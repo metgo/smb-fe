@@ -1,6 +1,6 @@
-import React from "react";
 import { Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductAvailability {
   activeStartDate: string | null;
@@ -9,16 +9,15 @@ interface ProductAvailability {
 
 interface ProductAvailabilityDetailsProps {
   product: ProductAvailability;
-  theme: Theme;
   language: Language;
 }
 
 const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
   product,
-  theme,
   language,
 }) => {
   const { t } = useTranslation("products");
+  const { isDark } = useThemeClasses();
 
   const { activeStartDate, activeEndDate } = product;
 
@@ -48,14 +47,14 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
         {/* Start Date */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("start_date")}
@@ -63,7 +62,7 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
 
           <div
             className={`flex items-center gap-2 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
+              isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
             <Calendar className="w-5 h-5" />
@@ -76,14 +75,14 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
         {/* End Date */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("end_date")}
@@ -91,7 +90,7 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
 
           <div
             className={`flex items-center gap-2 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
+              isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
             <Calendar className="w-5 h-5" />
@@ -105,24 +104,20 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
       {/* Availability Status */}
       <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "border-teal-700 bg-teal-950/30"
             : "border-teal-200 bg-teal-50"
         }`}
       >
         <h3
           className={`text-sm mb-2 ${
-            theme === "dark" ? "text-teal-400" : "text-teal-700"
+            isDark ? "text-teal-400" : "text-teal-700"
           }`}
         >
           {t("availability_status")}
         </h3>
 
-        <p
-          className={`text-lg ${
-            theme === "dark" ? "text-teal-300" : "text-teal-800"
-          }`}
-        >
+        <p className={`text-lg ${isDark ? "text-teal-300" : "text-teal-800"}`}>
           {availabilityStatus()}
         </p>
       </div>

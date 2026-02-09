@@ -19,7 +19,6 @@ import {
   ProductReviewSubmit,
 } from "./sub-components";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { toast } from "sonner";
@@ -35,14 +34,13 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { PublishButton } from "@/components/btns";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import clsx from "clsx";
+import { useSearchParams } from "react-router-dom";
 
 interface ProductWizardProps {
   onClose: () => void;
   editingProduct?: ProductFormData | null;
-  productId?: string | null;
-  setProductId: (value: string) => void;
   selectedProduct?: any;
-  currentView?: string;
   isOpen?: boolean;
   product?: any;
 }
@@ -50,20 +48,26 @@ interface ProductWizardProps {
 export default function CreateProductWizard({
   onClose,
   editingProduct,
-  productId,
-  setProductId,
-  currentView,
 }: ProductWizardProps) {
-  const { t, i18n } = useTranslation("products");
-  const { theme } = useAppSelector((state) => state.settings);
+  const { t } = useTranslation("products");
+  const [searchParams] = useSearchParams();
 
-  const language = i18n.language as Language;
+  const productId = searchParams?.get("productId");
+
+  const {
+    bgTertiary,
+    textPrimary,
+    textTertiary,
+    textSecondary,
+    borderColor,
+    language,
+  } = useThemeClasses();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
     "en" | "he" | "ar"
   >("en");
-  // const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, setIsPublishing] = useState(false);
   const {
     data: product,
@@ -183,7 +187,7 @@ export default function CreateProductWizard({
     });
     setGalleryImages(product?.images);
     setProductLogoImage({ image: product?.logo?.image });
-  }, [currentView, productId, product]);
+  }, [productId, product]);
 
   const availableCategories = [
     "Food & Dining",
@@ -193,9 +197,6 @@ export default function CreateProductWizard({
     "Wellness & Spa",
     "Entertainment",
   ];
-
-  const { bgTertiary, textPrimary, textTertiary, borderColor } =
-    useThemeClasses();
 
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
@@ -346,7 +347,6 @@ export default function CreateProductWizard({
       if (!productId) {
         const res = await initProductCreate({ businessId }).unwrap();
         internalProductId = res?.id;
-        setProductId(res?.id || internalProductId);
       }
 
       // Only send payload for the current step
@@ -376,7 +376,6 @@ export default function CreateProductWizard({
   const renderStepContent = () => {
     const commonProps = {
       t,
-      theme,
       language,
       formData,
       setFormData,
@@ -388,7 +387,6 @@ export default function CreateProductWizard({
       businesses,
     };
     const mediaProps = {
-      theme,
       t,
       errors,
       logoImage,
@@ -478,13 +476,13 @@ export default function CreateProductWizard({
                   <div className="flex flex-col items-center">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
-          ${
-            isActive
-              ? "bg-teal-500 text-white"
-              : isCompleted
-                ? "bg-green-500 text-white"
-                : `${bgTertiary} ${textTertiary}`
-          }`}
+                      ${
+                        isActive
+                          ? "bg-teal-500 text-white"
+                          : isCompleted
+                            ? "bg-green-500 text-white"
+                            : `${bgTertiary} ${textTertiary}`
+                      }`}
                     >
                       {isCompleted ? (
                         <Check className="w-5 h-5" />
@@ -494,7 +492,12 @@ export default function CreateProductWizard({
                     </div>
 
                     {/* Title below icon */}
-                    <span className="mt-2 text-sm text-center">
+                    <span
+                      className={clsx(
+                        "mt-2 text-sm text-center",
+                        textSecondary,
+                      )}
+                    >
                       {step.title}
                     </span>
                   </div>

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { MapPin, Package, Download, ChevronDown, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductInfoDetailsProps {
   t: (key: string) => string;
   product: Product;
-  theme: Theme;
   language: Language;
 }
 
@@ -14,9 +14,9 @@ interface ProductInfoDetailsProps {
 const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
   t,
   product,
-  theme,
   language,
 }) => {
+  const { isDark } = useThemeClasses();
   const [showQRDropdown, setShowQRDropdown] = useState(false);
 
   const handleQRDownload = (site: (typeof qrSites)[0]) => {
@@ -85,7 +85,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
     <div className="space-y-6">
       {/* Product Image */}
       <h3
-        className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+        className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
       >
         {t("product_image")}
       </h3>
@@ -106,11 +106,11 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Short Description */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("short_description")}
         </h3>
-        <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
+        <p className={isDark ? "text-gray-200" : "text-gray-800"}>
           {product?.shortDescription}
         </p>
       </div>
@@ -118,12 +118,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Business */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("business_name")}
         </h3>
         <div
-          className={`flex items-center gap-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
         >
           <MapPin className="w-4 h-4" />
           <span>{product?.businessId?.name}</span>
@@ -133,12 +133,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Product Type */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("product_type")}
         </h3>
         <div
-          className={`flex items-center gap-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
         >
           <Package className="w-4 h-4" />
           <span>{getProductTypeLabel(product?.productType)}</span>
@@ -148,7 +148,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Categories */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("categories")}
         </h3>
@@ -158,7 +158,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
               <span
                 key={idx}
                 className={`px-3 py-1 rounded-full text-sm ${
-                  theme === "dark"
+                  isDark
                     ? "bg-teal-900/30 text-teal-400"
                     : "bg-teal-100 text-teal-800"
                 }`}
@@ -175,7 +175,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Language Completeness */}
       {/* <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark? "text-gray-400" : "text-gray-600"}`}
         >
           {t("language_completeness")}
         </h3>
@@ -199,13 +199,13 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Connected Websites */}
       {/* <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/50 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <h3
-          className={`text-sm mb-3 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`text-sm mb-3 ${isDark? "text-gray-300" : "text-gray-700"}`}
         >
           {t("connected_websites")}
         </h3>
@@ -227,14 +227,14 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* QR Download */}
       <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/30 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <div className="flex justify-between mb-3">
           <h3
-            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             {t("download_qr_codes")}
           </h3>
@@ -270,7 +270,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Last Updated */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("last_updated")}
         </h3>

@@ -6,7 +6,6 @@ interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  // Remove theme and isRTL props to rely on global state for consistency
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({

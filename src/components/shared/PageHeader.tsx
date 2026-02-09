@@ -24,7 +24,7 @@ export default function PageHeader({
   const { textSecondary, borderColor } = useThemeClasses();
 
   return (
-    <div className={clsx("shrink-0 py-6 pb-4 border-b mb-4", borderColor)}>
+    <div className={clsx("shrink-0 pb-4 border-b mb-4", borderColor)}>
       <div className="mx-auto">
         <div className="flex items-center justify-between">
           <div>

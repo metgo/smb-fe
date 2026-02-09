@@ -127,3 +127,16 @@ interface ProductFormData {
   serviceDuration: string;
   serviceLocation: string;
 }
+
+interface IColumnVisibility {
+  images: boolean;
+  name: boolean;
+  businessId: boolean;
+  productType: boolean;
+  actions: boolean;
+  status: boolean;
+  price: boolean;
+  impact: boolean;
+  quantity: boolean;
+  updatedAt: boolean;
+}

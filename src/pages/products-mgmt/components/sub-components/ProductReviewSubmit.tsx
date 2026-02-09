@@ -4,18 +4,16 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductReviewSubmitProps {
   t: (key: string) => string;
-  theme: Theme;
   language: Language;
   formData: ProductFormData;
 }
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   t,
-  theme,
   language,
   formData,
 }) => {
-  const { textPrimary, textSecondary, textTertiary, borderColor } =
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
 
   const getTypeLabel = (type: string) => {
@@ -39,7 +37,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     <div className="space-y-6">
       {/* Review Header */}
       <div
-        className={`p-4 rounded-lg ${theme === "dark" ? "bg-teal-950/30" : "bg-teal-50"} border border-teal-500`}
+        className={`p-4 rounded-lg ${isDark ? "bg-teal-950/30" : "bg-teal-50"} border border-teal-500`}
       >
         <p className={`text-sm ${textSecondary}`}>
           <Eye className="w-4 h-4 inline mr-2" />

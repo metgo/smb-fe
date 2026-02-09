@@ -1,16 +1,17 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import React from "react";
 
 interface ProductPricingDetailsProps {
   product: Product;
-  theme: Theme;
   t: (key: string) => string;
 }
 
 const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
   product,
-  theme,
   t,
 }) => {
+  const { isDark } = useThemeClasses();
+
   const discountAmount =
     product?.price.markedPrice - product?.price.sellingPrice;
   const discountPercent =
@@ -25,21 +26,21 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
         {/* Marked Price */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("marked_price") || "Marked Price"}
           </h3>
           <p
             className={`text-3xl font-bold ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
+              isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
             ₪{product?.price.markedPrice?.toLocaleString()}
@@ -49,21 +50,21 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
         {/* Selling Price */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-teal-700 bg-teal-950/30"
               : "border-teal-200 bg-teal-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-teal-400" : "text-teal-700"
+              isDark ? "text-teal-400" : "text-teal-700"
             }`}
           >
             {t("selling_price") || "Selling Price"}
           </h3>
           <p
             className={`text-3xl font-bold ${
-              theme === "dark" ? "text-teal-300" : "text-teal-800"
+              isDark ? "text-teal-300" : "text-teal-800"
             }`}
           >
             ₪{product?.price.sellingPrice?.toLocaleString()}
@@ -75,14 +76,14 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
       {discountAmount > 0 && (
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-orange-700 bg-orange-950/30"
               : "border-orange-200 bg-orange-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-orange-400" : "text-orange-700"
+              isDark ? "text-orange-400" : "text-orange-700"
             }`}
           >
             {t("discount") || "Discount"}
@@ -90,14 +91,14 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
           <div className="flex items-baseline gap-3">
             <p
               className={`text-2xl font-bold ${
-                theme === "dark" ? "text-orange-300" : "text-orange-800"
+                isDark ? "text-orange-300" : "text-orange-800"
               }`}
             >
               ₪{discountAmount?.toLocaleString()}
             </p>
             <p
               className={`text-lg ${
-                theme === "dark" ? "text-orange-400" : "text-orange-700"
+                isDark ? "text-orange-400" : "text-orange-700"
               }`}
             >
               ({discountPercent}% off)
@@ -109,14 +110,14 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
       {/* Sales Statistics */}
       <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "border-gray-700 bg-gray-800/50"
             : "border-gray-200 bg-gray-50"
         }`}
       >
         <h3
           className={`text-sm mb-3 ${
-            theme === "dark" ? "text-gray-400" : "text-gray-600"
+            isDark ? "text-gray-400" : "text-gray-600"
           }`}
         >
           {t("sales_statistics") || "Sales Statistics"}
@@ -129,7 +130,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
             </p>
             <p
               className={`text-xl font-bold ${
-                theme === "dark" ? "text-gray-200" : "text-gray-800"
+                isDark ? "text-gray-200" : "text-gray-800"
               }`}
             >
               {product?.quantity?.sold?.toLocaleString()}
@@ -142,7 +143,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
             </p>
             <p
               className={`text-xl font-bold ${
-                theme === "dark" ? "text-gray-200" : "text-gray-800"
+                isDark ? "text-gray-200" : "text-gray-800"
               }`}
             >
               ₪
@@ -158,7 +159,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
             </p>
             <p
               className={`text-xl font-bold ${
-                theme === "dark" ? "text-gray-200" : "text-gray-800"
+                isDark ? "text-gray-200" : "text-gray-800"
               }`}
             >
               ₪{product?.price?.sellingPrice?.toLocaleString()}

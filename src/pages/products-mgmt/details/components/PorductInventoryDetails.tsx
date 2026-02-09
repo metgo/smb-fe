@@ -1,3 +1,4 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import React from "react";
 interface ProductQuantity {
   isUnlimited: boolean;
@@ -9,15 +10,14 @@ interface ProductInventoryDetailsProps {
   product: {
     quantity: ProductQuantity | null;
   };
-  theme: Theme;
   t: (key: string) => string;
 }
 
 const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
   product,
-  theme,
   t,
 }) => {
+  const { isDark } = useThemeClasses();
   const isUnlimited = product.quantity?.isUnlimited;
   const availableStock = product.quantity?.remaining ?? 0;
   const soldCount = product.quantity?.sold ?? 0;
@@ -34,19 +34,19 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
         {/* Total Quantity */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
-            className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+            className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
             {t("total_quantity")}
           </h3>
           <p
             className={`text-3xl font-bold ${
-              theme === "dark" ? "text-teal-300" : "text-teal-800"
+              isDark ? "text-teal-300" : "text-teal-800"
             }`}
           >
             {" "}
@@ -62,10 +62,10 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
         <div
           className={`p-4 rounded-lg border ${
             availableStock !== null && availableStock < 10
-              ? theme === "dark"
+              ? isDark
                 ? "border-red-700 bg-red-950/30"
                 : "border-red-200 bg-red-50"
-              : theme === "dark"
+              : isDark
                 ? "border-green-700 bg-green-950/30"
                 : "border-green-200 bg-green-50"
           }`}
@@ -73,10 +73,10 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
           <h3
             className={`text-sm mb-2 ${
               availableStock !== null && availableStock < 10
-                ? theme === "dark"
+                ? isDark
                   ? "text-red-400"
                   : "text-red-700"
-                : theme === "dark"
+                : isDark
                   ? "text-green-400"
                   : "text-green-700"
             }`}
@@ -85,7 +85,7 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
           </h3>
           <p
             className={`text-3xl font-bold ${
-              theme === "dark" ? "text-teal-300" : "text-teal-800"
+              isDark ? "text-teal-300" : "text-teal-800"
             }`}
           >
             {" "}
@@ -102,13 +102,13 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
       {product.quantity !== null && (
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
-            className={`text-sm mb-3 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+            className={`text-sm mb-3 ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
             {t("stock_status")}
           </h3>
@@ -130,7 +130,7 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
               <div className="flex justify-between mt-2 text-sm">
                 <span
                   className={` font-bold ${
-                    theme === "dark" ? "text-teal-300" : "text-teal-800"
+                    isDark ? "text-teal-300" : "text-teal-800"
                   }`}
                 >
                   {" "}
@@ -138,7 +138,7 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
                 </span>
                 <span
                   className={` font-bold ${
-                    theme === "dark" ? "text-teal-300" : "text-teal-800"
+                    isDark ? "text-teal-300" : "text-teal-800"
                   }`}
                 >
                   {availableStock} {t("remaining")}

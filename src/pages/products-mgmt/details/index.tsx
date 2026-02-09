@@ -5,10 +5,7 @@ import {
   Edit,
   Package,
   Copy,
-  Calendar,
   TrendingUp,
-  FileText,
-  Image as ImageIcon,
   DollarSign,
   Box,
   ChevronDown,
@@ -29,19 +26,21 @@ import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
-import { Spinner } from "@/components/shared";
+import { Spinner, TabsSection } from "@/components/shared";
 import { CreateProductWizard } from "../components";
 import { routes } from "@/lib/routes";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { productTabs } from "@/constants/tabs";
 
-const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
-
-export default function ProductDetails() {
-  const { t, i18n } = useTranslation("products");
+export default function ProductDetailsPage() {
+  const { t } = useTranslation("products");
   const { t: ct } = useTranslation("common");
   const navigate = useNavigate();
 
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const language = i18n.language as Language;
+  const { isDark } = useThemeClasses();
+  const { isRTL, language } = useAppSelector((state) => state.settings);
+  const { userRole } = useAppSelector((state) => state.auth);
+
   const [searchParams] = useSearchParams();
 
   const productId = searchParams.get("productId");
@@ -69,24 +68,7 @@ export default function ProductDetails() {
     "dmo",
     "authority",
     "business_owner",
-  ].includes(USER_ROLE);
-  const { userRole } = useAppSelector((state) => state.auth);
-
-  const tabs = [
-    { id: "overview", label: t("overview"), icon: FileText },
-    {
-      id: "pricing",
-      label: t("pricing") || "Pricing & Sales",
-      icon: DollarSign,
-    },
-    { id: "inventory", label: t("inventory") || "Inventory", icon: Box },
-    {
-      id: "availability",
-      label: t("availability") || "Availability",
-      icon: Calendar,
-    },
-    { id: "media", label: t("media") || "Media", icon: ImageIcon },
-  ];
+  ].includes(userRole);
 
   const StatusBadge = ({ status }: { status: Product["status"] }) => {
     const statusConfig = {
@@ -103,8 +85,6 @@ export default function ProductDetails() {
 
     const handleStatusChange = async (newStatus: Product["status"]) => {
       try {
-        console.log(newStatus.toUpperCase());
-
         await updateProduct({
           productId: productId ?? "",
           body: { status: newStatus },
@@ -141,7 +121,7 @@ export default function ProductDetails() {
         {showStatusDropdown && (
           <div
             className={`absolute ${isRTL ? "left-0" : "right-0"} top-full mt-2 w-48 rounded-lg shadow-lg border z-20 ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-800 border-gray-700"
                 : "bg-white border-gray-200"
             }`}
@@ -149,10 +129,10 @@ export default function ProductDetails() {
             {userRole === UserRole.SUPERADMIN && (
               <div className="">
                 <div
-                  className={`p-2 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                  className={`p-2 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
                 >
                   <p
-                    className={`text-xs px-2 py-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                    className={`text-xs px-2 py-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("change_status") || "Change Status"}
                   </p>
@@ -167,10 +147,10 @@ export default function ProductDetails() {
                           key={statusKey}
                           onClick={() => handleStatusChange(statusKey)}
                           className={`w-full text-${isRTL ? "right" : "left"} px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
-                            theme === "dark"
+                            isDark
                               ? "hover:bg-gray-700 text-gray-300"
                               : "hover:bg-gray-100 text-gray-700"
-                          } ${isActive ? (theme === "dark" ? "bg-gray-700" : "bg-gray-100") : ""}`}
+                          } ${isActive ? (isDark ? "bg-gray-700" : "bg-gray-100") : ""}`}
                         >
                           <div className="flex items-center gap-2">
                             <div
@@ -195,7 +175,7 @@ export default function ProductDetails() {
   };
 
   const renderContent = () => {
-    const commonProps = { theme, t, language, product };
+    const commonProps = { t, language, product };
     switch (activeTab) {
       case "overview":
         return <ProductInfoDetails {...commonProps} />;
@@ -215,7 +195,7 @@ export default function ProductDetails() {
   return (
     <div
       className={`h-[calc(100vh-64px)] overflow-y-auto ${
-        theme === "dark" ? "bg-gray-950" : "bg-gray-50"
+        isDark ? "bg-gray-950" : "bg-gray-50"
       }`}
     >
       <Spinner isLoading={isLoading} />
@@ -223,9 +203,7 @@ export default function ProductDetails() {
       {/* Fixed Header */}
       <div
         className={`sticky top-0 z-10 ${
-          theme === "dark"
-            ? "bg-gray-900 border-gray-800"
-            : "bg-white border-gray-200"
+          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
         } border-b`}
       >
         <div className="max-w-full mx-auto px-6 py-4">
@@ -233,7 +211,7 @@ export default function ProductDetails() {
             <button
               onClick={() => navigate(routes.productsMgmt)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                theme === "dark"
+                isDark
                   ? "hover:bg-gray-800 text-gray-300"
                   : "hover:bg-gray-100 text-gray-700"
               } transition-colors`}
@@ -248,7 +226,7 @@ export default function ProductDetails() {
                   <button
                     // onClick={onDuplicate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                      theme === "dark"
+                      isDark
                         ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                         : "border-gray-300 hover:bg-gray-50 text-gray-700"
                     } transition-colors`}
@@ -284,14 +262,14 @@ export default function ProductDetails() {
               <div>
                 <h1
                   className={`text-2xl mb-1 ${
-                    theme === "dark" ? "text-white" : "text-gray-900"
+                    isDark ? "text-white" : "text-gray-900"
                   }`}
                 >
                   {product?.name}
                 </h1>
                 {/* <p
                   className={
-                    theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    isDark ? "text-gray-400" : "text-gray-600"
                   }
                 >
                   {product.shortDescription}
@@ -303,13 +281,11 @@ export default function ProductDetails() {
         </div>
 
         {/* Analytics Stats */}
-        <div
-          className={`px-6 pb-4 ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}
-        >
+        <div className={`px-6 pb-4 ${isDark ? "bg-gray-900" : "bg-white"}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               className={`p-4 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}
@@ -317,13 +293,13 @@ export default function ProductDetails() {
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
                 <h3
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
                   {t("total_revenue") || "Total Revenue"}
                 </h3>
               </div>
               <p
-                className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 ₪
                 {(
@@ -334,7 +310,7 @@ export default function ProductDetails() {
 
             <div
               className={`p-4 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}
@@ -342,13 +318,13 @@ export default function ProductDetails() {
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
                   {t("units_sold") || "Units Sold"}
                 </h3>
               </div>
               <p
-                className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 {product?.quantity?.sold.toLocaleString()}
               </p>
@@ -356,7 +332,7 @@ export default function ProductDetails() {
 
             <div
               className={`p-4 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}
@@ -364,13 +340,13 @@ export default function ProductDetails() {
               <div className="flex items-center gap-2 mb-2">
                 <Box className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 <h3
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
                   {t("available_stock") || "Available Stock"}
                 </h3>
               </div>
               <p
-                className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 {product?.quantity?.isUnlimited ? (
                   <span className="text-teal-500">∞</span>
@@ -384,44 +360,19 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div
-          className={`flex gap-1 px-6 overflow-x-auto ${
-            theme === "dark" ? "bg-gray-900" : "bg-white"
-          }`}
-        >
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
-                  isActive
-                    ? theme === "dark"
-                      ? "border-teal-500 text-teal-400"
-                      : "border-teal-600 text-teal-600"
-                    : theme === "dark"
-                      ? "border-transparent text-gray-400 hover:text-gray-300"
-                      : "border-transparent text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        <TabsSection
+          t={t}
+          tabs={productTabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
       </div>
 
       {/* Content */}
-      <div className="max-w-full mx-auto px-6 py-6">
-        <div
-          className={`${theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} rounded-xl border p-6`}
-        >
-          {renderContent()}
-        </div>
+      <div
+        className={`${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} rounded-xl border p-6 my-6 max-w-full`}
+      >
+        {renderContent()}
       </div>
       {isEditOpen && (
         <CreateProductWizard

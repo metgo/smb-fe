@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import { generateMockProducts } from "@/helpers/data-generator";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -238,6 +237,7 @@ export function useProductMgmt() {
         "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
       inactive: "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
     };
+
     const labels = {
       draft: t("draft"),
       pending: t("pending"),
