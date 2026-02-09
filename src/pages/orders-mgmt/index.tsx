@@ -32,21 +32,17 @@ import {
   OrderDetailsModal,
   QRScannerModal,
 } from "./components";
+import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 
 // Default columns configuration
 const defaultColumns = {
-  orderId: true,
-  purchaserName: true,
+  _id: true,
+  firstName: true,
   email: true,
   phone: true,
-  orderStatus: true,
-  totalAmount: true,
-  paymentStatus: false,
-  voucherAmount: false,
-  creditCardAmount: false,
-  vendors: false,
-  campaign: false,
-  createdDate: false,
+  status: true,
+
+  createdAt: false,
   paymentDate: false,
 };
 
@@ -59,7 +55,7 @@ export default function OrdersMgmtPage() {
 
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
-  const [orders, setOrders] = useState<IOrder[]>([]);
+  // const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -70,6 +66,17 @@ export default function OrdersMgmtPage() {
   const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
+
+  const defaultFilters = {
+    orderType: "all",
+    deliveryType: "all",
+    paymentMethod: "all",
+    vendor: "all",
+    campaign: "all",
+    month: "all",
+    dateFrom: "",
+    dateTo: "",
+  };
 
   // Filters
   const [filters, setFilters] = useState({
@@ -82,109 +89,281 @@ export default function OrdersMgmtPage() {
     dateTo: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
   });
+  //active filter chips
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: string; value: string }[] = [];
+
+    if (filters.orderType !== "all")
+      chips.push({
+        key: "orderType",
+        value: filters.orderType,
+      });
+
+    if (filters.deliveryType !== "all")
+      chips.push({
+        key: "deliveryType",
+        value: filters.deliveryType,
+      });
+
+    if (filters.paymentMethod !== "all")
+      chips.push({
+        key: "paymentMethod",
+        value: filters.paymentMethod,
+      });
+
+    if (filters.month !== "all" && filters.month !== "custom")
+      chips.push({ key: "month", value: filters.month });
+
+    if (filters.month === "custom") {
+      if (filters.dateFrom)
+        chips.push({
+          key: "dateFrom",
+          value: filters.dateFrom,
+        });
+
+      if (filters.dateTo) chips.push({ key: "dateTo", value: filters.dateTo });
+    }
+
+    return chips;
+  }, [filters, t]);
+
+  const FilterChip = ({ value, onRemove }: any) => (
+    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-blue-100 text-sm">
+      <span>{value}</span>
+      <button onClick={onRemove} className=" transition">
+        ✕
+      </button>
+    </div>
+  );
 
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+  const columns = [
+    { key: "checkbox", label: "", width: "50px" },
 
+    columnVisibility._id && {
+      key: "_id",
+      label: t("order_id"),
+      sortable: true,
+      render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
+    },
+
+    columnVisibility.firstName && {
+      key: "firstName",
+      label: t("purchaser_name_field"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm">{order.firstName}</div>
+      ),
+    },
+
+    columnVisibility.email && {
+      key: "email",
+      label: t("purchaser_email"),
+      render: (order: IOrder) => (
+        <a
+          href={`mailto:${order.email}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+        >
+          <Mail className="w-3 h-3" />
+          {order.email}
+        </a>
+      ),
+    },
+
+    columnVisibility.phone && {
+      key: "phone",
+      label: t("purchaser_phone"),
+      render: (order: IOrder) => (
+        <a
+          href={`tel:${order.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+        >
+          <Phone className="w-3 h-3" />
+          {order.phone}
+        </a>
+      ),
+    },
+
+    columnVisibility.status && {
+      key: "status",
+      label: t("order_status"),
+      render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
+
+    // columnVisibility.totalAmount && {
+    //   key: "totalAmount",
+    //   label: t("total_amount"),
+    //   sortable: true,
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm font-medium">
+    //       ₪{order.totalAmount.toLocaleString()}
+    //     </div>
+    //   ),
+    // },
+
+    // columnVisibility.paymentStatus && {
+    //   key: "paymentStatus",
+    //   label: t("payment_status"),
+    //   render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+    // },
+
+    // columnVisibility.voucherAmount && {
+    //   key: "voucherAmount",
+    //   label: t("voucher_amount"),
+    //   sortable: true,
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">
+    //       ₪{order.voucherAmount.toLocaleString()}
+    //     </div>
+    //   ),
+    // },
+
+    // columnVisibility.creditCardAmount && {
+    //   key: "creditCardAmount",
+    //   label: t("credit_card_amount"),
+    //   sortable: true,
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">
+    //       ₪{order.creditCardAmount.toLocaleString()}
+    //     </div>
+    //   ),
+    // },
+
+    // columnVisibility.vendors && {
+    //   key: "vendors",
+    //   label: t("vendors"),
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">{order.vendors.join(", ")}</div>
+    //   ),
+    // },
+
+    // columnVisibility.campaign && {
+    //   key: "campaign",
+    //   label: t("campaign"),
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">{order.campaign}</div>
+    //   ),
+    // },
+
+    columnVisibility.createdAt && {
+      key: "createdAt",
+      label: t("created_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {new Date(order.createdAt).toLocaleDateString(language)}
+        </div>
+      ),
+    },
+
+    columnVisibility.paymentDate && {
+      key: "paymentDate",
+      label: t("payment_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {new Date(order.paymentDate).toLocaleDateString(language)}
+        </div>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: IOrder) => React.ReactNode;
+  }[];
+
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const orderQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit,
+    };
+
+    if (searchTerm) params.search = searchTerm;
+
+    if (filters.orderType !== "all") {
+      params.orderType = filters.orderType;
+    }
+
+    if (filters.deliveryType !== "all") {
+      params.deliveryType = filters.deliveryType;
+    }
+
+    if (filters.paymentMethod !== "all") {
+      params.paymentMethod = filters.paymentMethod;
+    }
+
+    if (filters.vendor !== "all") {
+      params.vendor = filters.vendor;
+    }
+
+    if (filters.campaign !== "all") {
+      params.campaign = filters.campaign;
+    }
+
+    // Month filter
+    if (filters.month !== "all" && filters.month !== "custom") {
+      params.month = filters.month;
+    }
+
+    // Custom date range
+    if (filters.month === "custom") {
+      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+      if (filters.dateTo) params.dateTo = filters.dateTo;
+    }
+
+    return params;
+  }, [page, limit, searchTerm, filters]);
+
+  const { data: orders, isLoading } = useGetAllOrdersQuery(orderQueryParams);
+  console.log("🚀 ~ OrdersMgmtPage ~ orders:", orders?.datas?.data);
   // Load mock data
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setOrders(generateMockOrders(100));
-      setLoading(false);
-    }, 800);
-  }, []);
-
-  // Filter and search orders
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      // Search filter
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        const matchesSearch =
-          order.id.toLowerCase().includes(search) ||
-          order.purchaserName.toLowerCase().includes(search) ||
-          order.email.toLowerCase().includes(search) ||
-          order.phone.includes(search);
-        if (!matchesSearch) return false;
-      }
-
-      // Status filters
-      if (filters.orderType !== "all" && order.orderType !== filters.orderType)
-        return false;
-      if (
-        filters.deliveryType !== "all" &&
-        order.deliveryType !== filters.deliveryType
-      )
-        return false;
-      if (
-        filters.paymentMethod !== "all" &&
-        !order.paymentMethod.includes(filters.paymentMethod)
-      )
-        return false;
-      if (filters.vendor !== "all" && !order.vendors.includes(filters.vendor))
-        return false;
-      if (filters.campaign !== "all" && order.campaign !== filters.campaign)
-        return false;
-
-      // Month filter
-      if (filters.month !== "all" && filters.month !== "custom") {
-        const orderDate = new Date(order.createdDate);
-        const orderMonth = `${String(orderDate.getMonth() + 1).padStart(2, "0")}-${orderDate.getFullYear()}`;
-        if (orderMonth !== filters.month) return false;
-      }
-
-      // Custom date range filter
-      if (filters.month === "custom") {
-        if (filters.dateFrom) {
-          const orderDate = new Date(order.createdDate);
-          const fromDate = new Date(filters.dateFrom);
-          if (orderDate < fromDate) return false;
-        }
-        if (filters.dateTo) {
-          const orderDate = new Date(order.createdDate);
-          const toDate = new Date(filters.dateTo);
-          toDate.setHours(23, 59, 59, 999); // Include the entire day
-          if (orderDate > toDate) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [orders, searchTerm, filters]);
+  // useEffect(() => {
+  //   setLoading(true);
+  //   setTimeout(() => {
+  //     setOrders(generateMockOrders(100));
+  //     setLoading(false);
+  //   }, 800);
+  // }, []);
 
   // Statistics
-  const statistics = useMemo(() => {
-    const totalOrders = filteredOrders.length;
-    const totalRevenue = filteredOrders.reduce(
-      (sum, o) => sum + o.totalAmount,
-      0,
-    );
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const pickups = filteredOrders.filter(
-      (o) => o.deliveryType === "pickup",
-    ).length;
-    const deliveries = filteredOrders.filter(
-      (o) => o.deliveryType === "delivery",
-    ).length;
-    const paidOrders = filteredOrders.filter(
-      (o) => o.paymentStatus === "success",
-    ).length;
-    const cancelledOrders = filteredOrders.filter(
-      (o) => o.orderStatus === "cancelled",
-    ).length;
+  // const statistics = useMemo(() => {
+  //   const totalOrders = filteredOrders?.length;
+  //   const totalRevenue = filteredOrders?.reduce(
+  //     (sum, o) => sum + o.totalAmount,
+  //     0,
+  //   );
+  //   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  //   const pickups = filteredOrders?.filter(
+  //     (o) => o.deliveryType === "pickup",
+  //   ).length;
+  //   const deliveries = filteredOrders?.filter(
+  //     (o) => o.deliveryType === "delivery",
+  //   ).length;
+  //   const paidOrders = filteredOrders?.filter(
+  //     (o) => o.paymentStatus === "success",
+  //   ).length;
+  //   const cancelledOrders = filteredOrders?.filter(
+  //     (o) => o.orderStatus === "cancelled",
+  //   ).length;
 
-    return {
-      totalOrders,
-      totalRevenue,
-      avgOrderValue,
-      pickups,
-      deliveries,
-      paidOrders,
-      cancelledOrders,
-    };
-  }, [filteredOrders]);
+  //   return {
+  //     totalOrders,
+  //     totalRevenue,
+  //     avgOrderValue,
+  //     pickups,
+  //     deliveries,
+  //     paidOrders,
+  //     cancelledOrders,
+  //   };
+  // }, [filteredOrders]);
 
   // // Bulk selection handlers
   // const handleSelectAll = () => {
@@ -210,130 +389,130 @@ export default function OrdersMgmtPage() {
     setShowOrderDetails(true);
   };
 
-  const handleExportCSV = () => {
-    const ordersToExport =
-      selectedOrders.size > 0
-        ? filteredOrders.filter((order) => selectedOrders.has(order.id))
-        : filteredOrders;
+  // const handleExportCSV = () => {
+  //   const ordersToExport =
+  //     selectedOrders.size > 0
+  //       ? filteredOrders?.filter((order) => selectedOrders.has(order.id))
+  //       : filteredOrders;
 
-    if (ordersToExport?.length === 0) {
-      alert(t("noOrdersToExport") || "No orders to export");
-      return;
-    }
+  //   if (ordersToExport?.length === 0) {
+  //     alert(t("noOrdersToExport") || "No orders to export");
+  //     return;
+  //   }
 
-    const escapeCSV = (value: any): string => {
-      if (value === null || value === undefined) return "";
-      const stringValue = String(value);
-      if (
-        stringValue.includes(",") ||
-        stringValue.includes('"') ||
-        stringValue.includes("\n")
-      ) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
-    };
+  //   const escapeCSV = (value: any): string => {
+  //     if (value === null || value === undefined) return "";
+  //     const stringValue = String(value);
+  //     if (
+  //       stringValue.includes(",") ||
+  //       stringValue.includes('"') ||
+  //       stringValue.includes("\n")
+  //     ) {
+  //       return `"${stringValue.replace(/"/g, '""')}"`;
+  //     }
+  //     return stringValue;
+  //   };
 
-    const headers: string[] = [];
-    const columnKeys: string[] = [];
+  //   const headers: string[] = [];
+  //   const columnKeys: string[] = [];
 
-    if (columnVisibility.orderId) {
-      headers.push(t("orderId"));
-      columnKeys.push("orderId");
-    }
-    if (columnVisibility.purchaserName) {
-      headers.push(t("purchaserName"));
-      columnKeys.push("purchaserName");
-    }
-    if (columnVisibility.email) {
-      headers.push(t("email"));
-      columnKeys.push("email");
-    }
-    if (columnVisibility.phone) {
-      headers.push(t("phone"));
-      columnKeys.push("phone");
-    }
-    if (columnVisibility.orderStatus) {
-      headers.push(t("orderStatus"));
-      columnKeys.push("orderStatus");
-    }
-    if (columnVisibility.totalAmount) {
-      headers.push(t("totalAmount"));
-      columnKeys.push("totalAmount");
-    }
-    if (columnVisibility.paymentStatus) {
-      headers.push(t("paymentStatus"));
-      columnKeys.push("paymentStatus");
-    }
-    if (columnVisibility.voucherAmount) {
-      headers.push(t("voucherAmount"));
-      columnKeys.push("voucherAmount");
-    }
-    if (columnVisibility.creditCardAmount) {
-      headers.push(t("creditCardAmount"));
-      columnKeys.push("creditCardAmount");
-    }
-    if (columnVisibility.vendors) {
-      headers.push(t("vendors"));
-      columnKeys.push("vendors");
-    }
-    if (columnVisibility.campaign) {
-      headers.push(t("campaign"));
-      columnKeys.push("campaign");
-    }
-    if (columnVisibility.createdDate) {
-      headers.push(t("createdDate"));
-      columnKeys.push("createdDate");
-    }
-    if (columnVisibility.paymentDate) {
-      headers.push(t("paymentDate"));
-      columnKeys.push("paymentDate");
-    }
+  //   if (columnVisibility.orderId) {
+  //     headers.push(t("orderId"));
+  //     columnKeys.push("orderId");
+  //   }
+  //   if (columnVisibility.purchaserName) {
+  //     headers.push(t("purchaserName"));
+  //     columnKeys.push("purchaserName");
+  //   }
+  //   if (columnVisibility.email) {
+  //     headers.push(t("email"));
+  //     columnKeys.push("email");
+  //   }
+  //   if (columnVisibility.phone) {
+  //     headers.push(t("phone"));
+  //     columnKeys.push("phone");
+  //   }
+  //   if (columnVisibility.orderStatus) {
+  //     headers.push(t("orderStatus"));
+  //     columnKeys.push("orderStatus");
+  //   }
+  //   if (columnVisibility.totalAmount) {
+  //     headers.push(t("totalAmount"));
+  //     columnKeys.push("totalAmount");
+  //   }
+  //   if (columnVisibility.paymentStatus) {
+  //     headers.push(t("paymentStatus"));
+  //     columnKeys.push("paymentStatus");
+  //   }
+  //   if (columnVisibility.voucherAmount) {
+  //     headers.push(t("voucherAmount"));
+  //     columnKeys.push("voucherAmount");
+  //   }
+  //   if (columnVisibility.creditCardAmount) {
+  //     headers.push(t("creditCardAmount"));
+  //     columnKeys.push("creditCardAmount");
+  //   }
+  //   if (columnVisibility.vendors) {
+  //     headers.push(t("vendors"));
+  //     columnKeys.push("vendors");
+  //   }
+  //   if (columnVisibility.campaign) {
+  //     headers.push(t("campaign"));
+  //     columnKeys.push("campaign");
+  //   }
+  //   if (columnVisibility.createdDate) {
+  //     headers.push(t("createdDate"));
+  //     columnKeys.push("createdDate");
+  //   }
+  //   if (columnVisibility.paymentDate) {
+  //     headers.push(t("paymentDate"));
+  //     columnKeys.push("paymentDate");
+  //   }
 
-    let csvContent = headers.map(escapeCSV).join(",") + "\n";
+  //   let csvContent = headers.map(escapeCSV).join(",") + "\n";
 
-    ordersToExport.forEach((order) => {
-      const row: string[] = [];
+  //   ordersToExport.forEach((order) => {
+  //     const row: string[] = [];
 
-      columnKeys.forEach((key) => {
-        if (key === "orderId") row.push(escapeCSV(order.id));
-        else if (key === "purchaserName")
-          row.push(escapeCSV(order.purchaserName));
-        else if (key === "email") row.push(escapeCSV(order.email));
-        else if (key === "phone") row.push(escapeCSV(order.phone));
-        else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
-        else if (key === "totalAmount")
-          row.push(escapeCSV(`₪${order.totalAmount}`));
-        else if (key === "paymentStatus")
-          row.push(escapeCSV(order.paymentStatus));
-        else if (key === "voucherAmount")
-          row.push(escapeCSV(`₪${order.voucherAmount}`));
-        else if (key === "creditCardAmount")
-          row.push(escapeCSV(`₪${order.creditCardAmount}`));
-        else if (key === "vendors")
-          row.push(escapeCSV(order.vendors.join(", ")));
-        else if (key === "campaign") row.push(escapeCSV(order.campaign));
-        else if (key === "createdDate")
-          row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
-        else if (key === "paymentDate")
-          row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
-      });
+  //     columnKeys.forEach((key) => {
+  //       if (key === "orderId") row.push(escapeCSV(order.id));
+  //       else if (key === "purchaserName")
+  //         row.push(escapeCSV(order.purchaserName));
+  //       else if (key === "email") row.push(escapeCSV(order.email));
+  //       else if (key === "phone") row.push(escapeCSV(order.phone));
+  //       else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
+  //       else if (key === "totalAmount")
+  //         row.push(escapeCSV(`₪${order.totalAmount}`));
+  //       else if (key === "paymentStatus")
+  //         row.push(escapeCSV(order.paymentStatus));
+  //       else if (key === "voucherAmount")
+  //         row.push(escapeCSV(`₪${order.voucherAmount}`));
+  //       else if (key === "creditCardAmount")
+  //         row.push(escapeCSV(`₪${order.creditCardAmount}`));
+  //       else if (key === "vendors")
+  //         row.push(escapeCSV(order.vendors.join(", ")));
+  //       else if (key === "campaign") row.push(escapeCSV(order.campaign));
+  //       else if (key === "createdDate")
+  //         row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
+  //       else if (key === "paymentDate")
+  //         row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
+  //     });
 
-      csvContent += row.join(",") + "\n";
-    });
+  //     csvContent += row.join(",") + "\n";
+  //   });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 10);
+  //   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  //   const link = document.createElement("a");
+  //   const url = URL.createObjectURL(blob);
+  //   const timestamp = new Date().toISOString().slice(0, 10);
 
-    link.setAttribute("href", url);
-    link.setAttribute("download", `orders_export_${timestamp}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  //   link.setAttribute("href", url);
+  //   link.setAttribute("download", `orders_export_${timestamp}.csv`);
+  //   link.style.visibility = "hidden";
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
 
   const handleExportXLS = () => {
     console.log("Exporting XLS...");
@@ -380,50 +559,50 @@ export default function OrdersMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const orderStats = [
-    {
-      id: 1,
-      title: t("totalOrders"),
-      value: statistics.totalOrders.toLocaleString(),
-      label: t("all"),
-      icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
-    },
-    {
-      id: 2,
-      title: t("revenue"),
-      value: `₪${statistics.totalRevenue.toLocaleString()}`,
-      label: t("gross"),
-      icon: <DollarSign className="w-5 h-5 text-green-500" />,
-    },
-    {
-      id: 3,
-      title: t("avgOrderValue"),
-      value: `₪${Math.round(statistics.avgOrderValue).toLocaleString()}`,
-      label: t("perOrder"),
-      icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
-    },
-    {
-      id: 4,
-      title: t("pickups"),
-      value: statistics.pickups.toLocaleString(),
-      label: t("orders"),
-      icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
-    },
-    {
-      id: 5,
-      title: t("deliveries"),
-      value: statistics.deliveries.toLocaleString(),
-      label: t("orders"),
-      icon: <Truck className="w-5 h-5 text-teal-500" />,
-    },
-    {
-      id: 6,
-      title: t("cancelledOrders"),
-      value: statistics.cancelledOrders.toLocaleString(),
-      label: t("cancelled"),
-      icon: <XCircle className="w-5 h-5 text-red-500" />,
-    },
-  ];
+  // const orderStats = [
+  //   {
+  //     id: 1,
+  //     title: t("totalOrders"),
+  //     value: statistics?.totalOrders?.toLocaleString(),
+  //     label: t("all"),
+  //     icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: t("revenue"),
+  //     value: `₪${statistics?.totalRevenue?.toLocaleString()}`,
+  //     label: t("gross"),
+  //     icon: <DollarSign className="w-5 h-5 text-green-500" />,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: t("avgOrderValue"),
+  //     value: `₪${Math.round(statistics?.avgOrderValue).toLocaleString()}`,
+  //     label: t("perOrder"),
+  //     icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: t("pickups"),
+  //     value: statistics?.pickups?.toLocaleString(),
+  //     label: t("orders"),
+  //     icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
+  //   },
+  //   {
+  //     id: 5,
+  //     title: t("deliveries"),
+  //     value: statistics?.deliveries?.toLocaleString(),
+  //     label: t("orders"),
+  //     icon: <Truck className="w-5 h-5 text-teal-500" />,
+  //   },
+  //   {
+  //     id: 6,
+  //     title: t("cancelledOrders"),
+  //     value: statistics?.cancelledOrders?.toLocaleString(),
+  //     label: t("cancelled"),
+  //     icon: <XCircle className="w-5 h-5 text-red-500" />,
+  //   },
+  // ];
 
   const getOrderStatusBadge = (status: IOrder["orderStatus"]) => {
     const badges = {
@@ -559,10 +738,10 @@ export default function OrdersMgmtPage() {
         </div>
       </div>
 
-      <PageStats
+      {/* <PageStats
         stats={orderStats}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
-      />
+      /> */}
 
       {/* Search and Filters */}
       <div className={` border rounded-lg p-4 mb-6`}>
@@ -587,7 +766,7 @@ export default function OrdersMgmtPage() {
           </div>
 
           <button
-            onClick={handleExportCSV}
+            // onClick={handleExportCSV}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               theme === "dark"
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -675,6 +854,7 @@ export default function OrdersMgmtPage() {
                 { value: "offline", label: t("offline") },
               ]}
             />
+
             <FilterSelect
               label={t("deliveryType")}
               value={filters.deliveryType}
@@ -688,6 +868,7 @@ export default function OrdersMgmtPage() {
                 { value: "digital", label: t("digital") },
               ]}
             />
+
             <FilterSelect
               label={t("paymentMethod")}
               value={filters.paymentMethod}
@@ -700,6 +881,7 @@ export default function OrdersMgmtPage() {
                 { value: "credit_card", label: t("creditCard") },
               ]}
             />
+
             <MonthFilter
               label={t("month")}
               value={filters.month}
@@ -718,6 +900,32 @@ export default function OrdersMgmtPage() {
               isRTL={isRTL}
               t={t}
             />
+
+            {activeFilterChips.length > 0 && (
+              <div className="flex gap-5 items-center mt-4">
+                <button
+                  onClick={() => setFilters(defaultFilters)}
+                  className="text-sm text-green-600"
+                >
+                  {t("clear_all")}
+                </button>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  {activeFilterChips.map((chip) => (
+                    <FilterChip
+                      key={chip.key}
+                      value={chip.value}
+                      onRemove={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          [chip.key]: chip.key.includes("date") ? "" : "all",
+                        }))
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -742,7 +950,7 @@ export default function OrdersMgmtPage() {
             <span className="text-sm">{t("resendOrderDetails")}</span>
           </button>
           <button
-            onClick={handleExportCSV}
+            // onClick={handleExportCSV}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
               theme === "dark"
                 ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -770,11 +978,11 @@ export default function OrdersMgmtPage() {
       <div
         className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
       >
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader className="w-8 h-8 animate-spin text-teal-500" />
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : orders?.datas?.data?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
             <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
@@ -782,163 +990,14 @@ export default function OrdersMgmtPage() {
         ) : (
           <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
             <ReordableDataTable
-              rowKey="id"
-              data={filteredOrders}
+              rowKey="_id"
+              data={orders?.datas?.data}
               selectedItems={selectedOrders}
               onSelectionChange={() => setSelectedOrders}
               onRowClick={handleRowClick}
               storageKey="ordersTableColumnOrder"
-              columns={
-                [
-                  { key: "checkbox", label: "", width: "50px" },
-                  columnVisibility.orderId && {
-                    key: "orderId",
-                    label: t("order_id"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm">{order.id}</div>
-                    ),
-                  },
-
-                  columnVisibility.purchaserName && {
-                    key: "purchaserName",
-                    label: t("purchaser_name_field"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm">{order.purchaserName}</div>
-                    ),
-                  },
-
-                  columnVisibility.email && {
-                    key: "email",
-                    label: t("purchaser_email"),
-                    render: (order: IOrder) => (
-                      <a
-                        href={`mailto:${order.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                      >
-                        <Mail className="w-3 h-3" />
-                        {order.email}
-                      </a>
-                    ),
-                  },
-
-                  columnVisibility.phone && {
-                    key: "phone",
-                    label: t("purchaser_phone"),
-                    render: (order: IOrder) => (
-                      <a
-                        href={`tel:${order.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                      >
-                        <Phone className="w-3 h-3" />
-                        {order.phone}
-                      </a>
-                    ),
-                  },
-
-                  columnVisibility.orderStatus && {
-                    key: "orderStatus",
-                    label: t("order_status"),
-                    render: (order: IOrder) =>
-                      getOrderStatusBadge(order.orderStatus),
-                  },
-
-                  columnVisibility.totalAmount && {
-                    key: "totalAmount",
-                    label: t("total_amount"),
-                    sortable: true,
-                    render: (order: any) => (
-                      <div className="text-sm font-medium">
-                        ₪{order.totalAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.paymentStatus && {
-                    key: "paymentStatus",
-                    label: t("payment_status"),
-                    render: (order: IOrder) =>
-                      getPaymentStatusBadge(order.paymentStatus),
-                  },
-
-                  columnVisibility.voucherAmount && {
-                    key: "voucherAmount",
-                    label: t("voucher_amount"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        ₪{order.voucherAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.creditCardAmount && {
-                    key: "creditCardAmount",
-                    label: t("credit_card_amount"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        ₪{order.creditCardAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.vendors && {
-                    key: "vendors",
-                    label: t("vendors"),
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {order.vendors.join(", ")}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.campaign && {
-                    key: "campaign",
-                    label: t("campaign"),
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {order.campaign}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.createdDate && {
-                    key: "createdDate",
-                    label: t("created_date"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.createdDate).toLocaleDateString(
-                          language,
-                        )}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.paymentDate && {
-                    key: "paymentDate",
-                    label: t("payment_date"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.paymentDate).toLocaleDateString(
-                          language,
-                        )}
-                      </div>
-                    ),
-                  },
-                ].filter(Boolean) as {
-                  key: string;
-                  label: string;
-                  width?: string;
-                  sortable?: boolean;
-                  render?: (row: IOrder) => React.ReactNode;
-                }[]
-              }
+              columns={columns}
+              isDataLoading={isLoading}
             />
           </div>
         )}
@@ -956,14 +1015,14 @@ export default function OrdersMgmtPage() {
         />
       </Activity>
 
-      <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
+      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onAddOrder={(newOrder) => {
             setOrders((prev) => [newOrder as IOrder, ...prev]);
           }}
         />
-      </Activity>
+      </Activity> */}
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal onClose={() => setShowQRScanner(false)} />

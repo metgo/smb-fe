@@ -23,7 +23,7 @@
   "revenue": "Revenue",
   "avgOrderValue": "Avg Order Value",
   "perOrder": "Per Order",
-
+  "clear_all": "Clear All",
   "pickups": "Pickups",
   "deliveries": "Deliveries",
   "orders": "Orders",
