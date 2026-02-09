@@ -14,7 +14,12 @@ import {
 
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { BulkActionBar, PageHeader, PageStats } from "@/components/shared";
+import {
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  PageStats,
+} from "@/components/shared";
 import {
   CreateProductWizard,
   ProductGridView,
@@ -97,6 +102,9 @@ export default function ProductsMgmtPage() {
     },
   });
   const [_clearBusiness, setClearBusiness] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
 
   const clearFilter = (filterKey: string) => {
     setClearBusiness(true);
@@ -166,10 +174,17 @@ export default function ProductsMgmtPage() {
     setSelectedProduct(null);
     setIsCreateModalOpen(true);
   };
+  const promptBulkDelete = () => {
+    if (selectedProducts.size === 0) return;
+    setIsBulkDelete(true); // mark bulk delete mode
+    setIsConfirmOpen(true); // open confirmation dialog
+  };
 
   //bulk delete
   const handleBulkDelete = async () => {
     if (!selectedProducts.size) return;
+    setIsConfirmOpen(true);
+
     const toastId = toast.loading("Please wait. Businesses are deleting...");
     try {
       const results = await bulkProductsUpdate({
@@ -635,7 +650,7 @@ export default function ProductsMgmtPage() {
               selectedItemCount={selectedProducts.size || 0}
               handleBulkStatusChange={handleBulkStatusChange}
               onBulkAction={{
-                delete: handleBulkDelete,
+                delete: promptBulkDelete,
               }}
             />
           )}
@@ -687,6 +702,32 @@ export default function ProductsMgmtPage() {
             )}
           </div>
         </div>
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={t("delete_product")}
+          message={t("delete_product_confirm")}
+          confirmText="delete"
+          // loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+
+            if (isBulkDelete) {
+              handleBulkDelete();
+              setIsBulkDelete(false);
+              setIsConfirmOpen(false);
+            } else {
+              if (!itemToDelete) return;
+              // handleProductDelete(itemToDelete);
+
+              setItemToDelete(null);
+            }
+          }}
+        />
       </div>
 
       {/* Create/Edit Product Wizard */}
