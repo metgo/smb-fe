@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Edit,
@@ -8,18 +8,15 @@ import {
   TrendingUp,
   DollarSign,
   Box,
-  ChevronDown,
-  Check,
+  ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
 
 import {
   ProductAvailabilityDetails,
   ProductInfoDetails,
   ProductInventoryDetails,
-  ProductMediaDetails,
   ProductPricingDetails,
 } from "./components";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
@@ -31,37 +28,39 @@ import { CreateProductWizard } from "../components";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { MediaDetails } from "@/components/details-sections";
+import { StatusChangeBtn } from "@/components/btns";
+import clsx from "clsx";
 
 export default function ProductDetailsPage() {
   const { t } = useTranslation("products");
   const { t: ct } = useTranslation("common");
   const navigate = useNavigate();
 
-  const { isDark } = useThemeClasses();
-  const { isRTL, language } = useAppSelector((state) => state.settings);
+  const { isDark, language, rowDir, isRTL } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
+  const [updateProduct] = useUpdateProductMutation();
 
   const [searchParams] = useSearchParams();
 
   const productId = searchParams.get("productId");
-  const { data: product, isLoading } = useGetProductbyIdQuery(
-    productId ? { productId: productId } : skipToken,
-  );
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+
+  const [activeTab, setActiveTab] = useState("overview");
+
   const handleClose = () => {
     setIsEditOpen(false);
   };
   const handleEdit = () => {
     setIsEditOpen(true);
   };
-  const [updateProduct] = useUpdateProductMutation();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [currentStatus, setCurrentStatus] = useState<Product["status"]>(
-    product?.status,
-  );
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [_productId, setProductId] = useState<string>("");
-
   const canEdit = [
     "superadmin",
     "admin",
@@ -70,112 +69,57 @@ export default function ProductDetailsPage() {
     "business_owner",
   ].includes(userRole);
 
-  const StatusBadge = ({ status }: { status: Product["status"] }) => {
-    const statusConfig = {
-      draft: { color: "bg-gray-500", label: t("draft") },
-      pending: { color: "bg-yellow-500", label: t("pending") },
-      approved: { color: "bg-green-500", label: t("approved") },
-      rejected: { color: "bg-red-500", label: t("rejected") },
-      archived: { color: "bg-gray-400", label: t("archived") },
-      active: { color: "bg-gray-400", label: t("active") },
-      inactive: { color: "bg-gray-400", label: t("inactive") },
-    };
+  const {
+    images,
+    primaryImageIndex,
+    handleImageUpload,
+    setPrimaryImage,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
 
-    const config = statusConfig[status];
+  useEffect(() => {
+    if (product) {
+      setGalleryImages(product?.images ?? []);
+    }
+  }, [product]);
 
-    const handleStatusChange = async (newStatus: Product["status"]) => {
+  const onStatusChangeHandler = async (status: string) => {
+    if (productId)
       try {
         await updateProduct({
-          productId: productId ?? "",
-          body: { status: newStatus },
+          productId,
+          body: { status },
         }).unwrap();
 
-        setCurrentStatus(newStatus);
-        setShowStatusDropdown(false);
-
-        toast.success(t("status_updated") || "Status Updated", {
-          description: `${
-            t("product_status_changed_to") || "Product status changed to"
-          } ${statusConfig[newStatus].label}`,
-          duration: 2000,
-        });
+        refetch();
+        toast.success("Product status updated successfully!");
       } catch (error) {
-        toast.error(t("status_update_failed") || "Failed to update status");
-        console.error("Status update failed", error);
+        toast.error("Failed to update product status.");
+        console.error(error);
       }
-    };
-
-    return (
-      <div className="relative">
-        <button
-          onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm text-white ${config?.color} hover:opacity-90 transition-opacity`}
-        >
-          <span>{config?.label}</span>
-          <ChevronDown
-            className={`w-4 h-4 transition-transform ${showStatusDropdown ? "rotate-180" : ""}`}
-          />
-        </button>
-
-        {/* Dropdown Menu */}
-        {showStatusDropdown && (
-          <div
-            className={`absolute ${isRTL ? "left-0" : "right-0"} top-full mt-2 w-48 rounded-lg shadow-lg border z-20 ${
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200"
-            }`}
-          >
-            {userRole === UserRole.SUPERADMIN && (
-              <div className="">
-                <div
-                  className={`p-2 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
-                >
-                  <p
-                    className={`text-xs px-2 py-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("change_status") || "Change Status"}
-                  </p>
-                </div>
-                <div className="p-2">
-                  {(Object.keys(statusConfig) as Array<Product["status"]>).map(
-                    (statusKey) => {
-                      const statusOption = statusConfig[statusKey];
-                      const isActive = statusKey === currentStatus;
-                      return (
-                        <button
-                          key={statusKey}
-                          onClick={() => handleStatusChange(statusKey)}
-                          className={`w-full text-${isRTL ? "right" : "left"} px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
-                            isDark
-                              ? "hover:bg-gray-700 text-gray-300"
-                              : "hover:bg-gray-100 text-gray-700"
-                          } ${isActive ? (isDark ? "bg-gray-700" : "bg-gray-100") : ""}`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-3 h-3 rounded-full ${statusOption.color}`}
-                            />
-                            <span>{statusOption.label}</span>
-                          </div>
-                          {isActive && (
-                            <Check className="w-4 h-4 text-teal-500" />
-                          )}
-                        </button>
-                      );
-                    },
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
   };
 
   const renderContent = () => {
     const commonProps = { t, language, product };
+    const mediaProps = {
+      t,
+      images,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
     switch (activeTab) {
       case "overview":
         return <ProductInfoDetails {...commonProps} />;
@@ -186,7 +130,7 @@ export default function ProductDetailsPage() {
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "media":
-        return <ProductMediaDetails {...commonProps} />;
+        return <MediaDetails {...mediaProps} />;
       default:
         return null;
     }
@@ -207,22 +151,35 @@ export default function ProductDetailsPage() {
         } border-b`}
       >
         <div className="max-w-full mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
+          <div
+            className={clsx("flex items-center justify-between mb-4", rowDir)}
+          >
             <button
               onClick={() => navigate(routes.productsMgmt)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+                rowDir,
                 isDark
                   ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-100 text-gray-700"
-              } transition-colors`}
+                  : "hover:bg-gray-100 text-gray-700",
+              )}
             >
-              <ArrowLeft className="w-5 h-5" />
+              {isRTL ? (
+                <ArrowRight className="w-5 h-5" />
+              ) : (
+                <ArrowLeft className="w-5 h-5" />
+              )}
               <span>{ct("back_to_list") || "Back"}</span>
             </button>
 
-            <div className="flex items-center gap-3">
+            <div className={clsx("flex items-center gap-3", rowDir)}>
               {canEdit && (
                 <>
+                  <StatusChangeBtn
+                    isProduct
+                    status={product?.status}
+                    handleStatusChange={onStatusChangeHandler}
+                  />
                   <button
                     // onClick={onDuplicate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
@@ -246,43 +203,36 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-                {product?.images?.length > 0 ? (
-                  <img
-                    src={product?.images[0]?.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Package className="w-8 h-8 text-white" />
-                )}
-              </div>
-              <div>
-                <h1
-                  className={`text-2xl mb-1 ${
-                    isDark ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  {product?.name}
-                </h1>
-                {/* <p
-                  className={
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }
-                >
-                  {product.shortDescription}
-                </p> */}
-              </div>
+          <div className={clsx("flex items-center gap-4", rowDir)}>
+            <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
+              {product?.images?.length > 0 ? (
+                <img
+                  src={product?.images[0]?.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Package className="w-8 h-8 text-white" />
+              )}
             </div>
-            <StatusBadge status={product?.status} />
+            <div>
+              <h1
+                className={`text-2xl mb-1 ${
+                  isDark ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {product?.name}
+              </h1>
+              <p className={isDark ? "text-gray-400" : "text-gray-600"}>
+                {product?.shortDescription}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Analytics Stats */}
         <div className={`px-6 pb-4 ${isDark ? "bg-gray-900" : "bg-white"}`}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={clsx("grid grid-cols-1 md:grid-cols-4 gap-4")}>
             <div
               className={`p-4 rounded-lg border ${
                 isDark
@@ -304,7 +254,7 @@ export default function ProductDetailsPage() {
                 ₪
                 {(
                   product?.quantity?.sold * product?.price?.sellingPrice
-                ).toLocaleString()}
+                ).toLocaleString() ?? 0}
               </p>
             </div>
 
@@ -357,6 +307,28 @@ export default function ProductDetailsPage() {
                 )}
               </p>
             </div>
+
+            <div
+              className={`p-4 rounded-lg border ${
+                isDark
+                  ? "border-gray-700 bg-gray-800/50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <h3
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {t("avg_order_value") || "Units Sold"}
+                </h3>
+              </div>
+              <p
+                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
+              >
+                ₪ {product?.quantity?.sold.toLocaleString()}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -375,12 +347,7 @@ export default function ProductDetailsPage() {
         {renderContent()}
       </div>
       {isEditOpen && (
-        <CreateProductWizard
-          isOpen={isEditOpen}
-          onClose={handleClose}
-          productId={productId}
-          setProductId={setProductId}
-        />
+        <CreateProductWizard isOpen={isEditOpen} onClose={handleClose} />
       )}
     </div>
   );

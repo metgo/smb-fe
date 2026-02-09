@@ -5,7 +5,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 /* ---------- Errors ---------- */
 interface ProductErrors {
-  logo?: string;
   images?: string;
 }
 
@@ -14,16 +13,6 @@ interface ProductMediaProps {
   t: (key: string) => string;
   errors: ProductErrors;
 
-  /* Logo */
-  logoImage: IImageUpload | null;
-  handleLogoImageSelect: (file: File) => void;
-  deleteTargetLogo: string | null;
-  setDeleteTargetLogo: (v: string | null) => void;
-  confirmDeleteLogo: () => void;
-  isLogoImageDeleting: boolean;
-  handleDeleteLogoImage: (logoImg: IImageUpload) => void;
-
-  /* Gallery */
   images: IImageUpload[];
   primaryImageIndex: number;
   setPrimaryImage: (idx: number) => void;

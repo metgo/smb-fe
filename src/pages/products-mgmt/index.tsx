@@ -658,6 +658,7 @@ export default function ProductsMgmtPage() {
             ) : (
               <ProductGridView
                 hasMore={hasMore}
+                refetch={refetch}
                 fetchNextPage={fetchNextPage}
                 products={combinedProducts}
                 isLoading={isLoadingProduct || isFetching}

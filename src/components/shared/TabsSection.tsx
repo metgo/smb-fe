@@ -1,4 +1,5 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import { type LucideIcon } from "lucide-react";
 import { useRef, useEffect } from "react";
 
@@ -21,7 +22,7 @@ const TabsSection = ({
   activeTab,
   setActiveTab,
 }: TabsSectionProps) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, rowDir } = useThemeClasses();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
 
@@ -48,7 +49,7 @@ const TabsSection = ({
   return (
     <div
       ref={tabsContainerRef}
-      className="flex gap-1 mt-6 overflow-x-auto scrollbar-hide"
+      className={clsx("flex gap-1 mt-6 overflow-x-auto scrollbar-hide", rowDir)}
       style={{
         scrollbarWidth: "none", // Firefox
         msOverflowStyle: "none", // IE and Edge

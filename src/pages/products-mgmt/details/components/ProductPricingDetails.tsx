@@ -13,10 +13,10 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
   const { isDark } = useThemeClasses();
 
   const discountAmount =
-    product?.price.markedPrice - product?.price.sellingPrice;
+    product?.price?.markedPrice - product?.price?.sellingPrice;
   const discountPercent =
-    product?.price.markedPrice > 0
-      ? Math.round((discountAmount / product?.price.markedPrice) * 100)
+    product?.price?.markedPrice > 0
+      ? Math.round((discountAmount / product?.price?.markedPrice) * 100)
       : 0;
 
   return (
@@ -43,7 +43,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
               isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
-            ₪{product?.price.markedPrice?.toLocaleString()}
+            ₪{product?.price?.markedPrice?.toLocaleString()}
           </p>
         </div>
 
@@ -67,7 +67,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
               isDark ? "text-teal-300" : "text-teal-800"
             }`}
           >
-            ₪{product?.price.sellingPrice?.toLocaleString()}
+            ₪{product?.price?.sellingPrice?.toLocaleString()}
           </p>
         </div>
       </div>
@@ -106,67 +106,6 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
           </div>
         </div>
       )}
-
-      {/* Sales Statistics */}
-      <div
-        className={`p-4 rounded-lg border ${
-          isDark
-            ? "border-gray-700 bg-gray-800/50"
-            : "border-gray-200 bg-gray-50"
-        }`}
-      >
-        <h3
-          className={`text-sm mb-3 ${
-            isDark ? "text-gray-400" : "text-gray-600"
-          }`}
-        >
-          {t("sales_statistics") || "Sales Statistics"}
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-xs mb-1 text-gray-500">
-              {t("units_sold") || "Units Sold"}
-            </p>
-            <p
-              className={`text-xl font-bold ${
-                isDark ? "text-gray-200" : "text-gray-800"
-              }`}
-            >
-              {product?.quantity?.sold?.toLocaleString()}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-xs mb-1 text-gray-500">
-              {t("total_revenue") || "Total Revenue"}
-            </p>
-            <p
-              className={`text-xl font-bold ${
-                isDark ? "text-gray-200" : "text-gray-800"
-              }`}
-            >
-              ₪
-              {(
-                product?.quantity.sold * product?.price?.sellingPrice
-              ).toLocaleString()}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-xs mb-1 text-gray-500">
-              {t("avg_order_value") || "Avg Order Value"}
-            </p>
-            <p
-              className={`text-xl font-bold ${
-                isDark ? "text-gray-200" : "text-gray-800"
-              }`}
-            >
-              ₪{product?.price?.sellingPrice?.toLocaleString()}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

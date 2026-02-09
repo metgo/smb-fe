@@ -39,6 +39,7 @@ export const productMutationApi = createApi({
         method: "DELETE",
       }),
     }),
+
     bulkProductsUpdate: builder.mutation<any, IBulkUpdateParams>({
       query: (body) => ({
         url: endpoints.bulkProductsUpdate,

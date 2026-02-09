@@ -1,17 +1,20 @@
-import { Package } from "lucide-react";
+import { Package, TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useRef } from "react";
-import { ImageWithFallback } from "@/components/shared";
+import { useRef, useState } from "react";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { Checkbox } from "@/components/ui/checkbox";
 import clsx from "clsx";
+import { useDeleteProductMutation } from "@/store/api/productMutationApi";
+import { toast } from "sonner";
 
 interface ProductGridViewProps {
   products: any[];
   isLoading: boolean;
   hasMore: boolean;
+  refetch: () => void;
   fetchNextPage: () => void;
   selectedProducts: Set<string>;
   setSelectedProducts: (v: Set<string>) => void;
@@ -21,6 +24,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   products,
   isLoading,
   hasMore,
+  refetch,
   fetchNextPage,
   selectedProducts,
   setSelectedProducts,
@@ -44,6 +48,16 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
     isLoading: isLoading,
     onLoadMore: fetchNextPage,
   });
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+
+  const handleBusinessDelete = async (productId: string) => {
+    const res = await deleteProduct({ productId });
+    toast.success(res?.data?.message || "Business deleted successfully");
+    refetch();
+  };
 
   const getStatusBadge = (status: Product["status"]) => {
     const badges = {
@@ -112,29 +126,18 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   };
 
   return (
-    <div
-      ref={scrollRef}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-    >
-      {products?.map((product: any) => (
-        <div
-          key={product._id}
-          onClick={() => {}}
-          className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden hover:shadow-lg transition-all cursor-pointer group`}
-        >
-          <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
-            {product?.images ? (
-              <ImageWithFallback
-                src={product?.images?.[0]?.image}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Package className="w-16 h-16 text-white opacity-50" />
-              </div>
-            )}
-            <div className="absolute top-3 left-3">
+    <>
+      <div
+        ref={scrollRef}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        {products?.map((product: any) => (
+          <div
+            key={product._id}
+            onClick={() => {}}
+            className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`}
+          >
+            <div className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2">
               <Checkbox
                 checked={selectedProducts?.has(product._id) ?? false}
                 onCheckedChange={() => toggleRow(product)}
@@ -145,38 +148,83 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                     : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
                 )}
               />
-            </div>
-            <div className="absolute top-3 right-3">
-              {getStatusBadge(product.status)}
-            </div>
-          </div>
-          <div className="p-4">
-            <h3 className={`${textPrimary} mb-2 font-medium line-clamp-2`}>
-              {product.name}
-            </h3>
-            <p className={`text-sm ${textTertiary} mb-3 line-clamp-2`}>
-              {product?.shortDescription?.[language]}
-            </p>
-            <div className="flex items-center justify-between mb-2">
-              <div className={`text-sm ${textSecondary}`}>
-                {getProductTypeLabel(product.type)}
+
+              <div className="flex items-center gap-2">
+                <div className="">{getStatusBadge(product.status)}</div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setItemToDelete(product?._id);
+                  }}
+                  className="z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                  aria-label={`Delete ${product.name}`}
+                >
+                  <TrashIcon size={18} />
+                </button>
               </div>
-              <div className={textPrimary}>
-                {product?.markedPrice !== product?.sellingPrice && (
-                  <span className="text-xs text-gray-400 line-through mr-2">
-                    ₪{product?.markedPrice}
+            </div>
+
+            <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
+              {product?.images ? (
+                <ImageWithFallback
+                  src={product?.images?.[0]?.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Package className="w-16 h-16 text-white opacity-50" />
+                </div>
+              )}
+            </div>
+            <div className="p-4">
+              <h3 className={`${textPrimary} mb-2 font-medium line-clamp-2`}>
+                {product.name}
+              </h3>
+              <p className={`text-sm ${textTertiary} mb-3 line-clamp-2`}>
+                {product?.shortDescription?.[language]}
+              </p>
+              <div className="flex items-center justify-between mb-2">
+                <div className={`text-sm ${textSecondary}`}>
+                  {getProductTypeLabel(product.type)}
+                </div>
+                <div className={textPrimary}>
+                  {product?.markedPrice !== product?.sellingPrice && (
+                    <span className="text-xs text-gray-400 line-through mr-2">
+                      ₪{product?.markedPrice}
+                    </span>
+                  )}
+                  <span className="font-medium">
+                    ₪{product?.price?.selligPrice}
                   </span>
-                )}
-                <span className="font-medium">
-                  ₪{product?.price?.selligPrice}
-                </span>
+                </div>
               </div>
+              <div className={`text-xs ${textTertiary}`}>{product.name}</div>
             </div>
-            <div className={`text-xs ${textTertiary}`}>{product.name}</div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={"delete_business"}
+        message="delete_business_confirm"
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!itemToDelete) return;
+          handleBusinessDelete(itemToDelete);
+          setIsConfirmOpen(false);
+          setItemToDelete(null);
+        }}
+      />
+    </>
   );
 };
 

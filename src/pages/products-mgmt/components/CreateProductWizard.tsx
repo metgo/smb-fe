@@ -1,4 +1,7 @@
+import clsx from "clsx";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
+
 import {
   Check,
   Image as ImageIcon,
@@ -21,7 +24,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { toast } from "sonner";
 import {
   useInitProductCreateMutation,
   useUpdateProductMutation,
@@ -31,11 +33,18 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { PublishButton } from "@/components/btns";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
-import clsx from "clsx";
 import { useSearchParams } from "react-router-dom";
+
+const availableCategories = [
+  "Food & Dining",
+  "Accommodation",
+  "Tours & Activities",
+  "Shopping",
+  "Wellness & Spa",
+  "Entertainment",
+];
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -63,6 +72,9 @@ export default function CreateProductWizard({
     language,
   } = useThemeClasses();
 
+  const { data: businessData, isLoading: isBusinessesLoading } =
+    useGetbusinessForProductQuery({});
+
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
@@ -74,13 +86,10 @@ export default function CreateProductWizard({
     isLoading,
     refetch,
   } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
-  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
 
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [_logoGcsUrl, setLogoGcsUrl] = useState<string>("");
-  const [productLogoImage, setProductLogoImage] = useState<IImage | null>(null);
-  const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetbusinessForProductQuery({});
+  console.log("🚀 ~ CreateProductWizard ~ galleryImages:", galleryImages);
+
   const businesses = businessData?.data;
 
   const [businessId, setBusinessId] = useState("");
@@ -102,19 +111,7 @@ export default function CreateProductWizard({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
-  const {
-    image: logoImage,
-    handleImageSelect: handleLogoImageSelect,
-    uploadImage: uploadLogoImage,
-    confirmDelete: confirmDeleteLogo,
-    deleteTarget: deleteTargetLogo,
-    setDeleteTarget: setDeleteTargetLogo,
-    isImageDeleting: isLogoImageDeleting,
-    handleDeleteImage: handleDeleteLogoImage,
-  } = useSingleImageUpload({
-    initialImage: productLogoImage?.image,
-    onChange: setProductLogoImage,
-  });
+
   const [formData, setFormData] = useState<any>(
     editingProduct || {
       businessId: businessId,
@@ -173,7 +170,6 @@ export default function CreateProductWizard({
       endDate: product.endDate || "",
 
       // images
-      logo: product?.logo?.image,
       images: product?.images || null,
       additionalImages: product.additionalImages || [],
 
@@ -186,17 +182,7 @@ export default function CreateProductWizard({
       serviceLocation: product.serviceLocation || "",
     });
     setGalleryImages(product?.images);
-    setProductLogoImage({ image: product?.logo?.image });
   }, [productId, product]);
-
-  const availableCategories = [
-    "Food & Dining",
-    "Accommodation",
-    "Tours & Activities",
-    "Shopping",
-    "Wellness & Spa",
-    "Entertainment",
-  ];
 
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
@@ -245,21 +231,15 @@ export default function CreateProductWizard({
     return Object.keys(newErrors).length === 0;
   };
   const handleSaveDraft = async () => {
-    const logoUrl = await uploadLogoImage();
-    setLogoGcsUrl(logoUrl);
     await uploadAll();
     await saveDraft(false);
   };
 
   const handleNext = async () => {
     if (currentStep === 4) {
-      const logoUrl = await uploadLogoImage();
-      setLogoGcsUrl(logoUrl);
       await uploadAll();
     }
     setCurrentStep((prev) => prev + 1);
-
-    // handleSaveDraft();
   };
 
   const handlePrevious = () => {
@@ -267,7 +247,6 @@ export default function CreateProductWizard({
   };
 
   const handlePublish = async () => {
-    setIsPublishBtnClicked(true);
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
@@ -289,8 +268,6 @@ export default function CreateProductWizard({
     refetch();
     onClose();
   };
-  // Last saved timestamp
-  const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
@@ -318,9 +295,7 @@ export default function CreateProductWizard({
     activeEndDate: formData.endDate,
     // },
     // 4: {
-    // logo: { image: logoGcsUrl },
     images: galleryImages,
-    // },
     // 5: {
     nameHe: formData.nameHe,
     shortDescriptionHe: formData.shortDescriptionHe,
@@ -359,11 +334,6 @@ export default function CreateProductWizard({
         body: payload,
       }).unwrap();
 
-      // setIsSaving(true);
-
-      // setIsSaving(false);
-      setLastSaved(new Date());
-
       toast.success(
         res?.message ?? (isPublish ? "Product published" : "Draft saved"),
       );
@@ -386,16 +356,10 @@ export default function CreateProductWizard({
       availableCategories,
       businesses,
     };
+
     const mediaProps = {
       t,
       errors,
-      logoImage,
-      handleLogoImageSelect,
-      deleteTargetLogo,
-      setDeleteTargetLogo,
-      isLogoImageDeleting,
-      confirmDeleteLogo,
-      handleDeleteLogoImage,
       images,
       imagesRef,
       primaryImageIndex,
@@ -407,6 +371,7 @@ export default function CreateProductWizard({
       confirmDelete,
       handleDeleteImage,
     };
+
     switch (currentStep) {
       case 1:
         return (
