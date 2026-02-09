@@ -180,7 +180,7 @@ export default function OrdersMgmtPage() {
     }
 
     return chips;
-  }, [filters, t]);
+  }, [filters]);
 
   const FilterChip = ({ value, onRemove }: any) => (
     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-blue-100 text-sm">
@@ -196,13 +196,6 @@ export default function OrdersMgmtPage() {
     useState<ColumnVisibility>(defaultColumns);
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
-
-    // columnVisibility._id && {
-    //   key: "_id",
-    //   label: t("order_id"),
-    //   sortable: true,
-    //   render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
-    // },
 
     columnVisibility.firstName && {
       key: "firstName",
@@ -377,11 +370,43 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters, page]);
+
+  const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
+
   const {
     data: orders,
     isLoading,
     refetch,
+    isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
+  // const orderss = orders?.datas?.data ?? [];
+
+  // useEffect(() => {
+  //   if (!orderss?.length) return;
+
+  //   if (page === 1) {
+  //     setCombinedOrders(orderss);
+  //   } else {
+  //     setCombinedOrders((prev) => {
+  //       // Prevent duplicates (important!)
+  //       const existingIds = new Set(prev.map((b) => b._id));
+  //       const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
+
+  //       return [...prev, ...newItems];
+  //     });
+  //   }
+  // }, [orderss]);
+  const hasMore = orders?.datas?.meta?.hasNextPage;
+
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => {
+      return prev + 1;
+    });
+  };
 
   //order details
   const { data: orderDetails, isLoading: isOrderDetailLoading } =
@@ -393,55 +418,43 @@ export default function OrdersMgmtPage() {
     );
   console.log("🚀 ~ OrdersMgmtPage ~ orderDetails:", orderDetails);
 
-  // Load mock data
-  // useEffect(() => {
-  //   setLoading(true);
-  //   setTimeout(() => {
-  //     setOrders(generateMockOrders(100));
-  //     setLoading(false);
-  //   }, 800);
-  // }, []);
-
   // Statistics
-  // const statistics = useMemo(() => {
-  //   const totalOrders = filteredOrders?.length;
-  //   const totalRevenue = filteredOrders?.reduce(
-  //     (sum, o) => sum + o.totalAmount,
-  //     0,
-  //   );
-  //   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  //   const pickups = filteredOrders?.filter(
-  //     (o) => o.deliveryType === "pickup",
-  //   ).length;
-  //   const deliveries = filteredOrders?.filter(
-  //     (o) => o.deliveryType === "delivery",
-  //   ).length;
-  //   const paidOrders = filteredOrders?.filter(
-  //     (o) => o.paymentStatus === "success",
-  //   ).length;
-  //   const cancelledOrders = filteredOrders?.filter(
-  //     (o) => o.orderStatus === "cancelled",
-  //   ).length;
+  const statistics = useMemo(() => {
+    const totalOrders = orderss?.length;
+    const totalRevenue = orderss?.reduce((sum, o) => sum + o.totalAmount, 0);
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    // const pickups = orderss?.filter(
+    //   (o) => o.deliveryType === "pickup",
+    // ).length;
+    // const deliveries = orderss?.filter(
+    //   (o) => o.deliveryType === "delivery",
+    // ).length;
+    // const paidOrders = orderss?.filter(
+    //   (o) => o.paymentStatus === "success",
+    // ).length;
+    // const cancelledOrders = orderss?.filter(
+    //   (o) => o.orderStatus === "cancelled",
+    // ).length;
 
-  //   return {
-  //     totalOrders,
-  //     totalRevenue,
-  //     avgOrderValue,
-  //     pickups,
-  //     deliveries,
-  //     paidOrders,
-  //     cancelledOrders,
-  //   };
-  // }, [filteredOrders]);
+    return {
+      totalOrders,
+      totalRevenue,
+      avgOrderValue,
+      // pickups,
+      // deliveries,
+      // paidOrders,
+      // cancelledOrders,
+    };
+  }, [orderss]);
 
   // // Bulk selection handlers
-  const handleSelectAll = () => {
-    if (selectedOrders.size === filteredOrders.length) {
-      setSelectedOrders(new Set());
-    } else {
-      setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-    }
-  };
+  // const handleSelectAll = () => {
+  //   if (selectedOrders.size === filteredOrders.length) {
+  //     setSelectedOrders(new Set());
+  //   } else {
+  //     setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
+  //   }
+  // };
 
   // const handleSelectOrder = (orderId: string) => {
   //   const newSelected = new Set(selectedOrders);
@@ -461,7 +474,9 @@ export default function OrdersMgmtPage() {
   const handleExportCSV = () => {
     const ordersToExport =
       selectedOrders.size > 0
-        ? orders?.datas?.data?.filter((order) => selectedOrders.has(order.id))
+        ? orders?.datas?.data?.filter((order: any) =>
+            selectedOrders.has(order.id),
+          )
         : orders?.data?.data;
 
     if (ordersToExport?.length === 0) {
@@ -485,7 +500,7 @@ export default function OrdersMgmtPage() {
     const headers: string[] = [];
     const columnKeys: string[] = [];
 
-    if (columnVisibility.orderId) {
+    if (columnVisibility._id) {
       headers.push(t("orderId"));
       columnKeys.push("orderId");
     }
@@ -628,50 +643,50 @@ export default function OrdersMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // const orderStats = [
-  //   {
-  //     id: 1,
-  //     title: t("totalOrders"),
-  //     value: statistics?.totalOrders?.toLocaleString(),
-  //     label: t("all"),
-  //     icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: t("revenue"),
-  //     value: `₪${statistics?.totalRevenue?.toLocaleString()}`,
-  //     label: t("gross"),
-  //     icon: <DollarSign className="w-5 h-5 text-green-500" />,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: t("avgOrderValue"),
-  //     value: `₪${Math.round(statistics?.avgOrderValue).toLocaleString()}`,
-  //     label: t("perOrder"),
-  //     icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: t("pickups"),
-  //     value: statistics?.pickups?.toLocaleString(),
-  //     label: t("orders"),
-  //     icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
-  //   },
-  //   {
-  //     id: 5,
-  //     title: t("deliveries"),
-  //     value: statistics?.deliveries?.toLocaleString(),
-  //     label: t("orders"),
-  //     icon: <Truck className="w-5 h-5 text-teal-500" />,
-  //   },
-  //   {
-  //     id: 6,
-  //     title: t("cancelledOrders"),
-  //     value: statistics?.cancelledOrders?.toLocaleString(),
-  //     label: t("cancelled"),
-  //     icon: <XCircle className="w-5 h-5 text-red-500" />,
-  //   },
-  // ];
+  const orderStats = [
+    {
+      id: 1,
+      title: t("totalOrders"),
+      value: statistics?.totalOrders?.toLocaleString(),
+      label: t("all"),
+      icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
+    },
+    {
+      id: 2,
+      title: t("revenue"),
+      value: `₪${statistics?.totalRevenue?.toLocaleString()}`,
+      label: t("gross"),
+      icon: <DollarSign className="w-5 h-5 text-green-500" />,
+    },
+    {
+      id: 3,
+      title: t("avgOrderValue"),
+      value: `₪${Math.round(statistics?.avgOrderValue).toLocaleString()}`,
+      label: t("perOrder"),
+      icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
+    },
+    // {
+    //   id: 4,
+    //   title: t("pickups"),
+    //   value: statistics?.pickups?.toLocaleString(),
+    //   label: t("orders"),
+    //   icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
+    // },
+    // {
+    //   id: 5,
+    //   title: t("deliveries"),
+    //   value: statistics?.deliveries?.toLocaleString(),
+    //   label: t("orders"),
+    //   icon: <Truck className="w-5 h-5 text-teal-500" />,
+    // },
+    // {
+    //   id: 6,
+    //   title: t("cancelledOrders"),
+    //   value: statistics?.cancelledOrders?.toLocaleString(),
+    //   label: t("cancelled"),
+    //   icon: <XCircle className="w-5 h-5 text-red-500" />,
+    // },
+  ];
 
   const getOrderStatusBadge = (status: IOrder["orderStatus"]) => {
     const badges = {
@@ -807,10 +822,10 @@ export default function OrdersMgmtPage() {
         </div>
       </div>
 
-      {/* <PageStats
+      <PageStats
         stats={orderStats}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
-      /> */}
+      />
 
       {/* Search and Filters */}
       <div className={` border rounded-lg p-4 mb-6`}>
@@ -1049,7 +1064,8 @@ export default function OrdersMgmtPage() {
           <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
             <ReordableDataTable
               rowKey="_id"
-              data={orders?.datas?.data}
+              data={orders?.datas?.data || []}
+              next={fetchNextPage}
               selectedItems={selectedOrders}
               onSelectionChange={setSelectedOrders}
               onRowClick={handleRowClick}
@@ -1067,6 +1083,7 @@ export default function OrdersMgmtPage() {
           isRTL={isRTL}
           theme={theme}
           order={orderDetails?.datas}
+          isLoading={isOrderDetailLoading}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
           getPaymentStatusBadge={getPaymentStatusBadge}

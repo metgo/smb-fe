@@ -18,12 +18,12 @@ type TOrderType = "online" | "offline";
 type TDeliveryType = "pickup" | "delivery" | "digital";
 
 interface IOrder {
-  id: string;
-  purchaserName: string;
+  _id: string;
+  firstName: string;
   email: string;
   phone: string;
   orderType: TOrderType;
-  orderStatus: TOrderStatus;
+  status: TOrderStatus;
   paymentStatus: TPaymentStatus;
   paymentMethod: string[];
   totalAmount: number;
@@ -32,7 +32,7 @@ interface IOrder {
   vendors: string[];
   campaign: string;
   deliveryType: TDeliveryType;
-  createdDate: string;
+  createdAt: string;
   paymentDate: string;
   products: OrderProduct[];
   address?: string;

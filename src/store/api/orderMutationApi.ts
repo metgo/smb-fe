@@ -17,7 +17,7 @@ export const orderMutationApi = createApi({
   endpoints: (builder) => ({
     initOrderCreate: builder.mutation<any, void>({
       query: () => ({
-        url: endpoints.businesses,
+        url: endpoints.orders,
         method: "POST",
         data: { name: "" },
       }),

@@ -5,6 +5,7 @@ import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
+import { ModalWrapper } from "@/components/wrapper";
 
 interface OrderDetailsModalProps {
   theme: Theme;
@@ -14,6 +15,7 @@ interface OrderDetailsModalProps {
   t: (key: string) => string;
   getOrderStatusBadge: any;
   getPaymentStatusBadge: any;
+  isLoading: any;
 }
 
 const USER_ROLE = "authority";
@@ -24,6 +26,7 @@ function OrderDetailsModal({
   theme,
   isRTL,
   t,
+  isLoading,
   getOrderStatusBadge,
   getPaymentStatusBadge,
 }: OrderDetailsModalProps) {
@@ -41,289 +44,259 @@ function OrderDetailsModal({
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
   console.log("oder", order);
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg ${
-          theme === "dark"
-            ? "bg-gray-900 text-gray-100"
-            : "bg-white text-gray-900"
-        }`}
-      >
-        {/* Header */}
-        <div
-          className={`sticky top-0 z-10 p-6 border-b ${
-            theme === "dark"
-              ? "bg-gray-900 border-gray-800"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
-          >
-            <div className="flex flex-col">
-              <div className="flex">
-                <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
-                <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
-              </div>
-              <div className="flex gap-2 mt-2">
-                {getOrderStatusBadge(order?.status)}
-                {/* {getPaymentStatusBadge(order?.paymentStatus)} */}
-              </div>
-            </div>
+    <ModalWrapper onClose={onClose} height="20vh" showSpinner={isLoading}>
+      {/* Header */}
 
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-colors ${
-                theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <div
+        className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+      >
+        <div className="flex flex-col p-6">
+          <div className="flex">
+            <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
+            <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
+          </div>
+          <div className="flex gap-2 mt-2">
+            {getOrderStatusBadge(order?.status)}
+            {/* {getPaymentStatusBadge(order?.paymentStatus)} */}
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Purchaser Information */}
-          <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>
-              {t("purchaser_information") || "Purchaser Information"}
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <InfoRow
-                label={t("name") || "Name"}
-                value={order?.buyerFirstName}
-                theme={theme}
-              />
+      {/* Content */}
+      <div className="p-6 space-y-6">
+        {/* Purchaser Information */}
+        <div>
+          <h3 className={`text-lg mb-3 ${textPrimary}`}>
+            {t("purchaser_information") || "Purchaser Information"}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <InfoRow
+              label={t("name") || "Name"}
+              value={order?.buyerFirstName}
+              theme={theme}
+            />
 
-              {/* Email - Clickable */}
-              <div>
-                <p
-                  className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
-                >
-                  {t("purchaser_email") || "Email"}
-                </p>
-                <a
-                  href={`mailto:${order?.buyerEmail}`}
-                  className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
-                >
-                  <Mail className="w-3 h-3" />
-                  {order?.buyerEmail}
-                </a>
-              </div>
+            {/* Email - Clickable */}
+            <div>
+              <p
+                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
+              >
+                {t("purchaser_email") || "Email"}
+              </p>
+              <a
+                href={`mailto:${order?.buyerEmail}`}
+                className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
+              >
+                <Mail className="w-3 h-3" />
+                {order?.buyerEmail}
+              </a>
+            </div>
 
-              {/* Phone - Clickable */}
-              <div>
-                <p
-                  className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
-                >
-                  {t("purchaser_phone") || "Phone"}
-                </p>
-                <a
-                  href={`tel:${order?.buyerPhone}`}
-                  className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
-                >
-                  <Phone className="w-3 h-3" />
-                  {order?.buyerPhone ? order?.buyerPhone : "-"}
-                </a>
-              </div>
-              {/* 
+            {/* Phone - Clickable */}
+            <div>
+              <p
+                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
+              >
+                {t("purchaser_phone") || "Phone"}
+              </p>
+              <a
+                href={`tel:${order?.buyerPhone}`}
+                className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
+              >
+                <Phone className="w-3 h-3" />
+                {order?.buyerPhone ? order?.buyerPhone : "-"}
+              </a>
+            </div>
+            {/* 
               <InfoRow
                 label={t("campaign") || "Campaign"}
                 value={`${order?.campaign} (${order?.campaignCode})`}
                 theme={theme}
               /> */}
 
-              {order?.buyerAddress && (
-                <InfoRow
-                  label={t("purchaser_address") || "Address"}
-                  value={order?.buyerAddress}
-                  theme={theme}
-                />
-              )}
-            </div>
+            {order?.buyerAddress && (
+              <InfoRow
+                label={t("purchaser_address") || "Address"}
+                value={order?.buyerAddress}
+                theme={theme}
+              />
+            )}
           </div>
+        </div>
 
-          {/* Products Section */}
-          <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>
-              {t("products") || "Products"}
-            </h3>
-            <div
-              className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
-            >
-              {orderProducts?.map((product, idx) => (
-                <div
-                  key={product?._id}
-                  className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Product Image */}
-                    <div
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowProductModal(true);
-                      }}
-                      className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                    >
-                      <img
-                        src={product?.imageUrl}
-                        alt={product?.name}
-                        className={`w-20 h-20 object-cover rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
-                      />
-                    </div>
+        {/* Products Section */}
+        <div>
+          <h3 className={`text-lg mb-3 ${textPrimary}`}>
+            {t("products") || "Products"}
+          </h3>
+          <div
+            className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+          >
+            {orderProducts?.map((product, idx) => (
+              <div
+                key={product?._id}
+                className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Product Image */}
+                  <div
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowProductModal(true);
+                    }}
+                    className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <img
+                      src={product?.imageUrl}
+                      alt={product?.name}
+                      className={`w-20 h-20 object-cover rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
+                    />
+                  </div>
 
-                    {/* Product Info */}
-                    <div
-                      className="flex-1 cursor-pointer"
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowProductModal(true);
-                      }}
+                  {/* Product Info */}
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowProductModal(true);
+                    }}
+                  >
+                    <p
+                      className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
                     >
+                      {product?.name}
+                    </p>
+                    <p className={`text-sm ${textTertiary}`}>
+                      {product?.vendor}
+                    </p>
+                    <p className={`text-xs ${textTertiary} mt-1`}>
+                      {product?.category}
+                    </p>
+                  </div>
+
+                  {/* Price & Actions */}
+                  <div
+                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
+                    <div className={`text-right ${isRTL ? "text-left" : ""}`}>
                       <p
                         className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
                       >
-                        {product?.name}
+                        ₪
+                        {(
+                          product?.quantity * product?.unitPrice
+                        ).toLocaleString()}
                       </p>
                       <p className={`text-sm ${textTertiary}`}>
-                        {product?.vendor}
-                      </p>
-                      <p className={`text-xs ${textTertiary} mt-1`}>
-                        {product?.category}
+                        {product?.quantity} x ₪{product?.unitPrice}
                       </p>
                     </div>
 
-                    {/* Price & Actions */}
-                    <div
-                      className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                    >
-                      <div className={`text-right ${isRTL ? "text-left" : ""}`}>
-                        <p
-                          className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
-                        >
-                          ₪
-                          {(
-                            product?.quantity * product?.unitPrice
-                          ).toLocaleString()}
-                        </p>
-                        <p className={`text-sm ${textTertiary}`}>
-                          {product?.quantity} x ₪{product?.unitPrice}
-                        </p>
-                      </div>
+                    {/* Cancel Button */}
+                    {!product?.cancelled && USER_ROLE !== "authority" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCancelType("item");
+                          setItemToCancel(product);
+                          setShowCancelDialog(true);
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${
+                          theme === "dark"
+                            ? "hover:bg-red-900/30 text-red-400"
+                            : "hover:bg-red-50 text-red-500"
+                        }`}
+                        title={t("cancel_product") || "Cancel Product"}
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
+                    )}
 
-                      {/* Cancel Button */}
-                      {!product?.cancelled && USER_ROLE !== "authority" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCancelType("item");
-                            setItemToCancel(product);
-                            setShowCancelDialog(true);
-                          }}
-                          className={`p-2 rounded-lg transition-colors ${
-                            theme === "dark"
-                              ? "hover:bg-red-900/30 text-red-400"
-                              : "hover:bg-red-50 text-red-500"
-                          }`}
-                          title={t("cancel_product") || "Cancel Product"}
-                        >
-                          <XCircle className="w-5 h-5" />
-                        </button>
-                      )}
-
-                      {product?.cancelled && (
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
-                        >
-                          {t("cancelled") || "Cancelled"}
-                        </span>
-                      )}
-                    </div>
+                    {product?.cancelled && (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
+                      >
+                        {t("cancelled") || "Cancelled"}
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Payment Breakdown */}
-          <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>
-              {t("payment_breakdown") || "Payment Breakdown"}
-            </h3>
-            <div
-              className={`border rounded-lg p-4 space-y-2 ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
-            >
-              <div className="flex justify-between">
-                <span className={textTertiary}>
-                  {t("voucher_amount") || "Voucher"}
-                </span>
-                {/* <span className={textPrimary}>
+        {/* Payment Breakdown */}
+        <div>
+          <h3 className={`text-lg mb-3 ${textPrimary}`}>
+            {t("payment_breakdown") || "Payment Breakdown"}
+          </h3>
+          <div
+            className={`border rounded-lg p-4 space-y-2 ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+          >
+            <div className="flex justify-between">
+              <span className={textTertiary}>
+                {t("voucher_amount") || "Voucher"}
+              </span>
+              {/* <span className={textPrimary}>
                   ₪{order?.voucherAmount.toLocaleString()}
                 </span> */}
-              </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>
-                  {t("credit_card_amount") || "Credit Card"}
-                </span>
-                {/* <span className={textPrimary}>
+            </div>
+            <div className="flex justify-between">
+              <span className={textTertiary}>
+                {t("credit_card_amount") || "Credit Card"}
+              </span>
+              {/* <span className={textPrimary}>
                   ₪{order?.creditCardAmount.toLocaleString()}
                 </span> */}
-              </div>
-              {order?.deliveryFee > 0 && (
-                <div className="flex justify-between">
-                  <span className={textTertiary}>
-                    {t("delivery_fee") || "Delivery Fee"}
-                  </span>
-                  <span className={textPrimary}>
-                    ₪{order?.deliveryFee?.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              <div
-                className={`flex justify-between pt-2 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
-              >
-                <span className={`${textPrimary}`}>
-                  {t("total") || "Total"}
+            </div>
+            {order?.deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span className={textTertiary}>
+                  {t("delivery_fee") || "Delivery Fee"}
                 </span>
-                <span className={`${textPrimary}`}>
-                  ₪{order?.totalAmount?.toLocaleString()}
+                <span className={textPrimary}>
+                  ₪{order?.deliveryFee?.toLocaleString()}
                 </span>
               </div>
+            )}
+            <div
+              className={`flex justify-between pt-2 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
+            >
+              <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
+              <span className={`${textPrimary}`}>
+                ₪{order?.totalAmount?.toLocaleString()}
+              </span>
             </div>
           </div>
-
-          {/* Actions */}
-          {USER_ROLE !== "authority" && (
-            <div
-              className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
-            >
-              <button
-                onClick={() => {
-                  setCancelType("order");
-                  setItemToCancel(null);
-                  setShowCancelDialog(true);
-                }}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-              >
-                {t("cancel_order") || "Cancel Order"}
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  theme === "dark"
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                }`}
-              >
-                {t("resend_notification") || "Resend Notification"}
-              </button>
-            </div>
-          )}
         </div>
+
+        {/* Actions */}
+        {USER_ROLE !== "authority" && (
+          <div
+            className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+          >
+            <button
+              onClick={() => {
+                setCancelType("order");
+                setItemToCancel(null);
+                setShowCancelDialog(true);
+              }}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+            >
+              {t("cancel_order") || "Cancel Order"}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                theme === "dark"
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+              }`}
+            >
+              {t("resend_notification") || "Resend Notification"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Cancellation Dialog */}
@@ -362,7 +335,7 @@ function OrderDetailsModal({
           }}
         />
       )}
-    </div>
+    </ModalWrapper>
   );
 }
 export default OrderDetailsModal;
