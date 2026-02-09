@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
-import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
+import { ArrowLeft, Edit, UserCog } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   AnalyticsStatsSection,
@@ -11,15 +11,13 @@ import {
   BusinessContactDetails,
   BusinessDeliveryPolicyDetails,
   BusinessInfoDetails,
-  BusinessLocationDetails,
   BusinessMediaDetails,
   BusinessOnlinePresenceDetails,
   BusinessOpeningHoursDetails,
   BusinessTitleSection,
   ChangeOwnerModal,
-  TabsSection,
 } from "./components";
-import { Spinner } from "@/components/shared";
+import { Spinner, TabsSection } from "@/components/shared";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -30,9 +28,13 @@ import { UserRole } from "@/enums/user.types";
 import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
+import { routes } from "@/lib/routes";
+import { LocationDetails } from "@/components/details-sections";
+import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
+  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
@@ -169,11 +171,13 @@ export default function BusinessDetailsPage() {
   //   }
   // };
 
-  const onViewProducts = () => {};
+  // const onViewProducts = () => { };
 
-  const onCreateProduct = () => {};
+  // const onCreateProduct = () => { };
 
-  const onBack = () => {};
+  const onBack = () => {
+    navigate(routes.businessMgmt, { replace: true });
+  };
 
   const onStatusChangeHandler = async (status: string) => {
     try {
@@ -223,7 +227,20 @@ export default function BusinessDetailsPage() {
       case "contact":
         return <BusinessContactDetails {...commonProps} USER_ROLE={userRole} />;
       case "location":
-        return <BusinessLocationDetails {...commonProps} />;
+        return (
+          <LocationDetails
+            t={t}
+            purpose="Business"
+            address={business?.address}
+            lat={
+              business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
+            }
+            lng={
+              business?.geoLocation?.long ??
+              business?.location?.coordinates?.[1]
+            }
+          />
+        );
       case "media":
         return <BusinessMediaDetails {...mediaProps} />;
       case "social":
@@ -285,7 +302,7 @@ export default function BusinessDetailsPage() {
               {t("edit")}
             </button>
 
-            {onCreateProduct && (
+            {/* {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
                 className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
@@ -293,9 +310,9 @@ export default function BusinessDetailsPage() {
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
               </button>
-            )}
+            )} */}
 
-            {onViewProducts && (
+            {/* {onViewProducts && (
               <button
                 onClick={onViewProducts}
                 className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
@@ -303,19 +320,22 @@ export default function BusinessDetailsPage() {
                 <Box className="w-4 h-4" />
                 {t("view_products")}
               </button>
-            )}
+            )} */}
           </div>
         </div>
 
         <BusinessTitleSection business={business} t={t} />
-        {business?.analytics && (
-          <AnalyticsStatsSection
-            t={t}
-            business={business}
-            borderColor={borderColor}
-          />
-        )}
-        <TabsSection t={t} activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AnalyticsStatsSection
+          t={t}
+          borderColor={borderColor}
+          businessId={businessId}
+        />
+        <TabsSection
+          t={t}
+          tabs={businessTabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
       </div>
 
       {/* Content */}

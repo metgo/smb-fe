@@ -79,6 +79,10 @@ const LIMIT = 20;
 
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation("businesses");
+  const { textSecondary, isDark } = useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -87,15 +91,6 @@ export default function BusinessesMgmtPage() {
       replace: true,
     });
   };
-
-  const handleCloseWizard = () => {
-    setIsCreateModalOpen(false);
-  };
-
-  const { t } = useTranslation("businesses");
-  const { textSecondary, isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const { data: businessStatsData } = useGetBusinessStatsQuery({});
   const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
@@ -198,6 +193,8 @@ export default function BusinessesMgmtPage() {
     setPage(1);
   }, [searchTerm, filters]);
 
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+
   const {
     data: businessData,
     isLoading,
@@ -207,6 +204,22 @@ export default function BusinessesMgmtPage() {
 
   const businesses = businessData?.data ?? [];
   const hasMore = businessData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    if (!businesses?.length) return;
+
+    if (page === 1) {
+      setCombinedBusinesses(businesses);
+    } else {
+      setCombinedBusinesses((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = businesses.filter((b: any) => !existingIds.has(b._id));
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [businesses]);
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
@@ -804,39 +817,37 @@ export default function BusinessesMgmtPage() {
             }}
           />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="">
-            {viewMode === "list" ? (
-              <BusinessListView
+        <div className="flex-1 overflow-y-auto mt-2">
+          {viewMode === "list" ? (
+            <BusinessListView
+              t={t}
+              hasMore={hasMore}
+              next={fetchNextPage}
+              isLoading={isLoading || isFetching}
+              columnVisibility={columnVisibility}
+              businesses={combinedBusinesses || []}
+              onBusinessClick={handleBusinessClick}
+              selectedBusinesses={selectedBusinesses}
+              setSelectedBusinesses={setSelectedBusinesses}
+            />
+          ) : (
+            <div className="overflow-y-auto ">
+              <BusinessGridView
                 t={t}
-                onBusinessClick={handleBusinessClick}
-                isLoading={isLoading}
-                businesses={businesses || []}
-                next={fetchNextPage}
+                refetch={refetch}
                 hasMore={hasMore}
-                columnVisibility={columnVisibility}
-                selectedBusinesses={selectedBusinesses}
-                setSelectedBusinesses={setSelectedBusinesses}
+                next={fetchNextPage}
+                data={combinedBusinesses || []}
+                onRowClick={handleBusinessClick}
+                isLoading={isLoading || isFetching}
               />
-            ) : (
-              <div className="h-96 overflow-y-auto ">
-                <BusinessGridView
-                  t={t}
-                  data={businesses || []}
-                  refetch={refetch}
-                  isLoading={isLoading}
-                  next={fetchNextPage}
-                  hasMore={hasMore}
-                  onRowClick={handleBusinessClick}
-                />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       {isCreateModalOpen && (
-        <CreateBusinessWizard onClose={handleCloseWizard} />
+        <CreateBusinessWizard onClose={() => setIsCreateModalOpen(false)} />
       )}
     </>
   );
