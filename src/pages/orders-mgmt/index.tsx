@@ -42,6 +42,7 @@ import {
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
+import SearchInput from "@/components/shared/SearchInput";
 
 // Default columns configuration
 const defaultColumns = {
@@ -817,19 +818,12 @@ export default function OrdersMgmtPage() {
           className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
         >
           <div className="flex-1 relative">
-            <Search
-              className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-            />
-            <input
-              type="text"
-              placeholder={t("searchOrders")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full ${isRTL ? "pr-10 text-right" : "pl-10"} py-2 rounded-lg border transition-colors ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              }`}
+            <SearchInput
+              placeholder={t("search_orders")}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              isRTL={isRTL}
+              isDark={isDark}
             />
           </div>
 

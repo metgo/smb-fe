@@ -25,7 +25,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchTerm(inputValue);
-    }, 3000); // 3 seconds debounce
+    }, 300); // 3 seconds debounce
 
     return () => {
       clearTimeout(handler);
