@@ -1,12 +1,10 @@
-const TicketCardSkeleton = ({ theme }: { theme: string }) => {
-  const base = theme === "dark" ? "bg-gray-700/40" : "bg-gray-200/60";
+const TicketCardSkeleton = ({ isDark }: { isDark: boolean }) => {
+  const base = isDark ? "bg-gray-700/40" : "bg-gray-200/60";
 
   return (
     <div
       className={`p-6 rounded-xl border animate-pulse ${
-        theme === "dark"
-          ? "border-gray-700 bg-gray-800/50"
-          : "border-gray-200 bg-gray-50"
+        isDark ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
       }`}
     >
       <div className="flex items-start justify-between gap-6">

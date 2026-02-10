@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, UserCog } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Edit, UserCog } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   AnalyticsStatsSection,
@@ -25,7 +25,7 @@ import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
-import { StatusChangeBtn } from "@/components/btns";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import { routes } from "@/lib/routes";
@@ -34,7 +34,6 @@ import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
-  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
@@ -175,10 +174,6 @@ export default function BusinessDetailsPage() {
 
   // const onCreateProduct = () => { };
 
-  const onBack = () => {
-    navigate(routes.businessMgmt, { replace: true });
-  };
-
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -229,7 +224,6 @@ export default function BusinessDetailsPage() {
       case "location":
         return (
           <LocationDetails
-            t={t}
             purpose="Business"
             address={business?.address}
             lat={
@@ -263,15 +257,7 @@ export default function BusinessDetailsPage() {
       <div className={clsx(` shrink-0 border-b px-6 py-4 `, borderColor)}>
         {/* Top Row */}
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={onBack}
-            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors cursor-pointer ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            {t("back_to_list")}
-          </button>
+          <BackToListBtn navPath={routes.businessMgmt} />
 
           <div className="flex items-center gap-2">
             {canChangeStatus && (

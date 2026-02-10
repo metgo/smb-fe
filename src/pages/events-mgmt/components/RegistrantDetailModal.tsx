@@ -51,7 +51,7 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) setSelectedRegistrant(null);
       }}

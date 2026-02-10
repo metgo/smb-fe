@@ -15,6 +15,8 @@ const EventTitleSection = ({
   impact,
 }: EventTitleSectionProps) => {
   const { t } = useTranslation("event");
+  const { t: tc } = useTranslation("common");
+
   const { isDark } = useThemeClasses();
 
   const StatusBadge = ({ status }: { status: EventStatus }) => {
@@ -49,8 +51,7 @@ const EventTitleSection = ({
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             <span className={isDark ? "text-gray-300" : "text-gray-700"}>
-              {/* {t("impact_score")}: {impact ?? 0} */}
-              Impact Score: {impact ?? 0}
+              {tc("impact_score")}: {impact ?? 0}
             </span>
           </div>
         </div>

@@ -36,7 +36,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   refetch,
   eventDays,
 }) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("events");
   const { language } = useAppSelector((state) => state.settings);
   const { isDark } = useThemeClasses();
 
@@ -137,7 +137,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
               isDark ? "text-white" : "text-gray-900",
             )}
           >
-            Event Tickets
+            {t("event_tickets")}
           </h2>
           <p
             className={clsx(
@@ -174,7 +174,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Total Available
+                {t("total_available")}
               </span>
             </div>
             <p
@@ -213,7 +213,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Sold
+                {t("sold")}
               </span>
             </div>
             <p
@@ -248,7 +248,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Remaining
+                {t("remaining")}
               </span>
             </div>
             <p
@@ -287,7 +287,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Revenue
+                {t("revenue")}
               </span>
             </div>
             <p
@@ -315,7 +315,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
               ticket.price.markedPrice > ticket.price.sellingPrice;
             const soldPercentage = ticket?.quantity?.isUnlimited
               ? 0
-              : (ticket?.quantity?.sold / ticket?.quantity?.initial) * 100;
+              : (ticket?.quantity?.sold / ticket?.quantity?.initial || 0) * 100;
 
             return (
               <div
@@ -490,7 +490,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                                   isDark ? "text-gray-400" : "text-gray-600",
                                 )}
                               >
-                                Price
+                                {t("price")}
                               </p>
                               <div className="flex items-center gap-2">
                                 {hasDiscount && !isFree && (
@@ -561,7 +561,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            Total
+                            {t("total")}
                           </span>
                         </div>
                         <p
@@ -596,7 +596,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            Sold
+                            {t("sold")}
                           </span>
                         </div>
                         <p
@@ -629,7 +629,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            Remaining
+                            {t("remaining")}
                           </span>
                         </div>
                         <p
@@ -655,7 +655,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            Sales Progress
+                            {t("sales_progress")}
                           </span>
                           <span
                             className={clsx(
@@ -663,7 +663,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-300" : "text-gray-700",
                             )}
                           >
-                            {soldPercentage.toFixed(1)}%
+                            {soldPercentage?.toFixed(1)}%
                           </span>
                         </div>
                         <div

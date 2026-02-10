@@ -5,9 +5,9 @@ import clsx from "clsx";
 import { MarkerMap } from "@/components/maps";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import SectionHeader from "./SectionHeader";
+import { useTranslation } from "react-i18next";
 
 interface LocationDetailsProps {
-  t: (key: string) => string;
   lat: string | number;
   lng: string | number;
   address: {
@@ -19,12 +19,12 @@ interface LocationDetailsProps {
 }
 
 const LocationDetails: FC<LocationDetailsProps> = ({
-  t,
   lat,
   lng,
   address,
   purpose,
 }) => {
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [formattedAddress, setFormatAddress] = useState("");

@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   Calendar,
@@ -149,9 +148,8 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 }) => {
   const { t } = useTranslation("events");
   const { t: cT } = useTranslation("common");
-  const { textSecondary, textTertiary, inputClasses, textPrimary } =
+  const { textSecondary, textTertiary, inputClasses, textPrimary, isDark } =
     useThemeClasses();
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
     markDirty(2);
@@ -287,8 +285,8 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
               !isMultiDay
                 ? "border-teal-500 bg-teal-500/10 text-teal-500"
-                : theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800"
+                : isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-white/70"
                   : "border-gray-300 hover:bg-gray-50"
             }`}
           >
@@ -300,8 +298,8 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
               isMultiDay
                 ? "border-teal-500 bg-teal-500/10 text-teal-500"
-                : theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800"
+                : isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-white/70"
                   : "border-gray-300 hover:bg-gray-50"
             }`}
           >
@@ -325,7 +323,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               }
               onChange={(date) => setStartDate(date)}
               placeholder={t("select_date")}
-              theme={theme}
               error={errors.startDate}
             />
           </div>
@@ -362,7 +359,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             <div
               key={day.id}
               className={`p-4 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}
@@ -396,7 +393,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                     );
                   }}
                   placeholder={t("select_date")}
-                  theme={theme}
                 />
 
                 <input
@@ -426,8 +422,8 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <button
             onClick={addEventDay}
             className={`w-full px-4 py-2 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2 ${
-              theme === "dark"
-                ? "border-gray-700 hover:border-teal-500 hover:bg-gray-800"
+              isDark
+                ? "border-gray-700 hover:border-teal-500 hover:bg-gray-800 text-gray-300"
                 : "border-gray-300 hover:border-teal-500 hover:bg-gray-50"
             }`}
           >
@@ -441,22 +437,14 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
       {!isMultiDay && (
         <div
           className={`p-6 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           {/* Header */}
-          <div
-            className={`flex items-center justify-between mb-4 ${
-              isRTL ? "flex-row-reverse" : ""
-            }`}
-          >
-            <div
-              className={`flex items-center gap-2 ${
-                isRTL ? "flex-row-reverse" : ""
-              }`}
-            >
+          <div className={`flex items-center justify-between mb-4 `}>
+            <div className={`flex items-center gap-2`}>
               <Repeat className="w-5 h-5 text-teal-500" />
               <label className={`text-sm font-medium ${textPrimary}`}>
                 {t("recurring_event") || "Recurring Event"}
@@ -499,10 +487,10 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                         recurrencePattern === pattern
                           ? "border-teal-500 bg-teal-500/10"
-                          : theme === "dark"
+                          : isDark
                             ? "border-gray-700 hover:bg-gray-800"
                             : "border-gray-200 hover:bg-gray-50"
-                      } ${isRTL ? "flex-row-reverse" : ""}`}
+                      }`}
                     >
                       <input
                         type="radio"
@@ -539,7 +527,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                           className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${
                             selectedWeekdays.includes(day.value)
                               ? "bg-teal-600 text-white"
-                              : theme === "dark"
+                              : isDark
                                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
@@ -634,9 +622,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                     {t("every")}
                   </label>
                   <div>
-                    <div
-                      className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
-                    >
+                    <div className={`flex items-center gap-2`}>
                       <input
                         min="1"
                         type="number"
@@ -667,9 +653,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   {t("recurrence_ends")}
                 </label>
                 <div className="space-y-2">
-                  <label
-                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                  >
+                  <label className={`flex items-center gap-3`}>
                     <input
                       type="radio"
                       name="end-type"
@@ -693,9 +677,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                     <span className={textSecondary}>{t("occurrences")}</span>
                   </label>
 
-                  <label
-                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                  >
+                  <label className={`flex items-center gap-3`}>
                     <input
                       type="radio"
                       name="end-type"
@@ -709,7 +691,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                         value={recurrenceEndDate}
                         onChange={(date) => setRecurrenceEndDate(date)}
                         placeholder={t("select_date")}
-                        theme={theme}
                       />
                     )}
                   </label>
@@ -719,7 +700,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {/* Helper Text */}
               <div
                 className={`p-3 rounded-lg ${
-                  theme === "dark"
+                  isDark
                     ? "bg-blue-900/20 border border-blue-800"
                     : "bg-blue-50 border border-blue-200"
                 }`}
@@ -734,20 +715,18 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {startDate && (
                 <div
                   className={`p-4 rounded-lg border ${
-                    theme === "dark"
+                    isDark
                       ? "border-gray-700 bg-gray-900/50"
                       : "border-gray-200 bg-white"
                   }`}
                 >
-                  <div
-                    className={`flex items-center justify-between mb-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                  >
+                  <div className={`flex items-center justify-between mb-3`}>
                     <span className={`text-sm font-medium ${textPrimary}`}>
                       {t("generated_occurrences")}
                     </span>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
-                        theme === "dark"
+                        isDark
                           ? "bg-teal-900/30 text-teal-400"
                           : "bg-teal-100 text-teal-700"
                       }`}
@@ -794,7 +773,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                     return (
                       <div
                         className={`p-3 rounded-lg ${
-                          theme === "dark"
+                          isDark
                             ? "bg-red-900/20 border border-red-800"
                             : "bg-red-50 border border-red-200"
                         }`}
@@ -826,8 +805,8 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               className={`px-4 py-3 rounded-lg border capitalize transition-colors flex flex-col items-center ${
                 eventFormat === format
                   ? "border-teal-500 bg-teal-500/10 text-teal-500"
-                  : theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800"
+                  : isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-white/70"
                     : "border-gray-300 hover:bg-gray-50"
               }`}
             >
