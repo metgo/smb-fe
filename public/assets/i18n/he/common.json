@@ -57,10 +57,12 @@
   "send_invite": "שלח הזמנה",
 
   "pending": "בהמתנה",
-  "approve": "אשר",
-  "reject": "דחה",
-  "archive": "ארכיון",
+  "approved": "אשר",
+  "rejected": "דחה",
+  "archived": "ארכיון",
   "draft": "טיוטה",
+  "active": "פעיל",
+  "inactive": "לא פעיל",
   "export": "ייצוא",
   "action": "פעולה",
   "status": "סטטוס",
@@ -71,6 +73,7 @@
   "paid": "בתשלום",
   "required": "נדרש",
   "not_required": "לא נדרש",
+  "change_status": "שינוי סטטוס",
 
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק כרטיס זה?",
@@ -112,5 +115,17 @@
   "select_authority": "בחר רשות",
   "website_visibility": "נראות אתרים",
   "select_associated_websites": "בחר אתרים משויכים",
-  "select_unassociated_websites": "בחר אתרים שאינם משויכים"
+  "select_unassociated_websites": "בחר אתרים שאינם משויכים",
+
+  "overview": "סקירה כללית",
+  "date_time": "תאריך ושעה",
+  "location_map": "מיקום ומפה",
+  "registration": "הרשמה",
+  "tickets": "כרטיסים",
+  "messages": "הודעות",
+  "media": "מדיה",
+  "attributes": "מאפיינים",
+  "schedual_notification": "תזמון התראות",
+
+  "impact_score": "ציון השפעה"
 }

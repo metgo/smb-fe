@@ -49,8 +49,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   eventDays,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary, isDark } = useThemeClasses();
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE");
   const isTicketDisabled = !eventDays?.length || eventDays[0]?.date === "";
 
@@ -126,7 +125,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header */}
-      <div className={clsx(rowDir, "flex items-center justify-between")}>
+      <div className={clsx("flex items-center justify-between")}>
         <h2 className={`text-2xl font-bold ${textPrimary}`}>
           {t("event_tickets")}
         </h2>
@@ -159,7 +158,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {isDeleting && (
         <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <TicketCardSkeleton key={i} theme={theme} />
+            <TicketCardSkeleton isDark={isDark} key={i} />
           ))}
         </div>
       )}
@@ -175,7 +174,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {(tickets?.length === 0 || !tickets) && (
         <div
           className={`p-16 rounded-2xl border-2 border-dashed text-center ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/30"
               : "border-gray-300 bg-gray-50"
           }`}
@@ -212,7 +211,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
             <div
               key={ticket._id}
               className={`p-6 rounded-xl border hover:shadow-md transition ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}

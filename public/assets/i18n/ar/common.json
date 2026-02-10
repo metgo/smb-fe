@@ -51,10 +51,12 @@
   "inactive": "غير نشط",
   "active": "نشيط",
   "pending": "قيد الانتظار",
-  "approve": "الموافقة",
-  "reject": "رفض",
-  "archive": "أرشيف",
+  "approved": "الموافقة",
+  "rejected": "رفض",
+  "archived": "أرشيف",
   "draft": "مسودة",
+  "active": "نشط",
+  "inactive": "غير نشط",
   "export": "تصدير",
   "action": "إجراء",
   "status": "الحالة",
@@ -65,6 +67,7 @@
   "paid": "مدفوع",
   "required": "مطلوب",
   "not_required": "غير مطلوب",
+  "change_status": "تغيير الحالة",
 
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد أنك تريد حذف هذه التذكرة؟",
@@ -107,5 +110,16 @@
   "select_authority": "اختر الجهة",
   "website_visibility": "ظهور المواقع",
   "select_associated_websites": "اختر المواقع المرتبطة",
-  "select_unassociated_websites": "اختر المواقع غير المرتبطة"
+  "select_unassociated_websites": "اختر المواقع غير المرتبطة",
+
+  "overview": "نظرة عامة",
+  "date_time": "التاريخ والوقت",
+  "location_map": "الموقع والخريطة",
+  "registration": "التسجيل",
+  "tickets": "التذاكر",
+  "messages": "الرسائل",
+  "media": "الوسائط",
+  "attributes": "الخصائص",
+  "schedual_notification": "جدولة الإشعارات",
+  "impact_score": "درجة التأثير"
 }
