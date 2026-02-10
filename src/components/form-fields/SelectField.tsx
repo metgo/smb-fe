@@ -7,6 +7,7 @@ interface SelectFieldProps {
   options: { label: string; value: string }[];
   placeholder: string;
   error?: string;
+  isDisabled?: boolean;
   fieldRef?: React.RefObject<HTMLDivElement | null>;
   selectInputClasses: string;
 }
@@ -18,17 +19,20 @@ const SelectField = ({
   placeholder,
   error,
   fieldRef,
+  isDisabled = false,
   selectInputClasses,
 }: SelectFieldProps) => {
   return (
     <div ref={fieldRef} className="relative">
       <select
         value={value}
+        disabled={isDisabled}
         onChange={(e) => onChange(e.target.value)}
         className={clsx(
           "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
           selectInputClasses,
           error && "border-red-500",
+          isDisabled ? "cursor-not-allowed" : "cursor-pointer",
         )}
       >
         <option value="">{placeholder}</option>

@@ -39,6 +39,7 @@ import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -54,6 +55,9 @@ export default function CreateEventWizard({
   const { t } = useTranslation("events");
   const [searchParams] = useSearchParams();
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>(editId || "");
@@ -176,6 +180,13 @@ export default function CreateEventWizard({
   ];
 
   useEffect(() => {
+    if (userRole === "authority") {
+      setSelectAuthorityId(authorityId);
+      setSelectDmoId(dmoId);
+    }
+  }, []);
+
+  useEffect(() => {
     if (tickets && (eventId || editId)) setLocalTickets(tickets);
   }, [tickets, editData, eventId, editId]);
 
@@ -214,8 +225,8 @@ export default function CreateEventWizard({
       setCustomQuestions([]);
       setErrors({});
       setLastSaved(null);
-      setSelectAuthorityId("");
-      setSelectDmoId("");
+      // setSelectAuthorityId("");
+      // setSelectDmoId("");
       setSubCategoriesId([]);
       setGroupTypesId([]);
       setAccessiblitiesId([]);

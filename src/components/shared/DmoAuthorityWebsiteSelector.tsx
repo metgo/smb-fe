@@ -6,6 +6,8 @@ import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper, SelectField } from "@/components/form-fields";
 import ImageWithFallback from "./ImageWithFallback";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 type Props = {
   isEdit: boolean;
@@ -35,6 +37,7 @@ export default function DmoAuthorityWebsiteSelector({
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark, selectInputClasses } = useThemeClasses();
+  const { userRole } = useAppSelector((state) => state.auth);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
@@ -75,7 +78,8 @@ export default function DmoAuthorityWebsiteSelector({
    Initialize ALL IDs (once data arrives)
   -----------------------------*/
   useEffect(() => {
-    if (!associatedWebsites.length || !unAssociatedWebsites.length) return;
+    // Only skip if BOTH are empty (no data at all)
+    if (!associatedWebsites.length && !unAssociatedWebsites.length) return;
 
     const allBlacklistIds = associatedWebsites?.map((w) => w?._id);
     const allWhitelistIds = unAssociatedWebsites?.map((w) => w?._id);
@@ -236,6 +240,7 @@ export default function DmoAuthorityWebsiteSelector({
             error={errors.dmoId}
           >
             <SelectField
+              isDisabled={userRole === UserRole.AUTHORITY}
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
@@ -258,6 +263,7 @@ export default function DmoAuthorityWebsiteSelector({
           <FormFieldWrapper label={t("select_authority")}>
             <SelectField
               value={selectedAuthorityId}
+              isDisabled={userRole === UserRole.AUTHORITY}
               onChange={setSelectAuthorityId}
               placeholder={t("select_authority")}
               options={

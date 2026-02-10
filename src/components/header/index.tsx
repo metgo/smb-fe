@@ -147,6 +147,7 @@ export default function Header() {
             <ReactSelect
               isClearable
               value={authorityId}
+              isDisabled={userRole === "authority"}
               onChange={(value) => dispatch(setAuthority(value))}
               placeholder="Select Authority"
               items={selectedParent?.authorities?.map((item) => ({

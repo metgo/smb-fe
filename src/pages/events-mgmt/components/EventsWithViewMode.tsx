@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Calendar,
@@ -127,6 +127,9 @@ export default function EventsWithViewMode({
   const [getEventEditData] = useLazyGetEventByIdQuery();
 
   const handleEditEvent = async () => {
+    const toastId = toast.loading(
+      "Event's edit data fetching. Please wait....",
+    );
     if (clickedEventData) {
       const eventDetails = await getEventEditData({
         eventId: clickedEventData?._id,
@@ -136,6 +139,7 @@ export default function EventsWithViewMode({
         setClickedEventData(null);
         setShowQuickViewModal(false);
         setEditData(eventDetails);
+        toast.success("Event details fetched", { id: toastId });
         navigate(`?eventId=${clickedEventData?._id}`);
       }
     }

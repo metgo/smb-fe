@@ -24,7 +24,7 @@ const QuickSnapEventDetails = ({
 }: QuickSnapEventDetailsProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation("events");
-  const { t: tc } = useTranslation("events");
+  const { t: tc } = useTranslation("common");
   const { isDark, textSecondary } = useThemeClasses();
 
   const handleEventDetailsNavigate = () => {
