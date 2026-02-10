@@ -65,6 +65,8 @@
   "rejected": "Rejected",
   "archived": "Archived",
   "draft": "Draft",
+  "inactive": "Inactive",
+  "active": "Active",
   "export": "Export",
   "action": "Action",
   "status": "Status",
