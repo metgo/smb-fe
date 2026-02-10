@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 
@@ -13,6 +13,7 @@ import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
+import { FormFieldWrapper } from "@/components/form-fields";
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
@@ -51,6 +52,8 @@ const CreateTicketWizard = ({
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("common");
+
   const {
     textPrimary,
     textSecondary,
@@ -92,6 +95,27 @@ const CreateTicketWizard = ({
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
+  useEffect(() => {
+    const markedPrice = editData?.price?.markedPrice || 0;
+    const sellingPrice = editData?.price?.sellingPrice || 0;
+
+    if (markedPrice > 0 && sellingPrice >= 0 && sellingPrice <= markedPrice) {
+      const discountAmount = markedPrice - sellingPrice;
+      const discountPercent = Number(
+        ((discountAmount / markedPrice) * 100).toFixed(2),
+      );
+
+      setEditData((prev: ITicketPayload) => ({
+        ...prev,
+        price: {
+          ...prev.price,
+          discountAmount,
+          discountPercent,
+        },
+      }));
+    }
+  }, [editData?.price?.markedPrice, editData?.price?.sellingPrice]);
 
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
@@ -211,8 +235,8 @@ const CreateTicketWizard = ({
       price: {
         markedPrice: editData.price?.markedPrice || 0,
         sellingPrice: editData.price?.sellingPrice || 0,
-        discountPercent: 0,
-        discountAmount: 0,
+        discountPercent: editData?.price?.discountPercent || 0,
+        discountAmount: editData?.price?.discountAmount || 0,
       },
       quantity: {
         initial: editData.quantity?.initial || 0,
@@ -227,7 +251,7 @@ const CreateTicketWizard = ({
         endTime: item.endTime,
       })),
       images: [{ image: uploadImageUrl ?? image?.gcsURL }],
-      status: "active",
+      status: editData?.status,
       type: editData.type.toUpperCase(),
     };
 
@@ -290,7 +314,7 @@ const CreateTicketWizard = ({
   return (
     <ModalWrapper
       onClose={handleClose}
-      height="h-[88vh]"
+      height="max-h"
       maxWidth="max-w-3xl"
       showSpinner={isSaving || isUpdating || image?.status === "uploading"}
     >
@@ -311,32 +335,61 @@ const CreateTicketWizard = ({
               sectionRefs.current["name"] = el;
             }}
           >
-            <label className={`block text-sm mb-2 ${textSecondary}`}>
-              {t("ticket_name")} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={editData?.name || ""}
-              onChange={(e) => {
-                setEditData((prev: ITicketPayload) => ({
-                  ...prev,
-                  name: e.target.value,
-                }));
-                clearError("name");
-              }}
-              placeholder={t("general_admission")}
-              className={clsx(
-                "w-full px-4 py-2.5 rounded-lg border transition-colors",
-                inputClasses,
-                errors.name && "field-error",
-              )}
-            />
-            {errors.name && (
-              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
-                {errors.name}
-              </p>
-            )}
+            <FormFieldWrapper
+              required
+              label={t("ticket_name")}
+              error={errors?.name}
+              inputHintText={`${editData.name?.length ?? 0}/50 ${t("max_characters")}`}
+            >
+              <input
+                type="text"
+                value={editData?.name || ""}
+                maxLength={50}
+                onChange={(e) => {
+                  setEditData((prev: ITicketPayload) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }));
+                  clearError("name");
+                }}
+                placeholder={t("general_admission")}
+                className={clsx(
+                  "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                  inputClasses,
+                  errors.name && "field-error",
+                )}
+              />
+            </FormFieldWrapper>
           </div>
+
+          <FormFieldWrapper label={t("ticket_status")}>
+            <div className="flex flex-wrap gap-6">
+              {["active", "inactive"].map((opt) => (
+                <label
+                  key={opt}
+                  className="flex items-center gap-3 cursor-pointer group"
+                >
+                  <input
+                    type="radio"
+                    value={opt}
+                    checked={editData?.status === opt}
+                    onChange={(e) => {
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }));
+                    }}
+                    className="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-2"
+                  />
+                  <span
+                    className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500`}
+                  >
+                    {tc(opt)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FormFieldWrapper>
 
           {/* === Description === */}
           <div
@@ -344,32 +397,32 @@ const CreateTicketWizard = ({
               sectionRefs.current["description"] = el;
             }}
           >
-            <label className={`block text-sm mb-2 ${textSecondary}`}>
-              {t("description")} <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={editData?.description || ""}
-              onChange={(e) =>
-                setEditData((prev: ITicketPayload) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              placeholder={
-                t("enter_ticket_description") || "Enter ticket description..."
-              }
-              rows={3}
-              className={clsx(
-                "w-full px-4 py-2.5 rounded-lg border transition-colors",
-                inputClasses,
-                errors.description && "field-error",
-              )}
-            />
-            {errors.description && (
-              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
-                {errors.description}
-              </p>
-            )}
+            <FormFieldWrapper
+              required
+              label={t("description")}
+              error={errors?.description}
+              inputHintText={`${editData?.description?.length ?? 0}/50 ${t("max_characters")}`}
+            >
+              <textarea
+                maxLength={50}
+                value={editData?.description || ""}
+                onChange={(e) =>
+                  setEditData((prev: ITicketPayload) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder={
+                  t("enter_ticket_description") || "Enter ticket description..."
+                }
+                rows={2}
+                className={clsx(
+                  "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                  inputClasses,
+                  errors.description && "field-error",
+                )}
+              />
+            </FormFieldWrapper>
           </div>
 
           {/* === Ticket Days === */}
@@ -588,6 +641,78 @@ const CreateTicketWizard = ({
                     {errors.sellingPrice}
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("discount_amount")} (₪){" "}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={editData?.price?.discountAmount || ""}
+                  onChange={(e) => {
+                    const discountAmount = parseFloat(e.target.value) || 0;
+                    const markedPrice = editData?.price?.markedPrice || 0;
+
+                    if (markedPrice > 0 && discountAmount <= markedPrice) {
+                      const sellingPrice = markedPrice - discountAmount;
+                      const discountPercent = Number(
+                        ((discountAmount / markedPrice) * 100).toFixed(2),
+                      );
+
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        price: {
+                          ...prev.price,
+                          discountAmount,
+                          discountPercent,
+                          sellingPrice,
+                        },
+                      }));
+                    }
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("discount_percent")} (%){" "}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={editData?.price?.discountPercent || ""}
+                  onChange={(e) => {
+                    const discountPercent = parseFloat(e.target.value) || 0;
+                    const markedPrice = editData?.price?.markedPrice || 0;
+
+                    if (markedPrice > 0 && discountPercent <= 100) {
+                      const discountAmount = Number(
+                        ((markedPrice * discountPercent) / 100).toFixed(2),
+                      );
+                      const sellingPrice = markedPrice - discountAmount;
+
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        price: {
+                          ...prev.price,
+                          discountPercent,
+                          discountAmount,
+                          sellingPrice,
+                        },
+                      }));
+                    }
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                  )}
+                />
               </div>
             </div>
           )}

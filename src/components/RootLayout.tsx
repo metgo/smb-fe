@@ -15,6 +15,7 @@ const RootLayout = () => {
         "min-h-screen transition-colors flex flex-col",
         theme === "dark" ? "bg-gray-950" : "bg-gray-50",
       )}
+      dir={isRTL ? "rtl" : "ltr"}
     >
       <Header />
       <div className=" pt-20 relative">

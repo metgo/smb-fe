@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Edit } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -18,12 +18,13 @@ import { UserRole } from "@/enums/user.types";
 import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
+  useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
-import { StatusChangeBtn } from "@/components/btns";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import { toast } from "sonner";
 import {
@@ -34,15 +35,27 @@ import {
 import { TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
 
+const findEventType = (type: string) => {
+  switch (type) {
+    case "PHYSICAL":
+      return type?.toLowerCase();
+    case "ONLINE":
+      return type?.toLowerCase();
+    case "HYBRID":
+      return type?.toLowerCase();
+    default:
+      return "physical";
+  }
+};
+
 export default function EventDetailsPage() {
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
 
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
 
-  const { isDark, bgPrimary } = useThemeClasses();
+  const { isDark, bgPrimary, textTertiary, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -56,8 +69,10 @@ export default function EventDetailsPage() {
   const { data: eventDetails, refetch } = useGetEventByIdQuery(
     eventId ? { eventId } : skipToken,
   );
-
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
+    eventId ? { eventId } : skipToken,
+  );
+  const { data: eventStatsData } = useGetEventsStatsQuery(
     eventId ? { eventId } : skipToken,
   );
 
@@ -128,7 +143,6 @@ export default function EventDetailsPage() {
       case "location":
         return (
           <LocationDetails
-            t={t}
             purpose="Event"
             lat={eventDetails?.geoLocation?.lat}
             lng={eventDetails?.geoLocation?.long}
@@ -151,7 +165,7 @@ export default function EventDetailsPage() {
       case "attributes":
         return (
           <AttributesDetails
-            t={t}
+            title={t("event_attributes")}
             groupTypesId={eventDetails?.groupTypesId}
             subCategoriesId={eventDetails?.subCategoriesId}
             accessibilitiesId={eventDetails?.accessibilitiesId}
@@ -181,16 +195,7 @@ export default function EventDetailsPage() {
       >
         {/* Top controls row */}
         <div className="px-6 pt-4 pb-3 flex items-center justify-between">
-          <button
-            onClick={() => navigate(routes.eventsMgmt)}
-            className={clsx(
-              "flex items-center gap-2 text-sm hover:text-teal-600 transition-colors",
-              isDark ? "text-gray-300" : "text-gray-700",
-            )}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            {t("back_to_list")}
-          </button>
+          <BackToListBtn navPath={routes.eventsMgmt} />
 
           <div className="flex items-center gap-3">
             {userRole === UserRole.SUPERADMIN && (
@@ -212,6 +217,60 @@ export default function EventDetailsPage() {
         {/* Title & Tabs */}
         <div className="px-6 pb-3">
           <EventTitleSection {...(eventDetails ?? {})} />
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mt-4">
+            {[
+              {
+                label: t("total_registrations"),
+                value: eventStatsData?.totalSold,
+              },
+              {
+                label: t("capacity"),
+                value: eventStatsData?.totalAttended,
+                sub: `${
+                  Math.round(
+                    (eventStatsData?.totalRegistrations /
+                      eventStatsData?.capacity) *
+                      100,
+                  ) || 0
+                }% ${t("filled")}`,
+              },
+              {
+                label: t("revenue"),
+                value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
+              },
+              {
+                label: t("refunds"),
+                value: `₪${(eventStatsData?.refunds || 0 / 1000).toFixed(1)}K`,
+              },
+              {
+                label: t("event_type"),
+                value: t(findEventType(eventDetails?.eventType)),
+              },
+            ]?.map((metric, i) => (
+              <div
+                key={i}
+                className={`p-6 rounded-2xl ${
+                  isDark ? "bg-gray-800/50" : "bg-gray-50"
+                }`}
+              >
+                <div className={`text-sm mb-2 ${textTertiary}`}>
+                  {metric.label}
+                </div>
+                <div className="flex gap-2">
+                  <div className={`text-3xl font-bold ${textPrimary}`}>
+                    {metric.value}
+                  </div>
+                  {metric.sub && (
+                    <div className="text-sm text-teal-500 mt-2">
+                      {metric.sub}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <TabsSection
             t={tc}
             tabs={eventTabs}

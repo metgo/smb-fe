@@ -8,9 +8,9 @@ import {
   Image as ImageIcon,
   CheckCircle2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface MediaDetailsProps {
-  t: (key: string) => string;
   images: IImageUpload[];
   primaryImageIndex: number;
   setPrimaryImage: (idx: number) => void;
@@ -23,7 +23,6 @@ interface MediaDetailsProps {
 }
 
 const MediaDetails: React.FC<MediaDetailsProps> = ({
-  t,
   images,
   primaryImageIndex,
   setPrimaryImage,
@@ -34,6 +33,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
+  const { t } = useTranslation("common");
   const { isDark, rowDir } = useThemeClasses();
 
   const handleViewImage = (img: IImageUpload) => {
@@ -261,7 +261,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               isDark ? "text-gray-300" : "text-gray-700",
             )}
           >
-            No Images Uploaded
+            {t("no_images_uploaded")}
           </h3>
           <p
             className={clsx(
@@ -269,7 +269,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
-            Upload images to create your event gallery
+            {t("upload_image_info")}
           </p>
           {/* ---------FUTURE USE----------- */}
           {/* <button

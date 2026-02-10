@@ -17,6 +17,7 @@ interface Column<T> {
   render?: (item: T) => React.ReactNode;
   width?: string;
 }
+
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
@@ -32,17 +33,17 @@ interface DataTableProps<T> {
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
+  t,
   data,
+  next,
   columns,
-  storageKey = "dataTableColumnOrder",
+  rowKey,
+  hasMore,
   onRowClick,
   selectedItems,
   onSelectionChange,
-  rowKey,
-  hasMore,
-  next,
-  t,
   isDataLoading = false,
+  storageKey = "dataTableColumnOrder",
 }: DataTableProps<T>) {
   const { isRTL } = useAppSelector((state) => state.settings);
   const {

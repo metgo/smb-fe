@@ -5,14 +5,13 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-
-type Theme = "light" | "dark";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface DatePickerProps {
   value: string;
   onChange: (date: string) => void;
   placeholder?: string;
-  theme: Theme;
   error?: string;
   minDate?: string;
   disablePast?: boolean;
@@ -47,25 +46,20 @@ export default function DatePicker({
   value,
   onChange,
   placeholder = "Select date",
-  theme,
   error,
   minDate,
   disablePast = false,
 }: DatePickerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { isDark, inputClasses, textTertiary, textSecondary, borderColor } =
+    useThemeClasses();
+
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const todayStr = formatLocalDate(new Date());
   const effectiveMinDate = disablePast ? todayStr : minDate;
-
-  const inputClasses =
-    theme === "dark"
-      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400";
-
-  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
-  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-500";
 
   /** Close on outside click */
   useEffect(() => {
@@ -191,9 +185,7 @@ export default function DatePicker({
       {isOpen && (
         <div
           className={`absolute z-80 mt-1 p-4 rounded-lg border shadow-lg ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
           }`}
           style={{ minWidth: 280 }}
         >
@@ -247,18 +239,38 @@ export default function DatePicker({
                   key={i}
                   disabled={isDateDisabled(day)}
                   onClick={() => handleDateSelect(day)}
-                  className={`
-                    aspect-square rounded text-sm
-                    ${
-                      isSelected(day)
-                        ? "bg-teal-500 text-white"
-                        : isToday(day)
-                          ? "border border-teal-500 text-teal-500"
-                          : isDateDisabled(day)
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }
-                  `}
+                  className={clsx(
+                    "aspect-square rounded text-sm transition-colors",
+                    {
+                      // Selected date
+                      "bg-teal-500 text-white": isSelected(day),
+
+                      // Today (not selected)
+                      "border border-teal-500 text-teal-500":
+                        !isSelected(day) && isToday(day),
+
+                      // Disabled date
+                      "text-gray-300 cursor-not-allowed": isDateDisabled(day),
+
+                      // Normal hover states
+                      "hover:bg-gray-100":
+                        !isDark &&
+                        !isSelected(day) &&
+                        !isToday(day) &&
+                        !isDateDisabled(day),
+                      "hover:bg-gray-700":
+                        isDark &&
+                        !isSelected(day) &&
+                        !isToday(day) &&
+                        !isDateDisabled(day),
+
+                      // Base text color
+                      "text-gray-700":
+                        !isDark && !isSelected(day) && !isDateDisabled(day),
+                      "text-gray-300":
+                        isDark && !isSelected(day) && !isDateDisabled(day),
+                    },
+                  )}
                 >
                   {day}
                 </button>
@@ -274,7 +286,11 @@ export default function DatePicker({
                 setIsOpen(false);
               }
             }}
-            className={`w-full mt-3 py-2 border rounded-lg ${textSecondary}`}
+            className={clsx(
+              "w-full mt-3 py-2 border rounded-lg",
+              borderColor,
+              textSecondary,
+            )}
           >
             Today
           </button>

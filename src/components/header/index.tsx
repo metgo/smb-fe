@@ -1,12 +1,13 @@
 import clsx from "clsx";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { Moon, Sun, ChevronDown, Settings, Check } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { toggleEditMode } from "@/features/uiSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { setLanguage, setTheme } from "@/features/settingsSlice";
 import {
   setAuthority,
@@ -15,10 +16,8 @@ import {
   setWebsite,
   setTimeFrameValue,
 } from "@/features/authSlice";
-
+import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ReactSelect } from "../form-fields";
-import { useEffect, useMemo } from "react";
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -37,7 +36,7 @@ export default function Header() {
   );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
-  const { textPrimary, selectInputClasses, rowDir, isDark } = useThemeClasses();
+  const { textPrimary, selectInputClasses, isDark } = useThemeClasses();
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
 
   const filteredWebsites = useMemo(() => {
@@ -114,9 +113,9 @@ export default function Header() {
       )}
     >
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className={clsx("flex items-center justify-between h-20", rowDir)}>
+        <div className={clsx("flex items-center justify-between h-20")}>
           {/* Logo and Brand */}
-          <div className={clsx("flex items-center gap-3", rowDir)}>
+          <div className={clsx("flex items-center gap-3")}>
             <img
               src="/assets/images/metgologo.png"
               alt="Logo image"
@@ -131,7 +130,7 @@ export default function Header() {
           </div>
 
           {/* Controls */}
-          <div className={clsx("flex items-center gap-3", rowDir)}>
+          <div className={clsx("flex items-center gap-3")}>
             <ReactSelect
               isClearable={userRole !== "authority"}
               isDisabled={userRole === "authority"}
@@ -148,6 +147,7 @@ export default function Header() {
             <ReactSelect
               isClearable
               value={authorityId}
+              isDisabled={userRole === "authority"}
               onChange={(value) => dispatch(setAuthority(value))}
               placeholder="Select Authority"
               items={selectedParent?.authorities?.map((item) => ({
