@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, UserCog } from "lucide-react";
+import { ArrowLeft, ArrowRight, Edit, UserCog } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -35,7 +35,7 @@ import { businessTabs } from "@/constants/tabs";
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
   const navigate = useNavigate();
-  const { borderColor, isDark } = useThemeClasses();
+  const { borderColor, isDark, isRTL } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [searchParams] = useSearchParams();
@@ -269,8 +269,17 @@ export default function BusinessDetailsPage() {
               isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
-            <ArrowLeft className="w-5 h-5" />
-            {t("back_to_list")}
+            {isRTL ? (
+              <>
+                <ArrowRight className="w-5 h-5" />
+                {t("back_to_list")}
+              </>
+            ) : (
+              <>
+                <ArrowLeft className="w-5 h-5" />
+                {t("back_to_list")}
+              </>
+            )}
           </button>
 
           <div className="flex items-center gap-2">

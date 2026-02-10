@@ -1,4 +1,3 @@
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { X } from "lucide-react";
@@ -20,8 +19,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   height = "h-[90vh]",
   maxWidth = "max-w-5xl",
 }) => {
-  const { cardClasses } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { cardClasses, isRTL } = useThemeClasses();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -45,7 +43,8 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
           onClick={onClose}
           className={clsx(
             cardClasses,
-            "p-2 absolute -top-8 -right-9 text-red-500 cursor-pointer  rounded-full transition-colors ",
+            isRTL ? "-left-9" : "-right-9",
+            "p-2 absolute -top-8  text-red-500 cursor-pointer  rounded-full transition-colors ",
           )}
         >
           <X className={`w-6 h-6`} />

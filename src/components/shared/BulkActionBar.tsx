@@ -47,8 +47,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   onBulkAction,
 }) => {
   const { t } = useTranslation("common");
-  const { theme } = useThemeClasses();
-  const isDark = theme === "dark";
+  const { isDark } = useThemeClasses();
 
   if (!selectedItemCount) return null;
 
@@ -87,7 +86,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
         {selectedItemCount} {t("selected")}
       </span>
 
-      <div className="flex items-center gap-4">
+      <div className={clsx("flex items-center gap-4")}>
         <BulkStatusChangeBtn handleBulkStatusChange={handleBulkStatusChange} />
 
         <div className="flex items-center gap-2">

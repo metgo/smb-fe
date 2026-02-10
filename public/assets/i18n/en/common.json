@@ -63,6 +63,8 @@
   "rejected": "Rejected",
   "archived": "Archived",
   "draft": "Draft",
+  "active": "Active",
+  "inactive": "Inactive",
   "export": "Export",
   "action": "Action",
   "status": "Status",
@@ -132,5 +134,7 @@
   "messages": "Messages",
   "media": "Media",
   "attributes": "Attributes",
-  "schedual_notification": "Notification Schedule"
+  "schedual_notification": "Notification Schedule",
+
+  "impact_score": "Impact Score"
 }

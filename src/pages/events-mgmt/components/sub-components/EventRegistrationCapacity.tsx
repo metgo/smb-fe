@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { useEffect } from "react";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
@@ -43,9 +42,14 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
   addCustomQuestion,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textSecondary, textTertiary, bgPrimary, inputClasses } =
-    useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    bgPrimary,
+    inputClasses,
+    isDark,
+  } = useThemeClasses();
 
   useEffect(() => {
     markDirty(3);
@@ -102,8 +106,8 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                 className={`px-6 py-4 rounded-xl border-2 transition-all flex flex-col items-center ${
                   capacityType === "unlimited"
                     ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
-                    : theme === "dark"
-                      ? "border-gray-700 hover:bg-gray-800/50"
+                    : isDark
+                      ? "border-gray-700 hover:bg-gray-800/50 text-white/70"
                       : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -116,8 +120,8 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                 className={`px-6 py-4 rounded-xl border-2 transition-all flex flex-col items-center ${
                   capacityType === "limited"
                     ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
-                    : theme === "dark"
-                      ? "border-gray-700 hover:bg-gray-800/50"
+                    : isDark
+                      ? "border-gray-700 hover:bg-gray-800/50 text-white/70"
                       : "border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -168,7 +172,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                   <div
                     key={q.id}
                     className={`p-5 rounded-xl border ${
-                      theme === "dark"
+                      isDark
                         ? "border-gray-700 bg-gray-800/50"
                         : "border-gray-200 bg-gray-50"
                     }`}
@@ -201,9 +205,6 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                         <option value="textarea">
                           {t("textarea") || "Textarea"}
                         </option>
-                        <option value="dropdown">
-                          {t("dropdown") || "Dropdown"}
-                        </option>
                         <option value="checkbox">
                           {t("checkbox") || "Checkbox"}
                         </option>
@@ -230,7 +231,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
         /* No Registration Info Box */
         <div
           className={`p-10 rounded-xl border-2 border-dashed text-center ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/30"
               : "border-gray-300 bg-gray-50"
           }`}

@@ -1,8 +1,9 @@
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, ArrowRight, Loader, Save, CheckCircle } from "lucide-react";
+
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
-import { ArrowLeft, ArrowRight, Loader, Save, CheckCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 type WizardFooterProps = {
   currentStep: number;
@@ -27,12 +28,11 @@ export default function WizardFooter({
 }: WizardFooterProps) {
   const { t } = useTranslation("common");
   const { isRTL } = useAppSelector((state) => state.settings);
-  const { rowDir, borderColor } = useThemeClasses();
-  const { isDark } = useThemeClasses();
+  const { isDark, borderColor } = useThemeClasses();
+
   return (
     <div
       className={clsx(
-        rowDir,
         borderColor,
         "flex items-center justify-between p-6 border-t",
       )}
@@ -50,8 +50,8 @@ export default function WizardFooter({
           >
             {isRTL ? (
               <>
-                {t("previous")}
                 <ArrowRight className="w-4 h-4" />
+                {t("previous")}
               </>
             ) : (
               <>
@@ -64,7 +64,7 @@ export default function WizardFooter({
       </div>
 
       {/* Right */}
-      <div className={clsx(rowDir, "flex items-center gap-3")}>
+      <div className={clsx("flex items-center gap-3")}>
         <button
           onClick={onSaveDraft}
           disabled={isSaving}
@@ -94,8 +94,8 @@ export default function WizardFooter({
           >
             {isRTL ? (
               <>
-                <ArrowLeft className="w-4 h-4" />
                 {t("next")}
+                <ArrowLeft className="w-4 h-4" />
               </>
             ) : (
               <>

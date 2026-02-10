@@ -53,7 +53,7 @@ export default function CreateEventWizard({
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
   const [searchParams] = useSearchParams();
-  const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
+  const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>(editId || "");
@@ -580,7 +580,6 @@ export default function CreateEventWizard({
       {/* Header */}
       <div
         className={clsx(
-          rowDir,
           "flex items-center justify-between p-6 border-b w-full",
           isDark ? "border-gray-800" : "border-gray-200",
         )}
@@ -618,7 +617,7 @@ export default function CreateEventWizard({
       <div
         className={`px-6 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"} `}
       >
-        <div className={clsx(rowDir, "flex items-center justify-between ")}>
+        <div className={clsx("flex items-center justify-between ")}>
           {steps.map((step, index) => (
             <div
               key={step.id}
