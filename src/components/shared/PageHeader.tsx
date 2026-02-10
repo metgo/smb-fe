@@ -21,12 +21,12 @@ export default function PageHeader({
   onRefreshClick,
   isRefreshing,
 }: PageHeaderProps) {
-  const { textSecondary, borderColor, rowDir } = useThemeClasses();
+  const { textSecondary, borderColor } = useThemeClasses();
 
   return (
     <div className={clsx("shrink-0 pb-4 border-b mb-4", borderColor)}>
       <div className="mx-auto">
-        <div className={clsx("flex items-center justify-between", rowDir)}>
+        <div className={clsx("flex items-center justify-between")}>
           <div>
             <h1 className={`text-3xl mb-2 bg-clip-text ${h1Gradient}`}>
               {title}
