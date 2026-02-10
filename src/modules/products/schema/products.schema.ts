@@ -7,7 +7,7 @@ import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
+import { ProductStatus, ProductType } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
 
 export class Image {
@@ -37,10 +37,34 @@ export class Product extends AuditableSchema {
     name: string;
 
   @Prop()
+    nameHe: string;
+
+  @Prop()
+    nameAr: string;
+
+  @Prop()
     slug: string;
 
   @Prop()
     description: string;
+
+  @Prop()
+    descriptionHe: string;
+
+  @Prop()
+    descriptionAr: string;
+
+  @Prop()
+    shortDescription: string;
+
+  @Prop()
+    shortDescriptionHe: string;
+
+  @Prop()
+    shortDescriptionAr: string;
+
+  @Prop({ enum: ProductType, default: ProductType.PHYSICAL })
+    productType: ProductType;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -155,6 +179,26 @@ export class Product extends AuditableSchema {
     required: false,
   })
     subCategories: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: {
+      country: String,
+      city: String,
+      location: String,
+      additional_information: String,
+    },
+    default: null,
+    _id: false,
+  })
+    address: {
+    country: { type: string; default: null };
+    city: { type: string; default: null };
+    location: { type: string; default: null };
+    additional_information: { type: string; default: null };
+  };
+
+  @Prop()
+    serviceDuration: string;
 
   @Prop({ type: Boolean, default: false })
     deliveryInfoSameAsBusiness: boolean;

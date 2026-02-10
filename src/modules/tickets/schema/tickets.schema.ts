@@ -47,7 +47,7 @@ export class Ticket extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: Event.name,
-    required: false,
+    required: true,
   })
     eventId: mongoose.Types.ObjectId;
 
@@ -58,6 +58,7 @@ export class Ticket extends AuditableSchema {
       discountPercent: Number,
       sellingPrice: Number,
     },
+    _id: false,
   })
     price: {
     markedPrice: number;
@@ -74,6 +75,7 @@ export class Ticket extends AuditableSchema {
       isUnlimited: Boolean,
       perUserLimit: Number,
     },
+    _id: false,
   })
     quantity: {
     initial: number;
@@ -97,6 +99,7 @@ export class Ticket extends AuditableSchema {
         endTime: { type: String, required: false, default: null },
       },
     ],
+    _id: false,
     default: [],
   })
     dayDescription: {

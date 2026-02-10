@@ -71,20 +71,6 @@ export class ExternalApi extends AuditableSchema {
     ipAddress: string;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'dmos',
-    required: false,
-  })
-    dmoId: mongoose.Types.ObjectId;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'authorities',
-    required: false,
-  })
-    authorityId: mongoose.Types.ObjectId;
-
-  @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
     required: false,
   })
@@ -117,6 +103,9 @@ export class ExternalApi extends AuditableSchema {
 
   @Prop({ default: null })
     welcomeBanner: string;
+
+  @Prop({ default: null })
+    gaPropertyId: string;
 
   @Prop({ default: null })
     privacyPolicy: string;

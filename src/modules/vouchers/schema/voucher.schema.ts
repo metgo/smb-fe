@@ -6,6 +6,7 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { User } from 'src/modules/users/schema/users.schema';
+import { VoucherType } from '../voucher.type';
 
 class PromotionalEmailDetails {
   promoName: string;
@@ -41,6 +42,9 @@ export class Voucher extends AuditableSchema {
 
   @Prop({ enum: VoucherStatus, default: VoucherStatus.UNASSIGNED })
     status: VoucherStatus;
+
+  @Prop({ enum: VoucherType, default: VoucherType.REGULAR })
+    type: VoucherType;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

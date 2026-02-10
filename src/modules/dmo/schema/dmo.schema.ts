@@ -5,7 +5,7 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
-@Schema()
+@Schema({ virtuals: true })
 export class DMO extends AuditableSchema {
   @Prop({
     type: mongoose.Types.ObjectId,
@@ -53,3 +53,14 @@ export class DMO extends AuditableSchema {
 
 export type DMODocument = HydratedDocument<DMO>;
 export const DMOSchema = SchemaFactory.createForClass(DMO);
+
+// Add virtual field
+DMOSchema.virtual('authorities', {
+  ref: 'Authority',
+  localField: '_id',
+  foreignField: 'dmoId',
+});
+
+// Enable virtuals in serialization
+DMOSchema.set('toObject', { virtuals: true });
+DMOSchema.set('toJSON', { virtuals: true });

@@ -66,6 +66,9 @@ export class Theme extends AuditableSchema {
     metaKeywords: string;
 
   @Prop()
+    logo: string;
+
+  @Prop()
     ogName: string;
 
   @Prop({ type: [VideoSchema], default: [] })

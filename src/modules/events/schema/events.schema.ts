@@ -19,10 +19,10 @@ import { ScheduledEventNotification } from './scheduled-event-notification.schem
 
 @Schema({ _id: false })
 export class CommonQuestionOptions {
-  @Prop({ required: true })
+  @Prop({ required: false })
     label: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     value: string;
 }
 export const CommonQuestionOptionsSchema = SchemaFactory.createForClass(
@@ -69,6 +69,7 @@ export class Event extends AuditableSchema {
       location: String,
       additional_information: String,
     },
+    _id: false,
     default: null,
   })
     address: {
@@ -99,6 +100,7 @@ export class Event extends AuditableSchema {
       noOfPeople: { type: Number, required: false, default: null },
       isUnlimited: { type: Boolean, default: false },
     },
+    _id: false,
   })
     registration: {
     isRegistration: boolean;
@@ -143,6 +145,7 @@ export class Event extends AuditableSchema {
       lat: { type: String, default: null },
       long: { type: String, default: null },
     },
+    _id: false,
     default: null,
   })
     geoLocation: {
@@ -195,6 +198,7 @@ export class Event extends AuditableSchema {
         endTime: { type: String, required: false, default: null },
       },
     ],
+    _id: false,
     default: [],
   })
     dayDescription: {

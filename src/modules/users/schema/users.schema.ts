@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { Locale } from 'src/common/enum';
 import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { UserType } from 'src/modules/users/users.type';
 
@@ -69,6 +70,14 @@ export class User extends AuditableSchema {
     required: false,
   })
     externalApiId: mongoose.Types.ObjectId;
+
+  @Prop({
+    default: null,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: BankAccount.name,
+    required: false,
+  })
+    bankAccountId: mongoose.Types.ObjectId;
 }
 
 export type Users = HydratedDocument<User>;

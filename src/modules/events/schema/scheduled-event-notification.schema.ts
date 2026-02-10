@@ -60,7 +60,7 @@ export class ScheduledEventNotification extends AuditableSchema {
 
   @Prop({
     type: NotificationTemplateSchema,
-    required: true,
+    required: false,
   })
     customTemplate: NotificationTemplate;
 

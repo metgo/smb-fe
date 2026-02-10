@@ -29,7 +29,7 @@ export class ImageUrl {
   @Prop({ type: SubCoordinatesSchema, required: false })
     subCoordinates?: SubCoordinates;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     link: string;
 
   @Prop({ required: false })
@@ -37,6 +37,9 @@ export class ImageUrl {
 
   @Prop({ required: false })
     description: string;
+
+  @Prop({ required: false })
+    shortDescription: string;
 
   @Prop({ default: true })
     isActive: boolean;

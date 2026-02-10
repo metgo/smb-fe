@@ -7,11 +7,11 @@ import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { CampaignType } from '../campaign.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { CampaignType } from '../campaign.type';
 
 @Schema({ _id: false })
 class Category {
@@ -76,10 +76,10 @@ export class Campaign extends AuditableSchema {
   @Prop()
     link: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     startDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     endDate: Date;
 
   @Prop({
@@ -172,6 +172,60 @@ export class Campaign extends AuditableSchema {
     deliveryAddress?: string;
     isDeliveredToHome?: boolean;
     amount: number;
+  };
+
+  @Prop({
+    type: {
+      business: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
+      poi: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
+      product: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+      event: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+      trip: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' }],
+      funday: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' }],
+    },
+    default: {
+      business: [],
+      poi: [],
+      product: [],
+      event: [],
+      trip: [],
+      funday: [],
+    },
+  })
+    blacklist: {
+    business: mongoose.Types.ObjectId[];
+    poi: mongoose.Types.ObjectId[];
+    product: mongoose.Types.ObjectId[];
+    event: mongoose.Types.ObjectId[];
+    trip: mongoose.Types.ObjectId[];
+    funday: mongoose.Types.ObjectId[];
+  };
+
+  @Prop({
+    type: {
+      business: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
+      poi: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
+      product: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+      event: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+      trip: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' }],
+      funday: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' }],
+    },
+    default: {
+      business: [],
+      poi: [],
+      product: [],
+      event: [],
+      trip: [],
+      funday: [],
+    },
+  })
+    whitelist: {
+    business: mongoose.Types.ObjectId[];
+    poi: mongoose.Types.ObjectId[];
+    product: mongoose.Types.ObjectId[];
+    event: mongoose.Types.ObjectId[];
+    trip: mongoose.Types.ObjectId[];
+    funday: mongoose.Types.ObjectId[];
   };
 }
 export type CampaignDocument = HydratedDocument<Campaign>;
