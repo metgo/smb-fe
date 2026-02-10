@@ -5,12 +5,11 @@ import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 
 import { categoryIds, navigationPathsByServiceType } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
-import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage, ImageCarouselControls } from "@/components/ui";
 import {
   getCityOrCenter,
@@ -23,7 +22,6 @@ import { staticImages } from "@/constant/staticImages";
 import {
   ANIMATION_CONFIG,
   cardVariants,
-  INTERSECTION_CONFIG,
   MOTION_CONFIG,
 } from "@/lib/animationConfig";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
@@ -40,6 +38,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const pathname = usePathname();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false); // Changed from imageLoading to imageLoaded
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const { setActiveFilterTab, setClickedBusinessId } = useGeneralStore();
   const { favoriteFeedItemIds, addFavoriteFeedItemId } =
@@ -55,23 +56,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     };
   }, [searchParams]);
 
-  // Optimized image and dependency arrays
-  const { images, deps } = useMemo(
-    () => ({
-      images: feedItem?.images ?? [],
-      deps: [urlParams.categoryId, urlParams.subCategoryId],
-    }),
-    [feedItem, urlParams.categoryId, urlParams.subCategoryId],
-  );
-
-  // Image loading hook
-  const { isLoading, updatedImageList, inView, containerRef } = useImagePresent(
-    width / height,
-    images,
-    activeImageIndex,
-    deps,
-    INTERSECTION_CONFIG,
-  );
+  // Get images directly from feedItem
+  const images = useMemo(() => feedItem?.images ?? [], [feedItem?.images]);
 
   // Animation controls
   const animationControls = useAnimation();
@@ -82,12 +68,35 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     setHasMounted(true);
   }, []);
 
+  // Reset image loaded state when activeImageIndex changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [activeImageIndex]);
+
+  // Check if image is already loaded (cached)
+  useEffect(() => {
+    if (imageRef.current && imageRef.current.complete) {
+      setImageLoaded(true);
+    }
+  }, [activeImageIndex]);
+
   // Animation effect
   useEffect(() => {
     if (isCardInView) {
       animationControls.start("visible");
     }
   }, [isCardInView, animationControls]);
+
+  // Add this useEffect as a safety fallback
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!imageLoaded) {
+        setImageLoaded(true);
+      }
+    }, 500); // 5 msecond timeout
+
+    return () => clearTimeout(timer);
+  }, [imageLoaded]);
 
   // Memoized computed values
   const computedValues = useMemo(
@@ -97,20 +106,19 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         urlParams.activeCategoryKey || "",
         feedItem.primaryCategoryId!,
       ),
-      currentImage: updatedImageList?.[activeImageIndex],
-      shouldShowSkeleton: !hasMounted || !inView || isLoading,
+      currentImage: images?.[activeImageIndex],
+      shouldShowSkeleton: !hasMounted || !imageLoaded, // Changed to check !imageLoaded
       locationText: getCityOrCenter(feedItem?.address),
     }),
     [
+      pathname,
       urlParams.activeCategoryKey,
       feedItem.primaryCategoryId,
       feedItem?.address,
-      updatedImageList,
+      images,
       activeImageIndex,
       hasMounted,
-      inView,
-      isLoading,
-      feedItem,
+      imageLoaded, // Changed to imageLoaded
     ],
   );
 
@@ -135,6 +143,18 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     },
     [feedItem._id, feedItem.name, feedItem.slug, router],
   );
+
+  // Handle image load
+  const handleImageLoad = useCallback(() => {
+    console.log("Image loaded successfully");
+    setImageLoaded(true);
+  }, []);
+
+  // Handle image error
+  const handleImageError = useCallback(() => {
+    console.log("Image failed to load");
+    setImageLoaded(true); // Set to true even on error to show fallback
+  }, []);
 
   // Render skeleton
   if (computedValues.shouldShowSkeleton) {
@@ -174,9 +194,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       >
         {/* Main Image */}
         <Image
-          src={
-            computedValues.currentImage?.imageUrl || staticImages.placeholder
-          }
+          ref={imageRef}
+          src={computedValues.currentImage?.image || staticImages.placeholder}
           alt={computedValues.currentImage?.alt || ""}
           fill
           unoptimized
@@ -187,6 +206,12 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
             "group-hover:scale-140",
           )}
           priority={false}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          onLoadingComplete={() => {
+            console.log("Next.js loading complete");
+            setImageLoaded(true);
+          }}
         />
 
         {/* Content Overlay */}
@@ -217,6 +242,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   );
 };
 
+// Extracted sub-components remain the same...
+
 // Extracted sub-components for better organization
 const FeedCardContent = ({
   feedItem,
@@ -231,7 +258,7 @@ const FeedCardContent = ({
 }) => (
   <div className="relative w-full h-full">
     {/* Gradient Overlay */}
-    <div className="absolute  bottom-0 right-0 h-full w-full bg-gradient-to-t from-black/40 via-black/30 to-black/5 rounded-b-xl" />
+    <div className="absolute bottom-0 right-0 h-full w-full bg-gradient-to-t from-black/40 via-black/30 to-black/5 rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
@@ -283,7 +310,7 @@ const FeedCardActions = ({
           onClick={() => addFavoriteFeedItemId(feedItem._id)}
         >
           {favoriteFeedItemIds.includes(feedItem._id) ? (
-            <div className=" h-7.5 w-7.5 p-1 bg-black/20 rounded-full flex items-center justify-center">
+            <div className="h-7.5 w-7.5 p-1 bg-black/20 rounded-full flex items-center justify-center">
               <FaHeart size={16} className="text-white" />
             </div>
           ) : (
