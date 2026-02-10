@@ -35,6 +35,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { CreateOrderDto } from 'src/modules/orders/dto';
 import {
+  DeliveryMethod,
   OrderItemType,
   OrderStatus,
   PaymentMode,
@@ -1122,7 +1123,20 @@ export class OrdersService {
             const price
               = matchingProduct.amount || product.price?.sellingPrice || 0;
             const deliveryFee = matchingProduct.deliveryFee || 0;
-            const address = matchingProduct?.deliveryPickupLocation || '';
+            const address
+              = matchingProduct.deliveryMethod === DeliveryMethod.DELIVER
+                ? [
+                  matchingProduct?.houseNo,
+                  matchingProduct?.apartment,
+                  matchingProduct?.street,
+                  matchingProduct?.city,
+                  matchingProduct?.deliveryArea,
+                ]
+                  .filter(Boolean)
+                  .join(', ')
+                  || matchingProduct.deliveryPickupLocation
+                  || ''
+                : `מיקום העסק שלך - ${business?.address?.location}`;
 
             const totalPriceForThisProduct = quantity * price + deliveryFee;
 
@@ -1149,7 +1163,13 @@ export class OrdersService {
 }</span>
                         <span style="display: block; font-size: 14px; color: #666666;">כמות:
                             ${quantity}</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">
+                        <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
+  matchingProduct.deliveryMethod
+                          === DeliveryMethod.DELIVER
+    ? 'לספק ללקוח'
+    : 'איסוף עצמי על ידי הלקוח'
+}</span>
+<span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${deliveryFee}</span>
   <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
   address || 'לא ישים'
