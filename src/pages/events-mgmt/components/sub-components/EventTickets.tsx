@@ -111,7 +111,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
         isUnlimited: false,
         perUserLimit: 5,
       },
-      status: "public",
+      status: "active",
     });
     if (!eventId) {
       const res = await initEventCreate().unwrap();

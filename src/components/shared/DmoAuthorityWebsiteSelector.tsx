@@ -5,6 +5,7 @@ import { useEffect, useCallback, useMemo } from "react";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper, SelectField } from "@/components/form-fields";
+import ImageWithFallback from "./ImageWithFallback";
 
 type Props = {
   isEdit: boolean;
@@ -33,7 +34,7 @@ export default function DmoAuthorityWebsiteSelector({
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
-  const { theme, selectInputClasses } = useThemeClasses();
+  const { isDark, selectInputClasses } = useThemeClasses();
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
@@ -153,7 +154,7 @@ export default function DmoAuthorityWebsiteSelector({
       <div>
         <label
           className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {title}
@@ -163,7 +164,7 @@ export default function DmoAuthorityWebsiteSelector({
           <label
             className={`flex items-center gap-2 cursor-pointer border rounded p-2
             ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 bg-gray-900 text-gray-300"
                 : "border-gray-300 bg-white text-gray-700"
             }
@@ -175,7 +176,7 @@ export default function DmoAuthorityWebsiteSelector({
               onChange={() => toggleAll(allKey, selectedKey)}
               className={`rounded
                 ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-900 border-gray-700 accent-teal-500"
                     : "bg-white border-gray-300 accent-teal-600"
                 }
@@ -191,7 +192,7 @@ export default function DmoAuthorityWebsiteSelector({
               key={item._id}
               className={`flex items-center gap-2 cursor-pointer border rounded p-2
       ${
-        theme === "dark"
+        isDark
           ? "border-gray-700 bg-gray-900 text-gray-300"
           : "border-gray-300 bg-white text-gray-700"
       }
@@ -203,15 +204,15 @@ export default function DmoAuthorityWebsiteSelector({
                 onChange={() => toggleId(item._id, selectedKey)}
                 className={`rounded
                 ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-900 border-gray-700 accent-teal-500"
                     : "bg-white border-gray-300 accent-teal-600"
                 }
               `}
               />
-              <img
-                src={item.logo}
-                alt={item.name}
+              <ImageWithFallback
+                src={item?.logo}
+                alt={item?.name}
                 className="w-8 h-8 object-contain"
               />
               <span>{item.name}</span>
@@ -277,7 +278,7 @@ export default function DmoAuthorityWebsiteSelector({
         <div className="space-y-4">
           <label
             className={`block text-sm mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-800"
+              isDark ? "text-gray-300" : "text-gray-800"
             }`}
           >
             {t("website_visibility")}

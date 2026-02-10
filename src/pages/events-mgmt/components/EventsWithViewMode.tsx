@@ -32,7 +32,9 @@ import {
   useUpdateEventMutation,
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
-import { routes } from "@/lib/routes";
+import QuickSnapEventDetails from "./QuickSnapEventDetails";
+import CreateEventWizard from "./CreateEventWizard";
+import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -110,10 +112,34 @@ export default function EventsWithViewMode({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
     useState<TViewMode>("calendar-month");
+
+  const [editData, setEditData] = useState();
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [clickedEventData, setClickedEventData] = useState<Event | null>(null);
+
   const [displayedListCount, setDisplayedListCount] = useState(12);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+
+  const [getEventEditData] = useLazyGetEventByIdQuery();
+
+  const handleEditEvent = async () => {
+    if (clickedEventData) {
+      const eventDetails = await getEventEditData({
+        eventId: clickedEventData?._id,
+      }).unwrap();
+      if (eventDetails) {
+        setIsEditModalOpen(true);
+        setClickedEventData(null);
+        setShowQuickViewModal(false);
+        setEditData(eventDetails);
+        navigate(`?eventId=${clickedEventData?._id}`);
+      }
+    }
+  };
 
   // Current month/year string
   const monthYear = useMemo(() => {
@@ -192,7 +218,9 @@ export default function EventsWithViewMode({
 
   // Handle events sets
   const handleEventSelect = (event: Event) => {
-    navigate(`${routes.eventDetails}?eventId=${event?._id}`, { replace: true });
+    setShowQuickViewModal(true);
+    setClickedEventData(event);
+    navigate(`?eventId=${event?._id}`, { replace: true });
   };
 
   const handleEventDelete = async (eventId: string) => {
@@ -814,6 +842,23 @@ export default function EventsWithViewMode({
           setEventToDelete(null);
         }}
       />
+
+      {showQuickViewModal && (
+        <QuickSnapEventDetails
+          setIsOpen={setShowQuickViewModal}
+          selectedEvent={clickedEventData}
+          setSelectedEvent={setClickedEventData}
+          handleEditEvent={handleEditEvent}
+        />
+      )}
+
+      {isEditModalOpen && (
+        <CreateEventWizard
+          isOpen={isEditModalOpen}
+          editData={editData}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

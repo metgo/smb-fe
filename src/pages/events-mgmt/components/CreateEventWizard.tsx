@@ -415,7 +415,7 @@ export default function CreateEventWizard({
   };
 
   const eventMsgSchedulePayload = {
-    scheduledNotifications: notifications.map((item) => {
+    scheduledNotifications: notifications?.map((item) => {
       const base = {
         ...(!item.index ? { _id: item._id } : {}),
 
@@ -618,7 +618,7 @@ export default function CreateEventWizard({
         className={`px-6 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"} `}
       >
         <div className={clsx("flex items-center justify-between ")}>
-          {steps.map((step, index) => (
+          {steps?.map((step, index) => (
             <div
               key={step.id}
               className="flex items-center flex-1 cursor-pointer"

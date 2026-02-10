@@ -51,6 +51,7 @@
   "edit": "עריכה",
   "continue": "המשך",
   "send_invite": "שלח הזמנה",
+  "back_to_list": "חזור לרשימה",
 
   "pending": "בהמתנה",
   "approved": "אשר",
@@ -123,5 +124,27 @@
   "attributes": "מאפיינים",
   "schedual_notification": "תזמון התראות",
 
-  "impact_score": "ציון השפעה"
+  "impact_score": "ציון השפעה",
+  "location": "מיקום",
+  "geo_coordinates": "קואורדינטות גיאוגרפיות",
+  "geo_coordinates_desc": "מיקום גיאוגרפי מדויק",
+  "latitude": "קו רוחב",
+  "longitude": "קו אורך",
+  "map_desc": "תצוגת מפה אינטראקטיבית של מיקום האירוע",
+  "image_gallery": "גלריית תמונות",
+  "image_gallery_desc": "{uploaded_count} תמונות הועלו. ניתן להעלות עוד {remaining_count}",
+  "no_images_uploaded": "לא הועלו תמונות",
+  "upload_image_info": "העלה תמונות כדי ליצור גלריית אירוע",
+
+  "attributes_desc": "קטגוריות, נגישויות וקהל יעד מתאים",
+  "subcategories": "תת-קטגוריות",
+  "subcat_desc": "{count} קטגוריות נבחרו",
+  "accessiblities": "נגישויות",
+  "accessibilities_desc": "{count} אפשרויות זמינות",
+  "group_types": "סוגי קבוצות",
+  "group_types_desc": "מתאים ל־{count} סוגי קבוצות",
+  "tags": "תגיות",
+  "tags_desc": "{count} תגיות זמינות",
+  "no_attribute_selected": "לא נבחרו מאפיינים",
+  "no_attribute_selected_info": "לא הוגדרו תת-קטגוריות, נגישויות או סוגי קבוצות לאירוע זה"
 }
