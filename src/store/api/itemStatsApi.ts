@@ -50,9 +50,9 @@ export const itemStatsApi = createApi({
       providesTags: ["ItemStatistics"],
     }),
 
-    getProductStats: builder.query<any, IDistOverviewParams>({
+    getProductStats: builder.query<any, any>({
       query: (params) => ({
-        url: endpoints.productStats,
+        url: endpoints.productsStats,
         method: "GET",
         params,
       }),

@@ -26,7 +26,10 @@ import {
   ProductListView,
 } from "./components";
 
-import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import {
+  useGetAllProductsQuery,
+  useGetProductStatsQuery,
+} from "@/store/api/productQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
@@ -139,6 +142,14 @@ export default function ProductsMgmtPage() {
     return params;
   }, [page, searchTerm, filters]);
 
+  const statsQueryParams = useMemo(() => {
+    const { page, limit, ...rest } = productQueryParams;
+    return rest;
+  }, [productQueryParams]);
+
+  const { data: productStats, isLoading: isStatsLoading } =
+    useGetProductStatsQuery(statsQueryParams);
+
   const {
     data: productData,
     refetch,
@@ -240,28 +251,28 @@ export default function ProductsMgmtPage() {
     {
       id: 1,
       title: t("total_revenue"),
-      value: `₪${salesMetrics.totalRevenue.toLocaleString()}`,
+      value: `₪${productStats?.totalRevenue}`,
       label: t("all_time") || "All Time",
       icon: <Package className="w-5 h-5 text-purple-600" />,
     },
     {
       id: 2,
       title: t("items_sold"),
-      value: salesMetrics.itemsSold.toLocaleString(),
+      value: productStats?.itemsSold,
       label: t("total_units") || "Total Units",
       icon: <ArrowUpDown className="w-5 h-5 text-green-600" />,
     },
     {
       id: 3,
       title: t("avg_product_price"),
-      value: `₪${Math.round(salesMetrics.avgPrice).toLocaleString()}`,
+      value: `₪${productStats?.averageProductPrice}`,
       label: t("per_product") || "Per Product",
       icon: <Settings2 className="w-5 h-5 text-blue-600" />,
     },
     {
       id: 4,
       title: t("revenue_this_month"),
-      value: `₪${salesMetrics.monthlyRevenue.toLocaleString()}`,
+      value: `₪${productStats?.revenueThisMonth}`,
       label: t("current_month") || "Current Month",
       icon: <ArrowUp className="w-5 h-5 text-orange-600" />,
     },
@@ -279,6 +290,7 @@ export default function ProductsMgmtPage() {
         />
         <PageStats
           stats={salesStats}
+          isLoading={isStatsLoading}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         />
 
