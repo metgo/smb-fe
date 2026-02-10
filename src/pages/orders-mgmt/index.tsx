@@ -80,61 +80,14 @@ export default function OrdersMgmtPage() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
-  const handleBulkDelete = async () => {
-    if (!selectedOrders.size) return;
-    const toastId = toast.loading("Please wait. Orders are deleting...");
-    try {
-      const results = await bulkOrdersUpdate({
-        ordersId: Array.from(selectedOrders),
-        isDeleted: true,
-      });
-
-      if (results?.data) {
-        const message = "Orders deleted successfully";
-        toast.success(message, { id: toastId });
-        setSelectedOrders(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Orders", {
-        id: toastId,
-      });
-    }
-  };
-  const handleBulkStatusChange = async (status: TStatus) => {
-    if (!selectedOrders.size) return;
-    const toastId = toast.loading(
-      "Please wait. Order's status are changing...",
-    );
-
-    try {
-      const results = await bulkOrdersUpdate({
-        ordersId: Array.from(selectedOrders),
-        status: status?.toLocaleUpperCase(),
-      });
-
-      if (results?.data) {
-        const message = "Orders status updated successfully";
-        toast.success(message, { id: toastId });
-        setSelectedOrders(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to change Orders status", {
-        id: toastId,
-      });
-    }
-  };
-  const defaultFilters = {
-    orderType: "all",
-    deliveryType: "all",
-    paymentMethod: "all",
-    vendor: "all",
-    campaign: "all",
-    month: "all",
-    dateFrom: "",
-    dateTo: "",
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => {
+      return prev + 1;
+    });
   };
 
   // Filters
@@ -194,6 +147,132 @@ export default function OrdersMgmtPage() {
       </button>
     </div>
   );
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters]);
+
+  const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
+  const orderQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit,
+    };
+
+    if (searchTerm) params.search = searchTerm;
+
+    if (filters.orderType !== "all") {
+      params.orderType = filters.orderType;
+    }
+
+    if (filters.deliveryType !== "all") {
+      params.deliveryType = filters.deliveryType;
+    }
+
+    if (filters.paymentMethod !== "all") {
+      params.paymentMethod = filters.paymentMethod;
+    }
+
+    if (filters.vendor !== "all") {
+      params.vendor = filters.vendor;
+    }
+
+    if (filters.campaign !== "all") {
+      params.campaign = filters.campaign;
+    }
+
+    // Month filter
+    if (filters.month !== "all" && filters.month !== "custom") {
+      params.month = filters.month;
+    }
+
+    // Custom date range
+    if (filters.month === "custom") {
+      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+      if (filters.dateTo) params.dateTo = filters.dateTo;
+    }
+
+    return params;
+  }, [page, limit, searchTerm, filters]);
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetAllOrdersQuery(orderQueryParams);
+  const hasMore = orders?.datas?.meta?.hasNextPage;
+
+  const orderss = orders?.datas?.data ?? [];
+  useEffect(() => {
+    if (!orderss?.length) return;
+
+    if (page === 1) {
+      setCombinedOrders(orderss);
+    } else {
+      setCombinedOrders((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [orderss]);
+
+  const handleBulkDelete = async () => {
+    if (!selectedOrders.size) return;
+    const toastId = toast.loading("Please wait. Orders are deleting...");
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        isDeleted: true,
+      });
+
+      if (results?.data) {
+        const message = "Orders deleted successfully";
+        toast.success(message, { id: toastId });
+        setSelectedOrders(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Orders", {
+        id: toastId,
+      });
+    }
+  };
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedOrders.size) return;
+    const toastId = toast.loading(
+      "Please wait. Order's status are changing...",
+    );
+
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        status: status?.toLocaleUpperCase(),
+      });
+
+      if (results?.data) {
+        const message = "Orders status updated successfully";
+        toast.success(message, { id: toastId });
+        setSelectedOrders(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Orders status", {
+        id: toastId,
+      });
+    }
+  };
+  const defaultFilters = {
+    orderType: "all",
+    deliveryType: "all",
+    paymentMethod: "all",
+    vendor: "all",
+    campaign: "all",
+    month: "all",
+    dateFrom: "",
+    dateTo: "",
+  };
 
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
@@ -329,88 +408,6 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
-
-  const [page, setPage] = useState(1);
-  const limit = 20;
-  const orderQueryParams = useMemo(() => {
-    const params: any = {
-      page,
-      limit,
-    };
-
-    if (searchTerm) params.search = searchTerm;
-
-    if (filters.orderType !== "all") {
-      params.orderType = filters.orderType;
-    }
-
-    if (filters.deliveryType !== "all") {
-      params.deliveryType = filters.deliveryType;
-    }
-
-    if (filters.paymentMethod !== "all") {
-      params.paymentMethod = filters.paymentMethod;
-    }
-
-    if (filters.vendor !== "all") {
-      params.vendor = filters.vendor;
-    }
-
-    if (filters.campaign !== "all") {
-      params.campaign = filters.campaign;
-    }
-
-    // Month filter
-    if (filters.month !== "all" && filters.month !== "custom") {
-      params.month = filters.month;
-    }
-
-    // Custom date range
-    if (filters.month === "custom") {
-      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
-      if (filters.dateTo) params.dateTo = filters.dateTo;
-    }
-
-    return params;
-  }, [page, limit, searchTerm, filters]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, filters, page]);
-
-  const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
-
-  const {
-    data: orders,
-    isLoading,
-    refetch,
-    isFetching,
-  } = useGetAllOrdersQuery(orderQueryParams);
-  const orderss = orders?.datas?.data ?? [];
-
-  useEffect(() => {
-    if (!orderss?.length) return;
-
-    if (page === 1) {
-      setCombinedOrders(orderss);
-    } else {
-      setCombinedOrders((prev) => {
-        // Prevent duplicates (important!)
-        const existingIds = new Set(prev.map((b) => b._id));
-        const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
-
-        return [...prev, ...newItems];
-      });
-    }
-  }, [orderss]);
-  const hasMore = orders?.datas?.meta?.hasNextPage;
-
-  const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => {
-      return prev + 1;
-    });
-  };
 
   //order details
   const { data: orderDetails, isLoading: isOrderDetailLoading } =
@@ -1071,7 +1068,8 @@ export default function OrdersMgmtPage() {
           ) : (
             <OrderListView
               theme={theme}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
+              hasMore={hasMore}
               orders={orders}
               combinedOrders={combinedOrders}
               fetchNextPage={fetchNextPage}
@@ -1087,16 +1085,18 @@ export default function OrdersMgmtPage() {
         </div>
       ) : (
         viewMode === "grid" && (
-          <OrderGridView
-            selectedOrders={selectedOrders}
-            setSelectedOrders={setSelectedOrders}
-            data={combinedOrders || []}
-            next={fetchNextPage}
-            hasMore={hasMore}
-            isLoading={isLoading}
-            onRowClick={handleRowClick}
-            t={t}
-          />
+          <div className="overflow-y-auto ">
+            <OrderGridView
+              selectedOrders={selectedOrders}
+              setSelectedOrders={setSelectedOrders}
+              data={combinedOrders || []}
+              next={fetchNextPage}
+              hasMore={hasMore}
+              isLoading={isLoading || isFetching}
+              onRowClick={handleRowClick}
+              t={t}
+            />
+          </div>
         )
       )}
 

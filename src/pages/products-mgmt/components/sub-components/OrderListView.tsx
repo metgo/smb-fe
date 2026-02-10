@@ -6,6 +6,7 @@ interface OrderListViewProps {
   theme: "dark" | "light";
   isLoading: boolean;
   orders: any;
+  hasMore: boolean;
   combinedOrders: any[];
   fetchNextPage: () => void;
   selectedOrders: Set<string>;
@@ -30,6 +31,7 @@ const OrderListView: React.FC<OrderListViewProps> = ({
   textTertiary,
   textSecondary,
   t,
+  hasMore,
 }) => {
   return (
     <div
@@ -39,28 +41,27 @@ const OrderListView: React.FC<OrderListViewProps> = ({
           : "bg-white border-gray-200"
       } border rounded-lg overflow-hidden`}
     >
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader className="w-8 h-8 animate-spin text-teal-500" />
-        </div>
-      ) : orders?.datas?.data?.length === 0 ? (
+      {orders?.datas?.data?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
           <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
-          <ReordableDataTable
-            rowKey="_id"
-            data={combinedOrders || []}
-            next={fetchNextPage}
-            selectedItems={selectedOrders}
-            onSelectionChange={setSelectedOrders}
-            onRowClick={handleRowClick}
-            storageKey="ordersTableColumnOrder"
-            columns={columns}
-            isDataLoading={isLoading}
-          />
+        <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+          <div className="sticky">
+            <ReordableDataTable
+              rowKey="_id"
+              hasMore={hasMore}
+              data={combinedOrders || []}
+              next={fetchNextPage}
+              selectedItems={selectedOrders}
+              onSelectionChange={setSelectedOrders}
+              onRowClick={handleRowClick}
+              storageKey="ordersTableColumnOrder"
+              columns={columns}
+              isDataLoading={isLoading}
+            />
+          </div>
         </div>
       )}
     </div>

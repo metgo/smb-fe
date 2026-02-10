@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { AlertCircle, Image, TrashIcon } from "lucide-react";
+import { AlertCircle, Image, Loader, TrashIcon } from "lucide-react";
 
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -36,7 +36,15 @@ function OrderGridView<T>({
     isLoading,
     onLoadMore: next,
   });
-
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
+  //       <div className="flex flex-col items-center justify-center h-full gap-3">
+  //         <Loader className="w-10 h-10 animate-spin text-teal-600" />
+  //       </div>
+  //     </div>
+  //   );
+  // }
   if (data.length === 0) {
     return (
       <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
@@ -159,6 +167,15 @@ function OrderGridView<T>({
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div>
+              <h2 className="h-20 flex justify-center text-center">
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                  <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                </div>
+              </h2>
+            </div>
+          )}
         </div>
       </div>
       {/* <ConfirmDialog
