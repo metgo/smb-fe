@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { Trash } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { BulkStatusChangeBtn } from "../btns";
+import { StatusChangeBtn } from "../btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BulkActionBarProps {
@@ -86,8 +86,12 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
         {selectedItemCount} {t("selected")}
       </span>
 
-      <div className={clsx("flex items-center gap-4")}>
-        <BulkStatusChangeBtn handleBulkStatusChange={handleBulkStatusChange} />
+      <div className="flex items-center gap-4">
+        <StatusChangeBtn
+          status="draft"
+          isProduct
+          handleStatusChange={handleBulkStatusChange}
+        />
 
         <div className="flex items-center gap-2">
           {ACTIONS.map(renderButton)}

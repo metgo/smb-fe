@@ -147,7 +147,8 @@
 
   "delivery": "Delivery",
   "pickup_available": "Pickup Available",
-
+  "image_gallery": "Image Gallery",
+  "primary_image": "Primary Image",
   "product_created": "Product created successfully",
   "product_updated": "Product updated successfully",
   "product_duplicated": "Product duplicated successfully",

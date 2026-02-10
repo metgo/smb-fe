@@ -185,7 +185,7 @@ export default function ProductsMgmtPage() {
     if (!selectedProducts.size) return;
     setIsConfirmOpen(true);
 
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    const toastId = toast.loading("Please wait. Products are deleting...");
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
@@ -211,7 +211,7 @@ export default function ProductsMgmtPage() {
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
-        status: status?.toLocaleUpperCase(),
+        status,
       });
 
       if (results?.data) {
@@ -319,7 +319,7 @@ export default function ProductsMgmtPage() {
                   {/* Column Settings Dropdown */}
                   {showColumnSettings && (
                     <div
-                      className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                      className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-100 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                     >
                       <div
                         className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}

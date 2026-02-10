@@ -38,7 +38,7 @@ export default function ProductDetailsPage() {
   const { t: ct } = useTranslation("common");
   const navigate = useNavigate();
 
-  const { isDark, language, rowDir, isRTL } = useThemeClasses();
+  const { isDark, language, isRTL } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [updateProduct] = useUpdateProductMutation();
 
@@ -151,14 +151,11 @@ export default function ProductDetailsPage() {
         } border-b`}
       >
         <div className="max-w-full mx-auto px-6 py-4">
-          <div
-            className={clsx("flex items-center justify-between mb-4", rowDir)}
-          >
+          <div className={clsx("flex items-center justify-between mb-4")}>
             <button
               onClick={() => navigate(routes.productsMgmt)}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
-                rowDir,
                 isDark
                   ? "hover:bg-gray-800 text-gray-300"
                   : "hover:bg-gray-100 text-gray-700",
@@ -172,7 +169,7 @@ export default function ProductDetailsPage() {
               <span>{ct("back_to_list") || "Back"}</span>
             </button>
 
-            <div className={clsx("flex items-center gap-3", rowDir)}>
+            <div className={clsx("flex items-center gap-3")}>
               {canEdit && (
                 <>
                   <StatusChangeBtn
@@ -203,7 +200,7 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className={clsx("flex items-center gap-4", rowDir)}>
+          <div className={clsx("flex items-center gap-4")}>
             <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
               {product?.images?.length > 0 ? (
                 <img
