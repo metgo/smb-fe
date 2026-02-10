@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { User } from 'src/modules/users/schema/users.schema';
-import { TicketStatus } from '../tickets.type';
+import { TicketStatus, TicketType } from '../tickets.type';
 
 export class Image {
   image: { type: string; required: true };
@@ -47,7 +47,7 @@ export class Ticket extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: Event.name,
-    required: true,
+    required: false,
   })
     eventId: mongoose.Types.ObjectId;
 
@@ -69,9 +69,10 @@ export class Ticket extends AuditableSchema {
   @Prop({
     type: {
       initial: Number,
-      sold: { type: Number, default: 0 },
+      sold: Number,
       remaining: Number,
       isUnlimited: Boolean,
+      perUserLimit: Number,
     },
   })
     quantity: {
@@ -79,12 +80,35 @@ export class Ticket extends AuditableSchema {
     sold: number;
     remaining: number;
     isUnlimited: boolean;
+    perUserLimit: number;
   };
 
   @Prop({ enum: TicketStatus, default: TicketStatus.ACTIVE })
     status: TicketStatus;
+
+  @Prop({ enum: TicketType, default: TicketType.FREE })
+    type: TicketType;
+
+  @Prop({
+    type: [
+      {
+        date: { type: Date, required: true },
+        startTime: { type: String, required: false, default: null },
+        endTime: { type: String, required: false, default: null },
+      },
+    ],
+    default: [],
+  })
+    dayDescription: {
+    date: Date;
+    startTime?: string;
+    endTime?: string;
+  }[];
 }
 
 export type Tickets = HydratedDocument<Ticket>;
 
 export const TicketSchema = SchemaFactory.createForClass(Ticket);
+
+TicketSchema.index({ eventId: 1, status: 1 });
+TicketSchema.index({ userId: 1 });

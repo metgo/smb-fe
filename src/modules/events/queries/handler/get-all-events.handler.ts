@@ -43,7 +43,14 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
     const today = new Date();
     let findQuery: any = {
       status: EventStatus.APPROVED,
-      endDate: { $gte: today },
+
+      dayDescription: {
+        $elemMatch: {
+          date: { $gte: today },
+        },
+      },
+
+      isDeleted: false,
     };
 
     const orConditions = [];

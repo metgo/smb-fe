@@ -11,6 +11,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { CampaignModule } from '../campaign/campaign.module';
 import { GetTicketByIdsHandler } from './queries/handler/get-ticket-by-ids.handler';
 import { GetTicketByIdHandler } from './queries/handler/get-ticket-by-id.handler';
+import { GetAllTicketsHandler } from './queries/handler/get-all-tickets.handler';
 
 @Module({
   imports: [
@@ -23,6 +24,10 @@ import { GetTicketByIdHandler } from './queries/handler/get-ticket-by-id.handler
     CampaignModule,
   ],
   controllers: [TicketController],
-  providers: [GetTicketByIdHandler, GetTicketByIdsHandler],
+  providers: [
+    GetTicketByIdHandler,
+    GetTicketByIdsHandler,
+    GetAllTicketsHandler,
+  ],
 })
 export class TicketModule {}

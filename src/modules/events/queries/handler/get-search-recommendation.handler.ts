@@ -41,7 +41,13 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
 
       let findQuery: any = {
         status: EventStatus.APPROVED,
-        endDate: { $gte: today },
+
+        dayDescription: {
+          $elemMatch: {
+            date: { $gte: today },
+          },
+        },
+        isDeleted: false,
       };
 
       const orConditions = [];

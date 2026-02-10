@@ -20,7 +20,13 @@ implements IQueryHandler<GetEventRawQuery> {
       const today = new Date();
       let findQuery: any = {
         status: EventStatus.APPROVED,
-        endDate: { $gte: today },
+
+        dayDescription: {
+          $elemMatch: {
+            date: { $gte: today },
+          },
+        },
+
         isDeleted: false,
       };
 

@@ -8,10 +8,46 @@ import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { User } from 'src/modules/users/schema/users.schema';
-import { EventPaymentMethod, EventStatus } from '../events.type';
-import { Ticket } from 'src/modules/tickets/schema/tickets.schema';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
+import {
+  CommonQuestionAnswerType,
+  EventStatus,
+  EventType,
+} from '../events.type';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
+import { RecurringEventRule } from './recurring-event.schema';
+import { ScheduledEventNotification } from './scheduled-event-notification.schema';
+
+@Schema({ _id: false })
+export class CommonQuestionOptions {
+  @Prop({ required: true })
+    label: string;
+
+  @Prop({ required: true })
+    value: string;
+}
+export const CommonQuestionOptionsSchema = SchemaFactory.createForClass(
+  CommonQuestionOptions,
+);
+
+@Schema({ _id: false })
+export class CustomQuestion {
+  @Prop({ required: false })
+    question: string;
+
+  @Prop({
+    enum: CommonQuestionAnswerType,
+    default: CommonQuestionAnswerType.TEXT,
+  })
+    answerType: CommonQuestionAnswerType;
+
+  @Prop({ default: false })
+    required?: boolean;
+
+  @Prop({ type: [CommonQuestionOptionsSchema], default: [] })
+    commonQuestionOptions?: CommonQuestionOptions[];
+}
+export const CustomQuestionSchema
+  = SchemaFactory.createForClass(CustomQuestion);
 
 @Schema()
 export class Event extends AuditableSchema {
@@ -48,30 +84,14 @@ export class Event extends AuditableSchema {
   @Prop()
     description: string;
 
-  @Prop({ enum: EventStatus, default: EventStatus.PENDING })
+  @Prop()
+    internalNotes: string;
+
+  @Prop({ enum: EventStatus, default: EventStatus.DRAFT })
     status: EventStatus;
 
   @Prop()
     rejected_reason: string;
-
-  @Prop({
-    type: {
-      isFree: { type: Boolean, default: false },
-      method: {
-        type: String,
-        enum: EventPaymentMethod,
-        default: EventPaymentMethod.TICKET,
-      },
-      externalLink: { type: String, required: false, default: null },
-      ticketIds: [{ type: mongoose.Schema.Types.ObjectId, ref: Ticket.name }],
-    },
-  })
-    payment: {
-    isFree: boolean;
-    method: EventPaymentMethod;
-    externalLink?: string;
-    ticketIds: mongoose.Types.ObjectId[];
-  };
 
   @Prop({
     type: {
@@ -86,20 +106,21 @@ export class Event extends AuditableSchema {
     isUnlimited: boolean;
   };
 
+  @Prop({ type: [CustomQuestionSchema], default: [] })
+    customQuestions: CustomQuestion[];
+
+  @Prop({ enum: EventType, default: EventType.PHYSICAL })
+    eventType: EventType;
+
+  @Prop()
+    onlineLink: string;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: User.name,
     required: false,
   })
     userId: mongoose.Types.ObjectId;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: Business.name,
-    required: false,
-    default: null,
-  })
-    businessId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -136,22 +157,14 @@ export class Event extends AuditableSchema {
       caption: string;
       alt: string;
       isPrimary: boolean;
+      subCoordinates: {
+        xMax: number;
+        xMin: number;
+        yMax: number;
+        yMin: number;
+      };
     }
   ];
-
-  @Prop({
-    type: {
-      image: String,
-      caption: String,
-      alt: String,
-    },
-    default: null,
-  })
-    cover: {
-    image: { type: string; default: null };
-    caption: { type: string; default: null };
-    alt: { type: string; default: null };
-  };
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
@@ -174,18 +187,10 @@ export class Event extends AuditableSchema {
   @Prop()
     slug: string;
 
-  @Prop({ required: false, default: null })
-    startDate: Date;
-
-  @Prop({ required: false, default: null })
-    endDate: Date;
-
   @Prop({
     type: [
       {
-        ticketIds: [{ type: mongoose.Schema.Types.ObjectId, ref: Ticket.name }],
         date: { type: Date, required: true },
-        description: { type: String, required: false, default: null },
         startTime: { type: String, required: false, default: null },
         endTime: { type: String, required: false, default: null },
       },
@@ -193,9 +198,7 @@ export class Event extends AuditableSchema {
     default: [],
   })
     dayDescription: {
-    ticketIds: mongoose.Types.ObjectId[];
     date: Date;
-    description?: string;
     startTime?: string;
     endTime?: string;
   }[];
@@ -209,6 +212,24 @@ export class Event extends AuditableSchema {
     required: false,
   })
     bankAccountId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: RecurringEventRule.name,
+    required: false,
+  })
+    recurringEventRuleId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: ScheduledEventNotification.name,
+      },
+    ],
+    required: false,
+  })
+    scheduledNotificationId: mongoose.Types.ObjectId[];
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { Currency } from 'src/common/enum';
 import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
@@ -15,7 +14,6 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
-import { Product } from 'src/modules/products/schema/products.schema';
 import { SocialMedia } from 'src/modules/socialMedia/schema/socialMedia.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -62,6 +60,15 @@ export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     name: string;
 
+  @Prop({ required: false, default: null })
+    nameHe: string;
+
+  @Prop({ required: false, default: null })
+    nameAr: string;
+
+  @Prop()
+    internalNotes: string;
+
   @Prop({
     type: {
       country: String,
@@ -70,6 +77,7 @@ export class Business extends AuditableSchema {
       additional_information: String,
     },
     default: null,
+    _id: false,
   })
     address: {
     country: { type: string; default: null };
@@ -92,6 +100,18 @@ export class Business extends AuditableSchema {
 
   @Prop()
     description: string;
+
+  @Prop()
+    shortDescriptionHe: string;
+
+  @Prop()
+    descriptionHe: string;
+
+  @Prop()
+    shortDescriptionAr: string;
+
+  @Prop()
+    descriptionAr: string;
 
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
     status: BusinessStatus;
@@ -163,28 +183,11 @@ export class Business extends AuditableSchema {
       long: { type: String, default: null },
     },
     default: null,
+    _id: false,
   })
     geoLocation: {
     lat: { type: string; default: null };
     long: { type: string; default: null };
-  };
-
-  @Prop({
-    type: {
-      type: String,
-    },
-    coordinates: {
-      type: [Number],
-      default: null,
-    },
-  })
-    location: {
-    type: {
-      type: String;
-    };
-    coordinates: {
-      type: number[];
-    };
   };
 
   @Prop()
@@ -193,9 +196,6 @@ export class Business extends AuditableSchema {
   @Prop()
     logo: Image;
 
-  @Prop()
-    cover: Image;
-
   @Prop({
     required: false,
     type: [
@@ -203,11 +203,13 @@ export class Business extends AuditableSchema {
         socialMediaId: {
           type: mongoose.Types.ObjectId,
           ref: SocialMedia.name,
+          _id: false,
         },
         url: String,
       },
     ],
     default: null,
+    _id: false,
   })
     socialMedia: [
     {
@@ -248,7 +250,7 @@ export class Business extends AuditableSchema {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
     required: false,
   })
-    bussSubCategoriesId: mongoose.Types.ObjectId[];
+    bussSubCategoriesId: mongoose.Types.ObjectId[]; // migrate to tags
 
   @Prop({
     type: [String],
@@ -277,35 +279,11 @@ export class Business extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     isAlwaysOpen: boolean;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],
-    required: false,
-  })
-    productsId: mongoose.Types.ObjectId[];
-
   @Prop()
     slug: string;
 
   @Prop({ enum: GeoServicesTypes, required: false })
     serviceType: GeoServicesTypes;
-
-  @Prop({ required: false, enum: Currency, default: Currency.ILS })
-    currency: Currency;
-
-  @Prop({ required: false, default: null })
-    price: string;
-
-  @Prop({ required: false, default: null })
-    registrationLink: string;
-
-  @Prop({ required: false, default: null })
-    meetingLink: string;
-
-  @Prop({ required: false, default: null })
-    startDate: string;
-
-  @Prop({ required: false, default: null })
-    endDate: string;
 
   @Prop({ required: false })
     deliveryArea: DeliveryArea[];
@@ -333,7 +311,7 @@ export class Business extends AuditableSchema {
     ref: BankAccount.name,
     required: false,
   })
-    bankAccountId: mongoose.Types.ObjectId;
+    bankAccountId: mongoose.Types.ObjectId; // migrate all to user Id
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
