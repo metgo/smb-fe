@@ -160,7 +160,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
             </div>
 
             <div className="space-y-4">
-              {customQuestions.length === 0 ? (
+              {customQuestions?.length === 0 ? (
                 <div className={`text-center py-10 ${textTertiary}`}>
                   <p className="text-sm">
                     {t("no_custom_questions_yet") ||
@@ -168,7 +168,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                   </p>
                 </div>
               ) : (
-                customQuestions.map((q, index) => (
+                customQuestions?.map((q, index) => (
                   <div
                     key={q.id}
                     className={`p-5 rounded-xl border ${
@@ -212,7 +212,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
                       <button
                         onClick={() =>
                           setCustomQuestions(
-                            customQuestions.filter((_, i) => i !== index),
+                            customQuestions?.filter((_, i) => i !== index),
                           )
                         }
                         className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"

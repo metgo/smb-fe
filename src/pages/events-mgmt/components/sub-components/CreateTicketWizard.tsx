@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 
@@ -52,6 +52,8 @@ const CreateTicketWizard = ({
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("common");
+
   const {
     textPrimary,
     textSecondary,
@@ -93,6 +95,27 @@ const CreateTicketWizard = ({
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
+  useEffect(() => {
+    const markedPrice = editData?.price?.markedPrice || 0;
+    const sellingPrice = editData?.price?.sellingPrice || 0;
+
+    if (markedPrice > 0 && sellingPrice >= 0 && sellingPrice <= markedPrice) {
+      const discountAmount = markedPrice - sellingPrice;
+      const discountPercent = Number(
+        ((discountAmount / markedPrice) * 100).toFixed(2),
+      );
+
+      setEditData((prev: ITicketPayload) => ({
+        ...prev,
+        price: {
+          ...prev.price,
+          discountAmount,
+          discountPercent,
+        },
+      }));
+    }
+  }, [editData?.price?.markedPrice, editData?.price?.sellingPrice]);
 
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
@@ -212,8 +235,8 @@ const CreateTicketWizard = ({
       price: {
         markedPrice: editData.price?.markedPrice || 0,
         sellingPrice: editData.price?.sellingPrice || 0,
-        discountPercent: 0,
-        discountAmount: 0,
+        discountPercent: editData?.price?.discountPercent || 0,
+        discountAmount: editData?.price?.discountAmount || 0,
       },
       quantity: {
         initial: editData.quantity?.initial || 0,
@@ -228,7 +251,7 @@ const CreateTicketWizard = ({
         endTime: item.endTime,
       })),
       images: [{ image: uploadImageUrl ?? image?.gcsURL }],
-      status: "active",
+      status: editData?.status,
       type: editData.type.toUpperCase(),
     };
 
@@ -338,6 +361,35 @@ const CreateTicketWizard = ({
               />
             </FormFieldWrapper>
           </div>
+
+          <FormFieldWrapper label={t("ticket_status")}>
+            <div className="flex flex-wrap gap-6">
+              {["active", "inactive"].map((opt) => (
+                <label
+                  key={opt}
+                  className="flex items-center gap-3 cursor-pointer group"
+                >
+                  <input
+                    type="radio"
+                    value={opt}
+                    checked={editData?.status === opt}
+                    onChange={(e) => {
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }));
+                    }}
+                    className="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-2"
+                  />
+                  <span
+                    className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500`}
+                  >
+                    {tc(opt)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </FormFieldWrapper>
 
           {/* === Description === */}
           <div
@@ -589,6 +641,78 @@ const CreateTicketWizard = ({
                     {errors.sellingPrice}
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("discount_amount")} (₪){" "}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={editData?.price?.discountAmount || ""}
+                  onChange={(e) => {
+                    const discountAmount = parseFloat(e.target.value) || 0;
+                    const markedPrice = editData?.price?.markedPrice || 0;
+
+                    if (markedPrice > 0 && discountAmount <= markedPrice) {
+                      const sellingPrice = markedPrice - discountAmount;
+                      const discountPercent = Number(
+                        ((discountAmount / markedPrice) * 100).toFixed(2),
+                      );
+
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        price: {
+                          ...prev.price,
+                          discountAmount,
+                          discountPercent,
+                          sellingPrice,
+                        },
+                      }));
+                    }
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("discount_percent")} (%){" "}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={editData?.price?.discountPercent || ""}
+                  onChange={(e) => {
+                    const discountPercent = parseFloat(e.target.value) || 0;
+                    const markedPrice = editData?.price?.markedPrice || 0;
+
+                    if (markedPrice > 0 && discountPercent <= 100) {
+                      const discountAmount = Number(
+                        ((markedPrice * discountPercent) / 100).toFixed(2),
+                      );
+                      const sellingPrice = markedPrice - discountAmount;
+
+                      setEditData((prev: ITicketPayload) => ({
+                        ...prev,
+                        price: {
+                          ...prev.price,
+                          discountPercent,
+                          discountAmount,
+                          sellingPrice,
+                        },
+                      }));
+                    }
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                  )}
+                />
               </div>
             </div>
           )}

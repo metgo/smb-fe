@@ -13,7 +13,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ReordableDataTable } from "@/components/shared";
-import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 import { ExportBtns } from "@/components/btns";
 import { useAppSelector } from "@/hooks/hooks";
 
@@ -46,9 +45,6 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary, textTertiary, isDark } =
     useThemeClasses();
-  const { data: eventStatsData } = useGetEventsStatsQuery({
-    eventId: eventDetails ? eventDetails?._id : "",
-  });
 
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(true);
   const [_selectedRegistrant, setSelectedRegistrant] = useState([]);
@@ -160,9 +156,6 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       {/* Metrics Snapshot */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-2xl font-semibold ${textPrimary}`}>
-            {t("event_metrics")}
-          </h3>
           {eventDetails?.isMultiDay && eventDetails?.dailyMetrics && (
             <button
               onClick={() => setShowDailyBreakdown(!showDailyBreakdown)}
@@ -179,104 +172,57 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           )}
         </div>
 
-        {showDailyBreakdown ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[
-              {
-                label: t("total_registrations"),
-                value: eventStatsData?.totalRegistrations,
-              },
-              {
-                label: t("capacity"),
-                value: eventStatsData?.totalAttended,
-                sub: `${Math.round(
-                  (eventStatsData?.totalRegistrations /
-                    eventStatsData?.capacity) *
-                    100,
-                )}% ${t("filled")}`,
-              },
-              {
-                label: t("revenue"),
-                value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
-              },
-              // { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
-              { label: t("refunds"), value: `₪0K` },
-              {
-                label: t("event_type"),
-                value: eventStatsData?.isFree ? t("free") : t("paid"),
-              },
-            ].map((metric, i) => (
+        {eventDetails?.dailyMetrics && (
+          <div className="space-y-6">
+            <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
+              {t("daily_breakdown")}
+            </h4>
+            {eventDetails?.dailyMetrics.map((day: any, idx: number) => (
               <div
-                key={i}
-                className={`p-6 rounded-2xl ${
-                  isDark ? "bg-gray-800/50" : "bg-gray-50"
+                key={idx}
+                className={`p-6 rounded-2xl border ${
+                  isDark
+                    ? "border-gray-700 bg-gray-800/30"
+                    : "border-gray-200 bg-gray-50"
                 }`}
               >
-                <div className={`text-sm mb-2 ${textTertiary}`}>
-                  {metric.label}
+                <div className={`text-lg font-semibold mb-4 ${textPrimary}`}>
+                  {new Date(day.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </div>
-                <div className={`text-3xl font-bold ${textPrimary}`}>
-                  {metric.value}
+                <div className="grid grid-cols-3 gap-6">
+                  <div>
+                    <div className={`text-sm ${textTertiary}`}>
+                      {t("registrations")}
+                    </div>
+                    <div className={`text-2xl font-bold ${textPrimary}`}>
+                      {day.registrations}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`text-sm ${textTertiary}`}>
+                      {t("attendance")}
+                    </div>
+                    <div className={`text-2xl font-bold ${textPrimary}`}>
+                      {day.attendance}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`text-sm ${textTertiary}`}>
+                      {t("revenue")}
+                    </div>
+                    <div className={`text-2xl font-bold ${textPrimary}`}>
+                      ₪{(day.revenue / 1000).toFixed(1)}K
+                    </div>
+                  </div>
                 </div>
-                {metric.sub && (
-                  <div className="text-sm text-teal-500 mt-2">{metric.sub}</div>
-                )}
               </div>
             ))}
           </div>
-        ) : (
-          eventDetails?.dailyMetrics && (
-            <div className="space-y-6">
-              <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
-                {t("daily_breakdown")}
-              </h4>
-              {eventDetails?.dailyMetrics.map((day: any, idx: number) => (
-                <div
-                  key={idx}
-                  className={`p-6 rounded-2xl border ${
-                    isDark
-                      ? "border-gray-700 bg-gray-800/30"
-                      : "border-gray-200 bg-gray-50"
-                  }`}
-                >
-                  <div className={`text-lg font-semibold mb-4 ${textPrimary}`}>
-                    {new Date(day.date).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <div className="grid grid-cols-3 gap-6">
-                    <div>
-                      <div className={`text-sm ${textTertiary}`}>
-                        {t("registrations")}
-                      </div>
-                      <div className={`text-2xl font-bold ${textPrimary}`}>
-                        {day.registrations}
-                      </div>
-                    </div>
-                    <div>
-                      <div className={`text-sm ${textTertiary}`}>
-                        {t("attendance")}
-                      </div>
-                      <div className={`text-2xl font-bold ${textPrimary}`}>
-                        {day.attendance}
-                      </div>
-                    </div>
-                    <div>
-                      <div className={`text-sm ${textTertiary}`}>
-                        {t("revenue")}
-                      </div>
-                      <div className={`text-2xl font-bold ${textPrimary}`}>
-                        ₪{(day.revenue / 1000).toFixed(1)}K
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
         )}
 
         {/* Trend Chart */}

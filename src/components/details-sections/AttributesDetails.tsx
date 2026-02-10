@@ -10,20 +10,22 @@ import {
 import { categoryIds } from "@/lib/utils";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface AttributesDetailsProps {
-  t: (key: string) => string;
+  title: string;
   groupTypesId?: string[];
   subCategoriesId?: string[];
   accessibilitiesId?: string[];
 }
 
 const AttributesDetails: FC<AttributesDetailsProps> = ({
-  t,
+  title,
   groupTypesId,
   subCategoriesId,
   accessibilitiesId,
 }) => {
+  const { t } = useTranslation("common");
   const { language } = useAppSelector((state) => state.settings);
   const { isDark } = useThemeClasses();
 
@@ -68,7 +70,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
             isDark ? "text-white" : "text-gray-900",
           )}
         >
-          Event Attributes
+          {title}
         </h2>
         <p
           className={clsx(
@@ -76,7 +78,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
             isDark ? "text-gray-400" : "text-gray-600",
           )}
         >
-          Categories, accessibility features, and suitable audience
+          {t("attributes_desc")}
         </p>
       </div>
 
@@ -172,7 +174,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
                   isDark ? "text-gray-200" : "text-gray-800",
                 )}
               >
-                {t("accessibility")}
+                {t("accessiblities")}
               </h3>
               <p
                 className={clsx(
@@ -288,7 +290,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
               isDark ? "text-gray-300" : "text-gray-700",
             )}
           >
-            No Attributes Selected
+            {t("no_attribute_selected")}
           </h3>
           <p
             className={clsx(
@@ -296,8 +298,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
-            No subcategories, accessibility features, or group types have been
-            assigned to this event
+            {t("no_attribute_selected_info")}
           </p>
         </div>
       )}
