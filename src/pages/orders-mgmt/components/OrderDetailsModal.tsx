@@ -6,6 +6,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
 import { ModalWrapper } from "@/components/wrapper";
+import {
+  useUpdateOrderConfirmationMutation,
+  useUpdateOrderStatusMutation,
+} from "@/store/api/orderMutationApi";
+import { toast } from "sonner";
 
 interface OrderDetailsModalProps {
   theme: Theme;
@@ -39,10 +44,28 @@ function OrderDetailsModal({
   const [orderProducts, setOrderProducts] = useState<IOrderProduct[]>(
     order?.products,
   );
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [updateOrderConfirmation, { isLoading: isSendingEmail }] =
+    useUpdateOrderConfirmationMutation();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
+
   console.log("oder", order);
+
+  const handleResendNotification = async () => {
+    try {
+      const res = await updateOrderConfirmation({
+        orderId: order?.map((order: any) => order?._id), // make sure you have this value
+        body: {}, // or whatever payload your API expects
+      }).unwrap();
+      toast.success(res?.message);
+      console.log("Notification resent:", res);
+    } catch (error) {
+      toast.error("failed");
+      console.error("Failed to resend notification:", error);
+    }
+  };
   return (
     <ModalWrapper onClose={onClose} height="20vh" showSpinner={isLoading}>
       {/* Header */}
@@ -270,7 +293,7 @@ function OrderDetailsModal({
         </div>
 
         {/* Actions */}
-        {USER_ROLE !== "authority" && (
+        {USER_ROLE === "authority" && (
           <div
             className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
           >
@@ -285,13 +308,17 @@ function OrderDetailsModal({
               {t("cancel_order") || "Cancel Order"}
             </button>
             <button
+              onClick={handleResendNotification}
+              disabled={isSendingEmail}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 theme === "dark"
                   ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
                   : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              }`}
+              } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {t("resend_notification") || "Resend Notification"}
+              {isSendingEmail
+                ? t("sending") || "Sending..."
+                : t("resend_notification") || "Resend Notification"}
             </button>
           </div>
         )}
@@ -306,19 +333,33 @@ function OrderDetailsModal({
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
-          onConfirm={(reason, notes) => {
-            if (cancelType === "item" && itemToCancel) {
-              setOrderProducts((prev) =>
-                prev.map((p) =>
-                  p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
-                ),
-              );
-            } else {
-              // Handle order cancellation
-              console.log("Order cancelled:", { reason, notes });
+          onConfirm={async (reason, notes) => {
+            try {
+              if (cancelType === "item" && itemToCancel) {
+                setOrderProducts((prev) =>
+                  prev.map((p) =>
+                    p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
+                  ),
+                );
+              } else {
+                await updateOrderStatus({
+                  orderId: order.map((order: any) => order?._id),
+                  body: {
+                    status: "pending",
+                    canceled_reason: reason || "Cancelled by user",
+                    isQrScan: true,
+                    externalApiId: notes || "",
+                  },
+                }).unwrap();
+
+                toast.success("Order cancelled successfully");
+              }
+
+              setShowCancelDialog(false);
+              setItemToCancel(null);
+            } catch (error) {
+              toast.error("Cancel failed");
             }
-            setShowCancelDialog(false);
-            setItemToCancel(null);
           }}
         />
       )}

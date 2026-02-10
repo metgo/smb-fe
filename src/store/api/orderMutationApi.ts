@@ -44,6 +44,25 @@ export const orderMutationApi = createApi({
         data: body,
       }),
     }),
+    updateOrderStatus: builder.mutation<any, { body: any; orderId: string }>({
+      query: ({ body, orderId }) => ({
+        url: `${endpoints.orderStatus}/${orderId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Order"],
+    }),
+    updateOrderConfirmation: builder.mutation<
+      any,
+      { body: any; orderId: string }
+    >({
+      query: ({ body, orderId }) => ({
+        url: `${endpoints.orderConfirmation}/${orderId}`,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Order"],
+    }),
   }),
 });
 
@@ -52,4 +71,6 @@ export const {
   useUpdateOrderMutation,
   useDeleteOrderMutation,
   useBulkOrdersUpdateMutation,
+  useUpdateOrderStatusMutation,
+  useUpdateOrderConfirmationMutation,
 } = orderMutationApi;

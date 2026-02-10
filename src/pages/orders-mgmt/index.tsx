@@ -39,6 +39,7 @@ import OrderGridView from "../products-mgmt/components/sub-components/OrderGridV
 
 // Default columns configuration
 const defaultColumns = {
+  _id: true,
   firstName: true,
   email: true,
   phone: true,
@@ -271,6 +272,12 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
+    columnVisibility._id && {
+      key: "_id",
+      label: t("order_id"),
+      sortable: true,
+      render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
+    },
     columnVisibility.firstName && {
       key: "firstName",
       label: t("purchaser_name_field"),

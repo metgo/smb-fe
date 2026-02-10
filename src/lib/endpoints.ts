@@ -41,6 +41,8 @@ export const endpoints = {
   orders: "/orders",
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/bulk-orders-update",
+  orderStatus: "/admin/cancel-orders",
+  orderConfirmation: "/admin/send-success-emails",
 
   // events
   events: "/events",
