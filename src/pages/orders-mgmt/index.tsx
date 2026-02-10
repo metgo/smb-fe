@@ -382,23 +382,23 @@ export default function OrdersMgmtPage() {
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
-  // const orderss = orders?.datas?.data ?? [];
+  const orderss = orders?.datas?.data ?? [];
 
-  // useEffect(() => {
-  //   if (!orderss?.length) return;
+  useEffect(() => {
+    if (!orderss?.length) return;
 
-  //   if (page === 1) {
-  //     setCombinedOrders(orderss);
-  //   } else {
-  //     setCombinedOrders((prev) => {
-  //       // Prevent duplicates (important!)
-  //       const existingIds = new Set(prev.map((b) => b._id));
-  //       const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
+    if (page === 1) {
+      setCombinedOrders(orderss);
+    } else {
+      setCombinedOrders((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
 
-  //       return [...prev, ...newItems];
-  //     });
-  //   }
-  // }, [orderss]);
+        return [...prev, ...newItems];
+      });
+    }
+  }, [orderss]);
   const hasMore = orders?.datas?.meta?.hasNextPage;
 
   const fetchNextPage = () => {
@@ -1064,7 +1064,7 @@ export default function OrdersMgmtPage() {
           <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
             <ReordableDataTable
               rowKey="_id"
-              data={orders?.datas?.data || []}
+              data={combinedOrders || []}
               next={fetchNextPage}
               selectedItems={selectedOrders}
               onSelectionChange={setSelectedOrders}
