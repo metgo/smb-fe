@@ -21,14 +21,18 @@ import {
 } from "@/store/api/orderMutationApi";
 import { ModalWrapper } from "@/components/wrapper";
 import { WizardFooter } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface CreateOrderWizard {
   onClose: () => void;
-  onAddOrder: (order: Partial<IOrder>) => void;
+  onOpen: () => void;
+
+  onAddOrder?: (order: Partial<IOrder>) => void;
 }
 
 export default function CreateOrderWizard({
   onClose,
+  onOpen,
   onAddOrder,
 }: CreateOrderWizard) {
   const { t } = useTranslation("orders");
@@ -36,7 +40,7 @@ export default function CreateOrderWizard({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [orderId, setOrderId] = useState<string>("");
-
+  const { isDark } = useThemeClasses();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     purchaserName: "",
@@ -307,13 +311,17 @@ export default function CreateOrderWizard({
           className={`flex items-center justify-between mt-6 ${isRTL ? "flex-row-reverse" : ""}`}
         >
           {steps.map((step, idx) => (
-            <div key={step.number} className="flex items-center flex-1">
+            <div
+              key={step.number}
+              className="flex items-center flex-1 cursor-pointer"
+              onClick={() => setCurrentStep(step.number)}
+            >
               <div className="flex flex-col items-center flex-1">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                     currentStep >= step.number
                       ? "bg-teal-500 text-white"
-                      : theme === "dark"
+                      : isDark
                         ? "bg-gray-800 text-gray-400"
                         : "bg-gray-200 text-gray-600"
                   }`}
@@ -331,7 +339,7 @@ export default function CreateOrderWizard({
                   className={`h-0.5 flex-1 mx-2 ${
                     currentStep > step.number
                       ? "bg-teal-500"
-                      : theme === "dark"
+                      : isDark
                         ? "bg-gray-800"
                         : "bg-gray-200"
                   }`}

@@ -126,7 +126,7 @@ function BusinessGridView<T extends Business>({
                   />
                 ) : (
                   <div className="w-full h-full bg-linear-to-br from-gray-400 to-teal-400 flex items-center justify-center">
-                    <Image className="w-20 h-20 text-white/40" />
+                    <Image className="w-20 h-20 " />
                   </div>
                 )}
               </div>

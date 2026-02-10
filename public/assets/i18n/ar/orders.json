@@ -1,7 +1,7 @@
 {
   "online_orders_management": "الطلبات عبر الإنترنت",
   "online_orders_subtitle": "إدارة وتتبع وتنفيذ طلبات العملاء",
-  "add_order": "إضافة طلب",
+  "addOrder": "إضافة طلب",
   "scan_qr_code": "مسح رمز QR",
   "search_orders": "البحث برقم الطلب، الاسم، البريد الإلكتروني، الهاتف...",
   "order_id": "رقم الطلب",

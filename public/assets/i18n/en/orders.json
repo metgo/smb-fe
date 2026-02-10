@@ -10,6 +10,7 @@
   "order_type": "Order Type",
   "online": "Online",
   "offline": "Offline",
+  "status": "Status",
   "field_required": "Field Required",
   "noOrdersFound": "No Orders Found",
   "order_status": "Order Status",

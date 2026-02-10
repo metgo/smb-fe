@@ -27,6 +27,7 @@ import {
   BulkActionBar,
   PageStats,
   ReordableDataTable,
+  ViewModeToggle,
 } from "@/components/shared";
 import {
   CreateOrderWizard,
@@ -43,6 +44,8 @@ import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
+import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
+import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 
 // Default columns configuration
 const defaultColumns = {
@@ -64,7 +67,8 @@ export default function OrdersMgmtPage() {
 
   const { textPrimary, textSecondary, textTertiary, isDark } =
     useThemeClasses();
-
+  //view mode toggle
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -856,55 +860,58 @@ export default function OrdersMgmtPage() {
           </button>
 
           <FilterButton value={showFilters} onChange={setShowFilters} />
-
-          <div className="relative" ref={columnSettingsRef}>
-            <button
-              onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              <Columns className="w-5 h-5" />
-              {t("show_columns")}
-              {showColumnSettings ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-
-            {showColumnSettings && (
-              <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+          {viewMode === "list" && (
+            <div className="relative" ref={columnSettingsRef}>
+              <button
+                onClick={() => setShowColumnSettings(!showColumnSettings)}
+                className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
-                <div className="p-3 max-h-96 overflow-y-auto">
-                  {Object.entries(columnVisibility).map(([key, visible]) => (
-                    <label
-                      key={key}
-                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={visible}
-                        onChange={(e) =>
-                          setColumnVisibility((prev) => ({
-                            ...prev,
-                            [key]: e.target.checked,
-                          }))
-                        }
-                        className="rounded"
-                      />
-                      <span className={`text-sm ${textSecondary}`}>
-                        {t(key as keyof typeof t)}
-                      </span>
-                    </label>
-                  ))}
+                <Columns className="w-5 h-5" />
+                {t("show_columns")}
+                {showColumnSettings ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+
+              {showColumnSettings && (
+                <div
+                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                >
+                  <div className="p-3 max-h-96 overflow-y-auto">
+                    {Object.entries(columnVisibility).map(([key, visible]) => (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visible}
+                          onChange={(e) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="rounded"
+                        />
+                        <span className={`text-sm ${textSecondary}`}>
+                          {t(key as keyof typeof t)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+
+          <ViewModeToggle onChange={setViewMode} value={viewMode} />
         </div>
 
         {showFilters && (
@@ -1048,34 +1055,50 @@ export default function OrdersMgmtPage() {
       )} */}
 
       {/* Orders Table */}
-      <div
-        className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader className="w-8 h-8 animate-spin text-teal-500" />
-          </div>
-        ) : orders?.datas?.data?.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
-            <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
-            <ReordableDataTable
-              rowKey="_id"
-              data={combinedOrders || []}
-              next={fetchNextPage}
-              selectedItems={selectedOrders}
-              onSelectionChange={setSelectedOrders}
-              onRowClick={handleRowClick}
-              storageKey="ordersTableColumnOrder"
+      {viewMode === "list" ? (
+        <div
+          className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader className="w-8 h-8 animate-spin text-teal-500" />
+            </div>
+          ) : orders?.datas?.data?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
+              <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
+            </div>
+          ) : (
+            <OrderListView
+              theme={theme}
+              isLoading={isLoading}
+              orders={orders}
+              combinedOrders={combinedOrders}
+              fetchNextPage={fetchNextPage}
+              selectedOrders={selectedOrders}
+              setSelectedOrders={setSelectedOrders}
+              handleRowClick={handleRowClick}
               columns={columns}
-              isDataLoading={isLoading}
+              textTertiary={textTertiary}
+              textSecondary={textSecondary}
+              t={t}
             />
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      ) : (
+        viewMode === "grid" && (
+          <OrderGridView
+            selectedOrders={selectedOrders}
+            setSelectedOrders={setSelectedOrders}
+            data={combinedOrders || []}
+            next={fetchNextPage}
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onRowClick={handleRowClick}
+            t={t}
+          />
+        )
+      )}
 
       <Activity mode={selectedOrder && showOrderDetails ? "visible" : "hidden"}>
         <OrderDetailsModal
@@ -1093,9 +1116,7 @@ export default function OrdersMgmtPage() {
       <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
-          onAddOrder={(newOrder) => {
-            setOrders((prev) => [newOrder as IOrder, ...prev]);
-          }}
+          onOpen={() => setShowAddOrderWizard(true)}
         />
       </Activity>
 
