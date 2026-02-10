@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { AlertCircle, Image, Loader, TrashIcon } from "lucide-react";
+import { useRef } from "react";
+import { AlertCircle, Image, Loader } from "lucide-react";
 
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -28,23 +28,14 @@ function OrderGridView<T>({
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { isDark } = useThemeClasses();
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,
     isLoading,
     onLoadMore: next,
   });
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
-  //       <div className="flex flex-col items-center justify-center h-full gap-3">
-  //         <Loader className="w-10 h-10 animate-spin text-teal-600" />
-  //       </div>
-  //     </div>
-  //   );
-  // }
+
   if (data.length === 0) {
     return (
       <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
@@ -101,20 +92,6 @@ function OrderGridView<T>({
                       : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                   }`}
                 />
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsConfirmOpen(true);
-                      setItemToDelete(order._id);
-                    }}
-                    className="z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                    aria-label={`Delete ${order.name}`}
-                  >
-                    <TrashIcon size={18} />
-                  </button>
-                </div>
               </div>
               {/* Thumbnail */}
               <div className="relative h-36">

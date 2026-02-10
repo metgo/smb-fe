@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 
 interface OrderListViewProps {

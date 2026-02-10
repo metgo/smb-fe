@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, X, XCircle } from "lucide-react";
+import { Mail, Phone, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -9,7 +9,7 @@ import { ModalWrapper } from "@/components/wrapper";
 
 interface OrderDetailsModalProps {
   theme: Theme;
-  order: IOrder;
+  order: any;
   isRTL: boolean;
   onClose: () => void;
   t: (key: string) => string;
@@ -57,7 +57,7 @@ function OrderDetailsModal({
           </div>
           <div className="flex gap-2 mt-2">
             {getOrderStatusBadge(order?.status)}
-            {/* {getPaymentStatusBadge(order?.paymentStatus)} */}
+            {getPaymentStatusBadge(order?.paymentStatus)}
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@ function OrderDetailsModal({
                     className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     <img
-                      src={product?.imageUrl}
+                      src={product?.image?.image}
                       alt={product?.name}
                       className={`w-20 h-20 object-cover rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
                     />
@@ -183,12 +183,10 @@ function OrderDetailsModal({
                         className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
                       >
                         ₪
-                        {(
-                          product?.quantity * product?.unitPrice
-                        ).toLocaleString()}
+                        {(product?.quantity * product?.amount).toLocaleString()}
                       </p>
                       <p className={`text-sm ${textTertiary}`}>
-                        {product?.quantity} x ₪{product?.unitPrice}
+                        {product?.quantity} x ₪{product?.amount}
                       </p>
                     </div>
 
@@ -312,7 +310,7 @@ function OrderDetailsModal({
             if (cancelType === "item" && itemToCancel) {
               setOrderProducts((prev) =>
                 prev.map((p) =>
-                  p.id === itemToCancel.id ? { ...p, cancelled: true } : p,
+                  p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
                 ),
               );
             } else {

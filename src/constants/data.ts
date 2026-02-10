@@ -553,8 +553,8 @@ export const mockProducts = [
   },
 ];
 
-export const generateMockOrders = (count: number): IOrder[] => {
-  const statuses: IOrder["orderStatus"][] = [
+export const generateMockOrders = (count: number): any[] => {
+  const statuses: IOrder["status"][] = [
     "draft",
     "processing",
     "paid",
@@ -645,7 +645,7 @@ export const generateMockOrders = (count: number): IOrder[] => {
   ];
 
   return Array.from({ length: count }, (_, i) => {
-    const orderProducts: IOrderProduct[] = Array.from(
+    const orderProducts: any[] = Array.from(
       { length: Math.floor(Math.random() * 3) + 1 },
       (_, j) => {
         const product = products[Math.floor(Math.random() * products.length)];

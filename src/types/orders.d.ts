@@ -42,13 +42,15 @@ interface IOrder {
 }
 
 interface IOrderProduct {
-  id: string;
+  _id: string;
   name: string;
   quantity: number;
-  unitPrice: number;
+  amount: number;
   vendor: string;
   deliveryType: "pickup" | "delivery";
-  imageUrl: string;
+  image: {
+    image: string;
+  };
   description: string;
   category: string;
   cancelled?: boolean;

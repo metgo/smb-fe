@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-
+import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { availableProducts } from "@/constants/data";
 import {
@@ -10,7 +10,6 @@ import {
   Search,
   ShoppingCart,
   User,
-  X,
   XCircle,
 } from "lucide-react";
 import { PublishButton } from "@/components/btns";
@@ -32,8 +31,8 @@ interface CreateOrderWizard {
 
 export default function CreateOrderWizard({
   onClose,
-  onOpen,
-  onAddOrder,
+  // onOpen,
+  // onAddOrder,
 }: CreateOrderWizard) {
   const { t } = useTranslation("orders");
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -63,17 +62,25 @@ export default function CreateOrderWizard({
   });
 
   const [productSearch, setProductSearch] = useState("");
+
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useGetAllProductsQuery({
+    search: productSearch,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   //create and update orders
   const [updateOrder, { isLoading: isSaving }] = useUpdateOrderMutation();
   const [initOrderCreate, { isLoading: isCreating }] =
     useInitOrderCreateMutation();
 
-  const filteredProducts = availableProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-      p.vendor.toLowerCase().includes(productSearch.toLowerCase()),
-  );
+  // const filteredProducts = availableProducts.filter(
+  //   (p) =>
+  //     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+  //     p.vendor.toLowerCase().includes(productSearch.toLowerCase()),
+  // );
   const totalSteps = 4;
 
   const stepPayloadMap = {
@@ -144,9 +151,10 @@ export default function CreateOrderWizard({
   const handleSaveDraft = async () => {
     await saveDraft(false);
   };
+
   const handleNext = async () => {
     if (!validateStep(currentStep) && isPublishBtnClicked) return;
-    // await saveDraft(false);
+    await saveDraft(false);
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -474,34 +482,45 @@ export default function CreateOrderWizard({
             {/* Available Products */}
             {productSearch && (
               <div
-                className={`border rounded-lg max-h-48 overflow-y-auto ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
+                className={`border rounded-lg max-h-48 overflow-y-auto ${
+                  theme === "dark" ? "border-gray-700" : "border-gray-300"
+                }`}
               >
-                {filteredProducts.map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => handleAddProduct(product)}
-                    className={`w-full p-3 text-left transition-colors ${isRTL ? "text-right" : ""} ${
-                      theme === "dark"
-                        ? "hover:bg-gray-800"
-                        : "hover:bg-gray-50"
-                    } ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b last:border-b-0`}
-                  >
-                    <div
-                      className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+                {isLoading ? (
+                  <p className="p-3 text-center">Loading...</p>
+                ) : error ? (
+                  <p className="p-3 text-center text-red-500">
+                    Error fetching products
+                  </p>
+                ) : products?.data?.length > 0 ? (
+                  products?.data?.map((product: any) => (
+                    <button
+                      key={product._id}
+                      onClick={() => handleAddProduct(product)}
+                      className={`w-full p-3 text-left transition-colors ${
+                        isRTL ? "text-right" : ""
+                      } ${
+                        theme === "dark"
+                          ? "hover:bg-gray-800"
+                          : "hover:bg-gray-50"
+                      } ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b last:border-b-0`}
                     >
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p
-                          className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                        >
-                          {product.vendor}
-                        </p>
+                      <div
+                        className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+                      >
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p
+                            className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                          >
+                            {product.vendor}
+                          </p>
+                        </div>
+                        <p className="text-teal-500">₪{product.price}</p>
                       </div>
-                      <p className="text-teal-500">₪{product.price}</p>
-                    </div>
-                  </button>
-                ))}
-                {filteredProducts.length === 0 && (
+                    </button>
+                  ))
+                ) : (
                   <p
                     className={`p-3 text-center ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
                   >

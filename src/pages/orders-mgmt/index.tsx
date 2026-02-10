@@ -1,20 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useRef, Activity } from "react";
 import {
-  Search,
-  Filter,
   Download,
   Plus,
   ChevronDown,
   ChevronUp,
-  XCircle,
   Loader,
   AlertCircle,
   Columns,
   Mail,
   Phone,
-  Truck,
-  ShoppingBag,
   DollarSign,
   TrendingUp,
   Camera,
@@ -23,12 +18,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  BulkActionBar,
-  PageStats,
-  ReordableDataTable,
-  ViewModeToggle,
-} from "@/components/shared";
+import { BulkActionBar, PageStats, ViewModeToggle } from "@/components/shared";
 import {
   CreateOrderWizard,
   FilterSelect,
@@ -53,8 +43,9 @@ const defaultColumns = {
   email: true,
   phone: true,
   status: true,
-
+  totalAmount: true,
   createdAt: false,
+  // paymentStatus: false,
   paymentDate: false,
 };
 
@@ -75,7 +66,7 @@ export default function OrdersMgmtPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
@@ -325,16 +316,16 @@ export default function OrdersMgmtPage() {
       render: (order: IOrder) => getOrderStatusBadge(order.status),
     },
 
-    // columnVisibility.totalAmount && {
-    //   key: "totalAmount",
-    //   label: t("total_amount"),
-    //   sortable: true,
-    //   render: (order: IOrder) => (
-    //     <div className="text-sm font-medium">
-    //       ₪{order.totalAmount.toLocaleString()}
-    //     </div>
-    //   ),
-    // },
+    columnVisibility.totalAmount && {
+      key: "totalAmount",
+      label: t("total_amount"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          ₪{order?.totalAmount?.toLocaleString()}
+        </div>
+      ),
+    },
 
     // columnVisibility.paymentStatus && {
     //   key: "paymentStatus",
@@ -422,7 +413,10 @@ export default function OrdersMgmtPage() {
   // Statistics
   const statistics = useMemo(() => {
     const totalOrders = orderss?.length;
-    const totalRevenue = orderss?.reduce((sum, o) => sum + o.totalAmount, 0);
+    const totalRevenue = orderss?.reduce(
+      (sum: number, o: any) => sum + o.totalAmount,
+      0,
+    );
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     // const pickups = orderss?.filter(
     //   (o) => o.deliveryType === "pickup",
@@ -501,13 +495,9 @@ export default function OrdersMgmtPage() {
     const headers: string[] = [];
     const columnKeys: string[] = [];
 
-    if (columnVisibility._id) {
-      headers.push(t("orderId"));
-      columnKeys.push("orderId");
-    }
-    if (columnVisibility.purchaserName) {
-      headers.push(t("purchaserName"));
-      columnKeys.push("purchaserName");
+    if (columnVisibility.firstName) {
+      headers.push(t("firstName"));
+      columnKeys.push("firstName");
     }
     if (columnVisibility.email) {
       headers.push(t("email"));
@@ -517,37 +507,37 @@ export default function OrdersMgmtPage() {
       headers.push(t("phone"));
       columnKeys.push("phone");
     }
-    if (columnVisibility.orderStatus) {
-      headers.push(t("orderStatus"));
-      columnKeys.push("orderStatus");
+    if (columnVisibility.status) {
+      headers.push(t("status"));
+      columnKeys.push("status");
     }
     if (columnVisibility.totalAmount) {
       headers.push(t("totalAmount"));
       columnKeys.push("totalAmount");
     }
-    if (columnVisibility.paymentStatus) {
-      headers.push(t("paymentStatus"));
-      columnKeys.push("paymentStatus");
-    }
-    if (columnVisibility.voucherAmount) {
-      headers.push(t("voucherAmount"));
-      columnKeys.push("voucherAmount");
-    }
-    if (columnVisibility.creditCardAmount) {
-      headers.push(t("creditCardAmount"));
-      columnKeys.push("creditCardAmount");
-    }
-    if (columnVisibility.vendors) {
-      headers.push(t("vendors"));
-      columnKeys.push("vendors");
-    }
-    if (columnVisibility.campaign) {
-      headers.push(t("campaign"));
-      columnKeys.push("campaign");
-    }
-    if (columnVisibility.createdDate) {
-      headers.push(t("createdDate"));
-      columnKeys.push("createdDate");
+    // if (columnVisibility.paymentStatus) {
+    //   headers.push(t("paymentStatus"));
+    //   columnKeys.push("paymentStatus");
+    // }
+    // if (columnVisibility.voucherAmount) {
+    //   headers.push(t("voucherAmount"));
+    //   columnKeys.push("voucherAmount");
+    // }
+    // if (columnVisibility.creditCardAmount) {
+    //   headers.push(t("creditCardAmount"));
+    //   columnKeys.push("creditCardAmount");
+    // }
+    // if (columnVisibility.vendors) {
+    //   headers.push(t("vendors"));
+    //   columnKeys.push("vendors");
+    // }
+    // if (columnVisibility.campaign) {
+    //   headers.push(t("campaign"));
+    //   columnKeys.push("campaign");
+    // }
+    if (columnVisibility.createdAt) {
+      headers.push(t("createdAt"));
+      columnKeys.push("createdAt");
     }
     if (columnVisibility.paymentDate) {
       headers.push(t("paymentDate"));
@@ -556,16 +546,15 @@ export default function OrdersMgmtPage() {
 
     let csvContent = headers.map(escapeCSV).join(",") + "\n";
 
-    ordersToExport.forEach((order) => {
+    ordersToExport.forEach((order: IOrder) => {
       const row: string[] = [];
 
       columnKeys.forEach((key) => {
-        if (key === "orderId") row.push(escapeCSV(order.id));
-        else if (key === "purchaserName")
-          row.push(escapeCSV(order.purchaserName));
+        if (key === "orderId") row.push(escapeCSV(order._id));
+        else if (key === "firstName") row.push(escapeCSV(order.firstName));
         else if (key === "email") row.push(escapeCSV(order.email));
         else if (key === "phone") row.push(escapeCSV(order.phone));
-        else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
+        else if (key === "orderStatus") row.push(escapeCSV(order.status));
         else if (key === "totalAmount")
           row.push(escapeCSV(`₪${order.totalAmount}`));
         else if (key === "paymentStatus")
@@ -577,8 +566,8 @@ export default function OrdersMgmtPage() {
         else if (key === "vendors")
           row.push(escapeCSV(order.vendors.join(", ")));
         else if (key === "campaign") row.push(escapeCSV(order.campaign));
-        else if (key === "createdDate")
-          row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
+        else if (key === "createdAt")
+          row.push(escapeCSV(new Date(order.createdAt).toLocaleDateString()));
         else if (key === "paymentDate")
           row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
       });
@@ -599,37 +588,32 @@ export default function OrdersMgmtPage() {
     document.body.removeChild(link);
   };
 
-  const handleExportXLS = () => {
-    console.log("Exporting XLS...");
-    // XLS export logic
-  };
+  // const handleResendOrderDetails = () => {
+  //   const ordersToResend =
+  //     selectedOrders.size > 0
+  //       ? orders.filter((order:IOrder) => selectedOrders.has(order._id))
+  //       : [];
 
-  const handleResendOrderDetails = () => {
-    const ordersToResend =
-      selectedOrders.size > 0
-        ? orders.filter((order) => selectedOrders.has(order.id))
-        : [];
+  //   if (ordersToResend.length === 0) {
+  //     alert(t("noOrdersSelected") || "No orders selected");
+  //     return;
+  //   }
 
-    if (ordersToResend.length === 0) {
-      alert(t("noOrdersSelected") || "No orders selected");
-      return;
-    }
+  //   ordersToResend.forEach((order:IOrder) => {
+  //     console.log(
+  //       `Sending order details to ${order.email} for order ${order._id}`,
+  //     );
+  //   });
 
-    ordersToResend.forEach((order) => {
-      console.log(
-        `Sending order details to ${order.email} for order ${order.id}`,
-      );
-    });
+  //   const message =
+  //     ordersToResend.length === 1
+  //       ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
+  //       : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
 
-    const message =
-      ordersToResend.length === 1
-        ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
-        : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
+  //   alert(message);
 
-    alert(message);
-
-    setSelectedOrders(new Set());
-  };
+  //   setSelectedOrders(new Set());
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -689,7 +673,7 @@ export default function OrdersMgmtPage() {
     // },
   ];
 
-  const getOrderStatusBadge = (status: IOrder["orderStatus"]) => {
+  const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
       draft: {
         bg: "bg-gray-100 dark:bg-gray-800",
