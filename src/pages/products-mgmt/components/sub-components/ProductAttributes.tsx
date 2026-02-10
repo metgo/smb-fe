@@ -22,10 +22,9 @@ const ProductAttributes = ({
   setFormData,
   errors,
 }: ProductAttributesProps) => {
-  const { textPrimary, textSecondary, borderColor, hoverBg } =
+  const { textPrimary, textSecondary, borderColor, hoverBg, isDark } =
     useThemeClasses();
-  const { primaryCategories } = useCommon(); // <-- Use useCommon here
-
+  const { primaryCategories } = useCommon();
   const productTypes = [
     { value: "PHYSICAL", label: t("physical_product"), icon: "📦" },
     { value: "TABLE_ORDER", label: t("table_order"), icon: "🍽️" },
@@ -52,8 +51,10 @@ const ProductAttributes = ({
               onClick={() => setFormData({ ...formData, type: type.value })}
               className={`p-4 rounded-xl border-2 transition-all ${
                 formData.type === type.value
-                  ? "border-teal-500 bg-teal-50 dark:bg-teal-950/30"
-                  : `${borderColor} ${hoverBg}`
+                  ? isDark
+                    ? "border-teal-500 bg-teal-950/30" // dark mode selected
+                    : "border-teal-500 bg-teal-50" // light mode selected
+                  : `${borderColor} ${hoverBg}` // not selected
               }`}
             >
               <div className="text-3xl mb-2">{type.icon}</div>

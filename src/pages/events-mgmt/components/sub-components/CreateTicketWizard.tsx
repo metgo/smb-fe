@@ -89,7 +89,6 @@ const CreateTicketWizard = ({
     initialImage: isDelete ? undefined : editData?.imageUrl,
     onChange: () => {},
   });
-  console.log("🚀 ~ CreateTicketWizard ~ image:", image);
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();

@@ -142,7 +142,7 @@ export default function ProductsMgmtPage() {
   }, [page, searchTerm, filters]);
 
   const statsQueryParams = useMemo(() => {
-    const { page, limit, ...rest } = productQueryParams;
+    const { page, limit, status, ...rest } = productQueryParams;
     return rest;
   }, [productQueryParams]);
 

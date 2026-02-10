@@ -1,7 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
 import ReactSelect from "react-select";
-
 interface ProductBasicInfoProps {
   t: (key: string) => string;
   selectedFormLanguage: "en" | "he" | "ar";
@@ -40,8 +39,14 @@ const ProductBasicInfo = ({
   isLoading,
   // isBusinessesLoading,
 }: ProductBasicInfoProps) => {
-  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+  const {
+    bgTertiary,
+    isDark,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
   // Helper to get field key based on selected language
   // const getFieldKey = (
   //   _field: "name" | "shortDescription" | "fullDescription",
@@ -123,7 +128,34 @@ const ProductBasicInfo = ({
               label: biz.name,
             })) || []
           }
+          styles={
+            isDark
+              ? {
+                  control: (provided: any) => ({
+                    ...provided,
+                    backgroundColor: "#1F2937",
+                    color: "#F9FAFB",
+                    borderColor: "#374151",
+                  }),
+                  singleValue: (provided: any) => ({
+                    ...provided,
+                    color: "#F9FAFB",
+                  }),
+                  menu: (provided: any) => ({
+                    ...provided,
+                    backgroundColor: "#1F2937",
+                    color: "#F9FAFB",
+                  }),
+                  option: (provided: any, state: any) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#374151" : "#1F2937",
+                    color: "#F9FAFB",
+                  }),
+                }
+              : {}
+          }
         />
+
         {errors.businessId && (
           <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
         )}

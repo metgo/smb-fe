@@ -81,14 +81,11 @@ export default function CreateProductWizard({
     "en" | "he" | "ar"
   >("en");
   const [isPublishing, setIsPublishing] = useState(false);
-  const {
-    data: product,
-    isLoading,
-    refetch,
-  } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
+  const { data: product, isLoading } = useGetProductbyIdQuery(
+    productId ? { productId: productId } : skipToken,
+  );
 
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  console.log("🚀 ~ CreateProductWizard ~ galleryImages:", galleryImages);
 
   const businesses = businessData?.data;
 
@@ -265,7 +262,6 @@ export default function CreateProductWizard({
     setIsPublishing(false);
 
     toast.success(t("business created succesfully"));
-    refetch();
     onClose();
   };
 
