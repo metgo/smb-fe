@@ -5,12 +5,8 @@ import {
   Edit,
   Package,
   Copy,
-  TrendingUp,
-  DollarSign,
-  Box,
   ArrowRight,
   ArrowUpDown,
-  Settings2,
   ArrowUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -25,7 +21,6 @@ import {
 import {
   useGetProductbyIdQuery,
   useGetProductStatsByIdQuery,
-  useGetProductStatsQuery,
 } from "@/store/api/productQueryApi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
