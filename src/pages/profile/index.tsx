@@ -40,7 +40,7 @@ export default function ProfilePage() {
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
   const { language } = useAppSelector((state) => state.settings);
-  const { isDark, textSecondary, isRTL } = useThemeClasses();
+  const { isDark, textSecondary } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 

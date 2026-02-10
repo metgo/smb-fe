@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Ticket, Trash2, AlertCircle, Copy, PenBox } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import CreateTicketWizard from "./CreateTicketWizard";
