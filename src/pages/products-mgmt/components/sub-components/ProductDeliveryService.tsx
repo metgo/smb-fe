@@ -12,6 +12,7 @@ const ProductDeliveryService = ({
   setFormData,
 }: ProductDeliveryServiceProps) => {
   const {
+    isDark,
     bgTertiary,
     textPrimary,
     textSecondary,
@@ -24,10 +25,10 @@ const ProductDeliveryService = ({
     <div className="space-y-6">
       {formData.type === "" && (
         <div
-          className="flex justify-center items-center text-center h-96
-                  bg-gray-50 border border-dashed border-gray-300
-                  rounded-md text-gray-600
-                  transition-all duration-300 ease-in-out"
+          className={`${isDark ? "bg-gray-700 text-gray-300" : "bg-white text-gray-600"} flex justify-center items-center text-center h-96
+                  border border-dashed border-gray-300
+                  rounded-md 
+                  transition-all duration-300 ease-in-out`}
         >
           {t("choose_product_type")}
         </div>
