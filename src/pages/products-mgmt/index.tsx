@@ -72,7 +72,6 @@ export default function ProductsMgmtPage() {
     showFilters,
     setShowFilters,
     setIsCreating,
-    salesMetrics,
   } = useProductMgmt();
   const {
     bgPrimary,

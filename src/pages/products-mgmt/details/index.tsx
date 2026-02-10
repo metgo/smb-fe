@@ -9,6 +9,9 @@ import {
   DollarSign,
   Box,
   ArrowRight,
+  ArrowUpDown,
+  Settings2,
+  ArrowUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
@@ -19,11 +22,15 @@ import {
   ProductInventoryDetails,
   ProductPricingDetails,
 } from "./components";
-import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
+import {
+  useGetProductbyIdQuery,
+  useGetProductStatsByIdQuery,
+  useGetProductStatsQuery,
+} from "@/store/api/productQueryApi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
-import { Spinner, TabsSection } from "@/components/shared";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { CreateProductWizard } from "../components";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -50,11 +57,43 @@ export default function ProductDetailsPage() {
     isLoading,
     refetch,
   } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
+  //individual stats
+  const { data: productStats, isLoading: isStatsLoading } =
+    useGetProductStatsByIdQuery(productId ?? skipToken);
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const [activeTab, setActiveTab] = useState("overview");
+  const salesStats = [
+    {
+      id: 1,
+      title: t("total_revenue"),
+      value: `₪${productStats?.totalRevenue}`,
+      label: t("all_time") || "All Time",
+      icon: <Package className="w-5 h-5 text-purple-600" />,
+    },
+    {
+      id: 2,
+      title: t("units_sold"),
+      value: productStats?.itemsSold,
+      label: t("total_units") || "Total Units",
+      icon: <ArrowUpDown className="w-5 h-5 text-green-600" />,
+    },
 
+    {
+      id: 3,
+      title: t("available_stock"),
+      value:
+        typeof productStats?.availableStock !== "number" ? (
+          <span className="text-teal-500">∞</span>
+        ) : (
+          `₪${productStats?.availableStock}`
+        ),
+      label: t("current_month") || "Current Month",
+      icon: <ArrowUp className="w-5 h-5 text-orange-600" />,
+    },
+  ];
   const handleClose = () => {
     setIsEditOpen(false);
   };
@@ -228,106 +267,11 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Analytics Stats */}
-        <div className={`px-6 pb-4 ${isDark ? "bg-gray-900" : "bg-white"}`}>
-          <div className={clsx("grid grid-cols-1 md:grid-cols-4 gap-4")}>
-            <div
-              className={`p-4 rounded-lg border ${
-                isDark
-                  ? "border-gray-700 bg-gray-800/50"
-                  : "border-gray-200 bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <h3
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("total_revenue") || "Total Revenue"}
-                </h3>
-              </div>
-              <p
-                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-              >
-                ₪
-                {(
-                  product?.quantity?.sold * product?.price?.sellingPrice
-                ).toLocaleString() ?? 0}
-              </p>
-            </div>
-
-            <div
-              className={`p-4 rounded-lg border ${
-                isDark
-                  ? "border-gray-700 bg-gray-800/50"
-                  : "border-gray-200 bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <h3
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("units_sold") || "Units Sold"}
-                </h3>
-              </div>
-              <p
-                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-              >
-                {product?.quantity?.sold.toLocaleString()}
-              </p>
-            </div>
-
-            <div
-              className={`p-4 rounded-lg border ${
-                isDark
-                  ? "border-gray-700 bg-gray-800/50"
-                  : "border-gray-200 bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Box className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <h3
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("available_stock") || "Available Stock"}
-                </h3>
-              </div>
-              <p
-                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-              >
-                {product?.quantity?.isUnlimited ? (
-                  <span className="text-teal-500">∞</span>
-                ) : typeof product?.quantity?.remaining === "number" ? (
-                  product.quantity.remaining.toLocaleString()
-                ) : (
-                  ""
-                )}
-              </p>
-            </div>
-
-            <div
-              className={`p-4 rounded-lg border ${
-                isDark
-                  ? "border-gray-700 bg-gray-800/50"
-                  : "border-gray-200 bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <h3
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("avg_order_value") || "Units Sold"}
-                </h3>
-              </div>
-              <p
-                className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
-              >
-                ₪ {product?.quantity?.sold.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageStats
+          stats={salesStats}
+          isLoading={isStatsLoading}
+          className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 md:p-4 lg:p-8`}
+        />
 
         <TabsSection
           t={t}

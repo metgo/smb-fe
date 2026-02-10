@@ -27,10 +27,18 @@ export const productQueryApi = createApi({
         params,
       }),
     }),
+    getProductStatsById: builder.query<any, string>({
+      query: (id) => ({
+        url: `${endpoints.productsStats}`, // just the base URL
+        method: "GET",
+        params: { productId: id }, // send as query parameter
+      }),
+    }),
   }),
 });
 export const {
   useGetAllProductsQuery,
   useGetProductbyIdQuery,
   useGetProductStatsQuery,
+  useGetProductStatsByIdQuery,
 } = productQueryApi;
