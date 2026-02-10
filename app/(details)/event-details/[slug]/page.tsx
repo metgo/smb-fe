@@ -31,8 +31,8 @@ const page = async ({ params }: PageProps) => {
 
         <div className="mb-4.5 mt-2.5 flex items-center justify-between">
           <Location
-            city={eventDetails?.address?.city}
-            address={eventDetails?.address?.country}
+            city={eventDetails?.address?.country}
+            address={eventDetails?.address?.location}
           />
           <div className="flex items-center gap-2.5">
             <MapNavButton

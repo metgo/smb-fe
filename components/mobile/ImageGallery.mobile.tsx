@@ -30,7 +30,7 @@ const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
         height={380}
         imgSrc={images?.[activeIndex]?.image}
         alt={images?.[activeIndex]?.alt}
-        className="object-cover w-full h-[380px] rounded-2xl"
+        className="object-cover w-full h-95 rounded-2xl"
       />
 
       {/* Thumbnails */}

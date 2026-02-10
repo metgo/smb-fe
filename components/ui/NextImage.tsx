@@ -82,7 +82,7 @@ const NextImage: React.FC<NextImageProps> = ({
       height={isFill ? undefined : height! * scale}
       quality={preserveTextQuality ? 100 : quality}
       className={clsx(finalClassName)}
-      unoptimized={isOptimized}
+      unoptimized={isOptimized ? false : true}
       priority={false}
       onLoad={handleImageLoad}
       onError={() => {
