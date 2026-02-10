@@ -185,7 +185,7 @@ export default function ProductsMgmtPage() {
     if (!selectedProducts.size) return;
     setIsConfirmOpen(true);
 
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    const toastId = toast.loading("Please wait. Products are deleting...");
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
@@ -211,7 +211,7 @@ export default function ProductsMgmtPage() {
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
-        status: status?.toLocaleUpperCase(),
+        status,
       });
 
       if (results?.data) {

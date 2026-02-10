@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -90,7 +90,7 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 text-gray-200 font-medium"
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-500 text-gray-400 font-medium"
       >
         <span>{t("change_status")}</span>
         <ChevronDown

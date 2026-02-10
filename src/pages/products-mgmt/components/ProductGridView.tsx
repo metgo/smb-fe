@@ -130,9 +130,9 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
       <div
         id="business-table-scroll"
         ref={scrollRef}
-        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
           {products?.map((product) => (
             <div
               key={product._id}
@@ -221,12 +221,13 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
               </div>
             </div>
           ))}
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center h-full gap-3">
-              <Loader className="w-10 h-10 animate-spin text-teal-600" />
-            </div>
-          )}
         </div>
+
+        {!isLoading && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+            <Loader className="w-10 h-10 animate-spin text-teal-600" />
+          </div>
+        )}
       </div>
 
       <ConfirmDialog
