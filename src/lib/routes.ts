@@ -22,3 +22,6 @@ export const routes = {
   miniSite: "/mini-site",
   profile: "/profile",
 };
+
+export type RouteKey = keyof typeof routes;
+export type RoutePath = (typeof routes)[RouteKey];

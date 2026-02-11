@@ -6,6 +6,7 @@ export const useThemeClasses = (): ThemeClasses & {
   rowDir: string;
   theme: Theme;
   isDark: boolean;
+  isRTL: boolean;
 } => {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const rowDir = isRTL ? "flex-row-reverse" : "flex-row";
@@ -18,5 +19,6 @@ export const useThemeClasses = (): ThemeClasses & {
     colDir,
     theme,
     isDark,
+    isRTL,
   };
 };

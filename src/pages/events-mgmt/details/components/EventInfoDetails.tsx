@@ -42,7 +42,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
             isDark ? "text-white" : "text-gray-900",
           )}
         >
-          Event Information
+          {t("event_info")}
         </h2>
         <p
           className={clsx(
@@ -50,7 +50,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
             isDark ? "text-gray-400" : "text-gray-600",
           )}
         >
-          Complete details about this event
+          {t("event_info_desc")}
         </p>
       </div>
 

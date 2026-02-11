@@ -12,6 +12,7 @@ import {
   FileText,
   Send,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ScheduledNotification {
   _id: string;
@@ -29,13 +30,13 @@ interface ScheduledNotification {
 }
 
 interface EventScheduledNotificationDetailsProps {
-  t: (key: string) => string;
   scheduledNotificationId: ScheduledNotification[];
 }
 
 const EventScheduledNotificationDetails: React.FC<
   EventScheduledNotificationDetailsProps
 > = ({ scheduledNotificationId }) => {
+  const { t } = useTranslation("events");
   const { isDark } = useThemeClasses();
 
   const getChannelIcon = (channel: string) => {
@@ -118,7 +119,7 @@ const EventScheduledNotificationDetails: React.FC<
             isDark ? "text-white" : "text-gray-900",
           )}
         >
-          Scheduled Notifications
+          {t("event_notifications")}
         </h2>
         <p
           className={clsx(
@@ -259,7 +260,7 @@ const EventScheduledNotificationDetails: React.FC<
                         isDark ? "text-gray-400" : "text-gray-600",
                       )}
                     >
-                      Delivery Channels
+                      {t("delivery_channels")}
                     </h4>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -419,7 +420,7 @@ const EventScheduledNotificationDetails: React.FC<
               isDark ? "text-gray-300" : "text-gray-700",
             )}
           >
-            No Scheduled Notifications
+            {t("no_scheduled_notifications")}
           </h3>
           <p
             className={clsx(
@@ -427,7 +428,7 @@ const EventScheduledNotificationDetails: React.FC<
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
-            No notifications have been scheduled for this event yet
+            {t("no_scheduled_notifications_desc")}
           </p>
         </div>
       )}
