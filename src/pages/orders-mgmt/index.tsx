@@ -208,7 +208,7 @@ export default function OrdersMgmtPage() {
         return [...prev, ...newItems];
       });
     }
-  }, [orderss]);
+  }, [orderss, page]);
 
   const handleBulkDelete = async () => {
     if (!selectedOrders.size) return;
@@ -778,7 +778,7 @@ export default function OrdersMgmtPage() {
 
   return (
     <div
-      className={`h-[calc(108vh-210px)] flex flex-col ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}
+      className={`h-[calc(108vh-210px)] flex flex-col ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
     >
       {/* Page Header */}
       <div
@@ -796,7 +796,7 @@ export default function OrdersMgmtPage() {
           <button
             onClick={() => setShowQRScanner(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
@@ -837,7 +837,7 @@ export default function OrdersMgmtPage() {
           <button
             onClick={handleExportCSV}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
@@ -875,7 +875,7 @@ export default function OrdersMgmtPage() {
                     {Object.entries(columnVisibility).map(([key, visible]) => (
                       <label
                         key={key}
-                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer ${isRTL ? "flex-row-reverse justify-end" : ""}`}
                       >
                         <input
                           type="checkbox"
@@ -1045,7 +1045,7 @@ export default function OrdersMgmtPage() {
       {/* Orders Table */}
       {viewMode === "list" ? (
         <div
-          className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+          className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
         >
           {isLoading ? (
             <div className="flex items-center justify-center py-20">

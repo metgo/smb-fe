@@ -29,6 +29,21 @@ export const orderQueryApi = createApi({
         method: "GET",
       }),
     }),
+    getOrderStats: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.ordersStats,
+        method: "GET",
+        params,
+      }),
+    }),
+
+    // getOrderStatsById: builder.query<any, string>({
+    //   query: (id) => ({
+    //     url: `${endpoints.ordersStats}`,
+    //     method: "GET",
+    //     params: { productId: id },
+    //   }),
+    // }),
   }),
 });
 

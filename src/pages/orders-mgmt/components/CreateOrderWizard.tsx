@@ -235,13 +235,13 @@ export default function CreateOrderWizard({
         // });
 
         toast.success(
-          res?.message ?? (isPublish ? "Order published" : "Draft saved"),
+          res?.message ?? (isPublish ? t("order_published") : "Draft saved"),
         );
       } catch (err: any) {
-        toast.error(err?.message || "Failed to save draft");
+        toast.error(err?.message || t("failed_draft"));
       }
     },
-    [currentStep, initOrderCreate, orderId, stepPayloadMap, updateOrder],
+    [currentStep, initOrderCreate, orderId, stepPayloadMap, updateOrder, t],
   );
 
   const handlePublish = async () => {
@@ -295,16 +295,16 @@ export default function CreateOrderWizard({
   ];
 
   return (
-    <ModalWrapper
-      height="20vh"
-      onClose={onClose}
-      showSpinner={isCreating || isSaving}
-    >
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className="p-6">
+      <div className="p-6 shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl">{t("add_order")}</h2>
+            <h2
+              className={`${isDark ? "text-gray-300" : "text-gray-700"} text-2xl`}
+            >
+              {t("add_order")}
+            </h2>
             <p
               className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
@@ -359,11 +359,13 @@ export default function CreateOrderWizard({
       </div>
 
       {/* Content */}
-      <div className="p-6 overflow-y-auto flex-1">
+      <div className="p-6 overflow-y-auto">
         {/* Step 1: Customer Information */}
         {currentStep === 1 && (
           <div className="space-y-4">
-            <h3 className="text-lg mb-4">
+            <h3
+              className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg`}
+            >
               {t("customer_information") || "Customer Information"}
             </h3>
 
@@ -455,7 +457,9 @@ export default function CreateOrderWizard({
         {/* Step 2: Product Selection */}
         {currentStep === 2 && (
           <div className="space-y-4">
-            <h3 className="text-lg mb-4">
+            <h3
+              className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg`}
+            >
               {t("product_selection") || "Product Selection"}
             </h3>
 
@@ -616,7 +620,9 @@ export default function CreateOrderWizard({
         {/* Step 3: Payment & Delivery */}
         {currentStep === 3 && (
           <div className="space-y-4">
-            <h3 className="text-lg mb-4">
+            <h3
+              className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg`}
+            >
               {t("payment_delivery_info") || "Payment & Delivery Information"}
             </h3>
 
@@ -731,7 +737,7 @@ export default function CreateOrderWizard({
 
             {/* Payment Amounts */}
             <div
-              className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`}
+              className={`${isDark ? "text-gray-300" : "text-gray-700 "} text-2xl`}
             >
               <h4 className="text-sm mb-3">
                 {t("payment_breakdown") || "Payment Breakdown"}
@@ -811,7 +817,9 @@ export default function CreateOrderWizard({
         {/* Step 4: Review */}
         {currentStep === 4 && (
           <div className="space-y-4">
-            <h3 className="text-lg mb-4">
+            <h3
+              className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg`}
+            >
               {t("review_order") || "Review Order"}
             </h3>
 
@@ -819,7 +827,9 @@ export default function CreateOrderWizard({
             <div
               className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`}
             >
-              <h4 className="text-sm mb-2 font-medium">
+              <h4
+                className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg mb-2`}
+              >
                 {t("customer_information") || "Customer Information"}
               </h4>
               <div className="space-y-1 text-sm">
@@ -860,7 +870,9 @@ export default function CreateOrderWizard({
             <div
               className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`}
             >
-              <h4 className="text-sm mb-2 font-medium">
+              <h4
+                className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg mb-2`}
+              >
                 {t("products_ordered") || "Products"}
               </h4>
               <div className="space-y-2">
@@ -888,7 +900,11 @@ export default function CreateOrderWizard({
                 <div
                   className={`pt-2 border-t flex justify-between font-medium ${theme === "dark" ? "border-gray-700" : "border-gray-300"} ${isRTL ? "flex-row-reverse" : ""}`}
                 >
-                  <span>{t("total") || "Total"}</span>
+                  <span
+                    className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg`}
+                  >
+                    {t("total") || "Total"}
+                  </span>
                   <span>₪{totalAmount.toLocaleString()}</span>
                 </div>
               </div>
@@ -896,53 +912,58 @@ export default function CreateOrderWizard({
 
             {/* Payment & Delivery */}
             <div
-              className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`}
+              className={`p-4 rounded-lg border ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"}`}
             >
-              <h4 className="text-sm mb-2 font-medium">
+              <h4
+                className={`${isDark ? "text-gray-300" : "text-gray-700"} text-lg mb-2`}
+              >
                 {t("payment_delivery_info") || "Payment & Delivery"}
               </h4>
               <div className="space-y-1 text-sm">
-                <p>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
-                  >
+                <p className="flex gap-2 items-center">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     {t("delivery_method") || "Delivery Method"}:
                   </span>{" "}
-                  {formData.deliveryMethod}
+                  <div
+                    className={`${isDark ? "text-gray-400" : "text-gray-700"} text-md`}
+                  >
+                    {formData.deliveryMethod}
+                  </div>
                 </p>
                 {formData.deliveryAddress && (
-                  <p>
+                  <p className="flex gap-2 items-center">
                     <span
-                      className={
-                        theme === "dark" ? "text-gray-400" : "text-gray-600"
-                      }
+                      className={isDark ? "text-gray-400" : "text-gray-600"}
                     >
                       {t("delivery_address") || "Address"}:
                     </span>{" "}
-                    {formData.deliveryAddress}
+                    <div
+                      className={`${isDark ? "text-gray-400" : "text-gray-700"} text-md`}
+                    >
+                      {formData.deliveryAddress}
+                    </div>
                   </p>
                 )}
-                <p>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
-                  >
+                <p className="flex gap-2 items-center">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     {t("voucher_amount") || "Voucher"}:
                   </span>{" "}
-                  ₪{formData.voucherAmount.toLocaleString()}
-                </p>
-                <p>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
+                  <div
+                    className={`${isDark ? "text-gray-400" : "text-gray-700"} text-md`}
                   >
+                    ₪{formData.voucherAmount.toLocaleString()}
+                  </div>
+                </p>
+
+                <p className="flex gap-2 items-center">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     {t("credit_card_amount") || "Credit Card"}:
                   </span>{" "}
-                  ₪{formData.creditCardAmount.toLocaleString()}
+                  <div
+                    className={`${isDark ? "text-gray-400" : "text-gray-700"} text-md`}
+                  >
+                    ₪{formData.creditCardAmount.toLocaleString()}
+                  </div>
                 </p>
               </div>
             </div>
