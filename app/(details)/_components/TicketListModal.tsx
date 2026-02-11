@@ -3,19 +3,17 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { useMemo, useRef, useState } from "react";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 import { Dialog } from "@/components/ui";
-import PriceTag from "@/components/PriceTag";
-import { buttonLabels, events } from "@/constant/hebrew";
-import useCartStore from "@/stores/cartStore";
 import { itemTypeEnum } from "@/lib/utils";
+import PriceTag from "@/components/PriceTag";
+import useCartStore from "@/stores/cartStore";
 import { groupTicketsByDateTime } from "@/lib/helpers";
 import { staticImages } from "@/constant/staticImages";
-
-/* ===================== TYPES ===================== */
+import { buttonLabels, events } from "@/constant/hebrew";
 
 interface TicketListModalProps {
   isOpen: boolean;
@@ -33,8 +31,8 @@ interface ISelectedTickets {
 }
 
 interface ITicketStockInfo {
-  remaining: number;
-  perUserLimit: number;
+  remaining: number | null;
+  perUserLimit: number | null;
 }
 
 /* ===================== COMPONENT ===================== */
@@ -79,14 +77,37 @@ const TicketListModal = ({
     const existing = prev.find((t) => t.key === payload.key);
     const currentQty = existing?.quantity ?? 0;
 
-    if (
-      payload.stock.remaining <= 0 ||
-      currentQty >= payload.stock.perUserLimit ||
-      currentQty + 1 > payload.stock.remaining
-    ) {
-      setErrorKey(payload.key);
-      setTimeout(() => setErrorKey(null), 2000);
-      return prev;
+    // If both remaining and perUserLimit are null, allow infinite tickets
+    const hasLimits =
+      payload.stock.remaining !== null || payload.stock.perUserLimit !== null;
+
+    if (hasLimits) {
+      // Check remaining stock (if not null)
+      if (payload.stock.remaining !== null && payload.stock.remaining <= 0) {
+        setErrorKey(payload.key);
+        setTimeout(() => setErrorKey(null), 2000);
+        return prev;
+      }
+
+      // Check per-user limit (if not null)
+      if (
+        payload.stock.perUserLimit !== null &&
+        currentQty >= payload.stock.perUserLimit
+      ) {
+        setErrorKey(payload.key);
+        setTimeout(() => setErrorKey(null), 2000);
+        return prev;
+      }
+
+      // Check if adding one more exceeds remaining stock (if not null)
+      if (
+        payload.stock.remaining !== null &&
+        currentQty + 1 > payload.stock.remaining
+      ) {
+        setErrorKey(payload.key);
+        setTimeout(() => setErrorKey(null), 2000);
+        return prev;
+      }
     }
 
     if (existing) {
@@ -203,6 +224,11 @@ const TicketListModal = ({
                     const qty = getSelectedQuantity(key);
                     const isSelected = qty > 0;
 
+                    // Check if limits exist
+                    const hasLimits =
+                      ticket.quantity.remaining !== null ||
+                      ticket.quantity.perUserLimit !== null;
+
                     return (
                       <div key={key}>
                         <div
@@ -237,12 +263,30 @@ const TicketListModal = ({
                                   __html: ticket.description,
                                 }}
                               />
-                              <p className="text-sm text-gray-500">
-                                {events.remaining}:{" "}
-                                <strong>{ticket.quantity.remaining}</strong> |{" "}
-                                {events.maxPerUser}:{" "}
-                                <strong>{ticket.quantity.perUserLimit}</strong>
-                              </p>
+                              {/* Only show limits if they exist */}
+                              {hasLimits && (
+                                <p className="text-sm text-gray-500">
+                                  {ticket.quantity.remaining !== null && (
+                                    <>
+                                      {events.remaining}:{" "}
+                                      <strong>
+                                        {ticket.quantity.remaining}
+                                      </strong>
+                                    </>
+                                  )}
+                                  {ticket.quantity.remaining !== null &&
+                                    ticket.quantity.perUserLimit !== null &&
+                                    " | "}
+                                  {ticket.quantity.perUserLimit !== null && (
+                                    <>
+                                      {events.maxPerUser}:{" "}
+                                      <strong>
+                                        {ticket.quantity.perUserLimit}
+                                      </strong>
+                                    </>
+                                  )}
+                                </p>
+                              )}
                             </div>
                           </div>
 

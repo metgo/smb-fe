@@ -548,17 +548,24 @@ export function groupTicketsByDateTime(
         });
       }
 
-      map.get(key)!.tickets.push({
-        _id: ticket._id,
-        name: ticket.name,
-        images: ticket.images,
-        userId: ticket.userId ?? "",
-        price: ticket.price,
-        quantity: ticket.quantity,
-        status: ticket.status,
-        type: ticket.type,
-        description: ticket.description,
-      });
+      const slot = map.get(key)!;
+
+      // ✅ Prevent duplicate ticket by _id
+      const alreadyExists = slot.tickets.some((t) => t._id === ticket._id);
+
+      if (!alreadyExists) {
+        slot.tickets.push({
+          _id: ticket._id,
+          name: ticket.name,
+          images: ticket.images,
+          userId: ticket.userId ?? "",
+          price: ticket.price,
+          quantity: ticket.quantity,
+          status: ticket.status,
+          type: ticket.type,
+          description: ticket.description,
+        });
+      }
     });
   });
 
