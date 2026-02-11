@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Trash } from "lucide-react";
+import { Download, Send, Trash } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { BulkStatusChangeBtn } from "../btns";
@@ -11,6 +11,7 @@ interface BulkActionBarProps {
   onBulkAction: {
     approve?: () => void;
     reject?: () => void;
+    resend?: () => void;
     archive?: () => void;
     draft?: () => void;
     pending?: () => void;
@@ -34,6 +35,18 @@ const ACTIONS: ActionButton[] = [
     label: "delete",
     icon: <Trash className="w-4 h-4" />,
     color: "red",
+  },
+  {
+    key: "resend",
+    label: "resend",
+    icon: <Send className="w-4 h-4" />,
+    color: "blue",
+  },
+  {
+    key: "csvExport",
+    label: "csvExport",
+    icon: <Download className="w-4 h-4" />,
+    color: "gray",
   },
 ];
 

@@ -107,6 +107,7 @@ export default function CreateOrderWizard({
     deliveryInstructions: formData.deliveryInstructions,
     deliveryFee: formData.deliveryFee,
   };
+
   console.log("🚀 ~ CreateOrderWizard ~ stepPayloadMap:", stepPayloadMap);
 
   const validateStep = (step: number): boolean => {

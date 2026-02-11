@@ -51,7 +51,10 @@
   "publish": "Publish",
   "publishing": "Publishing...",
   "cancle": "Cancle",
+  "resend": "Resend",
+  "csvExport": "CSV Export",
   "delete": "Delete",
+
   "confirm": "Confirm",
   "details": "Details",
   "edit": "Edit",

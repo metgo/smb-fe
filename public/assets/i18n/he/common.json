@@ -46,6 +46,8 @@
   "publishing": "מפרסם...",
   "cancle": "ביטול",
   "delete": "מחק",
+  "resend": "שלח מחדש",
+  "csvExport": "ייצוא CSV",
   "confirm": "אישור",
   "details": "פרטים",
   "edit": "עריכה",

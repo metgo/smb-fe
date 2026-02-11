@@ -37,7 +37,6 @@ function OrderDetailsModal({
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
-  console.log("🚀 ~ OrderDetailsModal ~ userRole:", userRole);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
     null,
   );

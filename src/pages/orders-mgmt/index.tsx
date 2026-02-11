@@ -415,7 +415,6 @@ export default function OrdersMgmtPage() {
         skip: !selectedOrder?._id, // only fetch if selectedOrder exists
       },
     );
-  console.log("🚀 ~ OrdersMgmtPage ~ orderDetails:", orderDetails);
 
   // Statistics
   const statistics = useMemo(() => {
@@ -474,15 +473,18 @@ export default function OrdersMgmtPage() {
   };
 
   const handleExportCSV = () => {
+    // const ordersToExport = selectedOrders;
     const ordersToExport =
-      selectedOrders.size > 0
+      selectedOrders.size > 1
         ? orders?.datas?.data?.filter((order: any) =>
-            selectedOrders.has(order.id),
+            selectedOrders.has(order._id),
           )
-        : orders?.data?.data;
+        : orders?.datas?.data;
+    console.log("export cvs", ordersToExport);
+    console.log("export cvs", selectedOrders);
 
     if (ordersToExport?.length === 0) {
-      alert(t("noOrdersToExport") || "No orders to export");
+      toast.message(t("noOrdersToExport") || "No orders to export");
       return;
     }
 
@@ -595,32 +597,32 @@ export default function OrdersMgmtPage() {
     document.body.removeChild(link);
   };
 
-  // const handleResendOrderDetails = () => {
-  //   const ordersToResend =
-  //     selectedOrders.size > 0
-  //       ? orders.filter((order:IOrder) => selectedOrders.has(order._id))
-  //       : [];
+  const handleResendOrderDetails = () => {
+    const ordersToResend =
+      selectedOrders.size > 0
+        ? orders.filter((order: IOrder) => selectedOrders.has(order._id))
+        : [];
 
-  //   if (ordersToResend.length === 0) {
-  //     alert(t("noOrdersSelected") || "No orders selected");
-  //     return;
-  //   }
+    if (ordersToResend.length === 0) {
+      alert(t("noOrdersSelected") || "No orders selected");
+      return;
+    }
 
-  //   ordersToResend.forEach((order:IOrder) => {
-  //     console.log(
-  //       `Sending order details to ${order.email} for order ${order._id}`,
-  //     );
-  //   });
+    ordersToResend.forEach((order: IOrder) => {
+      console.log(
+        `Sending order details to ${order.email} for order ${order._id}`,
+      );
+    });
 
-  //   const message =
-  //     ordersToResend.length === 1
-  //       ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
-  //       : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
+    const message =
+      ordersToResend.length === 1
+        ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
+        : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
 
-  //   alert(message);
+    alert(message);
 
-  //   setSelectedOrders(new Set());
-  // };
+    setSelectedOrders(new Set());
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -996,6 +998,8 @@ export default function OrdersMgmtPage() {
         handleBulkStatusChange={handleBulkStatusChange}
         onBulkAction={{
           delete: handleBulkDelete,
+          resend: handleResendOrderDetails,
+          csvExport: handleExportCSV,
         }}
         isDelete={true}
       />
