@@ -25,8 +25,6 @@ interface OrderDetailsModalProps {
   isLoading: any;
 }
 
-const USER_ROLE = "authority";
-
 function OrderDetailsModal({
   order,
   onClose,
