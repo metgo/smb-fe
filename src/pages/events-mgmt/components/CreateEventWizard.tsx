@@ -14,7 +14,6 @@ import {
   Mail,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 

@@ -18,7 +18,7 @@ interface BulkActionBarProps {
     csvExport?: () => void;
     pdfExport?: () => void;
   };
-  isDelete: boolean;
+  isDelete?: boolean;
 }
 
 interface ActionButton {

@@ -11,6 +11,8 @@ import {
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { toast } from "sonner";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface OrderDetailsModalProps {
   theme: Theme;
@@ -36,7 +38,8 @@ function OrderDetailsModal({
   getPaymentStatusBadge,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary } = useThemeClasses();
-
+  const { userRole } = useAppSelector((state) => state.auth);
+  console.log("🚀 ~ OrderDetailsModal ~ userRole:", userRole);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
     null,
   );
@@ -214,7 +217,7 @@ function OrderDetailsModal({
                     </div>
 
                     {/* Cancel Button */}
-                    {!product?.cancelled && USER_ROLE !== "authority" && (
+                    {!product?.cancelled && userRole !== UserRole.AUTHORITY && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -293,7 +296,7 @@ function OrderDetailsModal({
         </div>
 
         {/* Actions */}
-        {USER_ROLE === "authority" && (
+        {userRole === UserRole.AUTHORITY && (
           <div
             className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
           >
