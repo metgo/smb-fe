@@ -997,6 +997,7 @@ export default function OrdersMgmtPage() {
         onBulkAction={{
           delete: handleBulkDelete,
         }}
+        isDelete={true}
       />
       {/* Bulk Actions Toolbar */}
       {/* {selectedOrders.size > 0 && (

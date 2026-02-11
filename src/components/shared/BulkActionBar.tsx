@@ -18,6 +18,7 @@ interface BulkActionBarProps {
     csvExport?: () => void;
     pdfExport?: () => void;
   };
+  isDelete: boolean;
 }
 
 interface ActionButton {
@@ -45,15 +46,18 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   handleBulkStatusChange,
   selectedItemCount,
   onBulkAction,
+  isDelete = false,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark } = useThemeClasses();
+  const { theme } = useThemeClasses();
+  const isDark = theme === "dark";
 
   if (!selectedItemCount) return null;
 
   const renderButton = ({ key, label, icon, color }: ActionButton) => {
     const action = onBulkAction[key];
     if (!action) return null;
+    if (key === "delete" && isDelete) return null;
 
     return (
       <button
@@ -86,7 +90,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
         {selectedItemCount} {t("selected")}
       </span>
 
-      <div className={clsx("flex items-center gap-4")}>
+      <div className="flex items-center gap-4">
         <BulkStatusChangeBtn handleBulkStatusChange={handleBulkStatusChange} />
 
         <div className="flex items-center gap-2">
