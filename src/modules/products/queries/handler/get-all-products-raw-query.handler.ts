@@ -6,18 +6,15 @@ import { Model } from 'mongoose';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from '../../products.type';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { Authority } from 'src/modules/authority/schema/authority.schema';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 
 @QueryHandler(GetAllProductsRawQuery)
 export class GetAllProductsRawQueryHandler
 implements IQueryHandler<GetAllProductsRawQuery> {
   constructor(
-    @InjectModel(Authority.name)
-    private AuthorityModel: Model<Authority>,
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
+    @InjectModel(BussCategory.name)
+    private CategoryModel: Model<BussCategory>,
     private campaignService: CampaignService,
   ) {}
 
@@ -182,27 +179,12 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       if (search) {
-        const [matchingBusinessIds, matchingAuthorityIds] = await Promise.all([
-          this.BusinessModel.find({
-            $or: [
-              { name: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } },
-              { 'address.country': { $regex: search, $options: 'i' } },
-              { 'address.city': { $regex: search, $options: 'i' } },
-              { 'address.location': { $regex: search, $options: 'i' } },
-              {
-                'address.additional_information': {
-                  $regex: search,
-                  $options: 'i',
-                },
-              },
-              { 'contactDetails.address': { $regex: search, $options: 'i' } },
-            ],
-          }).select('_id'),
-          this.AuthorityModel.find({
-            name: { $regex: search, $options: 'i' },
-          }).select('_id'),
-        ]);
+        const matchingCategoryIds = await this.CategoryModel.find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { hebrewName: { $regex: search, $options: 'i' } },
+          ],
+        }).select('_id');
 
         findQuery = {
           ...findQuery,
@@ -212,8 +194,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
               $or: [
                 { name: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } },
-                { authorityId: { $in: matchingAuthorityIds } },
-                { businessId: { $in: matchingBusinessIds } },
+                { categories: { $in: matchingCategoryIds } },
               ],
             },
           ],

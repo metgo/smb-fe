@@ -17,13 +17,9 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { MediaModule } from 'src/modules/media/media.module';
 import { CartModule } from '../cart/cart.modules';
 import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
-import {
-  Authority,
-  AuthoritySchema,
-} from '../authority/schema/authority.schema';
+  BussCategory,
+  BussCategorySchema,
+} from '../buss-categories/schema/buss.category.schema';
 import { GetAllProductsForMapHandler } from './queries/handler/get-all-products-for-map.handler';
 import { GetAllProductsRawQueryHandler } from './queries/handler/get-all-products-raw-query.handler';
 import { GetAllProductsHandler } from './queries/handler/get-all-products.handler';
@@ -39,12 +35,8 @@ import { GetAllProductsByBusinessIdHandler } from './queries/handler/get-all-pro
         schema: ProductSchema,
       },
       {
-        name: Business.name,
-        schema: BusinessSchema,
-      },
-      {
-        name: Authority.name,
-        schema: AuthoritySchema,
+        name: BussCategory.name,
+        schema: BussCategorySchema,
       },
     ]),
     forwardRef(() => AuthorityModule),
