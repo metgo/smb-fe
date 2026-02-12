@@ -5,6 +5,8 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { DmoAuthorityWebsiteSelector } from "@/components/shared";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
+import { FormFieldWrapper } from "@/components/form-fields";
+import { useTranslation } from "react-i18next";
 interface BusinessFormData {
   authority: string;
   slug: string;
@@ -62,7 +64,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 }) => {
   const { userRole } = useAppSelector((state) => state.auth);
   const { borderColor, isDark } = useThemeClasses();
-
+  const { t: tc } = useTranslation("common");
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -142,30 +144,34 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       />
       {/* Business Name */}
       <div>
-        <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        <FormFieldWrapper
+          required
+          label={t("business_name")}
+          error={errors?.name}
+          inputHintText={`${formData.nameEn?.length ?? 0}/50 ${tc("max_characters")}`}
         >
-          {t("business_name")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={formData[getFieldName("name") as keyof BusinessFormData]}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [getFieldName("name")]: e.target.value,
-            })
-          }
-          placeholder={getPlaceholder("name")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("name")]
-              ? "border-red-500"
-              : isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
+          <input
+            type="text"
+            maxLength={50}
+            value={formData[getFieldName("name") as keyof BusinessFormData]}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("name")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("name")}
+            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+            className={`w-full px-4 py-2 rounded-lg border ${
+              errors[getFieldName("name")]
+                ? "border-red-500"
+                : isDark
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          />
+        </FormFieldWrapper>
+
         {errors[getFieldName("name")] && (
           <p className="text-red-500 text-sm mt-1">
             {errors[getFieldName("name")]}
@@ -175,62 +181,82 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
       {/* Short Description */}
       <div>
-        <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        <FormFieldWrapper
+          required
+          label={t("short_description")}
+          error={errors?.shortDescription}
+          inputHintText={`${formData.shortDescriptionEn?.length ?? 0}/50 ${tc("max_characters")}`}
         >
-          {t("short_description")} <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          rows={3}
-          value={
-            formData[getFieldName("shortDescription") as keyof BusinessFormData]
-          }
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [getFieldName("shortDescription")]: e.target.value,
-            })
-          }
-          placeholder={getPlaceholder("short")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("shortDescription")]
-              ? "border-red-500"
-              : isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
+          <textarea
+            rows={3}
+            maxLength={50}
+            value={
+              formData[
+                getFieldName("shortDescription") as keyof BusinessFormData
+              ]
+            }
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("shortDescription")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("short")}
+            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+            className={`w-full px-4 py-2 rounded-lg border ${
+              errors[getFieldName("shortDescription")]
+                ? "border-red-500"
+                : isDark
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          />
+        </FormFieldWrapper>
+        {errors[getFieldName("shortDescription")] && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors[getFieldName("shortDescription")]}
+          </p>
+        )}
       </div>
 
       {/* Full Description */}
       <div>
-        <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        <FormFieldWrapper
+          required
+          label={t("full_description")}
+          error={errors?.fullDescription}
+          inputHintText={`${formData.fullDescriptionEn?.length ?? 0}/500 ${tc("max_characters")}`}
         >
-          {t("full_description")} <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          rows={6}
-          value={
-            formData[getFieldName("fullDescription") as keyof BusinessFormData]
-          }
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [getFieldName("fullDescription")]: e.target.value,
-            })
-          }
-          placeholder={getPlaceholder("full")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("fullDescription")]
-              ? "border-red-500"
-              : isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
+          <textarea
+            rows={6}
+            maxLength={500}
+            value={
+              formData[
+                getFieldName("fullDescription") as keyof BusinessFormData
+              ]
+            }
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("fullDescription")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("full")}
+            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+            className={`w-full px-4 py-2 rounded-lg border ${
+              errors[getFieldName("fullDescription")]
+                ? "border-red-500"
+                : isDark
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          />
+        </FormFieldWrapper>
+        {errors[getFieldName("fullDescription")] && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors[getFieldName("fullDescription")]}
+          </p>
+        )}
       </div>
 
       {/* Internal Notes */}

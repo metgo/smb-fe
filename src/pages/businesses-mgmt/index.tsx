@@ -91,8 +91,21 @@ export default function BusinessesMgmtPage() {
     });
   };
 
+  const { i18n } = useTranslation();
+  const languageSafe = i18n.language || "en";
+
+  const statsQueryParams = useMemo(() => {
+    const params: any = {
+      locale: languageSafe, // required
+    };
+
+    return params;
+  }, [languageSafe]);
+
+  // Then call your query
   const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery({});
+    useGetBusinessStatsQuery(statsQueryParams);
+
   const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
 
   //infinite scroll states

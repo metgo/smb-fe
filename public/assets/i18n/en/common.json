@@ -43,6 +43,7 @@
   "settings": "Settings",
   "documents": "Documents",
   "version": "Version",
+  "max_characters": "Max characters",
 
   "filters": "Filters",
   "previous": "Previous",
