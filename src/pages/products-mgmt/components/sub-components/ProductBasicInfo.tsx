@@ -37,17 +37,11 @@ const ProductBasicInfo = ({
   errors,
   businesses,
   setBusinessId,
-  isLoading,
+
   // isBusinessesLoading,
 }: ProductBasicInfoProps) => {
-  const {
-    bgTertiary,
-    isDark,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-  } = useThemeClasses();
+  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
   // Helper to get field key based on selected language
   // const getFieldKey = (
   //   _field: "name" | "shortDescription" | "fullDescription",
@@ -87,7 +81,8 @@ const ProductBasicInfo = ({
         <ReactSelect
           value={formData?.businessId?._id}
           onChange={(selectedOption: any) => {
-            const selectedBusinessId = selectedOption?.value || "";
+            const selectedBusinessId = selectedOption || "";
+
             setFormData({
               ...formData,
               businessId: selectedBusinessId,

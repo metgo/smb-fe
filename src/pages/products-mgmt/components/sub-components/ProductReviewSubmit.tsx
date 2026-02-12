@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 
 interface ProductReviewSubmitProps {
   t: (key: string) => string;
@@ -36,6 +37,13 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         return "-";
     }
   };
+  const { primaryCategories } = useCommon();
+  const categoriesList = primaryCategories?.datas?.data || [];
+
+  const category = categoriesList.filter((cat: any) =>
+    formData.categories.includes(cat._id),
+  );
+  const categoryNames = category.map((cat: any) => cat.name);
 
   return (
     <div className="space-y-6">
@@ -107,7 +115,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             <div>
               <p className={`text-sm ${textTertiary}`}>{t("categories")}</p>
               <p className={`font-medium ${textPrimary}`}>
-                {formData.categories.join(", ") || "-"}
+                {categoryNames.join(", ") || "-"}
               </p>
             </div>
           </div>

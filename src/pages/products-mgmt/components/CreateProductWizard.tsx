@@ -144,12 +144,14 @@ export default function CreateProductWizard({
       deliverySpecificSellerInfo: [] as string[],
     },
   );
+  console.log("formData:", formData);
+
   useEffect(() => {
     if (!productId || !product) return;
 
     setFormData({
       // basic info
-      businessId: product?.businessId?._id || "",
+      businessId: product?.businessId || "",
       name: product.name || "",
       nameHe: product.nameHe || "",
       nameAr: product.nameAr || "",
