@@ -46,7 +46,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
   const { t } = useTranslation("businesses");
   const { isDark, isRTL, textPrimary, textSecondary, bgTertiary, borderColor } =
     useThemeClasses();
-  const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
+  // const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
 
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
