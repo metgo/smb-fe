@@ -43,6 +43,7 @@ const defaultColumns = {
   name: true,
   businessId: true, //  optional
   productType: true,
+  shortDescription: true,
   actions: true,
   status: true,
   price: true,
@@ -708,7 +709,7 @@ export default function ProductsMgmtPage() {
         />
       </div>
 
-      {/* Create/Edit Product Wizard */}
+      {/* Create Product Wizard */}
       {isCreateModalOpen && (
         <CreateProductWizard
           onClose={() => setIsCreateModalOpen(false)}
