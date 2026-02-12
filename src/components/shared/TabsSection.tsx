@@ -22,7 +22,7 @@ const TabsSection = ({
   activeTab,
   setActiveTab,
 }: TabsSectionProps) => {
-  const { isDark, rowDir } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
 
@@ -49,7 +49,7 @@ const TabsSection = ({
   return (
     <div
       ref={tabsContainerRef}
-      className={clsx("flex gap-1 mt-6 overflow-x-auto scrollbar-hide", rowDir)}
+      className={clsx("flex gap-1 mt-6 overflow-x-auto scrollbar-hide")}
       style={{
         scrollbarWidth: "none", // Firefox
         msOverflowStyle: "none", // IE and Edge

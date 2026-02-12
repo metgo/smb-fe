@@ -80,7 +80,7 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const { textSecondary, isDark, isRTL } = useThemeClasses();
+  const { textSecondary, isDark, isRTL, language } = useThemeClasses();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -91,7 +91,8 @@ export default function BusinessesMgmtPage() {
     });
   };
 
-  const { data: businessStatsData } = useGetBusinessStatsQuery({});
+  const { data: businessStatsData, isLoading: isStatsLoading } =
+    useGetBusinessStatsQuery({});
   const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
 
   //infinite scroll states
@@ -115,6 +116,7 @@ export default function BusinessesMgmtPage() {
     dmoId,
     authorityId,
     status: "all",
+    locale: language,
     hasProductFilter: "all",
   });
 
@@ -123,6 +125,7 @@ export default function BusinessesMgmtPage() {
       authorityId: "",
       dmoId: "",
       status: "all",
+      locale: language,
       hasProductFilter: "all",
     });
   };
@@ -165,6 +168,7 @@ export default function BusinessesMgmtPage() {
     const params: any = {
       page,
       limit: LIMIT,
+      locale: language,
     };
 
     if (searchTerm) params.search = searchTerm;
@@ -186,7 +190,7 @@ export default function BusinessesMgmtPage() {
     }
 
     return params;
-  }, [page, searchTerm, filters]);
+  }, [page, searchTerm, filters, language]);
 
   useEffect(() => {
     setPage(1);
@@ -530,6 +534,7 @@ export default function BusinessesMgmtPage() {
           />
           <PageStats
             stats={businessStats}
+            isLoading={isStatsLoading}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
           />
 

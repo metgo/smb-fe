@@ -96,3 +96,12 @@ export const parseAddress = (address: any) => {
     country: parts[2]?.trim(), // Israel
   };
 };
+
+export function getPlainTextFromRichText(html: string): string {
+  if (!html) return "";
+
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+
+  return temp.textContent?.trim() || "";
+}

@@ -12,7 +12,6 @@ import {
   Columns,
 } from "lucide-react";
 
-import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
@@ -34,9 +33,11 @@ import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
-import ReactSelect from "react-select";
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
+import { ReactSelect } from "@/components/form-fields";
 
-const businessId = "";
+const LIMIT = 20;
 const defaultColumns = {
   images: true,
   name: true,
@@ -63,17 +64,14 @@ const columnDefinitions = [
   { key: "updatedAt" as keyof IColumnVisibility, isDefault: false },
 ];
 export default function ProductsMgmtPage() {
+  const { t } = useTranslation("products");
+  const [searchParams] = useSearchParams();
+  const businessId = searchParams?.get("businessId");
+
   const {
-    t,
-    isRTL,
     isDark,
-    viewMode,
-    setViewMode,
-    showFilters,
-    setShowFilters,
-    setIsCreating,
-  } = useProductMgmt();
-  const {
+    isRTL,
+    language,
     bgPrimary,
     bgSecondary,
     borderColor,
@@ -81,7 +79,13 @@ export default function ProductsMgmtPage() {
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { data: businessData } = useGetbusinessForProductQuery({});
+  const { data: businessData } = useGetbusinessForProductQuery({
+    locale: language,
+  });
+
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [showFilters, setShowFilters] = useState(false);
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   //select products
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
@@ -91,17 +95,14 @@ export default function ProductsMgmtPage() {
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   //filters
-  const LIMIT = 20;
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   const [filters, setFilters] = useState({
     status: "all",
+    locale: language,
     productType: "all",
-    businessId: {
-      name: "",
-      _id: "",
-    },
+    businessId: "",
   });
   const [_clearBusiness, setClearBusiness] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -116,10 +117,17 @@ export default function ProductsMgmtPage() {
     }));
   };
 
+  useEffect(() => {
+    if (businessId) {
+      setIsCreateModalOpen(true);
+    }
+  }, [businessId]);
+
   const productQueryParams = useMemo(() => {
     const params: any = {
       page,
       limit: LIMIT,
+      locale: language,
     };
 
     if (searchTerm) {
@@ -134,15 +142,15 @@ export default function ProductsMgmtPage() {
       params.productType = filters.productType.toUpperCase();
     }
 
-    if (filters.businessId.name !== "all") {
-      params.businessId = filters.businessId?._id;
+    if (filters.businessId == "") {
+      params.businessId = filters.businessId;
     }
 
     return params;
-  }, [page, searchTerm, filters]);
+  }, [page, searchTerm, filters, language]);
 
   const statsQueryParams = useMemo(() => {
-    const { page, limit, status, ...rest } = productQueryParams;
+    const { page, limit, status, locale, ...rest } = productQueryParams;
     return rest;
   }, [productQueryParams]);
 
@@ -155,7 +163,8 @@ export default function ProductsMgmtPage() {
     isFetching,
     isLoading: isLoadingProduct,
   } = useGetAllProductsQuery(productQueryParams);
-  const [bulkProductsUpdate] = useBulkProductsUpdateMutation();
+  const [bulkProductsUpdate, { isLoading: isDeleting }] =
+    useBulkProductsUpdateMutation();
 
   const products = productData?.data ?? [];
   const hasMore = productData?.meta?.hasNextPage;
@@ -526,7 +535,7 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                {!businessId && (
+                {businessId && (
                   <div>
                     <label
                       className={`block text-sm mb-1 ${
@@ -535,60 +544,22 @@ export default function ProductsMgmtPage() {
                     >
                       {t("filter_by_business")}
                     </label>
-                    {/* <select
-                            value={filters.businessId}
-                            onChange={(e) =>
-                              setFilters((prev) => ({
-                                ...prev,
-                                businessId: e.target.value,
-                              }))
-                            }
-                            className={`w-full px-3 py-2 rounded-lg border ${
-                              isDark
-                                ? "bg-gray-800 border-gray-700 text-gray-200"
-                                : "bg-white border-gray-300 text-gray-900"
-                            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                          >
-                            <option value="all">{t("all_businesses")}</option>
-                            {isBusinessesLoading ? (
-                              <option disabled>{t("loading")}...</option>
-                            ) : (
-                              businessData?.data?.map((business: any) => (
-                                <option key={business._id} value={business._id}>
-                                  {business.name}
-                                </option>
-                              ))
-                            )}
-                          </select> */}
                     <ReactSelect
                       isClearable
-                      value={
-                        filters.businessId?._id
-                          ? {
-                              value: filters.businessId._id,
-                              label: filters.businessId.name,
-                            }
-                          : null
-                      }
-                      onChange={(selectedOption) => {
+                      value={filters?.businessId ?? ""}
+                      onChange={(businessId) => {
                         setFilters((prev) => ({
                           ...prev,
-                          businessId: selectedOption
-                            ? {
-                                _id: selectedOption.value,
-                                name: selectedOption.label,
-                              }
-                            : { _id: "", name: "" }, // or null — depending on your preference
+                          businessId,
                         }));
                       }}
-                      placeholder={t("select_business")}
-                      options={
+                      items={
                         businessData?.data?.map((item: any) => ({
-                          value: item._id,
-                          label: item.name,
+                          _id: item._id,
+                          name: item.name,
                         })) ?? []
                       }
-                      className="rounded-md z-50"
+                      placeholder={t("select_business")}
                     />
                   </div>
                 )}
@@ -604,10 +575,8 @@ export default function ProductsMgmtPage() {
                         setFilters({
                           status: "all",
                           productType: "all",
-                          businessId: {
-                            name: "",
-                            _id: "",
-                          },
+                          locale: language,
+                          businessId: "",
                         })
                       }
                       className="ml-auto text-sm text-green-600 "
@@ -671,8 +640,8 @@ export default function ProductsMgmtPage() {
         <div className="flex-1 overflow-y-auto">
           <div className=" mx-auto">
             {/* Products Content */}
-            {productData?.data?.length === 0 ? (
-              // Empty State
+            {combinedProducts?.length === 0 &&
+            !(isFetching || isLoadingProduct) ? (
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
               >
@@ -684,7 +653,7 @@ export default function ProductsMgmtPage() {
                   {t("no_products_desc")}
                 </p>
                 <button
-                  onClick={() => setIsCreating(true)}
+                  onClick={() => setIsCreateModalOpen(true)}
                   className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   {t("create_product")}
@@ -718,7 +687,7 @@ export default function ProductsMgmtPage() {
           title={t("delete_product")}
           message={t("delete_product_confirm")}
           confirmText="delete"
-          // loading={isDeleting}
+          loading={isDeleting}
           variant="danger"
           onCancel={() => {
             setIsConfirmOpen(false);
@@ -733,8 +702,6 @@ export default function ProductsMgmtPage() {
               setIsConfirmOpen(false);
             } else {
               if (!itemToDelete) return;
-              // handleProductDelete(itemToDelete);
-
               setItemToDelete(null);
             }
           }}
@@ -744,9 +711,7 @@ export default function ProductsMgmtPage() {
       {/* Create/Edit Product Wizard */}
       {isCreateModalOpen && (
         <CreateProductWizard
-          onClose={() => {
-            setIsCreateModalOpen(false);
-          }}
+          onClose={() => setIsCreateModalOpen(false)}
           selectedProduct={selectedProduct}
         />
       )}

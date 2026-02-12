@@ -1,5 +1,5 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PageStatsProps {
   stats: PageStats[];

@@ -1,8 +1,9 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { X } from "lucide-react";
-import { Spinner } from "../shared";
 import { useEffect } from "react";
+
+import { Spinner } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ModalWrapperProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div
         className={clsx(
           height,

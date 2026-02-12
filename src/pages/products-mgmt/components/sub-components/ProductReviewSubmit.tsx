@@ -4,17 +4,21 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductReviewSubmitProps {
   t: (key: string) => string;
-  language: Language;
   formData: ProductFormData;
 }
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   t,
-  language,
   formData,
 }) => {
-  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
-    useThemeClasses();
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    isDark,
+    language,
+  } = useThemeClasses();
 
   const getTypeLabel = (type: string) => {
     switch (type) {

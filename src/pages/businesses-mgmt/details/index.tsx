@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit, UserCog } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Edit, Plus, UserCog } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   AnalyticsStatsSection,
@@ -17,23 +17,24 @@ import {
   BusinessTitleSection,
   ChangeOwnerModal,
 } from "./components";
-import { Spinner, TabsSection } from "@/components/shared";
+import { routes } from "@/lib/routes";
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { Spinner, TabsSection } from "@/components/shared";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
-import { routes } from "@/lib/routes";
 import { LocationDetails } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
+  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
@@ -65,9 +66,7 @@ export default function BusinessDetailsPage() {
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    // uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -172,7 +171,9 @@ export default function BusinessDetailsPage() {
 
   // const onViewProducts = () => { };
 
-  // const onCreateProduct = () => { };
+  const onCreateProduct = () => {
+    navigate(`${routes.productsMgmt}?businessId=${businessId}`);
+  };
 
   const onStatusChangeHandler = async (status: string) => {
     try {
@@ -288,7 +289,7 @@ export default function BusinessDetailsPage() {
               {t("edit")}
             </button>
 
-            {/* {onCreateProduct && (
+            {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
                 className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
@@ -296,7 +297,7 @@ export default function BusinessDetailsPage() {
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
               </button>
-            )} */}
+            )}
 
             {/* {onViewProducts && (
               <button

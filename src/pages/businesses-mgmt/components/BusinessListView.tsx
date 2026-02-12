@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
+import { getPlainTextFromRichText } from "@/helpers";
+
 export const defaultColumns = {
   impact: true,
   name: true,
@@ -102,12 +104,9 @@ export default function BusinessListView({
       key: "shortDescription",
       label: t("shortDescription"),
       render: (business: any) => (
-        <div
-          className={`${textPrimary} line-clamp-1`}
-          dangerouslySetInnerHTML={{
-            __html: business?.shortDescription || "-",
-          }}
-        />
+        <div className={`${textPrimary} line-clamp-1`}>
+          {getPlainTextFromRichText(business?.shortDescription)}
+        </div>
       ),
     },
 

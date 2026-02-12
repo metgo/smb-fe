@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 import {
   Check,
@@ -15,7 +16,6 @@ import {
 import {
   ProductAttributes,
   ProductBasicInfo,
-  ProductDeliveryService,
   ProductMedia,
   ProductMultilingualContent,
   ProductPricingAvailability,
@@ -28,7 +28,6 @@ import {
   useInitProductCreateMutation,
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
@@ -36,6 +35,7 @@ import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 import { useSearchParams } from "react-router-dom";
+import { DeliveryPolicyOption } from "@/components/details-sections";
 
 const availableCategories = [
   "Food & Dining",
@@ -64,16 +64,16 @@ export default function CreateProductWizard({
   const productId = searchParams?.get("productId");
 
   const {
+    language,
     bgTertiary,
     textPrimary,
     textTertiary,
     textSecondary,
     borderColor,
-    language,
   } = useThemeClasses();
 
   const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetbusinessForProductQuery({});
+    useGetbusinessForProductQuery({ locale: language });
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -136,6 +136,12 @@ export default function CreateProductWizard({
       deliveryTime: "",
       serviceDuration: "",
       serviceLocation: "",
+      vendorDelivers: false,
+      pickupAvailable: false,
+      deliveryArea: [] as any[],
+      deliveryAdditionalInfo: "",
+      deliveryReturnExchange: [] as string[],
+      deliverySpecificSellerInfo: [] as string[],
     },
   );
   useEffect(() => {
@@ -143,7 +149,7 @@ export default function CreateProductWizard({
 
     setFormData({
       // basic info
-      businessId: product.businessId || "",
+      businessId: product?.businessId?._id || "",
       name: product.name || "",
       nameHe: product.nameHe || "",
       nameAr: product.nameAr || "",
@@ -177,6 +183,13 @@ export default function CreateProductWizard({
       deliveryTime: product.deliveryTime || "",
       serviceDuration: product.serviceDuration || "",
       serviceLocation: product.serviceLocation || "",
+
+      vendorDelivers: product?.vendorDelivers ?? false,
+      pickupAvailable: product?.isPickUpAvailable ?? false,
+      deliveryArea: product?.deliveryArea ?? [],
+      deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
+      deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
+      deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
     });
     setGalleryImages(product?.images);
   }, [productId, product]);
@@ -221,7 +234,6 @@ export default function CreateProductWizard({
         }
         break;
       case 4:
-        // if (!formData.images) newErrors.images = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
@@ -267,18 +279,14 @@ export default function CreateProductWizard({
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
-    // 1: {
     businessId: formData.businessId,
     name: formData.name,
 
     shortDescription: formData.shortDescription,
     description: formData.fullDescription,
-    // },
-    // 2: {
     productType: formData.type,
     categories: formData.categories,
-    // },
-    // 3: {
+
     price: {
       markedPrice: formData.markedPrice,
       sellingPrice: formData.sellingPrice,
@@ -289,24 +297,25 @@ export default function CreateProductWizard({
     },
     activeStartDate: formData.startDate,
     activeEndDate: formData.endDate,
-    // },
-    // 4: {
+
     images: galleryImages,
-    // 5: {
     nameHe: formData.nameHe,
     shortDescriptionHe: formData.shortDescriptionHe,
 
     nameAr: formData.nameAr,
     shortDescriptionAr: formData.shortDescriptionAr,
-    // },
-    // 6: {
-    // enableHomeDelivery: formData.enableHomeDelivery,
-    // enableStorePickup: formData.enableStorePickup,
-    // deliveryFee: formData.deliveryFee,
-    // deliveryTime: formData.deliveryTime,
-    // serviceDuration: formData.serviceDuration,
-    // serviceLocation: formData.serviceLocation,
-    // },
+
+    enableHomeDelivery: formData.enableHomeDelivery,
+    enableStorePickup: formData.enableStorePickup,
+    deliveryFee: formData.deliveryFee,
+    deliveryTime: formData.deliveryTime,
+    serviceDuration: formData.serviceDuration,
+    serviceLocation: formData.serviceLocation,
+    isPickUpAvailable: formData.pickupAvailable,
+    deliveryArea: formData.deliveryArea,
+    deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
+    deliveryReturnExchange: formData.deliveryReturnExchange,
+    deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
   };
 
   // Auto-save draft function
@@ -342,7 +351,6 @@ export default function CreateProductWizard({
   const renderStepContent = () => {
     const commonProps = {
       t,
-      language,
       formData,
       setFormData,
       errors,
@@ -388,7 +396,13 @@ export default function CreateProductWizard({
       case 5:
         return <ProductMultilingualContent {...commonProps} />;
       case 6:
-        return <ProductDeliveryService {...commonProps} />;
+        return (
+          <DeliveryPolicyOption
+            isProduct
+            formData={formData}
+            setFormData={setFormData}
+          />
+        );
       case 7:
         return <ProductReviewSubmit {...commonProps} />;
       default:

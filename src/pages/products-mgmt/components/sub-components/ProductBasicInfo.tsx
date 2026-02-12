@@ -1,6 +1,6 @@
+import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
-import ReactSelect from "react-select";
 interface ProductBasicInfoProps {
   t: (key: string) => string;
   selectedFormLanguage: "en" | "he" | "ar";
@@ -82,37 +82,8 @@ const ProductBasicInfo = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("select_business")} <span className="text-red-500">*</span>
         </label>
-        {/* <select
-          value={formData.businessId?._id}
-          onChange={(e) => {
-            const selectedBusinessId = e.target.value;
-            setFormData({
-              ...formData,
-              businessId: selectedBusinessId,
-            });
-            setBusinessId(selectedBusinessId);
-          }}
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-        >
-          <option value="">{t("select_business")}</option>
-          {businesses?.map((biz) => (
-            <option key={biz._id} value={biz._id}>
-              {biz.name}
-            </option>
-          ))}
-        </select> */}
         <ReactSelect
-          isLoading={isLoading}
-          value={
-            businesses?.find((biz) => biz._id === formData.businessId?._id)
-              ? {
-                  value: formData.businessId?._id,
-                  label: businesses.find(
-                    (biz) => biz._id === formData.businessId?._id,
-                  )?.name,
-                }
-              : formData.businessId?._id
-          }
+          value={formData?.businessId?._id}
           onChange={(selectedOption: any) => {
             const selectedBusinessId = selectedOption?.value || "";
             setFormData({
@@ -122,37 +93,11 @@ const ProductBasicInfo = ({
             setBusinessId(selectedBusinessId);
           }}
           placeholder={t("select_business")}
-          options={
+          items={
             businesses?.map((biz) => ({
-              value: biz._id,
-              label: biz.name,
+              _id: biz._id,
+              name: biz.name,
             })) || []
-          }
-          styles={
-            isDark
-              ? {
-                  control: (provided: any) => ({
-                    ...provided,
-                    backgroundColor: "#1F2937",
-                    color: "#F9FAFB",
-                    borderColor: "#374151",
-                  }),
-                  singleValue: (provided: any) => ({
-                    ...provided,
-                    color: "#F9FAFB",
-                  }),
-                  menu: (provided: any) => ({
-                    ...provided,
-                    backgroundColor: "#1F2937",
-                    color: "#F9FAFB",
-                  }),
-                  option: (provided: any, state: any) => ({
-                    ...provided,
-                    backgroundColor: state.isFocused ? "#374151" : "#1F2937",
-                    color: "#F9FAFB",
-                  }),
-                }
-              : {}
           }
         />
 
