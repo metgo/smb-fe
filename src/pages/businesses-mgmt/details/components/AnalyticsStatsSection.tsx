@@ -22,7 +22,7 @@ const AnalyticsStatsSection = ({
   businessId,
 }: AnalyticsStatsSectionProps) => {
   const { isDark } = useThemeClasses();
-  const { data } = useGetIndividualBusinessStatsQuery(
+  const { data, isLoading } = useGetIndividualBusinessStatsQuery(
     { businessId },
     { skip: !businessId },
   );

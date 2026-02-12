@@ -48,8 +48,8 @@ interface ThemeClasses {
 }
 
 interface PageStats {
-  id: number;
-  title: string;
+  id?: number;
+  title?: string;
   value: string | number;
   label?: string;
   labelClass?: string;

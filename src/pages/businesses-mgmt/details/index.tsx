@@ -2,11 +2,21 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit, Plus, UserCog } from "lucide-react";
+import {
+  Bookmark,
+  Edit,
+  Eye,
+  MousePointer,
+  Plus,
+  Share2,
+  Timer,
+  TrendingUp,
+  UserCog,
+  Users,
+} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  AnalyticsStatsSection,
   BusinessAttributesDetails,
   BusinessContactDetails,
   BusinessDeliveryPolicyDetails,
@@ -23,9 +33,12 @@ import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { Spinner, TabsSection } from "@/components/shared";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
+import {
+  useGetbusinessByIdQuery,
+  useGetIndividualBusinessStatsQuery,
+} from "@/store/api/businessQueryApi";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
@@ -40,7 +53,47 @@ export default function BusinessDetailsPage() {
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
+  ///business detail stats
+  const { data, isLoading: isDetailStatsLoading } =
+    useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
 
+  const businessStats = [
+    {
+      icon: <Eye className="w-5 h-5 text-green-600" />,
+      label: t("page_views"),
+      value: data?.pageViews?.toLocaleString() || 0,
+    },
+    {
+      icon: <Users className="w-5 h-5 text-green-600" />,
+      label: t("unique_visitors"),
+      value: data?.uniqueVisitors?.toLocaleString() || 0,
+    },
+    {
+      icon: <MousePointer className="w-5 h-5 text-green-600" />,
+      label: t("clicks"),
+      value: data?.clicks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Bookmark className="w-5 h-5 text-green-600" />,
+      label: t("bookmarks"),
+      value: data?.bookmarks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Share2 className="w-5 h-5 text-green-600" />,
+      label: t("shares"),
+      value: data?.shares?.toLocaleString() || 0,
+    },
+    {
+      icon: <Timer className="w-5 h-5 text-green-600" />,
+      label: t("avg_time_on_page"),
+      value: `${data?.averageEngagementTime}`,
+    },
+    {
+      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+      label: t("conversion_rate"),
+      value: `${data?.conversionRate || 0}%`,
+    },
+  ];
   const {
     data: business,
     refetch,
@@ -310,10 +363,15 @@ export default function BusinessDetailsPage() {
         </div>
 
         <BusinessTitleSection business={business} t={t} />
-        <AnalyticsStatsSection
+        {/* <AnalyticsStatsSection
           t={t}
           borderColor={borderColor}
           businessId={businessId}
+        /> */}
+        <PageStats
+          stats={businessStats}
+          isLoading={isDetailStatsLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
         />
         <TabsSection
           t={t}
