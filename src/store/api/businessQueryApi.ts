@@ -31,6 +31,7 @@ export const businessQueryApi = createApi({
   reducerPath: "businessQueryApi",
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Business"],
+
   endpoints: (builder) => ({
     getAllbusinesses: builder.query<any, BusinessListParams>({
       query: (params) => ({
@@ -90,9 +91,10 @@ export const businessQueryApi = createApi({
       }),
     }),
     getbusinessForProduct: builder.query<any, any>({
-      query: () => ({
+      query: (params) => ({
         url: "search-businesses",
         method: "GET",
+        params,
       }),
     }),
   }),

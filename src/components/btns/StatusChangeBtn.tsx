@@ -90,7 +90,7 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-500 text-gray-400 font-medium"
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-500 text-gray-600 font-medium"
       >
         <span>{t("change_status")}</span>
         <ChevronDown

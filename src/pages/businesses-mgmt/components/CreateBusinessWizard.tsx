@@ -24,7 +24,6 @@ import {
   BusinessAttributes,
   BusinessBasicInfos,
   BusinessContactOwership,
-  BusinessDeliveryPolicy,
   BusinessLocation,
   BusinessMedia,
   BusinessOnlinePresence,
@@ -40,6 +39,7 @@ import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
+import { DeliveryPolicyOption } from "@/components/details-sections";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
@@ -520,7 +520,7 @@ export default function CreateBusinessWizard({
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
-        return <BusinessDeliveryPolicy {...commonProps} />;
+        return <DeliveryPolicyOption {...commonProps} />;
       case 8:
         return <BusinessOnlinePresence {...commonProps} />;
       case 9:

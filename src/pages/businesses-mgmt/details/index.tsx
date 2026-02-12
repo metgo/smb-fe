@@ -2,11 +2,21 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit, UserCog } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import {
+  Bookmark,
+  Edit,
+  Eye,
+  MousePointer,
+  Plus,
+  Share2,
+  Timer,
+  TrendingUp,
+  UserCog,
+  Users,
+} from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  AnalyticsStatsSection,
   BusinessAttributesDetails,
   BusinessContactDetails,
   BusinessDeliveryPolicyDetails,
@@ -17,29 +27,73 @@ import {
   BusinessTitleSection,
   ChangeOwnerModal,
 } from "./components";
-import { Spinner, TabsSection } from "@/components/shared";
+import { routes } from "@/lib/routes";
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import {
+  useGetbusinessByIdQuery,
+  useGetIndividualBusinessStatsQuery,
+} from "@/store/api/businessQueryApi";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
-import { routes } from "@/lib/routes";
 import { LocationDetails } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
+  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
+  ///business detail stats
+  const { data, isLoading: isDetailStatsLoading } =
+    useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
 
+  const businessStats = [
+    {
+      icon: <Eye className="w-5 h-5 text-green-600" />,
+      label: t("page_views"),
+      value: data?.pageViews?.toLocaleString() || 0,
+    },
+    {
+      icon: <Users className="w-5 h-5 text-green-600" />,
+      label: t("unique_visitors"),
+      value: data?.uniqueVisitors?.toLocaleString() || 0,
+    },
+    {
+      icon: <MousePointer className="w-5 h-5 text-green-600" />,
+      label: t("clicks"),
+      value: data?.clicks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Bookmark className="w-5 h-5 text-green-600" />,
+      label: t("bookmarks"),
+      value: data?.bookmarks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Share2 className="w-5 h-5 text-green-600" />,
+      label: t("shares"),
+      value: data?.shares?.toLocaleString() || 0,
+    },
+    {
+      icon: <Timer className="w-5 h-5 text-green-600" />,
+      label: t("avg_time_on_page"),
+      value: `${data?.averageEngagementTime}`,
+    },
+    {
+      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+      label: t("conversion_rate"),
+      value: `${data?.conversionRate || 0}%`,
+    },
+  ];
   const {
     data: business,
     refetch,
@@ -65,9 +119,7 @@ export default function BusinessDetailsPage() {
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    // uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -172,8 +224,12 @@ export default function BusinessDetailsPage() {
 
   // const onViewProducts = () => { };
 
-  // const onCreateProduct = () => { };
-
+  const onCreateProduct = () => {
+    navigate(`${routes.productsMgmt}?businessId=${businessId}`);
+  };
+  const onClickView = () => {
+    navigate(`${routes.productsMgmt}?businessIdView=${businessId}`);
+  };
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -281,6 +337,12 @@ export default function BusinessDetailsPage() {
               </button>
             )}
             <button
+              onClick={onClickView}
+              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              {t("view_product")}
+            </button>
+            <button
               onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
             >
@@ -288,7 +350,7 @@ export default function BusinessDetailsPage() {
               {t("edit")}
             </button>
 
-            {/* {onCreateProduct && (
+            {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
                 className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
@@ -296,25 +358,20 @@ export default function BusinessDetailsPage() {
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
               </button>
-            )} */}
-
-            {/* {onViewProducts && (
-              <button
-                onClick={onViewProducts}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Box className="w-4 h-4" />
-                {t("view_products")}
-              </button>
-            )} */}
+            )}
           </div>
         </div>
 
         <BusinessTitleSection business={business} t={t} />
-        <AnalyticsStatsSection
+        {/* <AnalyticsStatsSection
           t={t}
           borderColor={borderColor}
           businessId={businessId}
+        /> */}
+        <PageStats
+          stats={businessStats}
+          isLoading={isDetailStatsLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
         />
         <TabsSection
           t={t}

@@ -36,6 +36,7 @@ export const endpoints = {
   //products
   products: "/products",
   bulkProductsUpdate: "/bulk-products-update",
+  productsStats: "/products-stat",
 
   // events
   events: "/events",

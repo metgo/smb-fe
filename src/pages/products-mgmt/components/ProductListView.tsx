@@ -8,7 +8,7 @@ import { routes } from "@/lib/routes";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-
+import { getPlainTextFromRichText } from "@/helpers";
 interface ProductListViewProps {
   products: any[];
   isLoading: boolean;
@@ -74,6 +74,18 @@ const ProductListView: React.FC<ProductListViewProps> = ({
           <div className="font-medium">{product.name[language]}</div>
           <div className="text-xs text-gray-500 truncate max-w-xs">
             {product.name}
+          </div>
+        </div>
+      ),
+    },
+    columnVisibility.shortDescription && {
+      key: "shortDescription",
+      label: t("short_description"),
+      sortable: true,
+      render: (product: any) => (
+        <div>
+          <div className="text-xs text-gray-500 line-clamp-1">
+            {getPlainTextFromRichText(product.shortDescription)}
           </div>
         </div>
       ),

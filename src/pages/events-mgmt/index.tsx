@@ -60,7 +60,7 @@ export default function EventsMgmtPage() {
     ...(dateRangeFilter.end && { endDate: dateRangeFilter.end }),
     externalApiId: selectedWebsites.map((site) => site._id),
   });
-  const { data: eventStatsData, isLoading: _isEventStatsFetching } =
+  const { data: eventStatsData, isLoading: isEventStatsFetching } =
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
 
@@ -122,6 +122,7 @@ export default function EventsMgmtPage() {
 
         <PageStats
           stats={eventStats}
+          isLoading={isEventStatsFetching}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
         />
 

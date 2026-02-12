@@ -131,11 +131,13 @@ export default function ReactSelect({
       }}
       formatOptionLabel={(option: ItemOption) => (
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <ImageWithFallback
-            src={option.logo}
-            alt={option.label}
-            style={{ width: 40, height: 30, objectFit: "contain" }}
-          />
+          {option.logo && (
+            <ImageWithFallback
+              src={option.logo}
+              alt={option.label}
+              style={{ width: 40, height: 30, objectFit: "contain" }}
+            />
+          )}
           <span className="font-semibold">{option.label}</span>
         </div>
       )}

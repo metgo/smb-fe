@@ -34,7 +34,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   handleImageUpload,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark, rowDir } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   const handleViewImage = (img: IImageUpload) => {
     window.open(img.previewUrl, "_blank");
@@ -43,7 +43,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   return (
     <div className="space-y-6 min-h-150">
       {/* Header */}
-      <div className={clsx("flex items-center justify-between mb-2", rowDir)}>
+      <div className={clsx("flex items-center justify-between mb-2")}>
         <div>
           <h2
             className={clsx(
@@ -59,12 +59,13 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               isDark ? "text-gray-400" : "text-gray-600",
             )}
           >
-            {images.length} {images.length === 1 ? "image" : "images"} uploaded
-            {images.length < 10 && ` • ${10 - images.length} more allowed`}
+            {images?.length} {images?.length === 1 ? "image" : "images"}{" "}
+            uploaded
+            {images?.length < 10 && ` • ${10 - images.length} more allowed`}
           </p>
         </div>
 
-        {images.length < 10 && (
+        {images?.length < 10 && (
           <>
             {/* ---------FUTURE USE----------- */}
             {/* <button
@@ -218,7 +219,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
                     )}
                   >
                     <Star className="w-3.5 h-3.5 fill-white" />
-                    {t("primary_image") || "Primary"}
+                    {t("primary") || "Primary"}
                   </div>
                 </div>
               )}
