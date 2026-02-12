@@ -174,7 +174,9 @@ export default function BusinessDetailsPage() {
   const onCreateProduct = () => {
     navigate(`${routes.productsMgmt}?businessId=${businessId}`);
   };
-
+  const onClickView = () => {
+    navigate(`${routes.productsMgmt}?businessIdView=${businessId}`);
+  };
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -282,6 +284,12 @@ export default function BusinessDetailsPage() {
               </button>
             )}
             <button
+              onClick={onClickView}
+              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              {t("view_product")}
+            </button>
+            <button
               onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
             >
@@ -298,16 +306,6 @@ export default function BusinessDetailsPage() {
                 {t("create_product")}
               </button>
             )}
-
-            {/* {onViewProducts && (
-              <button
-                onClick={onViewProducts}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Box className="w-4 h-4" />
-                {t("view_products")}
-              </button>
-            )} */}
           </div>
         </div>
 

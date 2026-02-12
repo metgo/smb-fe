@@ -1,6 +1,7 @@
-import { ReactSelect } from "@/components/form-fields";
+import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 interface ProductBasicInfoProps {
   t: (key: string) => string;
   selectedFormLanguage: "en" | "he" | "ar";
@@ -58,7 +59,7 @@ const ProductBasicInfo = ({
     const placeholders: Record<string, Record<string, string>> = {
       en: {
         name: "Enter product name in English",
-        short: "Brief description (max 160 characters)",
+        short: "Brief description (max 50 characters)",
         full: "Detailed product description",
       },
       he: {
@@ -74,6 +75,7 @@ const ProductBasicInfo = ({
     };
     return placeholders[selectedFormLanguage][type];
   };
+  const { t: tc } = useTranslation("common");
 
   return (
     <div className="space-y-6">
@@ -129,50 +131,50 @@ const ProductBasicInfo = ({
 
       {/* Product Name */}
       <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_name")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              name: e.target.value,
-            })
-          }
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-          placeholder={getPlaceholder("name")}
-        />
-
-        {errors.nameEn && selectedFormLanguage === "en" && (
-          <p className="text-red-500 text-sm mt-1">{errors.nameEn}</p>
-        )}
+        <FormFieldWrapper
+          required
+          label={t("product_name")}
+          error={errors?.nameEn}
+          inputHintText={`${formData.name?.length ?? 0}/50 ${tc("max_characters")}`}
+        >
+          <input
+            type="text"
+            value={formData.name}
+            maxLength={50}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                name: e.target.value,
+              })
+            }
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+            placeholder={getPlaceholder("name")}
+          />
+        </FormFieldWrapper>
       </div>
 
       {/* Short Description */}
       <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_short_description")}{" "}
-          <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          value={formData.shortDescription}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              shortDescription: e.target.value,
-            })
-          }
-          rows={3}
-          maxLength={160}
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-          placeholder={getPlaceholder("short")}
-        />
-
-        {errors.shortDescEn && selectedFormLanguage === "en" && (
-          <p className="text-red-500 text-sm mt-1">{errors.shortDescEn}</p>
-        )}
+        <FormFieldWrapper
+          required
+          label={t("product_short_description")}
+          error={errors?.shortDescEn}
+          inputHintText={`${formData.shortDescription?.length ?? 0}/50 ${tc("max_characters")}`}
+        >
+          <textarea
+            value={formData.shortDescription}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                shortDescription: e.target.value,
+              })
+            }
+            rows={3}
+            maxLength={50}
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+            placeholder={getPlaceholder("short")}
+          />
+        </FormFieldWrapper>
       </div>
 
       {/* Full Description */}
@@ -180,8 +182,10 @@ const ProductBasicInfo = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("product_full_description")}
         </label>
+
         <textarea
           value={formData.fullDescription}
+          maxLength={500}
           onChange={(e) =>
             setFormData({
               ...formData,

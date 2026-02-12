@@ -56,6 +56,8 @@ const columnDefinitions = [
   { key: "images" as keyof IColumnVisibility, isDefault: true },
   { key: "name" as keyof IColumnVisibility, isDefault: true },
   { key: "businessId" as keyof IColumnVisibility, isDefault: true },
+  { key: "shortDescription" as keyof IColumnVisibility, isDefault: true },
+
   { key: "productType" as keyof IColumnVisibility, isDefault: true },
   { key: "status" as keyof IColumnVisibility, isDefault: true },
   { key: "price" as keyof IColumnVisibility, isDefault: true },
@@ -66,8 +68,9 @@ const columnDefinitions = [
 ];
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
+  const businessIdView = searchParams?.get("businessIdView");
 
   const {
     isDark,
@@ -94,7 +97,15 @@ export default function ProductsMgmtPage() {
   );
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+  const removeQueryParams = () => {
+    const param = searchParams.get("businessIdView");
 
+    if (param) {
+      searchParams.delete("businessIdView");
+
+      setSearchParams(searchParams);
+    }
+  };
   //filters
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -143,12 +154,16 @@ export default function ProductsMgmtPage() {
       params.productType = filters.productType.toUpperCase();
     }
 
-    if (filters.businessId == "") {
+    if (filters.businessId !== "") {
       params.businessId = filters.businessId;
     }
 
+    if (businessIdView) {
+      params.businessId = businessIdView;
+    }
+
     return params;
-  }, [page, searchTerm, filters, language]);
+  }, [page, searchTerm, filters, language, businessIdView]);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = productQueryParams;
@@ -536,7 +551,7 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                {businessId && (
+                {!businessIdView && (
                   <div>
                     <label
                       className={`block text-sm mb-1 ${
@@ -551,7 +566,7 @@ export default function ProductsMgmtPage() {
                       onChange={(businessId) => {
                         setFilters((prev) => ({
                           ...prev,
-                          businessId,
+                          businessId: businessId,
                         }));
                       }}
                       items={
@@ -572,15 +587,16 @@ export default function ProductsMgmtPage() {
                     ([_, val]) => val !== "all",
                   ) && (
                     <button
-                      onClick={() =>
+                      onClick={() => {
                         setFilters({
                           status: "all",
                           productType: "all",
                           locale: language,
                           businessId: "",
-                        })
-                      }
-                      className="ml-auto text-sm text-green-600 "
+                        });
+                        removeQueryParams();
+                      }}
+                      className="ml-auto text-sm text-green-600"
                     >
                       {t("clear_all")}
                     </button>
