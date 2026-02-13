@@ -6,7 +6,6 @@ type SelectableChipsProps = {
   items?: { _id: string; name: string }[];
   selectedIds: string[];
   onSelect: (id: string) => void;
-  textSecondary: string;
 };
 
 const SelectableChips = ({
@@ -14,9 +13,8 @@ const SelectableChips = ({
   items = [],
   selectedIds,
   onSelect,
-  textSecondary,
 }: SelectableChipsProps) => {
-  const { textPrimary } = useThemeClasses();
+  const { textPrimary, textSecondary } = useThemeClasses();
   return (
     <div>
       <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
@@ -24,8 +22,8 @@ const SelectableChips = ({
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {items.map((item) => {
-          const isSelected = selectedIds.includes(item._id);
+        {items?.map((item) => {
+          const isSelected = selectedIds?.includes(item._id);
 
           return (
             <div

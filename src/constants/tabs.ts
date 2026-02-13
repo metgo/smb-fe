@@ -23,7 +23,7 @@ export const businessTabs = [
   { id: "delivery", label: "delivery_policy", icon: Truck },
   {
     id: "accessibility",
-    label: "accessibility_group_types",
+    label: "attributes",
     icon: Accessibility,
   },
   { id: "hours", label: "operating_hours", icon: Clock },
@@ -46,6 +46,7 @@ export const eventTabs = [
 
 export const productTabs = [
   { id: "overview", label: "overview", icon: FileText },
+  { id: "attributes", label: "attributes", icon: Accessibility },
   {
     id: "pricing",
     label: "pricing",
@@ -57,5 +58,6 @@ export const productTabs = [
     label: "availability",
     icon: Calendar,
   },
+  { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "media", label: "media", icon: ImageIcon },
 ];

@@ -1,19 +1,26 @@
-import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
+
 interface ProductBasicInfoProps {
   t: (key: string) => string;
   selectedFormLanguage: "en" | "he" | "ar";
   setSelectedFormLanguage: (lang: "en" | "he" | "ar") => void;
   formData: {
-    businessId: {
-      _id: string;
-      name: string;
-    };
+    businessId: string;
+
     name: string;
+    nameHe: string;
+    nameAr: string;
+
     shortDescription: string;
+    shortDescriptionHe: string;
+    shortDescriptionAr: string;
+
     fullDescription: string;
+    fullDescriptionHe: string;
+    fullDescriptionAr: string;
   };
   setBusinessId: (data: string) => void;
   setFormData: (data: any) => void;
@@ -22,10 +29,7 @@ interface ProductBasicInfoProps {
     nameEn?: string;
     shortDescEn?: string;
   };
-  businesses: { _id: string; name: string }[];
-  isBusinessesLoading: boolean;
-  businessData: any;
-  isLoading: any;
+  businesses: { _id: string; name: string; slug: string }[];
 }
 
 const ProductBasicInfo = ({
@@ -37,18 +41,24 @@ const ProductBasicInfo = ({
   errors,
   businesses,
   setBusinessId,
-
-  // isBusinessesLoading,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
-  // Helper to get field key based on selected language
-  // const getFieldKey = (
-  //   _field: "name" | "shortDescription" | "fullDescription",
-  // ) => {
-  //   return selectedFormLanguage;
-  // };
-  // Helper to get placeholder text based on language
+
+  const { t: tc } = useTranslation("common");
+
+  //  Dynamic key resolver
+  const getFieldKey = (
+    base: "name" | "shortDescription" | "fullDescription",
+  ) => {
+    if (selectedFormLanguage === "en") return base;
+    if (selectedFormLanguage === "he")
+      return `${base}He` as keyof typeof formData;
+    if (selectedFormLanguage === "ar")
+      return `${base}Ar` as keyof typeof formData;
+    return base;
+  };
+
   const getPlaceholder = (type: "name" | "short" | "full") => {
     const placeholders: Record<string, Record<string, string>> = {
       en: {
@@ -58,18 +68,21 @@ const ProductBasicInfo = ({
       },
       he: {
         name: "הזן שם המוצר",
-        short: "תיאור קצר (מקס 160 תווים)",
+        short: "תיאור קצר (מקס 50 תווים)",
         full: "תיאור מפורט של המוצר",
       },
       ar: {
         name: "أدخل اسم المنتج",
-        short: "وصف مختصر (بحد أقصى 160 حرفًا)",
+        short: "وصف مختصر (بحد أقصى 50 حرفًا)",
         full: "وصف تفصيلي للمنتج",
       },
     };
     return placeholders[selectedFormLanguage][type];
   };
-  const { t: tc } = useTranslation("common");
+
+  const currentNameKey = getFieldKey("name");
+  const currentShortKey = getFieldKey("shortDescription");
+  const currentFullKey = getFieldKey("fullDescription");
 
   return (
     <div className="space-y-6">
@@ -78,11 +91,10 @@ const ProductBasicInfo = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("select_business")} <span className="text-red-500">*</span>
         </label>
-        <ReactSelect
-          value={formData?.businessId?._id}
-          onChange={(selectedOption: any) => {
-            const selectedBusinessId = selectedOption || "";
 
+        <ReactSelect
+          value={formData.businessId}
+          onChange={(selectedBusinessId: string) => {
             setFormData({
               ...formData,
               businessId: selectedBusinessId,
@@ -108,6 +120,7 @@ const ProductBasicInfo = ({
         <h3 className={`text-lg font-medium ${textPrimary}`}>
           {t("product_information")}
         </h3>
+
         <div className="flex items-center gap-2">
           <Globe className={`w-4 h-4 ${textTertiary}`} />
           <select
@@ -125,73 +138,74 @@ const ProductBasicInfo = ({
       </div>
 
       {/* Product Name */}
-      <div>
-        <FormFieldWrapper
-          required
-          label={t("product_name")}
-          error={errors?.nameEn}
-          inputHintText={`${formData.name?.length ?? 0}/50 ${tc("max_characters")}`}
-        >
-          <input
-            type="text"
-            value={formData.name}
-            maxLength={50}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                name: e.target.value,
-              })
-            }
-            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-            placeholder={getPlaceholder("name")}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      {/* Short Description */}
-      <div>
-        <FormFieldWrapper
-          required
-          label={t("product_short_description")}
-          error={errors?.shortDescEn}
-          inputHintText={`${formData.shortDescription?.length ?? 0}/50 ${tc("max_characters")}`}
-        >
-          <textarea
-            value={formData.shortDescription}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                shortDescription: e.target.value,
-              })
-            }
-            rows={3}
-            maxLength={50}
-            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-            placeholder={getPlaceholder("short")}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      {/* Full Description */}
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_full_description")}
-        </label>
-
-        <textarea
-          value={formData.fullDescription}
-          maxLength={500}
+      <FormFieldWrapper
+        required
+        label={t("product_name")}
+        error={errors?.nameEn}
+        inputHintText={`${
+          (formData[currentNameKey] as string)?.length ?? 0
+        }/50 ${tc("max_characters")}`}
+      >
+        <input
+          type="text"
+          value={(formData[currentNameKey] as string) || ""}
+          maxLength={50}
           onChange={(e) =>
             setFormData({
               ...formData,
-              fullDescription: e.target.value,
+              [currentNameKey]: e.target.value,
             })
           }
+          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+          placeholder={getPlaceholder("name")}
+        />
+      </FormFieldWrapper>
+
+      {/* Short Description */}
+      <FormFieldWrapper
+        required
+        label={t("product_short_description")}
+        error={errors?.shortDescEn}
+        inputHintText={`${
+          (formData[currentShortKey] as string)?.length ?? 0
+        }/50 ${tc("max_characters")}`}
+      >
+        <textarea
+          value={(formData[currentShortKey] as string) || ""}
+          maxLength={50}
+          rows={3}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              [currentShortKey]: e.target.value,
+            })
+          }
+          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+          placeholder={getPlaceholder("short")}
+        />
+      </FormFieldWrapper>
+
+      {/* Full Description */}
+      <FormFieldWrapper
+        label={t("product_full_description")}
+        inputHintText={`${
+          (formData[currentFullKey] as string)?.length ?? 0
+        }/500 ${tc("max_characters")}`}
+      >
+        <textarea
+          value={(formData[currentFullKey] as string) || ""}
+          maxLength={500}
           rows={6}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              [currentFullKey]: e.target.value,
+            })
+          }
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("full")}
         />
-      </div>
+      </FormFieldWrapper>
     </div>
   );
 };

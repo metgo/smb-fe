@@ -39,9 +39,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
 }) => {
-  const { textSecondary, isDark } = useThemeClasses();
-  const { primaryCategories, accessibility, groupTypes, subCategories } =
-    useCommon();
+  const { isDark } = useThemeClasses();
+  const { categories, accessibility, groupTypes, subCategories } = useCommon();
 
   // Tag autocomplete states
   const [tagInput, setTagInput] = useState("");
@@ -93,7 +92,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         >
           <option value="">{t("select")}</option>
-          {primaryCategories?.datas?.data.map((cat: any) => (
+          {categories?.map((cat: any) => (
             <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
@@ -109,14 +108,12 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
         items={accessibility?.datas?.data}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
       <SelectableChips
         label="Group Types"
         items={groupTypes?.datas?.data}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Tags */}

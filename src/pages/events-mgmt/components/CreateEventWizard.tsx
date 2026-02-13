@@ -841,7 +841,7 @@ export default function CreateEventWizard({
 
       <WizardFooter
         currentStep={currentStep}
-        totalSteps={7}
+        totalSteps={steps?.length}
         isSaving={isEventUpdating}
         isPublishing={isPublishing}
         onPrevious={handlePrevious}

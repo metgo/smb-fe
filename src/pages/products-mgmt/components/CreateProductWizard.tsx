@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useSearchParams } from "react-router-dom";
 
 import {
   Check,
   Image as ImageIcon,
-  Globe,
   Package,
   Truck,
   Eye,
@@ -17,11 +18,9 @@ import {
   ProductAttributes,
   ProductBasicInfo,
   ProductMedia,
-  ProductMultilingualContent,
   ProductPricingAvailability,
   ProductReviewSubmit,
 } from "./sub-components";
-import { useTranslation } from "react-i18next";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -33,18 +32,12 @@ import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
-import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
-import { useSearchParams } from "react-router-dom";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessDeliveryInfoByIdQuery,
+} from "@/store/api/businessQueryApi";
 import { DeliveryPolicyOption } from "@/components/details-sections";
-
-const availableCategories = [
-  "Food & Dining",
-  "Accommodation",
-  "Tours & Activities",
-  "Shopping",
-  "Wellness & Spa",
-  "Entertainment",
-];
+import { useAppSelector } from "@/hooks/hooks";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -54,11 +47,9 @@ interface ProductWizardProps {
   product?: any;
 }
 
-export default function CreateProductWizard({
-  onClose,
-  editingProduct,
-}: ProductWizardProps) {
+export default function CreateProductWizard({ onClose }: ProductWizardProps) {
   const { t } = useTranslation("products");
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
   const [searchParams] = useSearchParams();
 
   const productId = searchParams?.get("productId");
@@ -72,24 +63,27 @@ export default function CreateProductWizard({
     borderColor,
   } = useThemeClasses();
 
-  const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetbusinessForProductQuery({ locale: language });
+  const { data: businessData, isLoading: _isBusinessesLoading } =
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      dmoId,
+      authorityId,
+    });
+  const [getBusinessDelivery] = useLazyGetBusinessDeliveryInfoByIdQuery();
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedFormLanguage, setSelectedFormLanguage] = useState<
-    "en" | "he" | "ar"
-  >("en");
-  const [isPublishing, setIsPublishing] = useState(false);
-  const { data: product, isLoading } = useGetProductbyIdQuery(
+  const { data: product } = useGetProductbyIdQuery(
     productId ? { productId: productId } : skipToken,
   );
 
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
-  const businesses = businessData?.data;
-
   const [businessId, setBusinessId] = useState("");
+  const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("en");
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const {
     images,
@@ -109,49 +103,68 @@ export default function CreateProductWizard({
     onChange: setGalleryImages,
   });
 
-  const [formData, setFormData] = useState<any>(
-    editingProduct || {
-      businessId: businessId,
-      name: "",
-      nameHe: "",
-      nameAr: "",
-      shortDescription: "",
-      shortDescriptionHe: "",
-      shortDescriptionAr: "",
-      fullDescription: "",
-      type: "",
-      categories: [],
-      markedPrice: "",
-      sellingPrice: "",
-      quantity: "",
-      isUnlimited: false,
-      startDate: "",
-      endDate: "",
-      logo: null as IImage | null,
-      images: null as TImages | null,
-      additionalImages: [],
-      enableHomeDelivery: false,
-      enableStorePickup: false,
-      deliveryFee: "",
-      deliveryTime: "",
-      serviceDuration: "",
-      serviceLocation: "",
-      vendorDelivers: false,
-      pickupAvailable: false,
-      deliveryArea: [] as any[],
-      deliveryAdditionalInfo: "",
-      deliveryReturnExchange: [] as string[],
-      deliverySpecificSellerInfo: [] as string[],
-    },
-  );
-  console.log("formData:", formData);
+  const [formData, setFormData] = useState<any>({
+    businessId: businessId,
+    name: "",
+    nameHe: "",
+    nameAr: "",
+    shortDescription: "",
+    shortDescriptionHe: "",
+    shortDescriptionAr: "",
+    fullDescription: "",
+    fullDescriptionHe: "",
+    fullDescriptionAr: "",
+    type: "",
+    categories: [],
+    subCategories: [],
+    markedPrice: "",
+    sellingPrice: "",
+    quantity: "",
+    isUnlimited: false,
+    startDate: "",
+    endDate: "",
+    logo: null as IImage | null,
+    images: null as TImages | null,
+    additionalImages: [],
+    serviceDuration: "",
+    vendorDelivers: false,
+    pickupAvailable: false,
+    deliveryArea: [] as any[],
+    deliveryAdditionalInfo: "",
+    deliveryReturnExchange: [] as string[],
+    deliverySpecificSellerInfo: [] as string[],
+  });
+
+  useEffect(() => {
+    const fetchBusinessDelivery = async () => {
+      if (isSameAsBusiness && businessId) {
+        try {
+          const { data } = await getBusinessDelivery({ businessId });
+
+          setFormData((prev: any) => ({
+            ...prev,
+            vendorDelivers: data?.vendorDelivers ?? false,
+            pickupAvailable: data?.isPickUpAvailable ?? false,
+            deliveryArea: data?.deliveryArea ?? [],
+            deliveryReturnExchange: data?.deliveryReturnExchange ?? [],
+            deliveryAdditionalInfo: data?.deliveryAdditionalInfo ?? "",
+            deliverySpecificSellerInfo: data?.deliverySpecificSellerInfo ?? [],
+          }));
+        } catch (error) {
+          console.error("Failed to fetch business delivery:", error);
+        }
+      }
+    };
+
+    fetchBusinessDelivery();
+  }, [isSameAsBusiness, businessId]);
 
   useEffect(() => {
     if (!productId || !product) return;
 
     setFormData({
       // basic info
-      businessId: product?.businessId || "",
+      businessId: product?.businessId?._id || "",
       name: product.name || "",
       nameHe: product.nameHe || "",
       nameAr: product.nameAr || "",
@@ -159,10 +172,13 @@ export default function CreateProductWizard({
       shortDescription: product.shortDescription || "",
       shortDescriptionHe: product.shortDescriptionHe || "",
       shortDescriptionAr: product.shortDescriptionAr || "",
-      fullDescription: product.fullDescription || "",
 
-      type: product.productType || "",
+      fullDescription: product.fullDescription || "",
+      fullDescriptionHe: product.fullDescriptionHe || "",
+      fullDescriptionAr: product.fullDescriptionAr || "",
+
       categories: product.categories || [],
+      subCategories: product.subCategories || [],
 
       // pricing & stock
       markedPrice: product.price?.markedPrice || "",
@@ -181,10 +197,7 @@ export default function CreateProductWizard({
       // delivery / service
       enableHomeDelivery: product.enableHomeDelivery || false,
       enableStorePickup: product.enableStorePickup || false,
-      deliveryFee: product.deliveryFee || "",
-      deliveryTime: product.deliveryTime || "",
       serviceDuration: product.serviceDuration || "",
-      serviceLocation: product.serviceLocation || "",
 
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
@@ -199,14 +212,14 @@ export default function CreateProductWizard({
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: t("product_type_category"), icon: Package },
+    { number: 2, title: t("product_segmentation"), icon: Package },
     { number: 3, title: t("product_pricing"), icon: CreditCard },
     { number: 4, title: t("product_media"), icon: ImageIcon },
-    { number: 5, title: t("product_multilingual"), icon: Globe },
-    { number: 6, title: t("product_delivery_service"), icon: Truck },
-    { number: 7, title: t("product_review"), icon: Eye },
+    { number: 5, title: t("product_delivery_service"), icon: Truck },
+    { number: 6, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -220,7 +233,6 @@ export default function CreateProductWizard({
           newErrors.shortDescEn = t("field_required");
         break;
       case 2:
-        if (!formData.type) newErrors.type = t("field_required");
         if (formData.categories.length === 0)
           newErrors.categories = t("select_at_least_one_category");
         break;
@@ -275,19 +287,29 @@ export default function CreateProductWizard({
     await saveDraft(true);
     setIsPublishing(false);
 
-    toast.success(t("business created succesfully"));
+    toast.success(t("Product created succesfully"));
     onClose();
   };
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
     businessId: formData.businessId,
+
     name: formData.name,
+    nameAr: formData.nameAr,
+    nameHe: formData.nameHe,
 
     shortDescription: formData.shortDescription,
+    shortDescriptionAr: formData.shortDescriptionAr,
+    shortDescriptionHe: formData.shortDescriptionHe,
+
     description: formData.fullDescription,
+    descriptionHe: formData.fullDescriptionHe,
+    descriptionAr: formData.fullDescriptionAr,
+
     productType: formData.type,
     categories: formData.categories,
+    subCategories: formData?.subCategories,
 
     price: {
       markedPrice: formData.markedPrice,
@@ -301,18 +323,8 @@ export default function CreateProductWizard({
     activeEndDate: formData.endDate,
 
     images: galleryImages,
-    nameHe: formData.nameHe,
-    shortDescriptionHe: formData.shortDescriptionHe,
 
-    nameAr: formData.nameAr,
-    shortDescriptionAr: formData.shortDescriptionAr,
-
-    enableHomeDelivery: formData.enableHomeDelivery,
-    enableStorePickup: formData.enableStorePickup,
-    deliveryFee: formData.deliveryFee,
-    deliveryTime: formData.deliveryTime,
     serviceDuration: formData.serviceDuration,
-    serviceLocation: formData.serviceLocation,
     isPickUpAvailable: formData.pickupAvailable,
     deliveryArea: formData.deliveryArea,
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
@@ -320,7 +332,6 @@ export default function CreateProductWizard({
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
   };
 
-  // Auto-save draft function
   const saveDraft = async (isPublish = false) => {
     try {
       let internalProductId;
@@ -359,8 +370,7 @@ export default function CreateProductWizard({
       selectedFormLanguage,
       setSelectedFormLanguage,
       handleImageUpload,
-      availableCategories,
-      businesses,
+      businesses: businessData?.data,
     };
 
     const mediaProps = {
@@ -381,13 +391,7 @@ export default function CreateProductWizard({
     switch (currentStep) {
       case 1:
         return (
-          <ProductBasicInfo
-            {...commonProps}
-            setBusinessId={setBusinessId}
-            isLoading={isLoading}
-            isBusinessesLoading={isBusinessesLoading}
-            businessData={businessData}
-          />
+          <ProductBasicInfo {...commonProps} setBusinessId={setBusinessId} />
         );
       case 2:
         return <ProductAttributes {...commonProps} />;
@@ -396,16 +400,16 @@ export default function CreateProductWizard({
       case 4:
         return <ProductMedia {...mediaProps} {...commonProps} />;
       case 5:
-        return <ProductMultilingualContent {...commonProps} />;
-      case 6:
         return (
           <DeliveryPolicyOption
             isProduct
             formData={formData}
             setFormData={setFormData}
+            isSameAsBusiness={isSameAsBusiness}
+            setIsSameAsBusiness={setIsSameAsBusiness}
           />
         );
-      case 7:
+      case 6:
         return <ProductReviewSubmit {...commonProps} />;
       default:
         return null;
@@ -414,18 +418,16 @@ export default function CreateProductWizard({
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
-      {/* Header */}
       <div
         className={`p-6 border-b ${borderColor} flex items-center justify-between`}
       >
-        {/* Left content */}
         <div>
           <h2 className={`text-2xl ${textPrimary} mb-1`}>
             {productId ? t("edit_product") : t("create_product")}
           </h2>
           <p className={`text-sm ${textTertiary}`}>
-            {t("step")} {currentStep} {t("of")} 7:{" "}
-            {steps[currentStep - 1].title}
+            {t("step")} {currentStep} {t("of")} 6:{" "}
+            {steps[currentStep - 1]?.title}
           </p>
         </div>
 
@@ -447,9 +449,7 @@ export default function CreateProductWizard({
                 className="flex-1 cursor-pointer"
                 onClick={() => setCurrentStep(step.number)}
               >
-                {/* Icon + connector */}
                 <div className="flex items-center">
-                  {/* Icon + title */}
                   <div className="flex flex-col items-center">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
@@ -499,7 +499,7 @@ export default function CreateProductWizard({
 
       <WizardFooter
         currentStep={currentStep}
-        totalSteps={7}
+        totalSteps={steps?.length}
         isSaving={isSaving}
         isPublishing={isPublishing}
         onPrevious={handlePrevious}

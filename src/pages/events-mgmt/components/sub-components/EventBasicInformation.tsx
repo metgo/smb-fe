@@ -260,7 +260,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
@@ -268,7 +267,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         items={accessibility?.datas?.data ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
@@ -276,7 +274,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         items={groupTypes?.datas?.data ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Internal Notes */}

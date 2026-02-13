@@ -327,9 +327,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {sortedData?.length === 0 ? (
-              // No data state
-
+            {sortedData?.length === 0 && !isDataLoading ? (
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}
