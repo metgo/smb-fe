@@ -26,7 +26,20 @@ export const businessTabs = [
   },
   { id: "hours", label: "operating_hours", icon: Clock },
 ];
-
+export const miniSiteTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "product", label: "product", icon: Users },
+  // { id: "location", label: "location_map", icon: MapPin },
+  // { id: "media", label: "images_branding", icon: ImageIcon },
+  // { id: "social", label: "social_networks", icon: Globe },
+  // { id: "delivery", label: "delivery_policy", icon: Truck },
+  // {
+  //   id: "accessibility",
+  //   label: "accessibility_group_types",
+  //   icon: Accessibility,
+  // },
+  // { id: "hours", label: "operating_hours", icon: Clock },
+];
 export const eventTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "attributes", label: "attributes", icon: Accessibility },

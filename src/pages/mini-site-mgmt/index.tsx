@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import {
-  Search,
+  // Search,
   Plus,
   DollarSign,
   Users,
@@ -67,7 +67,6 @@ export default function MiniSiteMgmtPage() {
   } = useThemeClasses();
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showWizard, setShowWizard] = useState(false);
   const [editingMiniSite, setEditingMiniSite] = useState<MiniSite | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -115,7 +114,6 @@ export default function MiniSiteMgmtPage() {
 
   const navigate = useNavigate();
   const handleMiniSiteClick = (miniSite: any) => {
-    console.log("🚀 ~ handleMiniSiteClick ~ miniSite:", miniSite);
     navigate(`${routes.miniSiteDetails}?miniSiteId=${miniSite?._id}`, {
       replace: true,
     });

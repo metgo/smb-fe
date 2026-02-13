@@ -17,22 +17,24 @@ export const miniSiteQueryApi = createApi({
   reducerPath: "miniSiteQueryApi",
   baseQuery: axiosBaseQuery(),
   tagTypes: ["MiniSite"],
-  endpoints: (builder) => ({
-    getAllMiniSites: builder.query<any, MiniSiteListParams>({
-      query: (params) => ({
-        url: endpoints.miniSites,
-        method: "GET",
-        params,
+  endpoints: (builder) => {
+    return {
+      getAllMiniSites: builder.query<any, MiniSiteListParams>({
+        query: (params) => ({
+          url: endpoints.miniSites,
+          method: "GET",
+          params,
+        }),
       }),
-    }),
 
-    getMiniSiteById: builder.query<any, { id: string | null }>({
-      query: ({ id }) => ({
-        url: `${endpoints.miniSites}/${id}`,
-        method: "GET",
+      getMiniSiteById: builder.query<any, { miniSiteId: string }>({
+        query: ({ miniSiteId }) => ({
+          url: `${endpoints.miniSites}/${miniSiteId}`,
+          method: "GET",
+        }),
       }),
-    }),
-  }),
+    };
+  },
 });
 
 export const { useGetAllMiniSitesQuery, useGetMiniSiteByIdQuery } =
