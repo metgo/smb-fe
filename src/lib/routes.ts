@@ -20,6 +20,7 @@ export const routes = {
   miniCampaignMgmt: "/mini-campaign-management",
   auth: "/authentication",
   miniSiteMgmt: "/mini-site-management",
+  miniSiteDetails: "/mini-site-details",
   profile: "/profile",
 };
 

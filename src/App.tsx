@@ -23,6 +23,7 @@ import {
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
+import MiniSiteDetailsPage from "./pages/mini-site-mgmt/details";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -65,7 +66,7 @@ function App() {
 
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
         { path: routes.businessDetails, element: <BusinessDetailsPage /> },
-
+        { path: routes.miniSiteDetails, element: <MiniSiteDetailsPage /> },
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.eventDetails, element: <EventDetailsPage /> },
 

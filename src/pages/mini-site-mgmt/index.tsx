@@ -26,8 +26,8 @@ import SearchInput from "@/components/shared/SearchInput";
 
 interface MiniSite {
   id: string;
-  campaignCode: string;
-  campaignName: string;
+  code: string;
+  name: string;
   companyName: string;
   website: string;
   startDate: string;
@@ -115,7 +115,8 @@ export default function MiniSiteMgmtPage() {
 
   const navigate = useNavigate();
   const handleMiniSiteClick = (miniSite: any) => {
-    navigate(`${routes.businessDetails}?businessId=${miniSite?._id}`, {
+    console.log("🚀 ~ handleMiniSiteClick ~ miniSite:", miniSite);
+    navigate(`${routes.miniSiteDetails}?miniSiteId=${miniSite?._id}`, {
       replace: true,
     });
   };
