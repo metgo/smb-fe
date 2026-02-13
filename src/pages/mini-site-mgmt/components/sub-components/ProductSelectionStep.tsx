@@ -19,7 +19,7 @@ interface Product {
 }
 
 interface ProductSelectionStepProps {
-  t: Record<string, string>; // your translation object
+  t: any; // your translation object
   productSearchQuery: string;
   setProductSearchQuery: (value: string) => void;
   selectedCategory: string;

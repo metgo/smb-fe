@@ -18,7 +18,7 @@ interface Step1WebsiteAndInfoProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
-  handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   websites: string[];
   contentLanguage: "en" | "he" | "ar";
   setContentLanguage: React.Dispatch<React.SetStateAction<"en" | "he" | "ar">>;
@@ -34,7 +34,7 @@ interface Step1WebsiteAndInfoProps {
   setContentGreeting: React.Dispatch<
     React.SetStateAction<Record<"en" | "he" | "ar", string>>
   >;
-  t: Record<string, string>; // translation object
+  t: any;
   textPrimary: string;
   textSecondary: string;
   textTertiary: string;
@@ -48,7 +48,7 @@ export default function Step1WebsiteAndInfo({
   formData,
   setFormData,
   handleChange,
-  handleLogoUpload,
+  // handleLogoUpload,
   websites,
   contentLanguage,
   setContentLanguage,
@@ -204,7 +204,7 @@ export default function Step1WebsiteAndInfo({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleLogoUpload}
+                  // onChange={handleLogoUpload}
                   name="logoFile"
                   className="hidden"
                 />
@@ -317,7 +317,7 @@ export default function Step1WebsiteAndInfo({
               name="deliveryArea"
               checked={formData.deliveryArea === "home"}
               onChange={() =>
-                setFormData((prev) => ({ ...prev, deliveryArea: "home" }))
+                setFormData((prev: any) => ({ ...prev, deliveryArea: "home" }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
@@ -331,7 +331,10 @@ export default function Step1WebsiteAndInfo({
               name="deliveryArea"
               checked={formData.deliveryArea === "office"}
               onChange={() =>
-                setFormData((prev) => ({ ...prev, deliveryArea: "office" }))
+                setFormData((prev: any) => ({
+                  ...prev,
+                  deliveryArea: "office",
+                }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />

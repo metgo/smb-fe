@@ -206,18 +206,17 @@ export default function MinisiteCreateWizard({
   );
   console.log("~ formData:", formData);
   // Step 1: Website & Purchaser Info
-  const [selectedWebsite, setSelectedWebsite] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneCountryCode, setPhoneCountryCode] = useState("+972");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [officeAddress, setOfficeAddress] = useState("");
-  const [logoFile, setLogoFile] = useState<string | null>(null);
+  const [_selectedWebsite, setSelectedWebsite] = useState("");
+  const [_companyName, setCompanyName] = useState("");
+  const [contactName, _setContactName] = useState("");
+  const [email] = useState("");
+  const [phoneCountryCode] = useState("+972");
+  const [phoneNumber] = useState("");
+  // const [logoFile, setLogoFile] = useState<string | null>(null);
   const [campaignName, setCampaignName] = useState("");
   const [campaignCode, setCampaignCode] = useState("");
   const [voucherAmount, setVoucherAmount] = useState("");
-  const [totalVouchers, setTotalVouchers] = useState("");
+  const [_totalVouchers, setTotalVouchers] = useState("");
   const retryFailedSends = async () => {
     // Filter failed recipients
     const failedRecipients = voucherResults.filter(
@@ -276,9 +275,9 @@ export default function MinisiteCreateWizard({
       // setIsRetrying(false);
     }
   };
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [deliveryArea, setDeliveryArea] = useState<"home" | "office">("office");
+  // const [ setStartDate] = useState("");
+  // const [setEndDate] = useState("");
+  // const [deliveryArea, setDeliveryArea] = useState<"home" | "office">("office");
   const [contentTitle, setContentTitle] = useState({ en: "", he: "", ar: "" });
   const [contentSubtitle, setContentSubtitle] = useState({
     en: "",
@@ -381,8 +380,8 @@ export default function MinisiteCreateWizard({
       setCampaignCode(editingMiniSite.campaignCode || "");
       setVoucherAmount(editingMiniSite.voucherAmount?.toString() || "");
       setTotalVouchers(editingMiniSite.totalVouchers?.toString() || "");
-      setStartDate(editingMiniSite.startDate || "");
-      setEndDate(editingMiniSite.endDate || "");
+      // setStartDate(editingMiniSite.startDate || "");
+      // setEndDate(editingMiniSite.endDate || "");
     }
   }, [editingMiniSite]);
 
@@ -410,18 +409,18 @@ export default function MinisiteCreateWizard({
     }));
   };
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleLogoUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
+  //   const previewUrl = URL.createObjectURL(file);
 
-    setFormData((prev) => ({
-      ...prev,
-      logoFile: previewUrl,
-      logoFileRaw: file, // optional: for backend upload
-    }));
-  };
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     logoFile: previewUrl,
+  //     logoFileRaw: file, // optional: for backend upload
+  //   }));
+  // };
 
   const handleNext = async () => {
     await saveDraft();
@@ -532,24 +531,16 @@ export default function MinisiteCreateWizard({
     return matchesSearch && matchesPrice && matchesCategory;
   });
 
-  const goToNext = () => {
-    if (currentStep < 5) setCurrentStep(currentStep + 1);
-  };
-
-  const goToPrev = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
-  };
-
-  const commonProps = {
-    t: t,
-    bgPrimary: "bg-white dark:bg-gray-900",
-    bgSecondary: "bg-gray-100 dark:bg-gray-800",
-    bgTertiary: "bg-gray-200 dark:bg-gray-700",
-    textPrimary: "text-gray-900 dark:text-gray-100",
-    textSecondary: "text-gray-600 dark:text-gray-400",
-    textTertiary: "text-gray-500 dark:text-gray-500",
-    borderColor: "border-gray-300 dark:border-gray-600",
-  };
+  // const commonProps = {
+  //   t: t,
+  //   bgPrimary: "bg-white dark:bg-gray-900",
+  //   bgSecondary: "bg-gray-100 dark:bg-gray-800",
+  //   bgTertiary: "bg-gray-200 dark:bg-gray-700",
+  //   textPrimary: "text-gray-900 dark:text-gray-100",
+  //   textSecondary: "text-gray-600 dark:text-gray-400",
+  //   textTertiary: "text-gray-500 dark:text-gray-500",
+  //   borderColor: "border-gray-300 dark:border-gray-600",
+  // };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -756,7 +747,7 @@ export default function MinisiteCreateWizard({
               formData={formData}
               setFormData={setFormData}
               handleChange={handleChange}
-              handleLogoUpload={handleLogoUpload}
+              // handleLogoUpload={handleLogoUpload}
               websites={websites}
               contentLanguage={contentLanguage}
               setContentLanguage={setContentLanguage}

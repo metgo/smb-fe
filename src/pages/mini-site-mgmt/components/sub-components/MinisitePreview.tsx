@@ -3,7 +3,7 @@ import React from "react";
 import { Monitor, Smartphone, Copy } from "lucide-react"; // adjust based on your icon library
 
 interface MiniSitePreviewProps {
-  t: Record<string, string>;
+  t: any;
   previewMode: "desktop" | "mobile";
   setPreviewMode: (mode: "desktop" | "mobile") => void;
   contentTitle: Record<string, string>; // e.g. { en: "...", he: "...", ar: "..." }

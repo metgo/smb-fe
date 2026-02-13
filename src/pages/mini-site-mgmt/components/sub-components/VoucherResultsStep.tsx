@@ -12,7 +12,7 @@ interface VoucherResult {
 }
 
 interface VoucherResultsStepProps {
-  t: Record<string, string>;
+  t: any;
   voucherResults: VoucherResult[];
   downloadSampleXLS: () => void; // note: probably should be renamed to downloadResultsXLS in real code
   retryFailedSends: () => void; // you'll need to implement/pass this handler

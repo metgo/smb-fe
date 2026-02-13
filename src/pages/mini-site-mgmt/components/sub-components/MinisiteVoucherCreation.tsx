@@ -3,7 +3,7 @@ import React from "react";
 import { Send, Clock, Download, Upload } from "lucide-react"; // adjust icon imports as needed
 
 interface MinisiteVoucherCreationProps {
-  t: Record<string, string>;
+  t: any;
   contactName: string;
   email: string;
   phoneCountryCode: string;
