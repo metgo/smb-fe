@@ -39,7 +39,7 @@ const MinisiteGridView = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredMiniSites.map((site) => {
+      {filteredMiniSites?.map((site) => {
         const percentage =
           site.totalVouchers > 0
             ? (site.usedVouchers / site.totalVouchers) * 100

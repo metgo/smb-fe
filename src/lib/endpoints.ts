@@ -33,6 +33,8 @@ export const endpoints = {
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
 
+  //mini-sites
+  miniSites: "mini-sites",
   // events
   events: "/events",
   eventsStats: "/events-stats",

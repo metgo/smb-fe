@@ -44,8 +44,8 @@ const MinisiteListView = ({
   } = useThemeClasses();
 
   const isAllSelected =
-    selectedRows.size === filteredMiniSites.length &&
-    filteredMiniSites.length > 0;
+    selectedRows?.size === filteredMiniSites?.length &&
+    filteredMiniSites?.length > 0;
 
   return (
     <div
@@ -101,7 +101,7 @@ const MinisiteListView = ({
 
           {/* Body */}
           <tbody>
-            {filteredMiniSites.map((site) => {
+            {filteredMiniSites?.map((site) => {
               const percentage =
                 site.totalVouchers > 0
                   ? (site.usedVouchers / site.totalVouchers) * 100

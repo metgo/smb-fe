@@ -78,7 +78,7 @@ export default function MiniSiteMgmtPage() {
     })),
   );
 
-  const filteredMiniSites = miniSites.filter((site) => {
+  const filteredMiniSites = miniSites?.filter((site) => {
     const matchesSearch =
       site.campaignName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       site.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,10 +158,10 @@ export default function MiniSiteMgmtPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedRows.size === filteredMiniSites.length) {
+    if (selectedRows?.size === filteredMiniSites?.length) {
       setSelectedRows(new Set());
     } else {
-      setSelectedRows(new Set(filteredMiniSites.map((site) => site.id)));
+      setSelectedRows(new Set(filteredMiniSites?.map((site) => site.id)));
     }
   };
 

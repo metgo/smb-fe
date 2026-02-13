@@ -28,6 +28,12 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import Step1WebsiteAndInfo from "./sub-components/ProductWebsiteAndInfo";
+import { ProductSelectionStep } from "./sub-components/ProductSelectionStep";
+import ProductWebsiteAndInfo from "./sub-components/ProductWebsiteAndInfo";
+import { MiniSitePreview } from "./sub-components/MinisitePreview";
+import { MinisiteVoucherCreation } from "./sub-components/MinisiteVoucherCreation";
+import { VoucherResultsStep } from "./sub-components/VoucherResultsStep";
 
 interface MinisiteCreateWizardProps {
   onClose: () => void;
@@ -35,6 +41,42 @@ interface MinisiteCreateWizardProps {
   editingMiniSite?: any;
 }
 
+export interface FormData {
+  // Step 1
+  selectedWebsite: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phoneCountryCode: string;
+  phoneNumber: string;
+  officeAddress: string;
+  logoFile: File | null;
+  campaignName: string;
+  campaignCode: string;
+  voucherAmount: string;
+  totalVouchers: string;
+  startDate: string;
+  endDate: string;
+  deliveryArea: "home" | "office";
+  contentLanguage: "en" | "he" | "ar";
+  contentTitle: Record<"en" | "he" | "ar", string>;
+  contentSubtitle: Record<"en" | "he" | "ar", string>;
+  contentGreeting: Record<"en" | "he" | "ar", string>;
+
+  // Step 2
+  selectedProducts: string[];
+  primaryProducts: string[];
+
+  // Step 4
+  sendTiming: "immediate" | "scheduled";
+  scheduledDate: string;
+  scheduledTime: string;
+  allowInstanceCreation: boolean;
+  instanceName: string;
+  instanceEmail: string;
+  instancePhone: string;
+  uploadedFile: File | null;
+}
 interface Product {
   id: string;
   name: string;
@@ -70,7 +112,41 @@ export default function MinisiteCreateWizard({
   } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>({
+    // default values
+    selectedWebsite: "",
+    companyName: "",
+    contactName: "",
+    email: "",
+    phoneCountryCode: "+972",
+    phoneNumber: "",
+    officeAddress: "",
+    logoFile: null,
+    campaignName: "",
+    campaignCode: "",
+    voucherAmount: "",
+    totalVouchers: "",
+    startDate: "",
+    endDate: "",
+    deliveryArea: "home",
+    contentLanguage: "he",
+    contentTitle: { en: "", he: "", ar: "" },
+    contentSubtitle: { en: "", he: "", ar: "" },
+    contentGreeting: { en: "", he: "", ar: "" },
 
+    selectedProducts: [],
+    primaryProducts: [],
+
+    sendTiming: "immediate",
+    scheduledDate: "",
+    scheduledTime: "",
+    allowInstanceCreation: false,
+    instanceName: "",
+    instanceEmail: "",
+    instancePhone: "",
+    uploadedFile: null,
+  });
+  console.log("~ formData:", formData);
   // Step 1: Website & Purchaser Info
   const [selectedWebsite, setSelectedWebsite] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -84,6 +160,64 @@ export default function MinisiteCreateWizard({
   const [campaignCode, setCampaignCode] = useState("");
   const [voucherAmount, setVoucherAmount] = useState("");
   const [totalVouchers, setTotalVouchers] = useState("");
+  const retryFailedSends = async () => {
+    // Filter failed recipients
+    const failedRecipients = voucherResults.filter(
+      (r) => !r.emailSent || !r.smsSent,
+    );
+
+    if (failedRecipients.length === 0) {
+      // Optional: show toast "No failed sends to retry"
+      console.log("No failed sends to retry");
+      return;
+    }
+
+    // Optional: show loading state or disable button
+    // setIsRetrying(true);
+
+    try {
+      // Example: simulate retry (replace with your real API call)
+      const updatedResults = await Promise.all(
+        voucherResults.map(async (recipient) => {
+          if (recipient.emailSent && recipient.smsSent) {
+            return recipient; // already successful → no change
+          }
+
+          try {
+            // Replace this with your actual send-voucher API call
+            // e.g. await api.resendVoucher(recipient.id, recipient.email, recipient.phone);
+
+            // Simulate success for demo (random 70% success rate)
+            const shouldSucceed = Math.random() > 0.3;
+
+            return {
+              ...recipient,
+              emailSent: shouldSucceed ? true : recipient.emailSent,
+              smsSent: shouldSucceed ? true : recipient.smsSent,
+              // Optional: add error field if you want to show why it failed
+              // error: shouldSucceed ? undefined : "Server timeout",
+            };
+          } catch (err) {
+            console.error("Retry failed for:", recipient.email, err);
+            return recipient; // keep original status on real error
+          }
+        }),
+      );
+
+      setVoucherResults(updatedResults);
+
+      // Optional: toast success message
+      const newSuccessCount = updatedResults.filter(
+        (r) => r.emailSent && r.smsSent,
+      ).length;
+      console.log(`Retry complete. ${newSuccessCount} successful now.`);
+    } catch (err) {
+      console.error("Bulk retry failed:", err);
+      // Show error toast
+    } finally {
+      // setIsRetrying(false);
+    }
+  };
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [deliveryArea, setDeliveryArea] = useState<"home" | "office">("office");
@@ -202,6 +336,32 @@ export default function MinisiteCreateWizard({
     { number: 5, name: t.results || "Results" },
   ];
 
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setFormData((prev) => ({
+      ...prev,
+      logoFile: previewUrl,
+      logoFileRaw: file, // optional: for backend upload
+    }));
+  };
+
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
@@ -211,17 +371,6 @@ export default function MinisiteCreateWizard({
   const handlePrev = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoFile(reader.result as string);
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -366,10 +515,53 @@ export default function MinisiteCreateWizard({
     return matchesSearch && matchesPrice && matchesCategory;
   });
 
+  const goToNext = () => {
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
+  };
+
+  const goToPrev = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  const commonProps: CommonProps = {
+    t: t,
+    bgPrimary: "bg-white dark:bg-gray-900",
+    bgSecondary: "bg-gray-100 dark:bg-gray-800",
+    bgTertiary: "bg-gray-200 dark:bg-gray-700",
+    textPrimary: "text-gray-900 dark:text-gray-100",
+    textSecondary: "text-gray-600 dark:text-gray-400",
+    textTertiary: "text-gray-500 dark:text-gray-500",
+    borderColor: "border-gray-300 dark:border-gray-600",
+  };
+
+  const renderStep = () => {
+    const shared = {
+      formData,
+      setFormData,
+      commonProps,
+      goToNext,
+      goToPrev,
+    };
+
+    switch (currentStep) {
+      case 1:
+        return <Step1WebsiteAndInfo {...shared} />;
+      case 2:
+        return <Step2SelectProducts {...shared} />;
+      case 3:
+        return <Step3MiniSitePreview {...shared} />;
+      case 4:
+        return <Step4VoucherCreation {...shared} />;
+      case 5:
+        return <Step5Results {...shared} />;
+      default:
+        return null;
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
-        className={`${bgPrimary} rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] my-8 flex flex-col border-2 ${borderColor} overflow-hidden`}
+        className={`${bgPrimary} rounded-2xl shadow-2xl w-full max-w-6xl max-h-[100vh] my-8 flex flex-col border-2 ${borderColor} overflow-hidden`}
       >
         {/* Header */}
         <div
@@ -566,949 +758,129 @@ export default function MinisiteCreateWizard({
         <div className="h-[40vh] overflow-y-auto p-4">
           {/* Step 1: Website & Purchaser Info */}
           {currentStep === 1 && (
-            <div className="space-y-6">
-              {/* Website Selection */}
-              <div>
-                <h3
-                  className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}
-                >
-                  <Globe className="w-5 h-5" />
-                  {t.websiteSelection || "Website Selection"}
-                </h3>
-                <select
-                  value={selectedWebsite}
-                  onChange={(e) => setSelectedWebsite(e.target.value)}
-                  className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                >
-                  <option value="">
-                    {t.selectWebsite || "Select Website"}
-                  </option>
-                  {websites.map((site) => (
-                    <option key={site} value={site}>
-                      {site}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Purchaser Info */}
-              <div>
-                <h3
-                  className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}
-                >
-                  <Building2 className="w-5 h-5" />
-                  {t.purchaserInfo || "Purchaser (Company) - Required"}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.companyName || "Company Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="Acme Corporation"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.contactName || "Contact Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.email || "Email"}
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="john@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.phone || "Phone"}
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={phoneCountryCode}
-                        onChange={(e) => setPhoneCountryCode(e.target.value)}
-                        className={`px-3 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      >
-                        <option value="+972">🇮🇱 +972</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
-                      </select>
-                      <input
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className={`flex-1 px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                        placeholder="501234567"
-                      />
-                    </div>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.officeAddress || "Office Address"}
-                    </label>
-                    <input
-                      type="text"
-                      value={officeAddress}
-                      onChange={(e) => setOfficeAddress(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="123 Main St, Tel Aviv"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.companyLogo || "Company Logo"}
-                    </label>
-                    <div className="flex items-center gap-4">
-                      {logoFile && (
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500">
-                          <img
-                            src={logoFile}
-                            alt="Logo"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <label
-                        className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textSecondary} cursor-pointer hover:${textPrimary} transition-colors flex items-center gap-2`}
-                      >
-                        <Upload className="w-4 h-4" />
-                        {t.uploadLogo || "Upload Logo"}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Campaign Info */}
-              <div>
-                <h3
-                  className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}
-                >
-                  <Ticket className="w-5 h-5" />
-                  {t.campaignInfo || "Campaign Info - Required"}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.campaignName || "Campaign Name"}
-                    </label>
-                    <input
-                      type="text"
-                      value={campaignName}
-                      onChange={(e) => setCampaignName(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="Summer Campaign 2024"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.campaignCode || "Campaign Code"}
-                    </label>
-                    <input
-                      type="text"
-                      value={campaignCode}
-                      readOnly
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} cursor-not-allowed font-mono`}
-                      placeholder="AUTO"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.voucherAmount || "Voucher Amount (₪)"}
-                    </label>
-                    <input
-                      type="number"
-                      value={voucherAmount}
-                      onChange={(e) => setVoucherAmount(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="100"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.totalVouchers || "Total Number of Vouchers"}
-                    </label>
-                    <input
-                      type="number"
-                      value={totalVouchers}
-                      onChange={(e) => setTotalVouchers(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder="100"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.startDate || "Start Date"}
-                    </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.endDate || "End Date"} ({t.optional || "Optional"})
-                    </label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Delivery Area */}
-              <div>
-                <h3 className={`text-lg ${textPrimary} mb-4`}>
-                  {t.deliveryArea || "Delivery Area"}
-                </h3>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="deliveryArea"
-                      checked={deliveryArea === "home"}
-                      onChange={() => setDeliveryArea("home")}
-                      className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                    />
-                    <Home className="w-4 h-4" />
-                    <span className={textSecondary}>{t.home || "Home"}</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="deliveryArea"
-                      checked={deliveryArea === "office"}
-                      onChange={() => setDeliveryArea("office")}
-                      className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                    />
-                    <Briefcase className="w-4 h-4" />
-                    <span className={textSecondary}>
-                      {t.office || "Office"}
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Content (Multi-Language) */}
-              <div>
-                <h3
-                  className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}
-                >
-                  <Globe className="w-5 h-5" />
-                  {t.content || "Content"} (
-                  {t.multiLanguage || "Multi-Language"})
-                </h3>
-                <div className="mb-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setContentLanguage("en")}
-                      className={`px-4 py-2 rounded-lg ${contentLanguage === "en" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-                    >
-                      English
-                    </button>
-                    <button
-                      onClick={() => setContentLanguage("he")}
-                      className={`px-4 py-2 rounded-lg ${contentLanguage === "he" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-                    >
-                      עברית
-                    </button>
-                    <button
-                      onClick={() => setContentLanguage("ar")}
-                      className={`px-4 py-2 rounded-lg ${contentLanguage === "ar" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-                    >
-                      العربية
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.title || "Title"}
-                    </label>
-                    <input
-                      type="text"
-                      value={contentTitle[contentLanguage]}
-                      onChange={(e) =>
-                        setContentTitle({
-                          ...contentTitle,
-                          [contentLanguage]: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder={
-                        contentLanguage === "en"
-                          ? "Welcome to our campaign"
-                          : contentLanguage === "he"
-                            ? "ברוכים הבאים למבצע שלנו"
-                            : "مرحبا بكم في حملتنا"
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.subtitle || "Sub-title"}
-                    </label>
-                    <input
-                      type="text"
-                      value={contentSubtitle[contentLanguage]}
-                      onChange={(e) =>
-                        setContentSubtitle({
-                          ...contentSubtitle,
-                          [contentLanguage]: e.target.value,
-                        })
-                      }
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder={
-                        contentLanguage === "en"
-                          ? "Enjoy exclusive offers"
-                          : contentLanguage === "he"
-                            ? "נהנו מהצעות בלעדיות"
-                            : "استمتع بالعروض الحصرية"
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.greeting || "Greeting"}
-                    </label>
-                    <textarea
-                      value={contentGreeting[contentLanguage]}
-                      onChange={(e) =>
-                        setContentGreeting({
-                          ...contentGreeting,
-                          [contentLanguage]: e.target.value,
-                        })
-                      }
-                      rows={4}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      placeholder={
-                        contentLanguage === "en"
-                          ? "Thank you for participating..."
-                          : contentLanguage === "he"
-                            ? "תודה על ההשתתפות..."
-                            : "شكرا لمشاركتك..."
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProductWebsiteAndInfo
+              currentStep={currentStep}
+              formData={formData}
+              setFormData={setFormData}
+              handleChange={handleChange}
+              handleLogoUpload={handleLogoUpload}
+              websites={websites}
+              contentLanguage={contentLanguage}
+              setContentLanguage={setContentLanguage}
+              contentTitle={contentTitle}
+              setContentTitle={setContentTitle}
+              contentSubtitle={contentSubtitle}
+              setContentSubtitle={setContentSubtitle}
+              contentGreeting={contentGreeting}
+              setContentGreeting={setContentGreeting}
+              t={t}
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
+              textTertiary={textTertiary}
+              bgSecondary={bgSecondary}
+              bgTertiary={bgTertiary}
+              borderColor={borderColor}
+            />
           )}
 
           {/* Step 2: Select Products */}
           {currentStep === 2 && (
-            <div className="space-y-6">
-              <h3 className={`text-lg ${textPrimary} mb-4`}>
-                {t.selectProducts || "Select Products"}
-              </h3>
-
-              {/* Filters */}
-              <div className={`${bgSecondary} rounded-lg p-4 space-y-4`}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.search || "Search"}
-                    </label>
-                    <div className="relative">
-                      <Search
-                        className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-                      />
-                      <input
-                        type="text"
-                        value={productSearchQuery}
-                        onChange={(e) => setProductSearchQuery(e.target.value)}
-                        className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                        placeholder={t.searchProducts || "Search products..."}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.category || "Category"}
-                    </label>
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                    >
-                      <option value="all">
-                        {t.allCategories || "All Categories"}
-                      </option>
-                      <option value="Wellness">Wellness</option>
-                      <option value="Tours">Tours</option>
-                      <option value="Accommodation">Accommodation</option>
-                      <option value="Dining">Dining</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end gap-2">
-                    <button
-                      onClick={() => setProductViewMode("grid")}
-                      className={`p-2 rounded-lg ${productViewMode === "grid" ? "bg-purple-600 text-white" : `${bgPrimary} ${textSecondary}`}`}
-                    >
-                      <Grid className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setProductViewMode("list")}
-                      className={`p-2 rounded-lg ${productViewMode === "list" ? "bg-purple-600 text-white" : `${bgPrimary} ${textSecondary}`}`}
-                    >
-                      <List className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Products */}
-              {productViewMode === "grid" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`${bgSecondary} rounded-lg p-4 border-2 transition-all cursor-pointer ${
-                        selectedProducts.includes(product.id)
-                          ? "border-purple-500"
-                          : borderColor
-                      }`}
-                      onClick={() => toggleProductSelection(product.id)}
-                    >
-                      <div
-                        className={`w-full h-32 ${bgTertiary} rounded-lg mb-3 flex items-center justify-center`}
-                      >
-                        <ImageIcon className={`w-12 h-12 ${textTertiary}`} />
-                      </div>
-                      <h4 className={`${textPrimary} mb-1`}>{product.name}</h4>
-                      <p className={`text-sm ${textTertiary} mb-2`}>
-                        {product.businessName}
-                      </p>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`${textPrimary}`}>
-                          ₪{product.price}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${bgTertiary} ${textSecondary}`}
-                        >
-                          {product.category}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mb-2">
-                        {product.accessibility.map((acc) => (
-                          <Accessibility
-                            key={acc}
-                            className={`w-4 h-4 ${textTertiary}`}
-                          />
-                        ))}
-                      </div>
-                      {selectedProducts.includes(product.id) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            togglePrimaryProduct(product.id);
-                          }}
-                          className={`w-full mt-2 px-3 py-1 rounded-lg text-sm ${
-                            primaryProducts.includes(product.id)
-                              ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
-                              : `${bgTertiary} ${textSecondary}`
-                          }`}
-                        >
-                          {primaryProducts.includes(product.id)
-                            ? "★ Primary"
-                            : "Mark as Primary"}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`${bgSecondary} rounded-lg p-4 border-2 transition-all cursor-pointer flex items-center gap-4 ${
-                        selectedProducts.includes(product.id)
-                          ? "border-purple-500"
-                          : borderColor
-                      }`}
-                      onClick={() => toggleProductSelection(product.id)}
-                    >
-                      <div
-                        className={`w-16 h-16 ${bgTertiary} rounded-lg flex items-center justify-center flex-shrink-0`}
-                      >
-                        <ImageIcon className={`w-8 h-8 ${textTertiary}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className={`${textPrimary}`}>{product.name}</h4>
-                        <p className={`text-sm ${textTertiary}`}>
-                          {product.businessName} • {product.category}
-                        </p>
-                      </div>
-                      <div className={`${textPrimary}`}>₪{product.price}</div>
-                      {selectedProducts.includes(product.id) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            togglePrimaryProduct(product.id);
-                          }}
-                          className={`px-3 py-1 rounded-lg text-sm ${
-                            primaryProducts.includes(product.id)
-                              ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
-                              : `${bgTertiary} ${textSecondary}`
-                          }`}
-                        >
-                          {primaryProducts.includes(product.id)
-                            ? "★ Primary"
-                            : "Mark Primary"}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className={`${bgSecondary} rounded-lg p-4`}>
-                <p className={textSecondary}>
-                  {selectedProducts.length}{" "}
-                  {t.productsSelected || "products selected"}
-                  {primaryProducts.length > 0 &&
-                    ` • ${primaryProducts.length} ${t.markedAsPrimary || "marked as primary"}`}
-                </p>
-              </div>
-            </div>
+            <ProductSelectionStep
+              t={t}
+              productSearchQuery={productSearchQuery}
+              setProductSearchQuery={setProductSearchQuery}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              productViewMode={productViewMode}
+              setProductViewMode={setProductViewMode}
+              filteredProducts={filteredProducts}
+              selectedProducts={selectedProducts}
+              toggleProductSelection={toggleProductSelection}
+              primaryProducts={primaryProducts}
+              togglePrimaryProduct={togglePrimaryProduct}
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
+              textTertiary={textTertiary}
+              bgPrimary={bgPrimary}
+              bgSecondary={bgSecondary}
+              bgTertiary={bgTertiary}
+              borderColor={borderColor}
+            />
           )}
-
           {/* Step 3: Mini-Site Preview */}
           {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className={`text-lg ${textPrimary}`}>
-                  {t.miniSitePreview || "Mini-Site Preview"}
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPreviewMode("desktop")}
-                    className={`px-4 py-2 rounded-lg flex items-center gap-2 ${previewMode === "desktop" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-                  >
-                    <Monitor className="w-4 h-4" />
-                    Desktop
-                  </button>
-                  <button
-                    onClick={() => setPreviewMode("mobile")}
-                    className={`px-4 py-2 rounded-lg flex items-center gap-2 ${previewMode === "mobile" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-                  >
-                    <Smartphone className="w-4 h-4" />
-                    Mobile
-                  </button>
-                </div>
-              </div>
-
-              {/* Preview Frame */}
-              <div
-                className={`${bgSecondary} rounded-lg p-8 flex justify-center`}
-              >
-                <div
-                  className={`${bgPrimary} rounded-lg shadow-2xl overflow-hidden ${
-                    previewMode === "desktop" ? "w-full max-w-4xl" : "w-80"
-                  }`}
-                  style={{
-                    height: previewMode === "desktop" ? "600px" : "667px",
-                  }}
-                >
-                  <div className="p-6 space-y-6">
-                    {/* Title */}
-                    <h1 className={`text-2xl ${textPrimary} text-center`}>
-                      {contentTitle[contentLanguage] || "Campaign Title"}
-                    </h1>
-
-                    {/* Subtitle */}
-                    <p className={`${textSecondary} text-center`}>
-                      {contentSubtitle[contentLanguage] || "Campaign subtitle"}
-                    </p>
-
-                    {/* Product Carousel */}
-                    <div className={`${bgSecondary} rounded-lg p-4`}>
-                      <h3 className={`text-sm ${textTertiary} mb-3`}>
-                        {t.featuredProducts || "Featured Products"}
-                      </h3>
-                      <div className="space-y-2">
-                        {selectedProducts.slice(0, 3).map((productId) => {
-                          const product = mockProducts.find(
-                            (p) => p.id === productId,
-                          );
-                          return product ? (
-                            <div
-                              key={product.id}
-                              className={`${bgTertiary} rounded p-3 flex items-center gap-3`}
-                            >
-                              <div
-                                className={`w-12 h-12 ${bgSecondary} rounded flex-shrink-0`}
-                              ></div>
-                              <div className="flex-1">
-                                <p className={`text-sm ${textPrimary}`}>
-                                  {product.name}
-                                </p>
-                                <p className={`text-xs ${textTertiary}`}>
-                                  ₪{product.price}
-                                </p>
-                              </div>
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Greeting */}
-                    <div className={`${bgSecondary} rounded-lg p-4`}>
-                      <p className={`text-sm ${textSecondary}`}>
-                        {contentGreeting[contentLanguage] ||
-                          "Greeting message will appear here"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Copy URL */}
-              <div className={`${bgSecondary} rounded-lg p-4`}>
-                <label className={`block text-sm ${textSecondary} mb-2`}>
-                  {t.miniSiteUrl || "Mini-Site URL"}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={`https://tav-8.co.il/mini-site?campCode=${campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${email}`}
-                    className={`flex-1 px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary} text-sm`}
-                  />
-                  <button
-                    onClick={copyMiniSiteUrl}
-                    className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-2"
-                  >
-                    <Copy className="w-4 h-4" />
-                    {t.copy || "Copy"}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <MiniSitePreview
+              t={t}
+              previewMode={previewMode}
+              setPreviewMode={setPreviewMode}
+              contentTitle={contentTitle} // assuming these are states/objects you have
+              contentSubtitle={contentSubtitle}
+              contentGreeting={contentGreeting}
+              contentLanguage={contentLanguage}
+              selectedProducts={selectedProducts}
+              mockProducts={mockProducts} // or products from context/store
+              campaignCode={campaignCode}
+              email={email} // or formData.email
+              copyMiniSiteUrl={copyMiniSiteUrl}
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
+              textTertiary={textTertiary}
+              bgPrimary={bgPrimary}
+              bgSecondary={bgSecondary}
+              bgTertiary={bgTertiary}
+              borderColor={borderColor}
+            />
           )}
 
           {/* Step 4: Voucher Creation & Distribution */}
           {currentStep === 4 && (
-            <div className="space-y-6">
-              <h3 className={`text-lg ${textPrimary} mb-4`}>
-                {t.voucherCreation || "Voucher Creation & Distribution"}
-              </h3>
-
-              {/* Voucher Sender Info */}
-              <div className={`${bgSecondary} rounded-lg p-4`}>
-                <h4 className={`${textPrimary} mb-3`}>
-                  {t.voucherSenderInfo || "Voucher Sender Info"}
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className={`block text-sm ${textTertiary} mb-1`}>
-                      {t.name || "Name"}
-                    </label>
-                    <p className={textPrimary}>{contactName || "-"}</p>
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textTertiary} mb-1`}>
-                      {t.email || "Email"}
-                    </label>
-                    <p className={textPrimary}>{email || "-"}</p>
-                  </div>
-                  <div>
-                    <label className={`block text-sm ${textTertiary} mb-1`}>
-                      {t.phone || "Phone"}
-                    </label>
-                    <p className={textPrimary}>
-                      {phoneCountryCode}
-                      {phoneNumber || "-"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Scheduling */}
-              <div>
-                <h4 className={`${textPrimary} mb-3`}>
-                  {t.scheduling || "Scheduling"}
-                </h4>
-                <div className="flex gap-4 mb-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={sendTiming === "immediate"}
-                      onChange={() => setSendTiming("immediate")}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <Send className="w-4 h-4" />
-                    <span className={textSecondary}>
-                      {t.sendImmediately || "Send Immediately"}
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={sendTiming === "scheduled"}
-                      onChange={() => setSendTiming("scheduled")}
-                      className="w-4 h-4 text-purple-600"
-                    />
-                    <Clock className="w-4 h-4" />
-                    <span className={textSecondary}>
-                      {t.scheduleForLater || "Schedule for Later"}
-                    </span>
-                  </label>
-                </div>
-                {sendTiming === "scheduled" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={`block text-sm ${textSecondary} mb-2`}>
-                        {t.date || "Date"}
-                      </label>
-                      <input
-                        type="date"
-                        value={scheduledDate}
-                        onChange={(e) => setScheduledDate(e.target.value)}
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-sm ${textSecondary} mb-2`}>
-                        {t.time || "Time"}
-                      </label>
-                      <input
-                        type="time"
-                        value={scheduledTime}
-                        onChange={(e) => setScheduledTime(e.target.value)}
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Voucher Assignment */}
-              <div>
-                <h4 className={`${textPrimary} mb-3`}>
-                  {t.voucherAssignment || "Voucher Assignment"}
-                </h4>
-
-                {/* Download Sample */}
-                <button
-                  onClick={downloadSampleXLS}
-                  className={`mb-4 px-4 py-2 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center gap-2`}
-                >
-                  <Download className="w-4 h-4" />
-                  {t.downloadSampleXLS || "Download Sample XLS"}
-                </button>
-
-                {/* Bulk Upload */}
-                <div className={`${bgSecondary} rounded-lg p-4 mb-4`}>
-                  <label className={`block text-sm ${textSecondary} mb-2`}>
-                    {t.bulkUpload || "Bulk Upload (XLS)"}
-                  </label>
-                  <label
-                    className={`px-4 py-2 rounded-lg border-2 border-dashed ${borderColor} ${textSecondary} cursor-pointer hover:${textPrimary} transition-colors flex items-center justify-center gap-2 h-24`}
-                  >
-                    <Upload className="w-5 h-5" />
-                    <span>
-                      {uploadedFile
-                        ? uploadedFile.name
-                        : t.uploadXLS || "Click to upload XLS file"}
-                    </span>
-                    <input
-                      type="file"
-                      accept=".xls,.xlsx,.csv"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {/* Instance Voucher Creation */}
-                <div>
-                  <label className="flex items-center gap-2 cursor-pointer mb-3">
-                    <input
-                      type="checkbox"
-                      checked={allowInstanceCreation}
-                      onChange={(e) =>
-                        setAllowInstanceCreation(e.target.checked)
-                      }
-                      className="w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
-                    />
-                    <span className={textSecondary}>
-                      {t.allowInstanceCreation ||
-                        "Allow Instance Voucher Creation"}
-                    </span>
-                  </label>
-
-                  {allowInstanceCreation && (
-                    <div className={`${bgSecondary} rounded-lg p-4`}>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                        <div>
-                          <input
-                            type="text"
-                            value={instanceName}
-                            onChange={(e) => setInstanceName(e.target.value)}
-                            placeholder={t.name || "Name"}
-                            className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="email"
-                            value={instanceEmail}
-                            onChange={(e) => setInstanceEmail(e.target.value)}
-                            placeholder={t.email || "Email"}
-                            className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="tel"
-                            value={instancePhone}
-                            onChange={(e) => setInstancePhone(e.target.value)}
-                            placeholder={t.phone || "Phone"}
-                            className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                          />
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleInstanceVoucherAdd}
-                        className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-                      >
-                        {t.addVoucher || "Add Voucher"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <MinisiteVoucherCreation
+              t={t}
+              contactName={contactName} // or formData.contactDetails?.name
+              email={email} // or formData.email
+              phoneCountryCode={phoneCountryCode}
+              phoneNumber={phoneNumber} // or formData.phone
+              sendTiming={sendTiming}
+              setSendTiming={setSendTiming}
+              scheduledDate={scheduledDate}
+              setScheduledDate={setScheduledDate}
+              scheduledTime={scheduledTime}
+              setScheduledTime={setScheduledTime}
+              allowInstanceCreation={allowInstanceCreation}
+              setAllowInstanceCreation={setAllowInstanceCreation}
+              instanceName={instanceName}
+              setInstanceName={setInstanceName}
+              instanceEmail={instanceEmail}
+              setInstanceEmail={setInstanceEmail}
+              instancePhone={instancePhone}
+              setInstancePhone={setInstancePhone}
+              uploadedFile={uploadedFile}
+              handleFileUpload={handleFileUpload}
+              downloadSampleXLS={downloadSampleXLS}
+              handleInstanceVoucherAdd={handleInstanceVoucherAdd}
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
+              textTertiary={textTertiary}
+              bgPrimary={bgPrimary}
+              bgSecondary={bgSecondary}
+              borderColor={borderColor}
+            />
           )}
 
           {/* Step 5: Results */}
           {currentStep === 5 && (
-            <div className="space-y-6">
-              <h3 className={`text-lg ${textPrimary} mb-4`}>
-                {t.voucherGenerationResults || "Voucher Generation Results"}
-              </h3>
-
-              {voucherResults.length > 0 ? (
-                <>
-                  <div className={`${bgSecondary} rounded-lg overflow-hidden`}>
-                    <table className="w-full">
-                      <thead
-                        className={`${bgTertiary} border-b ${borderColor}`}
-                      >
-                        <tr>
-                          <th
-                            className={`px-4 py-3 text-left text-sm ${textSecondary}`}
-                          >
-                            {t.assigneeName || "Assignee Name"}
-                          </th>
-                          <th
-                            className={`px-4 py-3 text-left text-sm ${textSecondary}`}
-                          >
-                            {t.email || "Email"}
-                          </th>
-                          <th
-                            className={`px-4 py-3 text-left text-sm ${textSecondary}`}
-                          >
-                            {t.phone || "Phone"}
-                          </th>
-                          <th
-                            className={`px-4 py-3 text-center text-sm ${textSecondary}`}
-                          >
-                            {t.emailSent || "Email Sent"}
-                          </th>
-                          <th
-                            className={`px-4 py-3 text-center text-sm ${textSecondary}`}
-                          >
-                            {t.smsSent || "SMS Sent"}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {voucherResults.map((recipient, index) => (
-                          <tr key={index} className={`border-b ${borderColor}`}>
-                            <td className={`px-4 py-3 ${textPrimary}`}>
-                              {recipient.name}
-                            </td>
-                            <td className={`px-4 py-3 ${textSecondary}`}>
-                              {recipient.email}
-                            </td>
-                            <td className={`px-4 py-3 ${textSecondary}`}>
-                              {recipient.phone}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              {recipient.emailSent ? (
-                                <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              {recipient.smsSent ? (
-                                <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-red-500 mx-auto" />
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={downloadSampleXLS}
-                      className={`px-4 py-2 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center gap-2`}
-                    >
-                      <Download className="w-4 h-4" />
-                      {t.downloadResults || "Download Results"}
-                    </button>
-                    <button className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center gap-2">
-                      <Send className="w-4 h-4" />
-                      {t.retryFailed || "Retry Failed Sends"}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className={`${bgSecondary} rounded-lg p-8 text-center`}>
-                  <p className={textTertiary}>
-                    {t.noVouchersCreated ||
-                      "No vouchers have been created yet. Go back to Step 4 to create vouchers."}
-                  </p>
-                </div>
-              )}
-            </div>
+            <VoucherResultsStep
+              t={t}
+              voucherResults={voucherResults}
+              downloadSampleXLS={downloadSampleXLS} //
+              retryFailedSends={retryFailedSends} // implement/pass this function
+              textPrimary={textPrimary}
+              textSecondary={textSecondary}
+              textTertiary={textTertiary}
+              bgSecondary={bgSecondary}
+              bgTertiary={bgTertiary}
+              borderColor={borderColor}
+            />
           )}
         </div>
 
