@@ -27,6 +27,16 @@ interface BusinessListParams {
   endDate?: string;
 }
 
+interface BusinessesForProductParams {
+  locale: Language;
+  limit: number;
+  search?: string;
+  status?: string;
+  authorityId?: string;
+  dmoId?: string;
+  page?: number;
+}
+
 export const businessQueryApi = createApi({
   reducerPath: "businessQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -83,6 +93,16 @@ export const businessQueryApi = createApi({
         method: "GET",
       }),
     }),
+    getBusinessDeliveryInfoById: builder.query<
+      any,
+      { businessId: string | null }
+    >({
+      query: ({ businessId }) => ({
+        url: `${endpoints.business}/${businessId}`,
+        method: "GET",
+        params: { showOnlyDeliveryInfo: true },
+      }),
+    }),
 
     getbusinessBySlug: builder.query<any, { slug: string | null }>({
       query: ({ slug }) => ({
@@ -90,9 +110,10 @@ export const businessQueryApi = createApi({
         method: "GET",
       }),
     }),
-    getbusinessForProduct: builder.query<any, any>({
+
+    getBusinessForProduct: builder.query<any, BusinessesForProductParams>({
       query: (params) => ({
-        url: "search-businesses",
+        url: endpoints.searchBusiness,
         method: "GET",
         params,
       }),
@@ -102,9 +123,11 @@ export const businessQueryApi = createApi({
 
 export const {
   useGetAllbusinessesQuery,
-  useGetbusinessForProductQuery,
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
   useGetBusinessStatsQuery,
   useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
+  useLazyGetBusinessDeliveryInfoByIdQuery,
 } = businessQueryApi;

@@ -127,6 +127,7 @@ export default function CreateBusinessWizard({
     images: null as TImages | null,
 
     // Step 6
+    type: "BUSINESS",
     operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
@@ -200,6 +201,7 @@ export default function CreateBusinessWizard({
         logo: editData?.logo?.image,
         images: editData?.images,
         //location
+        type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
         pickupAvailable: editData.isPickUpAvailable ?? false,
         deliveryArea: editData?.deliveryArea ?? [],

@@ -2,6 +2,8 @@ import React from "react";
 import { Eye } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
+import { getMatchedItems } from "@/helpers";
+import clsx from "clsx";
 
 interface ProductReviewSubmitProps {
   t: (key: string) => string;
@@ -18,32 +20,9 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     textTertiary,
     borderColor,
     isDark,
-    language,
+    bgTertiary,
   } = useThemeClasses();
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "PHYSICAL":
-        return t("physical_product");
-      case "TABLE_ORDER":
-        return t("table_order");
-      case "SERVICE":
-        return t("service");
-      case "HOTEL":
-        return t("hotel_room");
-      case "EXPERIENCE":
-        return t("experience");
-      default:
-        return "-";
-    }
-  };
-  const { primaryCategories } = useCommon();
-  const categoriesList = primaryCategories?.datas?.data || [];
-
-  const category = categoriesList.filter((cat: any) =>
-    formData.categories.includes(cat._id),
-  );
-  const categoryNames = category.map((cat: any) => cat.name);
+  const { categories, subCategories } = useCommon();
 
   return (
     <div className="space-y-6">
@@ -69,23 +48,13 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         <div className="p-6 space-y-4">
           <div>
             <h3 className={`text-2xl font-semibold ${textPrimary} mb-2`}>
-              {formData.name[language] || formData.name.en}
+              {formData.name}
             </h3>
-            <p className={`${textSecondary}`}>
-              {formData.shortDescription[language] ||
-                formData.shortDescription.en}
-            </p>
+            <p className={`${textSecondary}`}>{formData.shortDescription}</p>
           </div>
 
           {/* Product Info Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className={`text-sm ${textTertiary}`}>{t("product_type")}</p>
-              <p className={`font-medium ${textPrimary}`}>
-                {getTypeLabel(formData.type)}
-              </p>
-            </div>
-
             <div>
               <p className={`text-sm ${textTertiary}`}>{t("price")}</p>
               <p className={`font-medium ${textPrimary}`}>
@@ -113,23 +82,61 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             </div>
 
             <div>
-              <p className={`text-sm ${textTertiary}`}>{t("categories")}</p>
-              <p className={`font-medium ${textPrimary}`}>
-                {categoryNames.join(", ") || "-"}
+              <p className={`text-sm mb-2 ${textTertiary}`}>
+                {t("categories")}
               </p>
+              <div
+                className={`font-medium flex flex-wrap items-center gap-2 ${textPrimary}`}
+              >
+                {getMatchedItems(categories, formData?.categories)?.map(
+                  (item: any) => (
+                    <div
+                      key={item._id}
+                      className={clsx(
+                        borderColor,
+                        bgTertiary,
+                        "px-3 py-1 rounded-xl",
+                      )}
+                    >
+                      {item.name}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+
+            <div>
+              <p className={`text-sm mb-2 ${textTertiary}`}>
+                {t("sub_categories")}
+              </p>
+              <div
+                className={`font-medium flex flex-wrap items-center gap-2 ${textPrimary}`}
+              >
+                {getMatchedItems(subCategories, formData?.subCategories)?.map(
+                  (item: any) => (
+                    <div
+                      key={item._id}
+                      className={clsx(
+                        borderColor,
+                        bgTertiary,
+                        "px-3 py-1 rounded-xl",
+                      )}
+                    >
+                      {item.name}
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
           </div>
 
           {/* Full Description */}
-          {formData.fullDescription.en && (
+          {formData.fullDescription && (
             <div>
               <p className={`text-sm ${textTertiary} mb-2`}>
-                {t("description")}
+                {t("product_full_description")}
               </p>
-              <p className={`${textSecondary}`}>
-                {formData.fullDescription[language] ||
-                  formData.fullDescription.en}
-              </p>
+              <p className={`${textSecondary}`}>{formData.fullDescription}</p>
             </div>
           )}
         </div>

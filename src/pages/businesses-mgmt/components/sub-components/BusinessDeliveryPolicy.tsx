@@ -6,7 +6,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface PickupLocation {
   address: string;
   isAlwaysOpen: boolean;
-  openingHrs: { day: string; open: string; close: string }[]; // match your state type
+  openingHrs: { day: string; open: string; close: string }[];
 }
 
 interface DeliveryArea {

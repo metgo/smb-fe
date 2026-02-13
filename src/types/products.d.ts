@@ -68,6 +68,7 @@ interface Product {
   features: unknown[];
 
   shortDescription: string;
+  description: string;
 
   price: ProductPrice;
   quantity: ProductQuantity;
@@ -81,21 +82,17 @@ interface Product {
 interface ProductFormData {
   // Basic Info
   businessId: string;
-  name: {
-    en: string;
-    he: string;
-    ar: string;
-  };
-  shortDescription: {
-    en: string;
-    he: string;
-    ar: string;
-  };
-  fullDescription: {
-    en: string;
-    he: string;
-    ar: string;
-  };
+  name: string;
+  nameAr: string;
+  nameHe: string;
+
+  shortDescription: string;
+  shortDescriptionAr: string;
+  shortDescriptionHe: string;
+
+  fullDescription: string;
+  fullDescriptionAr: string;
+  fullDescriptionHe: string;
 
   // Type & Category
   type:
@@ -106,6 +103,7 @@ interface ProductFormData {
     | "experience"
     | "";
   categories: string[];
+  subCategories: string[];
 
   // Pricing
   markedPrice: string;

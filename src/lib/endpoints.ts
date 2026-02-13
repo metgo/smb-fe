@@ -30,6 +30,7 @@ export const endpoints = {
   // business
   business: "/businesses",
   businesses: "/businesses",
+  searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
 

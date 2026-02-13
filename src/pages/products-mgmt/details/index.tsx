@@ -31,7 +31,11 @@ import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
-import { MediaDetails } from "@/components/details-sections";
+import {
+  AttributesDetails,
+  DeliveryPolicyOptionDetails,
+  MediaDetails,
+} from "@/components/details-sections";
 import { StatusChangeBtn } from "@/components/btns";
 import clsx from "clsx";
 
@@ -157,12 +161,22 @@ export default function ProductDetailsPage() {
     switch (activeTab) {
       case "overview":
         return <ProductInfoDetails {...commonProps} />;
+      case "attributes":
+        return (
+          <AttributesDetails
+            title="Product Attributes"
+            categoriesId={product?.categories}
+            subCategoriesId={product?.subCategories}
+          />
+        );
       case "pricing":
         return <ProductPricingDetails {...commonProps} />;
       case "inventory":
         return <ProductInventoryDetails {...commonProps} />;
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
+      case "delivery":
+        return <DeliveryPolicyOptionDetails data={product} />;
       case "media":
         return <MediaDetails {...mediaProps} />;
       default:
@@ -269,7 +283,6 @@ export default function ProductDetailsPage() {
         />
 
         <TabsSection
-          t={t}
           tabs={productTabs}
           activeTab={activeTab}
           setActiveTab={setActiveTab}

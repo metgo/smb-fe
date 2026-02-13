@@ -50,7 +50,6 @@ const findEventType = (type: string) => {
 
 export default function EventDetailsPage() {
   const { t } = useTranslation("events");
-  const { t: tc } = useTranslation("common");
 
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
@@ -272,7 +271,6 @@ export default function EventDetailsPage() {
           </div>
 
           <TabsSection
-            t={tc}
             tabs={eventTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}

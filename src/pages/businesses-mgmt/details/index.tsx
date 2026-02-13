@@ -19,7 +19,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BusinessAttributesDetails,
   BusinessContactDetails,
-  BusinessDeliveryPolicyDetails,
   BusinessInfoDetails,
   BusinessMediaDetails,
   BusinessOnlinePresenceDetails,
@@ -42,7 +41,10 @@ import {
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
-import { LocationDetails } from "@/components/details-sections";
+import {
+  DeliveryPolicyOptionDetails,
+  LocationDetails,
+} from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
@@ -60,37 +62,37 @@ export default function BusinessDetailsPage() {
   const businessStats = [
     {
       icon: <Eye className="w-5 h-5 text-green-600" />,
-      label: t("page_views"),
+      title: t("page_views"),
       value: data?.pageViews?.toLocaleString() || 0,
     },
     {
       icon: <Users className="w-5 h-5 text-green-600" />,
-      label: t("unique_visitors"),
+      title: t("unique_visitors"),
       value: data?.uniqueVisitors?.toLocaleString() || 0,
     },
     {
       icon: <MousePointer className="w-5 h-5 text-green-600" />,
-      label: t("clicks"),
+      title: t("clicks"),
       value: data?.clicks?.toLocaleString() || 0,
     },
     {
       icon: <Bookmark className="w-5 h-5 text-green-600" />,
-      label: t("bookmarks"),
+      title: t("bookmarks"),
       value: data?.bookmarks?.toLocaleString() || 0,
     },
     {
       icon: <Share2 className="w-5 h-5 text-green-600" />,
-      label: t("shares"),
+      title: t("shares"),
       value: data?.shares?.toLocaleString() || 0,
     },
     {
       icon: <Timer className="w-5 h-5 text-green-600" />,
-      label: t("avg_time_on_page"),
+      title: t("avg_time_on_page"),
       value: `${data?.averageEngagementTime}`,
     },
     {
       icon: <TrendingUp className="w-5 h-5 text-green-600" />,
-      label: t("conversion_rate"),
+      title: t("conversion_rate"),
       value: `${data?.conversionRate || 0}%`,
     },
   ];
@@ -296,7 +298,7 @@ export default function BusinessDetailsPage() {
       case "social":
         return <BusinessOnlinePresenceDetails {...commonProps} />;
       case "delivery":
-        return <BusinessDeliveryPolicyDetails {...commonProps} />;
+        return <DeliveryPolicyOptionDetails data={business} />;
       case "accessibility":
         return <BusinessAttributesDetails {...commonProps} />;
       case "hours":
@@ -363,18 +365,12 @@ export default function BusinessDetailsPage() {
         </div>
 
         <BusinessTitleSection business={business} t={t} />
-        {/* <AnalyticsStatsSection
-          t={t}
-          borderColor={borderColor}
-          businessId={businessId}
-        /> */}
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
         />
         <TabsSection
-          t={t}
           tabs={businessTabs}
           activeTab={activeTab}
           setActiveTab={setActiveTab}

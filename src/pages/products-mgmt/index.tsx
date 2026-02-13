@@ -32,10 +32,11 @@ import {
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
-import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import { useGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { ReactSelect } from "@/components/form-fields";
+import { useAppSelector } from "@/hooks/hooks";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -66,9 +67,12 @@ const columnDefinitions = [
   { key: "quantity" as keyof IColumnVisibility, isDefault: false },
   { key: "updatedAt" as keyof IColumnVisibility, isDefault: false },
 ];
+
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+
+  const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
   const businessIdView = searchParams?.get("businessIdView");
 
@@ -83,8 +87,12 @@ export default function ProductsMgmtPage() {
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { data: businessData } = useGetbusinessForProductQuery({
+  const { data: businessData } = useGetBusinessForProductQuery({
     locale: language,
+    limit: 20,
+    page: 1,
+    dmoId,
+    authorityId,
   });
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -97,13 +105,12 @@ export default function ProductsMgmtPage() {
   );
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+
   const removeQueryParams = () => {
     const param = searchParams.get("businessIdView");
 
     if (param) {
       searchParams.delete("businessIdView");
-
-      setSearchParams(searchParams);
     }
   };
   //filters
@@ -164,6 +171,9 @@ export default function ProductsMgmtPage() {
 
     return params;
   }, [page, searchTerm, filters, language, businessIdView]);
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters, language, businessIdView]);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = productQueryParams;
@@ -186,7 +196,6 @@ export default function ProductsMgmtPage() {
   const hasMore = productData?.meta?.hasNextPage;
 
   useEffect(() => {
-    if (!products?.length) return;
     if (page === 1) setCombinedProducts(products);
     else {
       setCombinedProducts((prev: any) => {
@@ -196,7 +205,7 @@ export default function ProductsMgmtPage() {
         return [...prev, ...newItems];
       });
     }
-  }, [products]);
+  }, [products, page]);
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;

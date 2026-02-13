@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import type React from "react";
-import { Copy, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -47,7 +47,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
-    columnVisibility.images && {
+    columnVisibility?.images && {
       key: "images",
       label: t("product_image"),
       render: (product: any) => (
@@ -72,7 +72,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       render: (product: any) => (
         <div>
           <div className="font-medium">{product.name[language]}</div>
-          <div className="text-xs text-gray-500 truncate max-w-xs">
+          <div className="text-xs text-gray-100 truncate max-w-xs">
             {product.name}
           </div>
         </div>
@@ -84,7 +84,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       sortable: true,
       render: (product: any) => (
         <div>
-          <div className="text-xs text-gray-500 line-clamp-1">
+          <div className="text-xs text-gray-100 line-clamp-1">
             {getPlainTextFromRichText(product.shortDescription)}
           </div>
         </div>
@@ -95,12 +95,6 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       key: "businessId",
       label: t("business_name"),
       render: (product: any) => product.businessId?.name,
-    },
-
-    columnVisibility.productType && {
-      key: "productType",
-      label: t("product_type"),
-      render: (product: any) => product.productType,
     },
 
     columnVisibility.status && {
@@ -170,21 +164,21 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       ),
     },
 
-    columnVisibility.actions && {
-      key: "actions",
-      label: t("actions"),
-      render: () => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            // handleDuplicateProduct(product);
-          }}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Copy className="w-4 h-4" />
-        </button>
-      ),
-    },
+    // columnVisibility.actions && {
+    //   key: "actions",
+    //   label: t("actions"),
+    //   render: () => (
+    //     <button
+    //       onClick={(e) => {
+    //         e.stopPropagation();
+    //         // handleDuplicateProduct(product);
+    //       }}
+    //       className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+    //     >
+    //       <Copy className="w-4 h-4" />
+    //     </button>
+    //   ),
+    // },
   ].filter(Boolean) as {
     key: string;
     label: string;

@@ -16,6 +16,10 @@ type Props = {
   }[];
   value?: string;
   onChange: (value: string) => void;
+
+  onSearch?: (keyword: string) => void;
+  isLoading?: boolean;
+
   placeholder?: string;
   isClearable?: boolean;
   isDisabled?: boolean;
@@ -30,6 +34,8 @@ export default function ReactSelect({
   placeholder = "Select website",
   isClearable = false,
   isDisabled = false,
+  isLoading = false,
+  onSearch,
 }: Props) {
   const { isDark } = useThemeClasses();
 
@@ -52,6 +58,12 @@ export default function ReactSelect({
       isDisabled={isDisabled}
       placeholder={placeholder}
       onChange={(opt) => onChange(opt?.value ?? "")}
+      isLoading={isLoading}
+      onInputChange={(inputValue, { action }) => {
+        if (action === "input-change") {
+          onSearch?.(inputValue);
+        }
+      }}
       styles={{
         container: (base) => ({ ...base, minWidth, zIndex: 50 }),
         control: (base, state) => ({
@@ -65,7 +77,7 @@ export default function ReactSelect({
               ? "#374151"
               : "#d1d5db",
           backgroundColor: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#ffffff" : "#111827",
           boxShadow: state.isFocused
             ? isDark
               ? "0 0 0 2px #2dd4bf"
@@ -81,12 +93,16 @@ export default function ReactSelect({
                 : "#9ca3af",
           },
         }),
+        input: (base) => ({
+          ...base,
+          color: isDark ? "#ffffff" : "#111827",
+        }),
         menu: (base) => ({
           ...base,
           borderRadius: 8,
           borderColor: isDark ? "#374151" : "#e5e7eb",
           backgroundColor: isDark ? "#111827" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#ffffff" : "#111827",
           boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }),
         option: (base, state) => ({
@@ -102,7 +118,7 @@ export default function ReactSelect({
               : isDark
                 ? "#111827"
                 : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#fff" : "#111827",
           cursor: "pointer",
         }),
         singleValue: (base) => ({
@@ -110,7 +126,7 @@ export default function ReactSelect({
           display: "flex",
           alignItems: "center",
           gap: 8,
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#fff" : "#111827",
         }),
         placeholder: (base) => ({
           ...base,

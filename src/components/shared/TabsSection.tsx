@@ -1,7 +1,9 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
-import { type LucideIcon } from "lucide-react";
 import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { type LucideIcon } from "lucide-react";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ITabs {
   id: string;
@@ -10,18 +12,13 @@ interface ITabs {
 }
 
 interface TabsSectionProps {
-  t: (key: string) => string;
   activeTab: string;
   setActiveTab: (tabId: string) => void;
   tabs: ITabs[];
 }
 
-const TabsSection = ({
-  t,
-  tabs,
-  activeTab,
-  setActiveTab,
-}: TabsSectionProps) => {
+const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);

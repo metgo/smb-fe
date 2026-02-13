@@ -105,3 +105,12 @@ export function getPlainTextFromRichText(html: string): string {
 
   return temp.textContent?.trim() || "";
 }
+
+export function getMatchedItems(originalList: any, selectedIds?: string[]) {
+  if (!originalList?.length || !selectedIds?.length) return [];
+
+  const matchedItems = originalList?.filter((item: any) =>
+    selectedIds?.includes(item._id),
+  );
+  return matchedItems ?? [];
+}

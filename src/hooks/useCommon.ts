@@ -49,11 +49,11 @@ export function useCommon() {
     dateRanges,
     languages,
     dmosAuthorities,
-    primaryCategories,
     accessibility,
     groupTypes,
     socialMedia,
     allWebsites,
+    categories: primaryCategories?.datas?.data,
     subCategories: subCategories?.datas?.data,
   };
 }

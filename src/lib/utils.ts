@@ -51,3 +51,25 @@ export const googlePointOfInterest = [
   //   stylers: [{ visibility: 'off' }]
   // }
 ];
+
+export const DELIVERY_RETURN_EXCHANGE_OPTIONS = [
+  "return_option1",
+  "return_option2",
+  "return_option3",
+  "return_option4",
+  "return_option5",
+  "return_option6",
+  "return_option7",
+  "return_option8",
+];
+export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
+  "seller_info_option1",
+  "seller_info_option2",
+  "seller_info_option3",
+  "seller_info_option4",
+  "seller_info_option5",
+  "seller_info_option6",
+  "seller_info_option7",
+  "seller_info_option8",
+  "seller_info_option9",
+];
