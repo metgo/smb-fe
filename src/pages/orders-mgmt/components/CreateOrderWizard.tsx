@@ -25,14 +25,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface CreateOrderWizard {
   onClose: () => void;
   onOpen: () => void;
-
-  onAddOrder?: (order: Partial<IOrder>) => void;
 }
 
 export default function CreateOrderWizard({
   onClose,
   // onOpen,
-  // onAddOrder,
 }: CreateOrderWizard) {
   const { t } = useTranslation("orders");
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -107,8 +104,6 @@ export default function CreateOrderWizard({
     deliveryInstructions: formData.deliveryInstructions,
     deliveryFee: formData.deliveryFee,
   };
-
-  console.log("🚀 ~ CreateOrderWizard ~ stepPayloadMap:", stepPayloadMap);
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
