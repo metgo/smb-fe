@@ -10,17 +10,17 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 // }
 
 /* ---------------- API ---------------- */
-export const miniSitesMutationApi = createApi({
+export const miniSiteMutationApi = createApi({
   reducerPath: "miniSitesMutationApi",
   baseQuery: axiosBaseQuery(),
   tagTypes: ["MiniSites"],
   endpoints: (builder) => ({
     // POST → create minisite
     initMiniSiteCreate: builder.mutation<any, void>({
-      query: () => ({
+      query: (body) => ({
         url: endpoints.miniSites,
         method: "POST",
-        data: { name: "" },
+        data: body,
       }),
       invalidatesTags: ["MiniSites"],
     }),
@@ -60,4 +60,4 @@ export const {
   useUpdateMiniSiteMutation,
   useDeleteMiniSiteMutation,
   // useBulkMiniSitesUpdateMutation,
-} = miniSitesMutationApi;
+} = miniSiteMutationApi;

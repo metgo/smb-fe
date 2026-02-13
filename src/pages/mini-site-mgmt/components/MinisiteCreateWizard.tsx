@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   X,
   ArrowRight,
@@ -34,6 +34,11 @@ import ProductWebsiteAndInfo from "./sub-components/ProductWebsiteAndInfo";
 import { MiniSitePreview } from "./sub-components/MinisitePreview";
 import { MinisiteVoucherCreation } from "./sub-components/MinisiteVoucherCreation";
 import { VoucherResultsStep } from "./sub-components/VoucherResultsStep";
+import { toast } from "sonner";
+import {
+  useInitMiniSiteCreateMutation,
+  useUpdateMiniSiteMutation,
+} from "@/store/api/miniSiteMutation";
 
 interface MinisiteCreateWizardProps {
   onClose: () => void;
@@ -146,6 +151,75 @@ export default function MinisiteCreateWizard({
     instancePhone: "",
     uploadedFile: null,
   });
+  const campaignPayloadMap = {
+    // Basic campaign metadata (similar to step 1)
+    name: formData.campaignName,
+    code: formData.campaignCode,
+    internalNotes: "", // ← add field to form if needed
+
+    // Monetary / voucher details
+    voucher: {
+      amount: Number(formData.voucherAmount) || 0,
+      totalVouchers: Number(formData.totalVouchers) || 0,
+      currency: "ILS", // ← hard-code or add to formData if multi-currency
+    },
+
+    // Dates & timing (similar to opening hours / availability)
+    validity: {
+      startDate: formData.startDate, // should be ISO string "2025-04-10"
+      endDate: formData.endDate,
+    },
+  };
+  const [initMiniSiteCreate, { isLoading: isCreating }] =
+    useInitMiniSiteCreateMutation();
+  const [updateMiniSite, { isLoading: isSaving }] = useUpdateMiniSiteMutation();
+
+  const [miniSiteId, setMiniSiteId] = useState("");
+  const saveDraft = useCallback(
+    async (isPublish = false) => {
+      try {
+        let currentMiniSiteId = miniSiteId; // from your state
+
+        // 1. Create if not exists
+        if (!currentMiniSiteId) {
+          const res = await initMiniSiteCreate().unwrap();
+          currentMiniSiteId = res?.id;
+          setMiniSiteId(res?.id); // update local state
+        }
+
+        // 2. Prepare payload
+        let payload = { ...campaignPayloadMap };
+
+        if (isPublish) {
+          payload = {
+            ...payload,
+          };
+        }
+
+        if (!Object.keys(payload).length) return;
+
+        // 3. Update
+        const res = await updateMiniSite({
+          miniSiteId: currentMiniSiteId,
+          body: payload,
+        }).unwrap();
+
+        toast.success(
+          res?.message ?? (isPublish ? "Campaign published" : "Draft saved"),
+        );
+      } catch (err: any) {
+        toast.error(err?.data?.message || err?.message || "Failed to save");
+      }
+    },
+    [
+      miniSiteId,
+      setMiniSiteId,
+      currentStep,
+      campaignPayloadMap,
+      initMiniSiteCreate,
+      updateMiniSite,
+    ],
+  );
   console.log("~ formData:", formData);
   // Step 1: Website & Purchaser Info
   const [selectedWebsite, setSelectedWebsite] = useState("");
@@ -362,7 +436,8 @@ export default function MinisiteCreateWizard({
     }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    await saveDraft();
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
