@@ -7,6 +7,7 @@ import MiniCampaignsMgmtPage from "./mini-campaigns-mgmt";
 import OrdersMgmtPage from "./orders-mgmt";
 import EventDetailsPage from "./events-mgmt/details";
 import BusinessDetailsPage from "./businesses-mgmt/details";
+import MiniSiteMgmtPage from "./mini-site-mgmt";
 
 export {
   AuthPage,
@@ -18,4 +19,5 @@ export {
   EventDetailsPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
+  MiniSiteMgmtPage,
 };

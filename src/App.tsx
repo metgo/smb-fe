@@ -19,6 +19,7 @@ import {
   OrdersMgmtPage,
   EventDetailsPage,
   BusinessDetailsPage,
+  MiniSiteMgmtPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
@@ -69,7 +70,10 @@ function App() {
         { path: routes.eventDetails, element: <EventDetailsPage /> },
 
         { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-        { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
+
+        { path: routes.miniCampaignMgmt, element: <MiniCampaignsMgmtPage /> },
+        { path: routes.miniSiteMgmt, element: <MiniSiteMgmtPage /> },
+
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },

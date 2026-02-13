@@ -117,7 +117,7 @@ export default function Sidebar() {
     },
     {
       id: "local-economy",
-      path: routes.miniCampaign,
+      path: routes.miniCampaignMgmt,
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
       isEnabled: false,
@@ -138,7 +138,7 @@ export default function Sidebar() {
         },
         {
           id: "mini-campaign",
-          path: routes.miniCampaign,
+          path: routes.miniCampaignMgmt,
           label: t("mini_campaigns") || "Mini-Campaigns",
           icon: Megaphone,
           isEnabled: false,
@@ -147,10 +147,10 @@ export default function Sidebar() {
     },
     {
       id: "site-management",
-      path: routes.dashboard,
+      path: routes.miniSiteMgmt,
       label: t("site_management") || "Site Management",
       icon: Globe,
-      isEnabled: false,
+      isEnabled: true,
       subItems: [
         {
           id: "home",
@@ -189,10 +189,10 @@ export default function Sidebar() {
         },
         {
           id: "mini-site",
-          path: routes.dashboard,
+          path: routes.miniSiteMgmt,
           label: t("mini_site") || "Mini-site",
           icon: Layout,
-          isEnabled: false,
+          isEnabled: true,
         },
       ],
     },
