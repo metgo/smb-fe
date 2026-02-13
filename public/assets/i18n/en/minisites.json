@@ -11,6 +11,7 @@
   "all_statuses": "All Statuses",
   "active": "Active",
   "draft": "Draft",
+  "no_data": "No Data",
   "completed": "Completed",
   "paused": "Paused",
   "create_mini_site": "Create Mini-Site",

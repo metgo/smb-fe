@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
-
+import { getStatusColor } from "../mini-site.utils";
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 export const defaultColumns = {
   select: true,
   code: true,
@@ -49,22 +51,6 @@ interface MiniSiteListViewProps {
   data?: any;
 }
 
-const USER_ROLE = "admin";
-const canChangeStatus = ["superadmin", "admin"].includes(USER_ROLE);
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800";
-    case "DRAFT":
-      return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700";
-    case "COMPLETED":
-      return "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-    case "PAUSED":
-      return "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800";
-    default:
-      return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
-  }
-};
 export default function MiniSiteListView({
   miniSites,
   columnVisibility,
@@ -72,11 +58,17 @@ export default function MiniSiteListView({
   setSelectedRows,
   onRowClick,
   t,
+  isLoading,
 }: MiniSiteListViewProps) {
+  const { userRole } = useAppSelector((state) => state.auth);
+  const canChangeStatus = userRole === UserRole.ADMIN || UserRole.SUPERADMIN;
+
   const { textPrimary, textSecondary, textTertiary, isDark } =
     useThemeClasses();
 
   const columns = [
+    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+
     columnVisibility.code && {
       key: "code",
       label: t("campaign_code"),
@@ -125,7 +117,7 @@ export default function MiniSiteListView({
         <span
           className={clsx(
             "inline-block px-2 py-1 rounded-full text-xs border",
-            getStatusColor(site?.status),
+            getStatusColor(site?.status, isDark),
           )}
         >
           {site?.status}
@@ -179,8 +171,9 @@ export default function MiniSiteListView({
   return (
     <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
       <ReordableDataTable
-        rowKey="id"
+        rowKey="_id"
         data={miniSites}
+        isDataLoading={isLoading}
         selectedItems={selectedRows}
         onSelectionChange={setSelectedRows}
         onRowClick={onRowClick}

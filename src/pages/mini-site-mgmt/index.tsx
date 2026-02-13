@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Search,
   Plus,
@@ -22,6 +22,7 @@ import { useGetAllMiniSitesQuery } from "@/store/api/miniSiteQueryApi";
 import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { ViewModeToggle } from "@/components/shared";
+import SearchInput from "@/components/shared/SearchInput";
 
 interface MiniSite {
   id: string;
@@ -66,24 +67,41 @@ export default function MiniSiteMgmtPage() {
   } = useThemeClasses();
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showWizard, setShowWizard] = useState(false);
   const [editingMiniSite, setEditingMiniSite] = useState<MiniSite | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
   //api call
-  const [searchTerm, _setSearchTerm] = useState("");
-  const [_page, setPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState<number>(1);
   const [selectedMiniSites, setSelectedMiniSites] = useState<Set<string>>(
     new Set(),
   );
+  const LIMIT = 20;
+  const [filters, setFilters] = useState({
+    status: "all",
+  });
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit: LIMIT,
+    };
+
+    if (searchTerm) params.search = searchTerm;
+
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
+
+    return params;
+  }, [page, searchTerm, filters]);
   const {
     data: miniSiteData,
     isLoading,
     isFetching,
     refetch,
-  } = useGetAllMiniSitesQuery({ search: searchTerm });
+  } = useGetAllMiniSitesQuery(queryParams);
 
   const hasMore = miniSiteData?.meta?.hasNextPage;
   const fetchNextPage = () => {
@@ -353,21 +371,19 @@ export default function MiniSiteMgmtPage() {
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               <div className="flex flex-1 items-center gap-3 w-full lg:w-auto">
                 <div className="relative flex-1 lg:max-w-md">
-                  <Search
-                    className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-                  />
-                  <input
-                    type="text"
+                  <SearchInput
+                    setSearchTerm={setSearchTerm}
+                    searchTerm={searchTerm}
+                    isDark={isDark}
                     placeholder={t("search_campaigns")}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
                 </div>
 
                 <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, status: e.target.value }))
+                  }
                   className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                 >
                   <option value="all">{t("all_statuses")}</option>
@@ -509,6 +525,7 @@ export default function MiniSiteMgmtPage() {
           {viewMode === "list" ? (
             <MinisiteListView
               t={t}
+              isLoading={isLoading}
               columnVisibility={columnVisibility}
               miniSites={miniSiteData?.data || []}
               selectedRows={selectedMiniSites}
@@ -517,13 +534,13 @@ export default function MiniSiteMgmtPage() {
             />
           ) : (
             <MinisiteGridView
-              data={miniSiteData?.data} // your array of mini sites
-              onRowClick={handleMiniSiteClick} // function when a card is clicked
-              refetch={refetch} // function to reload the list after delete
-              next={fetchNextPage} // function for infinite scroll
-              hasMore={hasMore} // boolean: is there more data to load
-              isLoading={isLoading} // boolean: loading state
-              t={t} // translation function
+              data={miniSiteData?.data}
+              onRowClick={handleMiniSiteClick}
+              refetch={refetch}
+              next={fetchNextPage}
+              hasMore={hasMore}
+              isLoading={isLoading}
+              t={t}
             />
           )}
         </div>

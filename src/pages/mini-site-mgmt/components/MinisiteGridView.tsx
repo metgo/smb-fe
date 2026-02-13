@@ -1,16 +1,17 @@
-import { toast } from "sonner";
-import { useRef, useState } from "react";
+// import { toast } from "sonner";
+import { useRef } from "react";
 import { AlertCircle, ExternalLink, TrashIcon } from "lucide-react";
 
-import { ConfirmDialog } from "@/components/shared";
+// import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { getStatusColor } from "../mini-site.utils";
+import clsx from "clsx";
 
 interface MiniSite {
   id: string;
-  campaignCode: string;
-  campaignName: string;
+  code: string;
+  name: string;
   companyName: string;
   website: string;
   status: string;
@@ -34,7 +35,7 @@ interface MiniSiteGridViewProps {
 export default function MinisiteGridView({
   data,
   onRowClick,
-  refetch,
+  // refetch,
   next,
   hasMore,
   isLoading = false,
@@ -51,14 +52,14 @@ export default function MinisiteGridView({
     onLoadMore: next,
   });
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [miniSiteToDelete, setMiniSiteToDelete] = useState<string | null>(null);
+  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // const [miniSiteToDelete, setMiniSiteToDelete] = useState<string | null>(null);
 
-  const handleMiniSiteDelete = async (id: string) => {
-    const res = await deleteMiniSite({ id });
-    toast.success(res?.data?.message || "Mini-site deleted successfully");
-    refetch();
-  };
+  // const handleMiniSiteDelete = async (id: string) => {
+  //   const res = await deleteMiniSite({ id });
+  //   toast.success(res?.data?.message || "Mini-site deleted successfully");
+  //   refetch();
+  // };
 
   if (data.length === 0) {
     return (
@@ -106,11 +107,11 @@ export default function MinisiteGridView({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setMiniSiteToDelete(site.id);
+                    // setIsConfirmOpen(true);
+                    // setMiniSiteToDelete(site.id);
                   }}
                   className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                  aria-label={`Delete ${site.campaignName}`}
+                  aria-label={`Delete ${site.name}`}
                 >
                   <TrashIcon size={18} />
                 </button>
@@ -119,7 +120,7 @@ export default function MinisiteGridView({
                   {site.image ? (
                     <img
                       src={site.image}
-                      alt={site.campaignName}
+                      alt={site.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -139,13 +140,13 @@ export default function MinisiteGridView({
                   <h3
                     className={`${textPrimary} font-semibold text-lg mb-3 line-clamp-2`}
                   >
-                    {site.campaignName}
+                    {site.name}
                   </h3>
 
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center gap-2">
                       <span className={`${textSecondary} font-mono`}>
-                        {site.campaignCode}
+                        {site.code}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -169,7 +170,7 @@ export default function MinisiteGridView({
                           isDark,
                         )}`}
                       >
-                        {t(`status_${site.status}`)}
+                        {t(`${site.status}`)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -183,7 +184,7 @@ export default function MinisiteGridView({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={textPrimary}>
-                        Revenue: ₪{site.revenue.toLocaleString()}
+                        Revenue: ₪{site.revenue?.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -194,12 +195,12 @@ export default function MinisiteGridView({
         </div>
       </div>
 
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={isConfirmOpen}
         title={t("delete_mini_site")}
         message={t("delete_mini_site_confirm")}
         confirmText={t("delete")}
-        loading={isDeleting}
+        // loading={isDeleting}
         variant="danger"
         onCancel={() => {
           setIsConfirmOpen(false);
@@ -211,7 +212,7 @@ export default function MinisiteGridView({
           setIsConfirmOpen(false);
           setMiniSiteToDelete(null);
         }}
-      />
+      /> */}
     </div>
   );
 }
