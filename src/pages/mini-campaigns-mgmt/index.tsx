@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Search,
@@ -11,7 +10,6 @@ import {
   Download,
   Copy,
   CheckSquare,
-  Square,
 } from "lucide-react";
 
 import { MiniCampaignWizard } from "./components";
@@ -69,15 +67,15 @@ export default function MiniCampaignsMgmtPage() {
     })),
   );
 
-  const filteredMiniCampaigns = miniCampaigns.filter((campaign) => {
-    const matchesSearch =
-      campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.campaignCode.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || campaign.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // const filteredMiniCampaigns = miniCampaigns.filter((campaign) => {
+  //   const matchesSearch =
+  //     campaign.campaignName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     campaign.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     campaign.campaignCode.toLowerCase().includes(searchQuery.toLowerCase());
+  //   const matchesStatus =
+  //     statusFilter === "all" || campaign.status === statusFilter;
+  //   return matchesSearch && matchesStatus;
+  // });
 
   // Calculate KPIs
   const totalCampaigns = miniCampaigns.length;
@@ -97,20 +95,20 @@ export default function MiniCampaignsMgmtPage() {
     miniCampaigns.reduce((sum, c) => sum + c.conversionRate, 0) /
     miniCampaigns.length;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800";
-      case "draft":
-        return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700";
-      case "completed":
-        return "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-      case "paused":
-        return "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800";
-      default:
-        return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
-    }
-  };
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case "active":
+  //       return "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800";
+  //     case "draft":
+  //       return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700";
+  //     case "completed":
+  //       return "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800";
+  //     case "paused":
+  //       return "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800";
+  //     default:
+  //       return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+  //   }
+  // };
 
   const handleCreateMiniCampaign = (data: any, status: "draft" | "active") => {
     if (editingMiniCampaign) {
@@ -156,31 +154,31 @@ export default function MiniCampaignsMgmtPage() {
     setEditingMiniCampaign(null);
   };
 
-  const handleRowClick = (campaign: MiniCampaign) => {
-    setEditingMiniCampaign(campaign);
-    setShowWizard(true);
-  };
+  // const handleRowClick = (campaign: MiniCampaign) => {
+  //   setEditingMiniCampaign(campaign);
+  //   setShowWizard(true);
+  // };
 
-  // Bulk actions handlers
-  const toggleRowSelection = (id: string) => {
-    const newSelection = new Set(selectedRows);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
-    }
-    setSelectedRows(newSelection);
-  };
+  // // Bulk actions handlers
+  // const toggleRowSelection = (id: string) => {
+  //   const newSelection = new Set(selectedRows);
+  //   if (newSelection.has(id)) {
+  //     newSelection.delete(id);
+  //   } else {
+  //     newSelection.add(id);
+  //   }
+  //   setSelectedRows(newSelection);
+  // };
 
-  const toggleSelectAll = () => {
-    if (selectedRows.size === filteredMiniCampaigns.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(
-        new Set(filteredMiniCampaigns.map((campaign) => campaign.id)),
-      );
-    }
-  };
+  // const toggleSelectAll = () => {
+  //   if (selectedRows.size === filteredMiniCampaigns.length) {
+  //     setSelectedRows(new Set());
+  //   } else {
+  //     setSelectedRows(
+  //       new Set(filteredMiniCampaigns.map((campaign) => campaign.id)),
+  //     );
+  //   }
+  // };
 
   const handleBulkStatusChange = () => {
     if (!bulkStatus || selectedRows.size === 0) return;
@@ -345,7 +343,7 @@ export default function MiniCampaignsMgmtPage() {
     {
       id: 3,
       title: t("total_revenue"),
-      value: `₪${totalRevenue.toLocaleString()}`,
+      value: `₪${totalRevenue?.toLocaleString()}`,
       label: t("total"),
       icon: <DollarSign className="w-5 h-5 text-blue-600" />,
     },
@@ -514,251 +512,6 @@ export default function MiniCampaignsMgmtPage() {
         )}
 
         {/* Content */}
-        {viewMode === "list" ? (
-          <div
-            className={`${themeColor.bgPrimary} rounded-xl border ${themeColor.borderColor} overflow-hidden`}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead
-                  className={`${themeColor.bgSecondary} border-b ${themeColor.borderColor}`}
-                >
-                  <tr>
-                    <th className={`px-4 py-3 w-12`}>
-                      <button
-                        onClick={toggleSelectAll}
-                        className="flex items-center justify-center"
-                      >
-                        {selectedRows.size === filteredMiniCampaigns.length &&
-                        filteredMiniCampaigns.length > 0 ? (
-                          <CheckSquare className="w-5 h-5 text-purple-600" />
-                        ) : (
-                          <Square
-                            className={`w-5 h-5 ${themeColor.textTertiary}`}
-                          />
-                        )}
-                      </button>
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("campaign_code")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("campaign_name")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("company_name")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("website")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("status")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("voucher_amount")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("total_vouchers")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("used_vouchers")}
-                    </th>
-                    <th
-                      className={`px-4 py-3 text-left text-sm ${themeColor.textSecondary}`}
-                    >
-                      {t("revenue")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMiniCampaigns.map((campaign) => (
-                    <tr
-                      key={campaign.id}
-                      className={`border-b ${themeColor.borderColor} hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer`}
-                      onClick={() => handleRowClick(campaign)}
-                    >
-                      <td
-                        className="px-4 py-3"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => toggleRowSelection(campaign.id)}
-                          className="flex items-center justify-center"
-                        >
-                          {selectedRows.has(campaign.id) ? (
-                            <CheckSquare className="w-5 h-5 text-purple-600" />
-                          ) : (
-                            <Square
-                              className={`w-5 h-5 ${themeColor.textTertiary}`}
-                            />
-                          )}
-                        </button>
-                      </td>
-                      <td
-                        className={`px-4 py-3 ${themeColor.textPrimary} font-mono text-sm`}
-                      >
-                        {campaign.campaignCode}
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textPrimary}`}>
-                        {campaign.campaignName}
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textSecondary}`}>
-                        {campaign.companyName}
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textSecondary}`}>
-                        {campaign.website}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs border ${getStatusColor(campaign.status)}`}
-                        >
-                          {t(campaign.status)}
-                        </span>
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textPrimary}`}>
-                        ₪{campaign.voucherAmount}
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textPrimary}`}>
-                        {campaign.totalVouchers}
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textPrimary}`}>
-                        {campaign.usedVouchers}
-                        <span
-                          className={`ml-2 text-xs ${themeColor.textTertiary}`}
-                        >
-                          (
-                          {(
-                            (campaign.usedVouchers / campaign.totalVouchers) *
-                            100
-                          ).toFixed(0)}
-                          %)
-                        </span>
-                      </td>
-                      <td className={`px-4 py-3 ${themeColor.textPrimary}`}>
-                        ₪{campaign.revenue.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMiniCampaigns.map((campaign) => (
-              <div
-                key={campaign.id}
-                className={`${themeColor.bgPrimary} rounded-xl p-5 border ${themeColor.borderColor} hover:shadow-lg transition-all relative cursor-pointer`}
-                onClick={() => handleRowClick(campaign)}
-              >
-                {/* Checkbox for grid view */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleRowSelection(campaign.id);
-                  }}
-                  className="absolute top-4 right-4 z-10"
-                >
-                  {selectedRows.has(campaign.id) ? (
-                    <CheckSquare className="w-5 h-5 text-purple-600" />
-                  ) : (
-                    <Square className={`w-5 h-5 ${themeColor.textTertiary}`} />
-                  )}
-                </button>
-
-                {/* Logo and Header */}
-                <div className="flex items-start gap-4 mb-4 pr-8">
-                  <div
-                    className={`w-16 h-16 rounded-lg ${themeColor.bgSecondary} flex items-center justify-center flex-shrink-0 border ${themeColor.borderColor}`}
-                  >
-                    <Building2
-                      className={`w-8 h-8 ${themeColor.textTertiary}`}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`${themeColor.textPrimary} mb-1 truncate`}>
-                      {campaign.campaignName}
-                    </h3>
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs border ${getStatusColor(campaign.status)}`}
-                    >
-                      {t(campaign.status)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Voucher Usage Progress */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className={themeColor.textTertiary}>
-                      {t("vouchers")}:
-                    </span>
-                    <span className={themeColor.textPrimary}>
-                      {campaign.usedVouchers} / {campaign.totalVouchers}
-                    </span>
-                  </div>
-                  <div
-                    className={`w-full h-2 ${themeColor.bgSecondary} rounded-full overflow-hidden`}
-                  >
-                    <div
-                      className="h-full bg-linear-to-r from-purple-500 to-pink-600 transition-all"
-                      style={{
-                        width: `${(campaign.usedVouchers / campaign.totalVouchers) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <p
-                    className={`text-xs ${themeColor.textTertiary} mt-1 text-right`}
-                  >
-                    {(
-                      (campaign.usedVouchers / campaign.totalVouchers) *
-                      100
-                    ).toFixed(0)}
-                    % {t("used")}
-                  </p>
-                </div>
-
-                {/* Key Metrics */}
-                <div
-                  className={`grid grid-cols-2 gap-3 pt-4 border-t ${themeColor.borderColor}`}
-                >
-                  <div>
-                    <p className={`text-xs ${themeColor.textTertiary} mb-1`}>
-                      {t("voucher_amount")}
-                    </p>
-                    <p className={`${themeColor.textPrimary}`}>
-                      ₪{campaign.voucherAmount}
-                    </p>
-                  </div>
-                  <div>
-                    <p className={`text-xs ${themeColor.textTertiary} mb-1`}>
-                      {t("revenue")}
-                    </p>
-                    <p className={`${themeColor.textPrimary}`}>
-                      ₪{campaign.revenue.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Wizard Modal */}

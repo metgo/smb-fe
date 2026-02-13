@@ -38,7 +38,7 @@ export const miniSiteMutationApi = createApi({
     // DELETE → delete minisite by id
     deleteMiniSite: builder.mutation<any, { miniSiteId: string }>({
       query: ({ miniSiteId }) => ({
-        url: `${endpoints.miniSites}/${miniSiteId}`,
+        url: `${endpoints.miniSites}/media/${miniSiteId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["MiniSites"],

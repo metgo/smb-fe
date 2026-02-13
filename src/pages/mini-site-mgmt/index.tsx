@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   Search,
   Plus,
-  Grid,
-  List,
   DollarSign,
   Users,
   TrendingUp,
@@ -12,7 +10,6 @@ import {
   Download,
   Copy,
   CheckSquare,
-  Square,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -21,6 +18,10 @@ import {
   MinisiteGridView,
   MinisiteListView,
 } from "./components";
+import { useGetAllMiniSitesQuery } from "@/store/api/miniSiteQueryApi";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/lib/routes";
+import { ViewModeToggle } from "@/components/shared";
 
 interface MiniSite {
   id: string;
@@ -37,9 +38,22 @@ interface MiniSite {
   revenue: number;
   conversionRate: number;
 }
+export const defaultColumns = {
+  select: true,
+  code: true,
+  name: true,
+  companyName: true,
+  website: true,
+  status: true,
+  voucherAmount: true,
+  totalVouchers: true,
+  usedVouchers: true,
+  revenue: true,
+};
+type ColumnVisibility = typeof defaultColumns;
 
 export default function MiniSiteMgmtPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("minisites");
 
   const {
     bgPrimary,
@@ -58,153 +72,63 @@ export default function MiniSiteMgmtPage() {
   const [editingMiniSite, setEditingMiniSite] = useState<MiniSite | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
-
-  // Mock data
-  const [miniSites, setMiniSites] = useState<MiniSite[]>(
-    Array.from({ length: 25 }, (_, i) => ({
-      id: `ms-${i + 1}`,
-      campaignCode: `CAMP${String(i + 1).padStart(4, "0")}`,
-      campaignName: `Campaign ${i + 1}`,
-      companyName: `Company ${Math.floor(i / 5) + 1}`,
-      website: `Website ${(i % 3) + 1}`,
-      startDate: new Date(2024, i % 12, 1).toISOString().split("T")[0],
-      endDate: new Date(2024, (i % 12) + 1, 0).toISOString().split("T")[0],
-      status: ["active", "draft", "completed", "paused"][i % 4] as any,
-      voucherAmount: [50, 100, 150, 200][i % 4],
-      totalVouchers: [100, 200, 300, 500][i % 4],
-      usedVouchers: Math.floor(Math.random() * 100),
-      revenue: Math.floor(Math.random() * 50000),
-      conversionRate: Math.floor(Math.random() * 100),
-    })),
+  //api call
+  const [searchTerm, _setSearchTerm] = useState("");
+  const [_page, setPage] = useState<number>(1);
+  const [selectedMiniSites, setSelectedMiniSites] = useState<Set<string>>(
+    new Set(),
   );
+  const {
+    data: miniSiteData,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetAllMiniSitesQuery({ search: searchTerm });
 
-  const filteredMiniSites = miniSites?.filter((site) => {
-    const matchesSearch =
-      site.campaignName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      site.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      site.campaignCode.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || site.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const hasMore = miniSiteData?.meta?.hasNextPage;
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev: number) => {
+      return prev + 1;
+    });
+  };
+  const [columnVisibility, _setColumnVisibility] =
+    useState<ColumnVisibility>(defaultColumns);
+
+  const navigate = useNavigate();
+  const handleMiniSiteClick = (miniSite: any) => {
+    navigate(`${routes.businessDetails}?businessId=${miniSite?._id}`, {
+      replace: true,
+    });
+  };
 
   // Calculate KPIs
-  const totalCampaigns = miniSites.length;
-  const activeCampaigns = miniSites.filter((s) => s.status === "active").length;
-  const totalRevenue = miniSites.reduce((sum, s) => sum + s.revenue, 0);
-  const totalVouchers = miniSites.reduce((sum, s) => sum + s.totalVouchers, 0);
-  const usedVouchers = miniSites.reduce((sum, s) => sum + s.usedVouchers, 0);
+  const totalCampaigns = miniSiteData?.data.length;
+  const activeCampaigns = miniSiteData?.data.filter(
+    (s: any) => s.status === "active",
+  ).length;
+  const totalRevenue = miniSiteData?.data.reduce(
+    (sum: any, s: any) => sum + s.revenue,
+    0,
+  );
+  const totalVouchers = miniSiteData?.data.reduce(
+    (sum: any, s: any) => sum + s.totalVouchers,
+    0,
+  );
+  const usedVouchers = miniSiteData?.data.reduce(
+    (sum: any, s: any) => sum + s.usedVouchers,
+    0,
+  );
   const avgConversion =
-    miniSites.reduce((sum, s) => sum + s.conversionRate, 0) / miniSites.length;
-
-  const handleCreateMiniSite = (data: any, status: "draft" | "active") => {
-    if (editingMiniSite) {
-      // Edit existing mini-site
-      setMiniSites(
-        miniSites.map((site) =>
-          site.id === editingMiniSite.id
-            ? {
-                ...site,
-                campaignCode: data.campaignCode,
-                campaignName: data.campaignName,
-                companyName: data.companyName,
-                website: data.selectedWebsite,
-                startDate: data.startDate,
-                endDate: data.endDate,
-                status: status,
-                voucherAmount: parseFloat(data.voucherAmount),
-                totalVouchers: parseFloat(data.totalVouchers),
-              }
-            : site,
-        ),
-      );
-    } else {
-      // Create new mini-site
-      const newMiniSite: MiniSite = {
-        id: `ms-${miniSites.length + 1}`,
-        campaignCode: data.campaignCode,
-        campaignName: data.campaignName,
-        companyName: data.companyName,
-        website: data.selectedWebsite,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        status: status,
-        voucherAmount: parseFloat(data.voucherAmount),
-        totalVouchers: parseFloat(data.totalVouchers),
-        usedVouchers: 0,
-        revenue: 0,
-        conversionRate: 0,
-      };
-      setMiniSites([newMiniSite, ...miniSites]);
-    }
-    setShowWizard(false);
-    setEditingMiniSite(null);
-  };
-
-  const handleRowClick = (site: MiniSite) => {
-    setEditingMiniSite(site);
-    setShowWizard(true);
-  };
-
-  // Bulk actions handlers
-  const toggleRowSelection = (id: string) => {
-    const newSelection = new Set(selectedRows);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
-    }
-    setSelectedRows(newSelection);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedRows?.size === filteredMiniSites?.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(filteredMiniSites?.map((site) => site.id)));
-    }
-  };
-
-  const handleBulkStatusChange = () => {
-    if (!bulkStatus || selectedRows.size === 0) return;
-
-    setMiniSites(
-      miniSites.map((site) =>
-        selectedRows.has(site.id)
-          ? { ...site, status: bulkStatus as any }
-          : site,
-      ),
-    );
-    setSelectedRows(new Set());
-    setBulkStatus("");
-  };
-
-  const handleDuplicate = () => {
-    if (selectedRows.size !== 1) return;
-
-    const siteId = Array.from(selectedRows)[0];
-    const siteToDuplicate = miniSites.find((s) => s.id === siteId);
-    if (!siteToDuplicate) return;
-
-    const duplicatedSite: MiniSite = {
-      ...siteToDuplicate,
-      id: `ms-${miniSites.length + 1}`,
-      campaignCode: `${siteToDuplicate.campaignCode}-COPY`,
-      campaignName: `${siteToDuplicate.campaignName} (Copy)`,
-      status: "draft",
-      usedVouchers: 0,
-      revenue: 0,
-      conversionRate: 0,
-    };
-
-    setMiniSites([duplicatedSite, ...miniSites]);
-    setSelectedRows(new Set());
-  };
+    miniSiteData?.data.reduce((sum: any, s: any) => sum + s.conversionRate, 0) /
+    miniSiteData?.data.length;
 
   const exportToCSV = () => {
     if (selectedRows.size === 0) return;
 
-    const selectedSites = miniSites.filter((site) => selectedRows.has(site.id));
+    const selectedSites = miniSiteData?.data?.filter((site: any) =>
+      selectedRows.has(site.id),
+    );
     const headers = [
       "Campaign Code",
       "Campaign Name",
@@ -220,7 +144,7 @@ export default function MiniSiteMgmtPage() {
     ];
     const csvContent = [
       headers.join(","),
-      ...selectedSites.map((site) =>
+      ...selectedSites.map((site: any) =>
         [
           site.campaignCode,
           `"${site.campaignName}"`,
@@ -248,7 +172,9 @@ export default function MiniSiteMgmtPage() {
   const exportToXLS = () => {
     if (selectedRows.size === 0) return;
 
-    const selectedSites = miniSites.filter((site) => selectedRows.has(site.id));
+    const selectedSites = miniSiteData?.data.filter((site: any) =>
+      selectedRows.has(site.id),
+    );
     const headers = [
       "Campaign Code",
       "Campaign Name",
@@ -275,7 +201,7 @@ export default function MiniSiteMgmtPage() {
             <tbody>
               ${selectedSites
                 .map(
-                  (site) => `
+                  (site: any) => `
                 <tr>
                   <td>${site.campaignCode}</td>
                   <td>${site.campaignName}</td>
@@ -309,15 +235,28 @@ export default function MiniSiteMgmtPage() {
   return (
     <>
       <main className="overflow-y-auto h-[calc(100vh-64px)] p-6">
-        <div className="max-w-[1600px] mx-auto">
+        <div>
           {/* Header */}
-          <div className="mb-6">
-            <h1
-              className={`text-3xl mb-2 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+          <div className="mb-6 flex justify-between">
+            <div className="">
+              <h1
+                className={`text-3xl mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+              >
+                {t("mini_site_management_page")}{" "}
+                {/* "Mini-Site Management" */}{" "}
+              </h1>
+              <p className={textSecondary}>
+                {t("manage_all_mini_site_campaigns")}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowWizard(true)}
+              className="ml-2 px-3 py-1 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-1 text-sm font-medium"
             >
-              {t.MiniSiteMgmtPage}
-            </h1>
-            <p className={textSecondary}>{t.manageAllMiniSiteCampaigns}</p>
+              <Plus className="w-4 h-4" />
+              {t("create_mini_site")}
+            </button>
           </div>
 
           {/* KPI Cards */}
@@ -328,11 +267,11 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Target className="w-5 h-5 text-purple-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.totalMiniSites || "Total Mini-Sites"}
+                  {t("total_mini_sites")}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>{totalCampaigns}</p>
-              <p className={`text-xs ${textTertiary}`}>{t.campaigns}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("campaigns")}</p>
             </div>
 
             <div
@@ -341,13 +280,13 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-green-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.activeMiniSites || "Active Mini-Sites"}
+                  {t("active_mini_sites")}{" "}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>
                 {activeCampaigns}
               </p>
-              <p className={`text-xs ${textTertiary}`}>{t.campaigns}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("campaigns")}</p>
             </div>
 
             <div
@@ -356,13 +295,13 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className="w-5 h-5 text-blue-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.totalRevenue || "Total Revenue"}
+                  {t("total_revenue")}{" "}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>
-                ₪{totalRevenue.toLocaleString()}
+                ₪{totalRevenue?.toLocaleString()}
               </p>
-              <p className={`text-xs ${textTertiary}`}>{t.total}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("total")}</p>
             </div>
 
             <div
@@ -371,11 +310,11 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Users className="w-5 h-5 text-orange-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.totalVouchers || "Total Vouchers"}
+                  {t("total_vouchers")}{" "}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>{totalVouchers}</p>
-              <p className={`text-xs ${textTertiary}`}>{t.total}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("total")}</p>
             </div>
 
             <div
@@ -384,11 +323,11 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Award className="w-5 h-5 text-pink-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.usedVouchers || "Used Vouchers"}
+                  {t("used_vouchers")}{" "}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>{usedVouchers}</p>
-              <p className={`text-xs ${textTertiary}`}>{t.vouchers}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("vouchers")}</p>
             </div>
 
             <div
@@ -397,13 +336,13 @@ export default function MiniSiteMgmtPage() {
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-teal-600" />
                 <span className={`text-sm ${textPrimary}`}>
-                  {t.conversionRate || "Conversion Rate"}
+                  {t("conversion_rate")}{" "}
                 </span>
               </div>
               <p className={`text-2xl ${textPrimary} mb-1`}>
                 {avgConversion.toFixed(1)}%
               </p>
-              <p className={`text-xs ${textTertiary}`}>{t.rate}</p>
+              <p className={`text-xs ${textTertiary}`}>{t("rate")}</p>
             </div>
           </div>
 
@@ -419,7 +358,7 @@ export default function MiniSiteMgmtPage() {
                   />
                   <input
                     type="text"
-                    placeholder={t.searchCampaigns}
+                    placeholder={t("search_campaigns")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
@@ -431,35 +370,16 @@ export default function MiniSiteMgmtPage() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                 >
-                  <option value="all">{t.allStatuses}</option>
-                  <option value="active">{t.active}</option>
-                  <option value="draft">{t.draft}</option>
-                  <option value="completed">{t.completed}</option>
-                  <option value="paused">{t.paused}</option>
+                  <option value="all">{t("all_statuses")}</option>
+                  <option value="active">{t("active")}</option>
+                  <option value="draft">{t("draft")}</option>
+                  <option value="completed">{t("completed")}</option>
+                  <option value="paused">{t("paused")}</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-lg ${viewMode === "list" ? "bg-purple-100 dark:bg-purple-950/30 text-purple-600" : `${bgSecondary} ${textSecondary}`}`}
-                >
-                  <List className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg ${viewMode === "grid" ? "bg-purple-100 dark:bg-purple-950/30 text-purple-600" : `${bgSecondary} ${textSecondary}`}`}
-                >
-                  <Grid className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => setShowWizard(true)}
-                  className="ml-2 px-4 py-2 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  {t.createMiniSite}
-                </button>
+                <ViewModeToggle onChange={setViewMode} value={viewMode} />
               </div>
             </div>
           </div>
@@ -474,13 +394,15 @@ export default function MiniSiteMgmtPage() {
                   <CheckSquare className="w-5 h-5 text-purple-600" />
                   <span className={textPrimary}>
                     {selectedRows.size}{" "}
-                    {selectedRows.size === 1 ? t.itemSelected : t.itemsSelected}
+                    {selectedRows.size === 1
+                      ? t("item_selected")
+                      : t("items_selected")}
                   </span>
                   <button
                     onClick={() => setSelectedRows(new Set())}
                     className={`text-sm ${textTertiary} hover:${textSecondary} underline`}
                   >
-                    {t.clearSelection}
+                    {t("clear_selection")}{" "}
                   </button>
                 </div>
 
@@ -500,7 +422,7 @@ export default function MiniSiteMgmtPage() {
                           color: isDark ? "#ffffff" : "#111827",
                         }}
                       >
-                        {t.changeStatus}
+                        {t("change_status")}{" "}
                       </option>
                       <option
                         value="active"
@@ -509,7 +431,7 @@ export default function MiniSiteMgmtPage() {
                           color: isDark ? "#ffffff" : "#111827",
                         }}
                       >
-                        {t.active}
+                        {t("active")}{" "}
                       </option>
                       <option
                         value="draft"
@@ -518,7 +440,7 @@ export default function MiniSiteMgmtPage() {
                           color: isDark ? "#ffffff" : "#111827",
                         }}
                       >
-                        {t.draft}
+                        {t("draft")}{" "}
                       </option>
                       <option
                         value="completed"
@@ -527,7 +449,7 @@ export default function MiniSiteMgmtPage() {
                           color: isDark ? "#ffffff" : "#111827",
                         }}
                       >
-                        {t.completed}
+                        {t("completed")}{" "}
                       </option>
                       <option
                         value="paused"
@@ -536,11 +458,11 @@ export default function MiniSiteMgmtPage() {
                           color: isDark ? "#ffffff" : "#111827",
                         }}
                       >
-                        {t.paused}
+                        {t("paused")}{" "}
                       </option>
                     </select>
                     <button
-                      onClick={handleBulkStatusChange}
+                      // onClick={handleBulkStatusChange}
                       disabled={!bulkStatus}
                       className={`px-3 py-2 rounded-lg text-sm transition-all ${
                         bulkStatus
@@ -548,18 +470,18 @@ export default function MiniSiteMgmtPage() {
                           : "bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed"
                       }`}
                     >
-                      {t.apply}
+                      {t("apply")}{" "}
                     </button>
                   </div>
 
                   {/* Duplicate - only show when exactly 1 row selected */}
                   {selectedRows.size === 1 && (
                     <button
-                      onClick={handleDuplicate}
+                      // onClick={handleDuplicate}
                       className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center gap-2 text-sm"
                     >
                       <Copy className="w-4 h-4" />
-                      {t.duplicate}
+                      {t("duplicate")}{" "}
                     </button>
                   )}
 
@@ -584,7 +506,26 @@ export default function MiniSiteMgmtPage() {
           )}
 
           {/* Content */}
-          {viewMode === "list" ? <MinisiteListView /> : <MinisiteGridView />}
+          {viewMode === "list" ? (
+            <MinisiteListView
+              t={t}
+              columnVisibility={columnVisibility}
+              miniSites={miniSiteData?.data || []}
+              selectedRows={selectedMiniSites}
+              setSelectedRows={setSelectedMiniSites}
+              onRowClick={handleMiniSiteClick}
+            />
+          ) : (
+            <MinisiteGridView
+              data={miniSiteData?.data} // your array of mini sites
+              onRowClick={handleMiniSiteClick} // function when a card is clicked
+              refetch={refetch} // function to reload the list after delete
+              next={fetchNextPage} // function for infinite scroll
+              hasMore={hasMore} // boolean: is there more data to load
+              isLoading={isLoading} // boolean: loading state
+              t={t} // translation function
+            />
+          )}
         </div>
       </main>
 
@@ -595,7 +536,7 @@ export default function MiniSiteMgmtPage() {
             setShowWizard(false);
             setEditingMiniSite(null);
           }}
-          onSubmit={handleCreateMiniSite}
+          // onSubmit={handleCreateMiniSite}
           editingMiniSite={editingMiniSite}
         />
       )}

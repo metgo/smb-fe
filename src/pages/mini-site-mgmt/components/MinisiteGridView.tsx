@@ -1,139 +1,217 @@
-import { Building2, CheckSquare, Square } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { useRef, useState } from "react";
+import { AlertCircle, ExternalLink, TrashIcon } from "lucide-react";
+
+import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { getStatusColor } from "../mini-site.utils";
 
 interface MiniSite {
   id: string;
+  campaignCode: string;
   campaignName: string;
+  companyName: string;
+  website: string;
   status: string;
-  usedVouchers: number;
-  totalVouchers: number;
   voucherAmount: number;
+  totalVouchers: number;
+  usedVouchers: number;
   revenue: number;
+  image?: string;
 }
 
-interface MinisiteGridViewProps {
-  filteredMiniSites: MiniSite[];
-  selectedRows: Set<string>;
-  toggleRowSelection: (id: string) => void;
-  handleRowClick: (site: MiniSite) => void;
+interface MiniSiteGridViewProps {
+  data: MiniSite[];
+  onRowClick?: (item: MiniSite) => void;
+  refetch: () => void;
+  next?: () => void;
+  hasMore?: boolean;
+  isLoading?: boolean;
+  t: (key: string) => string;
 }
 
-const MinisiteGridView = ({
-  filteredMiniSites,
-  selectedRows,
-  toggleRowSelection,
-  handleRowClick,
-}: MinisiteGridViewProps) => {
-  const { t } = useTranslation("mini_site");
+export default function MinisiteGridView({
+  data,
+  onRowClick,
+  refetch,
+  next,
+  hasMore,
+  isLoading = false,
+  t,
+}: MiniSiteGridViewProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { isDark, textPrimary, textSecondary, textTertiary } =
+    useThemeClasses();
 
-  const {
-    bgPrimary,
-    bgSecondary,
-    textPrimary,
-    textTertiary,
-    borderColor,
-    isDark,
-  } = useThemeClasses();
+  useInfiniteScroll({
+    ref: scrollRef,
+    hasMore,
+    isLoading,
+    onLoadMore: next,
+  });
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [miniSiteToDelete, setMiniSiteToDelete] = useState<string | null>(null);
+
+  const handleMiniSiteDelete = async (id: string) => {
+    const res = await deleteMiniSite({ id });
+    toast.success(res?.data?.message || "Mini-site deleted successfully");
+    refetch();
+  };
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)]">
+        <AlertCircle
+          className={`w-16 h-16 mx-auto mb-4 ${isDark ? "text-gray-500" : "text-gray-400"}`}
+        />
+        <h3
+          className={`text-lg mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("no_mini_sites_found")}
+        </h3>
+        <p className={isDark ? "text-gray-500" : "text-gray-600"}>
+          {t("no_mini_sites_found_desc")}
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredMiniSites?.map((site) => {
-        const percentage =
-          site.totalVouchers > 0
-            ? (site.usedVouchers / site.totalVouchers) * 100
-            : 0;
+    <div
+      className={`py-6 px-4 ${isDark ? "bg-gray-900" : "bg-gray-100"} rounded-xl`}
+    >
+      <div
+        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        ref={scrollRef}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {data.map((site) => {
+            const percentage =
+              site.totalVouchers > 0
+                ? (site.usedVouchers / site.totalVouchers) * 100
+                : 0;
 
-        return (
-          <div
-            key={site.id}
-            className={`${bgPrimary} rounded-xl p-5 border ${borderColor} hover:shadow-lg transition-all relative cursor-pointer`}
-            onClick={() => handleRowClick(site)}
-          >
-            {/* Checkbox */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleRowSelection(site.id);
-              }}
-              className="absolute top-4 right-4 z-10"
-            >
-              {selectedRows.has(site.id) ? (
-                <CheckSquare className="w-5 h-5 text-purple-600" />
-              ) : (
-                <Square className={`w-5 h-5 ${textTertiary}`} />
-              )}
-            </button>
-
-            {/* Header */}
-            <div className="flex items-start gap-4 mb-4 pr-8">
+            return (
               <div
-                className={`w-16 h-16 rounded-lg ${bgSecondary} flex items-center justify-center shrink-0 border ${borderColor}`}
+                key={site.id}
+                className={clsx(
+                  isDark ? "bg-gray-900" : "bg-white",
+                  "relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
+                )}
+                onClick={() => onRowClick && onRowClick(site)}
               >
-                <Building2 className={`w-8 h-8 ${textTertiary}`} />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h3 className={`${textPrimary} mb-1 truncate`}>
-                  {site.campaignName}
-                </h3>
-
-                <span
-                  className={`inline-block px-2 py-1 rounded-full text-xs border ${getStatusColor(
-                    site.status,
-                    isDark,
-                  )}`}
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setMiniSiteToDelete(site.id);
+                  }}
+                  className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                  aria-label={`Delete ${site.campaignName}`}
                 >
-                  {t(`status_${site.status}`)}
-                </span>
-              </div>
-            </div>
+                  <TrashIcon size={18} />
+                </button>
 
-            {/* Voucher Progress */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span className={textTertiary}>{t("vouchers")}:</span>
-                <span className={textPrimary}>
-                  {site.usedVouchers} / {site.totalVouchers}
-                </span>
-              </div>
+                <div className="relative h-36">
+                  {site.image ? (
+                    <img
+                      src={site.image}
+                      alt={site.campaignName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                      <ExternalLink className="w-20 h-20 text-white/40" />
+                    </div>
+                  )}
+                </div>
 
-              <div
-                className={`w-full h-2 ${bgSecondary} rounded-full overflow-hidden`}
-              >
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-600 transition-all"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
+                  className={`p-5 ${
+                    isDark
+                      ? "bg-gray-800 text-gray-400"
+                      : "bg-white text-gray-600"
+                  }`}
+                >
+                  <h3
+                    className={`${textPrimary} font-semibold text-lg mb-3 line-clamp-2`}
+                  >
+                    {site.campaignName}
+                  </h3>
 
-              <p className={`text-xs ${textTertiary} mt-1 text-right`}>
-                {percentage.toFixed(0)}% {t("used")}
-              </p>
-            </div>
-
-            {/* Metrics */}
-            <div
-              className={`grid grid-cols-2 gap-3 pt-4 border-t ${borderColor}`}
-            >
-              <div>
-                <p className={`text-xs ${textTertiary} mb-1`}>
-                  {t("voucher_amount")}
-                </p>
-                <p className={textPrimary}>₪{site.voucherAmount}</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className={`${textSecondary} font-mono`}>
+                        {site.campaignCode}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={textSecondary}>{site.companyName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={site.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-teal-500 hover:text-teal-600 truncate"
+                      >
+                        {site.website}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-block px-2 py-1 rounded-full text-xs border ${getStatusColor(
+                          site.status,
+                          isDark,
+                        )}`}
+                      >
+                        {t(`status_${site.status}`)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={textPrimary}>
+                        ₪{site.voucherAmount} vouchers
+                      </span>
+                      <span className={`ml-2 text-xs ${textTertiary}`}>
+                        Used {site.usedVouchers}/{site.totalVouchers} (
+                        {percentage.toFixed(0)}%)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={textPrimary}>
+                        Revenue: ₪{site.revenue.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              <div>
-                <p className={`text-xs ${textTertiary} mb-1`}>{t("revenue")}</p>
-                <p className={textPrimary}>₪{site.revenue.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("delete_mini_site")}
+        message={t("delete_mini_site_confirm")}
+        confirmText={t("delete")}
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setMiniSiteToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!miniSiteToDelete) return;
+          handleMiniSiteDelete(miniSiteToDelete);
+          setIsConfirmOpen(false);
+          setMiniSiteToDelete(null);
+        }}
+      />
     </div>
   );
-};
-
-export default MinisiteGridView;
+}

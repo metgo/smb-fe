@@ -5,30 +5,15 @@ import {
   ArrowLeft,
   Save,
   Eye,
-  Upload,
-  Copy,
-  Download,
   CheckCircle,
-  XCircle,
   Building2,
-  Image as ImageIcon,
   DollarSign,
   Ticket,
-  Home,
   Briefcase,
-  Globe,
-  List,
-  Grid,
-  Search,
-  Accessibility,
   Monitor,
-  Smartphone,
-  Send,
-  Clock,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import Step1WebsiteAndInfo from "./sub-components/ProductWebsiteAndInfo";
 import { ProductSelectionStep } from "./sub-components/ProductSelectionStep";
 import ProductWebsiteAndInfo from "./sub-components/ProductWebsiteAndInfo";
 import { MiniSitePreview } from "./sub-components/MinisitePreview";
@@ -42,7 +27,6 @@ import {
 
 interface MinisiteCreateWizardProps {
   onClose: () => void;
-  onSubmit: (data: any, status: "draft" | "active") => void;
   editingMiniSite?: any;
 }
 
@@ -102,7 +86,6 @@ interface VoucherRecipient {
 
 export default function MinisiteCreateWizard({
   onClose,
-  onSubmit,
   editingMiniSite,
 }: MinisiteCreateWizardProps) {
   const { t } = useTranslation("mini_site");
@@ -170,9 +153,10 @@ export default function MinisiteCreateWizard({
       endDate: formData.endDate,
     },
   };
-  const [initMiniSiteCreate, { isLoading: isCreating }] =
+  const [initMiniSiteCreate, { isLoading: _isCreating }] =
     useInitMiniSiteCreateMutation();
-  const [updateMiniSite, { isLoading: isSaving }] = useUpdateMiniSiteMutation();
+  const [updateMiniSite, { isLoading: _isSaving }] =
+    useUpdateMiniSiteMutation();
 
   const [miniSiteId, setMiniSiteId] = useState("");
   const saveDraft = useCallback(
@@ -403,11 +387,14 @@ export default function MinisiteCreateWizard({
   }, [editingMiniSite]);
 
   const steps = [
-    { number: 1, name: t.websitePurchaserInfo || "Website & Purchaser Info" },
-    { number: 2, name: t.selectProducts || "Select Products" },
-    { number: 3, name: t.miniSitePreview || "Mini-Site Preview" },
-    { number: 4, name: t.voucherCreation || "Voucher Creation" },
-    { number: 5, name: t.results || "Results" },
+    {
+      number: 1,
+      name: t("website_purchaser_info") || "Website & Purchaser Info",
+    },
+    { number: 2, name: t("select_products") || "Select Products" },
+    { number: 3, name: t("mini_site_preview") || "Mini-Site Preview" },
+    { number: 4, name: t("voucher_creation") || "Voucher Creation" },
+    { number: 5, name: t("results") || "Results" },
   ];
 
   const handleChange = (
@@ -529,53 +516,8 @@ export default function MinisiteCreateWizard({
     }
   };
 
-  const handleSaveDraft = () => {
-    const data = {
-      selectedWebsite,
-      companyName,
-      contactName,
-      email,
-      phone: phoneCountryCode + phoneNumber,
-      officeAddress,
-      campaignName,
-      campaignCode,
-      voucherAmount,
-      totalVouchers,
-      startDate,
-      endDate,
-      deliveryArea,
-      contentTitle,
-      contentSubtitle,
-      contentGreeting,
-      selectedProducts,
-      primaryProducts,
-    };
-    onSubmit(data, "draft");
-  };
-
   const handlePublish = () => {
-    const data = {
-      selectedWebsite,
-      companyName,
-      contactName,
-      email,
-      phone: phoneCountryCode + phoneNumber,
-      officeAddress,
-      campaignName,
-      campaignCode,
-      voucherAmount,
-      totalVouchers,
-      startDate,
-      endDate,
-      deliveryArea,
-      contentTitle,
-      contentSubtitle,
-      contentGreeting,
-      selectedProducts,
-      primaryProducts,
-      voucherResults,
-    };
-    onSubmit(data, "active");
+    console.log("hi");
   };
 
   const filteredProducts = mockProducts.filter((product) => {
@@ -598,7 +540,7 @@ export default function MinisiteCreateWizard({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const commonProps: CommonProps = {
+  const commonProps = {
     t: t,
     bgPrimary: "bg-white dark:bg-gray-900",
     bgSecondary: "bg-gray-100 dark:bg-gray-800",
@@ -609,30 +551,6 @@ export default function MinisiteCreateWizard({
     borderColor: "border-gray-300 dark:border-gray-600",
   };
 
-  const renderStep = () => {
-    const shared = {
-      formData,
-      setFormData,
-      commonProps,
-      goToNext,
-      goToPrev,
-    };
-
-    switch (currentStep) {
-      case 1:
-        return <Step1WebsiteAndInfo {...shared} />;
-      case 2:
-        return <Step2SelectProducts {...shared} />;
-      case 3:
-        return <Step3MiniSitePreview {...shared} />;
-      case 4:
-        return <Step4VoucherCreation {...shared} />;
-      case 5:
-        return <Step5Results {...shared} />;
-      default:
-        return null;
-    }
-  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
@@ -646,12 +564,12 @@ export default function MinisiteCreateWizard({
             <h2
               className={`text-xl bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
             >
-              {editingMiniSite
-                ? t.editMiniSite || "Edit Mini-Site"
-                : t.createMiniSite || "Create Mini-Site"}
+              {t("create_mini_site")}{" "}
             </h2>
             <p className={`text-xs ${textTertiary} mt-0.5`}>
-              {t.step || "Step"} {currentStep} {t.of || "of"} {steps.length}
+              <p>
+                {t("step")} {currentStep} {t("of")} {steps.length}
+              </p>{" "}
             </p>
           </div>
           <button
@@ -668,7 +586,7 @@ export default function MinisiteCreateWizard({
             <h3
               className={`text-sm mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
             >
-              {t.miniSiteStatistics || "Mini-Site Statistics"}
+              {t("mini_site_statistics")}{" "}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {/* Page Views */}
@@ -678,7 +596,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <Eye className="w-4 h-4 text-purple-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.pageViews || "Page Views"}
+                    {t("page_views")}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -695,7 +613,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <Monitor className="w-4 h-4 text-blue-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.uniqueVisitors || "Unique Visitors"}
+                    {t("unique_visitors")}{" "}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -712,7 +630,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <Ticket className="w-4 h-4 text-pink-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.vouchersUsed || "Vouchers Used"}
+                    {t("vouchers_used")} {/* Vouchers Used */}{" "}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -731,7 +649,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <Briefcase className="w-4 h-4 text-teal-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.productsPurchased || "Products Purchased"}
+                    {t("products_purchased")}{" "}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -748,7 +666,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.conversionRate || "Conversion Rate"}
+                    {t("conversion_rate")}{" "}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -764,7 +682,7 @@ export default function MinisiteCreateWizard({
                 <div className="flex items-center gap-1.5 mb-1">
                   <DollarSign className="w-4 h-4 text-purple-600" />
                   <span className={`text-xs ${textTertiary}`}>
-                    {t.totalRevenue || "Total Revenue"}
+                    {t("total_revenue")}{" "}
                   </span>
                 </div>
                 <p className={`text-lg ${textPrimary}`}>
@@ -973,17 +891,17 @@ export default function MinisiteCreateWizard({
             } ${textSecondary} transition-colors text-sm`}
           >
             <ArrowLeft className="w-4 h-4" />
-            {t.previous || "Previous"}
+            {t("previous")}{" "}
           </button>
 
           <div className="flex gap-2">
             {currentStep < 5 && (
               <button
-                onClick={handleSaveDraft}
+                // onClick={handleSaveDraft}
                 className={`px-3 py-1.5 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center gap-2 text-sm`}
               >
                 <Save className="w-4 h-4" />
-                {t.saveDraft || "Save Draft"}
+                {t("save_draft")}{" "}
               </button>
             )}
 
@@ -993,15 +911,14 @@ export default function MinisiteCreateWizard({
                 className="px-4 py-1.5 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-2 text-sm"
               >
                 <CheckCircle className="w-4 h-4" />
-                {t.complete || "Complete"}
+                {t("complete")}{" "}
               </button>
             ) : (
               <button
                 onClick={handleNext}
                 className="px-4 py-1.5 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-2 text-sm"
               >
-                {t.next || "Next"}
-                <ArrowRight className="w-4 h-4" />
+                {t("next")} <ArrowRight className="w-4 h-4" />
               </button>
             )}
           </div>
