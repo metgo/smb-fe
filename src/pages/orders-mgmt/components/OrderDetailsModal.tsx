@@ -78,8 +78,10 @@ function OrderDetailsModal({
             <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
             <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
           </div>
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-2 items-center">
+            <span className="text-sm font-medium">Order:</span>
             {getOrderStatusBadge(order?.status)}
+            <span className="text-sm font-medium">Payment:</span>
             {getPaymentStatusBadge(order?.paymentStatus)}
           </div>
         </div>
@@ -98,6 +100,13 @@ function OrderDetailsModal({
               value={order?.buyerFirstName}
               theme={theme}
             />
+            {order?.buyerLastName && (
+              <InfoRow
+                label={t("name") || "Name"}
+                value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`.trim()}
+                theme={theme}
+              />
+            )}
 
             {/* Email - Clickable */}
             <div>

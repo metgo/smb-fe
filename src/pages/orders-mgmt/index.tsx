@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useRef, Activity } from "react";
 import {
   Download,
-  Plus,
+  // Plus,
   ChevronDown,
   ChevronUp,
   Loader,
@@ -20,7 +20,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { BulkActionBar, PageStats, ViewModeToggle } from "@/components/shared";
 import {
-  CreateOrderWizard,
+  // CreateOrderWizard,
   FilterSelect,
   MonthFilter,
   OrderDetailsModal,
@@ -68,7 +68,7 @@ export default function OrdersMgmtPage() {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
+  // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
@@ -806,13 +806,13 @@ export default function OrdersMgmtPage() {
           >
             <Camera className="w-4 h-4" />
           </button>
-          <button
+          {/* <button
             onClick={() => setShowAddOrderWizard(true)}
             className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>{t("addOrder")}</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -1109,12 +1109,12 @@ export default function OrdersMgmtPage() {
         />
       </Activity>
 
-      <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
+      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onOpen={() => setShowAddOrderWizard(true)}
         />
-      </Activity>
+      </Activity> */}
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal onClose={() => setShowQRScanner(false)} />
