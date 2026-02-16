@@ -72,7 +72,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       render: (product: any) => (
         <div>
           <div
-            className={`text-xs truncate max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
+            className={` truncate max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
             {product.name?.[language] ?? product.name?.en ?? product.name}
           </div>
@@ -85,7 +85,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       sortable: true,
       render: (product: any) => (
         <div
-          className={`text-xs line-clamp-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          className={` line-clamp-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {getPlainTextFromRichText(product.shortDescription)}
         </div>

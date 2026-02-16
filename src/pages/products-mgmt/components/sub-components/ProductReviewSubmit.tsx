@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import {
-  Eye,
   Pencil,
   Tag,
   Layers,
@@ -15,7 +14,6 @@ import { useTranslation } from "react-i18next";
 import { ImageWithFallback } from "@/components/shared";
 
 interface ProductReviewSubmitProps {
-  // t: (key: string) => string;
   formData: any;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -30,7 +28,6 @@ const STEPS = {
 };
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
-  // t,
   formData,
   setCurrentStep,
 }) => {
@@ -41,12 +38,12 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     borderColor,
     isDark,
     bgTertiary,
+    bgSecondary,
   } = useThemeClasses();
+  const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
   const { categories, subCategories } = useCommon();
-  const { t } = useTranslation("common");
 
-  // ── helpers ──────────────────────────────────────────────────────────────
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
   const sectionHeader = (
@@ -102,9 +99,9 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     <span
       key={key}
       className={clsx(
-        "px-3 py-1 text-xs rounded-full border",
+        "px-3 py-1 rounded-full border",
         borderColor,
-        bgTertiary,
+        bgSecondary,
         textSecondary,
       )}
     >
@@ -117,17 +114,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-      {/* ── Review banner ── */}
-      <div
-        className={clsx(
-          "flex items-center gap-2 px-4 py-3 rounded-lg border border-teal-500 text-sm",
-          isDark ? "bg-teal-950/30 text-teal-300" : "bg-teal-50 text-teal-700",
-        )}
-      >
-        <Eye className="w-4 h-4 shrink-0" />
-        <span>{t("review_your_product")}</span>
-      </div>
-
       {/* ══════════════════════════════════════════════
           STEP 1 – Basic Info
       ══════════════════════════════════════════════ */}
@@ -221,7 +207,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
                 {t("marked_price")}
               </span>
               <span className={clsx("text-sm font-medium", textPrimary)}>
-                {formData.markedPrice ? `₪${formData.markedPrice}` : "—"}
+                {formData?.markedPrice ? `₪${formData?.markedPrice}` : "—"}
               </span>
             </div>
 
@@ -231,7 +217,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
                 {t("selling_price")}
               </span>
               <span className="text-sm font-semibold text-teal-600 dark:text-teal-400">
-                {formData.sellingPrice ? `₪${formData.sellingPrice}` : "—"}
+                {formData?.sellingPrice ? `₪${formData?.sellingPrice}` : "—"}
               </span>
             </div>
 
@@ -250,18 +236,19 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             </div>
 
             {/* Discount badge */}
-            {formData.markedPrice &&
-              formData.sellingPrice &&
-              Number(formData.markedPrice) > Number(formData.sellingPrice) && (
+            {formData?.markedPrice &&
+              formData?.sellingPrice &&
+              Number(formData?.markedPrice) >
+                Number(formData?.sellingPrice) && (
                 <div className="flex flex-col gap-0.5">
                   <span className={clsx("text-xs", textTertiary)}>
                     {t("discount")}
                   </span>
                   <span className="text-sm font-semibold text-rose-500">
                     {Math.round(
-                      ((Number(formData.markedPrice) -
-                        Number(formData.sellingPrice)) /
-                        Number(formData.markedPrice)) *
+                      ((Number(formData?.markedPrice) -
+                        Number(formData?.sellingPrice)) /
+                        Number(formData?.markedPrice)) *
                         100,
                     )}
                     % {t("off")}
@@ -288,14 +275,15 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         )}
         <div className="">
           {formData.images?.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-wrap gap-2 p-4">
               {" "}
               {/* added some basic styling — adjust as needed */}
-              {formData.images.map((img: any, index: any) => (
+              {formData?.images?.map((img: any, index: any) => (
                 <ImageWithFallback
                   key={index}
-                  src={img.image}
+                  src={img?.image}
                   alt="Uploaded image"
+                  className="h-50 w-60 rounded-md shadow-md object-cover"
                 />
               ))}
             </div>
@@ -317,12 +305,11 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           <div className="flex flex-wrap gap-3">
             {(
               [
-                ["enableHomeDelivery", t("home_delivery")],
                 ["enableStorePickup", t("store_pickup")],
                 ["vendorDelivers", t("vendor_delivers")],
                 ["pickupAvailable", t("pickup_available")],
               ] as [keyof typeof formData, string][]
-            ).map(([key, label], index) => (
+            )?.map(([key, label], index) => (
               <span
                 key={index}
                 className={clsx(
@@ -337,7 +324,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
                 <span
                   className={clsx(
                     "w-1.5 h-1.5 rounded-full",
-                    formData[key] ? "bg-teal-400" : "bg-gray-400",
+                    formData?.[key] ? "bg-teal-400" : "bg-gray-400",
                   )}
                 />
                 {label}
@@ -347,88 +334,109 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
 
           {divider}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {row(t("service_duration"), formData.serviceDuration)}
+          {formData?.serviceDuration &&
+            row(t("service_duration"), formData?.serviceDuration)}
 
-            {/* Delivery area */}
-            {formData.deliveryArea && formData.deliveryArea.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                <span className={clsx("text-xs", textTertiary)}>
-                  {t("delivery_area")}
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.deliveryArea &&
-                    formData.deliveryArea.length > 0 ? (
-                      formData.deliveryArea.map((area: any, idx: number) =>
-                        badge(
-                          typeof area === "string"
-                            ? area
-                            : (area?.name ?? area),
-                          `area-${idx}`,
-                        ),
-                      )
-                    ) : (
-                      <span className={clsx("text-sm", textTertiary)}>-</span>
+          {/* Delivery area */}
+          <div className="flex flex-col gap-1.5">
+            <span className={clsx("text-xs", textTertiary)}>
+              {t("delivery_area")}
+            </span>
+
+            <div className="flex flex-col gap-3">
+              {formData?.deliveryArea && formData.deliveryArea.length > 0 ? (
+                formData?.deliveryArea?.map((areaObj: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="rounded-xl border px-3 py-2 flex flex-col gap-1.5"
+                  >
+                    {/* Area + Price */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">
+                        {areaObj?.area ?? "-"}
+                      </span>
+                      <span className="text-xs opacity-70">
+                        {areaObj?.price ? `Price: ${areaObj.price}` : ""}
+                      </span>
+                    </div>
+
+                    {/* Pickup locations */}
+                    {areaObj?.pickUpLocation?.length > 0 && (
+                      <div className="flex flex-col gap-1 text-xs opacity-80">
+                        {areaObj?.pickUpLocation.map((loc: any, i: number) => (
+                          <div key={i} className="pl-2 border-l">
+                            <div>{loc?.address}</div>
+
+                            {!loc.isAlwaysOpen &&
+                              loc.openingHrs?.length > 0 && (
+                                <div className="opacity-70">
+                                  {loc.openingHrs
+                                    .map(
+                                      (h: any) =>
+                                        `${h.day} ${h.open}-${h.close}`,
+                                    )
+                                    .join(", ")}
+                                </div>
+                              )}
+
+                            {loc.isAlwaysOpen && (
+                              <div className="opacity-70">Always open</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            )}
+                ))
+              ) : (
+                <span className={clsx("text-sm", textTertiary)}>-</span>
+              )}
+            </div>
           </div>
 
+          {divider}
+
           {/* Return & exchange */}
-          {formData.deliveryReturnExchange &&
-            formData.deliveryReturnExchange.length > 0 && (
-              <>
-                {divider}
-                <div>
-                  <p className={clsx("text-xs mb-2", textTertiary)}>
-                    {tb("return_exchange_policy")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.deliveryReturnExchange.map(
-                      (item: any, idx: number) =>
-                        badge(
-                          typeof item === "string"
-                            ? tb(item)
-                            : (item?.label ?? tb(item)),
-                          `rex-${idx}`,
-                        ),
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+          <div>
+            <p className={clsx("text-xs mb-2", textTertiary)}>
+              {tb("return_exchange_policy")}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {formData.deliveryReturnExchange.map((item: any, idx: number) =>
+                badge(
+                  typeof item === "string"
+                    ? tb(item)
+                    : (item?.label ?? tb(item)),
+                  `rex-${idx}`,
+                ),
+              )}
+            </div>
+          </div>
 
           {divider}
 
           {/* Additional info */}
           {row(tb("additional_details"), formData.deliveryAdditionalInfo)}
 
+          {divider}
+
           {/* Specific seller info */}
-          {formData.deliverySpecificSellerInfo &&
-            formData.deliverySpecificSellerInfo.length > 0 && (
-              <>
-                {divider}
-                <div>
-                  <p className={clsx("text-xs mb-2", textTertiary)}>
-                    {tb("specific_seller_delivery_info")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.deliverySpecificSellerInfo.map(
-                      (item: any, idx: number) =>
-                        badge(
-                          typeof item === "string"
-                            ? tb(item)
-                            : (item?.label ?? tb(item)),
-                          `ssi-${idx}`,
-                        ),
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+          <div>
+            <p className={clsx("text-xs mb-2", textTertiary)}>
+              {tb("specific_seller_delivery_info")}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {formData.deliverySpecificSellerInfo.map(
+                (item: any, idx: number) =>
+                  badge(
+                    typeof item === "string"
+                      ? tb(item)
+                      : (item?.label ?? tb(item)),
+                    `ssi-${idx}`,
+                  ),
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
