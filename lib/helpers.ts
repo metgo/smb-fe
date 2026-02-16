@@ -70,15 +70,7 @@ export function shuffleArray<T>(array?: T[] | null): T[] {
 export function getHebrewDateInfo(isoDate: string) {
   const date = new Date(isoDate);
 
-  const hebrewDays = [
-    "ראשון", // Sunday
-    "שני", // Monday
-    "שלישי", // Tuesday
-    "רביעי", // Wednesday
-    "חמישי", // Thursday
-    "שישי", // Friday
-    "שבת", // Saturday
-  ];
+  const hebrewDays = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
   const hebrewMonths = [
     "ינואר",
@@ -96,9 +88,9 @@ export function getHebrewDateInfo(isoDate: string) {
   ];
 
   return {
-    day: date.getDate().toString().padStart(2, "0"),
-    days: hebrewDays[date.getDay()],
-    month: hebrewMonths[date.getMonth()],
+    day: date.getUTCDate().toString().padStart(2, "0"),
+    days: hebrewDays[date.getUTCDay()],
+    month: hebrewMonths[date.getUTCMonth()],
   };
 }
 
