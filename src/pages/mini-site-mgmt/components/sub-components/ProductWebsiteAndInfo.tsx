@@ -121,7 +121,12 @@ export default function Step1WebsiteAndInfo({
               type="text"
               value={formData.companyName}
               name="companyName"
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  companyName: e.target.value,
+                }))
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="Acme Corporation"
             />
@@ -133,9 +138,14 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              name="contactName"
               value={formData.contactName}
-              onChange={handleChange}
+              name="contactName"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  contactName: e.target.value,
+                }))
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="John Doe"
             />
@@ -149,7 +159,9 @@ export default function Step1WebsiteAndInfo({
               type="email"
               value={formData.email}
               name="email"
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, email: e.target.value }))
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="john@example.com"
             />
@@ -163,19 +175,28 @@ export default function Step1WebsiteAndInfo({
               <select
                 name="phoneCountryCode"
                 value={formData.phoneCountryCode}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    phoneCountryCode: e.target.value,
+                  }))
+                }
                 className={`px-3 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               >
                 <option value="+972">🇮🇱 +972</option>
                 <option value="+1">🇺🇸 +1</option>
                 <option value="+44">🇬🇧 +44</option>
               </select>
-
               <input
                 type="tel"
-                name="phoneNumber"
                 value={formData.phoneNumber}
-                onChange={handleChange}
+                name="phoneNumber"
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    phoneNumber: e.target.value,
+                  }))
+                }
                 className={`flex-1 px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                 placeholder="501234567"
               />
@@ -188,9 +209,14 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              name="officeAddress"
               value={formData.officeAddress}
-              onChange={handleChange}
+              name="officeAddress"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  officeAddress: e.target.value,
+                }))
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="123 Main St, Tel Aviv"
             />
@@ -244,7 +270,12 @@ export default function Step1WebsiteAndInfo({
               type="text"
               name="campaignName"
               value={formData.campaignName}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  [e.target.name]: e.target.value,
+                }))
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="Summer Campaign 2024"
             />
@@ -277,7 +308,9 @@ export default function Step1WebsiteAndInfo({
               type="number"
               name="voucherAmount"
               value={formData.voucherAmount}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData({ ...formData, voucherAmount: e.target.value })
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="100"
             />
@@ -291,7 +324,9 @@ export default function Step1WebsiteAndInfo({
               type="number"
               name="totalVouchers"
               value={formData.totalVouchers}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData({ ...formData, totalVouchers: e.target.value })
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder="100"
             />
@@ -305,7 +340,9 @@ export default function Step1WebsiteAndInfo({
               type="date"
               name="startDate"
               value={formData.startDate}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData({ ...formData, startDate: e.target.value })
+              }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
             />
           </div>
@@ -317,7 +354,9 @@ export default function Step1WebsiteAndInfo({
             <input
               type="date"
               value={formData.endDate}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData({ ...formData, endDate: e.target.value })
+              }
               name="endDate"
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
             />
@@ -373,24 +412,58 @@ export default function Step1WebsiteAndInfo({
 
         <div className="mb-4">
           <div className="flex gap-2">
-            <button
-              onClick={() => setContentLanguage("en")}
-              className={`px-4 py-2 rounded-lg ${contentLanguage === "en" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setContentLanguage("he")}
-              className={`px-4 py-2 rounded-lg ${contentLanguage === "he" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-            >
-              עברית
-            </button>
-            <button
-              onClick={() => setContentLanguage("ar")}
-              className={`px-4 py-2 rounded-lg ${contentLanguage === "ar" ? "bg-purple-600 text-white" : `${bgSecondary} ${textSecondary}`}`}
-            >
-              العربية
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, contentLanguage: "en" }))
+                }
+                className={`
+              px-4 py-2 rounded-lg font-medium transition-colors
+              ${
+                formData.contentLanguage === "en"
+                  ? "bg-purple-600 text-white shadow-md"
+                  : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
+              }
+            `}
+              >
+                English
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, contentLanguage: "he" }))
+                }
+                className={`
+              px-4 py-2 rounded-lg font-medium transition-colors
+              ${
+                formData.contentLanguage === "he"
+                  ? "bg-purple-600 text-white shadow-md"
+                  : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
+              }
+            `}
+              >
+                עברית
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, contentLanguage: "ar" }))
+                }
+                className={`
+                px-4 py-2 rounded-lg font-medium transition-colors
+                ${
+                  formData.contentLanguage === "ar"
+                    ? "bg-purple-600 text-white shadow-md"
+                    : `${bgSecondary} ${textSecondary} hover:bg-purple-100/50`
+                }
+               `}
+              >
+                العربية
+              </button>
+            </div>
           </div>
         </div>
 
@@ -401,18 +474,21 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              value={contentTitle[contentLanguage]}
+              value={formData.contentTitle[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setContentTitle({
-                  ...contentTitle,
-                  [contentLanguage]: e.target.value,
-                })
+                setFormData((prev) => ({
+                  ...prev,
+                  contentTitle: {
+                    ...prev.contentTitle,
+                    [prev.contentLanguage]: e.target.value,
+                  },
+                }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={
-                contentLanguage === "en"
+                formData.contentLanguage === "en"
                   ? "Welcome to our campaign"
-                  : contentLanguage === "he"
+                  : formData.contentLanguage === "he"
                     ? "ברוכים הבאים למבצע שלנו"
                     : "مرحبا بكم في حملتنا"
               }
@@ -425,18 +501,21 @@ export default function Step1WebsiteAndInfo({
             </label>
             <input
               type="text"
-              value={contentSubtitle[contentLanguage]}
+              value={formData.contentSubtitle[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setContentSubtitle({
-                  ...contentSubtitle,
-                  [contentLanguage]: e.target.value,
-                })
+                setFormData((prev) => ({
+                  ...prev,
+                  contentSubtitle: {
+                    ...prev.contentSubtitle,
+                    [prev.contentLanguage]: e.target.value,
+                  },
+                }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={
-                contentLanguage === "en"
+                formData.contentLanguage === "en"
                   ? "Enjoy exclusive offers"
-                  : contentLanguage === "he"
+                  : formData.contentLanguage === "he"
                     ? "נהנו מהצעות בלעדיות"
                     : "استمتع بالعروض الحصرية"
               }
@@ -448,19 +527,22 @@ export default function Step1WebsiteAndInfo({
               {t.greeting || "Greeting"}
             </label>
             <textarea
-              value={contentGreeting[contentLanguage]}
+              value={formData.contentGreeting[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setContentGreeting({
-                  ...contentGreeting,
-                  [contentLanguage]: e.target.value,
-                })
+                setFormData((prev) => ({
+                  ...prev,
+                  contentGreeting: {
+                    ...prev.contentGreeting,
+                    [prev.contentLanguage]: e.target.value,
+                  },
+                }))
               }
               rows={4}
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={
-                contentLanguage === "en"
+                formData.contentLanguage === "en"
                   ? "Thank you for participating..."
-                  : contentLanguage === "he"
+                  : formData.contentLanguage === "he"
                     ? "תודה על ההשתתתפות..."
                     : "شكرا لمشاركتك..."
               }
