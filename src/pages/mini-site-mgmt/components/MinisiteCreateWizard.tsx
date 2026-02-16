@@ -104,6 +104,14 @@ export default function MinisiteCreateWizard({
   const totalSteps = 5;
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [selectedDmoId, setSelectedDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [] as string[],
+    selectedBlacklistIds: [] as string[],
+    allWhitelistIds: [] as string[],
+    selectedWhitelistIds: [] as string[],
+  });
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     // default values
@@ -742,6 +750,14 @@ export default function MinisiteCreateWizard({
         {/* Step 1: Website & Purchaser Info */}
         {currentStep === 1 && (
           <ProductWebsiteAndInfo
+            miniSiteId={miniSiteId}
+            selectedDmoId={selectedDmoId}
+            setSelectDmoId={setSelectedDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            setSelectAuthorityId={setSelectAuthorityId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            // miniSiteAssociatedWebsites={editData?.associatedWebsites ?? []}
             currentStep={currentStep}
             formData={formData}
             setFormData={setFormData}

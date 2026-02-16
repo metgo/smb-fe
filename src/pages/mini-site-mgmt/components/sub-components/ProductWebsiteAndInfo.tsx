@@ -1,5 +1,5 @@
 // Step1WebsiteAndInfo.tsx
-import React from "react";
+import React, { useRef } from "react";
 import {
   Globe,
   Building2,
@@ -8,18 +8,28 @@ import {
   Briefcase,
   Upload,
 } from "lucide-react"; // assuming you're using lucide-react icons
+import { DmoAuthorityWebsiteSelector } from "@/components/shared";
 
 interface Step1WebsiteAndInfoProps {
+  miniSiteId: string | number;
+  selectedDmoId: string | number | null;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<any>>;
+  selectedAuthorityId: string | number | null;
+  setSelectAuthorityId: React.Dispatch<React.SetStateAction<any>>;
+  websiteVisibilityIds: any[];
+  setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<any[]>>;
+
   currentStep: number;
-  formData: any; // ← improve this type later
+  formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   handleChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
-  handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleLogoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   websites: string[];
+
   contentLanguage: "en" | "he" | "ar";
   setContentLanguage: React.Dispatch<React.SetStateAction<"en" | "he" | "ar">>;
   contentTitle: Record<"en" | "he" | "ar", string>;
@@ -34,6 +44,7 @@ interface Step1WebsiteAndInfoProps {
   setContentGreeting: React.Dispatch<
     React.SetStateAction<Record<"en" | "he" | "ar", string>>
   >;
+
   t: any;
   textPrimary: string;
   textSecondary: string;
@@ -41,9 +52,18 @@ interface Step1WebsiteAndInfoProps {
   bgSecondary: string;
   bgTertiary: string;
   borderColor: string;
+  businessAssociatedWebsites: any;
 }
 
 export default function Step1WebsiteAndInfo({
+  miniSiteId,
+  selectedDmoId,
+  setSelectDmoId,
+  selectedAuthorityId,
+  setSelectAuthorityId,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+
   currentStep,
   formData,
   setFormData,
@@ -65,31 +85,26 @@ export default function Step1WebsiteAndInfo({
   bgSecondary,
   bgTertiary,
   borderColor,
+  businessAssociatedWebsites = [],
 }: Step1WebsiteAndInfoProps) {
   if (currentStep !== 1) return null;
+  // const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <div className="space-y-6">
       {/* Website Selection */}
-      <div>
-        <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
-          <Globe className="w-5 h-5" />
-          {t.websiteSelection || "Website Selection"}
-        </h3>
-        <select
-          value={formData.selectedWebsite}
-          name="selectedWebsite"
-          onChange={handleChange}
-          className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-        >
-          <option value="">{t.selectWebsite || "Select Website"}</option>
-          {websites.map((site) => (
-            <option key={site} value={site}>
-              {site}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* <DmoAuthorityWebsiteSelector
+        // errors={errors}
+        isEdit={!!miniSiteId}
+        selectedDmoId={selectedDmoId ?? ""}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId ?? ""}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={businessAssociatedWebsites}
+      /> */}
 
       {/* Purchaser Info */}
       <div>
