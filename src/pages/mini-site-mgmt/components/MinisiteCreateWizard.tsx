@@ -1,9 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
-  X,
-  ArrowRight,
-  ArrowLeft,
-  Save,
   Eye,
   CheckCircle,
   Building2,
@@ -33,7 +29,7 @@ interface MinisiteCreateWizardProps {
   editingMiniSite?: any;
 }
 
-export interface FormData {
+export interface MiniSiteFormData {
   // Step 1
   selectedWebsite: string;
   companyName: string;
@@ -102,18 +98,17 @@ export default function MinisiteCreateWizard({
     bgTertiary,
   } = useThemeClasses();
   const totalSteps = 5;
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
-  const [selectedDmoId, setSelectedDmoId] = useState<string>("");
-  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
+  const [isPublishing, _setIsPublishing] = useState(false);
+  // const [selectedDmoId, setSelectedDmoId] = useState<string>("");
+  // const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  // const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+  //   allBlacklistIds: [] as string[],
+  //   selectedBlacklistIds: [] as string[],
+  //   allWhitelistIds: [] as string[],
+  //   selectedWhitelistIds: [] as string[],
+  // });
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<MiniSiteFormData>({
     // default values
     selectedWebsite: "",
     companyName: "",
@@ -218,17 +213,10 @@ export default function MinisiteCreateWizard({
   );
   console.log("~ formData:", formData);
   // Step 1: Website & Purchaser Info
-  const [_selectedWebsite, setSelectedWebsite] = useState("");
-  const [_companyName, setCompanyName] = useState("");
-  const [contactName, _setContactName] = useState("");
   const [email] = useState("");
-  const [phoneCountryCode] = useState("+972");
-  const [phoneNumber] = useState("");
   // const [logoFile, setLogoFile] = useState<string | null>(null);
-  const [campaignName, setCampaignName] = useState("");
-  const [campaignCode, setCampaignCode] = useState("");
-  const [voucherAmount, setVoucherAmount] = useState("");
-  const [_totalVouchers, setTotalVouchers] = useState("");
+  const [campaignCode, _setCampaignCode] = useState("");
+  const [voucherAmount, _setVoucherAmount] = useState("");
   const retryFailedSends = async () => {
     // Filter failed recipients
     const failedRecipients = voucherResults.filter(
@@ -287,23 +275,6 @@ export default function MinisiteCreateWizard({
       // setIsRetrying(false);
     }
   };
-  // const [ setStartDate] = useState("");
-  // const [setEndDate] = useState("");
-  // const [deliveryArea, setDeliveryArea] = useState<"home" | "office">("office");
-  const [contentTitle, setContentTitle] = useState({ en: "", he: "", ar: "" });
-  const [contentSubtitle, setContentSubtitle] = useState({
-    en: "",
-    he: "",
-    ar: "",
-  });
-  const [contentGreeting, setContentGreeting] = useState({
-    en: "",
-    he: "",
-    ar: "",
-  });
-  const [contentLanguage, setContentLanguage] = useState<"en" | "he" | "ar">(
-    "en",
-  );
 
   // Step 2: Select Products
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -319,23 +290,10 @@ export default function MinisiteCreateWizard({
     "desktop",
   );
 
-  // Step 4: Voucher Creation
-  const [sendTiming, setSendTiming] = useState<"immediate" | "scheduled">(
-    "immediate",
-  );
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [scheduledTime, setScheduledTime] = useState("");
-  const [allowInstanceCreation, setAllowInstanceCreation] = useState(false);
-  const [instanceName, setInstanceName] = useState("");
-  const [instanceEmail, setInstanceEmail] = useState("");
-  const [instancePhone, setInstancePhone] = useState("");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-
   // Step 5: Results
   const [voucherResults, setVoucherResults] = useState<VoucherRecipient[]>([]);
 
   // Mock data
-  const websites = ["Website 1", "Website 2", "Website 3"];
   const mockProducts: Product[] = [
     {
       id: "1",
@@ -375,20 +333,6 @@ export default function MinisiteCreateWizard({
     },
   ];
 
-  // Populate fields when editing
-  useEffect(() => {
-    if (editingMiniSite) {
-      setSelectedWebsite(editingMiniSite.website || "");
-      setCompanyName(editingMiniSite.companyName || "");
-      setCampaignName(editingMiniSite.campaignName || "");
-      setCampaignCode(editingMiniSite.campaignCode || "");
-      setVoucherAmount(editingMiniSite.voucherAmount?.toString() || "");
-      setTotalVouchers(editingMiniSite.totalVouchers?.toString() || "");
-      // setStartDate(editingMiniSite.startDate || "");
-      // setEndDate(editingMiniSite.endDate || "");
-    }
-  }, [editingMiniSite]);
-
   const steps = [
     {
       number: 1,
@@ -400,31 +344,18 @@ export default function MinisiteCreateWizard({
     { number: 5, name: t("results") || "Results" },
   ];
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } = e.target;
+  // const handleLogoUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  //   const previewUrl = URL.createObjectURL(file);
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const previewUrl = URL.createObjectURL(file);
-
-    setFormData((prev) => ({
-      ...prev,
-      logoFile: previewUrl,
-      logoFileRaw: file, // optional: for backend upload
-    }));
-  };
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     logoFile: previewUrl,
+  //     logoFileRaw: file, // optional: for backend upload
+  //   }));
+  // };
 
   const handleNext = async () => {
     await saveDraft();
@@ -468,55 +399,6 @@ export default function MinisiteCreateWizard({
     link.href = URL.createObjectURL(blob);
     link.download = "voucher-template.csv";
     link.click();
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      // Mock parsing results
-      setVoucherResults([
-        {
-          name: "John Doe",
-          email: "john@example.com",
-          phone: "+972501234567",
-          emailSent: true,
-          smsSent: true,
-        },
-        {
-          name: "Jane Smith",
-          email: "jane@example.com",
-          phone: "+972501234568",
-          emailSent: true,
-          smsSent: false,
-        },
-        {
-          name: "Bob Johnson",
-          email: "bob@example.com",
-          phone: "+972501234569",
-          emailSent: false,
-          smsSent: false,
-        },
-      ]);
-    }
-  };
-
-  const handleInstanceVoucherAdd = () => {
-    if (instanceName && instanceEmail && instancePhone) {
-      setVoucherResults((prev) => [
-        ...prev,
-        {
-          name: instanceName,
-          email: instanceEmail,
-          phone: instancePhone,
-          emailSent: false,
-          smsSent: false,
-        },
-      ]);
-      setInstanceName("");
-      setInstanceEmail("");
-      setInstancePhone("");
-    }
   };
 
   const handlePublish = () => {
@@ -743,28 +625,17 @@ export default function MinisiteCreateWizard({
         {/* Step 1: Website & Purchaser Info */}
         {currentStep === 1 && (
           <ProductWebsiteAndInfo
-            miniSiteId={miniSiteId}
-            selectedDmoId={selectedDmoId}
-            setSelectDmoId={setSelectedDmoId}
-            selectedAuthorityId={selectedAuthorityId}
-            setSelectAuthorityId={setSelectAuthorityId}
-            websiteVisibilityIds={websiteVisibilityIds}
-            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            // miniSiteId={miniSiteId}
+            // selectedDmoId={selectedDmoId}
+            // setSelectDmoId={setSelectedDmoId}
+            // selectedAuthorityId={selectedAuthorityId}
+            // setSelectAuthorityId={setSelectAuthorityId}
+            // websiteVisibilityIds={websiteVisibilityIds}
+            // setWebsiteVisibilityIds={setWebsiteVisibilityIds}
             // miniSiteAssociatedWebsites={editData?.associatedWebsites ?? []}
             currentStep={currentStep}
             formData={formData}
             setFormData={setFormData}
-            handleChange={handleChange}
-            // handleLogoUpload={handleLogoUpload}
-            websites={websites}
-            contentLanguage={contentLanguage}
-            setContentLanguage={setContentLanguage}
-            contentTitle={contentTitle}
-            setContentTitle={setContentTitle}
-            contentSubtitle={contentSubtitle}
-            setContentSubtitle={setContentSubtitle}
-            contentGreeting={contentGreeting}
-            setContentGreeting={setContentGreeting}
             t={t}
             textPrimary={textPrimary}
             textSecondary={textSecondary}
@@ -807,14 +678,8 @@ export default function MinisiteCreateWizard({
             setFormData={setFormData}
             previewMode={previewMode}
             setPreviewMode={setPreviewMode}
-            contentTitle={contentTitle} // assuming these are states/objects you have
-            contentSubtitle={contentSubtitle}
-            contentGreeting={contentGreeting}
-            contentLanguage={contentLanguage}
             selectedProducts={selectedProducts}
-            mockProducts={mockProducts} // or products from context/store
-            campaignCode={campaignCode}
-            email={email} // or formData.email
+            mockProducts={mockProducts}
             copyMiniSiteUrl={copyMiniSiteUrl}
             textPrimary={textPrimary}
             textSecondary={textSecondary}
@@ -832,28 +697,7 @@ export default function MinisiteCreateWizard({
             t={t}
             formData={formData}
             setFormData={setFormData}
-            contactName={contactName} // or formData.contactDetails?.name
-            email={email} // or formData.email
-            phoneCountryCode={phoneCountryCode}
-            phoneNumber={phoneNumber} // or formData.phone
-            sendTiming={sendTiming}
-            setSendTiming={setSendTiming}
-            scheduledDate={scheduledDate}
-            setScheduledDate={setScheduledDate}
-            scheduledTime={scheduledTime}
-            setScheduledTime={setScheduledTime}
-            allowInstanceCreation={allowInstanceCreation}
-            setAllowInstanceCreation={setAllowInstanceCreation}
-            instanceName={instanceName}
-            setInstanceName={setInstanceName}
-            instanceEmail={instanceEmail}
-            setInstanceEmail={setInstanceEmail}
-            instancePhone={instancePhone}
-            setInstancePhone={setInstancePhone}
-            uploadedFile={uploadedFile}
-            handleFileUpload={handleFileUpload}
             downloadSampleXLS={downloadSampleXLS}
-            handleInstanceVoucherAdd={handleInstanceVoucherAdd}
             textPrimary={textPrimary}
             textSecondary={textSecondary}
             textTertiary={textTertiary}
@@ -868,8 +712,8 @@ export default function MinisiteCreateWizard({
           <VoucherResultsStep
             t={t}
             voucherResults={voucherResults}
-            downloadSampleXLS={downloadSampleXLS} //
-            retryFailedSends={retryFailedSends} // implement/pass this function
+            downloadSampleXLS={downloadSampleXLS}
+            retryFailedSends={retryFailedSends}
             textPrimary={textPrimary}
             textSecondary={textSecondary}
             textTertiary={textTertiary}

@@ -5,7 +5,6 @@ import { getStatusColor } from "../mini-site.utils";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 export const defaultColumns = {
-  select: true,
   code: true,
   name: true,
   companyName: true,

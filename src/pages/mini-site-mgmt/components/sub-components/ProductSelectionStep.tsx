@@ -182,7 +182,7 @@ export const ProductSelectionStep: React.FC<ProductSelectionStepProps> = ({
                   }}
                   className={`w-full mt-2 px-3 py-1 rounded-lg text-sm ${
                     primaryProducts.includes(product.id)
-                      ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white"
+                      ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
                       : `${bgTertiary} ${textSecondary}`
                   }`}
                 >
@@ -207,7 +207,7 @@ export const ProductSelectionStep: React.FC<ProductSelectionStepProps> = ({
               onClick={() => toggleProductSelection(product.id)}
             >
               <div
-                className={`w-16 h-16 ${bgTertiary} rounded-lg flex items-center justify-center flex-shrink-0`}
+                className={`w-16 h-16 ${bgTertiary} rounded-lg flex items-center justify-center shrink-0`}
               >
                 <ImageIcon className={`w-8 h-8 ${textTertiary}`} />
               </div>
@@ -227,7 +227,7 @@ export const ProductSelectionStep: React.FC<ProductSelectionStepProps> = ({
                   }}
                   className={`px-3 py-1 rounded-lg text-sm ${
                     primaryProducts.includes(product.id)
-                      ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white"
+                      ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
                       : `${bgTertiary} ${textSecondary}`
                   }`}
                 >

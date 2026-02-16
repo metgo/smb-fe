@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
+
 import {
   // Search,
   Plus,
@@ -11,6 +13,7 @@ import {
   Copy,
   CheckSquare,
 } from "lucide-react";
+import ColumnSettingsDropdown from "@/components/shared/ColumnSettingsDropdown";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -23,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { ViewModeToggle } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface MiniSite {
   id: string;
@@ -40,18 +44,29 @@ interface MiniSite {
   conversionRate: number;
 }
 export const defaultColumns = {
-  select: true,
   code: true,
   name: true,
   companyName: true,
-  website: true,
+  website: false,
   status: true,
-  voucherAmount: true,
-  totalVouchers: true,
-  usedVouchers: true,
+  voucherAmount: false,
+  totalVouchers: false,
+  usedVouchers: false,
   revenue: true,
 };
 type ColumnVisibility = typeof defaultColumns;
+
+const columnDefinitions = [
+  { key: "code" as keyof ColumnVisibility, isDefault: true },
+  { key: "name" as keyof ColumnVisibility, isDefault: true },
+  { key: "companyName" as keyof ColumnVisibility, isDefault: true },
+  { key: "website" as keyof ColumnVisibility, isDefault: false },
+  { key: "status" as keyof ColumnVisibility, isDefault: true },
+  { key: "voucherAmount" as keyof ColumnVisibility, isDefault: false },
+  { key: "totalVouchers" as keyof ColumnVisibility, isDefault: false },
+  { key: "usedVouchers" as keyof ColumnVisibility, isDefault: false },
+  { key: "revenue" as keyof ColumnVisibility, isDefault: true },
+];
 
 export default function MiniSiteMgmtPage() {
   const { t } = useTranslation("minisites");
@@ -65,6 +80,15 @@ export default function MiniSiteMgmtPage() {
     borderColor,
     isDark,
   } = useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
+
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibility>(defaultColumns);
+
+  // Reset to default columns
+  const resetToDefault = () => {
+    setColumnVisibility(defaultColumns);
+  };
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showWizard, setShowWizard] = useState(false);
@@ -109,8 +133,6 @@ export default function MiniSiteMgmtPage() {
       return prev + 1;
     });
   };
-  const [columnVisibility, _setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
 
   const navigate = useNavigate();
   const handleMiniSiteClick = (miniSite: any) => {
@@ -364,9 +386,7 @@ export default function MiniSiteMgmtPage() {
           </div>
 
           {/* Toolbar */}
-          <div
-            className={`${bgPrimary} rounded-xl p-4 border ${borderColor} mb-6`}
-          >
+          <div className="mb-4">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               <div className="flex flex-1 items-center gap-3 w-full lg:w-auto">
                 <div className="relative flex-1 lg:max-w-md">
@@ -374,6 +394,7 @@ export default function MiniSiteMgmtPage() {
                     setSearchTerm={setSearchTerm}
                     searchTerm={searchTerm}
                     isDark={isDark}
+                    isRTL={isRTL}
                     placeholder={t("search_campaigns")}
                   />
                 </div>
@@ -392,7 +413,21 @@ export default function MiniSiteMgmtPage() {
                   <option value="paused">{t("paused")}</option>
                 </select>
               </div>
-
+              {viewMode === "list" && (
+                <ColumnSettingsDropdown
+                  columnVisibility={columnVisibility as Record<string, boolean>}
+                  setColumnVisibility={
+                    setColumnVisibility as Dispatch<
+                      SetStateAction<Record<string, boolean>>
+                    >
+                  }
+                  columnDefinitions={columnDefinitions}
+                  resetToDefault={resetToDefault}
+                  isDark={isDark}
+                  isRTL={isRTL}
+                  textSecondary={textSecondary}
+                />
+              )}
               <div className="flex items-center gap-2">
                 <ViewModeToggle onChange={setViewMode} value={viewMode} />
               </div>

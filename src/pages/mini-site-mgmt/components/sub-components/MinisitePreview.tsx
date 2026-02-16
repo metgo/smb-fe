@@ -1,6 +1,5 @@
-// MiniSitePreviewStep.tsx
 import React from "react";
-import { Monitor, Smartphone, Copy } from "lucide-react"; // adjust based on your icon library
+import { Monitor, Smartphone, Copy } from "lucide-react";
 
 interface MiniSitePreviewProps {
   t: any;
@@ -8,14 +7,8 @@ interface MiniSitePreviewProps {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   previewMode: "desktop" | "mobile";
   setPreviewMode: (mode: "desktop" | "mobile") => void;
-  contentTitle: Record<string, string>; // e.g. { en: "...", he: "...", ar: "..." }
-  contentSubtitle: Record<string, string>;
-  contentGreeting: Record<string, string>;
-  contentLanguage: string; // 'en' | 'he' | 'ar'
   selectedProducts: string[];
-  mockProducts: Array<{ id: string; name: string; price: number | string }>; // or your real Product type
-  campaignCode: string;
-  email: string;
+  mockProducts: Array<{ id: string; name: string; price: number | string }>;
   copyMiniSiteUrl: () => void;
   textPrimary: string;
   textSecondary: string;
@@ -30,16 +23,8 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   t,
   previewMode,
   setPreviewMode,
-  contentTitle,
-  contentSubtitle,
-  contentGreeting,
-  contentLanguage,
-  selectedProducts,
   formData,
-  setFormData,
   mockProducts,
-  campaignCode,
-  email,
   copyMiniSiteUrl,
   textPrimary,
   textSecondary,
@@ -49,7 +34,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   bgTertiary,
   borderColor,
 }) => {
-  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${email}`;
+  const miniSiteUrl = `https://tav-8.co.il/mini-site?campCode=${formData.campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${formData.email}`;
 
   return (
     <div className="space-y-6">
@@ -116,27 +101,31 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                 {t.featuredProducts || "Featured Products"}
               </h3>
               <div className="space-y-2">
-                {formData.selectedProducts?.slice(0, 3).map((productId) => {
-                  const product = mockProducts.find((p) => p.id === productId);
-                  return product ? (
-                    <div
-                      key={product.id}
-                      className={`${bgTertiary} rounded p-3 flex items-center gap-3`}
-                    >
+                {formData.selectedProducts
+                  ?.slice(0, 3)
+                  .map((productId: string) => {
+                    const product = mockProducts.find(
+                      (p) => p.id === productId,
+                    );
+                    return product ? (
                       <div
-                        className={`w-12 h-12 ${bgSecondary} rounded flex-shrink-0`}
-                      />
-                      <div className="flex-1">
-                        <p className={`text-sm ${textPrimary}`}>
-                          {product.name}
-                        </p>
-                        <p className={`text-xs ${textTertiary}`}>
-                          ₪{product.price}
-                        </p>
+                        key={product.id}
+                        className={`${bgTertiary} rounded p-3 flex items-center gap-3`}
+                      >
+                        <div
+                          className={`w-12 h-12 ${bgSecondary} rounded shrink-0`}
+                        />
+                        <div className="flex-1">
+                          <p className={`text-sm ${textPrimary}`}>
+                            {product.name}
+                          </p>
+                          <p className={`text-xs ${textTertiary}`}>
+                            ₪{product.price}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ) : null;
-                })}
+                    ) : null;
+                  })}
 
                 {(formData.selectedProducts?.length ?? 0) === 0 && (
                   <p className={`text-sm ${textTertiary} text-center py-4`}>

@@ -1,5 +1,4 @@
-// Step1WebsiteAndInfo.tsx
-import React, { useRef } from "react";
+import React from "react";
 import {
   Globe,
   Building2,
@@ -7,43 +6,22 @@ import {
   Home,
   Briefcase,
   Upload,
-} from "lucide-react"; // assuming you're using lucide-react icons
-import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+} from "lucide-react";
 
 interface Step1WebsiteAndInfoProps {
-  miniSiteId: string | number;
-  selectedDmoId: string | number | null;
-  setSelectDmoId: React.Dispatch<React.SetStateAction<any>>;
-  selectedAuthorityId: string | number | null;
-  setSelectAuthorityId: React.Dispatch<React.SetStateAction<any>>;
-  websiteVisibilityIds: any[];
-  setWebsiteVisibilityIds: React.Dispatch<React.SetStateAction<any[]>>;
+  // miniSiteId: string | number;
+  // selectedDmoId: string | number | null;
+  // setSelectDmoId: React.Dispatch<React.SetStateAction<any>>;
+  // selectedAuthorityId: string | number | null;
+  // setSelectAuthorityId: React.Dispatch<React.SetStateAction<any>>;
+  // websiteVisibilityIds: IWebsiteVisibilityIds;
+  // setWebsiteVisibilityIds: (v: any) => void;
 
   currentStep: number;
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
-  handleChange: (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => void;
-  handleLogoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  websites: string[];
 
-  contentLanguage: "en" | "he" | "ar";
-  setContentLanguage: React.Dispatch<React.SetStateAction<"en" | "he" | "ar">>;
-  contentTitle: Record<"en" | "he" | "ar", string>;
-  setContentTitle: React.Dispatch<
-    React.SetStateAction<Record<"en" | "he" | "ar", string>>
-  >;
-  contentSubtitle: Record<"en" | "he" | "ar", string>;
-  setContentSubtitle: React.Dispatch<
-    React.SetStateAction<Record<"en" | "he" | "ar", string>>
-  >;
-  contentGreeting: Record<"en" | "he" | "ar", string>;
-  setContentGreeting: React.Dispatch<
-    React.SetStateAction<Record<"en" | "he" | "ar", string>>
-  >;
+  handleLogoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 
   t: any;
   textPrimary: string;
@@ -52,32 +30,23 @@ interface Step1WebsiteAndInfoProps {
   bgSecondary: string;
   bgTertiary: string;
   borderColor: string;
-  businessAssociatedWebsites: any;
+  // businessAssociatedWebsites: any;
 }
 
 export default function Step1WebsiteAndInfo({
-  miniSiteId,
-  selectedDmoId,
-  setSelectDmoId,
-  selectedAuthorityId,
-  setSelectAuthorityId,
-  websiteVisibilityIds,
-  setWebsiteVisibilityIds,
+  // miniSiteId,
+  // selectedDmoId,
+  // setSelectDmoId,
+  // selectedAuthorityId,
+  // setSelectAuthorityId,
+  // websiteVisibilityIds,
+  // setWebsiteVisibilityIds,
 
   currentStep,
   formData,
   setFormData,
-  handleChange,
   handleLogoUpload,
-  websites,
-  contentLanguage,
-  setContentLanguage,
-  contentTitle,
-  setContentTitle,
-  contentSubtitle,
-  setContentSubtitle,
-  contentGreeting,
-  setContentGreeting,
+
   t,
   textPrimary,
   textSecondary,
@@ -85,11 +54,10 @@ export default function Step1WebsiteAndInfo({
   bgSecondary,
   bgTertiary,
   borderColor,
-  businessAssociatedWebsites = [],
+  // businessAssociatedWebsites = [],
 }: Step1WebsiteAndInfoProps) {
   if (currentStep !== 1) return null;
   // const dmoSectionRef = useRef<HTMLDivElement | null>(null);
-  console.log(formData.contentLanguage);
   return (
     <div className="space-y-6">
       {/* Website Selection */}
@@ -122,7 +90,7 @@ export default function Step1WebsiteAndInfo({
               value={formData.companyName}
               name="companyName"
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   companyName: e.target.value,
                 }))
@@ -141,7 +109,7 @@ export default function Step1WebsiteAndInfo({
               value={formData.contactName}
               name="contactName"
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   contactName: e.target.value,
                 }))
@@ -160,7 +128,7 @@ export default function Step1WebsiteAndInfo({
               value={formData.email}
               name="email"
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, email: e.target.value }))
+                setFormData((prev: any) => ({ ...prev, email: e.target.value }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               placeholder={t("email_placeholder")}
@@ -176,7 +144,7 @@ export default function Step1WebsiteAndInfo({
                 name="phoneCountryCode"
                 value={formData.phoneCountryCode}
                 onChange={(e) =>
-                  setFormData((prev) => ({
+                  setFormData((prev: any) => ({
                     ...prev,
                     phoneCountryCode: e.target.value,
                   }))
@@ -192,7 +160,7 @@ export default function Step1WebsiteAndInfo({
                 value={formData.phoneNumber}
                 name="phoneNumber"
                 onChange={(e) =>
-                  setFormData((prev) => ({
+                  setFormData((prev: any) => ({
                     ...prev,
                     phoneNumber: e.target.value,
                   }))
@@ -212,7 +180,7 @@ export default function Step1WebsiteAndInfo({
               value={formData.officeAddress}
               name="officeAddress"
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   officeAddress: e.target.value,
                 }))
@@ -271,7 +239,7 @@ export default function Step1WebsiteAndInfo({
               name="campaignName"
               value={formData.campaignName}
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   [e.target.name]: e.target.value,
                 }))
@@ -290,7 +258,7 @@ export default function Step1WebsiteAndInfo({
               value={formData.campaignCode}
               name="campaignCode"
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   campaignCode: e.target.value,
                 }))
@@ -376,7 +344,7 @@ export default function Step1WebsiteAndInfo({
               name="deliveryArea"
               checked={formData.deliveryArea === "home"}
               onChange={() =>
-                setFormData((prev) => ({ ...prev, deliveryArea: "home" }))
+                setFormData((prev: any) => ({ ...prev, deliveryArea: "home" }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
@@ -391,7 +359,10 @@ export default function Step1WebsiteAndInfo({
               name="deliveryArea"
               checked={formData.deliveryArea === "office"}
               onChange={() =>
-                setFormData((prev) => ({ ...prev, deliveryArea: "office" }))
+                setFormData((prev: any) => ({
+                  ...prev,
+                  deliveryArea: "office",
+                }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
@@ -415,7 +386,10 @@ export default function Step1WebsiteAndInfo({
               <button
                 type="button"
                 onClick={() =>
-                  setFormData((prev) => ({ ...prev, contentLanguage: "en" }))
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    contentLanguage: "en",
+                  }))
                 }
                 className={`
               px-4 py-2 rounded-lg font-medium transition-colors
@@ -432,7 +406,10 @@ export default function Step1WebsiteAndInfo({
               <button
                 type="button"
                 onClick={() =>
-                  setFormData((prev) => ({ ...prev, contentLanguage: "he" }))
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    contentLanguage: "he",
+                  }))
                 }
                 className={`
               px-4 py-2 rounded-lg font-medium transition-colors
@@ -449,7 +426,10 @@ export default function Step1WebsiteAndInfo({
               <button
                 type="button"
                 onClick={() =>
-                  setFormData((prev) => ({ ...prev, contentLanguage: "ar" }))
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    contentLanguage: "ar",
+                  }))
                 }
                 className={`
                 px-4 py-2 rounded-lg font-medium transition-colors
@@ -476,7 +456,7 @@ export default function Step1WebsiteAndInfo({
               type="text"
               value={formData.contentTitle[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   contentTitle: {
                     ...prev.contentTitle,
@@ -498,7 +478,7 @@ export default function Step1WebsiteAndInfo({
               type="text"
               value={formData.contentSubtitle[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   contentSubtitle: {
                     ...prev.contentSubtitle,
@@ -521,7 +501,7 @@ export default function Step1WebsiteAndInfo({
             <textarea
               value={formData.contentGreeting[formData.contentLanguage] ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({
+                setFormData((prev: any) => ({
                   ...prev,
                   contentGreeting: {
                     ...prev.contentGreeting,
