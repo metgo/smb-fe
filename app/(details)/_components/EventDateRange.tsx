@@ -28,30 +28,36 @@ const EventDateRange = ({
 
   return (
     <>
-      <section className="col-span-4 flex flex-col items-center gap-6">
-        <div className=" flex items-center justify-center gap-2.5  overflow-x-auto w-full ps-16">
-          {dayDescription?.map((item) => {
-            const eventInfo = getHebrewDateInfo(item.date);
-            // const isActive = item.date === eventInfo.day;
-            const isActive = false;
+      <section className="col-span-4 flex flex-col items-center gap-6 w-full">
+        <div className="w-full overflow-x-auto scroll-smooth pb-2">
+          <div className="flex items-center justify-start gap-2.5 w-max px-4">
+            {dayDescription?.map((item, index) => {
+              const eventInfo = getHebrewDateInfo(item.date);
+              const isActive = false;
 
-            return (
-              <div
-                key={item._id}
-                // onClick={() => setClickedDay(eventInfo)}
-                className={` w-23.5 h-27 border rounded-[5px] flex flex-col shrink-0 items-center justify-center font-normal ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
-              >
-                <span>{eventInfo.days}</span>
+              return (
                 <div
-                  className={`font-bold text-[2.5rem] leading-none ${isActive ? "text-[#E89900]" : "text-charcoal"}`}
+                  key={index}
+                  className={`w-[94px] h-[108px] border rounded-[5px] flex flex-col shrink-0 items-center justify-center font-normal
+                    ${
+                      isActive
+                        ? "border-[#E89900] bg-[#FDF5E6] text-[#E89900]"
+                        : "border-[#D3D3D3] text-theme"
+                    }`}
                 >
-                  {eventInfo.day}
+                  <span>{eventInfo.days}</span>
+                  <div
+                    className={`font-bold text-[2.5rem] leading-none ${isActive ? "text-[#E89900]" : "text-charcoal"}`}
+                  >
+                    {eventInfo.day}
+                  </div>
+                  <span>{eventInfo.month}</span>
                 </div>
-                <span>{eventInfo.month}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
         <div className="space-y-2.5">
           {payment?.method === paymentMethodType?.externalLink ? (
             <Link
@@ -71,9 +77,6 @@ const EventDateRange = ({
               <span>{misc.enrollment}</span>
             </button>
           )}
-          {/* <p className="text-theme font-normal text-[12px] text-center db1">
-            {eventDetils.dateline}
-          </p> */}
         </div>
       </section>
 
