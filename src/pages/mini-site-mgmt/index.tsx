@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 import {
   // Search,
-  Plus,
+  // Plus,
   DollarSign,
   Users,
   TrendingUp,
