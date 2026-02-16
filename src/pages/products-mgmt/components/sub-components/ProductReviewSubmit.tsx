@@ -287,7 +287,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           STEPS.IMAGES,
         )}
         <div className="">
-          {formData.images?.length > 0 ? (
+          {formData.images?.length > 0 && (
             <div className="grid grid-cols-3 gap-3">
               {" "}
               {/* added some basic styling — adjust as needed */}
@@ -299,9 +299,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
                 />
               ))}
             </div>
-          ) : (
-            // Optional: show something when there are no images
-            <p className="text-gray-500">-</p>
           )}
         </div>
       </div>
