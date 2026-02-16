@@ -4,6 +4,8 @@ import { Monitor, Smartphone, Copy } from "lucide-react"; // adjust based on you
 
 interface MiniSitePreviewProps {
   t: any;
+  formData: any;
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
   previewMode: "desktop" | "mobile";
   setPreviewMode: (mode: "desktop" | "mobile") => void;
   contentTitle: Record<string, string>; // e.g. { en: "...", he: "...", ar: "..." }
@@ -33,6 +35,8 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
   contentGreeting,
   contentLanguage,
   selectedProducts,
+  formData,
+  setFormData,
   mockProducts,
   campaignCode,
   email,
@@ -90,15 +94,20 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
             height: previewMode === "desktop" ? "600px" : "667px",
           }}
         >
-          <div className="p-6 space-y-6">
+          <div
+            className="p-6 space-y-6"
+            dir={formData.contentLanguage === "en" ? "ltr" : "rtl"}
+          >
             {/* Title */}
             <h1 className={`text-2xl ${textPrimary} text-center`}>
-              {contentTitle[contentLanguage] || "Campaign Title"}
+              {formData.contentTitle[formData.contentLanguage]?.trim() ||
+                "Campaign Title"}
             </h1>
 
             {/* Subtitle */}
             <p className={`${textSecondary} text-center`}>
-              {contentSubtitle[contentLanguage] || "Campaign subtitle"}
+              {formData.contentSubtitle[formData.contentLanguage]?.trim() ||
+                "Campaign subtitle"}
             </p>
 
             {/* Featured Products */}
@@ -107,7 +116,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                 {t.featuredProducts || "Featured Products"}
               </h3>
               <div className="space-y-2">
-                {selectedProducts.slice(0, 3).map((productId) => {
+                {formData.selectedProducts?.slice(0, 3).map((productId) => {
                   const product = mockProducts.find((p) => p.id === productId);
                   return product ? (
                     <div
@@ -129,7 +138,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
                   ) : null;
                 })}
 
-                {selectedProducts.length === 0 && (
+                {(formData.selectedProducts?.length ?? 0) === 0 && (
                   <p className={`text-sm ${textTertiary} text-center py-4`}>
                     No products selected yet
                   </p>
@@ -140,7 +149,7 @@ export const MiniSitePreview: React.FC<MiniSitePreviewProps> = ({
             {/* Greeting / Message */}
             <div className={`${bgSecondary} rounded-lg p-4`}>
               <p className={`text-sm ${textSecondary}`}>
-                {contentGreeting[contentLanguage] ||
+                {formData.contentGreeting[formData.contentLanguage]?.trim() ||
                   "Greeting message will appear here"}
               </p>
             </div>

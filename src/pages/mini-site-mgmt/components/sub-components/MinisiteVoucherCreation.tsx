@@ -1,31 +1,16 @@
-// VoucherCreationStep.tsx
 import React from "react";
-import { Send, Clock, Download, Upload } from "lucide-react"; // adjust icon imports as needed
+import { Send, Clock, Download, Upload } from "lucide-react";
 
 interface MinisiteVoucherCreationProps {
   t: any;
-  contactName: string;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  contactName: string; // still passed separately (from earlier steps)
   email: string;
   phoneCountryCode: string;
   phoneNumber: string;
-  sendTiming: "immediate" | "scheduled";
-  setSendTiming: (timing: "immediate" | "scheduled") => void;
-  scheduledDate: string;
-  setScheduledDate: (date: string) => void;
-  scheduledTime: string;
-  setScheduledTime: (time: string) => void;
-  allowInstanceCreation: boolean;
-  setAllowInstanceCreation: (checked: boolean) => void;
-  instanceName: string;
-  setInstanceName: (name: string) => void;
-  instanceEmail: string;
-  setInstanceEmail: (email: string) => void;
-  instancePhone: string;
-  setInstancePhone: (phone: string) => void;
-  uploadedFile: File | null;
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   downloadSampleXLS: () => void;
-  handleInstanceVoucherAdd: () => void;
+  handleInstanceVoucherAdd: () => void; // parent will handle adding → clear fields after
   textPrimary: string;
   textSecondary: string;
   textTertiary: string;
@@ -38,26 +23,12 @@ export const MinisiteVoucherCreation: React.FC<
   MinisiteVoucherCreationProps
 > = ({
   t,
+  formData,
+  setFormData,
   contactName,
   email,
   phoneCountryCode,
   phoneNumber,
-  sendTiming,
-  setSendTiming,
-  scheduledDate,
-  setScheduledDate,
-  scheduledTime,
-  setScheduledTime,
-  allowInstanceCreation,
-  setAllowInstanceCreation,
-  instanceName,
-  setInstanceName,
-  instanceEmail,
-  setInstanceEmail,
-  instancePhone,
-  setInstancePhone,
-  uploadedFile,
-  handleFileUpload,
   downloadSampleXLS,
   handleInstanceVoucherAdd,
   textPrimary,
@@ -67,13 +38,22 @@ export const MinisiteVoucherCreation: React.FC<
   bgSecondary,
   borderColor,
 }) => {
+  const update = (updates: Partial<FormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    update({ uploadedFile: file });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className={`text-lg ${textPrimary} mb-4`}>
         {t.voucherCreation || "Voucher Creation & Distribution"}
       </h3>
 
-      {/* Voucher Sender Info */}
+      {/* Voucher Sender Info – still read-only from previous step */}
       <div className={`${bgSecondary} rounded-lg p-4`}>
         <h4 className={`${textPrimary} mb-3`}>
           {t.voucherSenderInfo || "Voucher Sender Info"}
@@ -83,21 +63,21 @@ export const MinisiteVoucherCreation: React.FC<
             <label className={`block text-sm ${textTertiary} mb-1`}>
               {t.name || "Name"}
             </label>
-            <p className={textPrimary}>{contactName || "-"}</p>
+            <p className={textPrimary}>{formData.contactName || "-"}</p>
           </div>
           <div>
             <label className={`block text-sm ${textTertiary} mb-1`}>
               {t.email || "Email"}
             </label>
-            <p className={textPrimary}>{email || "-"}</p>
+            <p className={textPrimary}>{formData.email || "-"}</p>
           </div>
           <div>
             <label className={`block text-sm ${textTertiary} mb-1`}>
               {t.phone || "Phone"}
             </label>
             <p className={textPrimary}>
-              {phoneCountryCode}
-              {phoneNumber || "-"}
+              {formData.phoneCountryCode}
+              {formData.phoneNumber || "-"}
             </p>
           </div>
         </div>
@@ -108,12 +88,12 @@ export const MinisiteVoucherCreation: React.FC<
         <h4 className={`${textPrimary} mb-3`}>
           {t.scheduling || "Scheduling"}
         </h4>
-        <div className="flex gap-4 mb-4 flex-wrap">
+        <div className="flex gap-6 mb-4 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
-              checked={sendTiming === "immediate"}
-              onChange={() => setSendTiming("immediate")}
+              checked={formData.sendTiming === "immediate"}
+              onChange={() => update({ sendTiming: "immediate" })}
               className="w-4 h-4 text-purple-600 focus:ring-purple-500"
             />
             <Send className="w-4 h-4" />
@@ -124,8 +104,8 @@ export const MinisiteVoucherCreation: React.FC<
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
-              checked={sendTiming === "scheduled"}
-              onChange={() => setSendTiming("scheduled")}
+              checked={formData.sendTiming === "scheduled"}
+              onChange={() => update({ sendTiming: "scheduled" })}
               className="w-4 h-4 text-purple-600 focus:ring-purple-500"
             />
             <Clock className="w-4 h-4" />
@@ -135,7 +115,7 @@ export const MinisiteVoucherCreation: React.FC<
           </label>
         </div>
 
-        {sendTiming === "scheduled" && (
+        {formData.sendTiming === "scheduled" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={`block text-sm ${textSecondary} mb-2`}>
@@ -143,8 +123,8 @@ export const MinisiteVoucherCreation: React.FC<
               </label>
               <input
                 type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
+                value={formData.scheduledDate}
+                onChange={(e) => update({ scheduledDate: e.target.value })}
                 className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               />
             </div>
@@ -154,8 +134,8 @@ export const MinisiteVoucherCreation: React.FC<
               </label>
               <input
                 type="time"
-                value={scheduledTime}
-                onChange={(e) => setScheduledTime(e.target.value)}
+                value={formData.scheduledTime}
+                onChange={(e) => update({ scheduledTime: e.target.value })}
                 className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
               />
             </div>
@@ -188,14 +168,14 @@ export const MinisiteVoucherCreation: React.FC<
           >
             <Upload className="w-5 h-5" />
             <span className="text-sm">
-              {uploadedFile
-                ? uploadedFile.name
+              {formData.uploadedFile
+                ? formData.uploadedFile.name
                 : t.uploadXLS || "Click to upload XLS file"}
             </span>
             <input
               type="file"
               accept=".xls,.xlsx,.csv"
-              onChange={handleFileUpload}
+              onChange={handleFileChange}
               className="hidden"
             />
           </label>
@@ -206,8 +186,10 @@ export const MinisiteVoucherCreation: React.FC<
           <label className="flex items-center gap-2 cursor-pointer mb-3">
             <input
               type="checkbox"
-              checked={allowInstanceCreation}
-              onChange={(e) => setAllowInstanceCreation(e.target.checked)}
+              checked={formData.allowInstanceCreation}
+              onChange={(e) =>
+                update({ allowInstanceCreation: e.target.checked })
+              }
               className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
             />
             <span className={textSecondary}>
@@ -215,14 +197,14 @@ export const MinisiteVoucherCreation: React.FC<
             </span>
           </label>
 
-          {allowInstanceCreation && (
+          {formData.allowInstanceCreation && (
             <div className={`${bgSecondary} rounded-lg p-4`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <input
                     type="text"
-                    value={instanceName}
-                    onChange={(e) => setInstanceName(e.target.value)}
+                    value={formData.instanceName}
+                    onChange={(e) => update({ instanceName: e.target.value })}
                     placeholder={t.name || "Name"}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
@@ -230,8 +212,8 @@ export const MinisiteVoucherCreation: React.FC<
                 <div>
                   <input
                     type="email"
-                    value={instanceEmail}
-                    onChange={(e) => setInstanceEmail(e.target.value)}
+                    value={formData.instanceEmail}
+                    onChange={(e) => update({ instanceEmail: e.target.value })}
                     placeholder={t.email || "Email"}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
@@ -239,13 +221,14 @@ export const MinisiteVoucherCreation: React.FC<
                 <div>
                   <input
                     type="tel"
-                    value={instancePhone}
-                    onChange={(e) => setInstancePhone(e.target.value)}
+                    value={formData.instancePhone}
+                    onChange={(e) => update({ instancePhone: e.target.value })}
                     placeholder={t.phone || "Phone"}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                   />
                 </div>
               </div>
+
               <button
                 onClick={handleInstanceVoucherAdd}
                 className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"

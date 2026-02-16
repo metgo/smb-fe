@@ -178,14 +178,7 @@ export default function MinisiteCreateWizard({
 
         // 1. Create if not exists
         if (!currentMiniSiteId) {
-          const createPayload = {
-            name: formData.campaignName,
-            code: formData.campaignCode,
-            externalApiId: crypto.randomUUID(),
-            logoPath: formData?.logoFile,
-          };
-
-          const res = await initMiniSiteCreate(createPayload).unwrap();
+          const res = await initMiniSiteCreate().unwrap();
           currentMiniSiteId = res?.id;
           setMiniSiteId(res?.id);
         }
@@ -565,12 +558,12 @@ export default function MinisiteCreateWizard({
           >
             {t("create_mini_site")}{" "}
           </h2>
-          <p className={`text-xs ${textTertiary} mt-0.5`}>
+          <div className={`text-xs ${textTertiary} mt-0.5`}>
             <p>
               {t("step")} {currentStep} {t("of")} {steps.length} :{" "}
               {steps.find((s) => s.number === currentStep)?.name}
             </p>
-          </p>
+          </div>
         </div>
       </div>
 
@@ -810,6 +803,8 @@ export default function MinisiteCreateWizard({
         {currentStep === 3 && (
           <MiniSitePreview
             t={t}
+            formData={formData}
+            setFormData={setFormData}
             previewMode={previewMode}
             setPreviewMode={setPreviewMode}
             contentTitle={contentTitle} // assuming these are states/objects you have
@@ -835,6 +830,8 @@ export default function MinisiteCreateWizard({
         {currentStep === 4 && (
           <MinisiteVoucherCreation
             t={t}
+            formData={formData}
+            setFormData={setFormData}
             contactName={contactName} // or formData.contactDetails?.name
             email={email} // or formData.email
             phoneCountryCode={phoneCountryCode}

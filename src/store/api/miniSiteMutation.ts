@@ -17,10 +17,10 @@ export const miniSiteMutationApi = createApi({
   endpoints: (builder) => ({
     // POST → create minisite
     initMiniSiteCreate: builder.mutation<any, void>({
-      query: (body) => ({
+      query: () => ({
         url: endpoints.miniSites,
         method: "POST",
-        data: body,
+        data: { name: "" },
       }),
       invalidatesTags: ["MiniSites"],
     }),
