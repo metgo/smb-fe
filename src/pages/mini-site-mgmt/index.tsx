@@ -27,6 +27,7 @@ import { routes } from "@/lib/routes";
 import { ViewModeToggle } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
+import { PageHeader } from "@/components/shared";
 
 interface MiniSite {
   id: string;
@@ -276,28 +277,13 @@ export default function MiniSiteMgmtPage() {
       <main className="overflow-y-auto h-[calc(100vh-64px)] p-6">
         <div>
           {/* Header */}
-          <div className="mb-6 flex justify-between">
-            <div className="">
-              <h1
-                className={`text-3xl mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
-              >
-                {t("mini_site_management_page")}{" "}
-                {/* "Mini-Site Management" */}{" "}
-              </h1>
-              <p className={textSecondary}>
-                {t("manage_all_mini_site_campaigns")}
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowWizard(true)}
-              className="ml-2 px-3 py-1 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-1 text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              {t("create_mini_site")}
-            </button>
-          </div>
-
+          <PageHeader
+            title={t("mini_site_management_page")}
+            description={t("manage_all_mini_site_campaigns")}
+            btnLabel={t("create_mini_site")}
+            onClick={() => setShowWizard(true)}
+            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+          />
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
             <div

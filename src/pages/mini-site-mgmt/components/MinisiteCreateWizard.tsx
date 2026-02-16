@@ -8,8 +8,10 @@ import {
   Briefcase,
   Monitor,
 } from "lucide-react";
+import clsx from "clsx";
 import { ModalWrapper } from "@/components/wrapper";
 import { WizardFooter } from "@/components/shared";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -107,6 +109,8 @@ export default function MinisiteCreateWizard({
   //   allWhitelistIds: [] as string[],
   //   selectedWhitelistIds: [] as string[],
   // });
+  const [logoGcsUrl, setLogoGcsUrl] = useState<string>("");
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<MiniSiteFormData>({
     // default values
@@ -142,11 +146,13 @@ export default function MinisiteCreateWizard({
     instancePhone: "",
     uploadedFile: null,
   });
+  console.log("🚀 ~ MinisiteCreateWizard ~ logoFile:", formData.logoFile);
   const campaignPayloadMap = {
     // Basic campaign metadata (similar to step 1)
     name: formData.campaignName,
     code: formData.campaignCode,
     internalNotes: "", // ← add field to form if needed
+    logo: { image: logoGcsUrl },
 
     // Monetary / voucher details
     voucher: {
@@ -164,7 +170,34 @@ export default function MinisiteCreateWizard({
   const [initMiniSiteCreate, { isLoading: isCreating }] =
     useInitMiniSiteCreateMutation();
   const [updateMiniSite, { isLoading: isSaving }] = useUpdateMiniSiteMutation();
+  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
+    null,
+  );
+  //logo upload
+  const {
+    image: logoImage,
+    handleImageSelect: handleLogoImageSelect,
+    uploadImage: uploadLogoImage,
+    confirmDelete: confirmDeleteLogo,
+    deleteTarget: deleteTargetLogo,
+    setDeleteTarget: setDeleteTargetLogo,
+    isImageDeleting: isLogoImageDeleting,
+    handleDeleteImage: handleDeleteLogoImage,
+  } = useSingleImageUpload({
+    initialImage: businessLogoImage?.image,
+    onChange: setBusinessLogoImage,
+  });
+  const mediaProps = {
+    t,
 
+    logoImage,
+    handleLogoImageSelect,
+    deleteTargetLogo,
+    setDeleteTargetLogo,
+    isLogoImageDeleting,
+    confirmDeleteLogo,
+    handleDeleteLogoImage,
+  };
   const [miniSiteId, setMiniSiteId] = useState("");
   const saveDraft = useCallback(
     async (isPublish = false) => {
@@ -211,7 +244,6 @@ export default function MinisiteCreateWizard({
       updateMiniSite,
     ],
   );
-  console.log("~ formData:", formData);
   // Step 1: Website & Purchaser Info
   const [email] = useState("");
   // const [logoFile, setLogoFile] = useState<string | null>(null);
@@ -359,9 +391,11 @@ export default function MinisiteCreateWizard({
 
   const handleNext = async () => {
     await saveDraft();
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
+    if (currentStep === 1) {
+      const logoUrl = await uploadLogoImage();
+      setLogoGcsUrl(logoUrl);
     }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handlePrev = () => {
@@ -435,9 +469,7 @@ export default function MinisiteCreateWizard({
         className={`flex items-center justify-between px-6 py-3 border-b ${borderColor}`}
       >
         <div>
-          <h2
-            className={`text-xl bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
-          >
+          <h2 className={clsx("text-2xl", textPrimary)}>
             {t("create_mini_site")}{" "}
           </h2>
           <div className={`text-xs ${textTertiary} mt-0.5`}>
@@ -625,6 +657,7 @@ export default function MinisiteCreateWizard({
         {/* Step 1: Website & Purchaser Info */}
         {currentStep === 1 && (
           <ProductWebsiteAndInfo
+            {...mediaProps}
             // miniSiteId={miniSiteId}
             // selectedDmoId={selectedDmoId}
             // setSelectDmoId={setSelectedDmoId}

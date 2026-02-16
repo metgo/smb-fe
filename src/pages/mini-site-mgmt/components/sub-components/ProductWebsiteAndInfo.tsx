@@ -6,7 +6,9 @@ import {
   Home,
   Briefcase,
   Upload,
+  X,
 } from "lucide-react";
+import { ImageWithFallback } from "@/components/shared";
 
 interface Step1WebsiteAndInfoProps {
   // miniSiteId: string | number;
@@ -16,7 +18,13 @@ interface Step1WebsiteAndInfoProps {
   // setSelectAuthorityId: React.Dispatch<React.SetStateAction<any>>;
   // websiteVisibilityIds: IWebsiteVisibilityIds;
   // setWebsiteVisibilityIds: (v: any) => void;
-
+  logoImage: IImageUpload | null;
+  handleLogoImageSelect: (file: File) => void;
+  confirmDeleteLogo: () => void;
+  deleteTargetLogo: string | null;
+  setDeleteTargetLogo: (imgUrl: string | null) => void;
+  isLogoImageDeleting: boolean;
+  handleDeleteLogoImage: (logoImg: IImageUpload) => void;
   currentStep: number;
   formData: any;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
@@ -42,6 +50,13 @@ export default function Step1WebsiteAndInfo({
   // websiteVisibilityIds,
   // setWebsiteVisibilityIds,
 
+  logoImage,
+  handleLogoImageSelect,
+  deleteTargetLogo,
+  setDeleteTargetLogo,
+  isLogoImageDeleting,
+  handleDeleteLogoImage,
+  confirmDeleteLogo,
   currentStep,
   formData,
   setFormData,
@@ -205,7 +220,7 @@ export default function Step1WebsiteAndInfo({
                 </div>
               )}
 
-              <label
+              {/* <label
                 className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textSecondary} cursor-pointer hover:${textPrimary} transition-colors flex items-center gap-2`}
               >
                 <Upload className="w-4 h-4" />
@@ -217,7 +232,55 @@ export default function Step1WebsiteAndInfo({
                   name="logoFile"
                   className="hidden"
                 />
-              </label>
+              </label> */}
+              <div>
+                <div className="flex items-center gap-4">
+                  {logoImage?.previewUrl ? (
+                    <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
+                      <div
+                        className="w-full h-full"
+                        onClick={() =>
+                          document.getElementById("logo-image-upload")?.click()
+                        }
+                      >
+                        <ImageWithFallback
+                          src={logoImage?.previewUrl}
+                          alt="Logo"
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteLogoImage(logoImage)}
+                        className="absolute top-2 right-2 z-50 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() =>
+                        document.getElementById("logo-image-upload")?.click()
+                      }
+                    >
+                      <div className="text-center">
+                        <Upload />
+                        <p>{t("upload_logo")}</p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleLogoImageSelect(file);
+                          }}
+                          className="hidden"
+                          id="logo-image-upload"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
