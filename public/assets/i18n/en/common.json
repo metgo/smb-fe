@@ -171,5 +171,48 @@
   "tags": "Tags",
   "tags_desc": "{count} tags available",
   "no_attribute_selected": "No Attributes Selected",
-  "no_attribute_selected_info": "No subcategories, accessibility features, or group types have been assigned to this event"
+  "no_attribute_selected_info": "No subcategories, accessibility features, or group types have been assigned to this event",
+
+  "review_your_product": "Review your product",
+  "basic_info": "Basic Information",
+  "pricing_stock_dates": "Pricing, Stock & Dates",
+  "delivery_service": "Delivery & Service",
+
+  "name": "Name (EN)",
+  "name_he": "Name (HE)",
+  "name_ar": "Name (AR)",
+
+  "short_description_en": "Short Description (EN)",
+  "short_description_he": "Short Description (HE)",
+  "short_description_ar": "Short Description (AR)",
+
+  "full_description_en": "Full Description (EN)",
+  "full_description_he": "Full Description (HE)",
+  "full_description_ar": "Full Description (AR)",
+
+  "categories": "Categories",
+  "sub_categories": "Sub Categories",
+
+  "marked_price": "Marked Price",
+  "selling_price": "Selling Price",
+  "quantity": "Quantity",
+  "discount": "Discount",
+  "off": "off",
+
+  "unlimited": "Unlimited",
+
+  "start_date": "Start Date",
+  "end_date": "End Date",
+
+  "home_delivery": "Home Delivery",
+  "store_pickup": "Store Pickup",
+  "vendor_delivers": "Vendor Delivers",
+  "pickup_available": "Pickup Available",
+
+  "service_duration": "Service Duration",
+  "delivery_area": "Delivery Area",
+
+  "return_exchange_policy": "Return & Exchange Policy",
+  "additional_details": "Additional Details",
+  "specific_seller_delivery_info": "Specific Seller Delivery Info"
 }

@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface StatusChangeBtnProps {
   status: TStatus;
@@ -23,8 +23,7 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   handleStatusChange,
 }) => {
   const { t } = useTranslation("common");
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL, textSecondary } = useThemeClasses();
 
   const [currentStatus, setCurrentStatus] = useState<TStatus>(
     status?.toLowerCase() as TStatus,
@@ -90,7 +89,10 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-500 text-gray-600 font-medium"
+        className={clsx(
+          "flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-500 font-medium",
+          textSecondary,
+        )}
       >
         <span>{t("change_status")}</span>
         <ChevronDown

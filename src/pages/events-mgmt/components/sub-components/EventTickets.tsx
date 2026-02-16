@@ -235,17 +235,17 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                   >
                     <div>
                       <span className="font-medium">{t("price")}:</span>{" "}
-                      {formatPrice(ticket.price)}
+                      {formatPrice(ticket?.price)}
                     </div>
                     <div>
                       <span className="font-medium">{t("quantity")}:</span>{" "}
-                      {ticket.quantity.initial || t("unlimited")}
+                      {ticket?.quantity?.initial || t("unlimited")}
                     </div>
                     <div>
                       <span className="font-medium">
                         {t("per_user_limit")}:
                       </span>{" "}
-                      {ticket.quantity.perUserLimit || t("no_limit")}
+                      {ticket?.quantity?.perUserLimit || t("no_limit")}
                     </div>
                   </div>
                 </div>
@@ -257,7 +257,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                         ...ticket,
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
-                      setTicketDateTime(ticket.dayDescription ?? []);
+                      setTicketDateTime(ticket?.dayDescription ?? []);
                       setOpMode("UPDATE");
                       setShowTicketModal(true);
                     }}

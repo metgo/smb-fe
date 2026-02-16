@@ -163,7 +163,7 @@ export default function CreateProductWizard({ onClose }: ProductWizardProps) {
     if (!productId || !product) return;
 
     setFormData({
-      // basic info
+      // setp-1: basic info
       businessId: product?.businessId?._id || "",
       name: product.name || "",
       nameHe: product.nameHe || "",
@@ -177,24 +177,24 @@ export default function CreateProductWizard({ onClose }: ProductWizardProps) {
       fullDescriptionHe: product.fullDescriptionHe || "",
       fullDescriptionAr: product.fullDescriptionAr || "",
 
+      // step-2: Attributes
       categories: product.categories || [],
       subCategories: product.subCategories || [],
 
-      // pricing & stock
+      //step-3: pricing, stock & dates
       markedPrice: product.price?.markedPrice || "",
       sellingPrice: product.price?.sellingPrice || "",
       quantity: product.quantity?.remaining || "",
       isUnlimited: product.quantity?.isUnlimited || false,
 
-      // dates
       startDate: product.startDate || "",
       endDate: product.endDate || "",
 
-      // images
+      // setp-4: images
       images: product?.images || null,
       additionalImages: product.additionalImages || [],
 
-      // delivery / service
+      // setp-5:  delivery / service
       enableHomeDelivery: product.enableHomeDelivery || false,
       enableStorePickup: product.enableStorePickup || false,
       serviceDuration: product.serviceDuration || "",
@@ -370,6 +370,7 @@ export default function CreateProductWizard({ onClose }: ProductWizardProps) {
       selectedFormLanguage,
       setSelectedFormLanguage,
       handleImageUpload,
+      setCurrentStep,
       businesses: businessData?.data,
     };
 

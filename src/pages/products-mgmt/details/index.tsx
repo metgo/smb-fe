@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Edit,
   Package,
-  Copy,
   ArrowRight,
   ArrowUpDown,
   ArrowUp,
@@ -225,7 +224,7 @@ export default function ProductDetailsPage() {
                     status={product?.status}
                     handleStatusChange={onStatusChangeHandler}
                   />
-                  <button
+                  {/* <button
                     // onClick={onDuplicate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                       isDark
@@ -235,7 +234,7 @@ export default function ProductDetailsPage() {
                   >
                     <Copy className="w-4 h-4" />
                     <span>{t("duplicate") || "Duplicate"}</span>
-                  </button>
+                  </button> */}
                   <button
                     onClick={handleEdit}
                     className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
