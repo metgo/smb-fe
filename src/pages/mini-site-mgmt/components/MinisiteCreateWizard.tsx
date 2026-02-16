@@ -12,6 +12,9 @@ import {
   Briefcase,
   Monitor,
 } from "lucide-react";
+import { ModalWrapper } from "@/components/wrapper";
+import { WizardFooter } from "@/components/shared";
+
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ProductSelectionStep } from "./sub-components/ProductSelectionStep";
@@ -98,7 +101,9 @@ export default function MinisiteCreateWizard({
     borderColor,
     bgTertiary,
   } = useThemeClasses();
-
+  const totalSteps = 5;
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     // default values
@@ -153,10 +158,9 @@ export default function MinisiteCreateWizard({
       endDate: formData.endDate,
     },
   };
-  const [initMiniSiteCreate, { isLoading: _isCreating }] =
+  const [initMiniSiteCreate, { isLoading: isCreating }] =
     useInitMiniSiteCreateMutation();
-  const [updateMiniSite, { isLoading: _isSaving }] =
-    useUpdateMiniSiteMutation();
+  const [updateMiniSite, { isLoading: isSaving }] = useUpdateMiniSiteMutation();
 
   const [miniSiteId, setMiniSiteId] = useState("");
   const saveDraft = useCallback(
@@ -166,9 +170,16 @@ export default function MinisiteCreateWizard({
 
         // 1. Create if not exists
         if (!currentMiniSiteId) {
-          const res = await initMiniSiteCreate().unwrap();
+          const createPayload = {
+            name: formData.campaignName,
+            code: formData.campaignCode,
+            externalApiId: crypto.randomUUID(),
+            logoPath: formData?.logoFile,
+          };
+
+          const res = await initMiniSiteCreate(createPayload).unwrap();
           currentMiniSiteId = res?.id;
-          setMiniSiteId(res?.id); // update local state
+          setMiniSiteId(res?.id);
         }
 
         // 2. Prepare payload
@@ -363,14 +374,6 @@ export default function MinisiteCreateWizard({
     },
   ];
 
-  // Auto-generate campaign code
-  useEffect(() => {
-    if (!campaignCode && campaignName) {
-      const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-      setCampaignCode(code);
-    }
-  }, [campaignName]);
-
   // Populate fields when editing
   useEffect(() => {
     if (editingMiniSite) {
@@ -409,18 +412,18 @@ export default function MinisiteCreateWizard({
     }));
   };
 
-  // const handleLogoUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  //   const previewUrl = URL.createObjectURL(file);
+    const previewUrl = URL.createObjectURL(file);
 
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     logoFile: previewUrl,
-  //     logoFileRaw: file, // optional: for backend upload
-  //   }));
-  // };
+    setFormData((prev) => ({
+      ...prev,
+      logoFile: previewUrl,
+      logoFileRaw: file, // optional: for backend upload
+    }));
+  };
 
   const handleNext = async () => {
     await saveDraft();
@@ -543,378 +546,337 @@ export default function MinisiteCreateWizard({
   // };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+      {/* Header */}
       <div
-        className={`${bgPrimary} rounded-2xl shadow-2xl w-full max-w-6xl max-h-[100vh] my-8 flex flex-col border-2 ${borderColor} overflow-hidden`}
+        className={`flex items-center justify-between px-6 py-3 border-b ${borderColor}`}
       >
-        {/* Header */}
-        <div
-          className={`flex items-center justify-between px-6 py-3 border-b ${borderColor}`}
-        >
-          <div>
-            <h2
-              className={`text-xl bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
-            >
-              {t("create_mini_site")}{" "}
-            </h2>
-            <p className={`text-xs ${textTertiary} mt-0.5`}>
-              <p>
-                {t("step")} {currentStep} {t("of")} {steps.length}
-              </p>{" "}
+        <div>
+          <h2
+            className={`text-xl bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+          >
+            {t("create_mini_site")}{" "}
+          </h2>
+          <p className={`text-xs ${textTertiary} mt-0.5`}>
+            <p>
+              {t("step")} {currentStep} {t("of")} {steps.length} :{" "}
+              {steps.find((s) => s.number === currentStep)?.name}
             </p>
-          </div>
-          <button
-            onClick={onClose}
-            className={`${textTertiary} hover:${textPrimary} transition-colors`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Mini-Site Statistics - Only show when editing */}
-        {editingMiniSite && (
-          <div className={`px-6 py-3 border-b ${borderColor} ${bgSecondary}`}>
-            <h3
-              className={`text-sm mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
-            >
-              {t("mini_site_statistics")}{" "}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {/* Page Views */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Eye className="w-4 h-4 text-purple-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("page_views")}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  {editingMiniSite?.analytics?.pageViews?.toLocaleString() ||
-                    "12,458"}
-                </p>
-                <span className="text-xs text-green-600">+12%</span>
-              </div>
-
-              {/* Unique Visitors */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Monitor className="w-4 h-4 text-blue-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("unique_visitors")}{" "}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  {editingMiniSite?.analytics?.uniqueVisitors?.toLocaleString() ||
-                    "8,234"}
-                </p>
-                <span className="text-xs text-green-600">+8%</span>
-              </div>
-
-              {/* Vouchers Used */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Ticket className="w-4 h-4 text-pink-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("vouchers_used")} {/* Vouchers Used */}{" "}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  {editingMiniSite?.analytics?.vouchersUsed?.toLocaleString() ||
-                    "1,456"}
-                </p>
-                <span className={`text-xs ${textTertiary}`}>
-                  / {editingMiniSite?.totalVouchers || "2,000"}
-                </span>
-              </div>
-
-              {/* Products Purchased */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Briefcase className="w-4 h-4 text-teal-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("products_purchased")}{" "}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  {editingMiniSite?.analytics?.productsPurchased?.toLocaleString() ||
-                    "3,892"}
-                </p>
-                <span className="text-xs text-green-600">+15%</span>
-              </div>
-
-              {/* Conversion Rate */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("conversion_rate")}{" "}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  {editingMiniSite?.analytics?.conversionRate || "47.2"}%
-                </p>
-                <span className="text-xs text-green-600">+3.5%</span>
-              </div>
-
-              {/* Total Revenue */}
-              <div
-                className={`p-2 rounded-lg border ${borderColor} bg-linear-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:shadow-lg transition-all`}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <DollarSign className="w-4 h-4 text-purple-600" />
-                  <span className={`text-xs ${textTertiary}`}>
-                    {t("total_revenue")}{" "}
-                  </span>
-                </div>
-                <p className={`text-lg ${textPrimary}`}>
-                  ₪
-                  {editingMiniSite?.analytics?.revenue?.toLocaleString() ||
-                    "284,560"}
-                </p>
-                <span className="text-xs text-green-600">+22%</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Progress Steps */}
-        <div className={`px-6 py-2 border-b ${borderColor} ${bgSecondary}`}>
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              // Map step numbers to icons
-              const getStepIcon = (stepNumber: number) => {
-                switch (stepNumber) {
-                  case 1:
-                    return <Building2 className="w-4 h-4" />;
-                  case 2:
-                    return <Briefcase className="w-4 h-4" />;
-                  case 3:
-                    return <Eye className="w-4 h-4" />;
-                  case 4:
-                    return <Ticket className="w-4 h-4" />;
-                  case 5:
-                    return <CheckCircle className="w-4 h-4" />;
-                  default:
-                    return step.number;
-                }
-              };
-
-              return (
-                <div key={step.number} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        currentStep >= step.number
-                          ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
-                          : `${bgPrimary} border-2 ${borderColor} ${textTertiary}`
-                      }`}
-                    >
-                      {getStepIcon(step.number)}
-                    </div>
-                    <p
-                      className={`text-xs mt-1 text-center ${currentStep >= step.number ? textPrimary : textTertiary}`}
-                    >
-                      {step.name}
-                    </p>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 ${currentStep > step.number ? "bg-linear-to-r from-purple-500 to-pink-600" : borderColor} mx-2`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="h-[40vh] overflow-y-auto p-4">
-          {/* Step 1: Website & Purchaser Info */}
-          {currentStep === 1 && (
-            <ProductWebsiteAndInfo
-              currentStep={currentStep}
-              formData={formData}
-              setFormData={setFormData}
-              handleChange={handleChange}
-              // handleLogoUpload={handleLogoUpload}
-              websites={websites}
-              contentLanguage={contentLanguage}
-              setContentLanguage={setContentLanguage}
-              contentTitle={contentTitle}
-              setContentTitle={setContentTitle}
-              contentSubtitle={contentSubtitle}
-              setContentSubtitle={setContentSubtitle}
-              contentGreeting={contentGreeting}
-              setContentGreeting={setContentGreeting}
-              t={t}
-              textPrimary={textPrimary}
-              textSecondary={textSecondary}
-              textTertiary={textTertiary}
-              bgSecondary={bgSecondary}
-              bgTertiary={bgTertiary}
-              borderColor={borderColor}
-            />
-          )}
-
-          {/* Step 2: Select Products */}
-          {currentStep === 2 && (
-            <ProductSelectionStep
-              t={t}
-              productSearchQuery={productSearchQuery}
-              setProductSearchQuery={setProductSearchQuery}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              productViewMode={productViewMode}
-              setProductViewMode={setProductViewMode}
-              filteredProducts={filteredProducts}
-              selectedProducts={selectedProducts}
-              toggleProductSelection={toggleProductSelection}
-              primaryProducts={primaryProducts}
-              togglePrimaryProduct={togglePrimaryProduct}
-              textPrimary={textPrimary}
-              textSecondary={textSecondary}
-              textTertiary={textTertiary}
-              bgPrimary={bgPrimary}
-              bgSecondary={bgSecondary}
-              bgTertiary={bgTertiary}
-              borderColor={borderColor}
-            />
-          )}
-          {/* Step 3: Mini-Site Preview */}
-          {currentStep === 3 && (
-            <MiniSitePreview
-              t={t}
-              previewMode={previewMode}
-              setPreviewMode={setPreviewMode}
-              contentTitle={contentTitle} // assuming these are states/objects you have
-              contentSubtitle={contentSubtitle}
-              contentGreeting={contentGreeting}
-              contentLanguage={contentLanguage}
-              selectedProducts={selectedProducts}
-              mockProducts={mockProducts} // or products from context/store
-              campaignCode={campaignCode}
-              email={email} // or formData.email
-              copyMiniSiteUrl={copyMiniSiteUrl}
-              textPrimary={textPrimary}
-              textSecondary={textSecondary}
-              textTertiary={textTertiary}
-              bgPrimary={bgPrimary}
-              bgSecondary={bgSecondary}
-              bgTertiary={bgTertiary}
-              borderColor={borderColor}
-            />
-          )}
-
-          {/* Step 4: Voucher Creation & Distribution */}
-          {currentStep === 4 && (
-            <MinisiteVoucherCreation
-              t={t}
-              contactName={contactName} // or formData.contactDetails?.name
-              email={email} // or formData.email
-              phoneCountryCode={phoneCountryCode}
-              phoneNumber={phoneNumber} // or formData.phone
-              sendTiming={sendTiming}
-              setSendTiming={setSendTiming}
-              scheduledDate={scheduledDate}
-              setScheduledDate={setScheduledDate}
-              scheduledTime={scheduledTime}
-              setScheduledTime={setScheduledTime}
-              allowInstanceCreation={allowInstanceCreation}
-              setAllowInstanceCreation={setAllowInstanceCreation}
-              instanceName={instanceName}
-              setInstanceName={setInstanceName}
-              instanceEmail={instanceEmail}
-              setInstanceEmail={setInstanceEmail}
-              instancePhone={instancePhone}
-              setInstancePhone={setInstancePhone}
-              uploadedFile={uploadedFile}
-              handleFileUpload={handleFileUpload}
-              downloadSampleXLS={downloadSampleXLS}
-              handleInstanceVoucherAdd={handleInstanceVoucherAdd}
-              textPrimary={textPrimary}
-              textSecondary={textSecondary}
-              textTertiary={textTertiary}
-              bgPrimary={bgPrimary}
-              bgSecondary={bgSecondary}
-              borderColor={borderColor}
-            />
-          )}
-
-          {/* Step 5: Results */}
-          {currentStep === 5 && (
-            <VoucherResultsStep
-              t={t}
-              voucherResults={voucherResults}
-              downloadSampleXLS={downloadSampleXLS} //
-              retryFailedSends={retryFailedSends} // implement/pass this function
-              textPrimary={textPrimary}
-              textSecondary={textSecondary}
-              textTertiary={textTertiary}
-              bgSecondary={bgSecondary}
-              bgTertiary={bgTertiary}
-              borderColor={borderColor}
-            />
-          )}
-        </div>
-
-        {/* Footer */}
-        <div
-          className={`flex items-center justify-between px-6 py-3 border-t ${borderColor}`}
-        >
-          <button
-            onClick={handlePrev}
-            disabled={currentStep === 1}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-              currentStep === 1
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100 dark:hover:bg-gray-800"
-            } ${textSecondary} transition-colors text-sm`}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t("previous")}{" "}
-          </button>
-
-          <div className="flex gap-2">
-            {currentStep < 5 && (
-              <button
-                // onClick={handleSaveDraft}
-                className={`px-3 py-1.5 rounded-lg ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors flex items-center gap-2 text-sm`}
-              >
-                <Save className="w-4 h-4" />
-                {t("save_draft")}{" "}
-              </button>
-            )}
-
-            {currentStep === steps.length ? (
-              <button
-                onClick={handlePublish}
-                className="px-4 py-1.5 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-2 text-sm"
-              >
-                <CheckCircle className="w-4 h-4" />
-                {t("complete")}{" "}
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                className="px-4 py-1.5 rounded-lg bg-linear-to-r from-purple-500 to-pink-600 text-white hover:shadow-lg transition-all flex items-center gap-2 text-sm"
-              >
-                {t("next")} <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          </p>
         </div>
       </div>
-    </div>
+
+      {/* Mini-Site Statistics - Only show when editing */}
+      {editingMiniSite && (
+        <div className={`px-6 py-3 border-b ${borderColor} ${bgSecondary}`}>
+          <h3
+            className={`text-sm mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+          >
+            {t("mini_site_statistics")}{" "}
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {/* Page Views */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Eye className="w-4 h-4 text-purple-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("page_views")}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                {editingMiniSite?.analytics?.pageViews?.toLocaleString() ||
+                  "12,458"}
+              </p>
+              <span className="text-xs text-green-600">+12%</span>
+            </div>
+
+            {/* Unique Visitors */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Monitor className="w-4 h-4 text-blue-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("unique_visitors")}{" "}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                {editingMiniSite?.analytics?.uniqueVisitors?.toLocaleString() ||
+                  "8,234"}
+              </p>
+              <span className="text-xs text-green-600">+8%</span>
+            </div>
+
+            {/* Vouchers Used */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Ticket className="w-4 h-4 text-pink-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("vouchers_used")} {/* Vouchers Used */}{" "}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                {editingMiniSite?.analytics?.vouchersUsed?.toLocaleString() ||
+                  "1,456"}
+              </p>
+              <span className={`text-xs ${textTertiary}`}>
+                / {editingMiniSite?.totalVouchers || "2,000"}
+              </span>
+            </div>
+
+            {/* Products Purchased */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Briefcase className="w-4 h-4 text-teal-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("products_purchased")}{" "}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                {editingMiniSite?.analytics?.productsPurchased?.toLocaleString() ||
+                  "3,892"}
+              </p>
+              <span className="text-xs text-green-600">+15%</span>
+            </div>
+
+            {/* Conversion Rate */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} ${bgPrimary} hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("conversion_rate")}{" "}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                {editingMiniSite?.analytics?.conversionRate || "47.2"}%
+              </p>
+              <span className="text-xs text-green-600">+3.5%</span>
+            </div>
+
+            {/* Total Revenue */}
+            <div
+              className={`p-2 rounded-lg border ${borderColor} bg-linear-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:shadow-lg transition-all`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <DollarSign className="w-4 h-4 text-purple-600" />
+                <span className={`text-xs ${textTertiary}`}>
+                  {t("total_revenue")}{" "}
+                </span>
+              </div>
+              <p className={`text-lg ${textPrimary}`}>
+                ₪
+                {editingMiniSite?.analytics?.revenue?.toLocaleString() ||
+                  "284,560"}
+              </p>
+              <span className="text-xs text-green-600">+22%</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Steps */}
+      <div className={`px-6 py-2 border-b ${borderColor} ${bgSecondary}`}>
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => {
+            // Map step numbers to icons
+            const getStepIcon = (stepNumber: number) => {
+              switch (stepNumber) {
+                case 1:
+                  return <Building2 className="w-4 h-4" />;
+                case 2:
+                  return <Briefcase className="w-4 h-4" />;
+                case 3:
+                  return <Eye className="w-4 h-4" />;
+                case 4:
+                  return <Ticket className="w-4 h-4" />;
+                case 5:
+                  return <CheckCircle className="w-4 h-4" />;
+                default:
+                  return step.number;
+              }
+            };
+
+            return (
+              <div
+                key={step.number}
+                className="flex items-center flex-1 cursor-pointer"
+                onClick={() => setCurrentStep(step.number)}
+              >
+                <div className="flex flex-col items-center flex-1">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      currentStep >= step.number
+                        ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
+                        : `${bgPrimary} border-2 ${borderColor} ${textTertiary}`
+                    }`}
+                  >
+                    {getStepIcon(step.number)}
+                  </div>
+                  <p
+                    className={`text-xs mt-1 text-center ${currentStep >= step.number ? textPrimary : textTertiary}`}
+                  >
+                    {step.name}
+                  </p>
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-0.5 ${currentStep > step.number ? "bg-linear-to-r from-purple-500 to-pink-600" : borderColor} mx-2`}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Step 1: Website & Purchaser Info */}
+        {currentStep === 1 && (
+          <ProductWebsiteAndInfo
+            currentStep={currentStep}
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            // handleLogoUpload={handleLogoUpload}
+            websites={websites}
+            contentLanguage={contentLanguage}
+            setContentLanguage={setContentLanguage}
+            contentTitle={contentTitle}
+            setContentTitle={setContentTitle}
+            contentSubtitle={contentSubtitle}
+            setContentSubtitle={setContentSubtitle}
+            contentGreeting={contentGreeting}
+            setContentGreeting={setContentGreeting}
+            t={t}
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
+            textTertiary={textTertiary}
+            bgSecondary={bgSecondary}
+            bgTertiary={bgTertiary}
+            borderColor={borderColor}
+          />
+        )}
+
+        {/* Step 2: Select Products */}
+        {currentStep === 2 && (
+          <ProductSelectionStep
+            t={t}
+            productSearchQuery={productSearchQuery}
+            setProductSearchQuery={setProductSearchQuery}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            productViewMode={productViewMode}
+            setProductViewMode={setProductViewMode}
+            filteredProducts={filteredProducts}
+            selectedProducts={selectedProducts}
+            toggleProductSelection={toggleProductSelection}
+            primaryProducts={primaryProducts}
+            togglePrimaryProduct={togglePrimaryProduct}
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
+            textTertiary={textTertiary}
+            bgPrimary={bgPrimary}
+            bgSecondary={bgSecondary}
+            bgTertiary={bgTertiary}
+            borderColor={borderColor}
+          />
+        )}
+        {/* Step 3: Mini-Site Preview */}
+        {currentStep === 3 && (
+          <MiniSitePreview
+            t={t}
+            previewMode={previewMode}
+            setPreviewMode={setPreviewMode}
+            contentTitle={contentTitle} // assuming these are states/objects you have
+            contentSubtitle={contentSubtitle}
+            contentGreeting={contentGreeting}
+            contentLanguage={contentLanguage}
+            selectedProducts={selectedProducts}
+            mockProducts={mockProducts} // or products from context/store
+            campaignCode={campaignCode}
+            email={email} // or formData.email
+            copyMiniSiteUrl={copyMiniSiteUrl}
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
+            textTertiary={textTertiary}
+            bgPrimary={bgPrimary}
+            bgSecondary={bgSecondary}
+            bgTertiary={bgTertiary}
+            borderColor={borderColor}
+          />
+        )}
+
+        {/* Step 4: Voucher Creation & Distribution */}
+        {currentStep === 4 && (
+          <MinisiteVoucherCreation
+            t={t}
+            contactName={contactName} // or formData.contactDetails?.name
+            email={email} // or formData.email
+            phoneCountryCode={phoneCountryCode}
+            phoneNumber={phoneNumber} // or formData.phone
+            sendTiming={sendTiming}
+            setSendTiming={setSendTiming}
+            scheduledDate={scheduledDate}
+            setScheduledDate={setScheduledDate}
+            scheduledTime={scheduledTime}
+            setScheduledTime={setScheduledTime}
+            allowInstanceCreation={allowInstanceCreation}
+            setAllowInstanceCreation={setAllowInstanceCreation}
+            instanceName={instanceName}
+            setInstanceName={setInstanceName}
+            instanceEmail={instanceEmail}
+            setInstanceEmail={setInstanceEmail}
+            instancePhone={instancePhone}
+            setInstancePhone={setInstancePhone}
+            uploadedFile={uploadedFile}
+            handleFileUpload={handleFileUpload}
+            downloadSampleXLS={downloadSampleXLS}
+            handleInstanceVoucherAdd={handleInstanceVoucherAdd}
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
+            textTertiary={textTertiary}
+            bgPrimary={bgPrimary}
+            bgSecondary={bgSecondary}
+            borderColor={borderColor}
+          />
+        )}
+
+        {/* Step 5: Results */}
+        {currentStep === 5 && (
+          <VoucherResultsStep
+            t={t}
+            voucherResults={voucherResults}
+            downloadSampleXLS={downloadSampleXLS} //
+            retryFailedSends={retryFailedSends} // implement/pass this function
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
+            textTertiary={textTertiary}
+            bgSecondary={bgSecondary}
+            bgTertiary={bgTertiary}
+            borderColor={borderColor}
+          />
+        )}
+      </div>
+
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isSaving={isSaving || isCreating}
+        isPublishing={isPublishing}
+        onPrevious={handlePrev}
+        onNext={handleNext}
+        onSaveDraft={saveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }

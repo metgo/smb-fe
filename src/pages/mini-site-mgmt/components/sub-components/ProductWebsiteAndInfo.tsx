@@ -18,7 +18,7 @@ interface Step1WebsiteAndInfoProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
-  // handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   websites: string[];
   contentLanguage: "en" | "he" | "ar";
   setContentLanguage: React.Dispatch<React.SetStateAction<"en" | "he" | "ar">>;
@@ -48,7 +48,7 @@ export default function Step1WebsiteAndInfo({
   formData,
   setFormData,
   handleChange,
-  // handleLogoUpload,
+  handleLogoUpload,
   websites,
   contentLanguage,
   setContentLanguage,
@@ -204,7 +204,7 @@ export default function Step1WebsiteAndInfo({
                 <input
                   type="file"
                   accept="image/*"
-                  // onChange={handleLogoUpload}
+                  onChange={handleLogoUpload}
                   name="logoFile"
                   className="hidden"
                 />
@@ -242,10 +242,15 @@ export default function Step1WebsiteAndInfo({
             <input
               type="text"
               value={formData.campaignCode}
-              readOnly
               name="campaignCode"
-              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} cursor-not-allowed font-mono`}
-              placeholder="AUTO"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  campaignCode: e.target.value,
+                }))
+              }
+              className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} font-mono`}
+              placeholder="Enter 4 or more digits"
             />
           </div>
 
