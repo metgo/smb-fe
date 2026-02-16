@@ -58,7 +58,7 @@ jobs:
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose pull ${{ matrix.app.name }}
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose up -d ${{ matrix.app.name }}
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.SERVER_PROD_IP }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           options: "-T -o StrictHostKeyChecking=no"
