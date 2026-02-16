@@ -18,12 +18,20 @@ implements IQueryHandler<GetEventRawQuery> {
       }
 
       const today = new Date();
+
+      today.setUTCHours(0, 0, 0, 0);
+
+      const nextDay = new Date(today);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
       let findQuery: any = {
         status: EventStatus.APPROVED,
 
         dayDescription: {
           $elemMatch: {
-            date: { $gte: today },
+            date: {
+              $gte: today,
+              $lt: nextDay,
+            },
           },
         },
 
