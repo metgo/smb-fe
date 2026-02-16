@@ -41,11 +41,8 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
     }
 
     const today = new Date();
-
     today.setUTCHours(0, 0, 0, 0);
 
-    const nextDay = new Date(today);
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
     let findQuery: any = {
       status: EventStatus.APPROVED,
 
@@ -53,7 +50,6 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
         $elemMatch: {
           date: {
             $gte: today,
-            $lt: nextDay,
           },
         },
       },

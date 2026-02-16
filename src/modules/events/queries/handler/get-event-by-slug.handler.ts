@@ -43,8 +43,6 @@ implements IQueryHandler<GetEventBySlugQuery> {
 
       today.setUTCHours(0, 0, 0, 0);
 
-      const nextDay = new Date(today);
-      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
       let findQuery: any = {
         slug,
         status: EventStatus.APPROVED,
@@ -53,7 +51,6 @@ implements IQueryHandler<GetEventBySlugQuery> {
           $elemMatch: {
             date: {
               $gte: today,
-              $lt: nextDay,
             },
           },
         },
