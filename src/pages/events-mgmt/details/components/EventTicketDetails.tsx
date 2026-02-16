@@ -22,6 +22,7 @@ import {
   Package,
 } from "lucide-react";
 import CreateTicketWizard from "../../components/sub-components/CreateTicketWizard";
+import TicketSummaryCard from "./TicketSummaryCard";
 
 interface EventTicketDetailsProps {
   eventId: string;
@@ -29,6 +30,10 @@ interface EventTicketDetailsProps {
   tickets: ITicketPayload[];
   eventDays: EventDay[];
 }
+const safe = (n: any) => (Number.isFinite(n) ? n : 0);
+
+const sum = (arr: any[], fn: (t: any) => number) =>
+  arr?.reduce((s, x) => s + safe(fn(x)), 0) ?? 0;
 
 const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   tickets,
@@ -38,7 +43,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 }) => {
   const { t } = useTranslation("events");
   const { language } = useAppSelector((state) => state.settings);
-  const { isDark } = useThemeClasses();
+  const { isDark, borderColor } = useThemeClasses();
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
 
@@ -150,158 +155,45 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
           </p>
         </div>
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Tickets */}
-          <div
-            className={clsx(
-              "rounded-xl border p-4",
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200",
+          <TicketSummaryCard
+            isDark={isDark}
+            icon={<Package />}
+            iconColor={isDark ? "text-blue-400" : "text-blue-600"}
+            label={t("total_available")}
+            value={sum(tickets, (t) =>
+              t?.quantity?.isUnlimited ? 0 : t?.quantity?.initial,
             )}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Package
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-blue-400" : "text-blue-600",
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-xs font-medium uppercase tracking-wide",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("total_available")}
-              </span>
-            </div>
-            <p
-              className={clsx(
-                "text-2xl font-bold",
-                isDark ? "text-white" : "text-gray-900",
-              )}
-            >
-              {tickets.reduce(
-                (sum, t) =>
-                  sum + (t?.quantity?.isUnlimited ? 0 : t?.quantity?.initial),
-                0,
-              )}
-            </p>
-          </div>
+          />
 
-          {/* Sold Tickets */}
-          <div
-            className={clsx(
-              "rounded-xl border p-4",
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Tag
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-green-400" : "text-green-600",
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-xs font-medium uppercase tracking-wide",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("sold")}
-              </span>
-            </div>
-            <p
-              className={clsx(
-                "text-2xl font-bold",
-                isDark ? "text-white" : "text-gray-900",
-              )}
-            >
-              {tickets.reduce((sum, t) => sum + t?.quantity?.sold, 0)}
-            </p>
-          </div>
+          <TicketSummaryCard
+            isDark={isDark}
+            icon={<Tag />}
+            iconColor={isDark ? "text-green-400" : "text-green-600"}
+            label={t("sold")}
+            value={sum(tickets, (t) => t?.quantity?.sold)}
+          />
 
-          {/* Remaining Tickets */}
-          <div
-            className={clsx(
-              "rounded-xl border p-4",
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200",
+          <TicketSummaryCard
+            isDark={isDark}
+            icon={<Ticket />}
+            iconColor={isDark ? "text-purple-400" : "text-purple-600"}
+            label={t("remaining")}
+            value={sum(tickets, (t) =>
+              t?.quantity?.isUnlimited ? 0 : t?.quantity?.remaining,
             )}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Ticket
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-purple-400" : "text-purple-600",
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-xs font-medium uppercase tracking-wide",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("remaining")}
-              </span>
-            </div>
-            <p
-              className={clsx(
-                "text-2xl font-bold",
-                isDark ? "text-white" : "text-gray-900",
-              )}
-            >
-              {tickets.reduce(
-                (sum, t) =>
-                  sum + (t?.quantity?.isUnlimited ? 0 : t?.quantity?.remaining),
-                0,
-              )}
-            </p>
-          </div>
+          />
 
-          {/* Total Revenue */}
-          <div
-            className={clsx(
-              "rounded-xl border p-4",
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-white border-gray-200",
-            )}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <DollarSign
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-yellow-400" : "text-yellow-600",
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-xs font-medium uppercase tracking-wide",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("revenue")}
-              </span>
-            </div>
-            <p
-              className={clsx(
-                "text-2xl font-bold",
-                isDark ? "text-white" : "text-gray-900",
-              )}
-            >
-              ₪
-              {tickets
-                .reduce((sum, t) => sum + calculateTotalRevenue(t), 0)
-                .toLocaleString()}
-            </p>
-          </div>
+          <TicketSummaryCard
+            isDark={isDark}
+            icon={<DollarSign />}
+            iconColor={isDark ? "text-yellow-400" : "text-yellow-600"}
+            label={t("revenue")}
+            value={
+              "₪" +
+              sum(tickets, (t) => calculateTotalRevenue(t)).toLocaleString()
+            }
+          />
         </div>
 
         {/* Tickets List */}
@@ -728,7 +620,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                     </div>
 
                     {/* Event Dates */}
-                    {ticket.dayDescription?.length > 0 && (
+                    {ticket?.dayDescription?.length > 0 && (
                       <div
                         className={clsx(
                           "rounded-lg p-4 border-t",
@@ -750,17 +642,20 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               isDark ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            Valid for {ticket.dayDescription.length}{" "}
-                            {ticket.dayDescription.length === 1
+                            Valid for {ticket?.dayDescription?.length}{" "}
+                            {ticket?.dayDescription?.length === 1
                               ? "date"
                               : "dates"}
                           </h4>
                         </div>
-                        <div className="space-y-2">
-                          {ticket.dayDescription.map((day) => (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {ticket?.dayDescription?.map((day) => (
                             <div
                               key={day._id}
-                              className="flex items-center gap-2 text-sm"
+                              className={clsx(
+                                "flex items-center gap-2 text-sm border rounded-md px-2 py-1",
+                                borderColor,
+                              )}
                             >
                               <Clock
                                 className={clsx(
