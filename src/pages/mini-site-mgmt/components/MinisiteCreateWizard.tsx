@@ -91,7 +91,7 @@ export default function MinisiteCreateWizard({
   onClose,
   editingMiniSite,
 }: MinisiteCreateWizardProps) {
-  const { t } = useTranslation("mini_site");
+  const { t } = useTranslation("minisites");
   const {
     bgPrimary,
     bgSecondary,

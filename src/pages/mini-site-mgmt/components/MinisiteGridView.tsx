@@ -175,16 +175,19 @@ export default function MinisiteGridView({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={textPrimary}>
-                        ₪{site.voucherAmount} vouchers
+                        ₪{site.voucherAmount ? site.voucherAmount : "-"}{" "}
+                        {t("vouchers")}
                       </span>
                       <span className={`ml-2 text-xs ${textTertiary}`}>
-                        Used {site.usedVouchers}/{site.totalVouchers} (
+                        {t("used")}
+                        {site.usedVouchers}/{site.totalVouchers} (
                         {percentage.toFixed(0)}%)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={textPrimary}>
-                        Revenue: ₪{site.revenue?.toLocaleString()}
+                        {t("revenue")}: ₪
+                        {site.revenue ? site.revenue?.toLocaleString() : "-"}
                       </span>
                     </div>
                   </div>

@@ -89,7 +89,7 @@ export default function Step1WebsiteAndInfo({
 }: Step1WebsiteAndInfoProps) {
   if (currentStep !== 1) return null;
   // const dmoSectionRef = useRef<HTMLDivElement | null>(null);
-
+  console.log(formData.contentLanguage);
   return (
     <div className="space-y-6">
       {/* Website Selection */}
@@ -110,12 +110,12 @@ export default function Step1WebsiteAndInfo({
       <div>
         <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
           <Building2 className="w-5 h-5" />
-          {t.purchaserInfo || "Purchaser (Company) - Required"}
+          {t("purchaser_info") || "Purchaser (Company) - Required"}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.companyName || "Company Name"}
+              {t("company_name")}
             </label>
             <input
               type="text"
@@ -128,13 +128,13 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder="Acme Corporation"
+              placeholder={t("company_name_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.contactName || "Contact Name"}
+              {t("contact_name")}
             </label>
             <input
               type="text"
@@ -147,13 +147,13 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder="John Doe"
+              placeholder={t("contact_name_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.email || "Email"}
+              {t("email")}
             </label>
             <input
               type="email"
@@ -163,13 +163,13 @@ export default function Step1WebsiteAndInfo({
                 setFormData((prev) => ({ ...prev, email: e.target.value }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder="john@example.com"
+              placeholder={t("email_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.phone || "Phone"}
+              {t("phone") || "Phone"}
             </label>
             <div className="flex gap-2">
               <select
@@ -205,7 +205,7 @@ export default function Step1WebsiteAndInfo({
 
           <div className="md:col-span-2">
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.officeAddress || "Office Address"}
+              {t("office_address") || "Office Address"}
             </label>
             <input
               type="text"
@@ -218,13 +218,13 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder="123 Main St, Tel Aviv"
+              placeholder={t("office_address_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.companyLogo || "Company Logo"}
+              {t("company_logo") || "Company Logo"}
             </label>
             <div className="flex items-center gap-4">
               {formData.logoFile && (
@@ -241,7 +241,7 @@ export default function Step1WebsiteAndInfo({
                 className={`px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textSecondary} cursor-pointer hover:${textPrimary} transition-colors flex items-center gap-2`}
               >
                 <Upload className="w-4 h-4" />
-                {t.uploadLogo || "Upload Logo"}
+                {t("upload_logo") || "Upload Logo"}
                 <input
                   type="file"
                   accept="image/*"
@@ -259,12 +259,12 @@ export default function Step1WebsiteAndInfo({
       <div>
         <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
           <Ticket className="w-5 h-5" />
-          {t.campaignInfo || "Campaign Info - Required"}
+          {t("campaign_info") || "Campaign Info - Required"}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.campaignName || "Campaign Name"}
+              {t("campaign_name")}
             </label>
             <input
               type="text"
@@ -277,13 +277,13 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder="Summer Campaign 2024"
+              placeholder={t("campaign_name_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.campaignCode || "Campaign Code"}
+              {t("campaign_code")}
             </label>
             <input
               type="text"
@@ -296,13 +296,13 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgTertiary} ${textTertiary} font-mono`}
-              placeholder="Enter 4 or more digits"
+              placeholder={t("campaign_code_placeholder")}
             />
           </div>
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.voucherAmount || "Voucher Amount (₪)"}
+              {t("voucher_amount")}
             </label>
             <input
               type="number"
@@ -318,7 +318,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.totalVouchers || "Total Number of Vouchers"}
+              {t("total_vouchers")}
             </label>
             <input
               type="number"
@@ -334,7 +334,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.startDate || "Start Date"}
+              {t("start_date")}
             </label>
             <input
               type="date"
@@ -349,7 +349,7 @@ export default function Step1WebsiteAndInfo({
 
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.endDate || "End Date"} ({t.optional || "Optional"})
+              {t("end_date")} ({t("optional")})
             </label>
             <input
               type="date"
@@ -366,39 +366,37 @@ export default function Step1WebsiteAndInfo({
 
       {/* Delivery Area */}
       <div>
-        <h3 className={`text-lg ${textPrimary} mb-4`}>
-          {t.deliveryArea || "Delivery Area"}
-        </h3>
+        <h3 className={`text-lg ${textPrimary} mb-4`}>{t("delivery_area")}</h3>
+
         <div className="flex gap-4">
+          {/* Home Option */}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
               name="deliveryArea"
               checked={formData.deliveryArea === "home"}
               onChange={() =>
-                setFormData((prev: any) => ({ ...prev, deliveryArea: "home" }))
+                setFormData((prev) => ({ ...prev, deliveryArea: "home" }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
             <Home className="w-4 h-4" />
-            <span className={textSecondary}>{t.home || "Home"}</span>
+            <span className={textSecondary}>{t("home")}</span>
           </label>
 
+          {/* Office Option */}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
               name="deliveryArea"
               checked={formData.deliveryArea === "office"}
               onChange={() =>
-                setFormData((prev: any) => ({
-                  ...prev,
-                  deliveryArea: "office",
-                }))
+                setFormData((prev) => ({ ...prev, deliveryArea: "office" }))
               }
               className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500"
             />
             <Briefcase className="w-4 h-4" />
-            <span className={textSecondary}>{t.office || "Office"}</span>
+            <span className={textSecondary}>{t("office")}</span>
           </label>
         </div>
       </div>
@@ -407,7 +405,8 @@ export default function Step1WebsiteAndInfo({
       <div>
         <h3 className={`text-lg ${textPrimary} mb-4 flex items-center gap-2`}>
           <Globe className="w-5 h-5" />
-          {t.content || "Content"} ({t.multiLanguage || "Multi-Language"})
+          {t("content") || "Content"} ({t("multi_language") || "Multi-Language"}
+          )
         </h3>
 
         <div className="mb-4">
@@ -468,9 +467,10 @@ export default function Step1WebsiteAndInfo({
         </div>
 
         <div className="space-y-4">
+          {/* Title */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.title || "Title"}
+              {t("title")}
             </label>
             <input
               type="text"
@@ -485,19 +485,14 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={
-                formData.contentLanguage === "en"
-                  ? "Welcome to our campaign"
-                  : formData.contentLanguage === "he"
-                    ? "ברוכים הבאים למבצע שלנו"
-                    : "مرحبا بكم في حملتنا"
-              }
+              placeholder={t(`title_placeholder_${formData.contentLanguage}`)}
             />
           </div>
 
+          {/* Sub-title */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.subtitle || "Sub-title"}
+              {t("subtitle")}
             </label>
             <input
               type="text"
@@ -512,19 +507,16 @@ export default function Step1WebsiteAndInfo({
                 }))
               }
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={
-                formData.contentLanguage === "en"
-                  ? "Enjoy exclusive offers"
-                  : formData.contentLanguage === "he"
-                    ? "נהנו מהצעות בלעדיות"
-                    : "استمتع بالعروض الحصرية"
-              }
+              placeholder={t(
+                `subtitle_placeholder_${formData.contentLanguage}`,
+              )}
             />
           </div>
 
+          {/* Greeting */}
           <div>
             <label className={`block text-sm ${textSecondary} mb-2`}>
-              {t.greeting || "Greeting"}
+              {t("greeting")}
             </label>
             <textarea
               value={formData.contentGreeting[formData.contentLanguage] ?? ""}
@@ -539,13 +531,9 @@ export default function Step1WebsiteAndInfo({
               }
               rows={4}
               className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-              placeholder={
-                formData.contentLanguage === "en"
-                  ? "Thank you for participating..."
-                  : formData.contentLanguage === "he"
-                    ? "תודה על ההשתתתפות..."
-                    : "شكرا لمشاركتك..."
-              }
+              placeholder={t(
+                `greeting_placeholder_${formData.contentLanguage}`,
+              )}
             />
           </div>
         </div>
