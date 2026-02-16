@@ -152,5 +152,46 @@
   "tags": "الوسوم",
   "tags_desc": "{count} وسوم متاحة",
   "no_attribute_selected": "لم يتم تحديد أي خصائص",
-  "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات وصول أو أنواع مجموعات لهذا الحدث"
+  "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات وصول أو أنواع مجموعات لهذا الحدث",
+  "review_your_product": "راجع منتجك",
+  "basic_info": "المعلومات الأساسية",
+  "pricing_stock_dates": "الأسعار والمخزون والتواريخ",
+  "delivery_service": "التوصيل والخدمة",
+
+  "name": "الاسم (إنجليزي)",
+  "name_he": "الاسم (عبري)",
+  "name_ar": "الاسم (عربي)",
+
+  "short_description_en": "وصف قصير (إنجليزي)",
+  "short_description_he": "وصف قصير (عبري)",
+  "short_description_ar": "وصف قصير (عربي)",
+
+  "full_description_en": "وصف كامل (إنجليزي)",
+  "full_description_he": "وصف كامل (عبري)",
+  "full_description_ar": "وصف كامل (عربي)",
+
+  "categories": "الفئات",
+  "sub_categories": "الفئات الفرعية",
+
+  "selling_price": "سعر البيع",
+  "quantity": "الكمية",
+  "discount": "الخصم",
+  "off": "خصم",
+
+  "unlimited": "غير محدود",
+
+  "start_date": "تاريخ البدء",
+  "end_date": "تاريخ الانتهاء",
+
+  "home_delivery": "توصيل إلى المنزل",
+  "store_pickup": "الاستلام من المتجر",
+  "vendor_delivers": "البائع يقوم بالتوصيل",
+  "pickup_available": "الاستلام متاح",
+
+  "service_duration": "مدة الخدمة",
+  "delivery_area": "منطقة التوصيل",
+
+  "return_exchange_policy": "سياسة الإرجاع والاستبدال",
+  "additional_details": "تفاصيل إضافية",
+  "specific_seller_delivery_info": "معلومات توصيل البائع المحدد"
 }

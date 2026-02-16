@@ -155,5 +155,46 @@
   "tags": "תגיות",
   "tags_desc": "{count} תגיות זמינות",
   "no_attribute_selected": "לא נבחרו מאפיינים",
-  "no_attribute_selected_info": "לא הוגדרו תת-קטגוריות, נגישויות או סוגי קבוצות לאירוע זה"
+  "no_attribute_selected_info": "לא הוגדרו תת-קטגוריות, נגישויות או סוגי קבוצות לאירוע זה",
+  "review_your_product": "סקירת המוצר שלך",
+  "basic_info": "מידע בסיסי",
+  "pricing_stock_dates": "מחיר, מלאי ותאריכים",
+  "delivery_service": "משלוח ושירות",
+
+  "name": "שם (אנגלית)",
+  "name_he": "שם (עברית)",
+  "name_ar": "שם (ערבית)",
+
+  "short_description_en": "תיאור קצר (אנגלית)",
+  "short_description_he": "תיאור קצר (עברית)",
+  "short_description_ar": "תיאור קצר (ערבית)",
+
+  "full_description_en": "תיאור מלא (אנגלית)",
+  "full_description_he": "תיאור מלא (עברית)",
+  "full_description_ar": "תיאור מלא (ערבית)",
+
+  "categories": "קטגוריות",
+  "sub_categories": "תתי קטגוריות",
+
+  "selling_price": "מחיר מכירה",
+  "quantity": "כמות",
+  "discount": "הנחה",
+  "off": "הנחה",
+
+  "unlimited": "ללא הגבלה",
+
+  "start_date": "תאריך התחלה",
+  "end_date": "תאריך סיום",
+
+  "home_delivery": "משלוח עד הבית",
+  "store_pickup": "איסוף מהחנות",
+  "vendor_delivers": "הספק מבצע משלוח",
+  "pickup_available": "איסוף זמין",
+
+  "service_duration": "משך השירות",
+  "delivery_area": "אזור משלוח",
+
+  "return_exchange_policy": "מדיניות החזרה והחלפה",
+  "additional_details": "פרטים נוספים",
+  "specific_seller_delivery_info": "מידע משלוח מספק מסוים"
 }

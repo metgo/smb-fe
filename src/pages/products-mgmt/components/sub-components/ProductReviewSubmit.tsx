@@ -1,12 +1,21 @@
 import clsx from "clsx";
-import { Eye, Pencil, Tag, Layers, DollarSign, Truck } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Tag,
+  Layers,
+  DollarSign,
+  Truck,
+  ImageIcon,
+} from "lucide-react";
 import { getMatchedItems } from "@/helpers";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { ImageWithFallback } from "@/components/shared";
 
 interface ProductReviewSubmitProps {
-  t: (key: string) => string;
+  // t: (key: string) => string;
   formData: any;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -21,7 +30,7 @@ const STEPS = {
 };
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
-  t,
+  // t,
   formData,
   setCurrentStep,
 }) => {
@@ -35,6 +44,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   } = useThemeClasses();
   const { t: tb } = useTranslation("businesses");
   const { categories, subCategories } = useCommon();
+  const { t } = useTranslation("common");
 
   // ── helpers ──────────────────────────────────────────────────────────────
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
@@ -129,15 +139,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         )}
 
         <div className="p-5 space-y-4">
-          {/* Main image preview */}
-          {formData.mainImage && (
-            <img
-              src={formData.mainImage}
-              alt="Product"
-              className="w-full h-52 object-cover rounded-lg"
-            />
-          )}
-
           {/* Names */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {row(t("name"), formData.name)}
@@ -269,18 +270,41 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
               )}
           </div>
 
-          {(formData.startDate || formData.endDate) && (
-            <>
-              {divider}
-              <div className="grid grid-cols-2 gap-4">
-                {row(t("start_date"), formData.startDate)}
-                {row(t("end_date"), formData.endDate)}
-              </div>
-            </>
-          )}
+          <div className="grid grid-cols-2 gap-4">
+            {row(t("start_date"), formData.startDate)}
+            {row(t("end_date"), formData.endDate)}
+          </div>
         </div>
       </div>
 
+      {/* ══════════════════════════════════════════════
+          STEP 4 – Images
+      ══════════════════════════════════════════════ */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <ImageIcon className="w-4 h-4" />,
+          t("images"),
+          STEPS.IMAGES,
+        )}
+        <div className="">
+          {formData.images?.length > 0 ? (
+            <div className="grid grid-cols-3 gap-3">
+              {" "}
+              {/* added some basic styling — adjust as needed */}
+              {formData.images.map((img: any, index: any) => (
+                <ImageWithFallback
+                  key={index}
+                  src={img.image}
+                  alt="Uploaded image"
+                />
+              ))}
+            </div>
+          ) : (
+            // Optional: show something when there are no images
+            <p className="text-gray-500">-</p>
+          )}
+        </div>
+      </div>
       {/* ══════════════════════════════════════════════
           STEP 5 – Delivery / Service
       ══════════════════════════════════════════════ */}
@@ -336,12 +360,21 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
                   {t("delivery_area")}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {formData.deliveryArea.map((area: any, idx: number) =>
-                    badge(
-                      typeof area === "string" ? area : (area?.name ?? area),
-                      `area-${idx}`,
-                    ),
-                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {formData.deliveryArea &&
+                    formData.deliveryArea.length > 0 ? (
+                      formData.deliveryArea.map((area: any, idx: number) =>
+                        badge(
+                          typeof area === "string"
+                            ? area
+                            : (area?.name ?? area),
+                          `area-${idx}`,
+                        ),
+                      )
+                    ) : (
+                      <span className={clsx("text-sm", textTertiary)}>-</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -374,14 +407,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           {divider}
 
           {/* Additional info */}
-          <div>
-            <p className={clsx("text-xs mb-1", textTertiary)}>
-              {tb("additional_details")}
-            </p>
-            <p className={clsx("text-sm font-bold", textSecondary)}>
-              {formData.deliveryAdditionalInfo || `-`}
-            </p>
-          </div>
+          {row(tb("additional_details"), formData.deliveryAdditionalInfo)}
 
           {/* Specific seller info */}
           {formData.deliverySpecificSellerInfo &&
