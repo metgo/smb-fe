@@ -93,7 +93,9 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           {t("product_full_description")}
         </h3>
         <p className={isDark ? "text-gray-200" : "text-gray-800"}>
-          {getPlainTextFromRichText(product?.description)}
+          {product?.description
+            ? getPlainTextFromRichText(product?.description)
+            : "-"}
         </p>
       </div>
 
@@ -108,12 +110,15 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
         >
           <MapPin className="w-4 h-4" />
-          <span>{product?.businessId?.name}</span>
+          <span>
+            {product?.businessId?.name ? product?.businessId?.name : "-"}
+          </span>
         </div>
       </div>
 
       {/* QR Download */}
-      <div
+      {/* future use */}
+      {/* <div
         className={`p-4 rounded-lg border ${
           isDark
             ? "bg-gray-800/30 border-gray-700"
@@ -153,7 +158,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Last Updated */}
       <div>
@@ -162,7 +167,9 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         >
           {t("last_updated")}
         </h3>
-        <div className="flex items-center gap-2">
+        <div
+          className={`flex  gap-2 items-center text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+        >
           <Clock className="w-4 h-4" />
           <span>{new Date(product?.updatedAt).toLocaleString(language)}</span>
         </div>

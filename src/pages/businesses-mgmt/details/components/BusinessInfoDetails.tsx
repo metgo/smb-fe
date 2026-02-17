@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useState, type FC } from "react";
-import { ExternalLink, Download, ChevronDown, Globe } from "lucide-react";
+import { type FC } from "react";
+import { ExternalLink, Globe } from "lucide-react";
 
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
@@ -26,13 +26,13 @@ interface BusinessInfoDetailsProps {
   business: Business;
 }
 
-const qrSites = [
-  { id: "tav8", name: "TAV8" },
-  { id: "negevtime", name: "NegevTime" },
-  { id: "visitnegev", name: "Visit Negev" },
-  { id: "tourism-il", name: "Tourism IL" },
-  { id: "google-business", name: "Google My Business" },
-];
+// const qrSites = [
+//   { id: "tav8", name: "TAV8" },
+//   { id: "negevtime", name: "NegevTime" },
+//   { id: "visitnegev", name: "Visit Negev" },
+//   { id: "tourism-il", name: "Tourism IL" },
+//   { id: "google-business", name: "Google My Business" },
+// ];
 
 /* ---------- Component ---------- */
 
@@ -40,7 +40,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   const { isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
-  const [showQRDropdown, setShowQRDropdown] = useState(false);
+  // const [_showQRDropdown, setShowQRDropdown] = useState(false);
 
   const handleWebsiteClick = (website: any) => {
     if (website.url) {
@@ -52,39 +52,39 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
     });
   };
 
-  const handleQRDownload = (site: (typeof qrSites)[0]) => {
-    toast.success(t("qr_code_downloaded"), {
-      description: t(`qr_code_download_description, ${site.name} `),
-      duration: 2000,
-    });
-    setShowQRDropdown(false);
+  // const handleQRDownload = (site: (typeof qrSites)[0]) => {
+  //   toast.success(t("qr_code_downloaded"), {
+  //     description: t(`qr_code_download_description, ${site.name} `),
+  //     duration: 2000,
+  //   });
+  //   setShowQRDropdown(false);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = 300;
-    canvas.height = 300;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, 300, 300);
-      ctx.fillStyle = "black";
-      for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 10; j++) {
-          if (Math.random() > 0.5) ctx.fillRect(i * 30, j * 30, 28, 28);
-        }
-      }
+  //   const canvas = document.createElement("canvas");
+  //   canvas.width = 300;
+  //   canvas.height = 300;
+  //   const ctx = canvas.getContext("2d");
+  //   if (ctx) {
+  //     ctx.fillStyle = "white";
+  //     ctx.fillRect(0, 0, 300, 300);
+  //     ctx.fillStyle = "black";
+  //     for (let i = 0; i < 10; i++) {
+  //       for (let j = 0; j < 10; j++) {
+  //         if (Math.random() > 0.5) ctx.fillRect(i * 30, j * 30, 28, 28);
+  //       }
+  //     }
 
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${business}-${site.id}-qr-code.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      });
-    }
-  };
+  //     canvas.toBlob((blob) => {
+  //       if (blob) {
+  //         const url = URL.createObjectURL(blob);
+  //         const a = document.createElement("a");
+  //         a.href = url;
+  //         a.download = `${business}-${site.id}-qr-code.png`;
+  //         a.click();
+  //         URL.revokeObjectURL(url);
+  //       }
+  //     });
+  //   }
+  // };
 
   return (
     <div className="space-y-6">
@@ -211,7 +211,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         )}
 
       {/* QR Code Download */}
-      <div
+      {/* <div
         className={`p-4 rounded-lg border ${
           isDark
             ? "bg-gray-800/30 border-gray-700"
@@ -280,7 +280,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}>
           {t("qr_code_description")}
         </p>
-      </div>
+      </div> */}
 
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
