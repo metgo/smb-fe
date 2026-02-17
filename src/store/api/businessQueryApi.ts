@@ -49,25 +49,6 @@ export const businessQueryApi = createApi({
         method: "GET",
         params,
       }),
-
-      serializeQueryArgs: ({ endpointName, queryArgs }) => {
-        // serialize to a string that includes page and search/filter params
-        const { page, search, status, authorityId, dmoId, hasProductFilter } =
-          queryArgs;
-
-        // Important: only serialize params relevant to cache differentiation
-        return `${endpointName}-${page}-${search || ""}-${status || ""}-${authorityId || ""}-${dmoId || ""}-${hasProductFilter !== undefined ? hasProductFilter : ""}`;
-      },
-      // 🔑 merge new page data into cache
-      merge: (currentCache, newData) => {
-        currentCache.data.push(...newData.data);
-        currentCache.meta = newData.meta;
-      },
-
-      // 🔑 refetch when page changes
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg?.page !== previousArg?.page;
-      },
     }),
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({

@@ -45,9 +45,13 @@ interface ProductWizardProps {
   selectedProduct?: any;
   isOpen?: boolean;
   product?: any;
+  refetch?: any;
 }
 
-export default function CreateProductWizard({ onClose }: ProductWizardProps) {
+export default function CreateProductWizard({
+  onClose,
+  refetch,
+}: ProductWizardProps) {
   const { t } = useTranslation("products");
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
   const [searchParams] = useSearchParams();
@@ -288,6 +292,7 @@ export default function CreateProductWizard({ onClose }: ProductWizardProps) {
     setIsPublishing(false);
 
     toast.success(t("Product created succesfully"));
+    refetch();
     onClose();
   };
 

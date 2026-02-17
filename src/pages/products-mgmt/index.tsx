@@ -691,6 +691,7 @@ export default function ProductsMgmtPage() {
         <CreateProductWizard
           onClose={() => setIsCreateModalOpen(false)}
           selectedProduct={selectedProduct}
+          refetch={refetch}
         />
       )}
     </>
