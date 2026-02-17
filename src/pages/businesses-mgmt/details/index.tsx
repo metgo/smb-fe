@@ -104,7 +104,6 @@ export default function BusinessDetailsPage() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
-  console.log("🚀 ~ BusinessDetailsPage ~ business:", business);
   const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
