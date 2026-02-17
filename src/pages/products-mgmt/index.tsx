@@ -42,14 +42,14 @@ const LIMIT = 20;
 const defaultColumns = {
   images: true,
   name: true,
-  businessId: true, //  optional
-  productType: true,
-  shortDescription: true,
+  businessId: true,
+  shortDescription: false,
+  description: true,
   actions: true,
   status: true,
   price: true,
-  impact: false, //  optional
-  quantity: false,
+  impact: true,
+  quantity: true,
   updatedAt: false, //  optional
 };
 
@@ -57,14 +57,13 @@ const columnDefinitions = [
   { key: "images" as keyof IColumnVisibility, isDefault: true },
   { key: "name" as keyof IColumnVisibility, isDefault: true },
   { key: "businessId" as keyof IColumnVisibility, isDefault: true },
-  { key: "shortDescription" as keyof IColumnVisibility, isDefault: true },
-
-  { key: "productType" as keyof IColumnVisibility, isDefault: true },
+  { key: "shortDescription" as keyof IColumnVisibility, isDefault: false },
+  { key: "description" as keyof IColumnVisibility, isDefault: true },
   { key: "status" as keyof IColumnVisibility, isDefault: true },
   { key: "price" as keyof IColumnVisibility, isDefault: true },
   { key: "actions" as keyof IColumnVisibility, isDefault: true },
-  { key: "impact" as keyof IColumnVisibility, isDefault: false },
-  { key: "quantity" as keyof IColumnVisibility, isDefault: false },
+  { key: "impact" as keyof IColumnVisibility, isDefault: true },
+  { key: "quantity" as keyof IColumnVisibility, isDefault: true },
   { key: "updatedAt" as keyof IColumnVisibility, isDefault: false },
 ];
 
@@ -120,7 +119,6 @@ export default function ProductsMgmtPage() {
   const [filters, setFilters] = useState({
     status: "all",
     locale: language,
-    productType: "all",
     businessId: "",
   });
   const [_clearBusiness, setClearBusiness] = useState(false);
@@ -155,10 +153,6 @@ export default function ProductsMgmtPage() {
 
     if (filters.status !== "all") {
       params.status = filters.status.toUpperCase();
-    }
-
-    if (filters.productType !== "all") {
-      params.productType = filters.productType.toUpperCase();
     }
 
     if (filters.businessId !== "") {
@@ -529,37 +523,6 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label
-                    className={`block text-sm mb-1 ${
-                      isDark ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    {t("filter_by_type")}
-                  </label>
-                  <select
-                    value={filters.productType}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        productType: e.target.value,
-                      }))
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="physical">{t("physical_product")}</option>
-                    <option value="table_order">{t("table_order")}</option>
-                    <option value="service">{t("service")}</option>
-                    <option value="hotel-room">{t("hotel_room")}</option>
-                    <option value="experience">{t("experience")}</option>
-                  </select>
-                </div>
-
                 {!businessIdView && (
                   <div>
                     <label
@@ -599,7 +562,6 @@ export default function ProductsMgmtPage() {
                       onClick={() => {
                         setFilters({
                           status: "all",
-                          productType: "all",
                           locale: language,
                           businessId: "",
                         });
@@ -625,18 +587,6 @@ export default function ProductsMgmtPage() {
                           <button
                             onClick={() => clearFilter("status")}
                             aria-label="Clear status filter"
-                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      )}
-                      {filters.productType !== "all" && (
-                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
-                          {t(filters.productType)}
-                          <button
-                            onClick={() => clearFilter("productType")}
-                            aria-label="Clear product type filter"
                             className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
                           >
                             ×

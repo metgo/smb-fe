@@ -217,6 +217,26 @@ export default function ProductDetailsPage() {
             </button>
 
             <div className={clsx("flex items-center gap-3")}>
+              <p
+                className={clsx(
+                  "inline-block px-5 py-2 text-sm font-semibold rounded-lg border border-gray-500",
+                  product?.status === "active"
+                    ? "bg-green-400 text-white border-green-500"
+                    : product?.status === "inactive"
+                      ? "bg-yellow-500/20 text-yellow-600 border-yellow-400"
+                      : product?.status === "draft"
+                        ? "bg-gray-500/20 text-gray-600 border-gray-400"
+                        : isDark
+                          ? "bg-gray-700 text-gray-300 border-gray-600"
+                          : "bg-gray-100 text-gray-600 border-gray-300",
+                )}
+              >
+                {product?.status
+                  ? product.status.charAt(0).toUpperCase() +
+                    product.status.slice(1)
+                  : "-"}
+              </p>
+
               {canEdit && (
                 <>
                   <StatusChangeBtn

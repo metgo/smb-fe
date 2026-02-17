@@ -74,7 +74,9 @@ const ProductListView: React.FC<ProductListViewProps> = ({
           <div
             className={` truncate max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
           >
-            {product.name?.[language] ?? product.name?.en ?? product.name}
+            {product.name
+              ? (product.name?.[language] ?? product.name?.en ?? product.name)
+              : "-"}
           </div>
         </div>
       ),
@@ -87,11 +89,28 @@ const ProductListView: React.FC<ProductListViewProps> = ({
         <div
           className={` line-clamp-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
-          {getPlainTextFromRichText(product.shortDescription)}
+          {product.shortDescription
+            ? getPlainTextFromRichText(product.shortDescription)
+            : "-"}
         </div>
       ),
     },
-
+    columnVisibility.description && {
+      key: "description",
+      label: t("description"),
+      sortable: true,
+      render: (product: any) => (
+        <div>
+          <div
+            className={` truncate max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
+            {product.description
+              ? getPlainTextFromRichText(product.description)
+              : "-"}
+          </div>
+        </div>
+      ),
+    },
     columnVisibility.businessId && {
       key: "businessId",
       label: t("business_name"),
@@ -151,7 +170,12 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       key: "quantity",
       label: t("quantity"),
       sortable: true,
-      render: (product: any) => product.quantity?.sold,
+      render: (product: any) =>
+        product?.quantity?.isUnlimited
+          ? "∞"
+          : product.quantity?.remaining
+            ? product.quantity?.remaining
+            : "-",
     },
 
     columnVisibility.updatedAt && {

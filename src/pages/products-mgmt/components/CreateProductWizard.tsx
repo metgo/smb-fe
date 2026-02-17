@@ -307,7 +307,6 @@ export default function CreateProductWizard({ onClose }: ProductWizardProps) {
     descriptionHe: formData.fullDescriptionHe,
     descriptionAr: formData.fullDescriptionAr,
 
-    productType: formData.type,
     categories: formData.categories,
     subCategories: formData?.subCategories,
 

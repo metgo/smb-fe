@@ -131,7 +131,7 @@ interface IColumnVisibility {
   name: boolean;
   businessId: boolean;
   shortDescription: boolean;
-  productType: boolean;
+  description: boolean;
   actions: boolean;
   status: boolean;
   price: boolean;

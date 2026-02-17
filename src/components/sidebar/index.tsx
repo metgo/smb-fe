@@ -248,7 +248,9 @@ export default function Sidebar() {
     navigate(item.path);
   };
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) =>
+    location.pathname.slice(0, 5) === path.slice(0, 5);
+
   const isExpanded = (path: string) => expandedItems.includes(path);
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {

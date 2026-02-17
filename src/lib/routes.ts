@@ -8,8 +8,9 @@ export const routes = {
   eventDetails: "/event-details",
 
   productsMgmt: "/products-management",
-  ordersMgmt: "/orders-management",
   productDetails: "/product-details",
+
+  ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
