@@ -63,6 +63,7 @@ export default function EventsMgmtPage() {
   const { data: eventStatsData, isLoading: isEventStatsFetching } =
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
+  const totalData = events?.totalData;
 
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
     "list",
@@ -116,6 +117,7 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
+          // totalCount={totalData}
           // onRefreshClick={() => dispatch(eventQueryApi.util.resetApiState())}
           // isRefreshing={_isLoading || _isEventStatsFetching}
         />

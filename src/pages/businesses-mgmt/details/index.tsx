@@ -394,6 +394,7 @@ export default function BusinessDetailsPage() {
           editData={business}
           currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
+          refetch={refetch}
         />
       )}
     </div>

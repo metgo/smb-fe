@@ -188,7 +188,7 @@ export default function ProductsMgmtPage() {
 
   const products = productData?.data ?? [];
   const hasMore = productData?.meta?.hasNextPage;
-
+  const totalData = productData?.totalData;
   useEffect(() => {
     if (page === 1) setCombinedProducts(products);
     else {
@@ -314,6 +314,7 @@ export default function ProductsMgmtPage() {
           h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
           btnLabel={t("add_products")}
           onClick={handleCreateNew}
+          totalCount={totalData}
         />
         <PageStats
           stats={salesStats}
@@ -638,6 +639,7 @@ export default function ProductsMgmtPage() {
             ) : viewMode === "list" ? (
               <ProductListView
                 hasMore={hasMore}
+                refetch={refetch}
                 fetchNextPage={fetchNextPage}
                 products={combinedProducts}
                 isLoading={isLoadingProduct || isFetching}
