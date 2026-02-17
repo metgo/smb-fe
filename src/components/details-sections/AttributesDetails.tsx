@@ -24,7 +24,7 @@ interface AttributesDetailsProps {
 }
 
 const AttributesDetails: FC<AttributesDetailsProps> = ({
-  title,
+  // title,
   tags = [],
   categoriesId,
   groupTypesId,
@@ -52,7 +52,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      {/* <div>
         <h2
           className={clsx(
             "text-2xl font-bold",
@@ -69,7 +69,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
         >
           {t("attributes_desc")}
         </p>
-      </div>
+      </div> */}
 
       {/* categories */}
       {categoriesId && categoriesId?.length > 0 && (

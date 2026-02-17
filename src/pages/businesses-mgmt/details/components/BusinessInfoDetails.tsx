@@ -103,7 +103,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         }
         iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
         isDark={isDark}
-        asHTML={business?.shortDescription ? true : false}
       />
 
       {/* Full Description */}
@@ -121,7 +120,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
         isDark={isDark}
         preWrap={true} // preserves line breaks
-        asHTML={true}
       />
 
       {/* Website Connections */}

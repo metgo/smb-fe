@@ -92,7 +92,6 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         }
         iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
         isDark={isDark}
-        asHTML={product?.shortDescription ? true : false}
       />
 
       {/*  Description */}
@@ -110,7 +109,6 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
         isDark={isDark}
         preWrap={true} // preserves line breaks
-        asHTML={true}
       />
       {/* Business */}
       {/* <div>
@@ -142,7 +140,6 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
         isDark={isDark}
         preWrap={true} // preserves line breaks
-        asHTML={true}
       />
 
       {/* QR Download */}
