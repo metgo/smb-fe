@@ -28,6 +28,7 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
+  ConfirmDialog,
   PageHeader,
   PageStats,
   ViewModeToggle,
@@ -82,8 +83,11 @@ export default function BusinessesMgmtPage() {
   const { t } = useTranslation("businesses");
   const { textSecondary, isDark, isRTL, language } = useThemeClasses();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleBusinessClick = (business: any) => {
     navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -106,7 +110,8 @@ export default function BusinessesMgmtPage() {
   const { data: businessStatsData, isLoading: isStatsLoading } =
     useGetBusinessStatsQuery(statsQueryParams);
 
-  const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
+  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
+    useBulkBusinessesUpdateMutation();
 
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
@@ -249,9 +254,14 @@ export default function BusinessesMgmtPage() {
   const resetToDefault = () => {
     setColumnVisibility(defaultColumns);
   };
-
+  const promptBulkDelete = () => {
+    if (selectedBusinesses.size === 0) return;
+    setIsBulkDelete(true); // mark bulk delete mode
+    setIsConfirmOpen(true); // open confirmation dialog
+  };
   const handleBulkDelete = async () => {
     if (!selectedBusinesses.size) return;
+    setIsConfirmOpen(true);
     const toastId = toast.loading("Please wait. Businesses are deleting...");
     try {
       const results = await bulkBusinessesUpdate({
@@ -830,7 +840,7 @@ export default function BusinessesMgmtPage() {
             selectedItemCount={selectedBusinesses.size || 0}
             handleBulkStatusChange={handleBulkStatusChange}
             onBulkAction={{
-              delete: handleBulkDelete,
+              delete: promptBulkDelete,
             }}
           />
         </div>
@@ -861,6 +871,30 @@ export default function BusinessesMgmtPage() {
             </div>
           )}
         </div>
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={t("delete_business")}
+          message={t("delete_business_confirm")}
+          confirmText="delete"
+          loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+
+            if (isBulkDelete) {
+              handleBulkDelete();
+              setIsBulkDelete(false);
+              setIsConfirmOpen(false);
+            } else {
+              if (!itemToDelete) return;
+              setItemToDelete(null);
+            }
+          }}
+        />
       </div>
 
       {isCreateModalOpen && (
