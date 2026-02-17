@@ -1,12 +1,6 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import {
-  Image,
-  Loader,
-  MapPin,
-  Phone,
-  TrashIcon,
-} from "lucide-react";
+import { Image, Loader, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
@@ -50,7 +44,6 @@ function BusinessGridView<T extends Business>({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { isDark } = useThemeClasses();
 
-  //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,

@@ -17,7 +17,7 @@ import { useAppSelector } from "@/hooks/hooks";
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
-  const { dmoId, authorityId, endDate, startDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 

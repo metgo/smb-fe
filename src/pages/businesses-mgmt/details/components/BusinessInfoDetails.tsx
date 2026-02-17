@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { type FC } from "react";
-import { ExternalLink, Globe } from "lucide-react";
+import { AlignLeft, ExternalLink, FileText, Globe } from "lucide-react";
 
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import DescriptionCard from "@/components/shared/DescriptionCard";
 
 interface Business {
   shortDescription: string;
@@ -89,30 +90,39 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   return (
     <div className="space-y-6">
       {/* Short Description */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("short_description")}
-        </h3>
-        <div
-          className={isDark ? "text-gray-300" : "text-gray-700"}
-          dangerouslySetInnerHTML={{ __html: business?.shortDescription || "" }}
-        />
-      </div>
+      <DescriptionCard
+        title={t("short_description")}
+        content={business?.shortDescription ? business?.shortDescription : "-"}
+        icon={
+          <FileText
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-blue-400" : "text-blue-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
+        isDark={isDark}
+        asHTML={business?.shortDescription ? true : false}
+      />
 
       {/* Full Description */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("full_description")}
-        </h3>
-        <div
-          className={isDark ? "text-gray-300" : "text-gray-700"}
-          dangerouslySetInnerHTML={{ __html: business?.description || "" }}
-        />
-      </div>
+      <DescriptionCard
+        title={t("full_description")}
+        content={business?.description ? business?.description : "-"}
+        icon={
+          <AlignLeft
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-purple-400" : "text-purple-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+        isDark={isDark}
+        preWrap={true} // preserves line breaks
+        asHTML={true}
+      />
 
       {/* Website Connections */}
       {business?.associatedWebsites &&

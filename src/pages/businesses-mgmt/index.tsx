@@ -40,7 +40,6 @@ import {
 } from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
-import clsx from "clsx";
 import FilterChips from "@/components/shared/FilterChips";
 
 // Column configuration
@@ -95,9 +94,7 @@ export default function BusinessesMgmtPage() {
     textTertiary,
   } = useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
