@@ -160,6 +160,7 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
+          totalCount={events?.totalData || 0}
         />
 
         <PageStats
@@ -354,7 +355,7 @@ export default function EventsMgmtPage() {
         {/* Events with different View */}
         <EventsWithViewMode
           isLoading={_isLoading}
-          events={(events as any) || []}
+          events={(events?.data as any) || []}
           refetch={refetch}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}

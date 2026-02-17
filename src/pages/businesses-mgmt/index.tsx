@@ -94,7 +94,9 @@ export default function BusinessesMgmtPage() {
     textTertiary,
   } = useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
@@ -563,7 +565,7 @@ export default function BusinessesMgmtPage() {
             btnLabel={t("add_business")}
             onClick={() => setIsCreateModalOpen(true)}
             h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            totalCount={totalData}
+            totalCount={totalData ?? 0}
           />
           <PageStats
             stats={businessStats}

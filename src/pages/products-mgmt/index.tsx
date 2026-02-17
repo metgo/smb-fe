@@ -112,26 +112,12 @@ export default function ProductsMgmtPage() {
     );
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
-  const initialBusinessData = useMemo(() => {
-    if (bzIdForProdView) {
-      return [
-        {
-          _id: bzIdForProdView,
-          name: businessName,
-          slug: "",
-        },
-      ];
-    }
-
-    return businessData?.data || [];
-  }, [bzIdForProdView, businessName, businessData]);
-
   const {
     items: businesses,
     search: searchBusiness,
     isSearching,
   } = useRemoteSelectData({
-    initialData: bzIdForProdView ? initialBusinessData : businessData?.data,
+    initialData: businessData?.data,
     debounceMs: 400,
     searchParams: {
       locale: language,
@@ -159,11 +145,11 @@ export default function ProductsMgmtPage() {
 
   const removeQueryParams = () => {
     const param = searchParams.get("bzIdForProdView");
-
     if (param) {
       searchParams.delete("bzIdForProdView");
     }
   };
+
   //filters
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -265,6 +251,7 @@ export default function ProductsMgmtPage() {
   const products = productData?.data ?? [];
   const hasMore = productData?.meta?.hasNextPage;
   const totalData = productData?.totalData;
+
   useEffect(() => {
     if (page === 1) setCombinedProducts(products);
     else {
@@ -390,7 +377,7 @@ export default function ProductsMgmtPage() {
           h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
           btnLabel={t("add_products")}
           onClick={handleCreateNew}
-          totalCount={totalData}
+          totalCount={totalData ?? 0}
         />
         <PageStats
           stats={salesStats}

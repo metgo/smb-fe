@@ -47,21 +47,13 @@ interface BusinessLocationProps {
 /* ---------- Component ---------- */
 
 const BusinessLocation: FC<BusinessLocationProps> = ({
-  // theme,
-  // isRTL,
   t,
-  // formData,
-  // errors,
-  // setFormData,
   geo,
-  // currentView,
   setGeo,
   address,
   setAddress,
-  business,
 }) => {
   const { textSecondary } = useThemeClasses();
-  console.log("geo", business?.geoLocation);
   // useEffect(() => {
   //   if (!business || currentView !== "edit") return;
 

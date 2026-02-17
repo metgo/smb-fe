@@ -23,8 +23,6 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { InfoTooltip, Spinner } from "@/components/shared";
 
-// Import components directly - make sure these paths are correct
-
 const getColors = (isDark: boolean) => ({
   sleep: {
     base: "#3b82f6",
@@ -338,7 +336,6 @@ export function DistributionCard({
         </div>
 
         {data?.map((item, index) => {
-          console.log("🚀 ~ DistributionCard ~ item:", item);
           const IconComponent =
             CATEGORY_ICONS[
               item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS

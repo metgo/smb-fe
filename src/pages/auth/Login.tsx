@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/btns";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
+import { UserRole } from "@/enums/user.types";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
@@ -35,7 +36,11 @@ export function Login({ setCurrentTab }: LoginProps) {
       }
       dispatch(loginSuccess(data.user));
 
-      navigate(routes.dashboard, { replace: true });
+      if (data?.user?.role === UserRole.TRAVELLER && !data?.user?.hasBusiness) {
+        navigate(routes.businessMgmt, { replace: true });
+      } else {
+        navigate(routes.dashboard, { replace: true });
+      }
       toast.success(`Welcome ${data.user.firstName} ${data.user.lastName}`);
     } catch (err: any) {
       toast.error(err?.data?.message || "Login failed");

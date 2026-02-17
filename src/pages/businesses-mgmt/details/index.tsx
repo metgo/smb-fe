@@ -104,6 +104,7 @@ export default function BusinessDetailsPage() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
+  console.log("🚀 ~ BusinessDetailsPage ~ business:", business);
   const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
@@ -296,10 +297,8 @@ export default function BusinessDetailsPage() {
           <AttributesDetails
             title="Business Attributes"
             categoriesId={[business?.primaryCategoryId]}
-            groupTypesId={business?.groupTypesId?.map((item: any) => item._id)}
-            accessibilitiesId={business?.accessibilitiesId?.map(
-              (item: any) => item._id,
-            )}
+            groupTypesId={business?.groupTypesId}
+            accessibilitiesId={business?.accessibilitiesId}
             tags={business?.tags}
           />
         );

@@ -19,7 +19,7 @@ export default function UpcomingEvents() {
     limit: 3,
   });
 
-  if (events?.length === 0) return null;
+  if (events?.totalData === 0) return null;
 
   return (
     <section>
@@ -42,7 +42,7 @@ export default function UpcomingEvents() {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events?.map((event: any) => (
+        {events?.data?.map((event: any) => (
           <Link
             key={event._id}
             to={`${routes.eventDetails}?eventId=${event?._id}`}
