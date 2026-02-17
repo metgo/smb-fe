@@ -319,6 +319,7 @@ export default function ProductDetailsPage() {
           isOpen={isEditOpen}
           onClose={handleClose}
           refetch={refetch}
+          product={product}
         />
       )}
     </div>

@@ -1,11 +1,18 @@
 import clsx from "clsx";
 import type { FC } from "react";
-import { Accessibility, Users, Tag, Grid3x3, CheckCircle2 } from "lucide-react";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
-import { useCommon } from "@/hooks/useCommon";
+import {
+  Accessibility,
+  Users,
+  Tag,
+  Grid3x3,
+  CheckCircle2,
+  TagIcon,
+} from "lucide-react";
+
 import { getMatchedItems } from "@/helpers";
+import { useCommon } from "@/hooks/useCommon";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface AttributesDetailsProps {
   title: string;
@@ -13,10 +20,12 @@ interface AttributesDetailsProps {
   groupTypesId?: string[];
   subCategoriesId?: string[];
   accessibilitiesId?: string[];
+  tags?: string[];
 }
 
 const AttributesDetails: FC<AttributesDetailsProps> = ({
   title,
+  tags = [],
   categoriesId,
   groupTypesId,
   subCategoriesId,
@@ -34,6 +43,8 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   const filteredGroupTypes = getMatchedItems(groupTypes, groupTypesId) || [];
 
   const hasAnyData =
+    tags?.length > 0 ||
+    filteredCategories?.length > 0 ||
     filteredSubcategories?.length > 0 ||
     filteredAccessibilities?.length > 0 ||
     filteredGroupTypes?.length > 0;
@@ -307,6 +318,67 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
               >
                 <Users className="w-4 h-4" />
                 {type?.name ? type.name : "Unnamed Group"}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Group Types */}
+      {tags.length > 0 && (
+        <div
+          className={clsx(
+            "rounded-xl border p-6 transition-all duration-200",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className={clsx(
+                "p-2 rounded-lg",
+                isDark ? "bg-orange-500/20" : "bg-orange-100",
+              )}
+            >
+              <TagIcon
+                className={clsx(
+                  "w-5 h-5",
+                  isDark ? "text-orange-400" : "text-orange-600",
+                )}
+              />
+            </div>
+            <div>
+              <h3
+                className={clsx(
+                  "text-base font-semibold",
+                  isDark ? "text-gray-200" : "text-gray-800",
+                )}
+              >
+                {t("tags")}
+              </h3>
+              <p
+                className={clsx(
+                  "text-xs mt-0.5",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
+                Suitable for {tags.length}{" "}
+                {tags.length === 1 ? "group type" : "group types"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center flex-wrap gap-3">
+            {tags.map((tag: string, idx: number) => (
+              <span
+                key={idx}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
+                  isDark
+                    ? "bg-orange-900/30 text-orange-400 border border-orange-800"
+                    : "bg-orange-100 text-orange-800 border border-orange-300"
+                }`}
+              >
+                <TagIcon className="w-4 h-4" />
+                {tag}
               </span>
             ))}
           </div>

@@ -1,6 +1,6 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
 interface IDistOverviewParams {
   startDate: string;
@@ -52,7 +52,7 @@ export const itemStatsApi = createApi({
 
     getProductStats: builder.query<any, any>({
       query: (params) => ({
-        url: endpoints.productsStats,
+        url: endpoints.productStats,
         method: "GET",
         params,
       }),

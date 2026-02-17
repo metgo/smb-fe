@@ -35,9 +35,11 @@ import { PublishButton } from "@/components/btns";
 import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessDeliveryInfoByIdQuery,
+  useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
 import { DeliveryPolicyOption } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -51,10 +53,11 @@ interface ProductWizardProps {
 export default function CreateProductWizard({
   onClose,
   refetch,
+  product,
 }: ProductWizardProps) {
   const { t } = useTranslation("products");
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
   const [searchParams] = useSearchParams();
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
 
@@ -68,26 +71,53 @@ export default function CreateProductWizard({
   } = useThemeClasses();
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
-    useGetBusinessForProductQuery({
+    useGetBusinessForProductQuery(
+      !product?.businessId
+        ? {
+            locale: language,
+            limit: 20,
+            dmoId,
+            authorityId,
+          }
+        : skipToken,
+    );
+
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching,
+  } = useRemoteSelectData({
+    initialData: product?.businessId
+      ? [product?.businessId]
+      : businessData?.data,
+    debounceMs: 400,
+    searchParams: {
       locale: language,
-      limit: 20,
       dmoId,
       authorityId,
-    });
+    },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res.data };
+    },
+  });
+
   const [getBusinessDelivery] = useLazyGetBusinessDeliveryInfoByIdQuery();
 
-  const { data: product } = useGetProductbyIdQuery(
-    productId ? { productId: productId } : skipToken,
-  );
+  // const { data: product } = useGetProductbyIdQuery(
+  //   productId ? { productId: productId } : skipToken,
+  // );
 
   const [businessId, setBusinessId] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
-  const [isPublishing, setIsPublishing] = useState(false);
 
   const {
     images,
@@ -96,7 +126,6 @@ export default function CreateProductWizard({
     handleImageUpload,
     uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -375,7 +404,9 @@ export default function CreateProductWizard({
       setSelectedFormLanguage,
       handleImageUpload,
       setCurrentStep,
-      businesses: businessData?.data,
+      businesses,
+      isLoading: isSearching || _isBusinessesLoading,
+      searchBusiness,
     };
 
     const mediaProps = {
