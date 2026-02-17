@@ -28,7 +28,6 @@ import {
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
 
-import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
