@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import type React from "react";
 import { Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getPlainTextFromRichText } from "@/helpers";
+import StatusBadge from "@/components/shared/StatusBadge";
 interface ProductListViewProps {
   products: any[];
   isLoading: boolean;
@@ -31,8 +31,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { userRole } = useAppSelector((state) => state.auth);
-  const { borderColor, bgSecondary, textTertiary, language, isDark } =
-    useThemeClasses();
+  const { borderColor, bgSecondary, textPrimary, language } = useThemeClasses();
 
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     userRole,
@@ -71,10 +70,10 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       sortable: true,
       render: (product: any) => (
         <div>
-          <div
-            className={` truncate max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {product.name?.[language] ?? product.name?.en ?? product.name}
+          <div className={`${textPrimary} line-clamp-1`}>
+            {product.name
+              ? (product.name?.[language] ?? product.name?.en ?? product.name)
+              : "-"}
           </div>
         </div>
       ),
@@ -84,18 +83,35 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("short_description"),
       sortable: true,
       render: (product: any) => (
-        <div
-          className={` line-clamp-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {getPlainTextFromRichText(product.shortDescription)}
+        <div className={`${textPrimary} line-clamp-1`}>
+          {product.shortDescription
+            ? getPlainTextFromRichText(product.shortDescription)
+            : "-"}
         </div>
       ),
     },
-
+    columnVisibility.description && {
+      key: "description",
+      label: t("description"),
+      sortable: true,
+      render: (product: any) => (
+        <div>
+          <div className={`${textPrimary} truncate max-w-xs`}>
+            {product.description
+              ? getPlainTextFromRichText(product.description)
+              : "-"}
+          </div>
+        </div>
+      ),
+    },
     columnVisibility.businessId && {
       key: "businessId",
       label: t("business_name"),
-      render: (product: any) => product.businessId?.name,
+      render: (product: any) => (
+        <div className={`${textPrimary} line-clamp-1`}>
+          {product.businessId?.name}
+        </div>
+      ),
     },
 
     columnVisibility.status && {
@@ -103,24 +119,25 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("product_status"),
       render: (product: any) => {
         const st = (product.status || "").toLowerCase();
-        return (
-          <span
-            className={clsx(
-              "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-              st === "active"
-                ? "bg-green-400 text-white"
-                : st === "inactive"
-                  ? "bg-yellow-500/20 text-yellow-600"
-                  : st === "draft"
-                    ? "bg-gray-500/20 text-gray-600"
-                    : isDark
-                      ? "bg-gray-700 text-gray-400"
-                      : "bg-gray-100 text-gray-600",
-            )}
-          >
-            {t(st) || st || t("unknown")}
-          </span>
-        );
+
+        return <>{st ? <StatusBadge status={t(st)} /> : "-"}</>;
+
+        // <span
+        //   className={clsx(
+        //     "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
+        //     st === "active"
+        //       ? "bg-green-400 text-white"
+        //       : st === "inactive"
+        //         ? "bg-yellow-500/20 text-yellow-600"
+        //         : st === "draft"
+        //           ? "bg-gray-500/20 text-gray-600"
+        //           : isDark
+        //             ? "bg-gray-700 text-gray-400"
+        //             : "bg-gray-100 text-gray-600",
+        //   )}
+        // >
+        //   {t(st) || st || t("unknown")}
+        // </span>
       },
     },
 
@@ -130,12 +147,19 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       sortable: true,
       render: (product: any) => (
         <div>
-          {product.price?.markedPrice !== product.price?.sellingPrice && (
-            <div className="text-xs text-gray-400 line-through">
-              ₪{product.markedPrice}
-            </div>
-          )}
-          <div className="font-medium">₪{product.price?.markedPrice}</div>
+          {product?.price?.markedPrice != null &&
+            product?.price?.sellingPrice != null &&
+            product.price.markedPrice !== product.price.sellingPrice && (
+              <div className="text-xs text-gray-400 line-through">
+                ₪{product.price.markedPrice.toLocaleString()}
+              </div>
+            )}
+
+          <div className="font-medium">
+            {product.price?.markedPrice != null
+              ? `₪${product.price?.sellingPrice}`
+              : "-"}
+          </div>
         </div>
       ),
     },
@@ -144,14 +168,24 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       key: "impact",
       label: t("impact"),
       sortable: true,
-      render: (product: any) => <div>{product.impact}</div>,
+      render: (product: any) => (
+        <div className={`${textPrimary} line-clamp-1`}>{product.impact}</div>
+      ),
     },
 
     columnVisibility.quantity && {
       key: "quantity",
       label: t("quantity"),
       sortable: true,
-      render: (product: any) => product.quantity?.sold,
+      render: (product: any) => (
+        <div className={`${textPrimary} line-clamp-1`}>
+          {product?.quantity?.isUnlimited
+            ? "∞"
+            : product.quantity?.remaining
+              ? product.quantity?.remaining
+              : "-"}
+        </div>
+      ),
     },
 
     columnVisibility.updatedAt && {
@@ -159,7 +193,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("last_updated"),
       sortable: true,
       render: (product: any) => (
-        <div className={`p-3 ${textTertiary} text-sm`}>
+        <div className={`${textPrimary} line-clamp-1`}>
           {new Date(product.updatedAt).toLocaleDateString(language)}
         </div>
       ),

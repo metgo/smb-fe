@@ -17,7 +17,6 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  BusinessAttributesDetails,
   BusinessContactDetails,
   BusinessInfoDetails,
   BusinessMediaDetails,
@@ -42,6 +41,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
 import {
+  AttributesDetails,
   DeliveryPolicyOptionDetails,
   LocationDetails,
 } from "@/components/details-sections";
@@ -56,8 +56,11 @@ export default function BusinessDetailsPage() {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
   ///business detail stats
-  const { data, isLoading: isDetailStatsLoading } =
-    useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
+  const {
+    data,
+    refetch,
+    isLoading: isDetailStatsLoading,
+  } = useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
 
   const businessStats = [
     {
@@ -98,7 +101,7 @@ export default function BusinessDetailsPage() {
   ];
   const {
     data: business,
-    refetch,
+    refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
@@ -145,26 +148,6 @@ export default function BusinessDetailsPage() {
     onChange: setBusinessLogoImage,
   });
 
-  // const StatusBadge = ({ status }: { status: Business["status"] }) => {
-  //   const statusConfig = {
-  //     draft: { color: "bg-gray-500", label: t("draft") },
-  //     pending: { color: "bg-yellow-500", label: t("pending") },
-  //     approved: { color: "bg-green-500", label: t("approved") },
-  //     rejected: { color: "bg-red-500", label: t("rejected") },
-  //     archived: { color: "bg-gray-400", label: t("archived") },
-  //   };
-
-  //   const config = statusConfig[status];
-
-  //   return (
-  //     <span
-  //       className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
-  //     >
-  //       {config.label}
-  //     </span>
-  //   );
-  // };
-
   // useEffect(() => {
   //   if (!business?.logo || !business?.images?.length) return;
   //   const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
@@ -200,6 +183,12 @@ export default function BusinessDetailsPage() {
     setBusinessLogoImage({ image: business?.logo?.image });
   }, [business]);
 
+  useEffect(() => {
+    if (!isEditClicked) {
+      businessDataRefetch();
+    }
+  }, [isEditClicked]);
+
   // const handleSubmit = async () => {
   //   try {
   //     let logoUrl = businessLogoImage?.image ?? null;
@@ -224,14 +213,17 @@ export default function BusinessDetailsPage() {
   //   }
   // };
 
-  // const onViewProducts = () => { };
-
   const onCreateProduct = () => {
-    navigate(`${routes.productsMgmt}?businessId=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+    );
   };
   const onClickView = () => {
-    navigate(`${routes.productsMgmt}?businessIdView=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?bzIdForProdView=${businessId}&businessName=${business?.name}`,
+    );
   };
+
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -300,13 +292,22 @@ export default function BusinessDetailsPage() {
       case "delivery":
         return <DeliveryPolicyOptionDetails data={business} />;
       case "accessibility":
-        return <BusinessAttributesDetails {...commonProps} />;
+        return (
+          <AttributesDetails
+            title="Business Attributes"
+            categoriesId={[business?.primaryCategoryId]}
+            groupTypesId={business?.groupTypesId}
+            accessibilitiesId={business?.accessibilitiesId}
+            tags={business?.tags}
+          />
+        );
       case "hours":
         return <BusinessOpeningHoursDetails {...commonProps} />;
       default:
         return null;
     }
   };
+
   return (
     <div className=" flex flex-col overflow-hidden relative ">
       <Spinner isLoading={isLoading} />
@@ -394,6 +395,7 @@ export default function BusinessDetailsPage() {
           editData={business}
           currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
+          refetch={refetch}
         />
       )}
     </div>

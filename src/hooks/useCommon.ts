@@ -36,6 +36,7 @@ export function useCommon() {
     { value: "last_30_days", label: t("last_30_days") },
     { value: "last_90_days", label: t("last_90_days") },
     { value: "last_year", label: t("last_year") },
+    { value: "all_time", label: t("all") },
   ];
 
   const languages: { value: Language; label: string }[] = [

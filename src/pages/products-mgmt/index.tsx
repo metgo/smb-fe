@@ -32,24 +32,31 @@ import {
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
-import { useGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { ReactSelect } from "@/components/form-fields";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+import { formatILS } from "@/helpers/formatter";
+import { skipToken } from "@reduxjs/toolkit/query";
+import FilterChips from "@/components/shared/FilterChips";
 
 const LIMIT = 20;
 const defaultColumns = {
   images: true,
   name: true,
-  businessId: true, //  optional
-  productType: true,
-  shortDescription: true,
+  businessId: true,
+  shortDescription: false,
+  description: true,
   actions: true,
   status: true,
   price: true,
-  impact: false, //  optional
-  quantity: false,
+  impact: true,
+  quantity: true,
   updatedAt: false, //  optional
 };
 
@@ -57,24 +64,26 @@ const columnDefinitions = [
   { key: "images" as keyof IColumnVisibility, isDefault: true },
   { key: "name" as keyof IColumnVisibility, isDefault: true },
   { key: "businessId" as keyof IColumnVisibility, isDefault: true },
-  { key: "shortDescription" as keyof IColumnVisibility, isDefault: true },
-
-  { key: "productType" as keyof IColumnVisibility, isDefault: true },
+  { key: "shortDescription" as keyof IColumnVisibility, isDefault: false },
+  { key: "description" as keyof IColumnVisibility, isDefault: true },
   { key: "status" as keyof IColumnVisibility, isDefault: true },
   { key: "price" as keyof IColumnVisibility, isDefault: true },
   { key: "actions" as keyof IColumnVisibility, isDefault: true },
-  { key: "impact" as keyof IColumnVisibility, isDefault: false },
-  { key: "quantity" as keyof IColumnVisibility, isDefault: false },
+  { key: "impact" as keyof IColumnVisibility, isDefault: true },
+  { key: "quantity" as keyof IColumnVisibility, isDefault: true },
   { key: "updatedAt" as keyof IColumnVisibility, isDefault: false },
 ];
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
-  const businessIdView = searchParams?.get("businessIdView");
+  // const businessName = searchParams?.get("businessName");
+  const bzIdForProdView = searchParams?.get("bzIdForProdView");
 
   const {
     isDark,
@@ -87,12 +96,40 @@ export default function ProductsMgmtPage() {
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { data: businessData } = useGetBusinessForProductQuery({
-    locale: language,
-    limit: 20,
-    page: 1,
-    dmoId,
-    authorityId,
+  const { data: businessData, isLoading: _isBusinessesLoading } =
+    useGetBusinessForProductQuery(
+      !bzIdForProdView
+        ? {
+            locale: language,
+            limit: 20,
+            page: 1,
+            dmoId,
+            authorityId,
+            startDate,
+            endDate,
+          }
+        : skipToken,
+    );
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching,
+  } = useRemoteSelectData({
+    initialData: businessData?.data,
+    debounceMs: 400,
+    searchParams: {
+      locale: language,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+    },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res.data };
+    },
   });
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -107,12 +144,12 @@ export default function ProductsMgmtPage() {
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   const removeQueryParams = () => {
-    const param = searchParams.get("businessIdView");
-
+    const param = searchParams.get("bzIdForProdView");
     if (param) {
-      searchParams.delete("businessIdView");
+      searchParams.delete("bzIdForProdView");
     }
   };
+
   //filters
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -120,7 +157,6 @@ export default function ProductsMgmtPage() {
   const [filters, setFilters] = useState({
     status: "all",
     locale: language,
-    productType: "all",
     businessId: "",
   });
   const [_clearBusiness, setClearBusiness] = useState(false);
@@ -147,6 +183,10 @@ export default function ProductsMgmtPage() {
       page,
       limit: LIMIT,
       locale: language,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
     };
 
     if (searchTerm) {
@@ -157,23 +197,39 @@ export default function ProductsMgmtPage() {
       params.status = filters.status.toUpperCase();
     }
 
-    if (filters.productType !== "all") {
-      params.productType = filters.productType.toUpperCase();
-    }
-
     if (filters.businessId !== "") {
       params.businessId = filters.businessId;
     }
 
-    if (businessIdView) {
-      params.businessId = businessIdView;
+    if (bzIdForProdView) {
+      params.businessId = bzIdForProdView;
     }
 
     return params;
-  }, [page, searchTerm, filters, language, businessIdView]);
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    bzIdForProdView,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
+
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters, language, businessIdView]);
+  }, [
+    searchTerm,
+    filters,
+    language,
+    bzIdForProdView,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = productQueryParams;
@@ -194,6 +250,7 @@ export default function ProductsMgmtPage() {
 
   const products = productData?.data ?? [];
   const hasMore = productData?.meta?.hasNextPage;
+  const totalData = productData?.totalData;
 
   useEffect(() => {
     if (page === 1) setCombinedProducts(products);
@@ -284,7 +341,7 @@ export default function ProductsMgmtPage() {
     {
       id: 1,
       title: t("total_revenue"),
-      value: `₪${productStats?.totalRevenue}`,
+      value: formatILS(productStats?.totalRevenue),
       label: t("all_time") || "All Time",
       icon: <Package className="w-5 h-5 text-purple-600" />,
     },
@@ -298,14 +355,14 @@ export default function ProductsMgmtPage() {
     {
       id: 3,
       title: t("avg_product_price"),
-      value: `₪${productStats?.averageProductPrice}`,
+      value: formatILS(productStats?.averageProductPrice),
       label: t("per_product") || "Per Product",
       icon: <Settings2 className="w-5 h-5 text-blue-600" />,
     },
     {
       id: 4,
       title: t("revenue_this_month"),
-      value: `₪${productStats?.revenueThisMonth}`,
+      value: formatILS(productStats?.revenueThisMonth),
       label: t("current_month") || "Current Month",
       icon: <ArrowUp className="w-5 h-5 text-orange-600" />,
     },
@@ -320,6 +377,7 @@ export default function ProductsMgmtPage() {
           h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
           btnLabel={t("add_products")}
           onClick={handleCreateNew}
+          totalCount={totalData ?? 0}
         />
         <PageStats
           stats={salesStats}
@@ -529,38 +587,7 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label
-                    className={`block text-sm mb-1 ${
-                      isDark ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    {t("filter_by_type")}
-                  </label>
-                  <select
-                    value={filters.productType}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        productType: e.target.value,
-                      }))
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="physical">{t("physical_product")}</option>
-                    <option value="table_order">{t("table_order")}</option>
-                    <option value="service">{t("service")}</option>
-                    <option value="hotel-room">{t("hotel_room")}</option>
-                    <option value="experience">{t("experience")}</option>
-                  </select>
-                </div>
-
-                {!businessIdView && (
+                {!bzIdForProdView && (
                   <div>
                     <label
                       className={`block text-sm mb-1 ${
@@ -569,6 +596,7 @@ export default function ProductsMgmtPage() {
                     >
                       {t("filter_by_business")}
                     </label>
+
                     <ReactSelect
                       isClearable
                       value={filters?.businessId ?? ""}
@@ -579,12 +607,14 @@ export default function ProductsMgmtPage() {
                         }));
                       }}
                       items={
-                        businessData?.data?.map((item: any) => ({
+                        businesses?.map((item: any) => ({
                           _id: item._id,
                           name: item.name,
                         })) ?? []
                       }
                       placeholder={t("select_business")}
+                      onSearch={searchBusiness}
+                      isLoading={isSearching || _isBusinessesLoading}
                     />
                   </div>
                 )}
@@ -599,7 +629,6 @@ export default function ProductsMgmtPage() {
                       onClick={() => {
                         setFilters({
                           status: "all",
-                          productType: "all",
                           locale: language,
                           businessId: "",
                         });
@@ -620,28 +649,10 @@ export default function ProductsMgmtPage() {
                   ) && (
                     <div className="flex flex-wrap items-center gap-2">
                       {filters.status !== "all" && (
-                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
-                          {t(filters.status)}
-                          <button
-                            onClick={() => clearFilter("status")}
-                            aria-label="Clear status filter"
-                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      )}
-                      {filters.productType !== "all" && (
-                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
-                          {t(filters.productType)}
-                          <button
-                            onClick={() => clearFilter("productType")}
-                            aria-label="Clear product type filter"
-                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
-                          >
-                            ×
-                          </button>
-                        </span>
+                        <FilterChips
+                          label={t(filters.status)}
+                          onRemove={() => clearFilter("status")}
+                        />
                       )}
                     </div>
                   )}
@@ -739,6 +750,7 @@ export default function ProductsMgmtPage() {
         <CreateProductWizard
           onClose={() => setIsCreateModalOpen(false)}
           selectedProduct={selectedProduct}
+          refetch={refetch}
         />
       )}
     </>

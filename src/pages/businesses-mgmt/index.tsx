@@ -21,6 +21,7 @@ import {
   Landmark,
   Theater,
   Map,
+  Package,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -28,6 +29,7 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
+  ConfirmDialog,
   PageHeader,
   PageStats,
   ViewModeToggle,
@@ -38,6 +40,7 @@ import {
 } from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterChips from "@/components/shared/FilterChips";
 
 // Column configuration
 const defaultColumns = {
@@ -80,10 +83,24 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const { textSecondary, isDark, isRTL, language } = useThemeClasses();
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const {
+    isDark,
+    isRTL,
+    language,
+    bgSecondary,
+    borderColor,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const handleBusinessClick = (business: any) => {
     navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -106,7 +123,8 @@ export default function BusinessesMgmtPage() {
   const { data: businessStatsData, isLoading: isStatsLoading } =
     useGetBusinessStatsQuery(statsQueryParams);
 
-  const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
+  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
+    useBulkBusinessesUpdateMutation();
 
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
@@ -126,19 +144,13 @@ export default function BusinessesMgmtPage() {
 
   // Filters
   const [filters, setFilters] = useState({
-    dmoId,
-    authorityId,
     status: "all",
-    locale: language,
     hasProductFilter: "all",
   });
 
   const clearFilter = () => {
     setFilters({
-      authorityId: "",
-      dmoId: "",
       status: "all",
-      locale: language,
       hasProductFilter: "all",
     });
   };
@@ -180,6 +192,10 @@ export default function BusinessesMgmtPage() {
   const queryParams = useMemo(() => {
     const params: any = {
       page,
+      dmoId,
+      startDate,
+      endDate,
+      authorityId,
       limit: LIMIT,
       locale: language,
     };
@@ -190,24 +206,25 @@ export default function BusinessesMgmtPage() {
       params.status = filters.status;
     }
 
-    if (filters.authorityId && filters.authorityId !== "all") {
-      params.authorityId = filters.authorityId;
-    }
-
-    if (filters.dmoId && filters.dmoId !== "all") {
-      params.dmoId = filters.dmoId;
-    }
-
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
     }
 
     return params;
-  }, [page, searchTerm, filters, language]);
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
 
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
@@ -220,10 +237,9 @@ export default function BusinessesMgmtPage() {
 
   const businesses = businessData?.data ?? [];
   const hasMore = businessData?.meta?.hasNextPage;
+  const totalData = businessData?.totalData;
 
   useEffect(() => {
-    if (!businesses?.length) return;
-
     if (page === 1) {
       setCombinedBusinesses(businesses);
     } else {
@@ -248,9 +264,14 @@ export default function BusinessesMgmtPage() {
   const resetToDefault = () => {
     setColumnVisibility(defaultColumns);
   };
-
+  const promptBulkDelete = () => {
+    if (selectedBusinesses.size === 0) return;
+    setIsBulkDelete(true); // mark bulk delete mode
+    setIsConfirmOpen(true); // open confirmation dialog
+  };
   const handleBulkDelete = async () => {
     if (!selectedBusinesses.size) return;
+    setIsConfirmOpen(true);
     const toastId = toast.loading("Please wait. Businesses are deleting...");
     try {
       const results = await bulkBusinessesUpdate({
@@ -544,6 +565,7 @@ export default function BusinessesMgmtPage() {
             btnLabel={t("add_business")}
             onClick={() => setIsCreateModalOpen(true)}
             h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            totalCount={totalData ?? 0}
           />
           <PageStats
             stats={businessStats}
@@ -708,7 +730,7 @@ export default function BusinessesMgmtPage() {
           {/* Filters Panel */}
           {showFilters && (
             <div
-              className={`pb-4 border-t ${
+              className={` border-t ${
                 isDark
                   ? "border-gray-800 bg-gray-900/30"
                   : "border-gray-200 bg-gray-50"
@@ -769,21 +791,17 @@ export default function BusinessesMgmtPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex items-center gap-4  pt-2">
                 <button
                   onClick={clearFilter}
-                  className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                  className=" px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
                 >
                   {t("clear_all")}
                 </button>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   {Object.entries(filters).map(([key, value]) => {
                     // Skip rendering empty filters
                     if (!value || value === "all") return null;
-
-                    if (key === "authorityId" && !filters.dmoId) {
-                      return null;
-                    }
 
                     let displayValue = value;
                     if (key === "status") {
@@ -793,30 +811,17 @@ export default function BusinessesMgmtPage() {
                     }
 
                     return (
-                      <div
+                      <FilterChips
                         key={key}
-                        className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
-                      >
-                        <span>{displayValue}</span>
-
-                        <button
-                          onClick={() => {
-                            if (key === "status") {
-                              setFilters((prev) => ({
-                                ...prev,
-                                status: "all",
-                              }));
-                            } else {
-                              // For other keys
-                              setFilters((prev) => ({ ...prev, [key]: "" }));
-                            }
-                          }}
-                          className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
-                          aria-label="Remove filter"
-                        >
-                          ✕
-                        </button>
-                      </div>
+                        label={displayValue}
+                        onRemove={() => {
+                          if (key === "status") {
+                            setFilters((prev) => ({ ...prev, status: "all" }));
+                          } else {
+                            setFilters((prev) => ({ ...prev, [key]: "" }));
+                          }
+                        }}
+                      />
                     );
                   })}
                 </div>
@@ -828,12 +833,30 @@ export default function BusinessesMgmtPage() {
             selectedItemCount={selectedBusinesses.size || 0}
             handleBulkStatusChange={handleBulkStatusChange}
             onBulkAction={{
-              delete: handleBulkDelete,
+              delete: promptBulkDelete,
             }}
           />
         </div>
         <div className="flex-1 overflow-y-auto mt-2">
-          {viewMode === "list" ? (
+          {combinedBusinesses?.length === 0 && !(isFetching || isLoading) ? (
+            <div
+              className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
+            >
+              <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
+              <h3 className={`text-lg ${textPrimary} mb-2`}>
+                {t("no_business")}
+              </h3>
+              <p className={`${textTertiary} mb-6`}>
+                {t("no_businesses_desc")}
+              </p>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                {t("add_business")}
+              </button>
+            </div>
+          ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
               hasMore={hasMore}
@@ -859,10 +882,37 @@ export default function BusinessesMgmtPage() {
             </div>
           )}
         </div>
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={t("delete_business")}
+          message={t("delete_business_confirm")}
+          confirmText="delete"
+          loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+
+            if (isBulkDelete) {
+              handleBulkDelete();
+              setIsBulkDelete(false);
+              setIsConfirmOpen(false);
+            } else {
+              if (!itemToDelete) return;
+              setItemToDelete(null);
+            }
+          }}
+        />
       </div>
 
       {isCreateModalOpen && (
-        <CreateBusinessWizard onClose={() => setIsCreateModalOpen(false)} />
+        <CreateBusinessWizard
+          onClose={() => setIsCreateModalOpen(false)}
+          refetch={refetch}
+        />
       )}
     </>
   );

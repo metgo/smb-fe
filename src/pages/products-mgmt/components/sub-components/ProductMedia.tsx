@@ -24,7 +24,6 @@ interface ProductMediaProps {
   isImageDeleting: boolean;
   handleDeleteImage: (item: IImageUpload, index: number) => void;
 }
-
 /* ---------- Component ---------- */
 const ProductMedia: FC<ProductMediaProps> = ({
   t,

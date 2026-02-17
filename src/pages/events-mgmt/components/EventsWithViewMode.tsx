@@ -40,7 +40,6 @@ interface EventsWithViewModeProps {
   events: any[];
   viewMode: string;
   isLoading: boolean;
-  selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -88,7 +87,6 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
   statusFilter,
@@ -435,7 +433,6 @@ export default function EventsWithViewMode({
           </h3>
           <p className={textTertiary}>
             {searchQuery ||
-            selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
             registrationFilter !== "all" ||
             statusFilter !== "all"

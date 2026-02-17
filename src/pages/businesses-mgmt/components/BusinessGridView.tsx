@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { AlertCircle, Image, MapPin, Phone, TrashIcon } from "lucide-react";
+import { Image, Loader, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
@@ -39,13 +39,11 @@ function BusinessGridView<T extends Business>({
   refetch,
   hasMore,
   next,
-  t,
   isLoading = false,
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { isDark } = useThemeClasses();
 
-  //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,
@@ -64,28 +62,6 @@ function BusinessGridView<T extends Business>({
     refetch();
   };
 
-  if (data.length === 0) {
-    return (
-      <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
-        <AlertCircle
-          className={`w-16 h-16 mx-auto mb-4 ${
-            isDark ? "text-gray-500" : "text-gray-400"
-          }`}
-        />
-        <h3
-          className={`text-lg mb-2 ${
-            isDark ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {t("no_businesses_found")}
-        </h3>
-        <p className={isDark ? "text-gray-500" : "text-gray-600"}>
-          {t("no_businesses_found_desc")}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div
       className={`py-6 px-4 ${
@@ -98,7 +74,7 @@ function BusinessGridView<T extends Business>({
         ref={scrollRef}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {data.map((business) => (
+          {data?.map((business) => (
             <div
               key={business._id}
               className={`${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
@@ -167,6 +143,11 @@ function BusinessGridView<T extends Business>({
             </div>
           ))}
         </div>
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+            <Loader className="w-10 h-10 animate-spin text-teal-600" />
+          </div>
+        )}
       </div>
 
       <ConfirmDialog

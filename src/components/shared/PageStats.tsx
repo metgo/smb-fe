@@ -35,9 +35,9 @@ export default function PageStats({
               </div>
             </div>
           ))
-        : stats?.map((item) => (
+        : stats?.map((item, index) => (
             <div
-              key={item.id}
+              key={index}
               className={`${bgSecondary} rounded-xl px-4 py-2 border shadow-sm ${
                 isDark ? "border-gray-500" : "border-gray-200"
               }`}
