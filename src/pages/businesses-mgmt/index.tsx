@@ -21,6 +21,7 @@ import {
   Landmark,
   Theater,
   Map,
+  Package,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -39,7 +40,7 @@ import {
 } from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
-import clsx from "clsx";
+import FilterChips from "@/components/shared/FilterChips";
 
 // Column configuration
 const defaultColumns = {
@@ -82,11 +83,18 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const { textSecondary, isDark, isRTL, language } = useThemeClasses();
+  const {
+    isDark,
+    isRTL,
+    language,
+    bgSecondary,
+    borderColor,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
@@ -801,35 +809,17 @@ export default function BusinessesMgmtPage() {
                     }
 
                     return (
-                      <div
+                      <FilterChips
                         key={key}
-                        className={clsx(
-                          "flex items-center gap-2 rounded-full h-6 px-2 text-sm border",
-                          isDark
-                            ? "bg-teal-950/40 text-teal-300 border-teal-800/50"
-                            : "bg-teal-50 text-teal-700 border-teal-200",
-                        )}
-                      >
-                        <span>{displayValue}</span>
-
-                        <button
-                          onClick={() => {
-                            if (key === "status") {
-                              setFilters((prev) => ({
-                                ...prev,
-                                status: "all",
-                              }));
-                            } else {
-                              // For other keys
-                              setFilters((prev) => ({ ...prev, [key]: "" }));
-                            }
-                          }}
-                          className=" text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
-                          aria-label="Remove filter"
-                        >
-                          ✕
-                        </button>
-                      </div>
+                        label={displayValue}
+                        onRemove={() => {
+                          if (key === "status") {
+                            setFilters((prev) => ({ ...prev, status: "all" }));
+                          } else {
+                            setFilters((prev) => ({ ...prev, [key]: "" }));
+                          }
+                        }}
+                      />
                     );
                   })}
                 </div>
@@ -846,7 +836,25 @@ export default function BusinessesMgmtPage() {
           />
         </div>
         <div className="flex-1 overflow-y-auto mt-2">
-          {viewMode === "list" ? (
+          {combinedBusinesses?.length === 0 && !(isFetching || isLoading) ? (
+            <div
+              className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
+            >
+              <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
+              <h3 className={`text-lg ${textPrimary} mb-2`}>
+                {t("no_business")}
+              </h3>
+              <p className={`${textTertiary} mb-6`}>
+                {t("no_businesses_desc")}
+              </p>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                {t("add_business")}
+              </button>
+            </div>
+          ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
               hasMore={hasMore}

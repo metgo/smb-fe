@@ -43,6 +43,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { formatILS } from "@/helpers/formatter";
 import { skipToken } from "@reduxjs/toolkit/query";
+import FilterChips from "@/components/shared/FilterChips";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -661,16 +662,10 @@ export default function ProductsMgmtPage() {
                   ) && (
                     <div className="flex flex-wrap items-center gap-2">
                       {filters.status !== "all" && (
-                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
-                          {t(filters.status)}
-                          <button
-                            onClick={() => clearFilter("status")}
-                            aria-label="Clear status filter"
-                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
-                          >
-                            ×
-                          </button>
-                        </span>
+                        <FilterChips
+                          label={t(filters.status)}
+                          onRemove={() => clearFilter("status")}
+                        />
                       )}
                     </div>
                   )}

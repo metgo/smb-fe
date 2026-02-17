@@ -32,7 +32,7 @@ export default function PageHeader({
           <div>
             <h1 className={`text-3xl mb-2 bg-clip-text ${h1Gradient}`}>
               {title}
-              {totalCount && (
+              {totalCount !== null && (
                 <span
                   className={`text-3xl mb-2 ml-2 bg-clip-text ${h1Gradient}`}
                 >
