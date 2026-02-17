@@ -183,6 +183,8 @@ export default function BusinessesMgmtPage() {
     const params: any = {
       page,
       dmoId,
+      startDate,
+      endDate,
       authorityId,
       limit: LIMIT,
       locale: language,
@@ -199,11 +201,20 @@ export default function BusinessesMgmtPage() {
     }
 
     return params;
-  }, [page, searchTerm, filters, language, dmoId, authorityId]);
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters, dmoId, authorityId]);
+  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
 
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
@@ -219,8 +230,6 @@ export default function BusinessesMgmtPage() {
   const totalData = businessData?.totalData;
 
   useEffect(() => {
-    if (!businesses?.length) return;
-
     if (page === 1) {
       setCombinedBusinesses(businesses);
     } else {

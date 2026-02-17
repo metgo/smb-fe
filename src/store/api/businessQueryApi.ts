@@ -35,6 +35,8 @@ interface BusinessesForProductParams {
   authorityId?: string;
   dmoId?: string;
   page?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const businessQueryApi = createApi({

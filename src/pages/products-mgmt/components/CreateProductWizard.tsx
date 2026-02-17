@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
@@ -28,7 +28,6 @@ import {
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
 
-import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
@@ -60,6 +59,8 @@ export default function CreateProductWizard({
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
+  const bzIdForProdCreate = searchParams?.get("businessId");
+  const businessName = searchParams?.get("businessName");
 
   const {
     language,
@@ -72,7 +73,7 @@ export default function CreateProductWizard({
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
     useGetBusinessForProductQuery(
-      !product?.businessId
+      !(product?.businessId || bzIdForProdCreate)
         ? {
             locale: language,
             limit: 20,
@@ -84,14 +85,32 @@ export default function CreateProductWizard({
 
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
+  const initialBusinessData = React.useMemo(() => {
+    if (product?.businessId || bzIdForProdCreate) {
+      return [
+        {
+          _id: product?.businessId?._id ?? bzIdForProdCreate,
+          name: product?.businessId?.name || businessName,
+          slug: "",
+        },
+      ];
+    }
+
+    return businessData?.data || [];
+  }, [
+    product?.businessId?._id,
+    product?.businessId?.name,
+    bzIdForProdCreate,
+    businessName,
+    businessData?.data,
+  ]);
+
   const {
     items: businesses,
     search: searchBusiness,
     isSearching,
   } = useRemoteSelectData({
-    initialData: product?.businessId
-      ? [product?.businessId]
-      : businessData?.data,
+    initialData: initialBusinessData,
     debounceMs: 400,
     searchParams: {
       locale: language,
@@ -110,7 +129,7 @@ export default function CreateProductWizard({
   //   productId ? { productId: productId } : skipToken,
   // );
 
-  const [businessId, setBusinessId] = useState("");
+  const [businessId, setBusinessId] = useState(bzIdForProdCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
@@ -427,7 +446,11 @@ export default function CreateProductWizard({
     switch (currentStep) {
       case 1:
         return (
-          <ProductBasicInfo {...commonProps} setBusinessId={setBusinessId} />
+          <ProductBasicInfo
+            {...commonProps}
+            setBusinessId={setBusinessId}
+            presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
+          />
         );
       case 2:
         return <ProductAttributes {...commonProps} />;

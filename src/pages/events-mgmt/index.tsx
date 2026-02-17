@@ -17,7 +17,7 @@ import { useAppSelector } from "@/hooks/hooks";
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
-  const { dmoId, authorityId, endDate, startDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
@@ -45,6 +45,8 @@ export default function EventsMgmtPage() {
 
   const eventQueryParams = useMemo(() => {
     const params: any = {
+      page: 1,
+      limit: 100,
       dmoId,
       authorityId,
       externalApiId: websiteId,
@@ -98,8 +100,13 @@ export default function EventsMgmtPage() {
     isLoading: _isLoading,
   } = useGetAllEventsQuery(eventQueryParams);
 
+  const statsQueryParams = useMemo(() => {
+    const { page, limit, status, locale, ...rest } = eventQueryParams;
+    return rest;
+  }, [eventQueryParams]);
+
   const { data: eventStatsData, isLoading: isEventStatsFetching } =
-    useGetEventsStatsQuery(eventQueryParams);
+    useGetEventsStatsQuery(statsQueryParams);
 
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
     "list",

@@ -20,8 +20,10 @@ import {
   useGetPOIStatsQuery,
   useGetProductStatsQuery,
 } from "@/store/api/itemStatsApi";
-import { InfoTooltip, Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { InfoTooltip, Spinner } from "@/components/shared";
+
+// Import components directly - make sure these paths are correct
 
 const getColors = (isDark: boolean) => ({
   sleep: {
@@ -198,7 +200,7 @@ export function DistributionCard({
 
   // Calculate the highest percentage to normalize bar heights
   const maxPercentage = Math.max(
-    ...(data?.map((item) => item.percentage) || [0]),
+    ...(data?.map((item) => item?.percentage) || [0]),
   );
 
   // Function to calculate normalized height (scaled to 100% based on max)
@@ -207,13 +209,53 @@ export function DistributionCard({
     return (percentage / maxPercentage) * 100;
   };
 
+  // If data is undefined or empty, show empty state
+  if (!data || data.length === 0) {
+    return (
+      <div
+        className={clsx(
+          "rounded-xl border p-3",
+          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+        )}
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
+              {icon}
+            </div>
+            <div>
+              <h3 className={isDark ? "text-white" : "text-gray-900"}>
+                {title}
+              </h3>
+              <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+                Total: 0
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="h-80 flex items-center justify-center">
+          <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+            No data available
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={clsx(
-        "rounded-xl border p-3 hover:shadow-lg transition-shadow",
+        "rounded-xl border p-3 hover:shadow-lg transition-shadow relative",
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
       )}
     >
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-50">
+          <Spinner isLoading={isLoading} />
+        </div>
+      )}
+
       {/* ===== Header ===== */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -237,7 +279,7 @@ export function DistributionCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Total: {total?.toLocaleString()}
+              Total: {total?.toLocaleString() || 0}
             </p>
           </div>
         </div>
@@ -272,7 +314,6 @@ export function DistributionCard({
 
       {/* ===== Chart ===== */}
       <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
-        <Spinner isLoading={isLoading} />
         {/* Background */}
         <div
           className={clsx(
@@ -297,13 +338,17 @@ export function DistributionCard({
         </div>
 
         {data?.map((item, index) => {
-          const Icon =
+          console.log("🚀 ~ DistributionCard ~ item:", item);
+          const IconComponent =
             CATEGORY_ICONS[
-              item.name.toLowerCase() as keyof typeof CATEGORY_ICONS
+              item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS
             ];
 
+          // Skip if icon is not found
+          if (!IconComponent) return null;
+
           const colorConfig =
-            COLORS[item.name.toLowerCase() as keyof typeof COLORS];
+            COLORS[item?.name?.toLowerCase() as keyof typeof COLORS];
 
           const isActive = activeIndex === index;
 
@@ -337,37 +382,41 @@ export function DistributionCard({
                 <div className="absolute inset-0 bg-black/20 rounded-t-lg blur-sm translate-y-1" />
 
                 {/* Side */}
-                <div
-                  className={clsx(
-                    "absolute top-0 -right-1 w-3 h-full rounded-tr-lg bg-linear-to-b",
-                    colorConfig.sideGradient,
-                  )}
-                  style={{ transform: "skewY(-3deg)" }}
-                />
+                {colorConfig && (
+                  <>
+                    <div
+                      className={clsx(
+                        "absolute top-0 -right-1 w-3 h-full rounded-tr-lg bg-linear-to-b",
+                        colorConfig?.sideGradient,
+                      )}
+                      style={{ transform: "skewY(-3deg)" }}
+                    />
 
-                {/* Front */}
-                <div
-                  className={clsx(
-                    "absolute inset-0 border-2 border-b-0 rounded-t-xl backdrop-blur-sm bg-linear-to-b transition-all duration-300",
-                    colorConfig.bgGradient,
-                    isActive
-                      ? `${colorConfig.shadow} shadow-2xl`
-                      : colorConfig.shadow,
-                  )}
-                />
+                    {/* Front */}
+                    <div
+                      className={clsx(
+                        "absolute inset-0 border-2 border-b-0 rounded-t-xl backdrop-blur-sm bg-linear-to-b transition-all duration-300",
+                        colorConfig?.bgGradient,
+                        isActive
+                          ? `${colorConfig?.shadow} shadow-2xl`
+                          : colorConfig?.shadow,
+                      )}
+                    />
 
-                {/* Top cap */}
-                <div
-                  className={clsx(
-                    "absolute -top-1 left-0 right-1 h-3 rounded-t-lg border-2 bg-linear-to-r",
-                    colorConfig.topGradient,
-                    isActive ? "shadow-xl" : "shadow-lg",
-                  )}
-                  style={{
-                    transform: "perspective(100px) rotateX(45deg)",
-                    transformOrigin: "bottom",
-                  }}
-                />
+                    {/* Top cap */}
+                    <div
+                      className={clsx(
+                        "absolute -top-1 left-0 right-1 h-3 rounded-t-lg border-2 bg-linear-to-r",
+                        colorConfig?.topGradient,
+                        isActive ? "shadow-xl" : "shadow-lg",
+                      )}
+                      style={{
+                        transform: "perspective(100px) rotateX(45deg)",
+                        transformOrigin: "bottom",
+                      }}
+                    />
+                  </>
+                )}
 
                 {/* Value tooltip - shows actual count */}
                 <div
@@ -379,10 +428,10 @@ export function DistributionCard({
                   <div
                     className={clsx(
                       "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
-                      colorConfig.gradient,
+                      colorConfig?.gradient,
                     )}
                   >
-                    {item.count}
+                    {item?.count || item?.value || 0}
                   </div>
                 </div>
 
@@ -396,11 +445,11 @@ export function DistributionCard({
                   <div
                     className={clsx(
                       "w-8 h-8 rounded-lg shadow-lg flex items-center justify-center bg-linear-to-br",
-                      colorConfig.gradient,
-                      colorConfig.shadow,
+                      colorConfig?.gradient,
+                      colorConfig?.shadow,
                     )}
                   >
-                    <Icon className="w-4 h-4 text-white" />
+                    <IconComponent className="w-4 h-4 text-white" />
                   </div>
                 </div>
 
@@ -479,18 +528,15 @@ export default function DistributionCards() {
       status: productStatus,
     });
 
-  useEffect(() => {
-    if (!businessData?.datas) return;
-  }, [businessData]);
-
-  useEffect(() => {
-    if (!poiData?.datas) return;
-  }, [poiData]);
-
   return (
     <section>
       <div className="flex items-start gap-2 mb-6">
-        <h2 className={clsx("flex-1", isDark ? "text-white" : "text-gray-900")}>
+        <h2
+          className={clsx(
+            "flex-1 text-xl font-semibold",
+            isDark ? "text-white" : "text-gray-900",
+          )}
+        >
           {t("distribution_overview")}
         </h2>
         <InfoTooltip

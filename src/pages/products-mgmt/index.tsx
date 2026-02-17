@@ -42,6 +42,7 @@ import { ReactSelect } from "@/components/form-fields";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { formatILS } from "@/helpers/formatter";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -80,7 +81,8 @@ export default function ProductsMgmtPage() {
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
-  const businessIdView = searchParams?.get("businessIdView");
+  const businessName = searchParams?.get("businessName");
+  const bzIdForProdView = searchParams?.get("bzIdForProdView");
 
   const {
     isDark,
@@ -94,26 +96,48 @@ export default function ProductsMgmtPage() {
     textTertiary,
   } = useThemeClasses();
   const { data: businessData, isLoading: _isBusinessesLoading } =
-    useGetBusinessForProductQuery({
-      locale: language,
-      limit: 20,
-      page: 1,
-      dmoId,
-      authorityId,
-    });
+    useGetBusinessForProductQuery(
+      !bzIdForProdView
+        ? {
+            locale: language,
+            limit: 20,
+            page: 1,
+            dmoId,
+            authorityId,
+            startDate,
+            endDate,
+          }
+        : skipToken,
+    );
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const initialBusinessData = useMemo(() => {
+    if (bzIdForProdView) {
+      return [
+        {
+          _id: bzIdForProdView,
+          name: businessName,
+          slug: "",
+        },
+      ];
+    }
+
+    return businessData?.data || [];
+  }, [bzIdForProdView, businessName, businessData]);
 
   const {
     items: businesses,
     search: searchBusiness,
     isSearching,
   } = useRemoteSelectData({
-    initialData: businessData?.data,
+    initialData: bzIdForProdView ? initialBusinessData : businessData?.data,
     debounceMs: 400,
     searchParams: {
       locale: language,
       dmoId,
       authorityId,
+      startDate,
+      endDate,
     },
     lazySearch: async (params) => {
       const res = await getBusinessList(params).unwrap();
@@ -133,10 +157,10 @@ export default function ProductsMgmtPage() {
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   const removeQueryParams = () => {
-    const param = searchParams.get("businessIdView");
+    const param = searchParams.get("bzIdForProdView");
 
     if (param) {
-      searchParams.delete("businessIdView");
+      searchParams.delete("bzIdForProdView");
     }
   };
   //filters
@@ -174,8 +198,8 @@ export default function ProductsMgmtPage() {
       locale: language,
       dmoId,
       authorityId,
-      // startDate,
-      // endDate
+      startDate,
+      endDate,
     };
 
     if (searchTerm) {
@@ -190,16 +214,35 @@ export default function ProductsMgmtPage() {
       params.businessId = filters.businessId;
     }
 
-    if (businessIdView) {
-      params.businessId = businessIdView;
+    if (bzIdForProdView) {
+      params.businessId = bzIdForProdView;
     }
 
     return params;
-  }, [page, searchTerm, filters, language, businessIdView, dmoId, authorityId]);
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    bzIdForProdView,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters, language, businessIdView, dmoId, authorityId]);
+  }, [
+    searchTerm,
+    filters,
+    language,
+    bzIdForProdView,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = productQueryParams;
@@ -556,7 +599,7 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                {!businessIdView && (
+                {!bzIdForProdView && (
                   <div>
                     <label
                       className={`block text-sm mb-1 ${
@@ -581,6 +624,7 @@ export default function ProductsMgmtPage() {
                           name: item.name,
                         })) ?? []
                       }
+                      placeholder={t("select_business")}
                       onSearch={searchBusiness}
                       isLoading={isSearching || _isBusinessesLoading}
                     />

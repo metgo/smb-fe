@@ -214,11 +214,16 @@ export default function BusinessDetailsPage() {
   // };
 
   const onCreateProduct = () => {
-    navigate(`${routes.productsMgmt}?businessId=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+    );
   };
   const onClickView = () => {
-    navigate(`${routes.productsMgmt}?businessIdView=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?bzIdForProdView=${businessId}&businessName=${business?.name}`,
+    );
   };
+
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
