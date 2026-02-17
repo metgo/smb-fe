@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import clsx from "clsx";
+import DescriptionCard from "@/components/shared/DescriptionCard";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -56,90 +57,41 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
 
       {/* Short Description */}
       {eventDetails?.shortDescription && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
-        >
-          <div className="flex items-start gap-3 mb-3">
-            <div
+        <DescriptionCard
+          title={t("short_description")}
+          content={
+            eventDetails?.shortDescription ? eventDetails.shortDescription : "-"
+          }
+          icon={
+            <FileText
               className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-blue-500/20" : "bg-blue-100",
+                "w-5 h-5",
+                isDark ? "text-blue-400" : "text-blue-600",
               )}
-            >
-              <FileText
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-blue-400" : "text-blue-600",
-                )}
-              />
-            </div>
-            <div className="flex-1">
-              <h3
-                className={clsx(
-                  "text-sm font-semibold uppercase tracking-wide mb-1",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("short_description")}
-              </h3>
-            </div>
-          </div>
-          <p
-            className={clsx(
-              "text-base leading-relaxed pl-11",
-              isDark ? "text-gray-200" : "text-gray-800",
-            )}
-          >
-            {eventDetails?.shortDescription}
-          </p>
-        </div>
+            />
+          }
+          iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
+          isDark={isDark}
+        />
       )}
 
       {/* Full Description */}
       {eventDetails?.description && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
-        >
-          <div className="flex items-start gap-3 mb-3">
-            <div
+        <DescriptionCard
+          title={t("full_description")}
+          content={eventDetails?.description ? eventDetails?.description : "-"}
+          icon={
+            <AlignLeft
               className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-purple-500/20" : "bg-purple-100",
+                "w-5 h-5",
+                isDark ? "text-purple-400" : "text-purple-600",
               )}
-            >
-              <AlignLeft
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-purple-400" : "text-purple-600",
-                )}
-              />
-            </div>
-            <div className="flex-1">
-              <h3
-                className={clsx(
-                  "text-sm font-semibold uppercase tracking-wide mb-1",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {t("full_description")}
-              </h3>
-            </div>
-          </div>
-          <p
-            className={clsx(
-              "text-base leading-relaxed whitespace-pre-wrap pl-11",
-              isDark ? "text-gray-300" : "text-gray-700",
-            )}
-          >
-            {eventDetails?.description}
-          </p>
-        </div>
+            />
+          }
+          iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+          isDark={isDark}
+          preWrap={true} // preserves line breaks
+        />
       )}
 
       {/* Website Connections */}

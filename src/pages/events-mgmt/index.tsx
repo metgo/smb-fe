@@ -2,8 +2,7 @@ import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
-
+import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
@@ -12,25 +11,20 @@ import {
   useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
 import { EventsWithViewMode, CreateEventWizard } from "./components";
+import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
-  const { dmoId, authorityId, endDate, startDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
   const navigate = useNavigate();
 
-  const {
-    textPrimary,
-    textSecondary,
-    inputClasses,
-    textTertiary,
-    isDark,
-    isRTL,
-  } = useThemeClasses();
+  const { textPrimary, textSecondary, inputClasses, textTertiary, isDark } =
+    useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
@@ -104,8 +98,13 @@ export default function EventsMgmtPage() {
     isLoading: _isLoading,
   } = useGetAllEventsQuery(eventQueryParams);
 
+  const statsQueryParams = useMemo(() => {
+    const { page, limit, status, locale, ...rest } = eventQueryParams;
+    return rest;
+  }, [eventQueryParams]);
+
   const { data: eventStatsData, isLoading: isEventStatsFetching } =
-    useGetEventsStatsQuery(eventQueryParams);
+    useGetEventsStatsQuery(statsQueryParams);
 
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
     "list",
@@ -159,6 +158,7 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
+          totalCount={events?.totalData || 0}
         />
 
         <PageStats
@@ -172,19 +172,10 @@ export default function EventsMgmtPage() {
           {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="flex-1 relative">
-              <Search
-                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 transform -translate-y-1/2 w-5 h-5 ${textTertiary}`}
-              />
-              <input
-                type="text"
+              <SearchInput
                 placeholder={t("search_events_placeholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border transition-colors ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                }`}
+                searchTerm={searchQuery}
+                setSearchTerm={setSearchQuery}
               />
             </div>
             <FilterButton value={showFilters} onChange={setShowFilters} />
@@ -362,7 +353,7 @@ export default function EventsMgmtPage() {
         {/* Events with different View */}
         <EventsWithViewMode
           isLoading={_isLoading}
-          events={(events as any) || []}
+          events={(events?.data as any) || []}
           refetch={refetch}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}

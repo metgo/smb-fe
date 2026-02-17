@@ -46,12 +46,14 @@ interface CreateBusinessWizardProps {
   onClose: () => void;
   currentView?: View;
   editData?: any;
+  refetch?: any;
 }
 
 export default function CreateBusinessWizard({
   onClose,
   currentView,
   editData,
+  refetch,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
@@ -426,6 +428,7 @@ export default function CreateBusinessWizard({
     }
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
+    refetch();
     onClose();
   };
   useEffect(() => {

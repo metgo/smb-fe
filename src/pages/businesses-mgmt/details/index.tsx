@@ -214,11 +214,16 @@ export default function BusinessDetailsPage() {
   // };
 
   const onCreateProduct = () => {
-    navigate(`${routes.productsMgmt}?businessId=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+    );
   };
   const onClickView = () => {
-    navigate(`${routes.productsMgmt}?businessIdView=${businessId}`);
+    navigate(
+      `${routes.productsMgmt}?bzIdForProdView=${businessId}&businessName=${business?.name}`,
+    );
   };
+
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -291,10 +296,8 @@ export default function BusinessDetailsPage() {
           <AttributesDetails
             title="Business Attributes"
             categoriesId={[business?.primaryCategoryId]}
-            groupTypesId={business?.groupTypesId?.map((item: any) => item._id)}
-            accessibilitiesId={business?.accessibilitiesId?.map(
-              (item: any) => item._id,
-            )}
+            groupTypesId={business?.groupTypesId}
+            accessibilitiesId={business?.accessibilitiesId}
             tags={business?.tags}
           />
         );
@@ -392,6 +395,7 @@ export default function BusinessDetailsPage() {
           editData={business}
           currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
+          refetch={refetch}
         />
       )}
     </div>

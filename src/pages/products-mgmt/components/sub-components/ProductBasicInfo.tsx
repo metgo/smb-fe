@@ -32,6 +32,7 @@ interface ProductBasicInfoProps {
   businesses: ISearchBusiness[] | [];
   searchBusiness: (key: string) => void;
   isLoading: boolean;
+  presetBusinessId: string;
 }
 
 const ProductBasicInfo = ({
@@ -45,6 +46,7 @@ const ProductBasicInfo = ({
   businesses,
   setBusinessId,
   searchBusiness,
+  presetBusinessId,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
@@ -97,6 +99,7 @@ const ProductBasicInfo = ({
         </label>
 
         <ReactSelect
+          isDisabled={!!presetBusinessId}
           value={formData.businessId}
           onChange={(selectedBusinessId: string) => {
             setFormData({

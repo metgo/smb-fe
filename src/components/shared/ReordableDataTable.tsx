@@ -195,11 +195,17 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
     const field = sortConfig.field;
 
-    return [...data].sort((a, b) => {
-      const aVal = a[field];
-      const bVal = b[field];
-      return compareValues(aVal, bVal, sortConfig.direction as "asc" | "desc");
-    });
+    return (
+      [...data].sort((a, b) => {
+        const aVal = a[field];
+        const bVal = b[field];
+        return compareValues(
+          aVal,
+          bVal,
+          sortConfig.direction as "asc" | "desc",
+        );
+      }) || []
+    );
   }, [data, sortConfig.field, sortConfig.direction]);
 
   const handleSort = useCallback((field: keyof T) => {
@@ -402,7 +408,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {(!sortedData || sortedData.length === 0) && !isDataLoading ? (
+            {(!sortedData || sortedData?.length === 0) && !isDataLoading ? (
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}

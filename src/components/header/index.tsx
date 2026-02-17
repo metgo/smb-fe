@@ -85,6 +85,11 @@ export default function Header() {
         start.setFullYear(today.getFullYear() - 1);
         start.setDate(today.getDate() + 1);
         break;
+      case "all_time":
+        start = new Date();
+        start.setFullYear(today.getFullYear() - 10);
+        start.setDate(today.getDate() + 10);
+        break;
       default:
         start = new Date();
         start.setDate(today.getDate() - 29);

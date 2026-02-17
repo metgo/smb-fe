@@ -39,13 +39,12 @@ export default function ReactSelect({
 }: Props) {
   const { isDark } = useThemeClasses();
 
-  if (!items?.length) return null;
-
-  const options: ItemOption[] = items.map((site) => ({
-    value: site._id,
-    label: site.name,
-    logo: site.logo,
-  }));
+  const options: ItemOption[] =
+    items?.map((site) => ({
+      value: site._id,
+      label: site.name,
+      logo: site.logo,
+    })) || [];
 
   const selectedOption = options.find((o) => o.value === value) || null;
 

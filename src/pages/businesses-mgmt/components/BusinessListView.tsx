@@ -97,7 +97,7 @@ export default function BusinessListView({
       label: t("business_name"),
       render: (business: any) => (
         <span className={`${textPrimary} line-clamp-1`}>
-          {business.name || business.slug || t("unnamed_business") || "-"}
+          {business.name || business.slug || "-"}
         </span>
       ),
     },

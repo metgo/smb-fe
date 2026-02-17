@@ -28,7 +28,6 @@ import {
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
 
-import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
@@ -47,10 +46,12 @@ interface ProductWizardProps {
   selectedProduct?: any;
   isOpen?: boolean;
   product?: any;
+  refetch?: any;
 }
 
 export default function CreateProductWizard({
   onClose,
+  refetch,
   product,
 }: ProductWizardProps) {
   const { t } = useTranslation("products");
@@ -58,6 +59,8 @@ export default function CreateProductWizard({
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
+  const bzIdForProdCreate = searchParams?.get("businessId");
+  // const businessName = searchParams?.get("businessName");
 
   const {
     language,
@@ -70,7 +73,7 @@ export default function CreateProductWizard({
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
     useGetBusinessForProductQuery(
-      !product?.businessId
+      !(product?.businessId || bzIdForProdCreate)
         ? {
             locale: language,
             limit: 20,
@@ -108,7 +111,7 @@ export default function CreateProductWizard({
   //   productId ? { productId: productId } : skipToken,
   // );
 
-  const [businessId, setBusinessId] = useState("");
+  const [businessId, setBusinessId] = useState(bzIdForProdCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
@@ -319,6 +322,7 @@ export default function CreateProductWizard({
     setIsPublishing(false);
 
     toast.success(t("Product created succesfully"));
+    refetch();
     onClose();
   };
 
@@ -338,7 +342,6 @@ export default function CreateProductWizard({
     descriptionHe: formData.fullDescriptionHe,
     descriptionAr: formData.fullDescriptionAr,
 
-    productType: formData.type,
     categories: formData.categories,
     subCategories: formData?.subCategories,
 
@@ -425,7 +428,11 @@ export default function CreateProductWizard({
     switch (currentStep) {
       case 1:
         return (
-          <ProductBasicInfo {...commonProps} setBusinessId={setBusinessId} />
+          <ProductBasicInfo
+            {...commonProps}
+            setBusinessId={setBusinessId}
+            presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
+          />
         );
       case 2:
         return <ProductAttributes {...commonProps} />;

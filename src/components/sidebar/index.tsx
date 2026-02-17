@@ -33,6 +33,7 @@ import { toggleSidebar } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { UserRole } from "@/enums/user.types";
 
 interface MenuItem {
   id: string;
@@ -50,9 +51,9 @@ export default function Sidebar() {
 
   const dispatch = useAppDispatch();
 
-  const { isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { isDark, isRTL } = useThemeClasses();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
+  const { userRole } = useAppSelector((state) => state.auth);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -64,7 +65,7 @@ export default function Sidebar() {
       path: routes.dashboard,
       label: t("dashboard") || "Dashboard",
       icon: LayoutDashboard,
-      isEnabled: true,
+      isEnabled: userRole !== UserRole.TRAVELLER && true,
     },
     {
       id: "businesses",
@@ -85,7 +86,7 @@ export default function Sidebar() {
       path: routes.ordersMgmt,
       label: t("orders") || "Orders",
       icon: ShoppingCart,
-      isEnabled: true,
+      isEnabled: false,
     },
     {
       id: "events",
@@ -248,7 +249,9 @@ export default function Sidebar() {
     navigate(item.path);
   };
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) =>
+    location.pathname.slice(0, 5) === path.slice(0, 5);
+
   const isExpanded = (path: string) => expandedItems.includes(path);
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
