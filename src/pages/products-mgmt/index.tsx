@@ -75,9 +75,7 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const { dmoId, authorityId, endDate, startDate } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
