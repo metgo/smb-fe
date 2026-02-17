@@ -1,14 +1,12 @@
-import { useState, type FC } from "react";
-import i18n from "@/i18n";
-
-import { Tag, ExternalLink, Download, ChevronDown, Globe } from "lucide-react";
-import { toast } from "sonner";
-import { useGetCategoriesQuery } from "@/store/api/masterDataApi";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
 import clsx from "clsx";
+import { toast } from "sonner";
+import { useState, type FC } from "react";
+import { ExternalLink, Download, ChevronDown, Globe } from "lucide-react";
+
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Business {
   shortDescription: string;
@@ -39,14 +37,10 @@ const qrSites = [
 /* ---------- Component ---------- */
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
-  const locale = i18n.language as Language;
-
   const { isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [showQRDropdown, setShowQRDropdown] = useState(false);
-
-  const { data: primaryCategories } = useGetCategoriesQuery({ locale });
 
   const handleWebsiteClick = (website: any) => {
     if (website.url) {
@@ -119,81 +113,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           dangerouslySetInnerHTML={{ __html: business?.description || "" }}
         />
       </div>
-
-      {/* Categories */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("categories")}
-        </h3>
-
-        <div className="flex flex-wrap gap-2">
-          {(() => {
-            const category = primaryCategories?.datas?.data.find(
-              (cat: any) => cat._id === business?.primaryCategoryId,
-            );
-            return category ? category.name : "-";
-          })()}
-        </div>
-      </div>
-
-      {/* Subcategories */}
-      {business?.subcategories?.length > 0 && (
-        <div>
-          <h3
-            className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("subcategories")}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {business?.subcategories?.map((subcat, idx) => (
-              <span
-                key={idx}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  isDark
-                    ? "bg-blue-900/30 text-blue-400"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {subcat}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tags */}
-      <h3
-        className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-      >
-        {t("tags")}
-      </h3>
-      {business?.tags?.length > 0 ? (
-        <div>
-          <div className="flex flex-wrap gap-2">
-            {business?.tags?.map((tag, idx) => (
-              <span
-                key={idx}
-                className={`px-2 py-1 rounded text-xs ${
-                  isDark
-                    ? "bg-gray-800 text-gray-400"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                <Tag className="w-3 h-3 inline mr-1" />
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <p
-          className={`text-sm italic ${isDark ? "text-gray-500" : "text-gray-400"}`}
-        >
-          -
-        </p>
-      )}
 
       {/* Website Connections */}
       {business?.associatedWebsites &&

@@ -63,6 +63,7 @@ export default function BusinessListView({
 
     columnVisibility.impact && {
       key: "impact",
+      sortable: true,
       label: t("impact_score"),
       width: "110px",
       render: (business: any) => {
@@ -92,6 +93,7 @@ export default function BusinessListView({
 
     columnVisibility.name && {
       key: "name",
+      sortable: true,
       label: t("business_name"),
       render: (business: any) => (
         <span className={`${textPrimary} line-clamp-1`}>
@@ -102,6 +104,7 @@ export default function BusinessListView({
 
     columnVisibility.shortDescription && {
       key: "shortDescription",
+      sortable: true,
       label: t("shortDescription"),
       render: (business: any) => (
         <div className={`${textPrimary} line-clamp-1`}>
@@ -112,6 +115,7 @@ export default function BusinessListView({
 
     columnVisibility.contactDetails && {
       key: "contactDetails",
+      sortable: true,
       label: t("contactPerson"),
       render: (business: any) => (
         <span className={textPrimary}>
@@ -122,6 +126,7 @@ export default function BusinessListView({
 
     columnVisibility.busiEmail && {
       key: "busiEmail",
+      sortable: true,
       label: t("business_email"),
       render: (business: any) => (
         <a
@@ -136,6 +141,7 @@ export default function BusinessListView({
 
     columnVisibility.phoneNumber && {
       key: "phoneNumber",
+      sortable: true,
       label: t("phone_number"),
       render: (business: any) => (
         <a
@@ -150,6 +156,7 @@ export default function BusinessListView({
 
     columnVisibility.productCount && {
       key: "productCount",
+      sortable: true,
       label: t("products_count"),
       render: (business: any) => (
         <span className={textPrimary}>{business.productCount ?? 0}</span>
@@ -159,6 +166,7 @@ export default function BusinessListView({
     columnVisibility.status && {
       key: "status",
       label: t("status"),
+      sortable: true,
       render: (business: any) => {
         const st = (business.status || "").toLowerCase();
         return (
@@ -184,6 +192,7 @@ export default function BusinessListView({
 
     columnVisibility.tripCount && {
       key: "tripCount",
+      sortable: true,
       label: t("trips"),
       render: (business: any) => (
         <span className={textPrimary}>{business.tripCount ?? 0}</span>
@@ -193,6 +202,7 @@ export default function BusinessListView({
     columnVisibility.associatedWebsites && {
       key: "associatedWebsites",
       label: t("website"),
+      sortable: true,
       render: (business: any) => {
         const sites = business.associatedWebsites || [];
         if (!sites.length) return <span className={textSecondary}>-</span>;

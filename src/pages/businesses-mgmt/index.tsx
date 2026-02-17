@@ -38,6 +38,7 @@ import {
 } from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
+import clsx from "clsx";
 
 // Column configuration
 const defaultColumns = {
@@ -81,7 +82,9 @@ export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
   const { textSecondary, isDark, isRTL, language } = useThemeClasses();
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -126,19 +129,13 @@ export default function BusinessesMgmtPage() {
 
   // Filters
   const [filters, setFilters] = useState({
-    dmoId,
-    authorityId,
     status: "all",
-    locale: language,
     hasProductFilter: "all",
   });
 
   const clearFilter = () => {
     setFilters({
-      authorityId: "",
-      dmoId: "",
       status: "all",
-      locale: language,
       hasProductFilter: "all",
     });
   };
@@ -180,6 +177,8 @@ export default function BusinessesMgmtPage() {
   const queryParams = useMemo(() => {
     const params: any = {
       page,
+      dmoId,
+      authorityId,
       limit: LIMIT,
       locale: language,
     };
@@ -190,24 +189,16 @@ export default function BusinessesMgmtPage() {
       params.status = filters.status;
     }
 
-    if (filters.authorityId && filters.authorityId !== "all") {
-      params.authorityId = filters.authorityId;
-    }
-
-    if (filters.dmoId && filters.dmoId !== "all") {
-      params.dmoId = filters.dmoId;
-    }
-
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
     }
 
     return params;
-  }, [page, searchTerm, filters, language]);
+  }, [page, searchTerm, filters, language, dmoId, authorityId]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, dmoId, authorityId]);
 
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
@@ -708,7 +699,7 @@ export default function BusinessesMgmtPage() {
           {/* Filters Panel */}
           {showFilters && (
             <div
-              className={`pb-4 border-t ${
+              className={` border-t ${
                 isDark
                   ? "border-gray-800 bg-gray-900/30"
                   : "border-gray-200 bg-gray-50"
@@ -769,21 +760,17 @@ export default function BusinessesMgmtPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex items-center gap-4  pt-2">
                 <button
                   onClick={clearFilter}
-                  className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                  className=" px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
                 >
                   {t("clear_all")}
                 </button>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   {Object.entries(filters).map(([key, value]) => {
                     // Skip rendering empty filters
                     if (!value || value === "all") return null;
-
-                    if (key === "authorityId" && !filters.dmoId) {
-                      return null;
-                    }
 
                     let displayValue = value;
                     if (key === "status") {
@@ -795,7 +782,12 @@ export default function BusinessesMgmtPage() {
                     return (
                       <div
                         key={key}
-                        className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
+                        className={clsx(
+                          "flex items-center gap-2 rounded-full h-6 px-2 text-sm border",
+                          isDark
+                            ? "bg-teal-950/40 text-teal-300 border-teal-800/50"
+                            : "bg-teal-50 text-teal-700 border-teal-200",
+                        )}
                       >
                         <span>{displayValue}</span>
 
@@ -811,7 +803,7 @@ export default function BusinessesMgmtPage() {
                               setFilters((prev) => ({ ...prev, [key]: "" }));
                             }
                           }}
-                          className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
+                          className=" text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
                           aria-label="Remove filter"
                         >
                           ✕

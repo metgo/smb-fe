@@ -295,7 +295,11 @@ export default function ProductDetailsPage() {
         {renderContent()}
       </div>
       {isEditOpen && (
-        <CreateProductWizard isOpen={isEditOpen} onClose={handleClose} />
+        <CreateProductWizard
+          isOpen={isEditOpen}
+          onClose={handleClose}
+          product={product}
+        />
       )}
     </div>
   );

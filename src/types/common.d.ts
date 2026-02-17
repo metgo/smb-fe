@@ -110,3 +110,9 @@ interface IAssociatedWebsiteIds {
   name: string;
   url: string;
 }
+
+interface ISearchBusiness {
+  _id: string;
+  name: string;
+  slug: string;
+}

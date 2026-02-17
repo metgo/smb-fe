@@ -32,11 +32,16 @@ import {
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
-import { useGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { ReactSelect } from "@/components/form-fields";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+import { formatILS } from "@/helpers/formatter";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -70,7 +75,9 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, endDate, startDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
@@ -87,12 +94,32 @@ export default function ProductsMgmtPage() {
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { data: businessData } = useGetBusinessForProductQuery({
-    locale: language,
-    limit: 20,
-    page: 1,
-    dmoId,
-    authorityId,
+  const { data: businessData, isLoading: _isBusinessesLoading } =
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      page: 1,
+      dmoId,
+      authorityId,
+    });
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching,
+  } = useRemoteSelectData({
+    initialData: businessData?.data,
+    debounceMs: 400,
+    searchParams: {
+      locale: language,
+      dmoId,
+      authorityId,
+    },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res.data };
+    },
   });
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -147,6 +174,10 @@ export default function ProductsMgmtPage() {
       page,
       limit: LIMIT,
       locale: language,
+      dmoId,
+      authorityId,
+      // startDate,
+      // endDate
     };
 
     if (searchTerm) {
@@ -170,10 +201,11 @@ export default function ProductsMgmtPage() {
     }
 
     return params;
-  }, [page, searchTerm, filters, language, businessIdView]);
+  }, [page, searchTerm, filters, language, businessIdView, dmoId, authorityId]);
+
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filters, language, businessIdView]);
+  }, [searchTerm, filters, language, businessIdView, dmoId, authorityId]);
 
   const statsQueryParams = useMemo(() => {
     const { page, limit, status, locale, ...rest } = productQueryParams;
@@ -284,7 +316,7 @@ export default function ProductsMgmtPage() {
     {
       id: 1,
       title: t("total_revenue"),
-      value: `₪${productStats?.totalRevenue}`,
+      value: formatILS(productStats?.totalRevenue),
       label: t("all_time") || "All Time",
       icon: <Package className="w-5 h-5 text-purple-600" />,
     },
@@ -298,14 +330,14 @@ export default function ProductsMgmtPage() {
     {
       id: 3,
       title: t("avg_product_price"),
-      value: `₪${productStats?.averageProductPrice}`,
+      value: formatILS(productStats?.averageProductPrice),
       label: t("per_product") || "Per Product",
       icon: <Settings2 className="w-5 h-5 text-blue-600" />,
     },
     {
       id: 4,
       title: t("revenue_this_month"),
-      value: `₪${productStats?.revenueThisMonth}`,
+      value: formatILS(productStats?.revenueThisMonth),
       label: t("current_month") || "Current Month",
       icon: <ArrowUp className="w-5 h-5 text-orange-600" />,
     },
@@ -569,6 +601,7 @@ export default function ProductsMgmtPage() {
                     >
                       {t("filter_by_business")}
                     </label>
+
                     <ReactSelect
                       isClearable
                       value={filters?.businessId ?? ""}
@@ -579,12 +612,13 @@ export default function ProductsMgmtPage() {
                         }));
                       }}
                       items={
-                        businessData?.data?.map((item: any) => ({
+                        businesses?.map((item: any) => ({
                           _id: item._id,
                           name: item.name,
                         })) ?? []
                       }
-                      placeholder={t("select_business")}
+                      onSearch={searchBusiness}
+                      isLoading={isSearching || _isBusinessesLoading}
                     />
                   </div>
                 )}

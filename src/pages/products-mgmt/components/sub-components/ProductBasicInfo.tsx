@@ -5,8 +5,8 @@ import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
-  selectedFormLanguage: "en" | "he" | "ar";
-  setSelectedFormLanguage: (lang: "en" | "he" | "ar") => void;
+  selectedFormLanguage: Language;
+  setSelectedFormLanguage: (lang: Language) => void;
   formData: {
     businessId: string;
 
@@ -29,11 +29,14 @@ interface ProductBasicInfoProps {
     nameEn?: string;
     shortDescEn?: string;
   };
-  businesses: { _id: string; name: string; slug: string }[];
+  businesses: ISearchBusiness[] | [];
+  searchBusiness: (key: string) => void;
+  isLoading: boolean;
 }
 
 const ProductBasicInfo = ({
   t,
+  isLoading,
   selectedFormLanguage,
   setSelectedFormLanguage,
   formData,
@@ -41,6 +44,7 @@ const ProductBasicInfo = ({
   errors,
   businesses,
   setBusinessId,
+  searchBusiness,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
@@ -108,6 +112,8 @@ const ProductBasicInfo = ({
               name: biz.name,
             })) || []
           }
+          onSearch={searchBusiness}
+          isLoading={isLoading}
         />
 
         {errors.businessId && (
@@ -126,7 +132,7 @@ const ProductBasicInfo = ({
           <select
             value={selectedFormLanguage}
             onChange={(e) =>
-              setSelectedFormLanguage(e.target.value as "en" | "he" | "ar")
+              setSelectedFormLanguage(e.target.value as Language)
             }
             className={`px-3 py-1.5 rounded-lg border ${borderColor} ${bgTertiary} ${textSecondary} text-sm`}
           >
