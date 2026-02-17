@@ -639,7 +639,6 @@ export default function ProductsMgmtPage() {
             ) : viewMode === "list" ? (
               <ProductListView
                 hasMore={hasMore}
-                refetch={refetch}
                 fetchNextPage={fetchNextPage}
                 products={combinedProducts}
                 isLoading={isLoadingProduct || isFetching}

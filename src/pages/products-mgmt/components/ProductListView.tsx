@@ -17,7 +17,6 @@ interface ProductListViewProps {
   selectedProducts: Set<string>;
   setSelectedProducts: (v: Set<string>) => void;
   columnVisibility: IColumnVisibility;
-  refetch: () => void;
 }
 
 const ProductListView: React.FC<ProductListViewProps> = ({
@@ -28,7 +27,6 @@ const ProductListView: React.FC<ProductListViewProps> = ({
   columnVisibility,
   selectedProducts,
   setSelectedProducts,
-  refetch,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("products");

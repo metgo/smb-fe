@@ -2,9 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
-
-import { useAppSelector } from "@/hooks/hooks";
+import { Calendar, Users, Ticket, DollarSign } from "lucide-react";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
@@ -14,6 +12,7 @@ import {
   useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
 import { EventsWithViewMode, CreateEventWizard } from "./components";
+import SearchInput from "@/components/shared/SearchInput";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
@@ -21,7 +20,6 @@ export default function EventsMgmtPage() {
 
   const navigate = useNavigate();
 
-  const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary, inputClasses, textTertiary, isDark } =
     useThemeClasses();
 
@@ -63,7 +61,7 @@ export default function EventsMgmtPage() {
   const { data: eventStatsData, isLoading: isEventStatsFetching } =
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
-  const totalData = events?.totalData;
+  // const totalData = events?.totalData;
 
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
     "list",
@@ -133,19 +131,10 @@ export default function EventsMgmtPage() {
           {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="flex-1 relative">
-              <Search
-                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 transform -translate-y-1/2 w-5 h-5 ${textTertiary}`}
-              />
-              <input
-                type="text"
+              <SearchInput
                 placeholder={t("search_events_placeholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border transition-colors ${
-                  isDark
-                    ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                }`}
+                searchTerm={searchQuery}
+                setSearchTerm={setSearchQuery}
               />
             </div>
             <FilterButton value={showFilters} onChange={setShowFilters} />
