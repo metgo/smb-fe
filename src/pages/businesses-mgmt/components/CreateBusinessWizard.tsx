@@ -377,6 +377,7 @@ export default function CreateBusinessWizard({
           newErrors.address = t("required_field");
         }
         break;
+
       case 4:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
