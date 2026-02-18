@@ -7,6 +7,12 @@
   "contact_name": "Contact Name",
   "email": "Email",
   "phone": "Phone",
+
+  "companyName": "Company Name",
+
+  "voucherAmount": "Voucher Amount",
+  "totalVouchers": "Total Vouchers",
+  "usedVouchers": "Used Vouchers",
   "office_address": "Office Address",
   "company_logo": "Company Logo",
   "upload_logo": "Upload Logo",

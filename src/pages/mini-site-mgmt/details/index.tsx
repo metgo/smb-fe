@@ -14,6 +14,7 @@ import { miniSiteTabs } from "@/constants/tabs";
 import { useGetMiniSiteByIdQuery } from "@/store/api/miniSiteQueryApi";
 
 import MiniOverviewSection from "./components/MiniOverviewSection";
+import MinisiteProductsSelect from "../components/sub-components/MinisiteProductsSelect";
 // import ContactSection from "./components/ContactSection";
 // import LocationSection from "./components/LocationSection";
 // import MediaSection from "./components/MediaSection";
@@ -52,7 +53,8 @@ export default function MiniSiteDetailsPage() {
     switch (activeTab) {
       case "overview":
         return <MiniOverviewSection {...commonProps} />;
-      // case "contact":   return <ContactSection {...commonProps} />;
+      case "product":
+        return <MinisiteProductsSelect {...commonProps} />;
       // case "location":  return <LocationSection {...commonProps} />;
       // case "media":     return <MediaSection {...commonProps} />;
       // case "social":    return <SocialSection {...commonProps} />;

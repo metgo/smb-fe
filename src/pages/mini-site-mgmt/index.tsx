@@ -274,7 +274,7 @@ export default function MiniSiteMgmtPage() {
 
   return (
     <>
-      <main className="overflow-y-auto h-[calc(100vh-64px)] p-6">
+      <main className="overflow-y-auto h-[calc(100vh-64px)] ">
         <div>
           {/* Header */}
           <PageHeader

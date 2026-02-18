@@ -136,5 +136,34 @@
   "tags": "الوسوم",
   "tags_desc": "{count} وسوم متاحة",
   "no_attribute_selected": "لم يتم تحديد أي خصائص",
-  "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات وصول أو أنواع مجموعات لهذا الحدث"
+  "no_attribute_selected_info": "لم يتم تعيين فئات فرعية أو ميزات وصول أو أنواع مجموعات لهذا الحدث",
+
+  "impact": "الأثر",
+  "name": "الاسم",
+  "shortDescription": "وصف قصير",
+  "contactDetails": "تفاصيل الاتصال",
+  "busiEmail": "البريد الإلكتروني للأعمال",
+  "phoneNumber": "رقم الهاتف",
+  "productCount": "عدد المنتجات",
+  "lifetimeSales": "المبيعات الكلية",
+  "tripCount": "عدد الرحلات",
+  "associatedWebsites": "المواقع المرتبطة",
+  "contactPhone": "هاتف الاتصال",
+  "categories": "الفئات",
+
+  "contact_phone": "هاتف جهة الاتصال",
+  "column_settings": "إعدادات الأعمدة",
+  "reset_to_default": "إعادة تعيين إلى الافتراضي",
+  "select_columns_to_display": "حدد الأعمدة المراد عرضها",
+  "show_columns": "إظهار الأعمدة",
+  "default_columns": "الأعمدة الافتراضية",
+  "optional_columns": "الأعمدة الاختيارية",
+
+  "code": "الرمز",
+  "companyName": "اسم الشركة",
+  "website": "الموقع الإلكتروني",
+  "voucherAmount": "قيمة القسيمة",
+  "totalVouchers": "إجمالي القسائم",
+  "usedVouchers": "القسائم المستخدمة",
+  "revenue": "الإيرادات"
 }

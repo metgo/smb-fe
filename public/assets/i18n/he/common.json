@@ -16,7 +16,13 @@
   "pois": "נקודות עניין",
   "trips": "טיולים",
   "users": "משתמשים",
-
+  "code": "קוד",
+  "companyName": "שם החברה",
+  "website": "אתר אינטרנט",
+  "voucherAmount": "סכום השובר",
+  "totalVouchers": "סך כל השוברים",
+  "usedVouchers": "שוברים שנוצלו",
+  "revenue": "הכנסות",
   "fun_days": "ימים שמחים",
   "local_economy": "כלכלה מקומית",
   "offline_vouchers": "שוברות לא מקוונות",
@@ -146,5 +152,26 @@
   "tags": "תגיות",
   "tags_desc": "{count} תגיות זמינות",
   "no_attribute_selected": "לא נבחרו מאפיינים",
-  "no_attribute_selected_info": "לא הוגדרו תת-קטגוריות, נגישויות או סוגי קבוצות לאירוע זה"
+  "no_attribute_selected_info": "לא הוגדרו תת-קטגוריות, נגישויות או סוגי קבוצות לאירוע זה",
+
+  "impact": "השפעה",
+  "name": "שם",
+  "shortDescription": "תיאור קצר",
+  "contactDetails": "פרטי קשר",
+  "busiEmail": "אימייל עסקי",
+  "phoneNumber": "מספר טלפון",
+  "productCount": "מספר מוצרים",
+  "lifetimeSales": "מכירות מצטברות",
+  "tripCount": "מספר טיולים",
+  "associatedWebsites": "אתרים קשורים",
+  "contactPhone": "טלפון ליצירת קשר",
+  "categories": "קטגוריות",
+  "contact_phone": "טלפון ליצירת קשר",
+
+  "column_settings": "הגדרות עמודות",
+  "reset_to_default": "אפס לברירת מחדל",
+  "select_columns_to_display": "בחר עמודות להצגה",
+  "show_columns": "הצג עמודות",
+  "default_columns": "עמודות ברירת מחדל",
+  "optional_columns": "עמודות אופציונליות"
 }

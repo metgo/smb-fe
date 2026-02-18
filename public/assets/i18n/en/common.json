@@ -164,5 +164,30 @@
   "tags": "Tags",
   "tags_desc": "{count} tags available",
   "no_attribute_selected": "No Attributes Selected",
-  "no_attribute_selected_info": "No subcategories, accessibility features, or group types have been assigned to this event"
+  "no_attribute_selected_info": "No subcategories, accessibility features, or group types have been assigned to this event",
+
+  "impact": "Impact",
+  "name": "Name",
+  "shortDescription": "Short Description",
+  "contactDetails": "Contact Details",
+  "busiEmail": "Business Email",
+  "phoneNumber": "Phone Number",
+  "productCount": "Product Count",
+  "lifetimeSales": "Lifetime Sales",
+  "tripCount": "Trip Count",
+  "associatedWebsites": "Associated Websites",
+  "contactPhone": "Contact Phone",
+  "categories": "Categories",
+
+  "contact_phone": "Contact Phone",
+
+  "default_columns": "Default Columns",
+
+  "code": "Code",
+  "companyName": "Company Name",
+  "website": "Website",
+  "voucherAmount": "Voucher Amount",
+  "totalVouchers": "Total Vouchers",
+  "usedVouchers": "Used Vouchers",
+  "revenue": "Revenue"
 }
