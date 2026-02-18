@@ -97,6 +97,7 @@ export default function BusinessesMgmtPage() {
   const [page, setPage] = useState<number>(1);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
   const [error, _setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -131,7 +132,8 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem("businessSearchTerm") ?? searchTerm;
     if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
@@ -567,6 +569,7 @@ export default function BusinessesMgmtPage() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                storageKey="businessSearchTerm"
               />
             </div>
 
