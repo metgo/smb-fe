@@ -131,7 +131,9 @@ export default function ProductsMgmtPage() {
     },
   });
 
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid">(
+    (localStorage.getItem("productViewMode") as "list" | "grid") ?? "list",
+  );
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -524,7 +526,11 @@ export default function ProductsMgmtPage() {
                 </div>
               )}
               {/* View Mode Toggle */}
-              <ViewModeToggle onChange={setViewMode} value={viewMode} />
+              <ViewModeToggle
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="productViewMode"
+              />
             </div>
           </div>
 

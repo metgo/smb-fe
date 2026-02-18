@@ -107,7 +107,7 @@ export default function EventsMgmtPage() {
     useGetEventsStatsQuery(statsQueryParams);
 
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
-    "list",
+    (localStorage.getItem("eventViewMode") as "list" | "grid") ?? "list",
   );
 
   const handleAddEvent = () => {
@@ -184,6 +184,7 @@ export default function EventsMgmtPage() {
               showCalendor
               onChange={setViewMode}
               value={viewMode}
+              tableName="eventViewMode"
             />
           </div>
 
