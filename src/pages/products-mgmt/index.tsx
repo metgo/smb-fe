@@ -2,8 +2,6 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Package,
-  Grid3x3,
-  List,
   Settings2,
   ArrowUpDown,
   ArrowUp,
@@ -18,6 +16,7 @@ import {
   ConfirmDialog,
   PageHeader,
   PageStats,
+  ViewModeToggle,
 } from "@/components/shared";
 import {
   CreateProductWizard,
@@ -133,6 +132,7 @@ export default function ProductsMgmtPage() {
   });
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
   const [showFilters, setShowFilters] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -187,7 +187,8 @@ export default function ProductsMgmtPage() {
       endDate,
     };
 
-    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem("productSearchTerm") ?? searchTerm;
     if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
@@ -391,6 +392,7 @@ export default function ProductsMgmtPage() {
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                storageKey="productSearchTerm"
               />
             </div>
 
@@ -522,30 +524,7 @@ export default function ProductsMgmtPage() {
                 </div>
               )}
               {/* View Mode Toggle */}
-              <div
-                className={`flex items-center gap-1 p-1 rounded-lg border border-gray-300 ${isDark ? "bg-gray-900" : "bg-white"} `}
-              >
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${
-                    viewMode === "list"
-                      ? "bg-teal-500 text-white"
-                      : "text-gray-500 dark:text-gray-400"
-                  } `}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${
-                    viewMode === "grid"
-                      ? "bg-teal-500 text-white"
-                      : "text-gray-500"
-                  }`}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-              </div>
+              <ViewModeToggle onChange={setViewMode} value={viewMode} />
             </div>
           </div>
 

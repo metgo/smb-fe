@@ -93,18 +93,15 @@ export default function ProductDetailsPage() {
     },
   ];
   const handleClose = () => {
+    refetch();
     setIsEditOpen(false);
   };
   const handleEdit = () => {
     setIsEditOpen(true);
   };
-  const canEdit = [
-    "superadmin",
-    "admin",
-    "dmo",
-    "authority",
-    "business_owner",
-  ].includes(userRole);
+  const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
+    userRole,
+  );
 
   const {
     images,
@@ -166,6 +163,8 @@ export default function ProductDetailsPage() {
             title="Product Attributes"
             categoriesId={product?.categories}
             subCategoriesId={product?.subCategories}
+            accessibilitiesId={product?.accessibilitiesId}
+            groupTypesId={product?.groupTypesId}
           />
         );
       case "pricing":

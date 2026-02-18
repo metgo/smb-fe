@@ -20,7 +20,8 @@
   "add_location": "إضافة موقع",
   "location_address": "عنوان الموقع",
   "address": "العنوان",
-
+  "no_data": "لا توجد بيانات",
+  "not_found": "غير موجود",
   "add": "إضافة",
   "cancel": "إلغاء",
   "city": "المدينة",

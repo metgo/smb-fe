@@ -15,7 +15,6 @@ import {
   FileText,
 } from "lucide-react";
 import {
-  ProductAttributes,
   ProductBasicInfo,
   ProductMedia,
   ProductPricingAvailability,
@@ -36,9 +35,13 @@ import {
   useLazyGetBusinessDeliveryInfoByIdQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { DeliveryPolicyOption } from "@/components/details-sections";
+import {
+  Attributes,
+  DeliveryPolicyOption,
+} from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+import { removeNulls } from "@/helpers";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -133,6 +136,10 @@ export default function CreateProductWizard({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
 
   const {
     images,
@@ -181,6 +188,11 @@ export default function CreateProductWizard({
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
+
+    primaryCategory: "",
+    tags: [] as string[],
+    accessibility: [] as string[],
+    groupTypes: [] as string[],
   });
 
   useEffect(() => {
@@ -228,6 +240,8 @@ export default function CreateProductWizard({
       // step-2: Attributes
       categories: product.categories || [],
       subCategories: product.subCategories || [],
+      primaryCategory: product?.primaryCategoryId || "",
+      tags: product?.tags || [],
 
       //step-3: pricing, stock & dates
       markedPrice: product.price?.markedPrice || "",
@@ -254,6 +268,9 @@ export default function CreateProductWizard({
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
     });
+
+    setAccessiblitiesId(removeNulls(product?.accessibilitiesId));
+    setGroupTypesId(removeNulls(product?.groupTypesId));
     setGalleryImages(product?.images);
   }, [productId, product]);
 
@@ -356,8 +373,10 @@ export default function CreateProductWizard({
     descriptionHe: formData.fullDescriptionHe,
     descriptionAr: formData.fullDescriptionAr,
 
-    categories: formData.categories,
-    subCategories: formData?.subCategories,
+    primaryCategoryId: formData.primaryCategory,
+    tags: formData.tags,
+    accessibilitiesId: removeNulls(selectedAccessiblitiesId),
+    groupTypesId: removeNulls(selectedGroupTypesId),
 
     price: {
       markedPrice: formData.markedPrice,
@@ -450,7 +469,15 @@ export default function CreateProductWizard({
           />
         );
       case 2:
-        return <ProductAttributes {...commonProps} />;
+        return (
+          <Attributes
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            setAccessiblitiesId={setAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+            setGroupTypesId={setGroupTypesId}
+          />
+        );
       case 3:
         return <ProductPricingAvailability {...commonProps} />;
       case 4:
