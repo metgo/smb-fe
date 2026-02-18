@@ -128,7 +128,7 @@ export default function ProductsMgmtPage() {
     },
     lazySearch: async (params) => {
       const res = await getBusinessList(params).unwrap();
-      return { data: res.data };
+      return { data: res?.data };
     },
   });
 
@@ -662,13 +662,12 @@ export default function ProductsMgmtPage() {
           )}
 
           {/* Bulk Actions */}
-          {selectedProducts.size > 0 && (
+          {selectedProducts?.size > 0 && (
             <BulkActionBar
-              selectedItemCount={selectedProducts.size || 0}
+              isProduct
+              selectedItemCount={selectedProducts?.size || 0}
               handleBulkStatusChange={handleBulkStatusChange}
-              onBulkAction={{
-                delete: promptBulkDelete,
-              }}
+              handleBulkDelete={promptBulkDelete}
             />
           )}
         </div>

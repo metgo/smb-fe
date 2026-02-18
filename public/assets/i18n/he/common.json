@@ -53,6 +53,11 @@
   "send_invite": "שלח הזמנה",
   "back_to_list": "חזור לרשימה",
 
+  "all_time": "כל הזמן",
+  "no_data_available": "אין נתונים זמינים",
+  "closed": "סגור",
+  "total": "סה\"כ: ",
+
   "pending": "בהמתנה",
   "approved": "אשר",
   "rejected": "דחה",

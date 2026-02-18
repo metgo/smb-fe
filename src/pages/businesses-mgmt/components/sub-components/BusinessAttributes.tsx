@@ -105,13 +105,13 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
 
       <SelectableChips
         label="Accessiblities"
-        items={accessibility?.datas?.data}
+        items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
       <SelectableChips
         label="Group Types"
-        items={groupTypes?.datas?.data}
+        items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
       />

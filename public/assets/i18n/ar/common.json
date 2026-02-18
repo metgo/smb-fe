@@ -53,6 +53,11 @@
   "marked_price": "מחיר_מסומן",
   "back_to_list": "العودة إلى القائمة",
 
+  "all_time": "كل الوقت",
+  "no_data_available": "لا توجد بيانات متاحة",
+  "closed": "مغلق",
+  "total": "الإجمالي: ",
+
   "pending": "قيد الانتظار",
   "draft": "مسودة",
   "active": "نشط",

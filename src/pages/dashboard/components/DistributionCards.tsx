@@ -141,18 +141,18 @@ interface DistributionCardProps {
 }
 
 const bzPoiStatuses = [
-  { value: "DRAFT", label: "Draft" },
-  { value: "PENDING", label: "Pending" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "ARCHIVED", label: "Archived" },
-  { value: "CLOSED", label: "Closed" },
-  { value: "REJECTED", label: "Rejected" },
+  { value: "DRAFT", label: "draft" },
+  { value: "PENDING", label: "pending" },
+  { value: "APPROVED", label: "approved" },
+  { value: "ARCHIVED", label: "archived" },
+  { value: "CLOSED", label: "closed" },
+  { value: "REJECTED", label: "rejected" },
 ];
 
 const prodStatuses = [
-  { value: "draft", label: "Draft" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
+  { value: "draft", label: "draft" },
+  { value: "active", label: "active" },
+  { value: "inactive", label: "inactive" },
 ];
 
 const getCategoryName = (name: string, t: (v: string) => string) => {
@@ -185,6 +185,8 @@ export function DistributionCard({
   isLoading,
 }: DistributionCardProps) {
   const { t } = useTranslation("dashboard");
+  const { t: tc } = useTranslation("common");
+
   const { isDark } = useThemeClasses();
   const COLORS = getColors(isDark);
 
@@ -226,14 +228,14 @@ export function DistributionCard({
                 {title}
               </h3>
               <p className={isDark ? "text-gray-400" : "text-gray-500"}>
-                Total: 0
+                {tc("total")} 0
               </p>
             </div>
           </div>
         </div>
         <div className="h-80 flex items-center justify-center">
           <p className={isDark ? "text-gray-400" : "text-gray-500"}>
-            No data available
+            {tc("no_data_available")}
           </p>
         </div>
       </div>
@@ -277,7 +279,7 @@ export function DistributionCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Total: {total?.toLocaleString() || 0}
+              {tc("total")} {total?.toLocaleString() || 0}
             </p>
           </div>
         </div>
@@ -296,7 +298,7 @@ export function DistributionCard({
           >
             {statuses?.map((s) => (
               <option key={s.value} value={s.value}>
-                {s.label}
+                {tc(s.label)}
               </option>
             ))}
           </select>
@@ -474,7 +476,7 @@ export function DistributionCard({
                     isDark ? "text-gray-300" : "text-gray-700",
                   )}
                 >
-                  {getCategoryName(item.name, t)}
+                  {t(item?.name?.toLocaleLowerCase())}
                 </span>
               </div>
             </div>

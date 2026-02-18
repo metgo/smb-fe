@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export type StatusKey =
   | "DRAFT"
@@ -10,11 +11,12 @@ export type StatusKey =
   | "ARCHIVED";
 
 interface StatusBadgeProps {
-  status?: StatusKey | string;
-  t?: (key: string) => string;
+  status: StatusKey | string;
 }
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ status, t }) => {
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  const { t } = useTranslation("common");
+
   const statusConfig: Record<StatusKey, { color: string; label: string }> = {
     DRAFT: { color: "bg-gray-500", label: t?.("draft") || "Draft" },
     INACTIVE: { color: "bg-yellow-500", label: t?.("inactive") || "Inactive" },

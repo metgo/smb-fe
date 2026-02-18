@@ -730,23 +730,12 @@ export default function EventsWithViewMode({
     }
   };
 
-  const handleBulkCsvExport = () => {
-    console.log("CSV export for:", 2);
-  };
-  const handleBulkPdfExport = () => {
-    console.log("PDF export for:", 2);
-  };
-
   return (
     <div className="space-y-2">
       <BulkActionBar
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
-        onBulkAction={{
-          delete: handleBulkDelete,
-          csvExport: handleBulkCsvExport,
-          pdfExport: handleBulkPdfExport,
-        }}
+        handleBulkDelete={handleBulkDelete}
       />
 
       {/* Controls */}

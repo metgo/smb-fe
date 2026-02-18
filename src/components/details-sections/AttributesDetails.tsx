@@ -361,8 +361,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Suitable for {tags.length}{" "}
-                {tags.length === 1 ? "group type" : "group types"}
+                Suitable for {tags.length} {tags.length === 1 ? "tag" : "tags"}
               </p>
             </div>
           </div>

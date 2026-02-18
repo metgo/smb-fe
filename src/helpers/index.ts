@@ -114,3 +114,7 @@ export function getMatchedItems(originalList: any, selectedIds?: string[]) {
   );
   return matchedItems ?? [];
 }
+
+export function removeNulls(arr: string[]) {
+  return arr.filter((item) => item !== null);
+}
