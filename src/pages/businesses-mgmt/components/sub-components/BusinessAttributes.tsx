@@ -132,8 +132,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
             isDark ? "text-gray-400" : "text-gray-500"
           }`}
         >
-          Type a tag and press <span className="font-medium">comma (,)</span> to
-          add
+          {t("tag_input_hint")}
         </p>
 
         <div
@@ -167,7 +166,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
             {/* Input */}
             <input
               type="text"
-              placeholder="Add tag..."
+              placeholder={t("add_tag_placeholder")}
               value={tagInput}
               onChange={(e) => {
                 setTagInput(e.target.value);

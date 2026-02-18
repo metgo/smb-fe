@@ -155,25 +155,6 @@ const prodStatuses = [
   { value: "inactive", label: "inactive" },
 ];
 
-const getCategoryName = (name: string, t: (v: string) => string) => {
-  switch (name) {
-    case "sleep":
-      return t("sleep");
-    case "eat":
-      return t("eat");
-    case "attraction":
-      return t("attraction");
-    case "local":
-      return t("local");
-    case "travel":
-      return t("travel");
-    case "culture":
-      return t("culture");
-    default:
-      return name;
-  }
-};
-
 export function DistributionCard({
   title,
   icon,
