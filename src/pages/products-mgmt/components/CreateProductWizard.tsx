@@ -298,7 +298,7 @@ export default function CreateProductWizard({
           newErrors.shortDescEn = t("field_required");
         break;
       case 2:
-        if (formData.categories.length === 0)
+        if (!formData.primaryCategory)
           newErrors.categories = t("select_at_least_one_category");
         break;
       case 3:

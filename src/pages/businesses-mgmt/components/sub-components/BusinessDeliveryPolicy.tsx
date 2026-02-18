@@ -283,7 +283,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     </button>
                   </div>
                 </div>
-                {deliveryArea?.pickUpLocation.length > 0 && (
+                {deliveryArea?.pickUpLocation?.length > 0 && (
                   <label
                     className={`block text-xs mb-1 ${
                       isDark ? "text-gray-400" : "text-gray-500"

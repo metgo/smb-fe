@@ -65,7 +65,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
 
   // Delete pickup location
   const handleDeletePickup = (areaIdx: number, pickupIdx: number) => {
-    const updatedAreas = formData.deliveryArea.map((area, idx) => {
+    const updatedAreas = formData?.deliveryArea?.map((area, idx) => {
       if (idx === areaIdx) {
         const updatedPickups = area.pickUpLocation.filter(
           (_, pIdx) => pIdx !== pickupIdx,
@@ -171,7 +171,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
           </div>
 
           <div className="space-y-4">
-            {formData.deliveryArea.map((deliveryArea, areaIdx) => (
+            {formData?.deliveryArea?.map((deliveryArea, areaIdx) => (
               <div
                 key={areaIdx}
                 className={`p-4 rounded-lg border ${isDark ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}
@@ -186,9 +186,9 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     </label>
                     <input
                       type="text"
-                      value={deliveryArea.area}
+                      value={deliveryArea?.area}
                       onChange={(e) => {
-                        const areas = formData.deliveryArea.map((area, idx) =>
+                        const areas = formData.deliveryArea?.map((area, idx) =>
                           idx === areaIdx
                             ? { ...area, area: e.target.value }
                             : area,
@@ -253,7 +253,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                       onClick={() =>
                         setFormData((prev) => ({
                           ...prev,
-                          deliveryArea: prev.deliveryArea.filter(
+                          deliveryArea: prev.deliveryArea?.filter(
                             (_, i) => i !== areaIdx,
                           ),
                         }))
@@ -266,14 +266,14 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                 </div>
 
                 {/* Pickup Locations */}
-                {deliveryArea.pickUpLocation.length > 0 && (
+                {deliveryArea?.pickUpLocation?.length > 0 && (
                   <label
                     className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
                     {t("pickup_locations")} :
                   </label>
                 )}
-                {deliveryArea.pickUpLocation.map((pickup, pickupIdx) => (
+                {deliveryArea?.pickUpLocation?.map((pickup, pickupIdx) => (
                   <div
                     key={pickupIdx}
                     className={`border p-3 rounded-md mb-2 ${isDark ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-200"}`}

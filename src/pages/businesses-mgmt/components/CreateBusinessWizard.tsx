@@ -90,6 +90,10 @@ export default function CreateBusinessWizard({
     allWhitelistIds: [] as string[],
     selectedWhitelistIds: [] as string[],
   });
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
+
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -181,9 +185,16 @@ export default function CreateBusinessWizard({
     useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
+  console.log("🚀 ~ CreateBusinessWizard ~ addr:", addr);
 
   const totalSteps = 9;
 
+  useEffect(() => {
+    if (userRole === "authority") {
+      setSelectAuthorityId(authorityId);
+      setSelectedDmoId(dmoId);
+    }
+  }, []);
   useEffect(() => {
     if (businessId === "" || currentView !== "edit") return;
 
@@ -363,10 +374,11 @@ export default function CreateBusinessWizard({
       }
 
       case 3:
-        if (!addr.city || !addr.country || !addr.location) {
+        if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
+
       case 4:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");

@@ -156,7 +156,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
             )}
 
           <div className="font-medium">
-            {product.price?.markedPrice != null
+            {product.price?.sellingPrice != null
               ? `₪${product.price?.sellingPrice}`
               : "-"}
           </div>
