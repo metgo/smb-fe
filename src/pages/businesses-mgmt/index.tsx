@@ -21,7 +21,6 @@ import {
   Landmark,
   Theater,
   Map,
-  Package,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -41,6 +40,7 @@ import {
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
+import EmptyState from "@/components/shared/EmptyState";
 
 // Column configuration
 const defaultColumns = {
@@ -83,16 +83,8 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const {
-    isDark,
-    isRTL,
-    language,
-    bgSecondary,
-    borderColor,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-  } = useThemeClasses();
+  const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
+    useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
@@ -139,8 +131,8 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status;
@@ -834,19 +826,7 @@ export default function BusinessesMgmtPage() {
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
-              <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
-              <h3 className={`text-lg ${textPrimary} mb-2`}>
-                {t("no_business")}
-              </h3>
-              <p className={`${textTertiary} mb-6`}>
-                {t("no_businesses_desc")}
-              </p>
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-              >
-                {t("add_business")}
-              </button>
+              <EmptyState searchQuery={searchTerm} />
             </div>
           ) : viewMode === "list" ? (
             <BusinessListView

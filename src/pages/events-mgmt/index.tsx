@@ -50,9 +50,8 @@ export default function EventsMgmtPage() {
       externalApiId: websiteId,
     };
 
-    if (searchQuery) {
-      params.search = searchQuery;
-    }
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchQuery;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (eventTypeFilter === "free") {
       params.isFree = true;
@@ -95,7 +94,7 @@ export default function EventsMgmtPage() {
   const {
     data: events,
     refetch,
-    isLoading: _isLoading,
+    isLoading: isLoading,
   } = useGetAllEventsQuery(eventQueryParams);
 
   const statsQueryParams = useMemo(() => {
@@ -352,7 +351,7 @@ export default function EventsMgmtPage() {
 
         {/* Events with different View */}
         <EventsWithViewMode
-          isLoading={_isLoading}
+          isLoading={isLoading}
           events={(events?.data as any) || []}
           refetch={refetch}
           eventTypeFilter={eventTypeFilter}
