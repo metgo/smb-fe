@@ -6,15 +6,17 @@ interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  storageKey?: string;
 }
-
-const STORAGE_KEY = "searchTerm"; // localStorage key
 
 const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
+  storageKey = "",
 }) => {
+  const STORAGE_KEY = storageKey; // localStorage key
+
   const [inputValue, setInputValue] = useState(() => {
     // Initialize from localStorage if available
     return localStorage.getItem(STORAGE_KEY) ?? searchTerm;

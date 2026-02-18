@@ -8,7 +8,8 @@
   "last_30_days": "Last 30 Days",
   "last_90_days": "Last 90 Days",
   "last_year": "Last Year",
-
+  "no_data": "No data available",
+  "not_found": "not found",
   "all_time": "All Time",
   "no_data_available": "No data available",
   "closed": "Closed",

@@ -19,7 +19,8 @@
   "add_location": "הוספת מיקום",
   "location_address": "כתובת המיקום",
   "address": "כתובת",
-
+  "no_data": "אין נתונים זמינים",
+  "not_found": "לא נמצא",
   "add": "הוסף",
   "cancel": "בטל",
   "city": "עיר",

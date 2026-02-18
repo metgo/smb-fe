@@ -50,7 +50,8 @@ export default function EventsMgmtPage() {
       externalApiId: websiteId,
     };
 
-    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchQuery;
+    const finalSearchTerm =
+      localStorage.getItem("eventsSearchTerm") ?? searchQuery;
     if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (eventTypeFilter === "free") {
@@ -175,6 +176,7 @@ export default function EventsMgmtPage() {
                 placeholder={t("search_events_placeholder")}
                 searchTerm={searchQuery}
                 setSearchTerm={setSearchQuery}
+                storageKey="eventsSearchTerm"
               />
             </div>
             <FilterButton value={showFilters} onChange={setShowFilters} />
