@@ -96,7 +96,9 @@ export default function BusinessesMgmtPage() {
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
 
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid">(
+    (localStorage.getItem("businessViewMode") as "list" | "grid") ?? "list",
+  );
 
   const [error, _setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -713,7 +715,11 @@ export default function BusinessesMgmtPage() {
               <Download className="w-5 h-5" />
               {t("export")}
             </button>
-            <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            <ViewModeToggle
+              onChange={setViewMode}
+              value={viewMode}
+              tableName="businessViewMode"
+            />
           </div>
 
           {/* Filters Panel */}
