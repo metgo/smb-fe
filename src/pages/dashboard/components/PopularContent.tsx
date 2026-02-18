@@ -1,4 +1,7 @@
+import clsx from "clsx";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+
 import { InfoTooltip } from "@/components/shared";
 import {
   useGetPopularBusinessStatsQuery,
@@ -13,11 +16,10 @@ import {
   Trophy,
   Award,
   Medal,
+  ArrowLeft,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PodiumItemProps {
   isDark: boolean;
@@ -170,7 +172,7 @@ function PopularCard({
   navPath,
 }: PopularCardProps) {
   const { t } = useTranslation("dashboard");
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
 
   // Top 3 for podium
   const topThree = items?.slice(0, 3);
@@ -243,7 +245,11 @@ function PopularCard({
         )}
       >
         {t("view_all")}
-        <ArrowRight className="w-4 h-4" />
+        {isRTL ? (
+          <ArrowLeft className="w-4 h-4" />
+        ) : (
+          <ArrowRight className="w-4 h-4" />
+        )}
       </Link>
     </div>
   );
@@ -327,11 +333,11 @@ export default function PopularContent() {
         <h2
           className={clsx(" flex-1", isDark ? "text-white" : "text-gray-900")}
         >
-          Popular Content
+          {t("popular_content")}
         </h2>
         <InfoTooltip
           content={t("popular_content_desc")}
-          title="Popular Content"
+          title={t("popular_content")}
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -339,21 +345,21 @@ export default function PopularContent() {
           title={t("popular_businesses")}
           icon={<Building2 className="w-5 h-5 text-white" />}
           items={popularBusinesses}
-          metricLabel="Total views"
+          metricLabel={t("total_views")}
           navPath="/businesses-management"
         />
         <PopularCard
           title={t("popular_products")}
           icon={<Package className="w-5 h-5 text-white" />}
           items={popularProducts}
-          metricLabel="Total Purchases"
+          metricLabel={t("total_purchases")}
           navPath="/products-management"
         />
         <PopularCard
           title={t("popular_pois")}
           icon={<Monitor className="w-5 h-5 text-white" />}
           items={popularPois}
-          metricLabel="Page views"
+          metricLabel={t("page_views")}
           navPath="/pois-management"
         />
       </div>

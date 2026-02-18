@@ -141,7 +141,7 @@ export default function Header() {
               isDisabled={userRole === "authority"}
               value={dmoId}
               onChange={(value) => dispatch(setDmo(value))}
-              placeholder="Select DMO"
+              placeholder={t("select_dmo")}
               items={dmosAuthorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -154,7 +154,7 @@ export default function Header() {
               value={authorityId}
               isDisabled={userRole === "authority"}
               onChange={(value) => dispatch(setAuthority(value))}
-              placeholder="Select Authority"
+              placeholder={t("select_authority")}
               items={selectedParent?.authorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -167,7 +167,7 @@ export default function Header() {
               items={filteredWebsites}
               value={websiteId}
               onChange={(value) => dispatch(setWebsite(value))}
-              placeholder="Select website"
+              placeholder={t("select_website")}
             />
 
             {/* Date Range Selector */}

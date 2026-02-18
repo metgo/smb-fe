@@ -36,7 +36,7 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { parseAddress } from "@/helpers";
+import { parseAddress, removeNulls } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { DeliveryPolicyOption } from "@/components/details-sections";
@@ -219,17 +219,17 @@ export default function CreateBusinessWizard({
           phone: editData.contactDetails?.phone,
           address: editData.contactDetails?.address,
           email: editData.contactDetails?.email,
-          whatsAppCountryCode: editData.contactDetails?.whatsAppCountryCode,
-          whatsAppNumber: editData.contactDetails?.whatsAppNumber,
-          prefferedChannel: editData.contactDetails?.prefferedChannel,
+          whatsAppCountryCode: editData?.contactDetails?.whatsAppCountryCode,
+          whatsAppNumber: editData?.contactDetails?.whatsAppNumber,
+          prefferedChannel: editData?.contactDetails?.prefferedChannel,
         },
         operatingHours: editData?.openingHrs,
         //attributes
-        primaryCategory: editData.primaryCategoryId || "",
-        tags: editData.tags || [],
+        primaryCategory: editData?.primaryCategoryId || "",
+        tags: editData?.tags || [],
       });
-      setAccessiblitiesId(editData.accessibilitiesId.map((a: any) => a._id));
-      setGroupTypesId(editData.groupTypesId.map((g: any) => g._id));
+      setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
+      setGroupTypesId(removeNulls(editData?.groupTypesId));
 
       // Set geo location
       if (editData?.geoLocation) {
@@ -304,8 +304,8 @@ export default function CreateBusinessWizard({
     primaryCategoryId: formData.primaryCategory,
     // subcategories: formData.subcategories,
     tags: formData.tags,
-    accessibilitiesId: selectedAccessiblitiesId,
-    groupTypesId: selectedGroupTypesId,
+    accessibilitiesId: removeNulls(selectedAccessiblitiesId),
+    groupTypesId: removeNulls(selectedGroupTypesId),
     // serviceType: formData.serviceType,
     //  step 5
     logo: { image: logoGcsUrl },

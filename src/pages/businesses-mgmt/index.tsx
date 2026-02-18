@@ -94,38 +94,13 @@ export default function BusinessesMgmtPage() {
     textTertiary,
   } = useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-
-  const handleBusinessClick = (business: any) => {
-    navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
-      replace: true,
-    });
-  };
-
-  const { i18n } = useTranslation();
-  const languageSafe = i18n.language || "en";
-
-  const statsQueryParams = useMemo(() => {
-    const params: any = {
-      locale: languageSafe, // required
-    };
-
-    return params;
-  }, [languageSafe]);
-
-  // Then call your query
-  const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery(statsQueryParams);
-
-  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
-    useBulkBusinessesUpdateMutation();
-
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
 
@@ -137,7 +112,6 @@ export default function BusinessesMgmtPage() {
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
@@ -147,6 +121,59 @@ export default function BusinessesMgmtPage() {
     status: "all",
     hasProductFilter: "all",
   });
+
+  const handleBusinessClick = (business: any) => {
+    navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
+      replace: true,
+    });
+  };
+
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page,
+      dmoId,
+      startDate,
+      endDate,
+      authorityId,
+      limit: LIMIT,
+      locale: language,
+      externalApiId: websiteId,
+    };
+
+    if (searchTerm) params.search = searchTerm;
+
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
+
+    if (filters.hasProductFilter !== "all") {
+      params.hasProductFilter = filters.hasProductFilter === "yes";
+    }
+
+    return params;
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+    websiteId,
+  ]);
+
+  const statsQueryParams = useMemo(() => {
+    const { page, limit, locale, ...rest } = queryParams;
+    return rest;
+  }, [queryParams, dmoId, authorityId, websiteId]);
+
+  // Then call your query
+  const { data: businessStatsData, isLoading: isStatsLoading } =
+    useGetBusinessStatsQuery(statsQueryParams);
+
+  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
+    useBulkBusinessesUpdateMutation();
 
   const clearFilter = () => {
     setFilters({
@@ -188,39 +215,6 @@ export default function BusinessesMgmtPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColumnSettings]);
-
-  const queryParams = useMemo(() => {
-    const params: any = {
-      page,
-      dmoId,
-      startDate,
-      endDate,
-      authorityId,
-      limit: LIMIT,
-      locale: language,
-    };
-
-    if (searchTerm) params.search = searchTerm;
-
-    if (filters.status !== "all") {
-      params.status = filters.status;
-    }
-
-    if (filters.hasProductFilter !== "all") {
-      params.hasProductFilter = filters.hasProductFilter === "yes";
-    }
-
-    return params;
-  }, [
-    page,
-    searchTerm,
-    filters,
-    language,
-    dmoId,
-    authorityId,
-    startDate,
-    endDate,
-  ]);
 
   useEffect(() => {
     setPage(1);
@@ -832,9 +826,7 @@ export default function BusinessesMgmtPage() {
           <BulkActionBar
             selectedItemCount={selectedBusinesses.size || 0}
             handleBulkStatusChange={handleBulkStatusChange}
-            onBulkAction={{
-              delete: promptBulkDelete,
-            }}
+            handleBulkDelete={promptBulkDelete}
           />
         </div>
         <div className="flex-1 overflow-y-auto mt-2">

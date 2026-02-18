@@ -6,6 +6,7 @@ import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface Business {
   _id: string;
@@ -34,6 +35,7 @@ interface GridViewProps<T> {
 }
 
 function BusinessGridView<T extends Business>({
+  t,
   data,
   onRowClick,
   refetch,
@@ -69,7 +71,7 @@ function BusinessGridView<T extends Business>({
       } `}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         id="business-table-scroll"
         ref={scrollRef}
       >
@@ -80,18 +82,36 @@ function BusinessGridView<T extends Business>({
               className={`${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
               onClick={() => onRowClick && onRowClick(business)}
             >
-              {/* Delete button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsConfirmOpen(true);
-                  setBusinessToDelete(business?._id);
-                }}
-                className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                aria-label={`Delete ${business.name}`}
-              >
-                <TrashIcon size={18} />
-              </button>
+              <div className="absolute top-2 mx-auto px-2 w-full z-50 flex items-center justify-between">
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setBusinessToDelete(business?._id);
+                  }}
+                  className=" z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                  aria-label={`Delete ${business.name}`}
+                >
+                  <TrashIcon size={18} />
+                </button>
+                <span
+                  className={clsx(
+                    "inline-flex items-center px-3 py-1 rounded-lg text-sm text-white",
+                    business?.status?.toLowerCase() === "approved"
+                      ? "bg-blue-500/60"
+                      : business?.status?.toLowerCase() === "pending"
+                        ? "bg-yellow-500/60"
+                        : business?.status?.toLowerCase() === "rejected"
+                          ? "bg-red-500/60 "
+                          : isDark
+                            ? "bg-gray-700 text-gray-400"
+                            : "bg-gray-100 text-gray-600",
+                  )}
+                >
+                  {t(business?.status) || business?.status || t("unknown")}
+                </span>
+              </div>
 
               <div className="relative h-36">
                 {business?.images && business.images.length > 0 ? (

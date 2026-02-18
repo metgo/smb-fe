@@ -44,7 +44,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
     <div className="space-y-6 min-h-150">
       {/* Header */}
       <div className={clsx("flex items-center justify-between mb-2")}>
-        <div>
+        {/* <div>
           <h2
             className={clsx(
               "text-2xl font-bold",
@@ -63,7 +63,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
             uploaded
             {images?.length < 10 && ` • ${10 - images.length} more allowed`}
           </p>
-        </div>
+        </div> */}
 
         {images?.length < 10 && (
           <>

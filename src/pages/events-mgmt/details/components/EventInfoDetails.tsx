@@ -36,7 +36,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      {/* <div>
         <h2
           className={clsx(
             "text-2xl font-bold",
@@ -53,7 +53,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         >
           {t("event_info_desc")}
         </p>
-      </div>
+      </div> */}
 
       {/* Short Description */}
       {eventDetails?.shortDescription && (

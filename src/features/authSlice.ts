@@ -49,7 +49,7 @@ const initialState: AuthState = {
   websiteId: persisted?.websiteId ?? "",
   startDate: persisted?.startDate ?? "",
   endDate: persisted?.endDate ?? "",
-  timeFrame: persisted?.timeFrame ?? "last_year",
+  timeFrame: persisted?.timeFrame ?? "all_time",
 };
 
 const authSlice = createSlice({

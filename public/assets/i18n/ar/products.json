@@ -10,6 +10,8 @@
   "draft": "مسودة",
   "pending": "قيد الانتظار",
   "approved": "موافق عليه",
+  "description": "وصف المنتج",
+  "sub_categories": "الفئات الفرعية",
   "approve": "اعتماد",
   "rejected": "مرفوض",
   "archived": "مؤرشف",

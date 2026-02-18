@@ -86,6 +86,7 @@
   "active": "Active",
   "selling_price": "Selling Price",
   "quantity": "Remaining Quantity",
+
   "unlimited": "Unlimited",
   "filter_by_status": "Filter by Status",
   "filter_by_type": "Filter by Type",
