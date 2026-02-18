@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import {
   Outlet,
   RouterProvider,
@@ -23,6 +23,45 @@ import {
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
+import { useAppDispatch } from "@/hooks/hooks";
+import { loginSuccess } from "@/features/authSlice";
+
+// Handle Google OAuth callback - extract userData from URL and store in localStorage
+const handleGoogleOAuthCallback = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const userData = urlParams.get("userData");
+
+  if (userData) {
+    try {
+      const data = JSON.parse(decodeURIComponent(userData));
+
+      // Store tokens and user info in localStorage
+      if (data.accessToken) {
+        localStorage.setItem("access_token", data.accessToken);
+      }
+      if (data.user) {
+        localStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+      }
+
+      // Clean up URL by removing userData param
+      urlParams.delete("userData");
+      const newUrl = urlParams.toString()
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+
+      return true;
+    } catch (error) {
+      console.error("Error parsing Google OAuth userData:", error);
+    }
+  }
+  return false;
+};
+
+// Run synchronously before React renders
+const isGoogleOAuthCallback = handleGoogleOAuthCallback();
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -30,6 +69,28 @@ interface ProtectedRouteProps {
 }
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  // Update Redux state if Google OAuth callback was handled
+  useEffect(() => {
+    if (isGoogleOAuthCallback) {
+      const userInfo = localStorage.getItem("user_info");
+      if (userInfo) {
+        try {
+          const { user } = JSON.parse(userInfo);
+          if (user) {
+            dispatch(loginSuccess(user));
+          }
+        } catch (error) {
+          console.error(
+            "Error updating Redux state after Google login:",
+            error,
+          );
+        }
+      }
+    }
+  }, [dispatch]);
+
   const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     isLoginPage = false,
