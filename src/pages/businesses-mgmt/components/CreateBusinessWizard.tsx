@@ -90,6 +90,10 @@ export default function CreateBusinessWizard({
     allWhitelistIds: [] as string[],
     selectedWhitelistIds: [] as string[],
   });
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
+
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -184,6 +188,12 @@ export default function CreateBusinessWizard({
 
   const totalSteps = 9;
 
+  useEffect(() => {
+    if (userRole === "authority") {
+      setSelectAuthorityId(authorityId);
+      setSelectedDmoId(dmoId);
+    }
+  }, []);
   useEffect(() => {
     if (businessId === "" || currentView !== "edit") return;
 
