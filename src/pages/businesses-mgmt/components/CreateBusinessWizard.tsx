@@ -228,8 +228,8 @@ export default function CreateBusinessWizard({
         primaryCategory: editData.primaryCategoryId || "",
         tags: editData.tags || [],
       });
-      setAccessiblitiesId(editData.accessibilitiesId.map((a: any) => a._id));
-      setGroupTypesId(editData.groupTypesId.map((g: any) => g._id));
+      setAccessiblitiesId(editData?.accessibilitiesId?.map((a: any) => a?._id));
+      setGroupTypesId(editData?.groupTypesId?.map((g: any) => g?._id));
 
       // Set geo location
       if (editData?.geoLocation) {
