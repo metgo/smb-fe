@@ -181,6 +181,7 @@ export default function CreateBusinessWizard({
     useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
+  console.log("🚀 ~ CreateBusinessWizard ~ addr:", addr);
 
   const totalSteps = 9;
 
@@ -363,7 +364,7 @@ export default function CreateBusinessWizard({
       }
 
       case 3:
-        if (!addr.city || !addr.country || !addr.location) {
+        if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
