@@ -95,7 +95,7 @@ export default function EventsMgmtPage() {
   const {
     data: events,
     refetch,
-    isLoading: _isLoading,
+    isLoading: isLoading,
   } = useGetAllEventsQuery(eventQueryParams);
 
   const statsQueryParams = useMemo(() => {
@@ -352,7 +352,7 @@ export default function EventsMgmtPage() {
 
         {/* Events with different View */}
         <EventsWithViewMode
-          isLoading={_isLoading}
+          isLoading={isLoading}
           events={(events?.data as any) || []}
           refetch={refetch}
           eventTypeFilter={eventTypeFilter}

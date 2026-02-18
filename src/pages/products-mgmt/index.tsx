@@ -44,6 +44,7 @@ import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { formatILS } from "@/helpers/formatter";
 import { skipToken } from "@reduxjs/toolkit/query";
 import FilterChips from "@/components/shared/FilterChips";
+import EmptyState from "@/components/shared/EmptyState";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -92,7 +93,6 @@ export default function ProductsMgmtPage() {
     bgPrimary,
     bgSecondary,
     borderColor,
-    textPrimary,
     textSecondary,
     textTertiary,
   } = useThemeClasses();
@@ -681,19 +681,28 @@ export default function ProductsMgmtPage() {
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
               >
-                <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
-                <h3 className={`text-lg ${textPrimary} mb-2`}>
-                  {t("no_products")}
-                </h3>
-                <p className={`${textTertiary} mb-6`}>
-                  {t("no_products_desc")}
-                </p>
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-                >
-                  {t("create_product")}
-                </button>
+                {searchTerm ? (
+                  <div>
+                    <EmptyState searchQuery={searchTerm} />
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Package
+                      className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`}
+                    />
+
+                    <p className={`${textTertiary} mb-6`}>
+                      {t("no_products_desc")}
+                    </p>
+
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+                    >
+                      {t("create_product")}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : viewMode === "list" ? (
               <ProductListView
