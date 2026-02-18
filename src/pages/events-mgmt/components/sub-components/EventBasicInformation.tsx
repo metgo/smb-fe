@@ -6,11 +6,7 @@ import {
   DmoAuthorityWebsiteSelector,
   SelectableChips,
 } from "@/components/shared";
-import {
-  useGetAccessibilityQuery,
-  useGetGroupTypesQuery,
-  useGetSubCategoriesQuery,
-} from "@/store/api/masterDataApi";
+import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   InputField,
@@ -20,6 +16,7 @@ import {
 import { categoryIds } from "@/lib/utils";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
+import { useCommon } from "@/hooks/useCommon";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -90,8 +87,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     bussCategoryId: categoryIds.event,
     locale,
   });
-  const { data: accessibility } = useGetAccessibilityQuery({ locale });
-  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+  console.log("🚀 ~ EventBasicInformation ~ subCategories:", subCategories);
+  const { groupTypes, accessibility } = useCommon();
 
   // Individual refs for scroll targets
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -260,23 +257,20 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
         label="Accessiblities"
-        items={accessibility?.datas?.data ?? []}
+        items={accessibility ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
         label="Group Types"
-        items={groupTypes?.datas?.data ?? []}
+        items={groupTypes ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Internal Notes */}

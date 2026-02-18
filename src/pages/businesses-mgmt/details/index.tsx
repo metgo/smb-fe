@@ -2,14 +2,22 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit, UserCog } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import {
+  Bookmark,
+  Edit,
+  Eye,
+  MousePointer,
+  Plus,
+  Share2,
+  Timer,
+  TrendingUp,
+  UserCog,
+  Users,
+} from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  AnalyticsStatsSection,
-  BusinessAttributesDetails,
   BusinessContactDetails,
-  BusinessDeliveryPolicyDetails,
   BusinessInfoDetails,
   BusinessMediaDetails,
   BusinessOnlinePresenceDetails,
@@ -17,32 +25,83 @@ import {
   BusinessTitleSection,
   ChangeOwnerModal,
 } from "./components";
-import { Spinner, TabsSection } from "@/components/shared";
+import { routes } from "@/lib/routes";
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import {
+  useGetbusinessByIdQuery,
+  useGetIndividualBusinessStatsQuery,
+} from "@/store/api/businessQueryApi";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 import { CreateBusinessWizard } from "../components";
-import { routes } from "@/lib/routes";
-import { LocationDetails } from "@/components/details-sections";
+import {
+  AttributesDetails,
+  DeliveryPolicyOptionDetails,
+  LocationDetails,
+} from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
+  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
+  ///business detail stats
+  const {
+    data,
+    refetch,
+    isLoading: isDetailStatsLoading,
+  } = useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
 
+  const businessStats = [
+    {
+      icon: <Eye className="w-5 h-5 text-green-600" />,
+      title: t("page_views"),
+      value: data?.pageViews?.toLocaleString() || 0,
+    },
+    {
+      icon: <Users className="w-5 h-5 text-green-600" />,
+      title: t("unique_visitors"),
+      value: data?.uniqueVisitors?.toLocaleString() || 0,
+    },
+    {
+      icon: <MousePointer className="w-5 h-5 text-green-600" />,
+      title: t("clicks"),
+      value: data?.clicks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Bookmark className="w-5 h-5 text-green-600" />,
+      title: t("bookmarks"),
+      value: data?.bookmarks?.toLocaleString() || 0,
+    },
+    {
+      icon: <Share2 className="w-5 h-5 text-green-600" />,
+      title: t("shares"),
+      value: data?.shares?.toLocaleString() || 0,
+    },
+    {
+      icon: <Timer className="w-5 h-5 text-green-600" />,
+      title: t("avg_time_on_page"),
+      value: `${data?.averageEngagementTime}`,
+    },
+    {
+      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+      title: t("conversion_rate"),
+      value: `${data?.conversionRate || 0}%`,
+    },
+  ];
   const {
     data: business,
-    refetch,
+    refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
@@ -65,9 +124,7 @@ export default function BusinessDetailsPage() {
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    // uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -90,26 +147,6 @@ export default function BusinessDetailsPage() {
     initialImage: businessLogoImage?.image,
     onChange: setBusinessLogoImage,
   });
-
-  // const StatusBadge = ({ status }: { status: Business["status"] }) => {
-  //   const statusConfig = {
-  //     draft: { color: "bg-gray-500", label: t("draft") },
-  //     pending: { color: "bg-yellow-500", label: t("pending") },
-  //     approved: { color: "bg-green-500", label: t("approved") },
-  //     rejected: { color: "bg-red-500", label: t("rejected") },
-  //     archived: { color: "bg-gray-400", label: t("archived") },
-  //   };
-
-  //   const config = statusConfig[status];
-
-  //   return (
-  //     <span
-  //       className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
-  //     >
-  //       {config.label}
-  //     </span>
-  //   );
-  // };
 
   // useEffect(() => {
   //   if (!business?.logo || !business?.images?.length) return;
@@ -146,6 +183,12 @@ export default function BusinessDetailsPage() {
     setBusinessLogoImage({ image: business?.logo?.image });
   }, [business]);
 
+  useEffect(() => {
+    if (!isEditClicked) {
+      businessDataRefetch();
+    }
+  }, [isEditClicked]);
+
   // const handleSubmit = async () => {
   //   try {
   //     let logoUrl = businessLogoImage?.image ?? null;
@@ -170,9 +213,11 @@ export default function BusinessDetailsPage() {
   //   }
   // };
 
-  // const onViewProducts = () => { };
-
-  // const onCreateProduct = () => { };
+  const onCreateProduct = () => {
+    navigate(
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+    );
+  };
 
   const onStatusChangeHandler = async (status: string) => {
     try {
@@ -181,8 +226,8 @@ export default function BusinessDetailsPage() {
         body: { status: status.toUpperCase() },
       }).unwrap();
 
-      refetch();
       toast.success("Business status updated successfully!");
+      refetch();
     } catch (error) {
       toast.error("Failed to update business status.");
       console.error(error);
@@ -240,15 +285,24 @@ export default function BusinessDetailsPage() {
       case "social":
         return <BusinessOnlinePresenceDetails {...commonProps} />;
       case "delivery":
-        return <BusinessDeliveryPolicyDetails {...commonProps} />;
+        return <DeliveryPolicyOptionDetails data={business} />;
       case "accessibility":
-        return <BusinessAttributesDetails {...commonProps} />;
+        return (
+          <AttributesDetails
+            title="Business Attributes"
+            categoriesId={[business?.primaryCategoryId]}
+            groupTypesId={business?.groupTypesId}
+            accessibilitiesId={business?.accessibilitiesId}
+            tags={business?.tags}
+          />
+        );
       case "hours":
         return <BusinessOpeningHoursDetails {...commonProps} />;
       default:
         return null;
     }
   };
+
   return (
     <div className=" flex flex-col overflow-hidden relative ">
       <Spinner isLoading={isLoading} />
@@ -280,6 +334,12 @@ export default function BusinessDetailsPage() {
                 {t("change_owner")}
               </button>
             )}
+            {/* <button
+              onClick={onClickView}
+              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              {t("view_product")}
+            </button> */}
             <button
               onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
@@ -288,7 +348,7 @@ export default function BusinessDetailsPage() {
               {t("edit")}
             </button>
 
-            {/* {onCreateProduct && (
+            {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
                 className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
@@ -296,28 +356,17 @@ export default function BusinessDetailsPage() {
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
               </button>
-            )} */}
-
-            {/* {onViewProducts && (
-              <button
-                onClick={onViewProducts}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Box className="w-4 h-4" />
-                {t("view_products")}
-              </button>
-            )} */}
+            )}
           </div>
         </div>
 
         <BusinessTitleSection business={business} t={t} />
-        <AnalyticsStatsSection
-          t={t}
-          borderColor={borderColor}
-          businessId={businessId}
+        <PageStats
+          stats={businessStats}
+          isLoading={isDetailStatsLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
         />
         <TabsSection
-          t={t}
           tabs={businessTabs}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -341,6 +390,7 @@ export default function BusinessDetailsPage() {
           editData={business}
           currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
+          refetch={refetch}
         />
       )}
     </div>

@@ -37,7 +37,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 
   t,
 }) => {
-  const { primaryCategories } = useCommon();
+  const { categories } = useCommon();
 
   return (
     <div className="space-y-6">
@@ -116,7 +116,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
             <span className="font-medium">{t("primary_category")}: </span>
             {formData?.primaryCategory
-              ? primaryCategories?.datas?.data?.find(
+              ? categories?.find(
                   (cat: any) => cat._id === formData.primaryCategory,
                 )?.name
               : t("not_set")}

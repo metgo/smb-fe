@@ -7,18 +7,20 @@ export const useThemeClasses = (): ThemeClasses & {
   theme: Theme;
   isDark: boolean;
   isRTL: boolean;
+  language: Language;
 } => {
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { theme, isRTL, language } = useAppSelector((state) => state.settings);
   const rowDir = isRTL ? "flex-row-reverse" : "flex-row";
   const colDir = isRTL ? "flex-col-reverse" : "flex-col";
   const isDark = theme === "dark";
 
   return {
-    ...getThemeClasses(theme),
+    ...getThemeClasses(isDark),
     rowDir,
     colDir,
     theme,
     isDark,
     isRTL,
+    language,
   };
 };

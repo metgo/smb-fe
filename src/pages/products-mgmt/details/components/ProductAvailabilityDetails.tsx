@@ -1,46 +1,43 @@
-import React from "react";
 import { Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductAvailability {
-  startDate: string | null;
-  endDate: string | null;
+  activeStartDate: string | null;
+  activeEndDate: string | null;
 }
 
 interface ProductAvailabilityDetailsProps {
-  product: {
-    availability: ProductAvailability;
-  };
-  theme: Theme;
+  product: ProductAvailability;
   language: Language;
 }
 
 const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
   product,
-  theme,
   language,
 }) => {
   const { t } = useTranslation("products");
+  const { isDark } = useThemeClasses();
 
-  const { startDate, endDate } = product.availability;
+  const { activeStartDate, activeEndDate } = product;
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString(language);
 
   const availabilityStatus = () => {
-    if (!startDate && !endDate) {
+    if (!activeStartDate && !activeEndDate) {
       return t("always_available");
     }
 
-    if (startDate && !endDate) {
-      return `${t("available_from")} ${formatDate(startDate)}`;
+    if (activeStartDate && !activeEndDate) {
+      return `${t("available_from")} ${formatDate(activeStartDate)}`;
     }
 
-    if (!startDate && endDate) {
-      return `${t("available_until")} ${formatDate(endDate)}`;
+    if (!activeStartDate && activeEndDate) {
+      return `${t("available_until")} ${formatDate(activeEndDate)}`;
     }
 
-    return `${formatDate(startDate!)} - ${formatDate(endDate!)}`;
+    return `${formatDate(activeStartDate!)} - ${formatDate(activeEndDate!)}`;
   };
 
   return (
@@ -50,14 +47,14 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
         {/* Start Date */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("start_date")}
@@ -65,12 +62,12 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
 
           <div
             className={`flex items-center gap-2 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
+              isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
             <Calendar className="w-5 h-5" />
             <p className="text-xl font-semibold">
-              {startDate ? formatDate(startDate) : t("not_set")}
+              {activeStartDate ? formatDate(activeStartDate) : t("not_set")}
             </p>
           </div>
         </div>
@@ -78,14 +75,14 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
         {/* End Date */}
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
             className={`text-sm mb-2 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("end_date")}
@@ -93,12 +90,12 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
 
           <div
             className={`flex items-center gap-2 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
+              isDark ? "text-gray-200" : "text-gray-800"
             }`}
           >
             <Calendar className="w-5 h-5" />
             <p className="text-xl font-semibold">
-              {endDate ? formatDate(endDate) : t("not_set")}
+              {activeEndDate ? formatDate(activeEndDate) : t("not_set")}
             </p>
           </div>
         </div>
@@ -107,24 +104,20 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
       {/* Availability Status */}
       <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "border-teal-700 bg-teal-950/30"
             : "border-teal-200 bg-teal-50"
         }`}
       >
         <h3
           className={`text-sm mb-2 ${
-            theme === "dark" ? "text-teal-400" : "text-teal-700"
+            isDark ? "text-teal-400" : "text-teal-700"
           }`}
         >
           {t("availability_status")}
         </h3>
 
-        <p
-          className={`text-lg ${
-            theme === "dark" ? "text-teal-300" : "text-teal-800"
-          }`}
-        >
+        <p className={`text-lg ${isDark ? "text-teal-300" : "text-teal-800"}`}>
           {availabilityStatus()}
         </p>
       </div>

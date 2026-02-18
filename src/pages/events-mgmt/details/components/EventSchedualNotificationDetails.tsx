@@ -112,7 +112,7 @@ const EventScheduledNotificationDetails: React.FC<
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      {/* <div>
         <h2
           className={clsx(
             "text-2xl font-bold",
@@ -133,7 +133,7 @@ const EventScheduledNotificationDetails: React.FC<
             : "notifications"}{" "}
           scheduled for this event
         </p>
-      </div>
+      </div> */}
 
       {/* Notifications List */}
       {sortedNotifications?.length > 0 ? (

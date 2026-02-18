@@ -85,6 +85,11 @@ export default function Header() {
         start.setFullYear(today.getFullYear() - 1);
         start.setDate(today.getDate() + 1);
         break;
+      case "all_time":
+        start = new Date();
+        start.setFullYear(today.getFullYear() - 10);
+        start.setDate(today.getDate() + 10);
+        break;
       default:
         start = new Date();
         start.setDate(today.getDate() - 29);
@@ -100,7 +105,7 @@ export default function Header() {
     );
   }, [timeFrame, dispatch]);
 
-  const handleLanguageChange = (lng: string) => {
+  const handleLanguageChange = (lng: Language) => {
     dispatch(setLanguage(lng));
     i18n.changeLanguage(lng);
   };
@@ -136,7 +141,7 @@ export default function Header() {
               isDisabled={userRole === "authority"}
               value={dmoId}
               onChange={(value) => dispatch(setDmo(value))}
-              placeholder="Select DMO"
+              placeholder={t("select_dmo")}
               items={dmosAuthorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -149,7 +154,7 @@ export default function Header() {
               value={authorityId}
               isDisabled={userRole === "authority"}
               onChange={(value) => dispatch(setAuthority(value))}
-              placeholder="Select Authority"
+              placeholder={t("select_authority")}
               items={selectedParent?.authorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -162,7 +167,7 @@ export default function Header() {
               items={filteredWebsites}
               value={websiteId}
               onChange={(value) => dispatch(setWebsite(value))}
-              placeholder="Select website"
+              placeholder={t("select_website")}
             />
 
             {/* Date Range Selector */}

@@ -21,10 +21,8 @@ import {
 } from "@/store/api/businessMutationApi";
 
 import {
-  BusinessAttributes,
   BusinessBasicInfos,
   BusinessContactOwership,
-  BusinessDeliveryPolicy,
   BusinessLocation,
   BusinessMedia,
   BusinessOnlinePresence,
@@ -37,21 +35,27 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { parseAddress } from "@/helpers";
+import { parseAddress, removeNulls } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
+import {
+  Attributes,
+  DeliveryPolicyOption,
+} from "@/components/details-sections";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
   currentView?: View;
   editData?: any;
+  refetch?: any;
 }
 
 export default function CreateBusinessWizard({
   onClose,
   currentView,
   editData,
+  refetch,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
@@ -59,7 +63,7 @@ export default function CreateBusinessWizard({
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -116,10 +120,10 @@ export default function CreateBusinessWizard({
 
     // Step 4
     primaryCategory: "",
-    // subcategories: [] as string[],
     tags: [] as string[],
     accessibility: [] as string[],
     groupTypes: [] as string[],
+    // subcategories: [] as string[],
     // serviceType: "",
 
     // Step 5
@@ -127,6 +131,7 @@ export default function CreateBusinessWizard({
     images: null as TImages | null,
 
     // Step 6
+    type: "BUSINESS",
     operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
@@ -200,6 +205,7 @@ export default function CreateBusinessWizard({
         logo: editData?.logo?.image,
         images: editData?.images,
         //location
+        type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
         pickupAvailable: editData.isPickUpAvailable ?? false,
         deliveryArea: editData?.deliveryArea ?? [],
@@ -215,17 +221,17 @@ export default function CreateBusinessWizard({
           phone: editData.contactDetails?.phone,
           address: editData.contactDetails?.address,
           email: editData.contactDetails?.email,
-          whatsAppCountryCode: editData.contactDetails?.whatsAppCountryCode,
-          whatsAppNumber: editData.contactDetails?.whatsAppNumber,
-          prefferedChannel: editData.contactDetails?.prefferedChannel,
+          whatsAppCountryCode: editData?.contactDetails?.whatsAppCountryCode,
+          whatsAppNumber: editData?.contactDetails?.whatsAppNumber,
+          prefferedChannel: editData?.contactDetails?.prefferedChannel,
         },
         operatingHours: editData?.openingHrs,
         //attributes
-        primaryCategory: editData.primaryCategoryId || "",
-        tags: editData.tags || [],
+        primaryCategory: editData?.primaryCategoryId || "",
+        tags: editData?.tags || [],
       });
-      setAccessiblitiesId(editData.accessibilitiesId.map((a: any) => a._id));
-      setGroupTypesId(editData.groupTypesId.map((g: any) => g._id));
+      setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
+      setGroupTypesId(removeNulls(editData?.groupTypesId));
 
       // Set geo location
       if (editData?.geoLocation) {
@@ -298,10 +304,10 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    // subcategories: formData.subcategories,
     tags: formData.tags,
-    accessibilitiesId: selectedAccessiblitiesId,
-    groupTypesId: selectedGroupTypesId,
+    accessibilitiesId: removeNulls(selectedAccessiblitiesId),
+    groupTypesId: removeNulls(selectedGroupTypesId),
+    // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
     logo: { image: logoGcsUrl },
@@ -372,7 +378,7 @@ export default function CreateBusinessWizard({
   };
 
   const handleNext = async () => {
-    if (!validateStep(currentStep) && isPublishBtnClicked) return;
+    // if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 5) {
       const logoUrl = await uploadLogoImage();
       setLogoGcsUrl(logoUrl);
@@ -424,13 +430,14 @@ export default function CreateBusinessWizard({
     }
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
+    refetch();
     onClose();
   };
   useEffect(() => {
     if (currentView === "edit") {
       setBusinessId(editData?._id);
     }
-  }, [currentView]);
+  }, [currentView, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
@@ -507,7 +514,7 @@ export default function CreateBusinessWizard({
         );
       case 4:
         return (
-          <BusinessAttributes
+          <Attributes
             {...commonProps}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
@@ -520,7 +527,7 @@ export default function CreateBusinessWizard({
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
-        return <BusinessDeliveryPolicy {...commonProps} />;
+        return <DeliveryPolicyOption {...commonProps} />;
       case 8:
         return <BusinessOnlinePresence {...commonProps} />;
       case 9:

@@ -15,6 +15,7 @@ import {
   XCircle,
   CalendarRange,
   TrashIcon,
+  Loader,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -35,12 +36,12 @@ import { EventCardSkeleton } from "@/components/skeletons";
 import QuickSnapEventDetails from "./QuickSnapEventDetails";
 import CreateEventWizard from "./CreateEventWizard";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
+import EmptyState from "@/components/shared/EmptyState";
 
 interface EventsWithViewModeProps {
   events: any[];
   viewMode: string;
   isLoading: boolean;
-  selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -88,7 +89,6 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
   statusFilter,
@@ -424,6 +424,18 @@ export default function EventsWithViewMode({
 
   // Grid View
   const GridView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        </div>
+      );
+    }
+
+    // If no events match the search query, show "not found" message
+    if (!displayedEvents || displayedEvents.length === 0) {
+      return <EmptyState searchQuery={searchQuery} />;
+    }
     const displayed = events?.slice(0, displayedListCount);
 
     if (events?.length === 0 && !isLoading) {
@@ -435,7 +447,6 @@ export default function EventsWithViewMode({
           </h3>
           <p className={textTertiary}>
             {searchQuery ||
-            selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
             registrationFilter !== "all" ||
             statusFilter !== "all"
@@ -547,6 +558,18 @@ export default function EventsWithViewMode({
 
   // List View
   const ListView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        </div>
+      );
+    }
+
+    // If no events match the search query, show "not found" message
+    if (!displayedEvents || displayedEvents.length === 0) {
+      return <EmptyState searchQuery={searchQuery} />;
+    }
     return (
       <ReordableDataTable
         rowKey="_id"
@@ -733,23 +756,12 @@ export default function EventsWithViewMode({
     }
   };
 
-  const handleBulkCsvExport = () => {
-    console.log("CSV export for:", 2);
-  };
-  const handleBulkPdfExport = () => {
-    console.log("PDF export for:", 2);
-  };
-
   return (
     <div className="space-y-2">
       <BulkActionBar
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
-        onBulkAction={{
-          delete: handleBulkDelete,
-          csvExport: handleBulkCsvExport,
-          pdfExport: handleBulkPdfExport,
-        }}
+        handleBulkDelete={handleBulkDelete}
       />
 
       {/* Controls */}

@@ -1,11 +1,12 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { AlertCircle, Image, MapPin, Phone, TrashIcon } from "lucide-react";
+import { Image, Loader, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 interface Business {
   _id: string;
@@ -34,18 +35,17 @@ interface GridViewProps<T> {
 }
 
 function BusinessGridView<T extends Business>({
+  t,
   data,
   onRowClick,
   refetch,
   hasMore,
   next,
-  t,
   isLoading = false,
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { isDark } = useThemeClasses();
 
-  //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,
@@ -64,28 +64,6 @@ function BusinessGridView<T extends Business>({
     refetch();
   };
 
-  if (data.length === 0) {
-    return (
-      <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
-        <AlertCircle
-          className={`w-16 h-16 mx-auto mb-4 ${
-            isDark ? "text-gray-500" : "text-gray-400"
-          }`}
-        />
-        <h3
-          className={`text-lg mb-2 ${
-            isDark ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {t("no_businesses_found")}
-        </h3>
-        <p className={isDark ? "text-gray-500" : "text-gray-600"}>
-          {t("no_businesses_found_desc")}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div
       className={`py-6 px-4 ${
@@ -93,29 +71,47 @@ function BusinessGridView<T extends Business>({
       } `}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         id="business-table-scroll"
         ref={scrollRef}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {data.map((business) => (
+          {data?.map((business) => (
             <div
               key={business._id}
               className={`${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
               onClick={() => onRowClick && onRowClick(business)}
             >
-              {/* Delete button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsConfirmOpen(true);
-                  setBusinessToDelete(business?._id);
-                }}
-                className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                aria-label={`Delete ${business.name}`}
-              >
-                <TrashIcon size={18} />
-              </button>
+              <div className="absolute top-2 mx-auto px-2 w-full z-50 flex items-center justify-between">
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setBusinessToDelete(business?._id);
+                  }}
+                  className=" z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                  aria-label={`Delete ${business.name}`}
+                >
+                  <TrashIcon size={18} />
+                </button>
+                <span
+                  className={clsx(
+                    "inline-flex items-center px-3 py-1 rounded-lg text-sm text-white",
+                    business?.status?.toLowerCase() === "approved"
+                      ? "bg-blue-500/60"
+                      : business?.status?.toLowerCase() === "pending"
+                        ? "bg-yellow-500/60"
+                        : business?.status?.toLowerCase() === "rejected"
+                          ? "bg-red-500/60 "
+                          : isDark
+                            ? "bg-gray-700 text-gray-400"
+                            : "bg-gray-100 text-gray-600",
+                  )}
+                >
+                  {t(business?.status) || business?.status || t("unknown")}
+                </span>
+              </div>
 
               <div className="relative h-36">
                 {business?.images && business.images.length > 0 ? (
@@ -167,6 +163,11 @@ function BusinessGridView<T extends Business>({
             </div>
           ))}
         </div>
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+            <Loader className="w-10 h-10 animate-spin text-teal-600" />
+          </div>
+        )}
       </div>
 
       <ConfirmDialog

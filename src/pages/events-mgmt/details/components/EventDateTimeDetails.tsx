@@ -1,7 +1,9 @@
-import { formatDate } from "@/helpers/formatter";
-import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+
+import { useAppSelector } from "@/hooks/hooks";
+import { formatDate } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   Calendar,
   Clock,
@@ -9,7 +11,6 @@ import {
   CalendarDays,
   AlertCircle,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface DayDescription {
   date: string;
@@ -109,7 +110,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        {/* <div>
           <h2
             className={clsx(
               "text-2xl font-bold",
@@ -127,7 +128,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
             {dayDescription?.length}{" "}
             {dayDescription?.length === 1 ? "date" : "dates"} scheduled
           </p>
-        </div>
+        </div> */}
 
         {recurringEventRuleId && (
           <div

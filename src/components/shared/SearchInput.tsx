@@ -1,39 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  isRTL?: boolean;
-  isDark: boolean;
+  storageKey?: string;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
-  isRTL = false,
-  isDark,
+  storageKey = "",
 }) => {
-  const [inputValue, setInputValue] = useState(searchTerm);
+  const STORAGE_KEY = storageKey; // localStorage key
+
+  const [inputValue, setInputValue] = useState(() => {
+    // Initialize from localStorage if available
+    return localStorage.getItem(STORAGE_KEY) ?? searchTerm;
+  });
+  const { isDark, rowDir } = useThemeClasses();
+  const isRTL = rowDir === "flex-row-reverse";
 
   useEffect(() => {
-    setInputValue(searchTerm); // Sync if external searchTerm changes
+    setInputValue(localStorage.getItem(STORAGE_KEY) ?? searchTerm); // Sync if external searchTerm changes
   }, [searchTerm]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchTerm(inputValue);
-    }, 3000); // 3 seconds debounce
+      localStorage.setItem(STORAGE_KEY, inputValue); // persist
+    }, 1000); // debounce 1s
 
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [inputValue, setSearchTerm]);
 
   return (
-    <div className="relative">
+    <div>
       <Search
         className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
           isDark ? "text-gray-500" : "text-gray-400"

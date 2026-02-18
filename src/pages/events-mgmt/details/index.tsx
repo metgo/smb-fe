@@ -1,7 +1,8 @@
 import clsx from "clsx";
+import { toast } from "sonner";
+import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -26,13 +27,12 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
-import { toast } from "sonner";
 import {
   AttributesDetails,
   LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
-import { TabsSection } from "@/components/shared";
+import { PageStats, TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
 
 const findEventType = (type: string) => {
@@ -50,12 +50,11 @@ const findEventType = (type: string) => {
 
 export default function EventDetailsPage() {
   const { t } = useTranslation("events");
-  const { t: tc } = useTranslation("common");
 
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
 
-  const { isDark, bgPrimary, textTertiary, textPrimary } = useThemeClasses();
+  const { isDark, bgPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -72,9 +71,8 @@ export default function EventDetailsPage() {
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
-  const { data: eventStatsData } = useGetEventsStatsQuery(
-    eventId ? { eventId } : skipToken,
-  );
+  const { data: eventStatsData, isLoading: isStatsLoading } =
+    useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
 
   const [updateEvent] = useUpdateEventMutation();
 
@@ -87,7 +85,6 @@ export default function EventDetailsPage() {
 
   const {
     images,
-    imagesRef,
     primaryImageIndex,
     handleImageUpload,
     setPrimaryImage,
@@ -121,12 +118,50 @@ export default function EventDetailsPage() {
     }
   };
 
+  const singleEventStats = [
+    {
+      id: 1,
+      title: t("total_registrations"),
+      value: eventStatsData?.totalSold,
+      labelClass: "text-green-500",
+      icon: <Calendar className="w-8 h-8 text-teal-500" />,
+    },
+    {
+      id: 2,
+      title: t("capacity"),
+      value: eventStatsData?.totalAttended,
+      sub: `${
+        Math.round(
+          (eventStatsData?.totalRegistrations / eventStatsData?.capacity) * 100,
+        ) || 0
+      }% ${t("filled")}`,
+      icon: <Users className="w-8 h-8 text-blue-500" />,
+    },
+    {
+      id: 3,
+      title: t("revenue"),
+      value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
+      icon: <DollarSign className="w-8 h-8 text-green-500" />,
+    },
+    {
+      id: 4,
+      title: t("refunds"),
+      value: `₪${(eventStatsData?.refunds || 0 / 1000).toFixed(1)}K`,
+      icon: <DollarSign className="w-8 h-8 text-red-500" />,
+    },
+    {
+      id: 5,
+      title: t("event_type"),
+      value: t(findEventType(eventDetails?.eventType)),
+      icon: <Ticket className="w-8 h-8 text-purple-500" />,
+    },
+  ];
+
   const renderContent = () => {
     const commonProps = { t, eventDetails };
     const mediaProps = {
       t,
       images,
-      imagesRef,
       primaryImageIndex,
       setPrimaryImage,
       handleImageUpload,
@@ -220,61 +255,13 @@ export default function EventDetailsPage() {
         <div className="px-6 pb-3">
           <EventTitleSection {...(eventDetails ?? {})} />
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mt-4">
-            {[
-              {
-                label: t("total_registrations"),
-                value: eventStatsData?.totalSold,
-              },
-              {
-                label: t("capacity"),
-                value: eventStatsData?.totalAttended,
-                sub: `${
-                  Math.round(
-                    (eventStatsData?.totalRegistrations /
-                      eventStatsData?.capacity) *
-                      100,
-                  ) || 0
-                }% ${t("filled")}`,
-              },
-              {
-                label: t("revenue"),
-                value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
-              },
-              {
-                label: t("refunds"),
-                value: `₪${(eventStatsData?.refunds || 0 / 1000).toFixed(1)}K`,
-              },
-              {
-                label: t("event_type"),
-                value: t(findEventType(eventDetails?.eventType)),
-              },
-            ]?.map((metric, i) => (
-              <div
-                key={i}
-                className={`p-6 rounded-2xl ${
-                  isDark ? "bg-gray-800/50" : "bg-gray-50"
-                }`}
-              >
-                <div className={`text-sm mb-2 ${textTertiary}`}>
-                  {metric.label}
-                </div>
-                <div className="flex gap-2">
-                  <div className={`text-3xl font-bold ${textPrimary}`}>
-                    {metric.value}
-                  </div>
-                  {metric.sub && (
-                    <div className="text-sm text-teal-500 mt-2">
-                      {metric.sub}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <PageStats
+            stats={singleEventStats}
+            isLoading={isStatsLoading}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 my-6"
+          />
 
           <TabsSection
-            t={tc}
             tabs={eventTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}

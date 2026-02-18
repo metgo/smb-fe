@@ -1,6 +1,13 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
-type TStatus = "draft" | "pending" | "approved" | "rejected" | "archived";
+type TStatus =
+  | "draft"
+  | "active"
+  | "inactive"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "archived";
 
 interface Geo {
   lat: string;
@@ -41,8 +48,8 @@ interface ThemeClasses {
 }
 
 interface PageStats {
-  id: number;
-  title: string;
+  id?: number;
+  title?: string;
   value: string | number;
   label?: string;
   labelClass?: string;
@@ -102,4 +109,10 @@ interface IAssociatedWebsiteIds {
   _id: string;
   name: string;
   url: string;
+}
+
+interface ISearchBusiness {
+  _id: string;
+  name: string;
+  slug: string;
 }
