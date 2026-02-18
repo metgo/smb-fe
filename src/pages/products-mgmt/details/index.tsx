@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
@@ -36,8 +37,6 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { StatusChangeBtn } from "@/components/btns";
-import clsx from "clsx";
-import StatusBadge from "@/components/shared/StatusBadge";
 
 export default function ProductDetailsPage() {
   const { t } = useTranslation("products");
@@ -218,8 +217,6 @@ export default function ProductDetailsPage() {
             </button>
 
             <div className={clsx("flex items-center gap-3")}>
-              <StatusBadge status={product?.status} />
-
               {canEdit && (
                 <>
                   <StatusChangeBtn

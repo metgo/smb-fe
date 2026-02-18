@@ -21,7 +21,6 @@ import {
 } from "@/store/api/businessMutationApi";
 
 import {
-  BusinessAttributes,
   BusinessBasicInfos,
   BusinessContactOwership,
   BusinessLocation,
@@ -39,7 +38,10 @@ import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { parseAddress, removeNulls } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
-import { DeliveryPolicyOption } from "@/components/details-sections";
+import {
+  Attributes,
+  DeliveryPolicyOption,
+} from "@/components/details-sections";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
@@ -118,10 +120,10 @@ export default function CreateBusinessWizard({
 
     // Step 4
     primaryCategory: "",
-    // subcategories: [] as string[],
     tags: [] as string[],
     accessibility: [] as string[],
     groupTypes: [] as string[],
+    // subcategories: [] as string[],
     // serviceType: "",
 
     // Step 5
@@ -302,10 +304,10 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    // subcategories: formData.subcategories,
     tags: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
+    // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
     logo: { image: logoGcsUrl },
@@ -512,7 +514,7 @@ export default function CreateBusinessWizard({
         );
       case 4:
         return (
-          <BusinessAttributes
+          <Attributes
             {...commonProps}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}

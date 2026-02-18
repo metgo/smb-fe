@@ -218,11 +218,6 @@ export default function BusinessDetailsPage() {
       `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
     );
   };
-  const onClickView = () => {
-    navigate(
-      `${routes.productsMgmt}?bzIdForProdView=${businessId}&businessName=${business?.name}`,
-    );
-  };
 
   const onStatusChangeHandler = async (status: string) => {
     try {
@@ -231,8 +226,8 @@ export default function BusinessDetailsPage() {
         body: { status: status.toUpperCase() },
       }).unwrap();
 
-      refetch();
       toast.success("Business status updated successfully!");
+      refetch();
     } catch (error) {
       toast.error("Failed to update business status.");
       console.error(error);
@@ -339,12 +334,12 @@ export default function BusinessDetailsPage() {
                 {t("change_owner")}
               </button>
             )}
-            <button
+            {/* <button
               onClick={onClickView}
               className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
             >
               {t("view_product")}
-            </button>
+            </button> */}
             <button
               onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"

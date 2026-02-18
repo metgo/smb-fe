@@ -1,7 +1,6 @@
 import { TrendingUp } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import StatusBadge from "@/components/shared/StatusBadge";
 interface BusinessTitleSectionProps {
   business: Business;
   t: (key: string) => string;
@@ -9,26 +8,6 @@ interface BusinessTitleSectionProps {
 
 const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
   const { isDark } = useThemeClasses();
-
-  //   const statusConfig = {
-  //     DRAFT: { color: "bg-gray-500", label: t("draft") },
-  //     PENDING: { color: "bg-yellow-500", label: t("pending") },
-  //     APPROVED: { color: "bg-green-500", label: t("approved") },
-  //     REJECTED: { color: "bg-red-500", label: t("rejected") },
-  //     ARCHIVED: { color: "bg-gray-400", label: t("archived") },
-  //   };
-
-  //   const config =
-  //     statusConfig[status?.toUpperCase() as keyof typeof statusConfig];
-
-  //   return (
-  //     <span
-  //       className={`px-3 py-1 rounded-full text-sm text-white ${config?.color}`}
-  //     >
-  //       {config?.label}
-  //     </span>
-  //   );
-  // };
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +23,6 @@ const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
           </h1>
 
           <div className="flex items-center gap-4">
-            <StatusBadge status={business?.status} />
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
               <span className={isDark ? "text-gray-300" : "text-gray-700"}>

@@ -25,12 +25,16 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   const { t } = useTranslation("common");
   const { isDark, isRTL, textSecondary } = useThemeClasses();
 
-  const [currentStatus, setCurrentStatus] = useState<TStatus>(
-    status?.toLowerCase() as TStatus,
-  );
+  const [currentStatus, setCurrentStatus] = useState<TStatus>();
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (status) {
+      setCurrentStatus(status?.toLowerCase() as TStatus);
+    }
+  }, [status]);
 
   /* -------------------- Status Config -------------------- */
   const statusConfig = useMemo<StatusConfig>(() => {
@@ -94,7 +98,7 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
           textSecondary,
         )}
       >
-        <span>{t("change_status")}</span>
+        <span>{t(currentStatus?.toLowerCase() as TStatus)}</span>
         <ChevronDown
           className={`w-4 h-4 transition-transform ${
             isOpen ? "rotate-180" : ""
