@@ -14,7 +14,7 @@ import { miniSiteTabs } from "@/constants/tabs";
 import { useGetMiniSiteByIdQuery } from "@/store/api/miniSiteQueryApi";
 
 import MiniOverviewSection from "./components/MiniOverviewSection";
-import MinisiteProductsSelect from "../components/sub-components/MinisiteProductsSelect";
+import MinisiteProductsSelect from "./components/MinisiteProductsSelect";
 // import ContactSection from "./components/ContactSection";
 // import LocationSection from "./components/LocationSection";
 // import MediaSection from "./components/MediaSection";

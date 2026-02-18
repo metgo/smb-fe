@@ -1,4 +1,3 @@
-// ProductSelectionStep.tsx
 import React from "react";
 import {
   Search,
@@ -6,7 +5,7 @@ import {
   List,
   Image as ImageIcon,
   Accessibility,
-} from "lucide-react"; // adjust imports based on your icon library
+} from "lucide-react";
 
 interface Product {
   id: string;
@@ -15,11 +14,10 @@ interface Product {
   price: number | string;
   category: string;
   accessibility: string[];
-  // add any other fields you actually use
 }
 
 interface ProductSelectionStepProps {
-  t: any; // your translation object
+  t: any;
   productSearchQuery: string;
   setProductSearchQuery: (value: string) => void;
   selectedCategory: string;

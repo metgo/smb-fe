@@ -9,7 +9,9 @@
   "phone": "Phone",
 
   "companyName": "Company Name",
-
+  "mini_site": "Mini Site",
+  "company_info": "Company Info",
+  "contact_person": "Contact Person",
   "voucherAmount": "Voucher Amount",
   "totalVouchers": "Total Vouchers",
   "usedVouchers": "Used Vouchers",

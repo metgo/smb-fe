@@ -67,8 +67,8 @@ const MinisiteProductsList = ({
           >
             {/* Image – left side on larger screens */}
             {primaryImage && (
-              <div className="sm:w-48 md:w-56 lg:w-64 flex-shrink-0">
-                <div className="aspect-[4/3] sm:aspect-square relative overflow-hidden bg-gray-50">
+              <div className="sm:w-48 md:w-56 lg:w-64 shrink-0">
+                <div className="aspect-4/3 sm:aspect-square relative overflow-hidden bg-gray-50">
                   <img
                     src={primaryImage}
                     alt={product.images[0].alt || product.name}
