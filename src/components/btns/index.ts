@@ -7,12 +7,14 @@ import SubmitButton from "./SubmitButton";
 
 import RefreshButton from "./RefreshButton";
 import StatusChangeBtn from "./StatusChangeBtn";
+import BackToListBtn from "./BackToListBtn";
 
 export {
   AddButton,
   FilterButton,
   SubmitButton,
   ExportBtns,
+  BackToListBtn,
   RefreshButton,
   StatusChangeBtn,
   PublishButton,

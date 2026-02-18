@@ -9,6 +9,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface PickupLocation {
   address: string;
@@ -21,33 +22,31 @@ interface DeliveryAreaItem {
   price?: string | number;
   pickUpLocation?: PickupLocation[];
 }
-interface BusinessDeliveryData {
+interface DeliveryData {
   deliveryAdditionalInfo?: string;
   deliveryReturnExchange?: string[];
   deliverySpecificSellerInfo?: string[];
   deliveryArea?: DeliveryAreaItem[];
 }
 
-interface BusinessDeliveryPolicyDetailsProps {
-  t: (key: string) => string;
-  business: BusinessDeliveryData;
+interface DeliveryPolicyOptionDetailsProps {
+  data: DeliveryData;
 }
 
 /* ---------- Component ---------- */
 
-const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
-  t,
-  business,
+const DeliveryPolicyOptionDetails: FC<DeliveryPolicyOptionDetailsProps> = ({
+  data,
 }) => {
+  const { t } = useTranslation("businesses");
   const { isDark } = useThemeClasses();
 
   const hasDeliveryInfo =
-    business.deliveryAdditionalInfo ||
-    (business.deliveryReturnExchange &&
-      business.deliveryReturnExchange.length > 0) ||
-    (business.deliverySpecificSellerInfo &&
-      business.deliverySpecificSellerInfo.length > 0) ||
-    (business.deliveryArea && business.deliveryArea?.length > 0);
+    data?.deliveryAdditionalInfo ||
+    (data?.deliveryReturnExchange && data?.deliveryReturnExchange.length > 0) ||
+    (data?.deliverySpecificSellerInfo &&
+      data?.deliverySpecificSellerInfo.length > 0) ||
+    (data?.deliveryArea && data?.deliveryArea?.length > 0);
 
   if (!hasDeliveryInfo) {
     return (
@@ -75,14 +74,10 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
     );
   }
 
-  console.log(
-    "BusinessDeliveryPolicyDetails ~ business:",
-    business?.deliveryArea,
-  );
   return (
     <div className="space-y-6">
       {/* Additional Delivery Information */}
-      {business.deliveryAdditionalInfo && (
+      {data?.deliveryAdditionalInfo && (
         <div
           className={`p-4 rounded-lg border ${
             isDark
@@ -107,14 +102,14 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
           <p
             className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"} whitespace-pre-line`}
           >
-            {business.deliveryAdditionalInfo}
+            {data?.deliveryAdditionalInfo}
           </p>
         </div>
       )}
 
       {/* Return & Exchange Policy */}
-      {business.deliveryReturnExchange &&
-        business.deliveryReturnExchange.length > 0 && (
+      {data?.deliveryReturnExchange &&
+        data?.deliveryReturnExchange.length > 0 && (
           <div
             className={`p-4 rounded-lg border ${
               isDark
@@ -137,27 +132,27 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
               </h3>
             </div>
             <ul className="space-y-2">
-              {business.deliveryReturnExchange.map((policy, idx) => (
+              {data?.deliveryReturnExchange.map((policy, idx) => (
                 <li
                   key={idx}
                   className={`flex items-start gap-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
                 >
                   <CheckCircle
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
-                  <span>{policy}</span>
+                  <span>{t(policy)}</span>
                 </li>
               ))}
             </ul>
           </div>
         )}
       {/* Delivery Area */}
-      {business.deliveryArea && business.deliveryArea.length > 0 && (
-        <div className={`p-4 rounded-lg ${isDark ? "" : "border-gray-200"}`}>
-          {business.deliveryArea.map((deliveryArea, areaIdx) => (
+      {data?.deliveryArea && data?.deliveryArea.length > 0 && (
+        <div className={` rounded-lg ${isDark ? "" : "border-gray-200"}`}>
+          {data?.deliveryArea.map((deliveryArea, areaIdx) => (
             <div
               key={areaIdx}
-              className={`mb-6 p-4 gap-5 flex flex-col rounded-lg ${
+              className={` p-4 gap-5 flex flex-col rounded-lg ${
                 isDark
                   ? "bg-gray-900 border border-gray-700"
                   : "border border-gray-200 shadow-sm"
@@ -280,8 +275,8 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
       )}
 
       {/* Specific Seller Information */}
-      {business.deliverySpecificSellerInfo &&
-        business.deliverySpecificSellerInfo.length > 0 && (
+      {data?.deliverySpecificSellerInfo &&
+        data?.deliverySpecificSellerInfo.length > 0 && (
           <div
             className={`p-4 rounded-lg border ${
               isDark
@@ -304,15 +299,15 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
               </h3>
             </div>
             <ul className="space-y-2">
-              {business.deliverySpecificSellerInfo.map((info, idx) => (
+              {data?.deliverySpecificSellerInfo.map((info, idx) => (
                 <li
                   key={idx}
                   className={`flex items-start gap-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
                 >
                   <CheckCircle
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
-                  <span>{info}</span>
+                  <span>{t(info)}</span>
                 </li>
               ))}
             </ul>
@@ -322,4 +317,4 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
   );
 };
 
-export default BusinessDeliveryPolicyDetails;
+export default DeliveryPolicyOptionDetails;

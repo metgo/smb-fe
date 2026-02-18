@@ -1,5 +1,11 @@
 import clsx from "clsx";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 
 import { ArrowUpDown, ArrowUp, ArrowDown, Loader } from "lucide-react";
 
@@ -17,6 +23,7 @@ interface Column<T> {
   render?: (item: T) => React.ReactNode;
   width?: string;
 }
+
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
@@ -32,17 +39,17 @@ interface DataTableProps<T> {
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
+  t,
   data,
+  next,
   columns,
-  storageKey = "dataTableColumnOrder",
+  rowKey,
+  hasMore,
   onRowClick,
   selectedItems,
   onSelectionChange,
-  rowKey,
-  hasMore,
-  next,
-  t,
   isDataLoading = false,
+  storageKey = "dataTableColumnOrder",
 }: DataTableProps<T>) {
   const { isRTL } = useAppSelector((state) => state.settings);
   const {
@@ -55,186 +62,260 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   } = useThemeClasses();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const initialLoadRef = useRef(true);
 
-  // Load saved column order
+  // Load saved column order - only once on mount
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+    const defaultOrder = columns.map((c) => c.key as string);
+
     if (typeof window === "undefined") {
-      return columns.map((c) => c.key as string);
+      return defaultOrder;
     }
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed: string[] = JSON.parse(saved);
-
+        // Filter out any saved columns that don't exist anymore
         const validKeys = parsed.filter((k) =>
           columns.some((c) => c.key === k),
         );
 
-        const missingKeys = columns
-          .map((c) => c.key as string)
-          .filter((k) => !validKeys.includes(k));
-
-        return [...validKeys, ...missingKeys];
+        // If we have valid saved keys, use them
+        if (validKeys.length > 0) {
+          return validKeys;
+        }
       }
     } catch (e) {
       console.error("Failed to load column order:", e);
     }
 
-    return columns.map((c) => c.key as string);
+    return defaultOrder;
   });
 
-  const [sortField, setSortField] = useState<keyof T | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    field: keyof T | null;
+    direction: SortDirection;
+  }>({ field: null, direction: null });
 
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
-  // Save column order
+  // Save column order when it changes
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(columnOrder));
-    } catch (e) {
-      console.error("Failed to save column order:", e);
+    if (typeof window !== "undefined" && !initialLoadRef.current) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(columnOrder));
+      } catch (e) {
+        console.error("Failed to save column order:", e);
+      }
     }
   }, [columnOrder, storageKey]);
 
-  //default order
-  const defaultOrder = useMemo(
-    () => columns.map((c) => c.key as string),
+  const columnKeys = useMemo(
+    () => columns.map((c) => c.key as string).join("|"),
     [columns],
   );
+
   useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+
+    const visibleKeys = columns.map((c) => c.key as string);
+
     setColumnOrder((prev) => {
-      const prevSet = new Set(prev);
+      const existingVisible = prev.filter((key) => visibleKeys.includes(key));
 
-      // columns that are currently visible
-      const visibleKeys = columns.map((c) => c.key as string);
+      const newColumns = visibleKeys.filter((key) => !prev.includes(key));
 
-      // remove hidden columns
-      const cleaned = prev.filter((key) => visibleKeys.includes(key));
+      const next = [...existingVisible, ...newColumns];
 
-      // reinsert missing columns at correct position
-      visibleKeys.forEach((key) => {
-        if (!prevSet.has(key)) {
-          const defaultIndex = defaultOrder.indexOf(key);
-
-          // find nearest previous column that exists
-          let insertAt = cleaned.length;
-          for (let i = defaultIndex - 1; i >= 0; i--) {
-            const prevKey = defaultOrder[i];
-            const idx = cleaned.indexOf(prevKey);
-            if (idx !== -1) {
-              insertAt = idx + 1;
-              break;
-            }
-          }
-
-          cleaned.splice(insertAt, 0, key);
-        }
-      });
-
-      return cleaned;
+      return prev.join("|") === next.join("|") ? prev : next;
     });
-  }, [columns, defaultOrder]);
+  }, [columnKeys]);
 
-  // Sorted data
+  // Helper function to safely compare values for sorting
+  const compareValues = (a: any, b: any, direction: "asc" | "desc"): number => {
+    // Handle null/undefined
+    if (a == null && b == null) return 0;
+    if (a == null) return direction === "asc" ? 1 : -1;
+    if (b == null) return direction === "asc" ? -1 : 1;
+
+    // Handle dates - check if they can be converted to Date objects
+    const aDate =
+      typeof a === "string" || typeof a === "number" ? new Date(a) : null;
+    const bDate =
+      typeof b === "string" || typeof b === "number" ? new Date(b) : null;
+
+    // Check if both are valid dates
+    if (aDate && bDate && !isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+      return direction === "asc"
+        ? aDate.getTime() - bDate.getTime()
+        : bDate.getTime() - aDate.getTime();
+    }
+
+    // Handle strings
+    if (typeof a === "string" && typeof b === "string") {
+      return direction === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+    }
+
+    // Handle numbers
+    if (typeof a === "number" && typeof b === "number") {
+      return direction === "asc" ? a - b : b - a;
+    }
+
+    // Handle booleans
+    if (typeof a === "boolean" && typeof b === "boolean") {
+      return direction === "asc"
+        ? a === b
+          ? 0
+          : a
+            ? 1
+            : -1
+        : a === b
+          ? 0
+          : a
+            ? -1
+            : 1;
+    }
+
+    // Default comparison
+    if (a < b) return direction === "asc" ? -1 : 1;
+    if (a > b) return direction === "asc" ? 1 : -1;
+    return 0;
+  };
+
+  // Sorted data - FIXED sorting logic
   const sortedData = useMemo(() => {
-    if (!sortField || !sortDirection) return data;
+    if (!sortConfig.field || !sortConfig.direction || !data) {
+      return data || [];
+    }
 
-    return [...data].sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
+    const field = sortConfig.field;
 
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        return sortDirection === "asc"
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
+    return (
+      [...data].sort((a, b) => {
+        const aVal = a[field];
+        const bVal = b[field];
+        return compareValues(
+          aVal,
+          bVal,
+          sortConfig.direction as "asc" | "desc",
+        );
+      }) || []
+    );
+  }, [data, sortConfig.field, sortConfig.direction]);
+
+  const handleSort = useCallback((field: keyof T) => {
+    setSortConfig((prev) => {
+      if (prev.field === field) {
+        // Cycle through: asc -> desc -> null
+        if (prev.direction === "asc") {
+          return { field, direction: "desc" };
+        } else if (prev.direction === "desc") {
+          return { field: null, direction: null };
+        } else {
+          return { field, direction: "asc" };
+        }
+      } else {
+        // New field, start with asc
+        return { field, direction: "asc" };
       }
-
-      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-      return 0;
     });
-  }, [data, sortField, sortDirection]);
+  }, []);
 
-  const handleSort = (field: keyof T) => {
-    if (sortField === field) {
-      const next =
-        sortDirection === "asc"
-          ? "desc"
-          : sortDirection === "desc"
-            ? null
-            : "asc";
-      setSortDirection(next);
-      if (next === null) setSortField(null);
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const handleDragStart = (colKey: string) => setDraggedColumn(colKey);
-  const handleDragOver = (e: React.DragEvent, colKey: string) => {
+  const handleDragStart = useCallback(
+    (colKey: string) => setDraggedColumn(colKey),
+    [],
+  );
+  const handleDragOver = useCallback((e: React.DragEvent, colKey: string) => {
     e.preventDefault();
-    if (draggedColumn && draggedColumn !== colKey) {
-      setDragOverColumn(colKey);
-    }
-  };
+    setDragOverColumn(colKey);
+  }, []);
 
-  const handleDrop = (e: React.DragEvent, targetKey: string) => {
-    e.preventDefault();
-    if (draggedColumn && draggedColumn !== targetKey) {
-      const newOrder = [...columnOrder];
-      const draggedIndex = newOrder.indexOf(draggedColumn);
-      const targetIndex = newOrder.indexOf(targetKey);
-      newOrder.splice(draggedIndex, 1);
-      newOrder.splice(targetIndex, 0, draggedColumn);
-      setColumnOrder(newOrder);
-    }
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetKey: string) => {
+      e.preventDefault();
+      if (draggedColumn && draggedColumn !== targetKey) {
+        setColumnOrder((prev) => {
+          const newOrder = [...prev];
+          const draggedIndex = newOrder.indexOf(draggedColumn);
+          const targetIndex = newOrder.indexOf(targetKey);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            newOrder.splice(draggedIndex, 1);
+            newOrder.splice(targetIndex, 0, draggedColumn);
+          }
+          return newOrder;
+        });
+      }
+      setDraggedColumn(null);
+      setDragOverColumn(null);
+    },
+    [draggedColumn],
+  );
+
+  const handleDragEnd = useCallback(() => {
     setDraggedColumn(null);
     setDragOverColumn(null);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
-    setDraggedColumn(null);
-    setDragOverColumn(null);
-  };
+  // Selection handlers
+  const allSelected = useMemo(() => {
+    return (
+      data?.length > 0 && data.every((item) => selectedItems?.has(item[rowKey]))
+    );
+  }, [data, selectedItems, rowKey]);
 
-  const allSelected =
-    data?.length > 0 &&
-    data.every((item) => selectedItems && selectedItems?.has(item[rowKey]));
-  const someSelected = selectedItems && selectedItems.size > 0 && !allSelected;
+  const someSelected = useMemo(() => {
+    return selectedItems && selectedItems.size > 0 && !allSelected;
+  }, [selectedItems, allSelected]);
 
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
+    if (!onSelectionChange) return;
+
     const newSelected = new Set(selectedItems);
     if (allSelected) {
       data.forEach((item) => newSelected.delete(item[rowKey]));
     } else {
       data.forEach((item) => newSelected.add(item[rowKey]));
     }
-    if (onSelectionChange) onSelectionChange(newSelected);
-  };
+    onSelectionChange(newSelected);
+  }, [data, selectedItems, allSelected, rowKey, onSelectionChange]);
 
-  const toggleRow = (item: T) => {
-    const newSelected = new Set(selectedItems);
-    const key = item[rowKey];
-    if (newSelected.has(key)) newSelected.delete(key);
-    else newSelected.add(key);
-    if (onSelectionChange) onSelectionChange(newSelected);
-  };
+  const toggleRow = useCallback(
+    (item: T) => {
+      if (!onSelectionChange) return;
 
-  const getSortIcon = (field: keyof T) => {
-    if (sortField !== field)
-      return <ArrowUpDown className="w-4 h-4 opacity-40" />;
-    return sortDirection === "asc" ? (
-      <ArrowUp className="w-4 h-4" />
-    ) : (
-      <ArrowDown className="w-4 h-4" />
-    );
-  };
+      const newSelected = new Set(selectedItems);
+      const key = item[rowKey];
+      if (newSelected.has(key)) {
+        newSelected.delete(key);
+      } else {
+        newSelected.add(key);
+      }
+      onSelectionChange(newSelected);
+    },
+    [selectedItems, rowKey, onSelectionChange],
+  );
 
-  //hook for scroll
+  const getSortIcon = useCallback(
+    (field: keyof T) => {
+      if (sortConfig.field !== field) {
+        return <ArrowUpDown className="w-4 h-4 opacity-40" />;
+      }
+      return sortConfig.direction === "asc" ? (
+        <ArrowUp className="w-4 h-4" />
+      ) : (
+        <ArrowDown className="w-4 h-4" />
+      );
+    },
+    [sortConfig.field, sortConfig.direction],
+  );
+
+  // Infinite scroll hook
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,
@@ -327,9 +408,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {sortedData?.length === 0 ? (
-              // No data state
-
+            {(!sortedData || sortedData?.length === 0) && !isDataLoading ? (
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}
@@ -356,7 +435,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                       <td
                         key={colKey}
                         className={clsx(
-                          "p-3 text-sm cursor-pointer",
+                          "p-3 z-10 text-sm cursor-pointer",
                           textSecondary,
                         )}
                         onClick={(e) =>
@@ -386,10 +465,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               ))
             )}
             {isDataLoading && (
-              <tr>
+              <tr className="h-80" aria-rowspan={80}>
                 <td
                   colSpan={columnOrder?.length || 1}
-                  className="h-20 text-center"
+                  className="h-80 text-center"
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-3">
                     <Loader className="w-10 h-10 animate-spin text-teal-600" />

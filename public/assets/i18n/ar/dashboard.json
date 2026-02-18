@@ -55,6 +55,14 @@
   "local": "محلي",
   "travel": "السفر",
   "culture": "الثقافة",
+
+  "popular_content": "المحتوى الشائع",
+  "total_purchases": "إجمالي المشتريات",
+  "total_views": "إجمالي المشاهدات",
+  "all_time": "كل الوقت",
+  "ga_desc": "مؤشرات الأداء الرئيسية والاتجاهات",
+  "total": "الإجمالي",
+
   "financial_summary": "الملخص المالي",
   "last_month": "الشهر الماضي",
   "vouchers": "القسائم",

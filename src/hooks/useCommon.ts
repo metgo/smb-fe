@@ -36,6 +36,7 @@ export function useCommon() {
     { value: "last_30_days", label: t("last_30_days") },
     { value: "last_90_days", label: t("last_90_days") },
     { value: "last_year", label: t("last_year") },
+    { value: "all_time", label: t("all_time") },
   ];
 
   const languages: { value: Language; label: string }[] = [
@@ -49,11 +50,11 @@ export function useCommon() {
     dateRanges,
     languages,
     dmosAuthorities,
-    primaryCategories,
-    accessibility,
-    groupTypes,
     socialMedia,
     allWebsites,
+    groupTypes: groupTypes?.datas?.data,
+    accessibility: accessibility?.datas?.data,
+    categories: primaryCategories?.datas?.data,
     subCategories: subCategories?.datas?.data,
   };
 }

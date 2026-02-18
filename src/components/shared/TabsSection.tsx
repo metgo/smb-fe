@@ -1,6 +1,9 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { type LucideIcon } from "lucide-react";
+import clsx from "clsx";
 import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { type LucideIcon } from "lucide-react";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ITabs {
   id: string;
@@ -9,18 +12,13 @@ interface ITabs {
 }
 
 interface TabsSectionProps {
-  t: (key: string) => string;
   activeTab: string;
   setActiveTab: (tabId: string) => void;
   tabs: ITabs[];
 }
 
-const TabsSection = ({
-  t,
-  tabs,
-  activeTab,
-  setActiveTab,
-}: TabsSectionProps) => {
+const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
@@ -48,7 +46,7 @@ const TabsSection = ({
   return (
     <div
       ref={tabsContainerRef}
-      className="flex gap-1 mt-6 overflow-x-auto scrollbar-hide"
+      className={clsx("flex gap-1 mt-6 overflow-x-auto scrollbar-hide")}
       style={{
         scrollbarWidth: "none", // Firefox
         msOverflowStyle: "none", // IE and Edge

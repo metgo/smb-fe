@@ -1,12 +1,13 @@
 import clsx from "clsx";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { Moon, Sun, ChevronDown, Settings, Check } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { toggleEditMode } from "@/features/uiSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { setLanguage, setTheme } from "@/features/settingsSlice";
 import {
   setAuthority,
@@ -15,10 +16,8 @@ import {
   setWebsite,
   setTimeFrameValue,
 } from "@/features/authSlice";
-
+import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ReactSelect } from "../form-fields";
-import { useEffect, useMemo } from "react";
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -37,7 +36,7 @@ export default function Header() {
   );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
-  const { textPrimary, selectInputClasses, rowDir, isDark } = useThemeClasses();
+  const { textPrimary, selectInputClasses, isDark } = useThemeClasses();
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
 
   const filteredWebsites = useMemo(() => {
@@ -86,6 +85,11 @@ export default function Header() {
         start.setFullYear(today.getFullYear() - 1);
         start.setDate(today.getDate() + 1);
         break;
+      case "all_time":
+        start = new Date();
+        start.setFullYear(today.getFullYear() - 10);
+        start.setDate(today.getDate() + 10);
+        break;
       default:
         start = new Date();
         start.setDate(today.getDate() - 29);
@@ -101,7 +105,7 @@ export default function Header() {
     );
   }, [timeFrame, dispatch]);
 
-  const handleLanguageChange = (lng: string) => {
+  const handleLanguageChange = (lng: Language) => {
     dispatch(setLanguage(lng));
     i18n.changeLanguage(lng);
   };
@@ -114,9 +118,9 @@ export default function Header() {
       )}
     >
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className={clsx("flex items-center justify-between h-20", rowDir)}>
+        <div className={clsx("flex items-center justify-between h-20")}>
           {/* Logo and Brand */}
-          <div className={clsx("flex items-center gap-3", rowDir)}>
+          <div className={clsx("flex items-center gap-3")}>
             <img
               src="/assets/images/metgologo.png"
               alt="Logo image"
@@ -131,13 +135,13 @@ export default function Header() {
           </div>
 
           {/* Controls */}
-          <div className={clsx("flex items-center gap-3", rowDir)}>
+          <div className={clsx("flex items-center gap-3")}>
             <ReactSelect
               isClearable={userRole !== "authority"}
               isDisabled={userRole === "authority"}
               value={dmoId}
               onChange={(value) => dispatch(setDmo(value))}
-              placeholder="Select DMO"
+              placeholder={t("select_dmo")}
               items={dmosAuthorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -148,8 +152,9 @@ export default function Header() {
             <ReactSelect
               isClearable
               value={authorityId}
+              isDisabled={userRole === "authority"}
               onChange={(value) => dispatch(setAuthority(value))}
-              placeholder="Select Authority"
+              placeholder={t("select_authority")}
               items={selectedParent?.authorities?.map((item) => ({
                 _id: item._id,
                 name: item.name,
@@ -162,7 +167,7 @@ export default function Header() {
               items={filteredWebsites}
               value={websiteId}
               onChange={(value) => dispatch(setWebsite(value))}
-              placeholder="Select website"
+              placeholder={t("select_website")}
             />
 
             {/* Date Range Selector */}

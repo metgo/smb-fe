@@ -1,7 +1,6 @@
 import AnalyticsStatsSection from "./AnalyticsStatsSection";
 import BusinessAttributesDetails from "./BusinessAttributesDetails";
 import BusinessContactDetails from "./BusinessContactDetails";
-import BusinessDeliveryPolicyDetails from "./BusinessDeliveryPolicyDetails";
 import BusinessInfoDetails from "./BusinessInfoDetails";
 import BusinessMediaDetails from "./BusinessMediaDetails";
 import BusinessOnlinePresenceDetails from "./BusinessOnlinePresenceDetails";
@@ -15,7 +14,6 @@ export {
   ChangeOwnerModal,
   BusinessAttributesDetails,
   BusinessContactDetails,
-  BusinessDeliveryPolicyDetails,
   BusinessInfoDetails,
   BusinessMediaDetails,
   BusinessOnlinePresenceDetails,

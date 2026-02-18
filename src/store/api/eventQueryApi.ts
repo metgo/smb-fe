@@ -73,5 +73,6 @@ export const {
   useGetAllTicketQuery,
   useGetAllEventsQuery,
   useGetEventByIdQuery,
+  useLazyGetEventByIdQuery,
   useGetEventsStatsQuery,
 } = eventQueryApi;

@@ -1,138 +1,151 @@
-import React from "react";
-import { X, Upload } from "lucide-react";
+import type { FC } from "react";
+import { Plus, X } from "lucide-react";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-interface ProductMediaProps {
-  t: (key: string) => string;
-  formData: {
-    mainImage: string | null;
-    additionalImages: string[];
-  };
-  setFormData: (data: any) => void;
-  errors: {
-    mainImage?: string;
-  };
-  handleImageUpload: (file: File, type: "main" | "additional") => void;
+/* ---------- Errors ---------- */
+interface ProductErrors {
+  images?: string;
 }
 
-const ProductMedia: React.FC<ProductMediaProps> = ({
+/* ---------- Props ---------- */
+interface ProductMediaProps {
+  t: (key: string) => string;
+  errors: ProductErrors;
+
+  images: IImageUpload[];
+  primaryImageIndex: number;
+  setPrimaryImage: (idx: number) => void;
+  handleImageUpload: (files: FileList) => void;
+
+  deleteTarget: IDeleteTarget | null;
+  setDeleteTarget: (v: IDeleteTarget | null) => void;
+  confirmDelete: () => void;
+  isImageDeleting: boolean;
+  handleDeleteImage: (item: IImageUpload, index: number) => void;
+}
+/* ---------- Component ---------- */
+const ProductMedia: FC<ProductMediaProps> = ({
   t,
-  formData,
-  setFormData,
   errors,
+
+  images,
+  primaryImageIndex,
+  setPrimaryImage,
+  handleDeleteImage,
+  deleteTarget,
+  setDeleteTarget,
+  confirmDelete,
+  isImageDeleting,
   handleImageUpload,
 }) => {
-  const { textSecondary, textTertiary, borderColor, hoverBg } =
-    useThemeClasses();
+  const { textSecondary, textTertiary, borderColor } = useThemeClasses();
 
   return (
     <div className="space-y-6">
-      {/* Main Image */}
+      {/* ---------------- Image Gallery ---------------- */}
       <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("upload_main_image")} *
+        <label className={`block text-sm mb-2 ${textSecondary}`}>
+          {t("product_images")} <span className="text-red-400">*</span>
+          <span className={`text-xs ml-2 ${textTertiary}`}>
+            ({t("upload_up_to_10_images")})
+          </span>
         </label>
-        <div
-          className={`border-2 border-dashed ${borderColor} rounded-xl p-8 text-center ${hoverBg} cursor-pointer transition-colors`}
-          onClick={() => document.getElementById("main-image-input")?.click()}
-        >
-          {formData.mainImage ? (
-            <div className="relative">
-              <img
-                src={formData.mainImage}
-                alt="Main product"
-                className="w-full h-64 object-cover rounded-lg"
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className={`relative aspect-square rounded-lg overflow-hidden border group ${borderColor}`}
+            >
+              <ImageWithFallback
+                src={img.previewUrl}
+                alt={`Image ${idx + 1}`}
+                className="w-full h-full object-cover"
               />
+
+              {/* Delete */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFormData({ ...formData, mainImage: null });
-                }}
-                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                onClick={() => handleDeleteImage(img, idx)}
+                className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 z-10"
               >
                 <X className="w-4 h-4" />
               </button>
+
+              {/* Upload progress */}
+              {img.status === "uploading" && (
+                <div className="absolute bottom-16 left-0 w-full flex items-center px-2 z-20">
+                  <div
+                    className="bg-white h-1 rounded transition-all"
+                    style={{ width: `${img.progress}%` }}
+                  />
+                  <span className="ml-2 text-green-600 text-xs font-bold">
+                    {img.progress}%
+                  </span>
+                </div>
+              )}
+
+              {/* Primary badge */}
+              {idx === primaryImageIndex && (
+                <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded z-10">
+                  {t("primary_image")}
+                </div>
+              )}
+
+              {/* Set primary */}
+              <button
+                onClick={() => setPrimaryImage(idx)}
+                className="absolute bottom-2 left-2 right-2 px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition hover:bg-teal-700 z-10"
+              >
+                {t("set_as_primary")}
+              </button>
             </div>
-          ) : (
-            <>
-              <Upload className={`w-12 h-12 mx-auto mb-4 ${textTertiary}`} />
-              <p className={`${textSecondary} mb-2`}>{t("drag_drop_images")}</p>
-              <p className={`text-xs ${textTertiary}`}>
-                {t("image_format_size")}
-              </p>
-            </>
+          ))}
+
+          {/* Upload new */}
+          {images.length < 10 && (
+            <div
+              className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${borderColor}`}
+              onClick={() =>
+                document.getElementById("product-image-upload")?.click()
+              }
+            >
+              <input
+                id="product-image-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  e.target.files && handleImageUpload(e.target.files)
+                }
+              />
+              <div className="text-center">
+                <Plus className={`w-8 h-8 mx-auto mb-1 ${textTertiary}`} />
+                <p className={`text-xs ${textTertiary}`}>
+                  {t("upload_images")}
+                </p>
+              </div>
+            </div>
           )}
         </div>
-        <input
-          id="main-image-input"
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleImageUpload(file, "main");
-          }}
-          className="hidden"
-        />
-        {errors.mainImage && (
-          <p className="text-red-500 text-sm mt-1">{errors.mainImage}</p>
+
+        {errors.images && (
+          <p className="text-red-500 text-sm mt-2">{errors.images}</p>
         )}
       </div>
 
-      {/* Additional Images */}
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("upload_additional_images")}
-        </label>
-        <div
-          className={`border-2 border-dashed ${borderColor} rounded-xl p-6 text-center ${hoverBg} cursor-pointer transition-colors`}
-          onClick={() =>
-            document.getElementById("additional-images-input")?.click()
-          }
-        >
-          <Upload className={`w-8 h-8 mx-auto mb-2 ${textTertiary}`} />
-          <p className={`text-sm ${textSecondary}`}>
-            {t("additional_images_limit")}
-          </p>
-        </div>
-        <input
-          id="additional-images-input"
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => {
-            const files = Array.from(e.target.files || []);
-            files.forEach((file) => handleImageUpload(file, "additional"));
-          }}
-          className="hidden"
-        />
-
-        {formData.additionalImages.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            {formData.additionalImages.map((img, idx) => (
-              <div key={idx} className="relative">
-                <img
-                  src={img}
-                  alt={`Additional ${idx + 1}`}
-                  className="w-full h-24 object-cover rounded-lg"
-                />
-                <button
-                  onClick={() =>
-                    setFormData({
-                      ...formData,
-                      additionalImages: formData.additionalImages.filter(
-                        (_, i) => i !== idx,
-                      ),
-                    })
-                  }
-                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* ---------------- Confirm Dialogs ---------------- */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="delete_image"
+        message="delete_image_confirm"
+        confirmText="delete"
+        loading={isImageDeleting}
+        variant="danger"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

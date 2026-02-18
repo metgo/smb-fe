@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Ticket, Trash2, AlertCircle, Copy, PenBox } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import CreateTicketWizard from "./CreateTicketWizard";
@@ -49,8 +48,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   eventDays,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary, isDark } = useThemeClasses();
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE");
   const isTicketDisabled = !eventDays?.length || eventDays[0]?.date === "";
 
@@ -71,9 +69,9 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   ]);
 
   const formatPrice = (ticket: TicketData) => {
-    if (ticket.type === "free") return t("free");
-    if (ticket.type === "donation") return t("donation");
-    return `₪${ticket.sellingPrice ?? 0}`;
+    if (ticket?.type === "free") return t("free");
+    if (ticket?.type === "donation") return t("donation");
+    return `₪${ticket?.sellingPrice ?? 0}`;
   };
 
   const handleDeleteTicket = async (ticketId: string) => {
@@ -113,7 +111,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
         isUnlimited: false,
         perUserLimit: 5,
       },
-      status: "public",
+      status: "active",
     });
     if (!eventId) {
       const res = await initEventCreate().unwrap();
@@ -126,7 +124,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header */}
-      <div className={clsx(rowDir, "flex items-center justify-between")}>
+      <div className={clsx("flex items-center justify-between")}>
         <h2 className={`text-2xl font-bold ${textPrimary}`}>
           {t("event_tickets")}
         </h2>
@@ -159,7 +157,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {isDeleting && (
         <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <TicketCardSkeleton key={i} theme={theme} />
+            <TicketCardSkeleton isDark={isDark} key={i} />
           ))}
         </div>
       )}
@@ -175,7 +173,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {(tickets?.length === 0 || !tickets) && (
         <div
           className={`p-16 rounded-2xl border-2 border-dashed text-center ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/30"
               : "border-gray-300 bg-gray-50"
           }`}
@@ -210,9 +208,9 @@ const EventTickets: React.FC<EventTicketsProps> = ({
         <div className="space-y-5">
           {tickets?.map((ticket: any) => (
             <div
-              key={ticket._id}
+              key={ticket?._id}
               className={`p-6 rounded-xl border hover:shadow-md transition ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/50"
                   : "border-gray-200 bg-gray-50"
               }`}
@@ -221,14 +219,14 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
                     <h4 className={`text-xl font-semibold ${textPrimary}`}>
-                      {ticket.name}
+                      {ticket?.name}
                     </h4>
                     <span
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${getTicketTypeColor(
-                        ticket.type,
+                        ticket?.type,
                       )}`}
                     >
-                      {t(ticket.type)}
+                      {t(ticket?.type)}
                     </span>
                   </div>
 
@@ -237,17 +235,17 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                   >
                     <div>
                       <span className="font-medium">{t("price")}:</span>{" "}
-                      {formatPrice(ticket.price)}
+                      {formatPrice(ticket?.price)}
                     </div>
                     <div>
                       <span className="font-medium">{t("quantity")}:</span>{" "}
-                      {ticket.quantity.initial || t("unlimited")}
+                      {ticket?.quantity?.initial || t("unlimited")}
                     </div>
                     <div>
                       <span className="font-medium">
                         {t("per_user_limit")}:
                       </span>{" "}
-                      {ticket.quantity.perUserLimit || t("no_limit")}
+                      {ticket?.quantity?.perUserLimit || t("no_limit")}
                     </div>
                   </div>
                 </div>
@@ -259,11 +257,16 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                         ...ticket,
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
-                      setTicketDateTime(ticket.dayDescription ?? []);
+                      setTicketDateTime(ticket?.dayDescription ?? []);
                       setOpMode("UPDATE");
                       setShowTicketModal(true);
                     }}
-                    className="p-3 cursor-pointer rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 "
+                    className={clsx(
+                      "p-3 cursor-pointer rounded-xl",
+                      isDark
+                        ? "text-white/80 hover:bg-gray-700"
+                        : "text-black/80 hover:bg-gray-200",
+                    )}
                   >
                     <PenBox className="w-5 h-5" />
                   </button>
@@ -271,7 +274,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                     onClick={() => {
                       setEditingTicket({
                         ...ticket,
-                        name: ticket.name + " (Copy)",
+                        name: ticket?.name + " (Copy)",
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
                       setOpMode("DUPLICATE");
@@ -283,7 +286,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      setTicketToDelete(ticket._id);
+                      setTicketToDelete(ticket?._id);
                       setIsConfirmOpen(true);
                     }}
                     className="p-3 cursor-pointer rounded-xl text-red-500 hover:bg-red-500/10"

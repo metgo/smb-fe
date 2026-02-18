@@ -10,6 +10,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
+import { useTranslation } from "react-i18next";
 
 interface ChangeOwnerModalProps {
   setIsOpen: (v: boolean) => void;
@@ -28,7 +29,7 @@ export default function ChangeOwnerModal({
 }: ChangeOwnerModalProps) {
   const { isDark } = useThemeClasses();
   const [getUserByEmail] = useLazyGetUserByEmailQuery();
-
+  const { t } = useTranslation("common");
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "create-user">("email");
   const [isChecking, setIsChecking] = useState(false);
@@ -51,8 +52,8 @@ export default function ChangeOwnerModal({
 
   const handleEmailCheck = async () => {
     if (!email || !email.includes("@")) {
-      toast.error("Invalid Email", {
-        description: "Please enter a valid email address",
+      toast.error(t("invalid_email"), {
+        description: t("invalid_email_description"),
       });
       return;
     }
@@ -61,16 +62,18 @@ export default function ChangeOwnerModal({
       setIsChecking(true);
       const user = await getUserByEmail({ email }).unwrap();
       setFoundUser(user);
-      toast.success("User Found!", {
-        description: `${user.firstName} ${user.lastName} is already in the system`,
+      toast.success(t("user_found"), {
+        description: t("user_found_description", {
+          firstName: user.firstName,
+          lastName: user.lastName,
+        }),
       });
     } catch (err) {
       setFoundUser(null);
       setStep("create-user");
 
-      toast.info("New User", {
-        description:
-          "This email is not in the system. Please create a new user.",
+      toast.info(t("new_user"), {
+        description: t("new_user_description"),
       });
     } finally {
       setIsChecking(false);
@@ -93,8 +96,11 @@ export default function ChangeOwnerModal({
   const handleAssignExistingUser = () => {
     if (foundUser) {
       updateOwner({ userId: foundUser?.id, businessesId: businessId });
-      toast.success("Owner Changed!", {
-        description: `${foundUser.firstName} ${foundUser.lastName} is now the owner`,
+      toast.success(t("owner_changed"), {
+        description: t("owner_changed_description", {
+          firstName: foundUser.firstName,
+          lastName: foundUser.lastName,
+        }),
       });
       setFoundUser("");
       handleClose();
@@ -104,8 +110,8 @@ export default function ChangeOwnerModal({
 
   const handleCreateAndAssign = async () => {
     if (!firstName || !lastName || !phone) {
-      toast.error("Missing Information", {
-        description: "Please fill in all required fields",
+      toast.error(t("missing_information"), {
+        description: t("missing_information_description"),
       });
       return;
     } else {
@@ -120,8 +126,11 @@ export default function ChangeOwnerModal({
       });
     }
 
-    toast.success("New Owner Created!", {
-      description: `${firstName} ${lastName} has been created and assigned as owner`,
+    toast.success(t("new_owner_created"), {
+      description: t("new_owner_created_description", {
+        firstName,
+        lastName,
+      }),
     });
     handleClose();
   };
@@ -136,13 +145,13 @@ export default function ChangeOwnerModal({
       >
         <div>
           <h2 className={`text-xl ${isDark ? "text-white" : "text-gray-900"}`}>
-            Change Business Owner
+            {t("change_business_owner")}{" "}
           </h2>
           {currentOwner && (
             <p
               className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
-              Current owner: {currentOwner.name} ({currentOwner.email})
+              {t("current_owner")}: {currentOwner.name} ({currentOwner.email})
             </p>
           )}
         </div>
@@ -158,7 +167,7 @@ export default function ChangeOwnerModal({
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Owner Email Address
+                {t("owner_email_address")}{" "}
               </label>
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -171,7 +180,7 @@ export default function ChangeOwnerModal({
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="owner@example.com"
+                    placeholder={t("owner_email_placeholder")}
                     className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors ${
                       isDark
                         ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
@@ -186,18 +195,17 @@ export default function ChangeOwnerModal({
                   {isChecking ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Checking...
+                      {t("checking")}{" "}
                     </>
                   ) : (
-                    "Check Email"
+                    t("check_email")
                   )}
                 </button>
               </div>
               <p
                 className={`text-xs mt-2 ${isDark ? "text-gray-500" : "text-gray-600"}`}
               >
-                Enter the email address of the new owner. We'll check if they're
-                already in the system.
+                {t("email_helper_text")}
               </p>
             </div>
 
@@ -221,7 +229,7 @@ export default function ChangeOwnerModal({
                         isDark ? "text-green-400" : "text-green-900"
                       }`}
                     >
-                      User Found in System
+                      {t("user_found_in_system")}{" "}
                     </h3>
                     <div
                       className={`space-y-1 text-sm ${
@@ -229,18 +237,20 @@ export default function ChangeOwnerModal({
                       }`}
                     >
                       <p>
-                        <strong>Name:</strong> {foundUser.firstName}{" "}
-                        {foundUser.lastName}
+                        <strong>{t("user_name_label")}</strong>{" "}
+                        {foundUser.firstName} {foundUser.lastName}
                       </p>
                       <p>
-                        <strong>Email:</strong> {foundUser.email}
+                        <strong>{t("user_email_label")}</strong>{" "}
+                        {foundUser.email}
                       </p>
                       <p>
-                        <strong>Phone:</strong>{" "}
+                        <strong>{t("user_phone_label")}</strong>{" "}
                         {foundUser.phoneDetails?.phoneNumber}
                       </p>
                       <p>
-                        <strong>Location:</strong> {foundUser.address}
+                        <strong>{t("user_location_label")}</strong>{" "}
+                        {foundUser.address}
                       </p>
                     </div>
                     <button
@@ -251,7 +261,7 @@ export default function ChangeOwnerModal({
                           : "bg-green-600 hover:bg-green-700 text-white"
                       }`}
                     >
-                      Assign as Owner
+                      {t("assign_as_owner")}{" "}
                     </button>
                   </div>
                 </div>
@@ -281,15 +291,14 @@ export default function ChangeOwnerModal({
                       isDark ? "text-blue-400" : "text-blue-900"
                     }`}
                   >
-                    Create New User
+                    {t("create_new_user")}{" "}
                   </h3>
                   <p
                     className={`text-sm ${
                       isDark ? "text-blue-300" : "text-blue-800"
                     }`}
                   >
-                    {email} is not in the system. Please complete the
-                    information below to create a new user.
+                    {t("create_new_user_description", { email })}
                   </p>
                 </div>
               </div>
@@ -303,13 +312,14 @@ export default function ChangeOwnerModal({
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  First Name <span className="text-red-500">*</span>
+                  {t("first_name_required")}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="First Name"
+                  placeholder={t("first_name_placeholder")}
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                     isDark
                       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
@@ -325,13 +335,14 @@ export default function ChangeOwnerModal({
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  Last Name <span className="text-red-500">*</span>
+                  {t("last_name_required")}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Last Name"
+                  placeholder={t("last_name_placeholder")}
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                     isDark
                       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
@@ -348,7 +359,7 @@ export default function ChangeOwnerModal({
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Email
+                {t("email")}{" "}
               </label>
               <input
                 type="email"
@@ -369,13 +380,14 @@ export default function ChangeOwnerModal({
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Phone Number <span className="text-red-500">*</span>
+                {t("phone_number_required")}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Phone Number"
+                placeholder={t("phone_number_placeholder")}
                 className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                   isDark
                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
@@ -391,13 +403,13 @@ export default function ChangeOwnerModal({
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Address
+                {t("address")}
               </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Address"
+                placeholder={t("address_placeholder")}
                 className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                   isDark
                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
@@ -413,7 +425,7 @@ export default function ChangeOwnerModal({
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Language
+                {t("language")}
               </label>
               <select
                 value={language}
@@ -443,13 +455,13 @@ export default function ChangeOwnerModal({
                     : "border-gray-300 hover:bg-gray-50 text-gray-700"
                 }`}
               >
-                Back
+                {t("back")}
               </button>
               <button
                 onClick={handleCreateAndAssign}
                 className="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
               >
-                + Create & Assign as Owner
+                {t("create_and_assign_as_owner")}{" "}
               </button>
             </div>
           </div>

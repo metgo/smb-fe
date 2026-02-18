@@ -8,8 +8,9 @@ export const routes = {
   eventDetails: "/event-details",
 
   productsMgmt: "/products-management",
-  ordersMgmt: "/orders-management",
   productDetails: "/product-details",
+
+  ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
@@ -22,3 +23,6 @@ export const routes = {
   miniSite: "/mini-site",
   profile: "/profile",
 };
+
+export type RouteKey = keyof typeof routes;
+export type RoutePath = (typeof routes)[RouteKey];

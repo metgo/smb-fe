@@ -49,7 +49,7 @@ const initialState: AuthState = {
   websiteId: persisted?.websiteId ?? "",
   startDate: persisted?.startDate ?? "",
   endDate: persisted?.endDate ?? "",
-  timeFrame: persisted?.timeFrame ?? "last_year",
+  timeFrame: persisted?.timeFrame ?? "all_time",
 };
 
 const authSlice = createSlice({
@@ -74,6 +74,11 @@ const authSlice = createSlice({
     },
     setDmo: (state, action: PayloadAction<string>) => {
       state.dmoId = action.payload;
+
+      if (!action.payload) {
+        state.authorityId = "";
+        state.websiteId = "";
+      }
     },
     setAuthority: (state, action: PayloadAction<string>) => {
       state.authorityId = action.payload;

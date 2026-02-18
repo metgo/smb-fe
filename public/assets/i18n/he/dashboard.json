@@ -54,12 +54,20 @@
   "businesses": "עסקים",
   "products": "מוצרים",
   "pois": "נקודות עניין",
+
   "sleep": "לינה",
   "eat": "אוכל",
   "attraction": "אטרקציה",
   "local": "מקומי",
   "travel": "נסיעות",
   "culture": "תרבות",
+
+  "popular_content": "תוכן פופולרי",
+  "total_purchases": "סה\"כ רכישות",
+  "total_views": "סה\"כ צפיות",
+  "all_time": "כל הזמן",
+  "ga_desc": "מדדי ביצוע מרכזיים ומגמות",
+  "total": "סה\"כ",
 
   "financial_summary": "סיכום פיננסי",
   "last_month": "חודש שעבר",

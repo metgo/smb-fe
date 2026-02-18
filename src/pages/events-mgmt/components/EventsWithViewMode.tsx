@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Calendar,
@@ -15,6 +15,7 @@ import {
   XCircle,
   CalendarRange,
   TrashIcon,
+  Loader,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -32,13 +33,15 @@ import {
   useUpdateEventMutation,
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
-import { routes } from "@/lib/routes";
+import QuickSnapEventDetails from "./QuickSnapEventDetails";
+import CreateEventWizard from "./CreateEventWizard";
+import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
+import EmptyState from "@/components/shared/EmptyState";
 
 interface EventsWithViewModeProps {
   events: any[];
   viewMode: string;
   isLoading: boolean;
-  selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -86,7 +89,6 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
   statusFilter,
@@ -110,10 +112,38 @@ export default function EventsWithViewMode({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
     useState<TViewMode>("calendar-month");
+
+  const [editData, setEditData] = useState();
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [clickedEventData, setClickedEventData] = useState<Event | null>(null);
+
   const [displayedListCount, setDisplayedListCount] = useState(12);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+
+  const [getEventEditData] = useLazyGetEventByIdQuery();
+
+  const handleEditEvent = async () => {
+    const toastId = toast.loading(
+      "Event's edit data fetching. Please wait....",
+    );
+    if (clickedEventData) {
+      const eventDetails = await getEventEditData({
+        eventId: clickedEventData?._id,
+      }).unwrap();
+      if (eventDetails) {
+        setIsEditModalOpen(true);
+        setClickedEventData(null);
+        setShowQuickViewModal(false);
+        setEditData(eventDetails);
+        toast.success("Event details fetched", { id: toastId });
+        navigate(`?eventId=${clickedEventData?._id}`);
+      }
+    }
+  };
 
   // Current month/year string
   const monthYear = useMemo(() => {
@@ -192,7 +222,9 @@ export default function EventsWithViewMode({
 
   // Handle events sets
   const handleEventSelect = (event: Event) => {
-    navigate(`${routes.eventDetails}?eventId=${event?._id}`, { replace: true });
+    setShowQuickViewModal(true);
+    setClickedEventData(event);
+    navigate(`?eventId=${event?._id}`, { replace: true });
   };
 
   const handleEventDelete = async (eventId: string) => {
@@ -392,6 +424,18 @@ export default function EventsWithViewMode({
 
   // Grid View
   const GridView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        </div>
+      );
+    }
+
+    // If no events match the search query, show "not found" message
+    if (!displayedEvents || displayedEvents.length === 0) {
+      return <EmptyState searchQuery={searchQuery} />;
+    }
     const displayed = events?.slice(0, displayedListCount);
 
     if (events?.length === 0 && !isLoading) {
@@ -403,7 +447,6 @@ export default function EventsWithViewMode({
           </h3>
           <p className={textTertiary}>
             {searchQuery ||
-            selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
             registrationFilter !== "all" ||
             statusFilter !== "all"
@@ -515,6 +558,18 @@ export default function EventsWithViewMode({
 
   // List View
   const ListView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        </div>
+      );
+    }
+
+    // If no events match the search query, show "not found" message
+    if (!displayedEvents || displayedEvents.length === 0) {
+      return <EmptyState searchQuery={searchQuery} />;
+    }
     return (
       <ReordableDataTable
         rowKey="_id"
@@ -701,23 +756,12 @@ export default function EventsWithViewMode({
     }
   };
 
-  const handleBulkCsvExport = () => {
-    console.log("CSV export for:", 2);
-  };
-  const handleBulkPdfExport = () => {
-    console.log("PDF export for:", 2);
-  };
-
   return (
     <div className="space-y-2">
       <BulkActionBar
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
-        onBulkAction={{
-          delete: handleBulkDelete,
-          csvExport: handleBulkCsvExport,
-          pdfExport: handleBulkPdfExport,
-        }}
+        handleBulkDelete={handleBulkDelete}
       />
 
       {/* Controls */}
@@ -814,6 +858,23 @@ export default function EventsWithViewMode({
           setEventToDelete(null);
         }}
       />
+
+      {showQuickViewModal && (
+        <QuickSnapEventDetails
+          setIsOpen={setShowQuickViewModal}
+          selectedEvent={clickedEventData}
+          setSelectedEvent={setClickedEventData}
+          handleEditEvent={handleEditEvent}
+        />
+      )}
+
+      {isEditModalOpen && (
+        <CreateEventWizard
+          isOpen={isEditModalOpen}
+          editData={editData}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

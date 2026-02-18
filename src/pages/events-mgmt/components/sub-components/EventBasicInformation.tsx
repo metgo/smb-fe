@@ -6,11 +6,7 @@ import {
   DmoAuthorityWebsiteSelector,
   SelectableChips,
 } from "@/components/shared";
-import {
-  useGetAccessibilityQuery,
-  useGetGroupTypesQuery,
-  useGetSubCategoriesQuery,
-} from "@/store/api/masterDataApi";
+import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   InputField,
@@ -20,6 +16,7 @@ import {
 import { categoryIds } from "@/lib/utils";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
+import { useCommon } from "@/hooks/useCommon";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -90,8 +87,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     bussCategoryId: categoryIds.event,
     locale,
   });
-  const { data: accessibility } = useGetAccessibilityQuery({ locale });
-  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+  console.log("🚀 ~ EventBasicInformation ~ subCategories:", subCategories);
+  const { groupTypes, accessibility } = useCommon();
 
   // Individual refs for scroll targets
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -198,10 +195,12 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           required
           label={t("event_name")}
           error={errors.eventName}
+          inputHintText={`${eventName?.length ?? 0}/50 ${t("max_characters")}`}
         >
           <InputField
             value={eventName}
             onChange={setEventName}
+            maxLength={50}
             placeholder={t("enter_event_name")}
             inputClasses={`${inputClasses} text-lg`}
           />
@@ -214,25 +213,29 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           required
           label={t("short_description")}
           error={errors.shortDescription}
-          inputHintText={`${shortDescription?.length ?? 0}/200 ${t("max_characters")}`}
+          inputHintText={`${shortDescription?.length ?? 0}/50 ${t("max_characters")}`}
         >
           <InputField
+            maxLength={50}
             value={shortDescription}
             onChange={setShortDescription}
             placeholder={t("brief_description")}
             inputClasses={inputClasses}
-            maxLength={200}
           />
         </FormFieldWrapper>
       </div>
 
       {/* Full Description */}
-      <FormFieldWrapper label={t("full_description")}>
+      <FormFieldWrapper
+        label={t("full_description")}
+        inputHintText={`${fullDescription?.length ?? 0}/500 ${t("max_characters")}`}
+      >
         <TextareaField
+          rows={8}
           value={fullDescription}
           onChange={setFullDescription}
           placeholder={t("full_event_description")}
-          rows={8}
+          maxLength={500}
           inputClasses={`${inputClasses} text-base`}
         />
       </FormFieldWrapper>
@@ -254,23 +257,20 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
         label="Accessiblities"
-        items={accessibility?.datas?.data ?? []}
+        items={accessibility ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
         label="Group Types"
-        items={groupTypes?.datas?.data ?? []}
+        items={groupTypes ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Internal Notes */}

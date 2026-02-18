@@ -4,10 +4,10 @@ import clsx from "clsx";
 
 import { MarkerMap } from "@/components/maps";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import SectionHeader from "./SectionHeader";
+// import SectionHeader from "./SectionHeader";
+import { useTranslation } from "react-i18next";
 
 interface LocationDetailsProps {
-  t: (key: string) => string;
   lat: string | number;
   lng: string | number;
   address: {
@@ -19,12 +19,12 @@ interface LocationDetailsProps {
 }
 
 const LocationDetails: FC<LocationDetailsProps> = ({
-  t,
   lat,
   lng,
   address,
   purpose,
 }) => {
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [formattedAddress, setFormatAddress] = useState("");
@@ -51,14 +51,14 @@ const LocationDetails: FC<LocationDetailsProps> = ({
   const hasLocation = address?.location || address?.city || address?.country;
 
   const hasCoordinates = lat && lng;
-  const subTitle =
-    purpose === "Event"
-      ? "Find out where this event is taking place"
-      : "Find out where this business is located";
+  // const subTitle =
+  //   purpose === "Event"
+  //     ? "Find out where this event is taking place"
+  //     : "Find out where this business is located";
 
   return (
     <div className="space-y-6">
-      <SectionHeader title={`${purpose} Location`} subTitle={subTitle} />
+      {/* <SectionHeader title={`${purpose} Location`} subTitle={subTitle} /> */}
 
       <div className="grid grid-cols-12 gap-4">
         <div className=" col-span-4 space-y-4">

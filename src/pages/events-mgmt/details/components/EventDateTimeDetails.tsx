@@ -1,7 +1,9 @@
-import { formatDate } from "@/helpers/formatter";
-import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+
+import { useAppSelector } from "@/hooks/hooks";
+import { formatDate } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   Calendar,
   Clock,
@@ -41,6 +43,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
   dayDescription,
   recurringEventRuleId,
 }) => {
+  const { t } = useTranslation("events");
   const { language } = useAppSelector((state) => state.settings);
   const { isDark } = useThemeClasses();
 
@@ -83,14 +86,18 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
     );
   };
 
-  const calculateDuration = (startTime: string, endTime: string) => {
+  const calculateDuration = (startTime?: string, endTime?: string) => {
+    if (!startTime || !endTime) return "";
+
     const [startHour, startMin] = startTime.split(":").map(Number);
     const [endHour, endMin] = endTime.split(":").map(Number);
 
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
-    const durationMinutes = endMinutes - startMinutes;
 
+    if (endMinutes <= startMinutes) return "";
+
+    const durationMinutes = endMinutes - startMinutes;
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
 
@@ -103,14 +110,14 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        {/* <div>
           <h2
             className={clsx(
               "text-2xl font-bold",
               isDark ? "text-white" : "text-gray-900",
             )}
           >
-            Event Schedule
+            {t("event_schedule")}
           </h2>
           <p
             className={clsx(
@@ -118,10 +125,10 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
               isDark ? "text-gray-400" : "text-gray-600",
             )}
           >
-            {dayDescription.length}{" "}
-            {dayDescription.length === 1 ? "date" : "dates"} scheduled
+            {dayDescription?.length}{" "}
+            {dayDescription?.length === 1 ? "date" : "dates"} scheduled
           </p>
-        </div>
+        </div> */}
 
         {recurringEventRuleId && (
           <div
@@ -142,7 +149,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
 
       {/* Date & Time Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {dayDescription.map((day, index) => (
+        {dayDescription?.map((day, index) => (
           <div
             key={day._id}
             className={clsx(
@@ -223,7 +230,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                       isDark ? "text-gray-300" : "text-gray-700",
                     )}
                   >
-                    Start Time
+                    {t("start_time")}
                   </span>
                 </div>
                 <span
@@ -251,7 +258,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                         isDark ? "text-gray-300" : "text-gray-700",
                       )}
                     >
-                      End Time
+                      {t("end_time")}
                     </span>
                   </div>
                   <span
@@ -274,7 +281,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                       isDark ? "text-gray-400" : "text-gray-500",
                     )}
                   >
-                    Duration
+                    {t("duration")}
                   </span>
                   <span
                     className={clsx(
@@ -294,7 +301,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
       </div>
 
       {/* Recurring Event Details */}
-      {recurringEventRuleId && (
+      {recurringEventRuleId && dayDescription?.length === 1 && (
         <div
           className={clsx(
             "rounded-xl border p-6",
@@ -322,7 +329,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                   isDark ? "text-white" : "text-gray-900",
                 )}
               >
-                Recurring Event Pattern
+                {t("recurring_event_pattern")}
               </h3>
               <p
                 className={clsx(
@@ -330,7 +337,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                This event repeats on a schedule
+                {t("recurring_event_pattern_desc")}
               </p>
             </div>
           </div>
@@ -356,7 +363,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                     isDark ? "text-gray-400" : "text-gray-500",
                   )}
                 >
-                  Pattern
+                  {t("pattern")}
                 </span>
               </div>
               <p
@@ -382,8 +389,8 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
             </div>
 
             {/* Days of Week */}
-            {recurringEventRuleId.daysOfWeek &&
-              recurringEventRuleId.daysOfWeek.length > 0 && (
+            {recurringEventRuleId?.daysOfWeek &&
+              recurringEventRuleId?.daysOfWeek?.length > 0 && (
                 <div
                   className={clsx(
                     "p-4 rounded-lg",
@@ -403,11 +410,11 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                         isDark ? "text-gray-400" : "text-gray-500",
                       )}
                     >
-                      Days of Week
+                      {t("days_of_week")}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {recurringEventRuleId.daysOfWeek.map((day) => (
+                    {recurringEventRuleId?.daysOfWeek?.map((day) => (
                       <span
                         key={day}
                         className={clsx(
@@ -423,7 +430,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
               )}
 
             {/* End Type */}
-            {recurringEventRuleId.endType && (
+            {recurringEventRuleId?.endType && (
               <div
                 className={clsx(
                   "p-4 rounded-lg",
@@ -443,7 +450,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                       isDark ? "text-gray-400" : "text-gray-500",
                     )}
                   >
-                    Ends
+                    {t("ends")}
                   </span>
                 </div>
                 <p
@@ -452,25 +459,25 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                     isDark ? "text-white" : "text-gray-900",
                   )}
                 >
-                  {recurringEventRuleId.endType === "END_DATE"
+                  {recurringEventRuleId?.endType === "END_DATE"
                     ? "On specific date"
                     : "Never"}
                 </p>
-                {recurringEventRuleId.occurrenceLimit && (
+                {recurringEventRuleId?.occurrenceLimit && (
                   <p
                     className={clsx(
                       "text-sm mt-1",
                       isDark ? "text-gray-400" : "text-gray-600",
                     )}
                   >
-                    After {recurringEventRuleId.occurrenceLimit} occurrences
+                    After {recurringEventRuleId?.occurrenceLimit} occurrences
                   </p>
                 )}
               </div>
             )}
 
             {/* Monthly Type */}
-            {recurringEventRuleId.monthlyType && (
+            {recurringEventRuleId?.monthlyType && (
               <div
                 className={clsx(
                   "p-4 rounded-lg",
@@ -490,7 +497,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                       isDark ? "text-gray-400" : "text-gray-500",
                     )}
                   >
-                    Monthly Type
+                    {t("monthly_type")}
                   </span>
                 </div>
                 <p
@@ -499,8 +506,8 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
                     isDark ? "text-white" : "text-gray-900",
                   )}
                 >
-                  {recurringEventRuleId.monthlyType === "SPECIFIC_DATE"
-                    ? `Day ${recurringEventRuleId.specificDate}`
+                  {recurringEventRuleId?.monthlyType === "SPECIFIC_DATE"
+                    ? `Day ${recurringEventRuleId?.specificDate}`
                     : "Relative date"}
                 </p>
               </div>

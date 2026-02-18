@@ -1,40 +1,15 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
-type EventStatus = "draft" | "pending" | "approved" | "rejected" | "archived";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface EventTitleSectionProps {
   name: string;
-  status: EventStatus;
   impact: number;
 }
-const EventTitleSection = ({
-  name,
-  status,
-  impact,
-}: EventTitleSectionProps) => {
-  const { t } = useTranslation("event");
-  const { isDark } = useThemeClasses();
+const EventTitleSection = ({ name, impact }: EventTitleSectionProps) => {
+  const { t: tc } = useTranslation("common");
 
-  const StatusBadge = ({ status }: { status: EventStatus }) => {
-    const statusConfig: Record<EventStatus, { color: string; label: string }> =
-      {
-        draft: { color: "bg-gray-500", label: t("draft") },
-        pending: { color: "bg-yellow-500", label: t("pending") },
-        approved: { color: "bg-green-500", label: t("approved") },
-        rejected: { color: "bg-red-500", label: t("rejected") },
-        archived: { color: "bg-gray-400", label: t("archived") },
-      };
-    const config = statusConfig[status];
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-sm text-white capitalize ${config?.color}`}
-      >
-        {config?.label}
-      </span>
-    );
-  };
+  const { isDark } = useThemeClasses();
 
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -45,12 +20,10 @@ const EventTitleSection = ({
           {name}
         </h1>
         <div className="flex items-center gap-4">
-          <StatusBadge status={status?.toLowerCase() as EventStatus} />
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             <span className={isDark ? "text-gray-300" : "text-gray-700"}>
-              {/* {t("impact_score")}: {impact ?? 0} */}
-              Impact Score: {impact ?? 0}
+              {tc("impact_score")}: {impact ?? 0}
             </span>
           </div>
         </div>

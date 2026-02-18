@@ -10,6 +10,7 @@ interface PageHeaderProps {
   onRefreshClick?: () => void;
   btnLabel: string;
   isRefreshing?: boolean;
+  totalCount?: number;
 }
 
 export default function PageHeader({
@@ -20,17 +21,26 @@ export default function PageHeader({
   onClick,
   onRefreshClick,
   isRefreshing,
+  totalCount,
 }: PageHeaderProps) {
   const { textSecondary, borderColor } = useThemeClasses();
 
   return (
-    <div className={clsx("shrink-0 py-6 pb-4 border-b mb-4", borderColor)}>
+    <div className={clsx("shrink-0 pb-4 border-b mb-4", borderColor)}>
       <div className="mx-auto">
-        <div className="flex items-center justify-between">
+        <div className={clsx("flex items-center justify-between")}>
           <div>
             <h1 className={`text-3xl mb-2 bg-clip-text ${h1Gradient}`}>
               {title}
+              {totalCount !== null && (
+                <span
+                  className={`text-3xl mb-2 ml-2 bg-clip-text ${h1Gradient}`}
+                >
+                  ({totalCount})
+                </span>
+              )}
             </h1>
+
             {description && <p className={textSecondary}>{description}</p>}
           </div>
 

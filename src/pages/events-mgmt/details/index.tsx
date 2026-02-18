@@ -1,14 +1,14 @@
 import clsx from "clsx";
+import { toast } from "sonner";
+import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
   EventDateTimeDetails,
   EventInfoDetails,
-  EventMediaDetails,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventTicketDetails,
@@ -19,26 +19,38 @@ import { UserRole } from "@/enums/user.types";
 import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
+  useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
-import { StatusChangeBtn } from "@/components/btns";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
-import { toast } from "sonner";
 import {
   AttributesDetails,
   LocationDetails,
+  MediaDetails,
 } from "@/components/details-sections";
-import { TabsSection } from "@/components/shared";
+import { PageStats, TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
 
-export default function EventDetailsPage() {
-  const { t } = useTranslation("businesses");
-  const { t: tc } = useTranslation("common");
+const findEventType = (type: string) => {
+  switch (type) {
+    case "PHYSICAL":
+      return type?.toLowerCase();
+    case "ONLINE":
+      return type?.toLowerCase();
+    case "HYBRID":
+      return type?.toLowerCase();
+    default:
+      return "physical";
+  }
+};
 
-  const navigate = useNavigate();
+export default function EventDetailsPage() {
+  const { t } = useTranslation("events");
+
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
 
@@ -56,10 +68,11 @@ export default function EventDetailsPage() {
   const { data: eventDetails, refetch } = useGetEventByIdQuery(
     eventId ? { eventId } : skipToken,
   );
-
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
+  const { data: eventStatsData, isLoading: isStatsLoading } =
+    useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
 
   const [updateEvent] = useUpdateEventMutation();
 
@@ -72,7 +85,6 @@ export default function EventDetailsPage() {
 
   const {
     images,
-    imagesRef,
     primaryImageIndex,
     handleImageUpload,
     setPrimaryImage,
@@ -106,12 +118,50 @@ export default function EventDetailsPage() {
     }
   };
 
+  const singleEventStats = [
+    {
+      id: 1,
+      title: t("total_registrations"),
+      value: eventStatsData?.totalSold,
+      labelClass: "text-green-500",
+      icon: <Calendar className="w-8 h-8 text-teal-500" />,
+    },
+    {
+      id: 2,
+      title: t("capacity"),
+      value: eventStatsData?.totalAttended,
+      sub: `${
+        Math.round(
+          (eventStatsData?.totalRegistrations / eventStatsData?.capacity) * 100,
+        ) || 0
+      }% ${t("filled")}`,
+      icon: <Users className="w-8 h-8 text-blue-500" />,
+    },
+    {
+      id: 3,
+      title: t("revenue"),
+      value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
+      icon: <DollarSign className="w-8 h-8 text-green-500" />,
+    },
+    {
+      id: 4,
+      title: t("refunds"),
+      value: `₪${(eventStatsData?.refunds || 0 / 1000).toFixed(1)}K`,
+      icon: <DollarSign className="w-8 h-8 text-red-500" />,
+    },
+    {
+      id: 5,
+      title: t("event_type"),
+      value: t(findEventType(eventDetails?.eventType)),
+      icon: <Ticket className="w-8 h-8 text-purple-500" />,
+    },
+  ];
+
   const renderContent = () => {
     const commonProps = { t, eventDetails };
     const mediaProps = {
       t,
       images,
-      imagesRef,
       primaryImageIndex,
       setPrimaryImage,
       handleImageUpload,
@@ -130,7 +180,6 @@ export default function EventDetailsPage() {
       case "location":
         return (
           <LocationDetails
-            t={t}
             purpose="Event"
             lat={eventDetails?.geoLocation?.lat}
             lng={eventDetails?.geoLocation?.long}
@@ -138,7 +187,7 @@ export default function EventDetailsPage() {
           />
         );
       case "media":
-        return <EventMediaDetails {...mediaProps} />;
+        return <MediaDetails {...mediaProps} />;
       case "tickets":
         return (
           <EventTicketDetails
@@ -153,7 +202,7 @@ export default function EventDetailsPage() {
       case "attributes":
         return (
           <AttributesDetails
-            t={t}
+            title={t("event_attributes")}
             groupTypesId={eventDetails?.groupTypesId}
             subCategoriesId={eventDetails?.subCategoriesId}
             accessibilitiesId={eventDetails?.accessibilitiesId}
@@ -183,16 +232,7 @@ export default function EventDetailsPage() {
       >
         {/* Top controls row */}
         <div className="px-6 pt-4 pb-3 flex items-center justify-between">
-          <button
-            onClick={() => navigate(routes.eventsMgmt)}
-            className={clsx(
-              "flex items-center gap-2 text-sm hover:text-teal-600 transition-colors",
-              isDark ? "text-gray-300" : "text-gray-700",
-            )}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            {t("back_to_list")}
-          </button>
+          <BackToListBtn navPath={routes.eventsMgmt} />
 
           <div className="flex items-center gap-3">
             {userRole === UserRole.SUPERADMIN && (
@@ -214,8 +254,14 @@ export default function EventDetailsPage() {
         {/* Title & Tabs */}
         <div className="px-6 pb-3">
           <EventTitleSection {...(eventDetails ?? {})} />
+
+          <PageStats
+            stats={singleEventStats}
+            isLoading={isStatsLoading}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 my-6"
+          />
+
           <TabsSection
-            t={tc}
             tabs={eventTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
