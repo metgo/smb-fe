@@ -131,8 +131,8 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status;

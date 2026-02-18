@@ -50,9 +50,8 @@ export default function EventsMgmtPage() {
       externalApiId: websiteId,
     };
 
-    if (searchQuery) {
-      params.search = searchQuery;
-    }
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchQuery;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (eventTypeFilter === "free") {
       params.isFree = true;

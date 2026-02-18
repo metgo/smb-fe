@@ -189,9 +189,8 @@ export default function ProductsMgmtPage() {
       endDate,
     };
 
-    if (searchTerm) {
-      params.search = searchTerm;
-    }
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status.toUpperCase();
