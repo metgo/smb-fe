@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
@@ -60,7 +60,7 @@ export default function CreateProductWizard({
 
   const productId = searchParams?.get("productId");
   const bzIdForProdCreate = searchParams?.get("businessId");
-  // const businessName = searchParams?.get("businessName");
+  const businessName = searchParams?.get("businessName");
 
   const {
     language,
@@ -85,18 +85,36 @@ export default function CreateProductWizard({
 
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
+  const initialBusinessData = useMemo(() => {
+    if (product?.businessId || bzIdForProdCreate) {
+      return [
+        {
+          _id: product?.businessId?._id ?? bzIdForProdCreate,
+          name: product?.businessId?.name || businessName,
+          slug: "",
+        },
+      ];
+    }
+
+    return businessData?.data || [];
+  }, [
+    product?.businessId?._id,
+    product?.businessId?.name,
+    bzIdForProdCreate,
+    businessName,
+    businessData?.data,
+  ]);
+
   const {
     items: businesses,
     search: searchBusiness,
     isSearching,
   } = useRemoteSelectData({
-    initialData: product?.businessId
-      ? [product?.businessId]
-      : businessData?.data,
+    initialData: initialBusinessData,
     debounceMs: 400,
     searchParams: {
-      locale: language,
       dmoId,
+      locale: language,
       authorityId,
     },
     lazySearch: async (params) => {
@@ -106,10 +124,6 @@ export default function CreateProductWizard({
   });
 
   const [getBusinessDelivery] = useLazyGetBusinessDeliveryInfoByIdQuery();
-
-  // const { data: product } = useGetProductbyIdQuery(
-  //   productId ? { productId: productId } : skipToken,
-  // );
 
   const [businessId, setBusinessId] = useState(bzIdForProdCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
@@ -401,6 +415,7 @@ export default function CreateProductWizard({
       formData,
       setFormData,
       errors,
+      images,
       selectedFormLanguage,
       setSelectedFormLanguage,
       handleImageUpload,

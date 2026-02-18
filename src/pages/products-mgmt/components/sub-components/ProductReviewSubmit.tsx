@@ -15,6 +15,7 @@ import { ImageWithFallback } from "@/components/shared";
 
 interface ProductReviewSubmitProps {
   formData: any;
+  images: IImageUpload[];
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -29,8 +30,10 @@ const STEPS = {
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   formData,
+  images,
   setCurrentStep,
 }) => {
+  console.log("🚀 ~ ProductReviewSubmit ~ images:", images);
   const {
     textPrimary,
     textSecondary,
@@ -43,6 +46,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
   const { categories, subCategories } = useCommon();
+  console.log("formData.images", formData.images);
 
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -274,14 +278,14 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           STEPS.IMAGES,
         )}
         <div className="">
-          {formData.images?.length > 0 && (
+          {images?.length > 0 && (
             <div className="flex flex-wrap gap-2 p-4">
               {" "}
               {/* added some basic styling — adjust as needed */}
-              {formData?.images?.map((img: any, index: any) => (
+              {images?.map((img: any, index: any) => (
                 <ImageWithFallback
                   key={index}
-                  src={img?.image}
+                  src={img?.image || img?.previewUrl}
                   alt="Uploaded image"
                   className="h-50 w-60 rounded-md shadow-md object-cover"
                 />

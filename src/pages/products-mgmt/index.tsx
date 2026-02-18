@@ -37,13 +37,14 @@ import {
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ReactSelect } from "@/components/form-fields";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { formatILS } from "@/helpers/formatter";
 import { skipToken } from "@reduxjs/toolkit/query";
 import FilterChips from "@/components/shared/FilterChips";
+import EmptyState from "@/components/shared/EmptyState";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -76,14 +77,14 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
+  const navigate = useNavigate();
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams?.get("businessId");
-  // const businessName = searchParams?.get("businessName");
-  const bzIdForProdView = searchParams?.get("bzIdForProdView");
+  const businessName = searchParams?.get("businessName");
 
   const {
     isDark,
@@ -92,13 +93,12 @@ export default function ProductsMgmtPage() {
     bgPrimary,
     bgSecondary,
     borderColor,
-    textPrimary,
     textSecondary,
     textTertiary,
   } = useThemeClasses();
   const { data: businessData, isLoading: _isBusinessesLoading } =
     useGetBusinessForProductQuery(
-      !bzIdForProdView
+      !businessId
         ? {
             locale: language,
             limit: 20,
@@ -144,10 +144,8 @@ export default function ProductsMgmtPage() {
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   const removeQueryParams = () => {
-    const param = searchParams.get("bzIdForProdView");
-    if (param) {
-      searchParams.delete("bzIdForProdView");
-    }
+    navigate({}, { replace: true });
+    setIsCreateModalOpen(false);
   };
 
   //filters
@@ -189,9 +187,8 @@ export default function ProductsMgmtPage() {
       endDate,
     };
 
-    if (searchTerm) {
-      params.search = searchTerm;
-    }
+    const finalSearchTerm = localStorage.getItem("searchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status.toUpperCase();
@@ -201,8 +198,8 @@ export default function ProductsMgmtPage() {
       params.businessId = filters.businessId;
     }
 
-    if (bzIdForProdView) {
-      params.businessId = bzIdForProdView;
+    if (businessId) {
+      params.businessId = businessId;
     }
 
     return params;
@@ -211,7 +208,7 @@ export default function ProductsMgmtPage() {
     searchTerm,
     filters,
     language,
-    bzIdForProdView,
+    businessId,
     dmoId,
     authorityId,
     startDate,
@@ -224,7 +221,7 @@ export default function ProductsMgmtPage() {
     searchTerm,
     filters,
     language,
-    bzIdForProdView,
+    businessId,
     dmoId,
     authorityId,
     startDate,
@@ -587,7 +584,7 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
-                {!bzIdForProdView && (
+                {!businessId && (
                   <div>
                     <label
                       className={`block text-sm mb-1 ${
@@ -644,18 +641,21 @@ export default function ProductsMgmtPage() {
                 {/* Active filters display and clear all button */}
                 <div className="flex items-start gap-3">
                   {/* Show active filters */}
-                  {Object.entries(filters).some(
-                    ([_, val]) => val !== "all",
-                  ) && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {filters.status !== "all" && (
-                        <FilterChips
-                          label={t(filters.status)}
-                          onRemove={() => clearFilter("status")}
-                        />
-                      )}
-                    </div>
-                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {filters.status !== "all" && (
+                      <FilterChips
+                        label={t(filters.status)}
+                        onRemove={() => clearFilter("status")}
+                      />
+                    )}
+                    {businessId && businessName && (
+                      <FilterChips
+                        label={businessName}
+                        onRemove={() => removeQueryParams()}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -681,19 +681,28 @@ export default function ProductsMgmtPage() {
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
               >
-                <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
-                <h3 className={`text-lg ${textPrimary} mb-2`}>
-                  {t("no_products")}
-                </h3>
-                <p className={`${textTertiary} mb-6`}>
-                  {t("no_products_desc")}
-                </p>
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-                >
-                  {t("create_product")}
-                </button>
+                {searchTerm ? (
+                  <div>
+                    <EmptyState searchQuery={searchTerm} />
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Package
+                      className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`}
+                    />
+
+                    <p className={`${textTertiary} mb-6`}>
+                      {t("no_products_desc")}
+                    </p>
+
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+                    >
+                      {t("create_product")}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : viewMode === "list" ? (
               <ProductListView
@@ -747,7 +756,7 @@ export default function ProductsMgmtPage() {
       {/* Create Product Wizard */}
       {isCreateModalOpen && (
         <CreateProductWizard
-          onClose={() => setIsCreateModalOpen(false)}
+          onClose={() => removeQueryParams()}
           selectedProduct={selectedProduct}
           refetch={refetch}
         />
