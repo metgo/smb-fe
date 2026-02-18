@@ -14,7 +14,8 @@
   "no_data_available": "No data available",
   "closed": "Closed",
   "total": "Total: ",
-
+  "tag_input_hint": "Type a tag and press comma (,) to add",
+  "add_tag_placeholder": "Add tag...",
   "dashboard": "Dashboard",
   "events": "Events",
   "products": "Products",
@@ -112,6 +113,7 @@
   "to": "to",
   "primary": "Primary",
   "set_as_primary": "Set as Primary",
+  "primary_category": "Primary Category",
 
   "filter": "Filter",
   "sunday": "Sunday",
