@@ -153,6 +153,7 @@ export default function ProductsMgmtPage() {
   //filters
   const STORAGE_KEY = "product_query_state";
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
   const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
 
   const [page, setPage] = useState(savedState?.page || 1);
@@ -183,28 +184,18 @@ export default function ProductsMgmtPage() {
   }, [businessId]);
 
   useEffect(() => {
-    const queryState = {
-      page,
-      searchTerm,
-      filters,
-      dmoId,
-      authorityId,
-      startDate,
-      endDate,
-      language,
-    };
+    const { status, locale, businessId } = filters;
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [
-    page,
-    searchTerm,
-    filters,
-    dmoId,
-    authorityId,
-    startDate,
-    endDate,
-    language,
-  ]);
+    if (
+      searchTerm !== "" ||
+      status !== "all" ||
+      locale !== language ||
+      businessId !== ""
+    ) {
+      const queryState = { searchTerm, filters };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+    }
+  }, [searchTerm, filters, language]);
 
   const productQueryParams = useMemo(() => {
     const params: any = {
@@ -637,9 +628,9 @@ export default function ProductsMgmtPage() {
                   </div>
                 )}
               </div>
+
               <div className="flex mt-4 gap-6 items-center">
                 <div>
-                  {/* Clear all button */}
                   {Object.entries(filters).some(
                     ([_, val]) => val !== "all",
                   ) && (
@@ -650,6 +641,7 @@ export default function ProductsMgmtPage() {
                           locale: language,
                           businessId: "",
                         });
+                        localStorage.removeItem(STORAGE_KEY);
                         setSearchTerm("");
                       }}
                       className="ml-auto text-sm text-green-600"
@@ -659,10 +651,7 @@ export default function ProductsMgmtPage() {
                   )}
                 </div>
 
-                {/* Active filters display and clear all button */}
                 <div className="flex items-start gap-3">
-                  {/* Show active filters */}
-
                   <div className="flex flex-wrap items-center gap-2">
                     {filters.status !== "all" && (
                       <FilterChips

@@ -761,6 +761,7 @@ export default function BusinessesMgmtPage() {
               <Download className="w-5 h-5" />
               {t("export")}
             </button>
+
             <ViewModeToggle
               onChange={setViewMode}
               value={viewMode}

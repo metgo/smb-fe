@@ -30,7 +30,9 @@ export default function EventsMgmtPage() {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
+
   const STORAGE_KEY = "event_query_state";
+
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
   const [eventTypeFilter, setEventTypeFilter] = useState<
@@ -43,32 +45,23 @@ export default function EventsMgmtPage() {
     savedState?.statusFilter || "all",
   );
   const [dateRangeFilter, setDateRangeFilter] = useState({
-    start: savedState?.dateRangeFilter.start || "",
-    end: savedState?.dateRangeFilter.end || "",
+    start: savedState?.dateRangeFilter?.start || "",
+    end: savedState?.dateRangeFilter?.end || "",
   });
-
-  const [page, _setPage] = useState(savedState?.page || 1);
 
   useEffect(() => {
     const queryState = {
-      page,
       searchQuery,
       eventTypeFilter,
-      dmoId,
       registrationFilter,
       statusFilter,
       dateRangeFilter,
-      authorityId,
-      websiteId,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
   }, [
-    page,
     searchQuery,
-    dmoId,
-    authorityId,
-    websiteId,
+
     registrationFilter,
     statusFilter,
     dateRangeFilter,
@@ -132,6 +125,7 @@ export default function EventsMgmtPage() {
     if (eventQueryParams.startDate)
       urlParams.startDate = eventQueryParams.startDate;
     if (eventQueryParams.endDate) urlParams.endDate = eventQueryParams.endDate;
+
     const searchParams = new URLSearchParams(urlParams).toString();
     navigate(`?${searchParams}`, { replace: true });
   }, [eventQueryParams, navigate]);
@@ -389,6 +383,7 @@ export default function EventsMgmtPage() {
                       setRegistrationFilter("all");
                       setStatusFilter("all");
                       setDateRangeFilter({ start: "", end: "" });
+                      localStorage.removeItem(STORAGE_KEY);
                     }}
                     className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                   >
