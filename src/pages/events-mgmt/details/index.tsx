@@ -235,12 +235,10 @@ export default function EventDetailsPage() {
           <BackToListBtn navPath={routes.eventsMgmt} />
 
           <div className="flex items-center gap-3">
-            {userRole === UserRole.SUPERADMIN && (
-              <StatusChangeBtn
-                handleStatusChange={onStatusChangeHandler}
-                status={eventDetails?.status}
-              />
-            )}
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={eventDetails?.status}
+            />
             <button
               onClick={() => setIsEditOpen(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"

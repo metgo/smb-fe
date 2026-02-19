@@ -115,9 +115,13 @@ export default function BusinessDetailsPage() {
   const [isEditClicked, setIsEditClicked] = useState(false);
   const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
 
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    userRole,
-  );
+  const canChangeStatus = [
+    "superadmin",
+    "admin",
+    "dmo",
+    "authority",
+    "traveller",
+  ].includes(userRole);
 
   const {
     images,
