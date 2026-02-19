@@ -52,7 +52,6 @@ export default function Sidebar() {
 
   const { isDark, isRTL } = useThemeClasses();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
-  const { userRole } = useAppSelector((state) => state.auth);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
