@@ -171,12 +171,6 @@ export default function ProductsMgmtPage() {
     }));
   };
 
-  useEffect(() => {
-    if (businessId) {
-      setIsCreateModalOpen(true);
-    }
-  }, [businessId]);
-
   const productQueryParams = useMemo(() => {
     const params: any = {
       page,
@@ -533,7 +527,7 @@ export default function ProductsMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {showFilters && (
+          {(showFilters || businessName) && (
             <div
               className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
             >
@@ -739,7 +733,7 @@ export default function ProductsMgmtPage() {
       {/* Create Product Wizard */}
       {isCreateModalOpen && (
         <CreateProductWizard
-          onClose={() => removeQueryParams()}
+          onClose={() => setIsCreateModalOpen(false)}
           refetch={refetch}
         />
       )}

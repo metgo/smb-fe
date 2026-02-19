@@ -45,24 +45,25 @@ import { removeNulls } from "@/helpers";
 
 interface ProductWizardProps {
   onClose: () => void;
+  editingProduct?: ProductFormData | null;
+  selectedProduct?: any;
+  isOpen?: boolean;
   product?: any;
   refetch?: any;
-  bzIdForProdCreate?: string;
-  businessName?: string;
 }
 
 export default function CreateProductWizard({
   onClose,
   refetch,
   product,
-  bzIdForProdCreate,
-  businessName,
 }: ProductWizardProps) {
   const { t } = useTranslation("products");
   const [searchParams] = useSearchParams();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
+  const bzIdForProdCreate = searchParams?.get("businessId");
+  const businessName = searchParams?.get("businessName");
 
   const {
     language,

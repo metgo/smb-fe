@@ -9,7 +9,6 @@ import {
   Globe,
   ImageIcon,
   MapPin,
-  Package,
   Ticket,
   Truck,
   Users,
@@ -28,7 +27,7 @@ export const businessTabs = [
   { id: "social", label: "social_networks", icon: Globe },
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "hours", label: "operating_hours", icon: Clock },
-  { id: "products", label: "products", icon: Package },
+  // { id: "products", label: "products", icon: Package },
 ];
 
 export const eventTabs = [
