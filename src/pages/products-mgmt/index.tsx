@@ -186,16 +186,11 @@ export default function ProductsMgmtPage() {
   useEffect(() => {
     const { status, locale, businessId } = filters;
 
-    if (
-      searchTerm !== "" ||
-      status !== "all" ||
-      locale !== language ||
-      businessId !== ""
-    ) {
-      const queryState = { searchTerm, filters };
+    if (status !== "all" || locale !== language || businessId !== "") {
+      const queryState = { filters };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
     }
-  }, [searchTerm, filters, language]);
+  }, [filters, language]);
 
   const productQueryParams = useMemo(() => {
     const params: any = {
@@ -208,7 +203,9 @@ export default function ProductsMgmtPage() {
       endDate,
     };
 
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem("productSearchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status.toUpperCase();
@@ -422,6 +419,7 @@ export default function ProductsMgmtPage() {
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                storageKey="productSearchTerm"
               />
             </div>
 

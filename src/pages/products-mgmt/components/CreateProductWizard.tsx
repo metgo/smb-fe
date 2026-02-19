@@ -352,7 +352,7 @@ export default function CreateProductWizard({
     await saveDraft(true);
     setIsPublishing(false);
 
-    toast.success(t("Product created succesfully"));
+    // toast.success(t("Product created succesfully"));
     refetch();
     onClose();
   };

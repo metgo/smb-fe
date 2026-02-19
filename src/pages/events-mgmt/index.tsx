@@ -51,7 +51,6 @@ export default function EventsMgmtPage() {
 
   useEffect(() => {
     const queryState = {
-      searchQuery,
       eventTypeFilter,
       registrationFilter,
       statusFilter,
@@ -59,14 +58,7 @@ export default function EventsMgmtPage() {
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [
-    searchQuery,
-
-    registrationFilter,
-    statusFilter,
-    dateRangeFilter,
-    eventTypeFilter,
-  ]);
+  }, [registrationFilter, statusFilter, dateRangeFilter, eventTypeFilter]);
 
   const eventQueryParams = useMemo(() => {
     const params: any = {
@@ -75,8 +67,9 @@ export default function EventsMgmtPage() {
       externalApiId: websiteId,
     };
 
-    if (searchQuery) params.search = searchQuery;
-
+    const finalSearchTerm =
+      localStorage.getItem("eventsSearchTerm") ?? searchQuery;
+    if (finalSearchTerm) params.search = finalSearchTerm;
     if (eventTypeFilter === "free") {
       params.isFree = true;
     }
@@ -215,6 +208,7 @@ export default function EventsMgmtPage() {
                 placeholder={t("search_events_placeholder")}
                 searchTerm={searchQuery}
                 setSearchTerm={setSearchQuery}
+                storageKey="eventSearchTerm"
               />
             </div>
             <FilterButton value={showFilters} onChange={setShowFilters} />

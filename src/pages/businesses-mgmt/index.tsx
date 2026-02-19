@@ -114,6 +114,8 @@ export default function BusinessesMgmtPage() {
   // for setting filters to local storage
   const STORAGE_KEY = "business_query_state";
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  // const hasSavedFilter =
+  //   savedState?.status !== "all" && savedState?.hasProductFilter !== "all";
   // Filters
   const [filters, setFilters] = useState({
     status: savedState?.filters?.status || "all",
@@ -123,11 +125,11 @@ export default function BusinessesMgmtPage() {
   const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
 
   const [page, setPage] = useState(savedState?.page || 1);
+  // console.log("showFilters:", showFilters, "hasSavedFilter:", hasSavedFilter);
 
   useEffect(() => {
     const queryState = {
       page,
-      searchTerm,
       filters,
       dmoId,
       authorityId,
@@ -140,7 +142,6 @@ export default function BusinessesMgmtPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
   }, [
     page,
-    searchTerm,
     filters,
     dmoId,
     authorityId,
@@ -168,7 +169,9 @@ export default function BusinessesMgmtPage() {
       externalApiId: websiteId,
     };
 
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem("businessSearchTerm") ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status;
@@ -617,7 +620,7 @@ export default function BusinessesMgmtPage() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                // storageKey="businessSearchTerm"
+                storageKey="businessSearchTerm"
               />
             </div>
 

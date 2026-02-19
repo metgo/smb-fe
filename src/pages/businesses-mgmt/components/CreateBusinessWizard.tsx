@@ -441,7 +441,7 @@ export default function CreateBusinessWizard({
       });
     }
     setIsPublishing(false);
-    toast.success(t("business created succesfully"));
+    // toast.success(t("business created succesfully"));
     refetch();
     onClose();
   };
