@@ -58,6 +58,8 @@ export default function CreateProductWizard({
   product,
 }: ProductWizardProps) {
   const { t } = useTranslation("products");
+  const { t: tc } = useTranslation("toast");
+
   const [searchParams] = useSearchParams();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
@@ -101,8 +103,7 @@ export default function CreateProductWizard({
 
     return businessData?.data || [];
   }, [
-    product?.businessId?._id,
-    product?.businessId?.name,
+    product?.businessId,
     bzIdForProdCreate,
     businessName,
     businessData?.data,
@@ -217,7 +218,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId]);
+  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -414,17 +415,15 @@ export default function CreateProductWizard({
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
-      const res = await updateProduct({
+      await updateProduct({
         productId: internalProductId || productId!,
         body: payload,
       }).unwrap();
 
-      toast.success(
-        res?.message ?? (isPublish ? "Product published" : "Draft saved"),
-      );
+      toast.success(isPublish ? tc("product_published") : tc("draft_saved"));
     } catch (error: any) {
       // setIsSaving(false);
-      toast.error(error?.message || t("something_went_wrong"));
+      toast.error(tc("draft_failed"));
     }
   };
 

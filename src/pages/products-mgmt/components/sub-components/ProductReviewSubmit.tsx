@@ -33,7 +33,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   images,
   setCurrentStep,
 }) => {
-  console.log("🚀 ~ ProductReviewSubmit ~ images:", images);
   const {
     textPrimary,
     textSecondary,

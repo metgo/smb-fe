@@ -58,6 +58,8 @@ export default function CreateBusinessWizard({
   refetch,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("toast");
+
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
@@ -185,7 +187,6 @@ export default function CreateBusinessWizard({
     useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
-  console.log("🚀 ~ CreateBusinessWizard ~ addr:", addr);
 
   const totalSteps = 9;
 
@@ -428,7 +429,7 @@ export default function CreateBusinessWizard({
       }
     }
     if (!allValid) {
-      toast.error(t("fill_all_fields"));
+      toast.error(tc("fill_all_fields"));
       return;
     }
 

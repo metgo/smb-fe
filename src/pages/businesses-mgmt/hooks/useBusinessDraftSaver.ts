@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface UseBusinessDraftSaverProps {
   currentStep: number;
@@ -19,7 +20,7 @@ export function useBusinessDraftSaver({
   stepPayloadMap,
 }: UseBusinessDraftSaverProps) {
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
-
+  const { t } = useTranslation("toast");
   // 🔹 Mark step dirty
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -52,7 +53,7 @@ export function useBusinessDraftSaver({
         if (!Object.keys(payload).length) return;
 
         // 4️⃣ Update event
-        const res = await updateBusiness({
+        await updateBusiness({
           businessId: internalbusinessId || businessId!,
           body: payload,
         }).unwrap();
@@ -63,12 +64,9 @@ export function useBusinessDraftSaver({
           [...next].forEach((s) => s <= currentStep && next.delete(s));
           return next;
         });
-
-        toast.success(
-          res?.message ?? (isPublish ? "Event published" : "Draft saved"),
-        );
+        toast.success(isPublish ? t("business_published") : t("draft_saved"));
       } catch (err: any) {
-        toast.error(err?.message || "Failed to save draft");
+        toast.error(err?.message || t("draft_failed"));
       }
     },
     [
@@ -78,6 +76,7 @@ export function useBusinessDraftSaver({
       businessId,
       updateBusiness,
       setBusinessId,
+      t,
     ],
   );
 

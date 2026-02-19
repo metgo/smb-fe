@@ -49,6 +49,8 @@ import { businessTabs } from "@/constants/tabs";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("toast");
+
   const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -226,10 +228,10 @@ export default function BusinessDetailsPage() {
         body: { status: status.toUpperCase() },
       }).unwrap();
 
-      toast.success("Business status updated successfully!");
+      toast.success(tc("business_status_update_success"));
       refetch();
     } catch (error) {
-      toast.error("Failed to update business status.");
+      toast.error(tc("business_status_update_failed"));
       console.error(error);
     }
   };

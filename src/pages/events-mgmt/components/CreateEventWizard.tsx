@@ -53,6 +53,8 @@ export default function CreateEventWizard({
   editData,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("toast");
+
   const [searchParams] = useSearchParams();
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
   const { userRole, dmoId, authorityId } = useAppSelector(
@@ -516,7 +518,7 @@ export default function CreateEventWizard({
     }
 
     if (!allValid) {
-      toast.error(t("requried_fill_up_info"));
+      toast.error(tc("fill_all_fields"));
       return;
     }
     setIsPublishing(true);
@@ -528,7 +530,7 @@ export default function CreateEventWizard({
       });
     }
     setIsPublishing(false);
-    toast.success(t("event_published_success"));
+    toast.success(tc("event_published"));
     onClose();
   };
 

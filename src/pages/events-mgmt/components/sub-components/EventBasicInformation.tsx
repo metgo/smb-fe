@@ -87,7 +87,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     bussCategoryId: categoryIds.event,
     locale,
   });
-  console.log("🚀 ~ EventBasicInformation ~ subCategories:", subCategories);
   const { groupTypes, accessibility } = useCommon();
 
   // Individual refs for scroll targets

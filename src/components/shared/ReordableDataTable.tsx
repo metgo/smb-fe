@@ -76,7 +76,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed: string[] = JSON.parse(saved);
-        console.log(parsed);
         // Filter out any saved columns that don't exist anymore
         const validKeys = parsed.filter((k) =>
           columns.some((c) => c.key === k),

@@ -83,6 +83,8 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("toast");
+
   const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
     useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -210,7 +212,7 @@ export default function BusinessesMgmtPage() {
   const statsQueryParams = useMemo(() => {
     const { page, limit, locale, ...rest } = queryParams;
     return rest;
-  }, [queryParams, dmoId, authorityId, websiteId]);
+  }, [queryParams]);
 
   // Then call your query
   const { data: businessStatsData, isLoading: isStatsLoading } =
@@ -290,7 +292,7 @@ export default function BusinessesMgmtPage() {
         return [...prev, ...newItems];
       });
     }
-  }, [businesses]);
+  }, [businesses, page]);
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
@@ -311,7 +313,7 @@ export default function BusinessesMgmtPage() {
   const handleBulkDelete = async () => {
     if (!selectedBusinesses.size) return;
     setIsConfirmOpen(true);
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
         businessesId: Array.from(selectedBusinesses),
@@ -319,13 +321,13 @@ export default function BusinessesMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Businesses deleted successfully";
+        const message = tc("business_deleted_success");
         toast.success(message, { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Businesses", {
+      toast.error(error?.message || tc("business_delete_failed"), {
         id: toastId,
       });
     }
@@ -333,9 +335,7 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedBusinesses.size) return;
-    const toastId = toast.loading(
-      "Please wait. Businesses's status are changing...",
-    );
+    const toastId = toast.loading(tc("business_status_change_loading"));
 
     try {
       const results = await bulkBusinessesUpdate({
@@ -344,13 +344,13 @@ export default function BusinessesMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Businesses status updated successfully";
+        const message = tc("business_status_update_success");
         toast.success(message, { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change Businesses status", {
+      toast.error(error?.message || tc("business_status_update_failed"), {
         id: toastId,
       });
     }

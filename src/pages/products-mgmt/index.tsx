@@ -76,6 +76,8 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
+  const { t: tc } = useTranslation("toast");
+
   const navigate = useNavigate();
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
@@ -311,7 +313,8 @@ export default function ProductsMgmtPage() {
     if (!selectedProducts.size) return;
     setIsConfirmOpen(true);
 
-    const toastId = toast.loading("Please wait. Products are deleting...");
+    const toastId = toast.loading(tc("product_delete_loading"));
+
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
@@ -319,20 +322,21 @@ export default function ProductsMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Products deleted successfully";
+        const message = tc("product_deleted_success");
         toast.success(message, { id: toastId });
         setSelectedProducts(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Products");
+      toast.error(tc("product_delete_failed"));
     }
   };
 
-  // //bulk status change
+  // Bulk status change
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedProducts.size) return;
-    toast.loading("Please wait. Product's status are changing...");
+
+    const toastId = toast.loading(tc("product_status_change_loading"));
 
     try {
       const results = await bulkProductsUpdate({
@@ -341,13 +345,13 @@ export default function ProductsMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Products status updated successfully";
-        toast.success(message);
+        const message = tc("product_status_update_success");
+        toast.success(message, { id: toastId });
         setSelectedProducts(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change Products status");
+      toast.error(tc("product_status_update_failed"));
     }
   };
 
