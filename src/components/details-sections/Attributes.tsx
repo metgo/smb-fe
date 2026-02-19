@@ -38,7 +38,7 @@ const Attributes: FC<AttributesProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
 }) => {
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const { categories, accessibility, groupTypes, subCategories } = useCommon();
 
@@ -104,13 +104,13 @@ const Attributes: FC<AttributesProps> = ({
       </div>
 
       <SelectableChips
-        label="Accessiblities"
+        label={t("accessiblities")}
         items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
       <SelectableChips
-        label="Group Types"
+        label={t("group_types")}
         items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}

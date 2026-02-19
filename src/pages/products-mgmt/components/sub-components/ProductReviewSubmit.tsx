@@ -45,7 +45,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
   const { categories, subCategories } = useCommon();
-  console.log("formData.images", formData.images);
 
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
