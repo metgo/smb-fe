@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
-import { useAppSelector } from "@/hooks/hooks";
 import {
   EventDateTimeDetails,
   EventInfoDetails,
@@ -15,7 +14,6 @@ import {
   EventTitleSection,
 } from "./components";
 import { routes } from "@/lib/routes";
-import { UserRole } from "@/enums/user.types";
 import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
@@ -55,7 +53,6 @@ export default function EventDetailsPage() {
   const eventId = searchParams.get("eventId") || "";
 
   const { isDark, bgPrimary } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditOpen, setIsEditOpen] = useState(false);
