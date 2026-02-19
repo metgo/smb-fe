@@ -142,7 +142,6 @@ export default function ProductsMgmtPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(),
   );
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   const removeQueryParams = () => {
@@ -171,12 +170,6 @@ export default function ProductsMgmtPage() {
       [filterKey]: "all",
     }));
   };
-
-  useEffect(() => {
-    if (businessId) {
-      setIsCreateModalOpen(true);
-    }
-  }, [businessId]);
 
   const productQueryParams = useMemo(() => {
     const params: any = {
@@ -272,7 +265,6 @@ export default function ProductsMgmtPage() {
   };
 
   const handleCreateNew = () => {
-    setSelectedProduct(null);
     setIsCreateModalOpen(true);
   };
   const promptBulkDelete = () => {
@@ -535,7 +527,7 @@ export default function ProductsMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {showFilters && (
+          {(showFilters || businessName) && (
             <div
               className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
             >
@@ -741,8 +733,7 @@ export default function ProductsMgmtPage() {
       {/* Create Product Wizard */}
       {isCreateModalOpen && (
         <CreateProductWizard
-          onClose={() => removeQueryParams()}
-          selectedProduct={selectedProduct}
+          onClose={() => setIsCreateModalOpen(false)}
           refetch={refetch}
         />
       )}
