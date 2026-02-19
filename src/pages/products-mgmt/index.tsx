@@ -244,13 +244,14 @@ export default function ProductsMgmtPage() {
     endDate,
   ]);
 
-  //exclude businessId from appending.. create product from business has same logic
-  //so create wizard opens otherwise
+  //skipped appending bzId as it opens create wizard
   useEffect(() => {
-    const { businessId, ...urlParams } = productQueryParams;
+    const urlParams: Record<string, any> = {};
+
+    if (productQueryParams.search) urlParams.search = productQueryParams.search;
+    if (productQueryParams.status) urlParams.status = productQueryParams.status;
 
     const searchParams = new URLSearchParams(urlParams).toString();
-
     navigate(`?${searchParams}`, { replace: true });
   }, [productQueryParams, navigate]);
 

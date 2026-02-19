@@ -191,10 +191,16 @@ export default function BusinessesMgmtPage() {
     websiteId,
   ]);
 
-  //append to url based on queries
+  // Only append search, status, hasProductFilter to URL
   useEffect(() => {
-    const searchParams = new URLSearchParams(queryParams).toString();
+    const urlParams: Record<string, any> = {};
 
+    if (queryParams.search) urlParams.search = queryParams.search;
+    if (queryParams.status) urlParams.status = queryParams.status;
+    if (queryParams.hasProductFilter !== undefined)
+      urlParams.hasProductFilter = queryParams.hasProductFilter;
+
+    const searchParams = new URLSearchParams(urlParams).toString();
     navigate(`?${searchParams}`, { replace: true });
   }, [queryParams, navigate]);
 
