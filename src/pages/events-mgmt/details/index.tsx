@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
-import { useAppSelector } from "@/hooks/hooks";
 import {
   EventDateTimeDetails,
   EventInfoDetails,
@@ -15,7 +14,6 @@ import {
   EventTitleSection,
 } from "./components";
 import { routes } from "@/lib/routes";
-import { UserRole } from "@/enums/user.types";
 import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
@@ -55,7 +53,6 @@ export default function EventDetailsPage() {
   const eventId = searchParams.get("eventId") || "";
 
   const { isDark, bgPrimary } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -235,12 +232,10 @@ export default function EventDetailsPage() {
           <BackToListBtn navPath={routes.eventsMgmt} />
 
           <div className="flex items-center gap-3">
-            {userRole === UserRole.SUPERADMIN && (
-              <StatusChangeBtn
-                handleStatusChange={onStatusChangeHandler}
-                status={eventDetails?.status}
-              />
-            )}
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={eventDetails?.status}
+            />
             <button
               onClick={() => setIsEditOpen(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"

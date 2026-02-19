@@ -1,3 +1,5 @@
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -20,6 +22,8 @@ export function useEventDraftSaver({
   stepPayloadMap,
   // debounceMs = 3600,
 }: UseEventDraftSaverProps) {
+  const { userRole } = useAppSelector((state) => state.auth);
+
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   // const debounceTimer = useRef<number | null>(null);
 
@@ -63,7 +67,7 @@ export function useEventDraftSaver({
         if (isPublish) {
           payload = {
             ...payload,
-            status: "APPROVED",
+            status: userRole === UserRole.TRAVELLER ? "PENDING" : "APPROVED",
           };
         }
 
@@ -96,6 +100,7 @@ export function useEventDraftSaver({
       eventId,
       updateEvent,
       setEventId,
+      userRole,
     ],
   );
 

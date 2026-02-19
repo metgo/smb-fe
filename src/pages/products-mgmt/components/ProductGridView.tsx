@@ -9,9 +9,9 @@ import { routes } from "@/lib/routes";
 import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { DeleteIconBtn, EditIconBtn } from "@/components/btns";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
-import { DeleteIconBtn, EditIconBtn } from "@/components/btns";
 
 interface ProductGridViewProps {
   products: any[];
