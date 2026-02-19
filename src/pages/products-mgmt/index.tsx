@@ -151,14 +151,18 @@ export default function ProductsMgmtPage() {
   };
 
   //filters
-  const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const STORAGE_KEY = "product_query_state";
+  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
+
+  const [page, setPage] = useState(savedState?.page || 1);
 
   const [filters, setFilters] = useState({
-    status: "all",
-    locale: language,
-    businessId: "",
+    status: savedState?.filters?.status || "all",
+    locale: savedState?.filters?.locale || language,
+    businessId: savedState?.filters?.businessId || "",
   });
+
   const [_clearBusiness, setClearBusiness] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -178,6 +182,30 @@ export default function ProductsMgmtPage() {
     }
   }, [businessId]);
 
+  useEffect(() => {
+    const queryState = {
+      page,
+      searchTerm,
+      filters,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+      language,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+  }, [
+    page,
+    searchTerm,
+    filters,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+    language,
+  ]);
+
   const productQueryParams = useMemo(() => {
     const params: any = {
       page,
@@ -189,9 +217,7 @@ export default function ProductsMgmtPage() {
       endDate,
     };
 
-    const finalSearchTerm =
-      localStorage.getItem("productSearchTerm") ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
+    if (searchTerm) params.search = searchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status.toUpperCase();
@@ -217,6 +243,16 @@ export default function ProductsMgmtPage() {
     startDate,
     endDate,
   ]);
+
+  //exclude businessId from appending.. create product from business has same logic
+  //so create wizard opens otherwise
+  useEffect(() => {
+    const { businessId, ...urlParams } = productQueryParams;
+
+    const searchParams = new URLSearchParams(urlParams).toString();
+
+    navigate(`?${searchParams}`, { replace: true });
+  }, [productQueryParams, navigate]);
 
   useEffect(() => {
     setPage(1);
@@ -266,7 +302,7 @@ export default function ProductsMgmtPage() {
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
-    setPage((prev) => {
+    setPage((prev: any) => {
       return prev + 1;
     });
   };
@@ -394,7 +430,6 @@ export default function ProductsMgmtPage() {
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey="productSearchTerm"
               />
             </div>
 
@@ -614,7 +649,7 @@ export default function ProductsMgmtPage() {
                           locale: language,
                           businessId: "",
                         });
-                        removeQueryParams();
+                        setSearchTerm("");
                       }}
                       className="ml-auto text-sm text-green-600"
                     >

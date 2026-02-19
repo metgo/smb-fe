@@ -94,14 +94,14 @@ export default function BusinessesMgmtPage() {
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   //infinite scroll states
-  const [page, setPage] = useState<number>(1);
+  // const [page, setPage] = useState<number>(1);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">(
     (localStorage.getItem("businessViewMode") as "list" | "grid") ?? "list",
   );
 
   const [error, _setError] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
@@ -111,11 +111,44 @@ export default function BusinessesMgmtPage() {
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
 
+  // for setting filters to local storage
+  const STORAGE_KEY = "business_query_state";
+  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   // Filters
   const [filters, setFilters] = useState({
-    status: "all",
-    hasProductFilter: "all",
+    status: savedState?.filters?.status || "all",
+    hasProductFilter: savedState?.filters?.hasProductFilter || "all",
   });
+
+  const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
+
+  const [page, setPage] = useState(savedState?.page || 1);
+
+  useEffect(() => {
+    const queryState = {
+      page,
+      searchTerm,
+      filters,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+      websiteId,
+      language,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+  }, [
+    page,
+    searchTerm,
+    filters,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+    websiteId,
+    language,
+  ]);
 
   const handleBusinessClick = (business: any) => {
     navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -134,9 +167,8 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-    const finalSearchTerm =
-      localStorage.getItem("businessSearchTerm") ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
+
+    if (searchTerm) params.search = searchTerm;
 
     if (filters.status !== "all") {
       params.status = filters.status;
@@ -159,6 +191,13 @@ export default function BusinessesMgmtPage() {
     websiteId,
   ]);
 
+  //append to url based on queries
+  useEffect(() => {
+    const searchParams = new URLSearchParams(queryParams).toString();
+
+    navigate(`?${searchParams}`, { replace: true });
+  }, [queryParams, navigate]);
+
   const statsQueryParams = useMemo(() => {
     const { page, limit, locale, ...rest } = queryParams;
     return rest;
@@ -172,10 +211,11 @@ export default function BusinessesMgmtPage() {
     useBulkBusinessesUpdateMutation();
 
   const clearFilter = () => {
-    setFilters({
-      status: "all",
-      hasProductFilter: "all",
-    });
+    localStorage.removeItem(STORAGE_KEY);
+
+    setFilters({ status: "all", hasProductFilter: "all" });
+    setSearchTerm("");
+    setPage(1);
   };
 
   // Column visibility - load from localStorage or use defaults
@@ -245,7 +285,7 @@ export default function BusinessesMgmtPage() {
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
-    setPage((prev) => {
+    setPage((prev: any) => {
       return prev + 1;
     });
   };
@@ -571,7 +611,7 @@ export default function BusinessesMgmtPage() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey="businessSearchTerm"
+                // storageKey="businessSearchTerm"
               />
             </div>
 

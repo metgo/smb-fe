@@ -93,7 +93,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
     return defaultOrder;
   });
-  console.log("🚀 ~ ReordableDataTable ~ columnOrder:", columnOrder);
 
   const [sortConfig, setSortConfig] = useState<{
     field: keyof T | null;

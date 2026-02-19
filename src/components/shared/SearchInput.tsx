@@ -6,32 +6,25 @@ interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  storageKey?: string;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
-  storageKey = "",
 }) => {
-  const STORAGE_KEY = storageKey; // localStorage key
+  const [inputValue, setInputValue] = useState(searchTerm);
 
-  const [inputValue, setInputValue] = useState(() => {
-    // Initialize from localStorage if available
-    return localStorage.getItem(STORAGE_KEY) ?? searchTerm;
-  });
   const { isDark, rowDir } = useThemeClasses();
   const isRTL = rowDir === "flex-row-reverse";
 
   useEffect(() => {
-    setInputValue(localStorage.getItem(STORAGE_KEY) ?? searchTerm); // Sync if external searchTerm changes
+    setInputValue(searchTerm); // Sync if external searchTerm changes
   }, [searchTerm]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchTerm(inputValue);
-      localStorage.setItem(STORAGE_KEY, inputValue); // persist
     }, 1000); // debounce 1s
 
     return () => clearTimeout(handler);
