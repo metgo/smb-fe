@@ -8,7 +8,7 @@ type FilterChipsProps = {
 const FilterChips: React.FC<FilterChipsProps> = ({
   label,
   onRemove,
-  className = "",
+  // className = "",
   removable = true,
 }) => {
   return (
