@@ -164,7 +164,8 @@ export default function ProductsMgmtPage() {
     locale: savedState?.filters?.locale || language,
     businessId: savedState?.filters?.businessId || "",
   });
-
+  const hasSavedFilters =
+    filters?.businessId !== "" || filters?.status !== "all";
   const [_clearBusiness, setClearBusiness] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -562,7 +563,7 @@ export default function ProductsMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {(showFilters || businessName) && (
+          {(showFilters || businessName || hasSavedFilters) && (
             <div
               className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
             >

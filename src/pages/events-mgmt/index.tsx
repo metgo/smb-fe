@@ -49,6 +49,13 @@ export default function EventsMgmtPage() {
     end: savedState?.dateRangeFilter?.end || "",
   });
 
+  const hasSavedFilters =
+    eventTypeFilter !== "all" ||
+    registrationFilter !== "all" ||
+    statusFilter !== "all" ||
+    dateRangeFilter?.start !== "" ||
+    dateRangeFilter?.end !== "";
+
   useEffect(() => {
     const queryState = {
       eventTypeFilter,
@@ -70,6 +77,7 @@ export default function EventsMgmtPage() {
     const finalSearchTerm =
       localStorage.getItem("eventsSearchTerm") ?? searchQuery;
     if (finalSearchTerm) params.search = finalSearchTerm;
+
     if (eventTypeFilter === "free") {
       params.isFree = true;
     }
@@ -220,7 +228,7 @@ export default function EventsMgmtPage() {
             />
           </div>
 
-          {showFilters && (
+          {(showFilters || hasSavedFilters) && (
             <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
               <div className="grid grid-cols-12 gap-2 pt-2  dark:border-gray-700">

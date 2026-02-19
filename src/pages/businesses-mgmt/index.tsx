@@ -123,6 +123,8 @@ export default function BusinessesMgmtPage() {
     status: savedState?.filters?.status || "all",
     hasProductFilter: savedState?.filters?.hasProductFilter || "all",
   });
+  const hasSavedFilters =
+    filters?.hasProductFilter !== "all" || filters?.status !== "all";
 
   const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
 
@@ -773,7 +775,7 @@ export default function BusinessesMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {showFilters && (
+          {(showFilters || hasSavedFilters) && (
             <div
               className={` border-t ${
                 isDark
