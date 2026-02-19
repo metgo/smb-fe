@@ -46,21 +46,83 @@ import {
   LocationDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
+import {
+  CreateProductWizard,
+  ProductGridView,
+} from "@/pages/products-mgmt/components";
+import {
+  useGetAllProductsQuery,
+  useLazyGetProductbyIdQuery,
+} from "@/store/api/productQueryApi";
 
 export default function BusinessDetailsPage() {
-  const { t } = useTranslation("businesses");
   const navigate = useNavigate();
-  const { borderColor, isDark } = useThemeClasses();
+  const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("common");
+
+  const { borderColor, isDark, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
+  const [page, setPage] = useState(1);
   const [searchParams] = useSearchParams();
+  const [product, setProduct] = useState();
   const businessId = searchParams.get("businessId") ?? "";
+  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+  const [errors, _setErrors] = useState<Record<string, string>>({});
+  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
+    null,
+  );
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditClicked, setIsEditClicked] = useState(false);
+  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
+
+  const [isCreateProductModalOpen, setIsCreateProductModalOpen] =
+    useState(false);
+  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+
   ///business detail stats
   const {
     data,
     refetch,
     isLoading: isDetailStatsLoading,
   } = useGetIndividualBusinessStatsQuery({ businessId }, { skip: !businessId });
+
+  const [getProductDetailsById, { isLoading: isProductDetailsFetching }] =
+    useLazyGetProductbyIdQuery();
+
+  const {
+    data: productData,
+    refetch: productRefetch,
+    isFetching,
+    isLoading: isLoadingProduct,
+  } = useGetAllProductsQuery(
+    { limit: 7, page, businessId },
+    { skip: !businessId },
+  );
+
+  const products = productData?.data ?? [];
+  const hasMore = productData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    if (page === 1) setCombinedProducts(products);
+    else {
+      setCombinedProducts((prev: any) => {
+        const existingIds = new Set(prev.map((b: any) => b._id));
+        const newItems = products?.filter((b: any) => !existingIds?.has(b._id));
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [products, page]);
+
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => {
+      return prev + 1;
+    });
+  };
 
   const businessStats = [
     {
@@ -99,25 +161,13 @@ export default function BusinessDetailsPage() {
       value: `${data?.conversionRate || 0}%`,
     },
   ];
+
   const {
+    isLoading,
     data: business,
     refetch: businessDataRefetch,
-    isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
-  const [errors, _setErrors] = useState<Record<string, string>>({});
-  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
-    null,
-  );
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEditClicked, setIsEditClicked] = useState(false);
-  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
-
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    userRole,
-  );
 
   const {
     images,
@@ -148,36 +198,6 @@ export default function BusinessDetailsPage() {
     onChange: setBusinessLogoImage,
   });
 
-  // useEffect(() => {
-  //   if (!business?.logo || !business?.images?.length) return;
-  //   const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
-
-  //   if (business) {
-  //     const logo = {
-  //       id: Date.now(),
-  //       previewUrl: business?.logo?.image,
-  //       progress: 100,
-  //       status: "success",
-  //       isPrimary: false,
-  //       gcsURL: business?.logo?.image,
-  //     };
-  //     const gallery = business?.images?.map((item: any, index: number) => ({
-  //       id: Date.now() + index,
-  //       previewUrl: item.image,
-  //       progress: 100,
-  //       status: "success",
-  //       isPrimary: item.isPrimary || (!hasPrimary && index === 0),
-  //       gcsURL: item.image,
-  //     }));
-  //     setBusinessMedia({
-  //       logo,
-  //       gallery,
-  //     });
-  //   }
-  // }, [business, businessSlug]);
-
-  // const [updateBusiness] = useUpdateBusinessMutation();
-
   useEffect(() => {
     setGalleryImages(business?.images);
     setBusinessLogoImage({ image: business?.logo?.image });
@@ -188,36 +208,6 @@ export default function BusinessDetailsPage() {
       businessDataRefetch();
     }
   }, [isEditClicked]);
-
-  // const handleSubmit = async () => {
-  //   try {
-  //     let logoUrl = businessLogoImage?.image ?? null;
-
-  //     // upload logo only if replaced
-  //     if (logoImage?.file) {
-  //       logoUrl = await uploadLogoImage();
-  //     }
-  //     // upload gallery images
-  //     await uploadAll();
-
-  //     const body = {
-  //       logo: { image: logoUrl },
-  //       images: galleryImages,
-  //     };
-
-  //     await updateBusiness({ body, businessId }).unwrap();
-
-  //     console.log("Business updated", galleryImages);
-  //   } catch {
-  //     console.error("Failed to save");
-  //   }
-  // };
-
-  const onCreateProduct = () => {
-    navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
-    );
-  };
 
   const onStatusChangeHandler = async (status: string) => {
     try {
@@ -232,6 +222,19 @@ export default function BusinessDetailsPage() {
       toast.error("Failed to update business status.");
       console.error(error);
     }
+  };
+
+  const handleEditProductClick = async (productId: string) => {
+    await getProductDetailsById({ productId }).then((res) => {
+      setProduct(res?.data);
+    });
+    navigate(`?businessId=${businessId}&productId=${productId}`);
+    setIsEditProductModalOpen(true);
+  };
+
+  const handleProductModalClose = () => {
+    setIsCreateProductModalOpen(false);
+    setIsEditProductModalOpen(false);
   };
 
   const renderContent = () => {
@@ -298,6 +301,35 @@ export default function BusinessDetailsPage() {
         );
       case "hours":
         return <BusinessOpeningHoursDetails {...commonProps} />;
+      case "products":
+        return (
+          <>
+            {combinedProducts?.length > 0 ? (
+              <div>
+                <h2 className={clsx("text-lg font-semibold mb-4", textPrimary)}>
+                  {tc("products")} ({productData?.totalData})
+                </h2>
+                <ProductGridView
+                  products={combinedProducts}
+                  hasMore={hasMore}
+                  isLoading={isFetching || isLoadingProduct}
+                  refetch={productRefetch}
+                  fetchNextPage={fetchNextPage}
+                  handleEditClick={handleEditProductClick}
+                />
+              </div>
+            ) : (
+              <div>
+                <h2 className={clsx("text-lg font-semibold mb-4", textPrimary)}>
+                  {tc("products")}
+                </h2>
+                <p className={clsx("mb-4", textPrimary)}>
+                  {t("no_products_yet")}
+                </p>
+              </div>
+            )}
+          </>
+        );
       default:
         return null;
     }
@@ -305,7 +337,7 @@ export default function BusinessDetailsPage() {
 
   return (
     <div className=" flex flex-col overflow-hidden relative ">
-      <Spinner isLoading={isLoading} />
+      <Spinner isLoading={isLoading || isProductDetailsFetching} />
 
       {/* Header */}
       <div className={clsx(` shrink-0 border-b px-6 py-4 `, borderColor)}>
@@ -314,12 +346,10 @@ export default function BusinessDetailsPage() {
           <BackToListBtn navPath={routes.businessMgmt} />
 
           <div className="flex items-center gap-2">
-            {canChangeStatus && (
-              <StatusChangeBtn
-                handleStatusChange={onStatusChangeHandler}
-                status={business?.status}
-              />
-            )}
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={business?.status}
+            />
 
             {userRole === UserRole.SUPERADMIN && (
               <button
@@ -334,12 +364,6 @@ export default function BusinessDetailsPage() {
                 {t("change_owner")}
               </button>
             )}
-            {/* <button
-              onClick={onClickView}
-              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-            >
-              {t("view_product")}
-            </button> */}
             <button
               onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
@@ -348,15 +372,13 @@ export default function BusinessDetailsPage() {
               {t("edit")}
             </button>
 
-            {onCreateProduct && (
-              <button
-                onClick={onCreateProduct}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                {t("create_product")}
-              </button>
-            )}
+            <button
+              onClick={() => setIsCreateProductModalOpen(true)}
+              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              {t("create_product")}
+            </button>
           </div>
         </div>
 
@@ -391,6 +413,16 @@ export default function BusinessDetailsPage() {
           currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
           refetch={refetch}
+        />
+      )}
+
+      {(isCreateProductModalOpen || isEditProductModalOpen) && (
+        <CreateProductWizard
+          refetch={productRefetch}
+          onClose={handleProductModalClose}
+          product={isEditProductModalOpen ? product : undefined}
+          businessName={business?.name}
+          bzIdForProdCreate={businessId}
         />
       )}
     </div>

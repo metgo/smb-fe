@@ -142,7 +142,6 @@ export default function ProductsMgmtPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(),
   );
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
   const removeQueryParams = () => {
@@ -272,7 +271,6 @@ export default function ProductsMgmtPage() {
   };
 
   const handleCreateNew = () => {
-    setSelectedProduct(null);
     setIsCreateModalOpen(true);
   };
   const promptBulkDelete = () => {
@@ -742,7 +740,6 @@ export default function ProductsMgmtPage() {
       {isCreateModalOpen && (
         <CreateProductWizard
           onClose={() => removeQueryParams()}
-          selectedProduct={selectedProduct}
           refetch={refetch}
         />
       )}

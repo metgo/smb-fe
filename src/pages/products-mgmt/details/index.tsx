@@ -2,15 +2,15 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
   Edit,
   Package,
+  ArrowUp,
+  ArrowLeft,
   ArrowRight,
   ArrowUpDown,
-  ArrowUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   ProductAvailabilityDetails,
@@ -22,12 +22,11 @@ import {
   useGetProductbyIdQuery,
   useGetProductStatsByIdQuery,
 } from "@/store/api/productQueryApi";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { CreateProductWizard } from "../components";
-import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
@@ -44,7 +43,6 @@ export default function ProductDetailsPage() {
   const navigate = useNavigate();
 
   const { isDark, language, isRTL } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
   const [updateProduct] = useUpdateProductMutation();
 
   const [searchParams] = useSearchParams();
@@ -99,9 +97,6 @@ export default function ProductDetailsPage() {
   const handleEdit = () => {
     setIsEditOpen(true);
   };
-  const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
-    userRole,
-  );
 
   const {
     images,
@@ -216,14 +211,13 @@ export default function ProductDetailsPage() {
             </button>
 
             <div className={clsx("flex items-center gap-3")}>
-              {canEdit && (
-                <>
-                  <StatusChangeBtn
-                    isProduct
-                    status={product?.status}
-                    handleStatusChange={onStatusChangeHandler}
-                  />
-                  {/* <button
+              <>
+                <StatusChangeBtn
+                  isProduct
+                  status={product?.status}
+                  handleStatusChange={onStatusChangeHandler}
+                />
+                {/* <button
                     // onClick={onDuplicate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                       isDark
@@ -234,15 +228,14 @@ export default function ProductDetailsPage() {
                     <Copy className="w-4 h-4" />
                     <span>{t("duplicate") || "Duplicate"}</span>
                   </button> */}
-                  <button
-                    onClick={handleEdit}
-                    className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-                  >
-                    <Edit className="w-4 h-4" />
-                    <span>{t("edit") || "Edit"}</span>
-                  </button>
-                </>
-              )}
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>{t("edit") || "Edit"}</span>
+                </button>
+              </>
             </div>
           </div>
 
@@ -295,7 +288,6 @@ export default function ProductDetailsPage() {
       </div>
       {isEditOpen && (
         <CreateProductWizard
-          isOpen={isEditOpen}
           onClose={handleClose}
           refetch={refetch}
           product={product}

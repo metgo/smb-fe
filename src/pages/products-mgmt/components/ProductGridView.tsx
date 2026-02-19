@@ -3,14 +3,15 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader, Package, TrashIcon } from "lucide-react";
+import { Loader, Package } from "lucide-react";
 
+import { routes } from "@/lib/routes";
+import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
-import { routes } from "@/lib/routes";
-import { getPlainTextFromRichText } from "@/helpers";
+import { DeleteIconBtn, EditIconBtn } from "@/components/btns";
 
 interface ProductGridViewProps {
   products: any[];
@@ -18,8 +19,9 @@ interface ProductGridViewProps {
   hasMore: boolean;
   refetch: () => void;
   fetchNextPage: () => void;
-  selectedProducts: Set<string>;
-  setSelectedProducts: (v: Set<string>) => void;
+  selectedProducts?: Set<string>;
+  setSelectedProducts?: (v: Set<string>) => void;
+  handleEditClick?: (productId: string) => void;
 }
 
 const ProductGridView: React.FC<ProductGridViewProps> = ({
@@ -30,6 +32,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   fetchNextPage,
   selectedProducts,
   setSelectedProducts,
+  handleEditClick,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("products");
@@ -59,23 +62,23 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
       draft: isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700",
 
       pending: isDark
-        ? "bg-yellow-900/30 text-yellow-400"
+        ? "bg-yellow-900/30 text-yellow-100"
         : "bg-yellow-100 text-yellow-700",
 
       approved: isDark
-        ? "bg-green-900/30 text-green-400"
+        ? "bg-green-900/30 text-green-100"
         : "bg-green-100 text-green-700",
 
       rejected: isDark
-        ? "bg-red-900/30 text-red-400"
+        ? "bg-red-900/30 text-red-100"
         : "bg-red-100 text-red-700",
 
       archived: isDark
-        ? "bg-zinc-800 text-zinc-400"
+        ? "bg-zinc-800 text-zinc-100"
         : "bg-zinc-100 text-zinc-600",
 
       active: isDark
-        ? "bg-blue-900/30 text-blue-400"
+        ? "bg-blue-900/60 text-blue-100"
         : "bg-blue-100 text-blue-700",
 
       inactive: isDark
@@ -117,7 +120,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
     const key = product._id;
     if (newSelected.has(key)) newSelected.delete(key);
     else newSelected.add(key);
-    setSelectedProducts(newSelected);
+    if (setSelectedProducts) setSelectedProducts(newSelected);
   };
 
   const handleProductClick = (productId: string) => {
@@ -128,8 +131,8 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
 
   return (
     <div
-      className={`py-6 px-4 ${
-        isDark ? "border-gray-700 bg-gray-900" : "border-gray-300 bg-white"
+      className={`py-6 px-4 rounded-xl ${
+        isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"
       }`}
     >
       <div
@@ -151,29 +154,35 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                 className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Checkbox
-                  checked={selectedProducts?.has(product._id) ?? false}
-                  onCheckedChange={() => toggleCheckBox(product)}
-                  className={`cursor-pointer border transition-colors ${
-                    isDark
-                      ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                      : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
-                  }`}
-                />
+                {selectedProducts && (
+                  <Checkbox
+                    checked={selectedProducts?.has(product._id) ?? false}
+                    onCheckedChange={() => toggleCheckBox(product)}
+                    className={`cursor-pointer border transition-colors ${
+                      isDark
+                        ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                        : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                    }`}
+                  />
+                )}
+                <div>{getStatusBadge(product?.status)}</div>
 
                 <div className="flex items-center gap-2">
-                  <div>{getStatusBadge(product?.status)}</div>
-                  <button
+                  {handleEditClick && (
+                    <EditIconBtn
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(product._id);
+                      }}
+                    />
+                  )}
+                  <DeleteIconBtn
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsConfirmOpen(true);
                       setItemToDelete(product._id);
                     }}
-                    className="z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                    aria-label={`Delete ${product?.name}`}
-                  >
-                    <TrashIcon size={18} />
-                  </button>
+                  />
                 </div>
               </div>
 

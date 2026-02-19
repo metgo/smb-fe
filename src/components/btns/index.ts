@@ -8,11 +8,15 @@ import SubmitButton from "./SubmitButton";
 import RefreshButton from "./RefreshButton";
 import StatusChangeBtn from "./StatusChangeBtn";
 import BackToListBtn from "./BackToListBtn";
+import DeleteIconBtn from "./DeleteIconBtn";
+import EditIconBtn from "./EditIconBtn";
 
 export {
   AddButton,
   FilterButton,
   SubmitButton,
+  DeleteIconBtn,
+  EditIconBtn,
   ExportBtns,
   BackToListBtn,
   RefreshButton,
