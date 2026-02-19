@@ -33,7 +33,6 @@ import { toggleSidebar } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { UserRole } from "@/enums/user.types";
 
 interface MenuItem {
   id: string;
@@ -53,7 +52,6 @@ export default function Sidebar() {
 
   const { isDark, isRTL } = useThemeClasses();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
-  const { userRole } = useAppSelector((state) => state.auth);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -65,7 +63,7 @@ export default function Sidebar() {
       path: routes.dashboard,
       label: t("dashboard") || "Dashboard",
       icon: LayoutDashboard,
-      isEnabled: userRole !== UserRole.TRAVELLER && true,
+      isEnabled: true,
     },
     {
       id: "businesses",
