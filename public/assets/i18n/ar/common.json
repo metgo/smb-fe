@@ -101,6 +101,7 @@
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
 
+  "images": "الصور",
   "image_upload_info": "بدأ رفع الصورة. يرجى الانتظار…",
   "delete_image": "حذف الصورة",
   "delete_image_confirm": "هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.",
@@ -173,7 +174,6 @@
   "image_gallery_desc": "تم رفع {uploaded_count} صور. يُسمح بـ {remaining_count} صور إضافية",
   "no_images_uploaded": "لم يتم رفع أي صور",
   "upload_image_info": "ارفع الصور لإنشاء معرض فعاليتك",
-  "images": "العربية",
   "attributes_desc": "الفئات، وميزات إمكانية الوصول، والجمهور المناسب",
   "subcategories": "الفئات الفرعية",
   "subcat_desc": "تم اختيار {count} فئة",
@@ -259,6 +259,7 @@
   "phone_number_required": "رقم الهاتف",
   "language": "اللغة",
   "back": "رجوع",
+  "select": "اختر",
   "create_and_assign_as_owner": "+ إنشاء وتعيين كمالك",
   "missing_information": "معلومات ناقصة",
   "missing_information_description": "يرجى تعبئة جميع الحقول المطلوبة",
