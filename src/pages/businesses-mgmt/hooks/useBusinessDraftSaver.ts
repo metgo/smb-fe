@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 import { useCallback, useState } from "react";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface UseBusinessDraftSaverProps {
   currentStep: number;
@@ -18,6 +20,7 @@ export function useBusinessDraftSaver({
   updateBusiness,
   stepPayloadMap,
 }: UseBusinessDraftSaverProps) {
+  const { userRole } = useAppSelector((state) => state.auth);
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
 
   // 🔹 Mark step dirty
@@ -45,7 +48,7 @@ export function useBusinessDraftSaver({
         if (isPublish) {
           payload = {
             ...payload,
-            status: "APPROVED",
+            status: userRole === UserRole.TRAVELLER ? "PENDING" : "APPROVED",
           };
         }
 
@@ -78,6 +81,7 @@ export function useBusinessDraftSaver({
       businessId,
       updateBusiness,
       setBusinessId,
+      userRole,
     ],
   );
 
