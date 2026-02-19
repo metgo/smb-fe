@@ -12,6 +12,7 @@
   "pending_approval": "Pending Approval",
   "short_description": "Short Description",
   "status": "Status",
+  "active_filters": "Active Filters",
   "contact_name": "Contact Person",
   "location_address": "Location Address",
   "trips": "Trips",

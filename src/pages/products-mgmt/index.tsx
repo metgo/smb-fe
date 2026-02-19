@@ -175,7 +175,7 @@ export default function ProductsMgmtPage() {
     setClearBusiness(true);
     setFilters((prev) => ({
       ...prev,
-      [filterKey]: "all",
+      [filterKey]: filterKey === "businessId" ? "" : "all",
     }));
   };
 
@@ -632,9 +632,9 @@ export default function ProductsMgmtPage() {
 
               <div className="flex mt-4 gap-6 items-center">
                 <div>
-                  {Object.entries(filters).some(
-                    ([_, val]) => val !== "all",
-                  ) && (
+                  {(filters.status !== "all" ||
+                    filters.locale !== language ||
+                    filters.businessId !== "") && (
                     <button
                       onClick={() => {
                         setFilters({
@@ -645,7 +645,7 @@ export default function ProductsMgmtPage() {
                         localStorage.removeItem(STORAGE_KEY);
                         setSearchTerm("");
                       }}
-                      className="ml-auto text-sm text-green-600"
+                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                     >
                       {t("clear_all")}
                     </button>

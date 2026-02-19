@@ -12,6 +12,7 @@
   "pending_approval": "ממתין לאישור",
   "short_description": "תיאור קצר",
   "status": "סטטוס",
+  "active_filters": "מסננים פעילים",
   "contact_name": "איש קשר",
   "location_address": "כתובת מיקום",
   "trips": "טיולים",

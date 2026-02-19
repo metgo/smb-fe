@@ -85,8 +85,15 @@ export default function BusinessesMgmtPage() {
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("toast");
 
-  const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
-    useThemeClasses();
+  const {
+    isDark,
+    isRTL,
+    language,
+    bgSecondary,
+    borderColor,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
@@ -838,13 +845,13 @@ export default function BusinessesMgmtPage() {
                   </select>
                 </div>
               </div>
-              <div className="flex items-center gap-4  pt-2">
-                <button
-                  onClick={clearFilter}
-                  className=" px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
-                >
-                  {t("clear_all")}
-                </button>
+              <div className="flex items-center gap-4  pt-2 ml-4">
+                {(filters?.status !== "all" ||
+                  filters?.hasProductFilter !== "all") && (
+                  <span className={`text-sm ${textTertiary}`}>
+                    {t("active_filters")}:
+                  </span>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(filters).map(([key, value]) => {
                     // Skip rendering empty filters
@@ -865,13 +872,22 @@ export default function BusinessesMgmtPage() {
                           if (key === "status") {
                             setFilters((prev) => ({ ...prev, status: "all" }));
                           } else {
-                            setFilters((prev) => ({ ...prev, [key]: "" }));
+                            setFilters((prev) => ({ ...prev, [key]: "all" }));
                           }
                         }}
                       />
                     );
                   })}
                 </div>
+                {(filters?.status !== "all" ||
+                  filters?.hasProductFilter !== "all") && (
+                  <button
+                    onClick={clearFilter}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -35,6 +35,7 @@ export default function EventsMgmtPage() {
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
+  console.log("🚀 ~ EventsMgmtPage ~ searchQuery:", searchQuery);
   const [eventTypeFilter, setEventTypeFilter] = useState<
     "all" | "free" | "paid"
   >(savedState?.eventTypeFilter || "all");
@@ -346,38 +347,82 @@ export default function EventsMgmtPage() {
                   <span className={`text-sm ${textTertiary}`}>
                     {t("active_filters")}:
                   </span>
+
+                  {/* Search Query */}
                   {searchQuery && (
-                    <span className="px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
                       "{searchQuery}"
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="ml-1 text-teal-500 hover:text-teal-700 font-bold"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
+
+                  {/* Event Type Filter */}
                   {eventTypeFilter !== "all" && (
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-xs">
                       {eventTypeFilter === "free" ? t("free") : t("paid")}
+                      <button
+                        onClick={() => setEventTypeFilter("all")}
+                        className="ml-1 text-purple-500 hover:text-purple-700 font-bold"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
+
+                  {/* Registration Filter */}
                   {registrationFilter !== "all" && (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
                       {registrationFilter === "true"
                         ? t("registration_required")
                         : t("registration_not_required")}
+                      <button
+                        onClick={() => setRegistrationFilter("all")}
+                        className="ml-1 text-green-500 hover:text-green-700 font-bold"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
+
+                  {/* Status Filter */}
                   {statusFilter !== "all" && (
-                    <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
+                    <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
                       {statusFilter === "APPROVED"
                         ? t("approved")
                         : statusFilter === "PENDING"
                           ? t("pending")
                           : t("draft")}
+                      <button
+                        onClick={() => setStatusFilter("all")}
+                        className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
+                      >
+                        ×
+                      </button>
                     </span>
                   )}
+
+                  {/* Date Range Filter */}
                   {dateRangeFilter.start !== "" &&
                     dateRangeFilter.end !== "" && (
-                      <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                        {dateRangeFilter?.start} - {dateRangeFilter?.end}
+                      <span className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
+                        {dateRangeFilter.start} - {dateRangeFilter.end}
+                        <button
+                          onClick={() =>
+                            setDateRangeFilter({ start: "", end: "" })
+                          }
+                          className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
+                        >
+                          ×
+                        </button>
                       </span>
                     )}
+
+                  {/* Clear All */}
                   <button
                     onClick={() => {
                       setSearchQuery("");
@@ -386,6 +431,7 @@ export default function EventsMgmtPage() {
                       setStatusFilter("all");
                       setDateRangeFilter({ start: "", end: "" });
                       localStorage.removeItem(STORAGE_KEY);
+                      localStorage.removeItem("eventsSearchTerm");
                     }}
                     className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                   >

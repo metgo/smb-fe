@@ -12,21 +12,15 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   removable = true,
 }) => {
   return (
-    <div
-      className={`flex items-center gap-2 px-3 py-1 rounded-full 
-      bg-green-100 dark:bg-green-900 
-      text-green-800 dark:text-blue-100 
-      text-sm ${className}`}
-    >
+    <div className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
       <span>{label}</span>
 
       {removable && (
         <button
           onClick={onRemove}
-          className="hover:text-red-500 transition"
-          aria-label="Remove filter"
+          className="ml-1 text-orange-500 hover:text-orange-700 font-bold"
         >
-          ✕
+          ×
         </button>
       )}
     </div>
