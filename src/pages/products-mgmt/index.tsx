@@ -570,12 +570,11 @@ export default function ProductsMgmtPage() {
             <div
               className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
             >
-              <div className="grid grid-cols-1 z-5 sm:grid-cols-3 gap-4">
-                <div>
+              <div className="flex gap-4 items-start w-full">
+                {/* Status Filter */}
+                <div className="flex flex-col min-w-[180px]">
                   <label
-                    className={`block text-sm mb-1 ${
-                      isDark ? "text-gray-400" : "text-gray-600"
-                    }`}
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("filter_by_status")}
                   </label>
@@ -600,16 +599,14 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
+                {/* Business Filter */}
                 {!businessId && (
-                  <div>
+                  <div className="flex flex-col min-w-[180px]">
                     <label
-                      className={`block text-sm mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                     >
                       {t("filter_by_business")}
                     </label>
-
                     <ReactSelect
                       isClearable
                       value={filters?.businessId ?? ""}
@@ -631,62 +628,62 @@ export default function ProductsMgmtPage() {
                     />
                   </div>
                 )}
-              </div>
 
-              <div className="flex mt-4 gap-6 items-center">
-                <div className="flex items-start gap-3">
-                  {(filters?.status !== "all" || filters.businessId !== "") && (
-                    <span className={`text-sm ${textTertiary}`}>
+                {/* Active Filters Label + Chips + Clear All */}
+                {(filters?.status !== "all" || filters.businessId !== "") && (
+                  <div className="flex flex-col min-w-[180px]">
+                    {/* Label inline with other selects */}
+                    <label className={`block text-sm mb-1 ${textTertiary}`}>
                       {tb("active_filters")}:
-                    </span>
-                  )}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {filters.status !== "all" && (
-                      <FilterChips
-                        label={t(filters.status)}
-                        onRemove={() => clearFilter("status")}
-                      />
-                    )}
-                    {businessId && businessName && (
-                      <FilterChips
-                        label={businessName}
-                        onRemove={() => removeQueryParams()}
-                      />
-                    )}
-                    {filters.businessId !== "" && (
-                      <FilterChips
-                        label={t(
-                          businessData?.data?.find(
-                            (item: any) => item._id === filters.businessId,
-                          )?.name || filters.businessId,
-                        )}
-                        onRemove={() => clearFilter("businessId")}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    {(filters.status !== "all" ||
-                      filters.locale !== language ||
-                      filters.businessId !== "") && (
-                      <button
-                        onClick={() => {
-                          setFilters({
-                            status: "all",
-                            locale: language,
-                            businessId: "",
-                          });
-                          localStorage.removeItem(STORAGE_KEY);
-                          localStorage.removeItem("productSearchTerm");
+                    </label>
 
-                          setSearchTerm("");
-                        }}
-                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                      >
-                        {t("clear_all")}
-                      </button>
-                    )}
+                    {/* Chips */}
+                    <div className="flex flex-wrap gap-2 mt-2 ">
+                      {filters.status !== "all" && (
+                        <FilterChips
+                          label={t(filters.status)}
+                          onRemove={() => clearFilter("status")}
+                        />
+                      )}
+                      {businessId && businessName && (
+                        <FilterChips
+                          label={businessName}
+                          onRemove={() => removeQueryParams()}
+                        />
+                      )}
+                      {filters.businessId !== "" && (
+                        <FilterChips
+                          label={t(
+                            businessData?.data?.find(
+                              (item: any) => item._id === filters.businessId,
+                            )?.name || filters.businessId,
+                          )}
+                          onRemove={() => clearFilter("businessId")}
+                        />
+                      )}
+                      {/* Clear All Button */}
+                      {(filters.status !== "all" ||
+                        filters.locale !== language ||
+                        filters.businessId !== "") && (
+                        <button
+                          onClick={() => {
+                            setFilters({
+                              status: "all",
+                              locale: language,
+                              businessId: "",
+                            });
+                            localStorage.removeItem(STORAGE_KEY);
+                            localStorage.removeItem("productSearchTerm");
+                            setSearchTerm("");
+                          }}
+                          className="px-3 py-1  bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                        >
+                          {t("clear_all")}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
