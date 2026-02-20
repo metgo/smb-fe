@@ -417,6 +417,25 @@ export default function CreateBusinessWizard({
     }
   };
 
+  // useEffect(() => {
+  //   if (!logoGcsUrl) return;
+
+  //   const patchLogo = async () => {
+  //     try {
+  //       await updateBusiness({
+  //         businessId: businessId!,
+  //         body: {
+  //           logo: { image: logoGcsUrl },
+  //         },
+  //       }).unwrap();
+  //     } catch (err) {
+  //       console.error("Failed to update logo", err);
+  //     }
+  //   };
+
+  //   patchLogo();
+  // }, [logoGcsUrl]);
+
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     // Validate all steps

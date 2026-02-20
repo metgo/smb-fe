@@ -76,6 +76,8 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
+  const { t: tb } = useTranslation("businesses");
+
   const { t: tc } = useTranslation("toast");
 
   const navigate = useNavigate();
@@ -111,6 +113,7 @@ export default function ProductsMgmtPage() {
           }
         : skipToken,
     );
+  console.log("🚀 ~ ProductsMgmtPage ~ businessData:", businessData);
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
   const {
@@ -631,28 +634,12 @@ export default function ProductsMgmtPage() {
               </div>
 
               <div className="flex mt-4 gap-6 items-center">
-                <div>
-                  {(filters.status !== "all" ||
-                    filters.locale !== language ||
-                    filters.businessId !== "") && (
-                    <button
-                      onClick={() => {
-                        setFilters({
-                          status: "all",
-                          locale: language,
-                          businessId: "",
-                        });
-                        localStorage.removeItem(STORAGE_KEY);
-                        setSearchTerm("");
-                      }}
-                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                    >
-                      {t("clear_all")}
-                    </button>
-                  )}
-                </div>
-
                 <div className="flex items-start gap-3">
+                  {(filters?.status !== "all" || filters.businessId !== "") && (
+                    <span className={`text-sm ${textTertiary}`}>
+                      {tb("active_filters")}:
+                    </span>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     {filters.status !== "all" && (
                       <FilterChips
@@ -665,6 +652,36 @@ export default function ProductsMgmtPage() {
                         label={businessName}
                         onRemove={() => removeQueryParams()}
                       />
+                    )}
+                    {filters.businessId !== "" && (
+                      <FilterChips
+                        label={t(
+                          businessData?.data?.find(
+                            (item: any) => item._id === filters.businessId,
+                          )?.name || filters.businessId,
+                        )}
+                        onRemove={() => clearFilter("businessId")}
+                      />
+                    )}
+                  </div>
+                  <div>
+                    {(filters.status !== "all" ||
+                      filters.locale !== language ||
+                      filters.businessId !== "") && (
+                      <button
+                        onClick={() => {
+                          setFilters({
+                            status: "all",
+                            locale: language,
+                            businessId: "",
+                          });
+                          localStorage.removeItem(STORAGE_KEY);
+                          setSearchTerm("");
+                        }}
+                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                      >
+                        {t("clear_all")}
+                      </button>
                     )}
                   </div>
                 </div>
