@@ -51,9 +51,10 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
 
   return (
     <div className="space-y-6 min-h-150">
-      <div className="">{t("logo")}</div>
       {logoImage && (
         <div>
+          <div className="">{t("logo")}</div>
+
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
               <ImageWithFallback
