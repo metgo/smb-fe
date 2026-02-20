@@ -45,12 +45,14 @@ interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
   editData?: any;
+  refetch?: () => void;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
   editData,
+  refetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
@@ -531,6 +533,9 @@ export default function CreateEventWizard({
     }
     setIsPublishing(false);
     toast.success(tc("event_published"));
+    if (refetch) {
+      refetch();
+    }
     onClose();
   };
 

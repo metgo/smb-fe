@@ -870,6 +870,7 @@ export default function EventsWithViewMode({
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}
+          refetch={refetch}
         />
       )}
     </div>
