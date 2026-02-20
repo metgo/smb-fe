@@ -322,7 +322,7 @@ export default function CreateBusinessWizard({
     // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
-    logo: { image: logoGcsUrl },
+    logo: editData ? businessLogoImage : { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
     openingHrs: formData.operatingHours,
