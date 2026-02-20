@@ -431,7 +431,7 @@ export default function EventsMgmtPage() {
                       setStatusFilter("all");
                       setDateRangeFilter({ start: "", end: "" });
                       localStorage.removeItem(STORAGE_KEY);
-                      localStorage.removeItem("eventsSearchTerm");
+                      localStorage.removeItem("eventSearchTerm");
                     }}
                     className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                   >

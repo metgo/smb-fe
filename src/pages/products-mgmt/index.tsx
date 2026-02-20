@@ -676,6 +676,8 @@ export default function ProductsMgmtPage() {
                             businessId: "",
                           });
                           localStorage.removeItem(STORAGE_KEY);
+                          localStorage.removeItem("productSearchTerm");
+
                           setSearchTerm("");
                         }}
                         className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"

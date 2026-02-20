@@ -232,6 +232,7 @@ export default function BusinessesMgmtPage() {
 
   const clearFilter = () => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("businessSearchTerm");
 
     setFilters({ status: "all", hasProductFilter: "all" });
     setSearchTerm("");
