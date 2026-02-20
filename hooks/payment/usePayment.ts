@@ -14,7 +14,7 @@ import {
   getProductDetailsByIds,
 } from "@/actions/productActions";
 import { startLoading } from "@/components/wrappers/ProgressBar";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 type ErrorType = Step | "cart" | "server";
 type Step = "first" | "second" | "third" | "product";
@@ -176,7 +176,7 @@ export const usePayment = () => {
   };
   // ------------------- Payment Flow -------------------
   const handlePlaceOrder = async () => {
-    googleSendGtmEvent(triggerName.orderPlaceBtn, {
+    sendGAEvent(triggerName.orderPlaceBtn, {
       cartId: cartedProduct.cartId,
     });
 
@@ -226,7 +226,7 @@ export const usePayment = () => {
   };
 
   const handleIframeLoad = (event: React.SyntheticEvent<HTMLIFrameElement>) => {
-    googleSendGtmEvent(triggerName.orderCheckoutCardcomWindow, {
+    sendGAEvent(triggerName.orderCheckoutCardcomWindow, {
       customerAction: "Customer trigger the payment window",
     });
     const iframe = event.currentTarget;
@@ -256,12 +256,12 @@ export const usePayment = () => {
           clearCart();
           clearVoucher();
           setIsPaymentModalOpen(false);
-          googleSendGtmEvent(triggerName.orderCheckoutCardcomSuccess, {
-            customerAction: "Customer successfully completed the payment",
+          sendGAEvent(triggerName.orderCheckoutCardcomSuccess, {
+            customer_action: "Customer successfully completed the payment",
           });
         } else {
-          googleSendGtmEvent(triggerName.orderCheckoutCardcomFailure, {
-            customerAction: "Customer failed to complete the payment",
+          sendGAEvent(triggerName.orderCheckoutCardcomFailure, {
+            customer_action: "Customer failed to complete the payment",
           });
         }
         router.refresh();

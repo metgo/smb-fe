@@ -16,6 +16,7 @@ import HamburgerMenu from "../navbar/HamburgerMenu";
 import { fundayEnquiryLables } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import SearchFlowMobile from "../navbar/SearchFlow.mobile";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -67,12 +68,26 @@ const MobileNavbar = () => {
           <div className="flex items-center justify-end gap-2 col-span-8">
             <div className="flex items-center justify-center">
               {activeFilterTabMobile === "gallery" && (
-                <button onClick={() => setActiveFilterTabMobile("map")}>
+                <button
+                  onClick={() => {
+                    setActiveFilterTabMobile("map");
+                    sendGAEvent(triggerName.clickToLayoutSwitchBtn, {
+                      layout: "map",
+                    });
+                  }}
+                >
                   <FaRegMap color="#0F353A" size={24} />
                 </button>
               )}
               {activeFilterTabMobile === "map" && (
-                <button onClick={() => setActiveFilterTabMobile("gallery")}>
+                <button
+                  onClick={() => {
+                    setActiveFilterTabMobile("gallery");
+                    sendGAEvent(triggerName.clickToLayoutSwitchBtn, {
+                      layout: "gallery",
+                    });
+                  }}
+                >
                   <LuLayoutDashboard color="#0F353A" size={24} />
                 </button>
               )}

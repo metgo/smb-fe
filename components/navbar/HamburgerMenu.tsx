@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { navItems } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const HamburgerMenu = ({
   openIcon = "threeline",
@@ -32,6 +33,8 @@ const HamburgerMenu = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      sendGAEvent(triggerName.clickToMenuBar, { label: "menu_click" });
+
       const target = event.target as Node;
 
       if (

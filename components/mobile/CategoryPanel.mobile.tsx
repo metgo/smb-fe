@@ -6,7 +6,7 @@ import Image from "next/image";
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import useCategoryStore from "@/stores/categoriesStore";
-import { triggerName, googleSendGtmEvent } from "@/lib/googleEventsConfig";
+import { triggerName, sendGAEvent } from "@/lib/googleEventsConfig";
 
 const MobileCategoryPanel = () => {
   const { categories } = useCategoryStore();
@@ -24,9 +24,9 @@ const MobileCategoryPanel = () => {
             key={item.id}
             onClick={() => {
               handleCategoryChange(item.id);
-              googleSendGtmEvent(triggerName.clickToCategory, {
-                categoryId: item.id,
-                categoryName: item.name,
+              sendGAEvent(triggerName.clickToCategory, {
+                category_id: item.id,
+                category_name: item.name,
               });
             }}
             className={clsx(

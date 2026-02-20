@@ -9,7 +9,7 @@ import { categoryBgClasses } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import { getAllSubCategory } from "@/actions/feedActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const scrollAmount = 150;
 
@@ -77,7 +77,7 @@ const SubcategoryFilterPanel = () => {
                   type="button"
                   onClick={() => {
                     handleSubcategoryChange(item.id);
-                    googleSendGtmEvent(triggerName.clickToSubCategory, {
+                    sendGAEvent(triggerName.clickToSubCategory, {
                       subCategoryId: item.id,
                       subCategoryName: item.name,
                     });

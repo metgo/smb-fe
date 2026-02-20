@@ -8,7 +8,7 @@ import { IconImage } from "@/components/ui";
 import { paymentMethodType } from "@/lib/utils";
 import TicketListModal from "./TicketListModal";
 import { getHebrewDateInfo } from "@/lib/helpers";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const EventDateRange = ({
   _id,
@@ -20,7 +20,7 @@ const EventDateRange = ({
 
   function handleOpenTicketModal() {
     setOpenTicketModal(true);
-    googleSendGtmEvent(triggerName.clickToViewTicket, {
+    sendGAEvent(triggerName.clickToViewTicket, {
       eventId: _id,
       eventName: name,
     });

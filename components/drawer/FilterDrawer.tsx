@@ -11,6 +11,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { getFilterTypes } from "@/actions/feedActions";
 import { FilterTypeHeader, IconImage, MotionDialogDiv } from "../ui";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const parseCommaParam = (param: string | null): string[] =>
   param ? param.split(",").filter(Boolean) : [];
@@ -100,6 +101,7 @@ const FilterDrawer = () => {
     setSelectedAccessibilityIds([]);
     setAppliedFilterCount(0);
     updateQueryParams({ groupTypesIds: [], accessibilitiesIds: [] });
+    sendGAEvent(triggerName.clickToFilterResetBtn, { label: "reset_filters" });
   }
 
   function handleApplyFilter() {
@@ -164,7 +166,13 @@ const FilterDrawer = () => {
                       {accessibilities.map((item) => (
                         <span
                           key={item._id}
-                          onClick={() => handleAccessToggle(item._id)}
+                          onClick={() => {
+                            handleAccessToggle(item._id);
+                            sendGAEvent(triggerName.clickToAccessibility, {
+                              accessibility_id: item._id,
+                              accessibility_name: item.name,
+                            });
+                          }}
                           className={`custom-cursor py-1.5 px-4 rounded-3xl text-sm ${
                             selectedAccessibilityIds.includes(item._id)
                               ? "bg-black text-white font-bold"
@@ -190,7 +198,13 @@ const FilterDrawer = () => {
                       {groupTypes.map((item) => (
                         <span
                           key={item._id}
-                          onClick={() => handleGroupToggle(item._id)}
+                          onClick={() => {
+                            handleGroupToggle(item._id);
+                            sendGAEvent(triggerName.clickToGroupType, {
+                              group_type_id: item._id,
+                              group_type_name: item.name,
+                            });
+                          }}
                           className={`custom-cursor py-1.5 px-4 rounded-3xl text-sm ${
                             selectedGroupTypeIds.includes(item._id)
                               ? "bg-black text-white font-bold"
