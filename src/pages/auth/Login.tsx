@@ -100,6 +100,7 @@ export function Login({ setCurrentTab }: LoginProps) {
               <button
                 type="button"
                 className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                onClick={() => setCurrentTab("forgotPassword")}
               >
                 Forgot Password?
               </button>

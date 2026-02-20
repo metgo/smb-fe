@@ -19,7 +19,14 @@ interface RegisterStep2Payload {
   phoneNumber: string;
   languagePreference?: string;
 }
-
+interface ForgotPasswordStep3Payload {
+  email: string;
+  purpose: string;
+}
+interface VerifyOtpPayload {
+  code: "string";
+  token: "string";
+}
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: axiosBaseQuery(),
@@ -28,6 +35,20 @@ export const authApi = createApi({
     login: builder.mutation<any, LoginPayload>({
       query: (body) => ({
         url: endpoints.login,
+        method: "POST",
+        data: body,
+      }),
+    }),
+    forgotPassword: builder.mutation<any, ForgotPasswordStep3Payload>({
+      query: (body) => ({
+        url: endpoints.forgotPassword,
+        method: "POST",
+        data: body,
+      }),
+    }),
+    verifyOtp: builder.mutation<any, VerifyOtpPayload>({
+      query: (body) => ({
+        url: endpoints.verifyOtp,
         method: "POST",
         data: body,
       }),
@@ -56,4 +77,6 @@ export const {
   useLoginMutation,
   useRegisterStep1Mutation,
   useRegisterStep2Mutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation,
 } = authApi;

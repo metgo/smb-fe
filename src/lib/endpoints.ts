@@ -1,6 +1,8 @@
 export const endpoints = {
   login: "/auth/login",
+  forgotPassword: "/auth/send-otp",
   signUp: "/auth/signUp",
+  verifyOtp: "/auth/verify-otp",
   googleAuth: "/auth/google/url",
   registerStep1: "/auth/register-step1",
   registerStep2: "/auth/register-step2",
