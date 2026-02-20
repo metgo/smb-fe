@@ -3,21 +3,21 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { categoryIds, navigationPathsByServiceType } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage, ImageCarouselControls } from "@/components/ui";
+import { categoryIds, navigationPathsByServiceType } from "@/lib/utils";
 import {
   getCityOrCenter,
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import {
@@ -125,9 +125,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const handleNavigation = useCallback(
     (serviceType: keyof typeof navigationPathsByServiceType) => {
       startLoading();
-      googleSendGtmEvent(triggerName.navigateToBusiness, {
-        bussinessId: feedItem._id,
-        bussinessName: feedItem.name,
+      sendGAEvent(triggerName.navigateToBusiness, {
+        bussiness_id: feedItem._id,
+        bussiness_name: feedItem.name,
       });
       router.push(
         `${navigationPathsByServiceType[serviceType]}/${feedItem.slug}`,

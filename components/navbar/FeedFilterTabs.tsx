@@ -6,6 +6,7 @@ import { useLayoutEffect, useState, useRef, useEffect } from "react";
 import { filterTabs } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { IconImage } from "@/components/ui";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 // Smooth scroll helper
 const scrollToFeed = (isHomepage: boolean) => {
@@ -95,6 +96,7 @@ export default function FeedLyoutSwitcTabs() {
     setActiveFilterTab(key);
     setClickedBusinessId("");
     scrollToFeed(isHomepage);
+    sendGAEvent(triggerName.clickToLayoutSwitchBtn, { layout: key });
   };
 
   /* -------------------------------------------------------------
