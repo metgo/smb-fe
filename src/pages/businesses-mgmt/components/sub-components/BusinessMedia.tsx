@@ -92,6 +92,15 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
               >
                 <X className="w-4 h-4" />
               </button>
+              {/* Upload Loader */}
+              {logoImage.status === "uploading" && (
+                <div className="absolute inset-0  flex flex-col items-center justify-center z-40">
+                  <Loader2 className="w-12 h-12 text-white animate-spin" />
+                  <span className="mt-2 text-white font-bold text-xs">
+                    {logoImage.progress}%
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div
