@@ -417,7 +417,10 @@ export default function CreateProductWizard({
       // 4️⃣ Update product
       await updateProduct({
         productId: internalProductId || productId!,
-        body: payload,
+        body: {
+          ...payload,
+          status: isPublish ? "active" : "draft",
+        },
       }).unwrap();
 
       toast.success(isPublish ? tc("product_published") : tc("draft_saved"));
