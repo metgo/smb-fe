@@ -19,7 +19,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BusinessContactDetails,
   BusinessInfoDetails,
-  BusinessMediaDetails,
   BusinessOnlinePresenceDetails,
   BusinessOpeningHoursDetails,
   BusinessTitleSection,
@@ -44,6 +43,7 @@ import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
   LocationDetails,
+  MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
 
@@ -283,7 +283,7 @@ export default function BusinessDetailsPage() {
           />
         );
       case "media":
-        return <BusinessMediaDetails {...mediaProps} />;
+        return <MediaDetails {...mediaProps} />;
       case "social":
         return <BusinessOnlinePresenceDetails {...commonProps} />;
       case "delivery":

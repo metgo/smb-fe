@@ -11,6 +11,14 @@ import {
 import { useTranslation } from "react-i18next";
 
 interface MediaDetailsProps {
+  logoImage?: IImageUpload | null;
+  handleLogoImageSelect?: (file: File) => void;
+  confirmDeleteLogo?: () => void;
+  deleteTargetLogo?: string | null;
+  setDeleteTargetLogo?: (imgUrl: string | null) => void;
+  isLogoImageDeleting?: boolean;
+  handleDeleteLogoImage?: (logoImg: IImageUpload) => void;
+
   images: IImageUpload[];
   primaryImageIndex: number;
   setPrimaryImage: (idx: number) => void;
@@ -32,6 +40,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   confirmDelete,
   isImageDeleting,
   handleImageUpload,
+  logoImage,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -42,8 +51,44 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
 
   return (
     <div className="space-y-6 min-h-150">
+      <div className="">{t("logo")}</div>
+      {logoImage && (
+        <div>
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
+              <ImageWithFallback
+                src={logoImage?.previewUrl}
+                alt={"Business logo"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* <div className="flex gap-2">
+            <label
+              htmlFor="logo-image-upload"
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {t("replace_logo")}
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleLogoImageSelect(file);
+              }}
+              className="hidden"
+              id="logo-image-upload"
+            />
+          </div> */}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className={clsx("flex items-center justify-between mb-2")}>
+        <div className="">{t("images")}</div>
+
         {/* <div>
           <h2
             className={clsx(
