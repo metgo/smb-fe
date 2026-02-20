@@ -76,6 +76,10 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
+  const { t: tb } = useTranslation("businesses");
+
+  const { t: tc } = useTranslation("toast");
+
   const navigate = useNavigate();
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
@@ -109,6 +113,7 @@ export default function ProductsMgmtPage() {
           }
         : skipToken,
     );
+  console.log("🚀 ~ ProductsMgmtPage ~ businessData:", businessData);
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
   const {
@@ -150,14 +155,20 @@ export default function ProductsMgmtPage() {
   };
 
   //filters
-  const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const STORAGE_KEY = "product_query_state";
+  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+  const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
+
+  const [page, setPage] = useState(savedState?.page || 1);
 
   const [filters, setFilters] = useState({
-    status: "all",
-    locale: language,
-    businessId: "",
+    status: savedState?.filters?.status || "all",
+    locale: savedState?.filters?.locale || language,
+    businessId: savedState?.filters?.businessId || "",
   });
+  const hasSavedFilters =
+    filters?.businessId !== "" || filters?.status !== "all";
   const [_clearBusiness, setClearBusiness] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -167,9 +178,24 @@ export default function ProductsMgmtPage() {
     setClearBusiness(true);
     setFilters((prev) => ({
       ...prev,
-      [filterKey]: "all",
+      [filterKey]: filterKey === "businessId" ? "" : "all",
     }));
   };
+
+  useEffect(() => {
+    if (businessId) {
+      setIsCreateModalOpen(true);
+    }
+  }, [businessId]);
+
+  useEffect(() => {
+    const { status, locale, businessId } = filters;
+
+    if (status !== "all" || locale !== language || businessId !== "") {
+      const queryState = { filters };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+    }
+  }, [filters, language]);
 
   const productQueryParams = useMemo(() => {
     const params: any = {
@@ -210,6 +236,17 @@ export default function ProductsMgmtPage() {
     startDate,
     endDate,
   ]);
+
+  //skipped appending bzId as it opens create wizard
+  useEffect(() => {
+    const urlParams: Record<string, any> = {};
+
+    if (productQueryParams.search) urlParams.search = productQueryParams.search;
+    if (productQueryParams.status) urlParams.status = productQueryParams.status;
+
+    const searchParams = new URLSearchParams(urlParams).toString();
+    navigate(`?${searchParams}`, { replace: true });
+  }, [productQueryParams, navigate]);
 
   useEffect(() => {
     setPage(1);
@@ -259,7 +296,7 @@ export default function ProductsMgmtPage() {
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
-    setPage((prev) => {
+    setPage((prev: any) => {
       return prev + 1;
     });
   };
@@ -278,7 +315,8 @@ export default function ProductsMgmtPage() {
     if (!selectedProducts.size) return;
     setIsConfirmOpen(true);
 
-    const toastId = toast.loading("Please wait. Products are deleting...");
+    const toastId = toast.loading(tc("product_delete_loading"));
+
     try {
       const results = await bulkProductsUpdate({
         productsId: Array.from(selectedProducts),
@@ -286,20 +324,21 @@ export default function ProductsMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Products deleted successfully";
+        const message = tc("product_deleted_success");
         toast.success(message, { id: toastId });
         setSelectedProducts(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Products");
+      toast.error(tc("product_delete_failed"));
     }
   };
 
-  // //bulk status change
+  // Bulk status change
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedProducts.size) return;
-    toast.loading("Please wait. Product's status are changing...");
+
+    const toastId = toast.loading(tc("product_status_change_loading"));
 
     try {
       const results = await bulkProductsUpdate({
@@ -308,13 +347,13 @@ export default function ProductsMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Products status updated successfully";
-        toast.success(message);
+        const message = tc("product_status_update_success");
+        toast.success(message, { id: toastId });
         setSelectedProducts(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change Products status");
+      toast.error(tc("product_status_update_failed"));
     }
   };
 
@@ -527,16 +566,15 @@ export default function ProductsMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {(showFilters || businessName) && (
+          {(showFilters || businessName || hasSavedFilters) && (
             <div
               className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
             >
-              <div className="grid grid-cols-1 z-5 sm:grid-cols-3 gap-4">
-                <div>
+              <div className="flex gap-4 items-start w-full">
+                {/* Status Filter */}
+                <div className="flex flex-col min-w-[180px]">
                   <label
-                    className={`block text-sm mb-1 ${
-                      isDark ? "text-gray-400" : "text-gray-600"
-                    }`}
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("filter_by_status")}
                   </label>
@@ -561,16 +599,14 @@ export default function ProductsMgmtPage() {
                   </select>
                 </div>
 
+                {/* Business Filter */}
                 {!businessId && (
-                  <div>
+                  <div className="flex flex-col min-w-[180px]">
                     <label
-                      className={`block text-sm mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                     >
                       {t("filter_by_business")}
                     </label>
-
                     <ReactSelect
                       isClearable
                       value={filters?.businessId ?? ""}
@@ -592,48 +628,62 @@ export default function ProductsMgmtPage() {
                     />
                   </div>
                 )}
-              </div>
-              <div className="flex mt-4 gap-6 items-center">
-                <div>
-                  {/* Clear all button */}
-                  {Object.entries(filters).some(
-                    ([_, val]) => val !== "all",
-                  ) && (
-                    <button
-                      onClick={() => {
-                        setFilters({
-                          status: "all",
-                          locale: language,
-                          businessId: "",
-                        });
-                        removeQueryParams();
-                      }}
-                      className="ml-auto text-sm text-green-600"
-                    >
-                      {t("clear_all")}
-                    </button>
-                  )}
-                </div>
 
-                {/* Active filters display and clear all button */}
-                <div className="flex items-start gap-3">
-                  {/* Show active filters */}
+                {/* Active Filters Label + Chips + Clear All */}
+                {(filters?.status !== "all" || filters.businessId !== "") && (
+                  <div className="flex flex-col min-w-[180px]">
+                    {/* Label inline with other selects */}
+                    <label className={`block text-sm mb-1 ${textTertiary}`}>
+                      {tb("active_filters")}:
+                    </label>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {filters.status !== "all" && (
-                      <FilterChips
-                        label={t(filters.status)}
-                        onRemove={() => clearFilter("status")}
-                      />
-                    )}
-                    {businessId && businessName && (
-                      <FilterChips
-                        label={businessName}
-                        onRemove={() => removeQueryParams()}
-                      />
-                    )}
+                    {/* Chips */}
+                    <div className="flex flex-wrap gap-2 mt-2 ">
+                      {filters.status !== "all" && (
+                        <FilterChips
+                          label={t(filters.status)}
+                          onRemove={() => clearFilter("status")}
+                        />
+                      )}
+                      {businessId && businessName && (
+                        <FilterChips
+                          label={businessName}
+                          onRemove={() => removeQueryParams()}
+                        />
+                      )}
+                      {filters.businessId !== "" && (
+                        <FilterChips
+                          label={t(
+                            businessData?.data?.find(
+                              (item: any) => item._id === filters.businessId,
+                            )?.name || filters.businessId,
+                          )}
+                          onRemove={() => clearFilter("businessId")}
+                        />
+                      )}
+                      {/* Clear All Button */}
+                      {(filters.status !== "all" ||
+                        filters.locale !== language ||
+                        filters.businessId !== "") && (
+                        <button
+                          onClick={() => {
+                            setFilters({
+                              status: "all",
+                              locale: language,
+                              businessId: "",
+                            });
+                            localStorage.removeItem(STORAGE_KEY);
+                            localStorage.removeItem("productSearchTerm");
+                            setSearchTerm("");
+                          }}
+                          className="px-3 py-1  bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                        >
+                          {t("clear_all")}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}

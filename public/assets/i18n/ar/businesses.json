@@ -12,6 +12,7 @@
   "pending_approval": "في انتظار الموافقة",
   "short_description": "وصف مختصر",
   "status": "الحالة",
+  "active_filters": "الفلاتر النشطة",
   "contact_name": "اسم جهة الاتصال",
   "location_address": "عنوان الموقع",
   "trips": "الرحلات",
