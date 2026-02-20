@@ -13,7 +13,7 @@ import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import {
@@ -106,9 +106,9 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
   const handleNavigation = useCallback(
     (serviceType: keyof typeof navigationPathsByServiceType) => {
       startLoading();
-      googleSendGtmEvent(triggerName.navigateToBusiness, {
-        bussinessId: feedItem._id,
-        bussinessName: feedItem.name,
+      sendGAEvent(triggerName.navigateToBusiness, {
+        bussiness_id: feedItem._id,
+        bussiness_name: feedItem.name,
       });
       router.push(
         `${navigationPathsByServiceType[serviceType]}/${feedItem.slug}`,

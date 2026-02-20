@@ -12,12 +12,12 @@ import {
   GOOGLE_TAG_MANAGER_ID,
   IdentifierId,
 } from "@/constant/envConstants";
-import { SiteInfoClientProvider } from "@/providers/SiteInfoClientProvider";
 import { urls } from "@/lib/endpoints";
+import Providers from "@/components/wrappers/Providers";
 import { getFavicon, getLogo } from "@/constant/images";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
-import Providers from "@/components/wrappers/Providers";
 import InitialLoader from "@/components/InitialLoader";
+import { SiteInfoClientProvider } from "@/providers/SiteInfoClientProvider";
 
 // Dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
@@ -90,7 +90,7 @@ export default function RootLayout({ children }: ReactChildNode) {
         <Suspense fallback={<InitialLoader />}>
           <Providers>
             <SiteInfoClientProvider>
-              <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
+              <GoogleAnalytics debugMode={false} gaId={GOOGLE_ANALYTIC_ID!} />
               <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
 
               <ProgressBar />

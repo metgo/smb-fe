@@ -40,8 +40,8 @@ const ProductInfo = () => {
             </div>
           </div>
           <div>
-            {orderProducts?.map((item) => (
-              <div key={item._id}>
+            {orderProducts?.map((item, index) => (
+              <div key={index}>
                 <div className="grid grid-cols-12 gap-1 items-center justify-between w-full pe-5.25">
                   <div className="flex items-center gap-2 col-span-8">
                     <Image

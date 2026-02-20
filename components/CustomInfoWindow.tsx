@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { FaHeart } from "react-icons/fa6";
 import { useEffect, useRef, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
@@ -11,7 +12,6 @@ import useTrailStationStore from "@/stores/trailStationStore";
 import { getLocationDetailsById } from "@/actions/commonActions";
 import { IconImage, ImageCarouselControls, NextImage } from "./ui";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
-import { FaHeart } from "react-icons/fa6";
 
 interface CustomInfoWindowProps {
   stationId: string;
@@ -41,48 +41,29 @@ const CustomInfoWindow = ({
   const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
 
-  const imageCount = stationDetails?.images?.length || 0;
-
   const loadedStationIdsRef = useRef<Set<string>>(new Set());
 
-  // Get window width for responsive sizing
+  const imageCount = stationDetails?.images?.length || 0;
+
+  // window width
   useEffect(() => {
-    const updateWindowWidth = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    // Set initial width
-    updateWindowWidth();
-
-    window.addEventListener("resize", updateWindowWidth);
-    return () => window.removeEventListener("resize", updateWindowWidth);
+    const update = () => setWindowWidth(window.innerWidth);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Determine card size based on window width
   const getCardDimensions = () => {
-    if (windowWidth <= 300) {
-      return {
-        width: "150px",
-        height: "150px",
-        isSmall: true,
-      };
-    } else if (windowWidth <= 360) {
-      return {
-        width: "180px",
-        height: "180px",
-        isSmall: false,
-      };
-    } else {
-      return {
-        width: "240px",
-        height: "240px",
-        isSmall: false,
-      };
-    }
+    if (windowWidth <= 300)
+      return { width: "150px", height: "150px", isSmall: true };
+    if (windowWidth <= 360)
+      return { width: "180px", height: "180px", isSmall: false };
+    return { width: "240px", height: "240px", isSmall: false };
   };
 
   const cardDimensions = getCardDimensions();
 
+  // fetch station
   useEffect(() => {
     if (!stationId || loadedStationIdsRef.current.has(stationId)) return;
 
@@ -93,22 +74,26 @@ const CustomInfoWindow = ({
         setStationDetails(res);
         loadedStationIdsRef.current.add(stationId);
       } catch (err) {
-        console.error("Failed to fetch station details:", err);
+        console.error("Failed to fetch station:", err);
       } finally {
         setLoading(false);
       }
     })();
   }, [stationId]);
 
+  // add button disabled
   useEffect(() => {
     if (isTrailMap && trailId && stationId) {
       setIsAddBtnDisabled(isAreadyExistStation(trailId, stationId));
     }
   }, [isTrailMap, trailId, stationId, isAreadyExistStation]);
 
-  function handleAddStationToRoute() {
-    if (geoLocation && primaryCategoryId && trailId) {
-      const trailStaionInfo = stationDetails && {
+  function handleAddStationToRoute(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (geoLocation && primaryCategoryId && trailId && stationDetails) {
+      const info = {
         _id: stationDetails._id,
         name: stationDetails.name,
         description: stationDetails.description,
@@ -116,135 +101,140 @@ const CustomInfoWindow = ({
         geoLocation,
         primaryCategoryId,
       };
-      addTrailStation(trailId, trailStaionInfo!);
+
+      addTrailStation(trailId, info);
+
       toast.success("התחנה נוספה למסלול", {
-        style: {
-          color: "#fff",
-          background: "#111",
-          marginTop: "120px",
-        },
+        style: { color: "#fff", background: "#111", marginTop: "120px" },
       });
+
       setIsModalClose?.(true);
     }
+  }
+
+  function handleFavorite(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addFavoriteFeedItemId(stationId);
   }
 
   if (loading) {
     return (
       <div
-        className="rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white"
-        style={{
-          width: cardDimensions.width,
-          height: cardDimensions.height,
-        }}
+        className="rounded-md bg-gray-200 animate-pulse border-2 border-white"
+        style={{ width: cardDimensions.width, height: cardDimensions.height }}
       >
         <CardSkeleton
-          className={"rounded w-full h-full"}
+          className="rounded w-full h-full"
           primaryCategoryId={primaryCategoryId!}
         />
       </div>
     );
   }
 
-  // ✅ Main UI after data loaded
   return (
     <div
-      className="rounded-md bg-white border-2 border-white relative z-50 overflow-hidden"
-      style={{
-        width: cardDimensions.width,
-        height: cardDimensions.height,
-      }}
+      className="relative rounded-md border-2 border-white overflow-hidden bg-white"
+      style={{ width: cardDimensions.width, height: cardDimensions.height }}
     >
-      {/* Background Image */}
-      <NextImage
-        isFill
-        width={100}
-        height={100}
-        imgSrc={stationDetails?.images?.[activeImageIndex]?.image}
-        alt={stationDetails?.images?.[activeImageIndex]?.alt || "station image"}
-        className="object-cover w-full h-full rounded-md overflow-hidden"
-      />
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 z-10 rounded-md bg-gradient-to-t from-black/60 via-black/20 to-black/10" />
-
-      {/* Top Section */}
-      <div className="absolute top-0 right-0 w-full z-20">
-        <div
-          className={`flex items-center justify-between w-full ${cardDimensions.isSmall ? "p-1" : "p-2"}`}
-        >
-          <Link href={`/business-details/${stationDetails?.slug}`}>
-            <NextImage
-              width={cardDimensions.isSmall ? 30 : 40}
-              height={cardDimensions.isSmall ? 30 : 40}
-              imgSrc={stationDetails?.logo?.image}
-              alt={stationDetails?.logo?.alt || "Station logo"}
-              className={`rounded-md shadow-md border border-white overflow-hidden ${cardDimensions.isSmall ? "w-[30px] h-[30px]" : "w-[40px] h-[40px]"}`}
-            />
-          </Link>
-          {isTrailMap ? (
-            <button
-              type="button"
-              onClick={handleAddStationToRoute}
-              disabled={isAddBtnDisabled}
-              className={clsx(
-                isAddBtnDisabled
-                  ? "cursor-not-allowed bg-gray-400"
-                  : "bg-black/60 custom-cursor",
-                "font-bold text-white rounded-lg px-4 py-2.25",
-                cardDimensions.isSmall && "text-xs px-2 py-1",
-              )}
-            >
-              <span>{misc.addToRoute}</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <IconImage icon="pin" />
-              <button
-                type="button"
-                className="custom-cursor border border-transparent hover:border-white rounded-full"
-                aria-label="Circular heart"
-                onClick={() => addFavoriteFeedItemId(stationId)}
-              >
-                {favoriteFeedItemIds.includes(stationId) ? (
-                  <div className=" h-7.5 w-7.5 p-1 bg-black/20 rounded-full flex items-center justify-center">
-                    <FaHeart size={16} className="text-white" />
-                  </div>
-                ) : (
-                  <IconImage width={30} height={30} icon="circular-heart" />
-                )}
-              </button>
-              {/* <IconImage icon="circular-heart" /> */}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom Section */}
-      <div
-        className={`absolute bottom-2 right-0 z-20 w-full ${cardDimensions.isSmall && "bottom-1"}`}
+      {/* CLICKABLE CARD */}
+      <Link
+        href={`/business-details/${stationDetails?.slug}`}
+        className="absolute inset-0 z-10"
       >
+        <NextImage
+          isFill
+          imgSrc={stationDetails?.images?.[activeImageIndex]?.image}
+          alt={stationDetails?.images?.[activeImageIndex]?.alt || "station"}
+          className="object-cover w-full h-full"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10" />
+
+        {/* Bottom text */}
         <div
-          className={`${cardDimensions.isSmall ? "px-1 pb-1 space-y-0" : "px-2 pb-2 max-sm:space-y-0 md:space-y-2"}`}
+          className={clsx(
+            "absolute bottom-0 w-full text-white",
+            cardDimensions.isSmall ? "p-1" : "p-2",
+          )}
         >
-          <div className="font-bold text-white">
-            <h3
-              className={`${cardDimensions.isSmall ? "text-sm -mb-1" : "md:text-lg max-sm:text-xl max-sm:-mb-1"}`}
-            >
-              {stationDetails?.name}
-            </h3>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: stationDetails?.description || "",
-              }}
-              className={`line-clamp-1 ${cardDimensions.isSmall ? "text-[10px]" : "max-sm:text-[12px] md:text-sm"}`}
-            />
-          </div>
+          <h3
+            className={clsx(
+              "font-bold",
+              cardDimensions.isSmall ? "text-sm" : "text-lg",
+            )}
+          >
+            {stationDetails?.name}
+          </h3>
+
+          <div
+            dangerouslySetInnerHTML={{
+              __html: stationDetails?.description || "",
+            }}
+            className={clsx(
+              "line-clamp-1",
+              cardDimensions.isSmall ? "text-[10px]" : "text-sm",
+            )}
+          />
+
           <ImageCarouselControls
             totalImages={imageCount < 5 ? imageCount : 4}
             activeIndex={activeImageIndex}
             setActiveImageIndex={setActiveImageIndex}
           />
         </div>
+      </Link>
+
+      {/* ACTIONS OVERLAY */}
+      <div
+        className={clsx(
+          "absolute top-0 right-0 w-full flex justify-between items-start z-20",
+          cardDimensions.isSmall ? "p-1" : "p-2",
+        )}
+      >
+        {/* Logo */}
+        <NextImage
+          imgSrc={stationDetails?.logo?.image}
+          width={cardDimensions.isSmall ? 30 : 40}
+          height={cardDimensions.isSmall ? 30 : 40}
+          alt="logo"
+          className="rounded-md shadow border border-white"
+        />
+
+        {/* Actions */}
+        {isTrailMap ? (
+          <button
+            onClick={handleAddStationToRoute}
+            disabled={isAddBtnDisabled}
+            className={clsx(
+              "font-bold text-white rounded-lg",
+              cardDimensions.isSmall ? "text-xs px-2 py-1" : "px-4 py-2",
+              isAddBtnDisabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-black/60",
+            )}
+          >
+            {misc.addToRoute}
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            {/* <IconImage icon="pin" /> */}
+
+            <button
+              aria-label="favorite"
+              onClick={handleFavorite}
+              className="rounded-full hover:ring-2 hover:ring-white"
+            >
+              {favoriteFeedItemIds.includes(stationId) ? (
+                <div className="h-7.5 w-7.5 p-1 bg-black/40 rounded-full flex items-center justify-center">
+                  <FaHeart size={16} className="text-white" />
+                </div>
+              ) : (
+                <IconImage width={30} height={30} icon="circular-heart" />
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

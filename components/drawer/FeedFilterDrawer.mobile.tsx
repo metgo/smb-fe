@@ -17,6 +17,7 @@ import {
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { SunsetButton } from "../filter-icon/SunsetButton";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
@@ -102,9 +103,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.pointOfInterest,
+                    });
+                  }}
                   icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
                   activeIcon={<PointOfInterestIcon strokColor="#fff" />}
                   label={filterPanelLabels.pointOfInterest}
@@ -118,7 +122,13 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   <FilterButton
                     key={menu._id}
                     active={isSelected("categoryIds", menu._id)}
-                    onClick={() => toggleParam("categoryIds", menu._id)}
+                    onClick={() => {
+                      toggleParam("categoryIds", menu._id);
+                      sendGAEvent(triggerName.clickToCategory, {
+                        category_id: menu._id,
+                        category_name: menu.hebrewName,
+                      });
+                    }}
                     icon={Icon && <Icon strokColor="#7c7c7c" />}
                     activeIcon={Icon && <Icon strokColor="#fff" />}
                     label={menu.hebrewName}
@@ -130,9 +140,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               {aminitiesInfo?.funday && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.funDays,
+                    });
+                  }}
                   icon={<FundayIcon strokColor="#7c7c7c" />}
                   activeIcon={<FundayIcon strokColor="#fff" />}
                   label={filterPanelLabels.funDays}
@@ -143,9 +156,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.events,
+                    });
+                  }}
                   icon={<EventIcon strokColor="#7c7c7c" />}
                   activeIcon={<EventIcon strokColor="#fff" />}
                   label={filterPanelLabels.events}
@@ -156,9 +172,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.routes,
+                    });
+                  }}
                   icon={<RouteIcon strokColor="#7c7c7c" />}
                   activeIcon={<RouteIcon strokColor="#fff" />}
                   label={filterPanelLabels.routes}
@@ -192,9 +211,13 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                             <FilterChip
                               key={item._id}
                               active={isSelected("subCategoryIds", item._id)}
-                              onClick={() =>
-                                toggleParam("subCategoryIds", item._id)
-                              }
+                              onClick={() => {
+                                toggleParam("subCategoryIds", item._id);
+                                sendGAEvent(triggerName.clickToSubCategory, {
+                                  subcategory_id: item._id,
+                                  subcategory_name: item.hebrewName,
+                                });
+                              }}
                               label={item.hebrewName}
                             />
                           ))}
@@ -212,9 +235,13 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                         <FilterChip
                           key={item._id}
                           active={isSelected("accessibilityIds", item._id)}
-                          onClick={() =>
-                            toggleParam("accessibilityIds", item._id)
-                          }
+                          onClick={() => {
+                            toggleParam("accessibilityIds", item._id);
+                            sendGAEvent(triggerName.clickToAccessibility, {
+                              accessibility_id: item._id,
+                              accessibility_name: item.hebrewName,
+                            });
+                          }}
                           label={item.hebrewName}
                         />
                       ))}
@@ -231,7 +258,13 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                         <FilterChip
                           key={item._id}
                           active={isSelected("groupTypeIds", item._id)}
-                          onClick={() => toggleParam("groupTypeIds", item._id)}
+                          onClick={() => {
+                            toggleParam("groupTypeIds", item._id);
+                            sendGAEvent(triggerName.clickToGroupType, {
+                              group_type_id: item._id,
+                              group_type_name: item.hebrewName,
+                            });
+                          }}
                           label={item.hebrewName}
                         />
                       ))}

@@ -15,6 +15,7 @@ import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import { useCommonHook } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import { SunsetButton } from "../filter-icon/SunsetButton";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -90,9 +91,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.pointOfInterest,
+                    });
+                  }}
                   icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
                   activeIcon={<PointOfInterestIcon strokColor="#fff" />}
                   label={filterPanelLabels.pointOfInterest}
@@ -106,7 +110,13 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   <FilterButton
                     key={menu._id}
                     active={isSelected("categoryIds", menu._id)}
-                    onClick={() => toggleParam("categoryIds", menu._id)}
+                    onClick={() => {
+                      toggleParam("categoryIds", menu._id);
+                      sendGAEvent(triggerName.clickToCategory, {
+                        category_id: menu._id,
+                        category_name: menu.hebrewName,
+                      });
+                    }}
                     icon={Icon && <Icon strokColor="#7c7c7c" />}
                     activeIcon={Icon && <Icon strokColor="#fff" />}
                     label={menu.hebrewName}
@@ -118,9 +128,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               {aminitiesInfo?.funday && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.funDays,
+                    });
+                  }}
                   icon={<FundayIcon strokColor="#7c7c7c" />}
                   activeIcon={<FundayIcon strokColor="#fff" />}
                   label={filterPanelLabels.funDays}
@@ -131,9 +144,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.events,
+                    });
+                  }}
                   icon={<EventIcon strokColor="#7c7c7c" />}
                   activeIcon={<EventIcon strokColor="#fff" />}
                   label={filterPanelLabels.events}
@@ -144,9 +160,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
-                  }
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.routes,
+                    });
+                  }}
                   icon={<RouteIcon strokColor="#7c7c7c" />}
                   activeIcon={<RouteIcon strokColor="#fff" />}
                   label={filterPanelLabels.routes}
@@ -162,11 +181,17 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                 {filterPanelLabels.second}
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
-                {filteredSubCategories.map((item) => (
+                {filteredSubCategories?.map((item) => (
                   <FilterChip
                     key={item._id}
                     active={isSelected("subCategoryIds", item._id)}
-                    onClick={() => toggleParam("subCategoryIds", item._id)}
+                    onClick={() => {
+                      toggleParam("subCategoryIds", item._id);
+                      sendGAEvent(triggerName.clickToSubCategory, {
+                        subcategory_id: item._id,
+                        subcategory_name: item.hebrewName,
+                      });
+                    }}
                     label={item.hebrewName}
                   />
                 ))}
@@ -184,7 +209,13 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                 <FilterChip
                   key={item._id}
                   active={isSelected("accessibilityIds", item._id)}
-                  onClick={() => toggleParam("accessibilityIds", item._id)}
+                  onClick={() => {
+                    toggleParam("accessibilityIds", item._id);
+                    sendGAEvent(triggerName.clickToAccessibility, {
+                      accessibility_id: item._id,
+                      accessibility_name: item.hebrewName,
+                    });
+                  }}
                   label={item.hebrewName}
                 />
               ))}
@@ -201,7 +232,13 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                 <FilterChip
                   key={item._id}
                   active={isSelected("groupTypeIds", item._id)}
-                  onClick={() => toggleParam("groupTypeIds", item._id)}
+                  onClick={() => {
+                    toggleParam("groupTypeIds", item._id);
+                    sendGAEvent(triggerName.clickToGroupType, {
+                      group_type_id: item._id,
+                      group_type_name: item.hebrewName,
+                    });
+                  }}
                   label={item.hebrewName}
                 />
               ))}

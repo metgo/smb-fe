@@ -9,7 +9,7 @@ import { InputField, SubmitButton } from "@/components/ui";
 import { orderInfoFields } from "@/constant/formFields";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import { PurchaserInfo, purchaserSchema } from "@/schemas/payment";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
   const { setCustomerInfo, setIsStepOneSubmitBtnComplete } = useCheckoutStore();
@@ -35,11 +35,11 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
       email: data.email || "",
       phone: data.phone || "",
     });
-    googleSendGtmEvent(triggerName.orderCheckoutPersonalDetailsBtn, {
-      formStep: "first_purchaser_info",
-      customerName: data.firstName,
-      customerEmail: data.email,
-      customerPhone: data.phone,
+    sendGAEvent(triggerName.orderCheckoutPersonalDetailsBtn, {
+      form_step: "first_purchaser_info",
+      customer_name: data.firstName,
+      customer_email: data.email,
+      customer_phone: data.phone,
     });
     handleToggle("second");
   };

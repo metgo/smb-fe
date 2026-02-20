@@ -7,6 +7,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { pathNames } from "@/lib/endpoints";
 import { getLogo } from "@/constant/images";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const NavLogo = () => {
   const router = useRouter();
@@ -15,6 +16,7 @@ const NavLogo = () => {
     useGeneralStore();
 
   function handleNavigation() {
+    sendGAEvent(triggerName.clickToLogo, { label: "logo_click" });
     if (pathname === pathNames.home) {
       window.scrollTo({
         top: 0,

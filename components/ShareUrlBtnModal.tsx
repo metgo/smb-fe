@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { Dialog, IconImage } from "./ui";
 import { misc } from "@/constant/hebrew";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const ShareUrlBtnModal = ({
   hideShareText = false,
@@ -18,7 +18,7 @@ const ShareUrlBtnModal = ({
   const handleCopy = async () => {
     const url = window.location.href;
     try {
-      googleSendGtmEvent(triggerName.clickToShareUrl, { shareUrl: url });
+      sendGAEvent(triggerName.clickToShareUrl, { share_url: url });
       await navigator.clipboard.writeText(url);
       setIsOpen(true);
     } catch (err) {

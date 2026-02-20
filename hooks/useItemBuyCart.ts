@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
 import useCartStore from "@/stores/cartStore";
 import { startLoading } from "@/components/wrappers/ProgressBar";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 export const useItemBuyCart = () => {
   const router = useRouter();
@@ -31,9 +31,9 @@ export const useItemBuyCart = () => {
       itemType: itemType,
     });
 
-    googleSendGtmEvent(triggerName.addToCart, {
-      productId: product._id,
-      productName: product.name,
+    sendGAEvent(triggerName.addToCart, {
+      product_id: product._id,
+      product_name: product.name,
     });
   }
 
@@ -48,7 +48,7 @@ export const useItemBuyCart = () => {
       itemType: itemType,
     });
 
-    googleSendGtmEvent(triggerName.buyNowBtn, {
+    sendGAEvent(triggerName.buyNowBtn, {
       productId: product._id,
       productName: product.name,
     });

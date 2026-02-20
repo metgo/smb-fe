@@ -6,6 +6,7 @@ import { BUCKET_URL } from "@/constant/envConstants";
 import useGeneralStore from "@/stores/generalStore";
 import { useDeviceHeight } from "@/hooks";
 import { getThumbnail } from "@/constant/images";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -144,6 +145,9 @@ const IntroVideo = () => {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            sendGAEvent(triggerName.clickToAudioBtn, {
+              action: isMuted ? "unmute" : "mute",
+            });
             toggleMute();
           }}
           className="absolute right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
