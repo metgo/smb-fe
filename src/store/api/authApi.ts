@@ -24,9 +24,16 @@ interface ForgotPasswordStep3Payload {
   purpose: string;
 }
 interface VerifyOtpPayload {
-  code: "string";
-  token: "string";
+  code: string;
+  token: string;
 }
+
+interface ResetPasswordPayload {
+  password: string;
+  confirmPassword: string;
+  token: string;
+}
+
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: axiosBaseQuery(),
@@ -53,7 +60,13 @@ export const authApi = createApi({
         data: body,
       }),
     }),
-
+    resetPassword: builder.mutation<any, ResetPasswordPayload>({
+      query: (body) => ({
+        url: endpoints.resetPassword,
+        method: "POST",
+        data: body,
+      }),
+    }),
     //  Register - Step 1
     registerStep1: builder.mutation<any, RegisterStep1Payload>({
       query: (body) => ({
@@ -79,4 +92,5 @@ export const {
   useRegisterStep2Mutation,
   useForgotPasswordMutation,
   useVerifyOtpMutation,
+  useResetPasswordMutation,
 } = authApi;

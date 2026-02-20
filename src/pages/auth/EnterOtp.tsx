@@ -1,16 +1,19 @@
 import { toast } from "sonner";
 import { useState } from "react";
-import { Globe } from "lucide-react";
 import { useVerifyOtpMutation } from "@/store/api/authApi";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/shared/LanguageSelector";
 
 interface EnterOtpProps {
   setCurrentTab: (v: string) => void;
-  token: string; // token returned from forgot password request
+  otpToken: string; // token returned from forgot password request
 }
 
-export function EnterOtp({ setCurrentTab, token }: EnterOtpProps) {
-  const [otp, setOtp] = useState("");
+export function EnterOtp({ setCurrentTab, otpToken }: EnterOtpProps) {
+  const [otp, setOtp] = useState<string>("");
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+  const token = otpToken;
+  const { t } = useTranslation("login");
 
   const handleSubmitOtp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,10 +22,10 @@ export function EnterOtp({ setCurrentTab, token }: EnterOtpProps) {
       const payload = { code: otp, token };
       await verifyOtp(payload).unwrap();
 
-      toast.success("OTP verified! You can now reset your password.");
+      toast.success(t("otp_verified"));
       setCurrentTab("reset"); // redirect to Reset Password page
     } catch (err: any) {
-      toast.error(err?.data?.message || "Invalid OTP");
+      toast.error(err?.data?.message || t("invalid_otp"));
     }
   };
 
@@ -31,28 +34,18 @@ export function EnterOtp({ setCurrentTab, token }: EnterOtpProps) {
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => setCurrentTab("forgot")}
-              className="text-white hover:text-gray-300 text-2xl transition-colors"
-            >
-              ← Back
-            </button>
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
+          <div className="mb-6 flex justify-start">
+            <LanguageSelector />
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl text-white mb-2">Enter OTP</h1>
-          <p className="text-white/80 mb-6">
-            Enter the OTP sent to your email to continue.
-          </p>
+          <h1 className="text-4xl text-white mb-2">{t("enter_otp")}</h1>
+          <p className="text-white/80 mb-6">{t("otp_instruction")}</p>
 
           <form onSubmit={handleSubmitOtp} className="space-y-6">
             <input
               type="text"
-              placeholder="Enter OTP"
+              placeholder={t("enter_otp_placeholder")}
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               className="w-full px-6 py-4 bg-white/90 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -64,7 +57,7 @@ export function EnterOtp({ setCurrentTab, token }: EnterOtpProps) {
               disabled={isLoading}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-lg py-4 transition-colors"
             >
-              {isLoading ? "Verifying..." : "Verify OTP"}
+              {isLoading ? t("verifying") : t("verify_otp")}
             </button>
           </form>
         </div>
