@@ -10,6 +10,7 @@ interface BulkActionBarProps {
   selectedItemCount: number;
   handleBulkStatusChange: (v: TStatus) => void;
   handleBulkDelete: () => void;
+  hancleClearSelection?: () => void;
 }
 
 // const EXPORTS: ActionButton[] = [
@@ -22,6 +23,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   handleBulkStatusChange,
   selectedItemCount,
   handleBulkDelete,
+  hancleClearSelection,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -37,11 +39,25 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           : "border-gray-200 bg-teal-50",
       )}
     >
-      <span
-        className={clsx("text-sm", isDark ? "text-gray-300" : "text-gray-700")}
-      >
-        {selectedItemCount} {t("selected")}
-      </span>
+      <div>
+        <span
+          className={clsx(
+            "text-sm",
+            isDark ? "text-gray-300" : "text-gray-700",
+          )}
+        >
+          {selectedItemCount} {t("selected")}
+        </span>
+        <button
+          type="button"
+          onClick={hancleClearSelection}
+          className={clsx(
+            "ml-4 text-sm underline font-semibold text-blue-500 hover:text-red-500",
+          )}
+        >
+          {t("clear_selection")}
+        </button>
+      </div>
 
       <div className="flex items-center gap-4">
         <StatusChangeBtn

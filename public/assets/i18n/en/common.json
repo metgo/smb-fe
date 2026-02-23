@@ -84,6 +84,7 @@
   "action": "Action",
   "status": "Status",
   "selected": "Selected",
+  "clear_selection": "Clear Selection",
   "csv_export": "CSV Export",
   "pdf_export": "PDF Export",
   "free": "Free",

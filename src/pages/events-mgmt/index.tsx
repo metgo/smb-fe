@@ -459,6 +459,7 @@ export default function EventsMgmtPage() {
       <CreateEventWizard
         isOpen={isCreateWizardOpen}
         onClose={handleCreateWizardClose}
+        refetch={refetch}
       />
     </>
   );

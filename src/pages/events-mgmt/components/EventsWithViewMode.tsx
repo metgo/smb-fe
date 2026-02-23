@@ -759,6 +759,7 @@ export default function EventsWithViewMode({
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
         handleBulkDelete={handleBulkDelete}
+        hancleClearSelection={() => setSelectedEvents(new Set())}
       />
 
       {/* Controls */}
@@ -870,6 +871,7 @@ export default function EventsWithViewMode({
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}
+          refetch={refetch}
         />
       )}
     </div>

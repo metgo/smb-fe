@@ -226,41 +226,41 @@ export default function CreateProductWizard({
     setFormData({
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
-      name: product.name || "",
-      nameHe: product.nameHe || "",
-      nameAr: product.nameAr || "",
+      name: product?.name || "",
+      nameHe: product?.nameHe || "",
+      nameAr: product?.nameAr || "",
 
-      shortDescription: product.shortDescription || "",
-      shortDescriptionHe: product.shortDescriptionHe || "",
-      shortDescriptionAr: product.shortDescriptionAr || "",
+      shortDescription: product?.shortDescription || "",
+      shortDescriptionHe: product?.shortDescriptionHe || "",
+      shortDescriptionAr: product?.shortDescriptionAr || "",
 
-      fullDescription: product.fullDescription || "",
-      fullDescriptionHe: product.fullDescriptionHe || "",
-      fullDescriptionAr: product.fullDescriptionAr || "",
+      fullDescription: product?.description || "",
+      fullDescriptionHe: product?.descriptionHe || "",
+      fullDescriptionAr: product?.descriptionAr || "",
 
       // step-2: Attributes
-      categories: product.categories || [],
-      subCategories: product.subCategories || [],
+      categories: product?.categories || [],
+      subCategories: product?.subCategories || [],
       primaryCategory: product?.primaryCategoryId || "",
       tags: product?.tags || [],
 
       //step-3: pricing, stock & dates
-      markedPrice: product.price?.markedPrice || "",
-      sellingPrice: product.price?.sellingPrice || "",
-      quantity: product.quantity?.remaining || "",
-      isUnlimited: product.quantity?.isUnlimited || false,
+      markedPrice: product?.price?.markedPrice || "",
+      sellingPrice: product?.price?.sellingPrice || "",
+      quantity: product?.quantity?.remaining || "",
+      isUnlimited: product?.quantity?.isUnlimited || false,
 
-      startDate: product.startDate || "",
-      endDate: product.endDate || "",
+      startDate: product?.startDate || "",
+      endDate: product?.endDate || "",
 
       // setp-4: images
       images: product?.images || null,
-      additionalImages: product.additionalImages || [],
+      additionalImages: product?.additionalImages || [],
 
       // setp-5:  delivery / service
-      enableHomeDelivery: product.enableHomeDelivery || false,
-      enableStorePickup: product.enableStorePickup || false,
-      serviceDuration: product.serviceDuration || "",
+      enableHomeDelivery: product?.enableHomeDelivery || false,
+      enableStorePickup: product?.enableStorePickup || false,
+      serviceDuration: product?.serviceDuration || "",
 
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
@@ -417,7 +417,10 @@ export default function CreateProductWizard({
       // 4️⃣ Update product
       await updateProduct({
         productId: internalProductId || productId!,
-        body: payload,
+        body: {
+          ...payload,
+          status: isPublish ? "active" : "draft",
+        },
       }).unwrap();
 
       toast.success(isPublish ? tc("product_published") : tc("draft_saved"));
