@@ -95,6 +95,8 @@ export default function EventsWithViewMode({
   searchQuery,
 }: EventsWithViewModeProps) {
   const { t, i18n } = useTranslation("events");
+  const { t: tc } = useTranslation("toast");
+
   const language = i18n.language || "en";
   const navigate = useNavigate();
   const {
@@ -127,9 +129,7 @@ export default function EventsWithViewMode({
   const [getEventEditData] = useLazyGetEventByIdQuery();
 
   const handleEditEvent = async () => {
-    const toastId = toast.loading(
-      "Event's edit data fetching. Please wait....",
-    );
+    const toastId = toast.loading(tc("event_edit_data_fetching"));
     if (clickedEventData) {
       const eventDetails = await getEventEditData({
         eventId: clickedEventData?._id,
@@ -139,7 +139,7 @@ export default function EventsWithViewMode({
         setClickedEventData(null);
         setShowQuickViewModal(false);
         setEditData(eventDetails);
-        toast.success("Event details fetched", { id: toastId });
+        toast.success(tc("event_details_fetched"), { id: toastId });
         navigate(`?eventId=${clickedEventData?._id}`);
       }
     }
@@ -228,8 +228,8 @@ export default function EventsWithViewMode({
   };
 
   const handleEventDelete = async (eventId: string) => {
-    const res = await deleteEvent({ eventId });
-    toast.success(res?.data?.message || "Event deleted successfully");
+    await deleteEvent({ eventId });
+    toast.success(tc("event_deleted_success"));
     refetch();
   };
 
@@ -715,22 +715,20 @@ export default function EventsWithViewMode({
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedEvents.size) return;
-    const toastId = toast.loading(
-      "Please wait. Event's status are changing...",
-    );
+    const toastId = toast.loading(tc("event_status_change_loading"));
 
     try {
-      const results = await Promise.all(
+      await Promise.all(
         Array.from(selectedEvents).map((eventId: string) =>
           updateEvent({ eventId, body: { status: status?.toUpperCase() } }),
         ),
       );
-      const message = results[0]?.data?.message;
+      const message = tc("event_status_update_success");
       toast.success(message, { id: toastId });
       setSelectedEvents(new Set());
       refetch();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change events status", {
+      toast.error(tc("event_status_update_failed"), {
         id: toastId,
       });
     }
@@ -738,21 +736,20 @@ export default function EventsWithViewMode({
 
   const handleBulkDelete = async () => {
     if (!selectedEvents.size) return;
-    const toastId = toast.loading("Please wait. Events are deleting...");
+    const toastId = toast.loading(tc("event_delete_loading"));
     try {
-      const results = await Promise.all(
+      await Promise.all(
         Array.from(selectedEvents).map((eventId: string) =>
           deleteEvent({ eventId }),
         ),
       );
 
-      const message =
-        results[0]?.data?.message || "Events deleted successfully";
+      const message = tc("event_deleted_success");
       toast.success(message, { id: toastId });
       setSelectedEvents(new Set());
       refetch();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete events");
+      toast.error(tc("event_delete_failed"));
     }
   };
 
@@ -762,6 +759,7 @@ export default function EventsWithViewMode({
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
         handleBulkDelete={handleBulkDelete}
+        hancleClearSelection={() => setSelectedEvents(new Set())}
       />
 
       {/* Controls */}
@@ -873,6 +871,7 @@ export default function EventsWithViewMode({
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}
+          refetch={refetch}
         />
       )}
     </div>

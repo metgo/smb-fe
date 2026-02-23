@@ -58,6 +58,8 @@ export default function CreateProductWizard({
   product,
 }: ProductWizardProps) {
   const { t } = useTranslation("products");
+  const { t: tc } = useTranslation("toast");
+
   const [searchParams] = useSearchParams();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
@@ -101,8 +103,7 @@ export default function CreateProductWizard({
 
     return businessData?.data || [];
   }, [
-    product?.businessId?._id,
-    product?.businessId?.name,
+    product?.businessId,
     bzIdForProdCreate,
     businessName,
     businessData?.data,
@@ -217,7 +218,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId]);
+  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -225,41 +226,41 @@ export default function CreateProductWizard({
     setFormData({
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
-      name: product.name || "",
-      nameHe: product.nameHe || "",
-      nameAr: product.nameAr || "",
+      name: product?.name || "",
+      nameHe: product?.nameHe || "",
+      nameAr: product?.nameAr || "",
 
-      shortDescription: product.shortDescription || "",
-      shortDescriptionHe: product.shortDescriptionHe || "",
-      shortDescriptionAr: product.shortDescriptionAr || "",
+      shortDescription: product?.shortDescription || "",
+      shortDescriptionHe: product?.shortDescriptionHe || "",
+      shortDescriptionAr: product?.shortDescriptionAr || "",
 
-      fullDescription: product.fullDescription || "",
-      fullDescriptionHe: product.fullDescriptionHe || "",
-      fullDescriptionAr: product.fullDescriptionAr || "",
+      fullDescription: product?.description || "",
+      fullDescriptionHe: product?.descriptionHe || "",
+      fullDescriptionAr: product?.descriptionAr || "",
 
       // step-2: Attributes
-      categories: product.categories || [],
-      subCategories: product.subCategories || [],
+      categories: product?.categories || [],
+      subCategories: product?.subCategories || [],
       primaryCategory: product?.primaryCategoryId || "",
       tags: product?.tags || [],
 
       //step-3: pricing, stock & dates
-      markedPrice: product.price?.markedPrice || "",
-      sellingPrice: product.price?.sellingPrice || "",
-      quantity: product.quantity?.remaining || "",
-      isUnlimited: product.quantity?.isUnlimited || false,
+      markedPrice: product?.price?.markedPrice || "",
+      sellingPrice: product?.price?.sellingPrice || "",
+      quantity: product?.quantity?.remaining || "",
+      isUnlimited: product?.quantity?.isUnlimited || false,
 
-      startDate: product.startDate || "",
-      endDate: product.endDate || "",
+      startDate: product?.startDate || "",
+      endDate: product?.endDate || "",
 
       // setp-4: images
       images: product?.images || null,
-      additionalImages: product.additionalImages || [],
+      additionalImages: product?.additionalImages || [],
 
       // setp-5:  delivery / service
-      enableHomeDelivery: product.enableHomeDelivery || false,
-      enableStorePickup: product.enableStorePickup || false,
-      serviceDuration: product.serviceDuration || "",
+      enableHomeDelivery: product?.enableHomeDelivery || false,
+      enableStorePickup: product?.enableStorePickup || false,
+      serviceDuration: product?.serviceDuration || "",
 
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
@@ -352,7 +353,7 @@ export default function CreateProductWizard({
     await saveDraft(true);
     setIsPublishing(false);
 
-    toast.success(t("Product created succesfully"));
+    // toast.success(t("Product created succesfully"));
     refetch();
     onClose();
   };
@@ -414,17 +415,18 @@ export default function CreateProductWizard({
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
-      const res = await updateProduct({
+      await updateProduct({
         productId: internalProductId || productId!,
-        body: payload,
+        body: {
+          ...payload,
+          status: isPublish ? "active" : "draft",
+        },
       }).unwrap();
 
-      toast.success(
-        res?.message ?? (isPublish ? "Product published" : "Draft saved"),
-      );
+      toast.success(isPublish ? tc("product_published") : tc("draft_saved"));
     } catch (error: any) {
       // setIsSaving(false);
-      toast.error(error?.message || t("something_went_wrong"));
+      toast.error(tc("draft_failed"));
     }
   };
 

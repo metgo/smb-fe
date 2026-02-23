@@ -83,6 +83,8 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("toast");
+
   const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
     useThemeClasses();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -94,14 +96,14 @@ export default function BusinessesMgmtPage() {
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   //infinite scroll states
-  const [page, setPage] = useState<number>(1);
+  // const [page, setPage] = useState<number>(1);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">(
     (localStorage.getItem("businessViewMode") as "list" | "grid") ?? "list",
   );
 
   const [error, _setError] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
@@ -111,11 +113,47 @@ export default function BusinessesMgmtPage() {
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
 
+  // for setting filters to local storage
+  const STORAGE_KEY = "business_query_state";
+  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  // const hasSavedFilter =
+  //   savedState?.status !== "all" && savedState?.hasProductFilter !== "all";
   // Filters
   const [filters, setFilters] = useState({
-    status: "all",
-    hasProductFilter: "all",
+    status: savedState?.filters?.status || "all",
+    hasProductFilter: savedState?.filters?.hasProductFilter || "all",
   });
+  const hasSavedFilters =
+    filters?.hasProductFilter !== "all" || filters?.status !== "all";
+
+  const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
+
+  const [page, setPage] = useState(savedState?.page || 1);
+  // console.log("showFilters:", showFilters, "hasSavedFilter:", hasSavedFilter);
+
+  useEffect(() => {
+    const queryState = {
+      page,
+      filters,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+      websiteId,
+      language,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+  }, [
+    page,
+    filters,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+    websiteId,
+    language,
+  ]);
 
   const handleBusinessClick = (business: any) => {
     navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -134,6 +172,7 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
+
     const finalSearchTerm =
       localStorage.getItem("businessSearchTerm") ?? searchTerm;
     if (finalSearchTerm) params.search = finalSearchTerm;
@@ -159,10 +198,23 @@ export default function BusinessesMgmtPage() {
     websiteId,
   ]);
 
+  // Only append search, status, hasProductFilter to URL
+  useEffect(() => {
+    const urlParams: Record<string, any> = {};
+
+    if (queryParams.search) urlParams.search = queryParams.search;
+    if (queryParams.status) urlParams.status = queryParams.status;
+    if (queryParams.hasProductFilter !== undefined)
+      urlParams.hasProductFilter = queryParams.hasProductFilter;
+
+    const searchParams = new URLSearchParams(urlParams).toString();
+    navigate(`?${searchParams}`, { replace: true });
+  }, [queryParams, navigate]);
+
   const statsQueryParams = useMemo(() => {
     const { page, limit, locale, ...rest } = queryParams;
     return rest;
-  }, [queryParams, dmoId, authorityId, websiteId]);
+  }, [queryParams]);
 
   // Then call your query
   const { data: businessStatsData, isLoading: isStatsLoading } =
@@ -172,10 +224,12 @@ export default function BusinessesMgmtPage() {
     useBulkBusinessesUpdateMutation();
 
   const clearFilter = () => {
-    setFilters({
-      status: "all",
-      hasProductFilter: "all",
-    });
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("businessSearchTerm");
+
+    setFilters({ status: "all", hasProductFilter: "all" });
+    setSearchTerm("");
+    setPage(1);
   };
 
   // Column visibility - load from localStorage or use defaults
@@ -241,11 +295,11 @@ export default function BusinessesMgmtPage() {
         return [...prev, ...newItems];
       });
     }
-  }, [businesses]);
+  }, [businesses, page]);
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
-    setPage((prev) => {
+    setPage((prev: any) => {
       return prev + 1;
     });
   };
@@ -262,7 +316,7 @@ export default function BusinessesMgmtPage() {
   const handleBulkDelete = async () => {
     if (!selectedBusinesses.size) return;
     setIsConfirmOpen(true);
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
         businessesId: Array.from(selectedBusinesses),
@@ -270,13 +324,13 @@ export default function BusinessesMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Businesses deleted successfully";
+        const message = tc("business_deleted_success");
         toast.success(message, { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Businesses", {
+      toast.error(error?.message || tc("business_delete_failed"), {
         id: toastId,
       });
     }
@@ -284,9 +338,7 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedBusinesses.size) return;
-    const toastId = toast.loading(
-      "Please wait. Businesses's status are changing...",
-    );
+    const toastId = toast.loading(tc("business_status_change_loading"));
 
     try {
       const results = await bulkBusinessesUpdate({
@@ -295,13 +347,13 @@ export default function BusinessesMgmtPage() {
       });
 
       if (results?.data) {
-        const message = "Businesses status updated successfully";
+        const message = tc("business_status_update_success");
         toast.success(message, { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change Businesses status", {
+      toast.error(error?.message || tc("business_status_update_failed"), {
         id: toastId,
       });
     }
@@ -715,6 +767,7 @@ export default function BusinessesMgmtPage() {
               <Download className="w-5 h-5" />
               {t("export")}
             </button>
+
             <ViewModeToggle
               onChange={setViewMode}
               value={viewMode}
@@ -723,17 +776,18 @@ export default function BusinessesMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {showFilters && (
+          {(showFilters || hasSavedFilters) && (
             <div
-              className={` border-t ${
+              className={` border-t py-2 ${
                 isDark
                   ? "border-gray-800 bg-gray-900/30"
                   : "border-gray-200 bg-gray-50"
               }`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-4 mt-4">
+              {/* Active Filters Title */}
+              <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
                 {/* Status Filter */}
-                <div>
+                <div className="flex flex-col min-w-45">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -760,7 +814,7 @@ export default function BusinessesMgmtPage() {
                 </div>
 
                 {/* Has Products Filter */}
-                <div>
+                <div className="flex flex-col min-w-45">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -785,41 +839,62 @@ export default function BusinessesMgmtPage() {
                     <option value="no">{t("no")}</option>
                   </select>
                 </div>
-              </div>
-              <div className="flex items-center gap-4  pt-2">
-                <button
-                  onClick={clearFilter}
-                  className=" px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
-                >
-                  {t("clear_all")}
-                </button>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(filters).map(([key, value]) => {
-                    // Skip rendering empty filters
-                    if (!value || value === "all") return null;
 
-                    let displayValue = value;
-                    if (key === "status") {
-                      displayValue = t(value.toLowerCase()) || value;
-                    } else if (key === "hasProductFilter") {
-                      displayValue = value === "yes" ? t("yes") : t("no");
-                    }
+                {/* Active Filters Label + Chips */}
+                {(filters?.status !== "all" ||
+                  filters?.hasProductFilter !== "all") && (
+                  <div className="flex flex-col min-w-45">
+                    {/* Label inline with other filter labels */}
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("active_filters")}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      {" "}
+                      {/* Chips row */}
+                      <div className="flex flex-wrap gap-2 mb-2 mt-2">
+                        {Object.entries(filters).map(([key, value]) => {
+                          if (!value || value === "all") return null;
 
-                    return (
-                      <FilterChips
-                        key={key}
-                        label={displayValue}
-                        onRemove={() => {
+                          let displayValue = value;
                           if (key === "status") {
-                            setFilters((prev) => ({ ...prev, status: "all" }));
-                          } else {
-                            setFilters((prev) => ({ ...prev, [key]: "" }));
+                            displayValue = t(value.toLowerCase()) || value;
+                          } else if (key === "hasProductFilter") {
+                            displayValue = value === "yes" ? t("yes") : t("no");
                           }
-                        }}
-                      />
-                    );
-                  })}
-                </div>
+
+                          return (
+                            <FilterChips
+                              key={key}
+                              label={displayValue}
+                              onRemove={() => {
+                                if (key === "status") {
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    status: "all",
+                                  }));
+                                } else {
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    [key]: "all",
+                                  }));
+                                }
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                      {/* Clear All Button */}
+                      <button
+                        onClick={clearFilter}
+                        className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -828,6 +903,7 @@ export default function BusinessesMgmtPage() {
             selectedItemCount={selectedBusinesses.size || 0}
             handleBulkStatusChange={handleBulkStatusChange}
             handleBulkDelete={promptBulkDelete}
+            hancleClearSelection={() => setSelectedBusinesses(new Set())}
           />
         </div>
         <div className="flex-1 overflow-y-auto mt-2">

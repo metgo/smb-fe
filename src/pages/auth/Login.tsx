@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
 import { UserRole } from "@/enums/user.types";
+import { useTranslation } from "react-i18next";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
@@ -18,7 +19,7 @@ interface LoginProps {
 export function Login({ setCurrentTab }: LoginProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const { t } = useTranslation("toast");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error] = useState("");
@@ -43,7 +44,7 @@ export function Login({ setCurrentTab }: LoginProps) {
       }
       toast.success(`Welcome ${data.user.firstName} ${data.user.lastName}`);
     } catch (err: any) {
-      toast.error(err?.data?.message || "Login failed");
+      toast.error(err?.data?.message || t("login_failed"));
     }
   };
 
