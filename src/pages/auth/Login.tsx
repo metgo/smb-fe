@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { routes } from "@/lib/routes";
 import { useLoginMutation } from "@/store/api/authApi";
@@ -10,8 +11,8 @@ import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
 import { UserRole } from "@/enums/user.types";
 
-import { LanguageSelector } from "@/components/shared/LanguageSelector";
-import { useTranslation } from "react-i18next";
+import AuthInputField from "./AuthInputField";
+import AuthHeader from "./AuthHeader";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
@@ -21,11 +22,11 @@ export function Login({ setCurrentTab }: LoginProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation("login");
-
   const { t: tt } = useTranslation("toast");
+
+  const [error] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error] = useState("");
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,42 +60,29 @@ export function Login({ setCurrentTab }: LoginProps) {
     <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8 relative">
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
-          {/* Header */}
-          <div className="mb-6 flex justify-start ">
-            <LanguageSelector />
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl text-white mb-4 mt-20 ">{t("sign_in")}</h1>
-
-          {/* Subtitle */}
-          <p className="text-white/80 mb-8">
-            {t("no_account")}{" "}
-            <button
-              onClick={() => setCurrentTab("register")}
-              className="text-yellow-400 hover:text-yellow-300 transition-colors cursor-pointer"
-            >
-              {t("sign_up_here")}
-            </button>
-          </p>
+          <AuthHeader
+            title="sign_in"
+            desc="no_account"
+            btnText="sign_up_here"
+            handleCurrentTabChange={() => setCurrentTab("register")}
+          />
 
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Username/Email Input */}
-            <input
-              type="text"
-              placeholder={t("username_email")}
+            <AuthInputField
+              isRequired
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t("username_email")}
+              onChange={setUsername}
             />
 
             {/* Password Input */}
-            <input
+            <AuthInputField
+              isRequired
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={setPassword}
             />
 
             {/* Error Message */}

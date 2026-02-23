@@ -1,8 +1,10 @@
 import { toast } from "sonner";
 import { useState } from "react";
-import { useResetPasswordMutation } from "@/store/api/authApi";
 import { useTranslation } from "react-i18next";
-import { LanguageSelector } from "@/components/shared/LanguageSelector";
+
+import AuthHeader from "./AuthHeader";
+import { useResetPasswordMutation } from "@/store/api/authApi";
+import AuthInputField from "./AuthInputField";
 
 interface ResetPasswordProps {
   setCurrentTab: (v: string) => void;
@@ -48,39 +50,27 @@ export function ResetPassword({ setCurrentTab, token }: ResetPasswordProps) {
     <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
-          {/* Header */}
-          <div className="mb-6 flex justify-start">
-            <LanguageSelector />
-          </div>
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => setCurrentTab("otp")}
-              className="text-white hover:text-gray-300 text-2xl transition-colors"
-            >
-              {t("back")}
-            </button>
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl text-white mb-6">{t("reset_password")}</h1>
+          <AuthHeader
+            title="reset_password"
+            btnText="back"
+            handleCurrentTabChange={() => setCurrentTab("otp")}
+          />
 
           <form onSubmit={handleResetPassword} className="space-y-6">
-            <input
+            <AuthInputField
+              isRequired
               type="password"
               placeholder={t("new_password")}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl"
-              required
+              onChange={setPassword}
             />
 
-            <input
+            <AuthInputField
+              isRequired
               type="password"
               placeholder={t("confirm_password")}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl"
-              required
+              onChange={setConfirmPassword}
             />
 
             <button

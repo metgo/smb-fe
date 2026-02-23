@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Login } from "./Login";
-import { Signup } from "./Signup";
 import { ForgotPassword } from "./ForgotPassword";
 import { EnterOtp } from "./EnterOtp";
 import { ResetPassword } from "./ResetPassword";
+import { Signup } from "./Signup";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const AuthPage = () => {
+  const { isRTL } = useThemeClasses();
   const [currentTab, setCurrentTab] = useState("login");
   const [otpToken, setOtpToken] = useState<string | null>(null);
 
   return (
-    <div className="relative min-h-screen ">
+    <div className="relative min-h-screen " dir={isRTL ? "rtl" : "ltr"}>
       {/* Auth Forms */}
       {currentTab === "login" ? (
         <Login setCurrentTab={setCurrentTab} />
