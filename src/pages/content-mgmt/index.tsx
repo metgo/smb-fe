@@ -3,31 +3,18 @@ import { mockBusinesses } from "@/helpers/mockBusinesses";
 import {
   Search,
   Plus,
-  Grid3x3,
-  List,
-  Filter,
   X,
   ChevronDown,
   Edit2,
   Check,
   MoreVertical,
   Trash2,
-  FolderPlus,
   Send,
   Badge,
 } from "lucide-react";
 import FilterChips from "@/components/shared/FilterChips";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-//   DropdownMenuSeparator,
-// } from "@/components/ui/dropdown-menu";
 
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Badge } from "@/components/ui/badge";
 
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -43,6 +30,8 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { useCommon } from "@/hooks/useCommon";
+import ContentGridView from "./components/sub-components/ContentGridView";
+import ContentListView from "./components/sub-components/ContentListView";
 
 // ───────────────────────────────────────────────
 //  Types
@@ -98,12 +87,8 @@ const useLanguage = () => ({
   t: {
     contentManager: "Content Manager",
   },
-  isRTL: false, // ← toggle based on real language
+  isRTL: false,
 });
-
-// ───────────────────────────────────────────────
-//  Layout placeholders (replace with your real components)
-// ───────────────────────────────────────────────
 
 // ───────────────────────────────────────────────
 //  Draggable Business Card
@@ -114,10 +99,11 @@ function DraggableBusinessCard({
   isSelected,
   onSelect,
   onRemove,
-  categories,
+  // categories,
   viewMode,
   isInCategory = false,
   selectedIds,
+  // onAddToCategory,
 }: {
   business: any;
   isSelected: boolean;
@@ -129,10 +115,9 @@ function DraggableBusinessCard({
   isInCategory?: boolean;
   selectedIds: Set<string>;
 }) {
-  const { isRTL } = useLanguage();
-
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.BUSINESS_CARD,
+    canDrag: !isInCategory,
     item: () => {
       if (isSelected && selectedIds.size > 0) {
         return {
@@ -157,126 +142,69 @@ function DraggableBusinessCard({
     onSelect(business.id, isMulti);
   };
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = () => {
     if (!isSelected) {
       onSelect(business.id, false);
     }
   };
 
-  const availableCategories = categories.filter(
-    (cat) => !cat.businessIds.includes(business.id),
-  );
+  // const availableCategories = categories.filter(
+  //   (cat) => !cat.businessIds.includes(business.id),
+  // );
+
+  // ────────────────────────────────────────────────
+  // Common shared parts
+  // ────────────────────────────────────────────────
+
+  const selectionClasses = isSelected
+    ? "bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700 ring-2 ring-rose-400/50"
+    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600";
+
+  const draggingClasses = isDragging ? "opacity-50" : "opacity-100";
+
+  const baseClasses = `
+    cursor-pointer transition-all border
+    ${draggingClasses}
+    ${selectionClasses}
+  `;
+
+  const logoSrc = business?.logo?.image;
+  const logoAlt = business?.name;
+  const primaryCategory = business?.primaryCategoryId;
 
   if (viewMode === "list") {
     return (
-      <div
-        ref={drag}
-        onClick={handleClick}
-        onContextMenu={handleContextMenu}
-        className={`
-          flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all
-          ${isDragging ? "opacity-50" : "opacity-100"}
-          ${
-            isSelected
-              ? "bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700 ring-2 ring-rose-400/50"
-              : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-          }
-        `}
-      >
-        <div className="flex-shrink-0">
-          <img
-            src={business?.logo?.image}
-            alt={business?.name}
-            className="w-12 h-12 rounded-lg object-cover"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-            {business.name}
-          </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-            {business.shortDescription}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {business?.categories?.slice(0, 2).map((cat, idx) => (
-            <Badge key={idx} className="text-xs">
-              {cat}
-            </Badge>
-          ))}
-          {isInCategory && onRemove && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove?.(business.id);
-              }}
-              className="opacity-0 group-hover:opacity-100"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      </div>
+      <ContentListView
+        drag={drag}
+        handleClick={handleClick}
+        handleContextMenu={handleContextMenu}
+        baseClasses={baseClasses}
+        logoSrc={logoSrc}
+        logoAlt={logoAlt}
+        business={business}
+        primaryCategory={primaryCategory}
+        isInCategory={isInCategory}
+        onRemove={onRemove}
+      />
     );
   }
 
-  // Grid view
+  // Default: grid view
   return (
-    <div
-      ref={drag}
-      onClick={handleClick}
-      onContextMenu={handleContextMenu}
-      className={`
-        group rounded-lg border overflow-hidden cursor-pointer transition-all w-full
-        ${isDragging ? "opacity-50" : "opacity-100"}
-        ${
-          isSelected
-            ? "bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-700 ring-2 ring-rose-400/50"
-            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-        }
-      `}
-    >
-      <div className="relative aspect-video">
-        <img
-          src={business?.logo?.image}
-          alt={business?.name}
-          className="w-full h-full object-cover"
-        />
-        {isInCategory && onRemove && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove?.(business?._id);
-            }}
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-      <div className="p-3">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
-          {business.name}
-        </h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
-          {business.shortDescription}
-        </p>
-        <div className="flex flex-wrap gap-1">
-          {business?.categories?.slice(0, 2).map((cat, idx) => (
-            <Badge key={idx} variant="secondary" className="text-xs">
-              {cat}
-            </Badge>
-          ))}
-        </div>
-      </div>
-    </div>
+    <ContentGridView
+      drag={drag}
+      handleClick={handleClick}
+      handleContextMenu={handleContextMenu}
+      baseClasses={baseClasses}
+      logoSrc={logoSrc}
+      logoAlt={logoAlt}
+      isInCategory={isInCategory}
+      onRemove={onRemove}
+      business={business}
+      primaryCategory={primaryCategory}
+    />
   );
 }
-
 // ───────────────────────────────────────────────
 //  Category Section
 // ───────────────────────────────────────────────
@@ -291,7 +219,6 @@ function CategorySection({
   onAddToCategory,
   onRename,
   onDelete,
-  viewMode,
   onClearSelection,
 }: {
   category: Category;
@@ -361,6 +288,7 @@ function CategorySection({
   const categoryBusinesses = businesses?.filter((b) =>
     category?.businessIds?.includes(b.id),
   );
+  console.log("🚀 ~ CategorySection ~ categoryBusinesses:", categoryBusinesses);
 
   return (
     <div
@@ -423,7 +351,7 @@ function CategorySection({
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {category.name}
               </h3>
-              <Badge variant="secondary">{categoryBusinesses?.length}</Badge>
+              <Badge>{categoryBusinesses?.length}</Badge>
             </>
           )}
         </div>
@@ -480,8 +408,8 @@ function CategorySection({
             </div>
           ) : (
             <div className="relative">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-4">
-                <div className="flex gap-4 min-w-max">
+              <div className="overflow-x-auto max-w-[98vw]">
+                <div className="flex gap-4 ">
                   {categoryBusinesses?.map((business) => (
                     <div key={business.id} className="w-64 flex-shrink-0">
                       <DraggableBusinessCard
@@ -513,10 +441,7 @@ function CategorySection({
 
 export default function ContentMgmtPage({
   language,
-  setLanguage,
   theme,
-  setTheme,
-  onNavigate,
 }: ContentMgmtPageProps) {
   const { isRTL } = useLanguage();
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
@@ -544,7 +469,7 @@ export default function ContentMgmtPage({
     setSearchQuery("");
     setPage(1);
   };
-  const { isDark, bgSecondary, borderColor, textSecondary } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -594,25 +519,18 @@ export default function ContentMgmtPage({
   const {
     data: businessData,
     isLoading: isBusinessLoading,
-    isFetching,
-    refetch,
+    // isFetching,
+    // refetch,
   } = useGetAllbusinessesQuery(queryParams);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedAuthority, setSelectedAuthority] = useState("all");
-  const [selectedWebsite, setSelectedWebsite] = useState("all");
-  const [dateRange, setDateRange] = useState("last30days");
-  const {
-    categories: categoryFilter,
-    accessibility,
-    groupTypes,
-    subCategories,
-  } = useCommon();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const { categories: categoryFilter, accessibility, groupTypes } = useCommon();
+
+  const [viewMode, setViewMode] = useState<"list" | "grid">(
+    (localStorage.getItem("contentViewMode") as "list" | "grid") ?? "list",
+  );
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedDMO, setSelectedDMO] = useState<string[]>([]);
-  const [selectedAuthorities, setSelectedAuthorities] = useState<string[]>([]);
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
@@ -658,30 +576,17 @@ export default function ContentMgmtPage({
     }
   }, [categories]);
 
-  const backlogBusinesses = () => {
+  const backlogBusinesses = useMemo(() => {
     return businessData?.data?.filter((business: any) => {
-      // Search query filter
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (
-          !business.name.toLowerCase().includes(q) &&
-          !business.shortDescription.toLowerCase().includes(q)
-        ) {
-          return false;
-        }
-      }
-
-      // Category filter
       if (selectedCategories?.length > 0) {
         const hasCat = business.categories?.some((c) =>
-          selectedCategories.includes(c),
+          selectedCategories?.includes(c),
         );
         if (!hasCat) return false;
       }
-
       return true;
     });
-  };
+  }, [selectedCategories, businessData?.data]);
 
   const handleSelectBacklog = (id: string, isMulti: boolean) => {
     setSelectedBacklogIds((prev) => {
@@ -820,7 +725,7 @@ export default function ContentMgmtPage({
             <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  {t.contentManager || "Content Manager"}
+                  {"Content Manager"}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
                   Organize businesses into custom categories for your website
@@ -856,10 +761,11 @@ export default function ContentMgmtPage({
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {/* Source Backlog */}
-                <div>
+            <div className="flex">
+              {/* Source Backlog */}
+
+              <div className="flex-1 max-h-[98vh] overflow-y-auto p-6">
+                <div className="">
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                       Source Backlog
@@ -888,7 +794,7 @@ export default function ContentMgmtPage({
                       <ViewModeToggle
                         onChange={setViewMode}
                         value={viewMode}
-                        tableName="businessViewMode"
+                        tableName="contentViewMode"
                       />
                     </div>
 
@@ -903,151 +809,157 @@ export default function ContentMgmtPage({
                       >
                         {/* Active Filters Title */}
                         <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
-                          {/* Status Filter */}
-                          <div className="flex flex-col min-w-45">
-                            <label
-                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              {t("status")}
-                            </label>
-                            <select
-                              value={filters.status}
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  status: e.target.value,
-                                })
-                              }
-                              className={`w-full px-3 py-2 rounded-lg border ${
-                                isDark
-                                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                                  : "bg-white border-gray-300 text-gray-900"
-                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                            >
-                              <option value="all">{t("all")}</option>
-                              <option value="DRAFT">{t("draft")}</option>
-                              <option value="PENDING">{t("pending")}</option>
-                              <option value="APPROVED">{t("approved")}</option>
-                              <option value="REJECTED">{t("rejected")}</option>
-                              <option value="CLOSED">{t("closed")}</option>
-                            </select>
-                          </div>
-
-                          {/* Has Products Filter */}
-                          <div className="flex flex-col min-w-45">
-                            <label
-                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              {t("has_products")}
-                            </label>
-                            <select
-                              value={filters.hasProductFilter}
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  hasProductFilter: e.target.value,
-                                })
-                              }
-                              className={`w-full px-3 py-2 rounded-lg border ${
-                                isDark
-                                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                                  : "bg-white border-gray-300 text-gray-900"
-                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                            >
-                              <option value="all">{t("all")}</option>
-                              <option value="yes">{t("yes")}</option>
-                              <option value="no">{t("no")}</option>
-                            </select>
-                          </div>
-
-                          {/* Category Filter */}
-                          <div className="flex flex-col min-w-45">
-                            <label
-                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              {t("primary_category")}
-                            </label>
-                            <select
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  primaryCategory: e.target.value,
-                                })
-                              }
-                              value={filters.primaryCategory}
-                              className={`w-full px-3 py-2 rounded-lg border ${
-                                isDark
-                                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                                  : "bg-white border-gray-300 text-gray-900"
-                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                            >
-                              <option value="">{t("all")}</option>
-                              {categoryFilter?.map((cat: any) => (
-                                <option key={cat._id} value={cat._id}>
-                                  {cat.name}
+                          <div className="grid grid-cols-3 gap-2">
+                            {/* Status Filter */}
+                            <div className="flex flex-col min-w-45">
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("status")}
+                              </label>
+                              <select
+                                value={filters.status}
+                                onChange={(e) =>
+                                  setFilters({
+                                    ...filters,
+                                    status: e.target.value,
+                                  })
+                                }
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDark
+                                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                                    : "bg-white border-gray-300 text-gray-900"
+                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                              >
+                                <option value="all">{t("all")}</option>
+                                <option value="DRAFT">{t("draft")}</option>
+                                <option value="PENDING">{t("pending")}</option>
+                                <option value="APPROVED">
+                                  {t("approved")}
                                 </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Accessibility Filter */}
-                          <div className="flex flex-col min-w-45">
-                            <label
-                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              {t("accessibility")}
-                            </label>
-                            <select
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  accessibility: e.target.value,
-                                })
-                              }
-                              value={filters.accessibility}
-                              className={`w-full px-3 py-2 rounded-lg border ${
-                                isDark
-                                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                                  : "bg-white border-gray-300 text-gray-900"
-                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                            >
-                              <option value="">{t("all")}</option>
-                              {accessibility?.map((cat: any) => (
-                                <option key={cat._id} value={cat._id}>
-                                  {cat.name}
+                                <option value="REJECTED">
+                                  {t("rejected")}
                                 </option>
-                              ))}
-                            </select>
-                          </div>
+                                <option value="CLOSED">{t("closed")}</option>
+                              </select>
+                            </div>
 
-                          {/* Group Types Filter */}
-                          <div className="flex flex-col min-w-45">
-                            <label
-                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                            >
-                              {t("group_types")}
-                            </label>
-                            <select
-                              onChange={(e) =>
-                                setFilters({
-                                  ...filters,
-                                  groupTypes: e.target.value,
-                                })
-                              }
-                              value={filters.groupTypes}
-                              className={`w-full px-3 py-2 rounded-lg border ${
-                                isDark
-                                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                                  : "bg-white border-gray-300 text-gray-900"
-                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                            >
-                              <option value="">{t("all")}</option>
-                              {groupTypes?.map((cat: any) => (
-                                <option key={cat._id} value={cat._id}>
-                                  {cat.name}
-                                </option>
-                              ))}
-                            </select>
+                            {/* Has Products Filter */}
+                            <div className="flex flex-col min-w-45">
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("has_products")}
+                              </label>
+                              <select
+                                value={filters.hasProductFilter}
+                                onChange={(e) =>
+                                  setFilters({
+                                    ...filters,
+                                    hasProductFilter: e.target.value,
+                                  })
+                                }
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDark
+                                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                                    : "bg-white border-gray-300 text-gray-900"
+                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                              >
+                                <option value="all">{t("all")}</option>
+                                <option value="yes">{t("yes")}</option>
+                                <option value="no">{t("no")}</option>
+                              </select>
+                            </div>
+
+                            {/* Category Filter */}
+                            <div className="flex flex-col min-w-45">
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("primary_category")}
+                              </label>
+                              <select
+                                onChange={(e) =>
+                                  setFilters({
+                                    ...filters,
+                                    primaryCategory: e.target.value,
+                                  })
+                                }
+                                value={filters.primaryCategory}
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDark
+                                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                                    : "bg-white border-gray-300 text-gray-900"
+                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                              >
+                                <option value="">{t("all")}</option>
+                                {categoryFilter?.map((cat: any) => (
+                                  <option key={cat._id} value={cat._id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Accessibility Filter */}
+                            <div className="flex flex-col min-w-45">
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("accessibility")}
+                              </label>
+                              <select
+                                onChange={(e) =>
+                                  setFilters({
+                                    ...filters,
+                                    accessibility: e.target.value,
+                                  })
+                                }
+                                value={filters.accessibility}
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDark
+                                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                                    : "bg-white border-gray-300 text-gray-900"
+                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                              >
+                                <option value="">{t("all")}</option>
+                                {accessibility?.map((cat: any) => (
+                                  <option key={cat._id} value={cat._id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Group Types Filter */}
+                            <div className="flex flex-col min-w-45">
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("group_types")}
+                              </label>
+                              <select
+                                onChange={(e) =>
+                                  setFilters({
+                                    ...filters,
+                                    groupTypes: e.target.value,
+                                  })
+                                }
+                                value={filters.groupTypes}
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDark
+                                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                                    : "bg-white border-gray-300 text-gray-900"
+                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                              >
+                                <option value="">{t("all")}</option>
+                                {groupTypes?.map((cat: any) => (
+                                  <option key={cat._id} value={cat._id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
 
                           {/* Active Filters Label + Chips */}
@@ -1171,7 +1083,7 @@ export default function ContentMgmtPage({
                     }
                   >
                     {isBusinessLoading ? (
-                      <div>no business</div>
+                      <div>{t("no_business")}</div>
                     ) : (
                       businessData?.data?.map((business: any) => (
                         <DraggableBusinessCard
@@ -1188,8 +1100,9 @@ export default function ContentMgmtPage({
                     )}
                   </div>
                 </div>
-
-                {/* Custom Categories */}
+              </div>
+              {/* Custom Categories */}
+              <div className="flex-1 max-h-[96vh] overflow-y-auto p-6">
                 <div>
                   <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -1205,7 +1118,7 @@ export default function ContentMgmtPage({
                         ? "All Websites"
                         : selectedCategoryWebsite}
                     </Button>
-                    All Websites Negev Sites
+                    {/* All Websites Negev Sites */}
                     {/* Add more */}
                   </div>
 
@@ -1232,7 +1145,7 @@ export default function ContentMgmtPage({
                       <CategorySection
                         key={category.id}
                         category={category}
-                        businesses={backlogBusinesses}
+                        businesses={businessData?.data}
                         selectedIds={new Set()}
                         onSelect={() => {}}
                         onRemove={(id) =>
@@ -1266,14 +1179,12 @@ export default function ContentMgmtPage({
           onClose={() => setShowMessageComposer(false)}
           recipientCount={selectedBacklogIds.size}
           onSend={handleSendMessage}
-          theme={theme}
         />
 
         <SendResultsModal
           isOpen={showSendResults}
           onClose={() => setShowSendResults(false)}
           results={sendResults}
-          theme={theme}
         />
       </div>
     </DndProvider>

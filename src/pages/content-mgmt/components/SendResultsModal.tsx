@@ -15,7 +15,7 @@ interface SendResultsModalProps {
   isOpen: boolean;
   onClose: () => void;
   results: SendResult[];
-  theme: "light" | "dark";
+  theme?: "light" | "dark";
 }
 
 export function SendResultsModal({

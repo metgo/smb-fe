@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   X,
   Send,
@@ -19,7 +19,7 @@ interface MessageComposerModalProps {
   onClose: () => void;
   recipientCount: number;
   onSend: (data: MessageData) => void;
-  theme: "light" | "dark";
+  theme?: "light" | "dark";
 }
 
 export interface MessageData {
