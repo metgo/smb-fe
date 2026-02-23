@@ -44,6 +44,7 @@ import { formatILS } from "@/helpers/formatter";
 import { skipToken } from "@reduxjs/toolkit/query";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
+import { FilterByStatus } from "@/components/filter-fields";
 
 const LIMIT = 20;
 const defaultColumns = {
@@ -76,9 +77,8 @@ const columnDefinitions = [
 
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
-  const { t: tb } = useTranslation("businesses");
-
   const { t: tc } = useTranslation("toast");
+  const { t: tb } = useTranslation("businesses");
 
   const navigate = useNavigate();
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
@@ -564,33 +564,7 @@ export default function ProductsMgmtPage() {
               className={` rounded-md border p-2 ${borderColor} ${bgPrimary}`}
             >
               <div className="flex gap-4 items-start w-full">
-                {/* Status Filter */}
-                <div className="flex flex-col min-w-45">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("filter_by_status")}
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        status: e.target.value,
-                      }))
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="draft">{t("draft")}</option>
-                    <option value="active">{t("active")}</option>
-                    <option value="inactive">{t("inactive")}</option>
-                  </select>
-                </div>
+                <FilterByStatus filters={filters} setFilters={setFilters} />
 
                 {/* Business Filter */}
                 {!businessId && (
@@ -686,7 +660,6 @@ export default function ProductsMgmtPage() {
           {/* Bulk Actions */}
           {selectedProducts?.size > 0 && (
             <BulkActionBar
-              isProduct
               selectedItemCount={selectedProducts?.size || 0}
               handleBulkStatusChange={handleBulkStatusChange}
               handleBulkDelete={promptBulkDelete}

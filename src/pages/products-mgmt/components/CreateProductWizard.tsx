@@ -42,6 +42,8 @@ import {
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { removeNulls } from "@/helpers";
+import { ItemStatus } from "@/enums/status.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -61,6 +63,7 @@ export default function CreateProductWizard({
   const { t: tc } = useTranslation("toast");
 
   const [searchParams] = useSearchParams();
+  const { isTraveller } = useUserRoles();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
@@ -419,7 +422,11 @@ export default function CreateProductWizard({
         productId: internalProductId || productId!,
         body: {
           ...payload,
-          status: isPublish ? "active" : "draft",
+          status: isPublish
+            ? isTraveller
+              ? ItemStatus.PENDING
+              : ItemStatus.APPROVED
+            : ItemStatus.DRAFT,
         },
       }).unwrap();
 
