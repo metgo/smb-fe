@@ -20,6 +20,7 @@ import {
   EventDetailsPage,
   BusinessDetailsPage,
   ProductDetailsPage,
+  ErrorUiPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
@@ -121,6 +122,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
+      errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
 
@@ -149,6 +151,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
+      errorElement: <ErrorUiPage />,
       children: [
         { path: routes.auth, element: <AuthPage /> },
         { path: "/test-lab", element: <TestLabPage /> },

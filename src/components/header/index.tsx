@@ -18,18 +18,14 @@ import {
 } from "@/features/authSlice";
 import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { locales } from "@/lib/utils";
 
 export default function Header() {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const { t, i18n } = useTranslation("common");
 
-  const {
-    languages,
-    allWebsites,
-    dateRanges: timeframes,
-    dmosAuthorities,
-  } = useCommon();
+  const { allWebsites, dateRanges: timeframes, dmosAuthorities } = useCommon();
   const { language } = useAppSelector((state) => state.settings);
   const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
@@ -201,7 +197,7 @@ export default function Header() {
                   selectInputClasses,
                 )}
               >
-                {languages.map((lang) => (
+                {locales.map((lang) => (
                   <option key={lang.value} value={lang.value}>
                     {lang.label}
                   </option>

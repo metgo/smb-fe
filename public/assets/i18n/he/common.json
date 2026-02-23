@@ -147,6 +147,11 @@
   "download_pdf": "הורד PDF",
   "download_csv": "הורד CSV",
 
+  "error_title": "אוי לא, משהו השתבש!",
+  "error_description": "אירעה שגיאה בלתי צפויה. אנא נסו שוב מאוחר יותר או פנו לתמיכה אם הבעיה נמשכת.",
+  "go_back_home": "חזרה לדף הבית",
+  "reload_page": "טען מחדש את הדף",
+
   "overview": "סקירה כללית",
   "date_time": "תאריך ושעה",
   "location_map": "מיקום ומפה",
