@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Plus, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -74,12 +74,12 @@ const ProductMedia: FC<ProductMediaProps> = ({
 
               {/* Upload progress */}
               {img.status === "uploading" && (
-                <div className="absolute bottom-16 left-0 w-full flex items-center px-2 z-20">
-                  <div
-                    className="bg-white h-1 rounded transition-all"
-                    style={{ width: `${img.progress}%` }}
-                  />
-                  <span className="ml-2 text-green-600 text-xs font-bold">
+                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center">
+                  {/* Circular loader */}
+                  <Loader2 className="w-16 h-16 text-white animate-spin" />
+
+                  {/* Progress text */}
+                  <span className="mt-2 text-white font-bold text-xs">
                     {img.progress}%
                   </span>
                 </div>

@@ -191,12 +191,12 @@ export default function ProductDetailsPage() {
           isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
         } border-b`}
       >
-        <div className="max-w-full mx-auto px-6 py-4">
+        <div className="max-w-full mx-auto px-6 py-2">
           <div className={clsx("flex items-center justify-between mb-4")}>
             <button
               onClick={() => navigate(routes.productsMgmt)}
               className={clsx(
-                "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-2 py-2 rounded-lg transition-colors",
                 isDark
                   ? "hover:bg-gray-800 text-gray-300"
                   : "hover:bg-gray-100 text-gray-700",
@@ -270,7 +270,7 @@ export default function ProductDetailsPage() {
         <PageStats
           stats={salesStats}
           isLoading={isStatsLoading}
-          className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 md:p-4 lg:p-8`}
+          className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 px-4`}
         />
 
         <TabsSection

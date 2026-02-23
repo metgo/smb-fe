@@ -2,8 +2,8 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Loader, Package } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { routes } from "@/lib/routes";
 import { getPlainTextFromRichText } from "@/helpers";
@@ -154,18 +154,20 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                 className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                {selectedProducts && (
-                  <Checkbox
-                    checked={selectedProducts?.has(product._id) ?? false}
-                    onCheckedChange={() => toggleCheckBox(product)}
-                    className={`cursor-pointer border transition-colors ${
-                      isDark
-                        ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                        : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
-                    }`}
-                  />
-                )}
-                <div>{getStatusBadge(product?.status)}</div>
+                <div className="flex items-center gap-2">
+                  {selectedProducts && (
+                    <Checkbox
+                      checked={selectedProducts?.has(product._id) ?? false}
+                      onCheckedChange={() => toggleCheckBox(product)}
+                      className={`cursor-pointer border transition-colors ${
+                        isDark
+                          ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                          : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                      }`}
+                    />
+                  )}
+                  <div>{getStatusBadge(product?.status)}</div>
+                </div>
 
                 <div className="flex items-center gap-2">
                   {handleEditClick && (

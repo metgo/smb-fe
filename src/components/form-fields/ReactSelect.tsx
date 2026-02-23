@@ -24,6 +24,12 @@ type Props = {
   isClearable?: boolean;
   isDisabled?: boolean;
   minWidth?: number;
+
+  logoSize?: {
+    width: number;
+    height: number;
+  };
+  optionGap?: number;
 };
 
 export default function ReactSelect({
@@ -36,6 +42,8 @@ export default function ReactSelect({
   isDisabled = false,
   isLoading = false,
   onSearch,
+  logoSize = { width: 40, height: 30 },
+  optionGap = 4,
 }: Props) {
   const { isDark } = useThemeClasses();
 
@@ -145,12 +153,16 @@ export default function ReactSelect({
         }),
       }}
       formatOptionLabel={(option: ItemOption) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: optionGap }}>
           {option.logo && (
             <ImageWithFallback
               src={option.logo}
               alt={option.label}
-              style={{ width: 40, height: 30, objectFit: "contain" }}
+              style={{
+                width: logoSize.width,
+                height: logoSize.height,
+                objectFit: "contain",
+              }}
             />
           )}
           <span className="font-semibold">{option.label}</span>

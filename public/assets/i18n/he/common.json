@@ -21,6 +21,7 @@
   "address": "כתובת",
   "no_data": "אין נתונים זמינים",
   "not_found": "לא נמצא",
+  "logo": "לוגו",
   "add": "הוסף",
   "cancel": "בטל",
   "city": "עיר",
@@ -86,6 +87,7 @@
   "action": "פעולה",
   "status": "סטטוס",
   "selected": "נבחרו",
+  "clear_selection": "נקה בחירה",
   "csv_export": "ייצוא CSV",
   "pdf_export": "ייצוא PDF",
   "free": "חינם",
@@ -144,6 +146,11 @@
 
   "download_pdf": "הורד PDF",
   "download_csv": "הורד CSV",
+
+  "error_title": "אוי לא, משהו השתבש!",
+  "error_description": "אירעה שגיאה בלתי צפויה. אנא נסו שוב מאוחר יותר או פנו לתמיכה אם הבעיה נמשכת.",
+  "go_back_home": "חזרה לדף הבית",
+  "reload_page": "טען מחדש את הדף",
 
   "overview": "סקירה כללית",
   "date_time": "תאריך ושעה",

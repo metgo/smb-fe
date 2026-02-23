@@ -16,6 +16,7 @@
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
   "users": "المستخدمون",
+  "points_of_interest": "نقاط الاهتمام",
   "delete_business": "حذف العمل التجاري",
   "delete_business_confirm": "تأكيد حذف العمل التجاري؟",
   "edit_location": "تعديل الموقع",
@@ -24,6 +25,7 @@
   "address": "العنوان",
   "no_data": "لا توجد بيانات",
   "not_found": "غير موجود",
+  "logo": "الشعار",
   "add": "إضافة",
   "cancel": "إلغاء",
   "city": "المدينة",
@@ -84,6 +86,7 @@
   "action": "الإجراء",
   "status": "الحالة",
   "selected": "محدد",
+  "clear_selection": "مسح التحديد",
   "csv_export": "تصدير CSV",
   "pdf_export": "تصدير PDF",
   "free": "مجاني",
@@ -142,6 +145,11 @@
 
   "download_pdf": "تحميل PDF",
   "download_csv": "تحميل CSV",
+
+  "error_title": "عذرًا، حدث خطأ ما!",
+  "error_description": "حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
+  "go_back_home": "العودة إلى الصفحة الرئيسية",
+  "reload_page": "إعادة تحميل الصفحة",
 
   "overview": "نظرة عامة",
   "date_time": "التاريخ والوقت",

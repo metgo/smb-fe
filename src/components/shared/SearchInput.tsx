@@ -64,7 +64,10 @@ const SearchInput: React.FC<SearchInputProps> = ({
               ? "text-gray-400 hover:text-gray-200"
               : "text-gray-500 hover:text-black"
           }`}
-          onClick={() => setInputValue("")}
+          onClick={() => {
+            setInputValue("");
+            localStorage.removeItem(STORAGE_KEY);
+          }}
           size={20}
         />
       )}
