@@ -12,6 +12,9 @@ export const routes = {
 
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
+
+  contentMgmt: "/content-management",
+
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
 

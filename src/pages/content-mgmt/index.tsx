@@ -52,7 +52,7 @@ import {
 } from "./components/MessageComposerModal";
 import { SendResultsModal, SendResult } from "./components/SendResultsModal";
 
-interface ContentManagerProps {
+interface ContentMgmtPageProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   theme: Theme;
@@ -550,13 +550,13 @@ function CategorySection({
   );
 }
 
-function ContentManager({
+function ContentMgmtPage({
   language,
   setLanguage,
   theme,
   setTheme,
   onNavigate,
-}: ContentManagerProps) {
+}: ContentMgmtPageProps) {
   const { t, isRTL } = useLanguage();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -1354,4 +1354,4 @@ function ContentManager({
   );
 }
 
-export default ContentManager;
+export default ContentMgmtPage;

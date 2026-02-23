@@ -26,6 +26,7 @@ import {
   Users,
   File,
   UserCircle,
+  CopyCheck,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -149,7 +150,7 @@ export default function Sidebar() {
       path: routes.dashboard,
       label: t("site_management") || "Site Management",
       icon: Globe,
-      isEnabled: false,
+      isEnabled: true,
       subItems: [
         {
           id: "home",
@@ -157,6 +158,13 @@ export default function Sidebar() {
           label: t("home") || "Home",
           icon: Home,
           isEnabled: false,
+        },
+        {
+          id: "content-mgmt",
+          path: routes.contentMgmt,
+          label: t("content-mgmt") || "Content Management",
+          icon: CopyCheck,
+          isEnabled: true,
         },
         {
           id: "promotions",

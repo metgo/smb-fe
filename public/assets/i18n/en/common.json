@@ -21,6 +21,7 @@
   "products": "Products",
   "businesses": "Businesses",
   "users": "Users",
+  "content-mgmt": "Content Management",
   "delete_business": "Delete Business",
   "delete_business_confirm": "Confirm Delete Business?",
   "edit_location": "Edit Location",
