@@ -1,7 +1,6 @@
 import React from "react";
 import { X, Download, CheckCircle, XCircle, AlertCircle } from "lucide-react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
+import { Button } from "@/components/ui/button";
 
 export interface SendResult {
   customerId: string;

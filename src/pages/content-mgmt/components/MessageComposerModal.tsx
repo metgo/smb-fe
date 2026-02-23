@@ -7,10 +7,12 @@ import {
   TestTube,
   Plus,
   Save,
+  Badge,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
+import { Button } from "@/components/ui/button";
+// import { Button } from "./ui/button";
+// import { Input } from "./ui/input";
+// import { Badge } from "./ui/badge";
 
 interface MessageComposerModalProps {
   isOpen: boolean;
@@ -160,7 +162,7 @@ export function MessageComposerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+    <div className="fixed inset-0 z-10000 flex items-center justify-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -246,7 +248,7 @@ export function MessageComposerModal({
                 }`}
               >
                 <div className="flex gap-2">
-                  <Input
+                  <input
                     placeholder="Template name..."
                     value={newTemplateName}
                     onChange={(e) => setNewTemplateName(e.target.value)}
@@ -298,7 +300,7 @@ export function MessageComposerModal({
                     >
                       Test Email
                     </label>
-                    <Input
+                    <input
                       type="email"
                       placeholder="test@example.com"
                       value={testEmail}
@@ -311,7 +313,7 @@ export function MessageComposerModal({
                     >
                       Test Phone
                     </label>
-                    <Input
+                    <input
                       type="tel"
                       placeholder="+972-50-123-4567"
                       value={testPhone}
@@ -379,7 +381,7 @@ export function MessageComposerModal({
               <Mail className="w-4 h-4 inline mr-1" />
               Email Subject
             </label>
-            <Input
+            <input
               type="text"
               placeholder="Enter email subject..."
               value={subject}
@@ -399,7 +401,7 @@ export function MessageComposerModal({
                     <Mail className="w-4 h-4 inline mr-1" />
                     Email Message
                   </label>
-                  <Badge variant="secondary">{emailMessage.length} chars</Badge>
+                  <Badge>{emailMessage.length} chars</Badge>
                 </div>
                 <textarea
                   value={emailMessage}
@@ -436,7 +438,7 @@ export function MessageComposerModal({
                     <MessageSquare className="w-4 h-4 inline mr-1" />
                     SMS Message
                   </label>
-                  <Badge variant="secondary">{smsMessage.length} chars</Badge>
+                  <Badge>{smsMessage.length} chars</Badge>
                 </div>
                 <textarea
                   value={smsMessage}
@@ -472,7 +474,7 @@ export function MessageComposerModal({
                 >
                   Message (Email & SMS)
                 </label>
-                <Badge variant="secondary">{emailMessage.length} chars</Badge>
+                <Badge>{emailMessage.length} chars</Badge>
               </div>
               <textarea
                 value={emailMessage}
