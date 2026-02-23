@@ -1,12 +1,13 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { Image, Loader, MapPin, Phone, TrashIcon } from "lucide-react";
+import { Image, Loader, MapPin, Phone } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { DeleteIconBtn } from "@/components/btns";
 
 interface Business {
   _id: string;
@@ -83,18 +84,13 @@ function BusinessGridView<T extends Business>({
               onClick={() => onRowClick && onRowClick(business)}
             >
               <div className="absolute top-2 mx-auto px-2 w-full z-50 flex items-center justify-between">
-                {/* Delete button */}
-                <button
+                <DeleteIconBtn
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsConfirmOpen(true);
                     setBusinessToDelete(business?._id);
                   }}
-                  className=" z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                  aria-label={`Delete ${business.name}`}
-                >
-                  <TrashIcon size={18} />
-                </button>
+                />
                 <span
                   className={clsx(
                     "inline-flex items-center px-3 py-1 rounded-lg text-sm text-white",

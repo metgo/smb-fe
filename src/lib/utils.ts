@@ -11,6 +11,15 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
   { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
 ];
 
+export const itemStatuses = [
+  { value: "DRAFT", label: "draft" },
+  { value: "PENDING", label: "pending" },
+  { value: "ARCHIVED", label: "archived" },
+  { value: "APPROVED", label: "approved" },
+  { value: "CLOSED", label: "closed" },
+  { value: "REJECTED", label: "rejected" },
+];
+
 export const categoryIds = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",
