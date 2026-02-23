@@ -1,8 +1,11 @@
 import { toast } from "sonner";
 import { useState } from "react";
-import { useForgotPasswordMutation } from "@/store/api/authApi";
 import { useTranslation } from "react-i18next";
-import { LanguageSelector } from "@/components/shared/LanguageSelector";
+
+import AuthHeader from "./AuthHeader";
+import AuthInputField from "./AuthInputField";
+
+import { useForgotPasswordMutation } from "@/store/api/authApi";
 
 interface ForgotPasswordProps {
   setCurrentTab: (v: string) => void;
@@ -41,35 +44,20 @@ export function ForgotPassword({
           <div className="mb-6 flex justify-start"></div>
 
           {/* Header */}
-          <div className="mb-6 flex justify-start">
-            <LanguageSelector />
-          </div>
-          <div className="flex items-center justify-start mb-8"></div>
-
-          <div>
-            {/* Title */}
-            <h1 className="text-4xl text-white mb-2">{t("forgot_password")}</h1>
-
-            {/* Signup Link */}
-            <p className="text-white/80 text-left mb-6">
-              {t("no_account")}{" "}
-              <button
-                onClick={() => setCurrentTab("register")}
-                className="text-yellow-400 hover:text-yellow-300 transition-colors"
-              >
-                {t("sign_up_here")}
-              </button>
-            </p>
-          </div>
+          <AuthHeader
+            title="forgot_password"
+            desc="no_account"
+            btnText="sign_up_here"
+            handleCurrentTabChange={() => setCurrentTab("register")}
+          />
 
           <form onSubmit={handleForgotPassword} className="space-y-6">
-            <input
+            <AuthInputField
+              isRequired
               type="email"
               placeholder={t("enter_email")}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+              onChange={setEmail}
             />
 
             <button

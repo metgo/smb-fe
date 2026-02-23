@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const locales: { value: Language; label: string; flag?: string }[] = [
+  { value: "en", label: "English", flag: "/assets/images/gb.png" },
+  { value: "he", label: "עברית", flag: "/assets/images/il.png" },
+  { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
+];
+
 export const categoryIds = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",

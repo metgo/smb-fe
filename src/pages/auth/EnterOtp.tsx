@@ -2,11 +2,12 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useVerifyOtpMutation } from "@/store/api/authApi";
 import { useTranslation } from "react-i18next";
-import { LanguageSelector } from "@/components/shared/LanguageSelector";
+import AuthInputField from "./AuthInputField";
+import AuthHeader from "./AuthHeader";
 
 interface EnterOtpProps {
   setCurrentTab: (v: string) => void;
-  otpToken: string; // token returned from forgot password request
+  otpToken: string;
 }
 
 export function EnterOtp({ setCurrentTab, otpToken }: EnterOtpProps) {
@@ -34,22 +35,13 @@ export function EnterOtp({ setCurrentTab, otpToken }: EnterOtpProps) {
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
           {/* Header */}
-          <div className="mb-6 flex justify-start">
-            <LanguageSelector />
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl text-white mb-2">{t("enter_otp")}</h1>
-          <p className="text-white/80 mb-6">{t("otp_instruction")}</p>
+          <AuthHeader title="enter_otp" desc="otp_instruction" />
 
           <form onSubmit={handleSubmitOtp} className="space-y-6">
-            <input
-              type="text"
-              placeholder={t("enter_otp_placeholder")}
+            <AuthInputField
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full px-6 py-4 bg-white/90 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+              onChange={setOtp}
+              placeholder={t("enter_otp_placeholder")}
             />
 
             <button
