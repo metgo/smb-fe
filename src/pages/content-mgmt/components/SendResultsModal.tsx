@@ -1,4 +1,3 @@
-import React from "react";
 import { X, Download, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -108,7 +107,7 @@ export function SendResultsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+    <div className="fixed inset-0 z-10000 flex items-center justify-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -236,7 +235,7 @@ export function SendResultsModal({
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
                         <span className="text-xs font-medium text-teal-700 dark:text-teal-300">
                           {result.customerName.charAt(0).toUpperCase()}
                         </span>

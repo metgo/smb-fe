@@ -16,7 +16,7 @@ import {
   Send,
   Badge,
 } from "lucide-react";
-
+import FilterChips from "@/components/shared/FilterChips";
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -35,6 +35,14 @@ import { toast } from "sonner";
 
 import { MessageComposerModal } from "./components/MessageComposerModal";
 import { SendResultsModal } from "./components/SendResultsModal";
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { useAppSelector } from "@/hooks/hooks";
+import SearchInput from "@/components/shared/SearchInput";
+import { ViewModeToggle } from "@/components/shared";
+import { FilterButton } from "@/components/btns";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
+import { useCommon } from "@/hooks/useCommon";
 
 // ───────────────────────────────────────────────
 //  Types
@@ -107,12 +115,11 @@ function DraggableBusinessCard({
   onSelect,
   onRemove,
   categories,
-  onAddToCategory,
   viewMode,
   isInCategory = false,
   selectedIds,
 }: {
-  business: Business;
+  business: any;
   isSelected: boolean;
   onSelect: (id: string, isMulti: boolean) => void;
   onRemove?: (id: string) => void;
@@ -178,8 +185,8 @@ function DraggableBusinessCard({
       >
         <div className="flex-shrink-0">
           <img
-            src={business.logo}
-            alt={business.name}
+            src={business?.logo?.image}
+            alt={business?.name}
             className="w-12 h-12 rounded-lg object-cover"
           />
         </div>
@@ -192,8 +199,8 @@ function DraggableBusinessCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {business.categories.slice(0, 2).map((cat, idx) => (
-            <Badge key={idx} variant="secondary" className="text-xs">
+          {business?.categories?.slice(0, 2).map((cat, idx) => (
+            <Badge key={idx} className="text-xs">
               {cat}
             </Badge>
           ))}
@@ -233,8 +240,8 @@ function DraggableBusinessCard({
     >
       <div className="relative aspect-video">
         <img
-          src={business.logo}
-          alt={business.name}
+          src={business?.logo?.image}
+          alt={business?.name}
           className="w-full h-full object-cover"
         />
         {isInCategory && onRemove && (
@@ -243,7 +250,7 @@ function DraggableBusinessCard({
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
-              onRemove?.(business.id);
+              onRemove?.(business?._id);
             }}
             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
           >
@@ -259,7 +266,7 @@ function DraggableBusinessCard({
           {business.shortDescription}
         </p>
         <div className="flex flex-wrap gap-1">
-          {business.categories.slice(0, 2).map((cat, idx) => (
+          {business?.categories?.slice(0, 2).map((cat, idx) => (
             <Badge key={idx} variant="secondary" className="text-xs">
               {cat}
             </Badge>
@@ -322,7 +329,7 @@ function CategorySection({
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
     drop: (item: { ids: string[]; isMultiple: boolean; count: number }) => {
-      const newBusinessIds = item.ids.filter(
+      const newBusinessIds = item?.ids?.filter(
         (id) => !category.businessIds.includes(id),
       );
       newBusinessIds.forEach((id) => {
@@ -330,12 +337,12 @@ function CategorySection({
       });
       if (newBusinessIds.length > 0) {
         toast.success(
-          newBusinessIds.length === 1
+          newBusinessIds?.length === 1
             ? "Business added to category"
-            : `${newBusinessIds.length} businesses added to category`,
+            : `${newBusinessIds?.length} businesses added to category`,
         );
         onClearSelection?.();
-      } else if (item.ids.length > 0) {
+      } else if (item?.ids?.length > 0) {
         toast.info("Businesses already in this category");
       }
     },
@@ -351,8 +358,8 @@ function CategorySection({
     setIsEditing(false);
   };
 
-  const categoryBusinesses = businesses.filter((b) =>
-    category.businessIds.includes(b.id),
+  const categoryBusinesses = businesses?.filter((b) =>
+    category?.businessIds?.includes(b.id),
   );
 
   return (
@@ -416,7 +423,7 @@ function CategorySection({
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {category.name}
               </h3>
-              <Badge variant="secondary">{categoryBusinesses.length}</Badge>
+              <Badge variant="secondary">{categoryBusinesses?.length}</Badge>
             </>
           )}
         </div>
@@ -465,7 +472,7 @@ function CategorySection({
 
       {isExpanded && (
         <>
-          {categoryBusinesses.length === 0 ? (
+          {categoryBusinesses?.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
               <p className="text-sm">
                 Drag businesses here to add them to this category
@@ -475,7 +482,7 @@ function CategorySection({
             <div className="relative">
               <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-4">
                 <div className="flex gap-4 min-w-max">
-                  {categoryBusinesses.map((business) => (
+                  {categoryBusinesses?.map((business) => (
                     <div key={business.id} className="w-64 flex-shrink-0">
                       <DraggableBusinessCard
                         business={business}
@@ -511,15 +518,97 @@ export default function ContentMgmtPage({
   setTheme,
   onNavigate,
 }: ContentMgmtPageProps) {
-  const { t, isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const { t } = useTranslation("businesses");
+  const [filters, setFilters] = useState({
+    status: "all",
+    hasProductFilter: "all",
+    primaryCategory: "all",
+    accessibility: "all",
+    groupTypes: "all",
+  });
+  const clearFilter = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("businessSearchTerm");
 
+    setFilters({
+      status: "all",
+      hasProductFilter: "all",
+      primaryCategory: "all",
+      accessibility: "all",
+      groupTypes: "all",
+    });
+    setSearchQuery("");
+    setPage(1);
+  };
+  const { isDark, bgSecondary, borderColor, textSecondary } = useThemeClasses();
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page,
+      dmoId,
+      startDate,
+      endDate,
+      authorityId,
+      limit: 20,
+      locale: language,
+      externalApiId: websiteId,
+    };
+
+    const finalSearchTerm = searchQuery;
+    if (finalSearchTerm) params.search = finalSearchTerm;
+
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
+
+    if (filters.hasProductFilter !== "all") {
+      params.hasProductFilter = filters.hasProductFilter === "yes";
+    }
+    if (filters.primaryCategory !== "all") {
+      params.categories = filters.primaryCategory;
+    }
+    if (filters.accessibility !== "all") {
+      params.accessibilityId = filters.accessibility;
+    }
+    if (filters.groupTypes !== "all") {
+      params.groupTypes = filters.groupTypes;
+    }
+    return params;
+  }, [
+    page,
+    searchQuery,
+    language,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+    websiteId,
+    filters,
+  ]);
+  const {
+    data: businessData,
+    isLoading: isBusinessLoading,
+    isFetching,
+    refetch,
+  } = useGetAllbusinessesQuery(queryParams);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedAuthority, setSelectedAuthority] = useState("all");
   const [selectedWebsite, setSelectedWebsite] = useState("all");
   const [dateRange, setDateRange] = useState("last30days");
+  const {
+    categories: categoryFilter,
+    accessibility,
+    groupTypes,
+    subCategories,
+  } = useCommon();
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedDMO, setSelectedDMO] = useState<string[]>([]);
@@ -564,13 +653,14 @@ export default function ContentMgmtPage({
 
   // Save categories
   useEffect(() => {
-    if (categories.length > 0) {
+    if (categories?.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
     }
   }, [categories]);
 
-  const backlogBusinesses = useMemo(() => {
-    return mockBusinesses.filter((business) => {
+  const backlogBusinesses = () => {
+    return businessData?.data?.filter((business: any) => {
+      // Search query filter
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (
@@ -580,24 +670,18 @@ export default function ContentMgmtPage({
           return false;
         }
       }
-      if (selectedDMO.length > 0 && !selectedDMO.includes(business.dmo || "")) {
-        return false;
-      }
-      if (
-        selectedAuthorities.length > 0 &&
-        !selectedAuthorities.includes(business.authority || "")
-      ) {
-        return false;
-      }
-      if (selectedCategories.length > 0) {
+
+      // Category filter
+      if (selectedCategories?.length > 0) {
         const hasCat = business.categories?.some((c) =>
           selectedCategories.includes(c),
         );
         if (!hasCat) return false;
       }
+
       return true;
     });
-  }, [searchQuery, selectedDMO, selectedAuthorities, selectedCategories]);
+  };
 
   const handleSelectBacklog = (id: string, isMulti: boolean) => {
     setSelectedBacklogIds((prev) => {
@@ -645,11 +729,11 @@ export default function ContentMgmtPage({
   const handleDeleteCategory = (categoryId: string) => {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
-    if (cat.businessIds.length > 0) {
+    if (cat?.businessIds?.length > 0) {
       setDeleteConfirmation({
         categoryId: cat.id,
         categoryName: cat.name,
-        businessCount: cat.businessIds.length,
+        businessCount: cat?.businessIds?.length,
       });
     } else {
       setCategories((prev) => prev.filter((c) => c.id !== categoryId));
@@ -719,7 +803,7 @@ export default function ContentMgmtPage({
     setSelectedBacklogIds(new Set());
 
     toast.success(
-      `Messages sent to ${results.length} customer${results.length !== 1 ? "s" : ""}`,
+      `Messages sent to ${results?.length} customer${results?.length !== 1 ? "s" : ""}`,
     );
   };
 
@@ -781,7 +865,7 @@ export default function ContentMgmtPage({
                       Source Backlog
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {backlogBusinesses.length} businesses available
+                      {backlogBusinesses?.length} businesses available
                     </p>
                   </div>
 
@@ -789,88 +873,267 @@ export default function ContentMgmtPage({
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
+                        <SearchInput
                           placeholder="Search businesses..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10"
+                          searchTerm={searchQuery}
+                          setSearchTerm={setSearchQuery}
+                          storageKey="contentSearchTerm"
                         />
                       </div>
-                      <Button
-                        variant={showFilters ? "secondary" : "outline"}
-                        onClick={() => setShowFilters(!showFilters)}
-                      >
-                        <Filter className="w-4 h-4 mr-2" />
-                        Filters
-                        {(selectedDMO.length > 0 ||
-                          selectedAuthorities.length > 0 ||
-                          selectedCategories.length > 0) && (
-                          <Badge variant="destructive" className="ml-2">
-                            {selectedDMO.length +
-                              selectedAuthorities.length +
-                              selectedCategories.length}
-                          </Badge>
-                        )}
-                      </Button>
-                      <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
-                        <Button
-                          variant={viewMode === "grid" ? "secondary" : "ghost"}
-                          size="sm"
-                          onClick={() => setViewMode("grid")}
-                        >
-                          <Grid3x3 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant={viewMode === "list" ? "secondary" : "ghost"}
-                          size="sm"
-                          onClick={() => setViewMode("list")}
-                        >
-                          <List className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <FilterButton
+                        value={showFilters}
+                        onChange={setShowFilters}
+                      />
+
+                      <ViewModeToggle
+                        onChange={setViewMode}
+                        value={viewMode}
+                        tableName="businessViewMode"
+                      />
                     </div>
 
+                    {/* Filters Panel */}
                     {showFilters && (
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-2">
-                              DMO
+                      <div
+                        className={` border-t py-2 ${
+                          isDark
+                            ? "border-gray-800 bg-gray-900/30"
+                            : "border-gray-200 bg-gray-50"
+                        }`}
+                      >
+                        {/* Active Filters Title */}
+                        <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
+                          {/* Status Filter */}
+                          <div className="flex flex-col min-w-45">
+                            <label
+                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("status")}
                             </label>
-                            {uniqueDMOs.map((dmo) => (
-                              <label
-                                key={dmo}
-                                className="flex items-center gap-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedDMO.includes(dmo)}
-                                  onChange={(e) => {
-                                    setSelectedDMO(
-                                      e.target.checked
-                                        ? [...selectedDMO, dmo]
-                                        : selectedDMO.filter((d) => d !== dmo),
-                                    );
-                                  }}
-                                />
-                                <span>{dmo || "None"}</span>
-                              </label>
-                            ))}
+                            <select
+                              value={filters.status}
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  status: e.target.value,
+                                })
+                              }
+                              className={`w-full px-3 py-2 rounded-lg border ${
+                                isDark
+                                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                                  : "bg-white border-gray-300 text-gray-900"
+                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                            >
+                              <option value="all">{t("all")}</option>
+                              <option value="DRAFT">{t("draft")}</option>
+                              <option value="PENDING">{t("pending")}</option>
+                              <option value="APPROVED">{t("approved")}</option>
+                              <option value="REJECTED">{t("rejected")}</option>
+                              <option value="CLOSED">{t("closed")}</option>
+                            </select>
                           </div>
-                          {/* Add similar blocks for Authorities & Categories if needed */}
-                        </div>
-                        <div className="mt-4 flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedDMO([]);
-                              setSelectedAuthorities([]);
-                              setSelectedCategories([]);
-                            }}
-                          >
-                            Clear Filters
-                          </Button>
+
+                          {/* Has Products Filter */}
+                          <div className="flex flex-col min-w-45">
+                            <label
+                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("has_products")}
+                            </label>
+                            <select
+                              value={filters.hasProductFilter}
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  hasProductFilter: e.target.value,
+                                })
+                              }
+                              className={`w-full px-3 py-2 rounded-lg border ${
+                                isDark
+                                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                                  : "bg-white border-gray-300 text-gray-900"
+                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                            >
+                              <option value="all">{t("all")}</option>
+                              <option value="yes">{t("yes")}</option>
+                              <option value="no">{t("no")}</option>
+                            </select>
+                          </div>
+
+                          {/* Category Filter */}
+                          <div className="flex flex-col min-w-45">
+                            <label
+                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("primary_category")}
+                            </label>
+                            <select
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  primaryCategory: e.target.value,
+                                })
+                              }
+                              value={filters.primaryCategory}
+                              className={`w-full px-3 py-2 rounded-lg border ${
+                                isDark
+                                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                                  : "bg-white border-gray-300 text-gray-900"
+                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                            >
+                              <option value="">{t("all")}</option>
+                              {categoryFilter?.map((cat: any) => (
+                                <option key={cat._id} value={cat._id}>
+                                  {cat.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Accessibility Filter */}
+                          <div className="flex flex-col min-w-45">
+                            <label
+                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("accessibility")}
+                            </label>
+                            <select
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  accessibility: e.target.value,
+                                })
+                              }
+                              value={filters.accessibility}
+                              className={`w-full px-3 py-2 rounded-lg border ${
+                                isDark
+                                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                                  : "bg-white border-gray-300 text-gray-900"
+                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                            >
+                              <option value="">{t("all")}</option>
+                              {accessibility?.map((cat: any) => (
+                                <option key={cat._id} value={cat._id}>
+                                  {cat.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Group Types Filter */}
+                          <div className="flex flex-col min-w-45">
+                            <label
+                              className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("group_types")}
+                            </label>
+                            <select
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  groupTypes: e.target.value,
+                                })
+                              }
+                              value={filters.groupTypes}
+                              className={`w-full px-3 py-2 rounded-lg border ${
+                                isDark
+                                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                                  : "bg-white border-gray-300 text-gray-900"
+                              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                            >
+                              <option value="">{t("all")}</option>
+                              {groupTypes?.map((cat: any) => (
+                                <option key={cat._id} value={cat._id}>
+                                  {cat.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Active Filters Label + Chips */}
+                          {(filters?.status !== "all" ||
+                            filters?.hasProductFilter !== "all" ||
+                            filters?.primaryCategory !== "all" ||
+                            filters?.accessibility !== "all" ||
+                            filters?.groupTypes !== "all") && (
+                            <div className="flex flex-col min-w-45">
+                              {/* Label inline with other filter labels */}
+                              <label
+                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                              >
+                                {t("active_filters")}
+                              </label>
+                              <div className="flex gap-2 items-center">
+                                {" "}
+                                {/* Chips row */}
+                                <div className="flex flex-wrap gap-2 mb-2 mt-2">
+                                  {Object.entries(filters).map(
+                                    ([key, value]) => {
+                                      if (!value || value === "all")
+                                        return null;
+
+                                      let displayValue = value;
+                                      if (key === "status") {
+                                        displayValue =
+                                          t(value.toLowerCase()) || value;
+                                      } else if (key === "hasProductFilter") {
+                                        displayValue =
+                                          value === "yes" ? t("yes") : t("no");
+                                      } else if (key === "accessibility") {
+                                        const selectedAccessibility =
+                                          accessibility?.find(
+                                            (item: any) => item._id === value,
+                                          );
+                                        displayValue =
+                                          selectedAccessibility?.name || value;
+                                      } else if (key === "primaryCategory") {
+                                        const selectedprimaryCategory =
+                                          categoryFilter?.find(
+                                            (item: any) => item._id === value,
+                                          );
+                                        displayValue =
+                                          selectedprimaryCategory?.name ||
+                                          value;
+                                      } else if (key === "groupTypes") {
+                                        const selectedgroupTypes =
+                                          groupTypes?.find(
+                                            (item: any) => item._id === value,
+                                          );
+                                        displayValue =
+                                          selectedgroupTypes?.name || value;
+                                      }
+                                      return (
+                                        <FilterChips
+                                          key={key}
+                                          label={displayValue}
+                                          onRemove={() => {
+                                            if (key === "status") {
+                                              setFilters((prev) => ({
+                                                ...prev,
+                                                status: "all",
+                                              }));
+                                            } else {
+                                              setFilters((prev) => ({
+                                                ...prev,
+                                                [key]: "all",
+                                              }));
+                                            }
+                                          }}
+                                        />
+                                      );
+                                    },
+                                  )}
+                                </div>
+                                {/* Clear All Button */}
+                                <button
+                                  onClick={clearFilter}
+                                  className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                                >
+                                  {t("clear_all")}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -903,22 +1166,26 @@ export default function ContentMgmtPage({
                   <div
                     className={
                       viewMode === "grid"
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4"
                         : "space-y-3"
                     }
                   >
-                    {backlogBusinesses.map((business) => (
-                      <DraggableBusinessCard
-                        key={business.id}
-                        business={business}
-                        isSelected={selectedBacklogIds.has(business.id)}
-                        onSelect={handleSelectBacklog}
-                        categories={categories}
-                        onAddToCategory={handleAddToCategory}
-                        viewMode={viewMode}
-                        selectedIds={selectedBacklogIds}
-                      />
-                    ))}
+                    {isBusinessLoading ? (
+                      <div>no business</div>
+                    ) : (
+                      businessData?.data?.map((business: any) => (
+                        <DraggableBusinessCard
+                          key={business._id}
+                          business={business}
+                          isSelected={selectedBacklogIds.has(business.id)}
+                          onSelect={handleSelectBacklog}
+                          categories={categories}
+                          onAddToCategory={handleAddToCategory}
+                          viewMode={viewMode}
+                          selectedIds={selectedBacklogIds}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -965,7 +1232,7 @@ export default function ContentMgmtPage({
                       <CategorySection
                         key={category.id}
                         category={category}
-                        businesses={mockBusinesses}
+                        businesses={backlogBusinesses}
                         selectedIds={new Set()}
                         onSelect={() => {}}
                         onRemove={(id) =>
@@ -982,7 +1249,7 @@ export default function ContentMgmtPage({
                       />
                     ))}
 
-                    {categories.length === 0 && (
+                    {categories?.length === 0 && (
                       <div className="text-center py-12 text-gray-500">
                         No categories yet. Create one to begin.
                       </div>
