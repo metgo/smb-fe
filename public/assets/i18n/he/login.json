@@ -6,8 +6,8 @@
   "forgot_password": "שכחת סיסמה?",
   "or": "או",
   "login_failed": "התחברות נכשלה",
-  "welcome_message": "ברוך הבא ",
-
+  "welcome_message": "ברוך הבא {{firstName}} {{lastName}}",
+  "continue_with_google": "המשך עם Google",
   "enter_email": "הזן את האימייל שלך",
   "send_otp": "שלח קוד OTP",
   "sending": "שולח...",

@@ -6,8 +6,7 @@
   "forgot_password": "Forgot Password?",
   "or": "Or",
   "login_failed": "Login failed",
-  "welcome_message": "Welcome ",
-
+  "welcome_message": "Welcome {{firstName}} {{lastName}}",
   "enter_email": "Enter your email",
   "send_otp": "Send OTP",
   "sending": "Sending...",
@@ -39,5 +38,6 @@
   "phone_number": "Enter your phone number *",
   "password": "Enter your password *",
   "next": "Next",
-  "welcome_user": "Welcome "
+  "welcome_user": "Welcome",
+  "continue_with_google": "Continue with Google"
 }

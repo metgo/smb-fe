@@ -6,7 +6,7 @@
   "forgot_password": "نسيت كلمة المرور؟",
   "or": "أو",
   "login_failed": "فشل تسجيل الدخول",
-  "welcome_message": "مرحبًا ",
+  "welcome_message": "مرحبًا {{firstName}} {{lastName}}",
 
   "enter_email": "أدخل بريدك الإلكتروني",
   "send_otp": "إرسال رمز OTP",
@@ -39,5 +39,6 @@
   "phone_number": "أدخل رقم هاتفك *",
   "password": "أدخل كلمة المرور *",
   "next": "التالي",
-  "welcome_user": "مرحباً {{firstName}} {{lastName}}"
+  "welcome_user": "مرحباً {{firstName}} {{lastName}}",
+  "continue_with_google": "المتابعة باستخدام Google"
 }

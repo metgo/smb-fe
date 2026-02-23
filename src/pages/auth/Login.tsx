@@ -59,12 +59,12 @@ export function Login({ setCurrentTab }: LoginProps) {
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
           {/* Header */}
-          <div className="mb-6 flex justify-start">
+          <div className="mb-6 flex justify-start ">
             <LanguageSelector />
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl text-white mb-4">{t("sign_in")}</h1>
+          <h1 className="text-4xl text-white mb-4 mt-20 ">{t("sign_in")}</h1>
 
           {/* Subtitle */}
           <p className="text-white/80 mb-8">
