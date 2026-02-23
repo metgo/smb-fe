@@ -58,6 +58,8 @@ export default function CreateBusinessWizard({
   refetch,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("toast");
+
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
@@ -185,7 +187,6 @@ export default function CreateBusinessWizard({
     useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
-  console.log("🚀 ~ CreateBusinessWizard ~ addr:", addr);
 
   const totalSteps = 9;
 
@@ -321,7 +322,7 @@ export default function CreateBusinessWizard({
     // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
-    logo: { image: logoGcsUrl },
+    logo: editData ? businessLogoImage : { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
     openingHrs: formData.operatingHours,
@@ -416,6 +417,25 @@ export default function CreateBusinessWizard({
     }
   };
 
+  // useEffect(() => {
+  //   if (!logoGcsUrl) return;
+
+  //   const patchLogo = async () => {
+  //     try {
+  //       await updateBusiness({
+  //         businessId: businessId!,
+  //         body: {
+  //           logo: { image: logoGcsUrl },
+  //         },
+  //       }).unwrap();
+  //     } catch (err) {
+  //       console.error("Failed to update logo", err);
+  //     }
+  //   };
+
+  //   patchLogo();
+  // }, [logoGcsUrl]);
+
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     // Validate all steps
@@ -428,7 +448,7 @@ export default function CreateBusinessWizard({
       }
     }
     if (!allValid) {
-      toast.error(t("fill_all_fields"));
+      toast.error(tc("fill_all_fields"));
       return;
     }
 
@@ -441,7 +461,7 @@ export default function CreateBusinessWizard({
       });
     }
     setIsPublishing(false);
-    toast.success(t("business created succesfully"));
+    // toast.success(t("business created succesfully"));
     refetch();
     onClose();
   };

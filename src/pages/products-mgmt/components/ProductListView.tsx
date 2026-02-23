@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
-import { useAppSelector } from "@/hooks/hooks";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getPlainTextFromRichText } from "@/helpers";
@@ -30,13 +29,12 @@ const ProductListView: React.FC<ProductListViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("products");
-  const { userRole } = useAppSelector((state) => state.auth);
   const { borderColor, bgSecondary, textPrimary, language } = useThemeClasses();
+  const USER_ROLE = "admin";
 
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    userRole,
+    USER_ROLE,
   );
-
   const handleProductClick = (product: any) => {
     navigate(`${routes.productDetails}?productId=${product?._id}`, {
       replace: true,

@@ -22,6 +22,7 @@ export function Login({ setCurrentTab }: LoginProps) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("login");
 
+  const { t: tt } = useTranslation("toast");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error] = useState("");
@@ -50,7 +51,7 @@ export function Login({ setCurrentTab }: LoginProps) {
         }),
       );
     } catch (err: any) {
-      toast.error(err?.data?.message || t("login_failed"));
+      toast.error(tt("login_failed"));
     }
   };
 

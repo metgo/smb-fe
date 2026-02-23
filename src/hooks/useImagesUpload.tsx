@@ -17,7 +17,7 @@ export const useImagesUpload = ({
   initialImages = [],
   onChange,
 }: UseImagesUploadProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("toast");
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [deleteMedia, { isLoading: isImageDeleting }] =
     useDeleteMediaMutation();
@@ -106,9 +106,9 @@ export const useImagesUpload = ({
         ),
       );
 
-      toast.success("Image uploaded successfully");
+      toast.success(t("image_upload_success"));
     } catch {
-      toast.error("Image upload failed");
+      toast.error(t("image_upload_failed"));
       setImages((prev) =>
         prev.map((img) => (img.id === id ? { ...img, status: "error" } : img)),
       );
