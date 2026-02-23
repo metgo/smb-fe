@@ -778,126 +778,123 @@ export default function BusinessesMgmtPage() {
           {/* Filters Panel */}
           {(showFilters || hasSavedFilters) && (
             <div
-              className={` border-t ${
+              className={` border-t py-2 ${
                 isDark
                   ? "border-gray-800 bg-gray-900/30"
                   : "border-gray-200 bg-gray-50"
               }`}
             >
-              <div className="flex flex-wrap items-end gap-4 ml-4 mt-4 w-full">
-                {/* Active Filters Title */}
-                <div className="flex flex-wrap items-start gap-4 ml-4 mt-4 w-full">
-                  {/* Status Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("status")}
-                    </label>
-                    <select
-                      value={filters.status}
-                      onChange={(e) =>
-                        setFilters({ ...filters, status: e.target.value })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-800 border-gray-700 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="all">{t("all")}</option>
-                      <option value="DRAFT">{t("draft")}</option>
-                      <option value="PENDING">{t("pending")}</option>
-                      <option value="APPROVED">{t("approved")}</option>
-                      <option value="REJECTED">{t("rejected")}</option>
-                      <option value="CLOSED">{t("closed")}</option>
-                    </select>
-                  </div>
-
-                  {/* Has Products Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("has_products")}
-                    </label>
-                    <select
-                      value={filters.hasProductFilter}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          hasProductFilter: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-800 border-gray-700 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="all">{t("all")}</option>
-                      <option value="yes">{t("yes")}</option>
-                      <option value="no">{t("no")}</option>
-                    </select>
-                  </div>
-
-                  {/* Active Filters Label + Chips */}
-                  {(filters?.status !== "all" ||
-                    filters?.hasProductFilter !== "all") && (
-                    <div className="flex flex-col min-w-45">
-                      {/* Label inline with other filter labels */}
-                      <label
-                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        {t("active_filters")}
-                      </label>
-                      <div className="flex gap-2 items-center">
-                        {" "}
-                        {/* Chips row */}
-                        <div className="flex flex-wrap gap-2 mb-2 mt-2">
-                          {Object.entries(filters).map(([key, value]) => {
-                            if (!value || value === "all") return null;
-
-                            let displayValue = value;
-                            if (key === "status") {
-                              displayValue = t(value.toLowerCase()) || value;
-                            } else if (key === "hasProductFilter") {
-                              displayValue =
-                                value === "yes" ? t("yes") : t("no");
-                            }
-
-                            return (
-                              <FilterChips
-                                key={key}
-                                label={displayValue}
-                                onRemove={() => {
-                                  if (key === "status") {
-                                    setFilters((prev) => ({
-                                      ...prev,
-                                      status: "all",
-                                    }));
-                                  } else {
-                                    setFilters((prev) => ({
-                                      ...prev,
-                                      [key]: "all",
-                                    }));
-                                  }
-                                }}
-                              />
-                            );
-                          })}
-                        </div>
-                        {/* Clear All Button */}
-                        <button
-                          onClick={clearFilter}
-                          className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
-                        >
-                          {t("clear_all")}
-                        </button>
-                      </div>
-                    </div>
-                  )}
+              {/* Active Filters Title */}
+              <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
+                {/* Status Filter */}
+                <div className="flex flex-col min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("status")}
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({ ...filters, status: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="DRAFT">{t("draft")}</option>
+                    <option value="PENDING">{t("pending")}</option>
+                    <option value="APPROVED">{t("approved")}</option>
+                    <option value="REJECTED">{t("rejected")}</option>
+                    <option value="CLOSED">{t("closed")}</option>
+                  </select>
                 </div>
+
+                {/* Has Products Filter */}
+                <div className="flex flex-col min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("has_products")}
+                  </label>
+                  <select
+                    value={filters.hasProductFilter}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        hasProductFilter: e.target.value,
+                      })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="yes">{t("yes")}</option>
+                    <option value="no">{t("no")}</option>
+                  </select>
+                </div>
+
+                {/* Active Filters Label + Chips */}
+                {(filters?.status !== "all" ||
+                  filters?.hasProductFilter !== "all") && (
+                  <div className="flex flex-col min-w-45">
+                    {/* Label inline with other filter labels */}
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("active_filters")}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      {" "}
+                      {/* Chips row */}
+                      <div className="flex flex-wrap gap-2 mb-2 mt-2">
+                        {Object.entries(filters).map(([key, value]) => {
+                          if (!value || value === "all") return null;
+
+                          let displayValue = value;
+                          if (key === "status") {
+                            displayValue = t(value.toLowerCase()) || value;
+                          } else if (key === "hasProductFilter") {
+                            displayValue = value === "yes" ? t("yes") : t("no");
+                          }
+
+                          return (
+                            <FilterChips
+                              key={key}
+                              label={displayValue}
+                              onRemove={() => {
+                                if (key === "status") {
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    status: "all",
+                                  }));
+                                } else {
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    [key]: "all",
+                                  }));
+                                }
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                      {/* Clear All Button */}
+                      <button
+                        onClick={clearFilter}
+                        className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -906,6 +903,7 @@ export default function BusinessesMgmtPage() {
             selectedItemCount={selectedBusinesses.size || 0}
             handleBulkStatusChange={handleBulkStatusChange}
             handleBulkDelete={promptBulkDelete}
+            hancleClearSelection={() => setSelectedBusinesses(new Set())}
           />
         </div>
         <div className="flex-1 overflow-y-auto mt-2">

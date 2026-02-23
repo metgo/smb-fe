@@ -113,7 +113,6 @@ export default function ProductsMgmtPage() {
           }
         : skipToken,
     );
-  console.log("🚀 ~ ProductsMgmtPage ~ businessData:", businessData);
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
   const {
@@ -183,12 +182,6 @@ export default function ProductsMgmtPage() {
   };
 
   useEffect(() => {
-    if (businessId) {
-      setIsCreateModalOpen(true);
-    }
-  }, [businessId]);
-
-  useEffect(() => {
     const { status, locale, businessId } = filters;
 
     if (status !== "all" || locale !== language || businessId !== "") {
@@ -238,15 +231,15 @@ export default function ProductsMgmtPage() {
   ]);
 
   //skipped appending bzId as it opens create wizard
-  useEffect(() => {
-    const urlParams: Record<string, any> = {};
+  // useEffect(() => {
+  //   const urlParams: Record<string, any> = {};
 
-    if (productQueryParams.search) urlParams.search = productQueryParams.search;
-    if (productQueryParams.status) urlParams.status = productQueryParams.status;
+  //   if (productQueryParams.search) urlParams.search = productQueryParams.search;
+  //   if (productQueryParams.status) urlParams.status = productQueryParams.status;
 
-    const searchParams = new URLSearchParams(urlParams).toString();
-    navigate(`?${searchParams}`, { replace: true });
-  }, [productQueryParams, navigate]);
+  //   const searchParams = new URLSearchParams(urlParams).toString();
+  //   navigate(`?${searchParams}`, { replace: true });
+  // }, [productQueryParams, navigate]);
 
   useEffect(() => {
     setPage(1);
@@ -416,9 +409,9 @@ export default function ProductsMgmtPage() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         />
 
-        <div className="shrink-0">
+        <div className="shrink-0 space-y-2 mb-2 mt-4">
           {/* Toolbar */}
-          <div className="py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
             {/* Search - extreme left */}
             <div className="flex-1 relative max-w-full ">
               <SearchInput
@@ -568,11 +561,11 @@ export default function ProductsMgmtPage() {
           {/* Filters Panel */}
           {(showFilters || businessName || hasSavedFilters) && (
             <div
-              className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
+              className={` rounded-md border p-2 ${borderColor} ${bgPrimary}`}
             >
               <div className="flex gap-4 items-start w-full">
                 {/* Status Filter */}
-                <div className="flex flex-col min-w-[180px]">
+                <div className="flex flex-col min-w-45">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -601,7 +594,7 @@ export default function ProductsMgmtPage() {
 
                 {/* Business Filter */}
                 {!businessId && (
-                  <div className="flex flex-col min-w-[180px]">
+                  <div className="flex flex-col min-w-45">
                     <label
                       className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                     >
@@ -630,8 +623,10 @@ export default function ProductsMgmtPage() {
                 )}
 
                 {/* Active Filters Label + Chips + Clear All */}
-                {(filters?.status !== "all" || filters.businessId !== "") && (
-                  <div className="flex flex-col min-w-[180px]">
+                {(filters?.status !== "all" ||
+                  filters.businessId !== "" ||
+                  businessName) && (
+                  <div className="flex flex-col min-w-45">
                     {/* Label inline with other selects */}
                     <label className={`block text-sm mb-1 ${textTertiary}`}>
                       {tb("active_filters")}:
@@ -695,6 +690,7 @@ export default function ProductsMgmtPage() {
               selectedItemCount={selectedProducts?.size || 0}
               handleBulkStatusChange={handleBulkStatusChange}
               handleBulkDelete={promptBulkDelete}
+              hancleClearSelection={() => setSelectedProducts(new Set())}
             />
           )}
         </div>

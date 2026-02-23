@@ -85,6 +85,7 @@
   "action": "الإجراء",
   "status": "الحالة",
   "selected": "محدد",
+  "clear_selection": "مسح التحديد",
   "csv_export": "تصدير CSV",
   "pdf_export": "تصدير PDF",
   "free": "مجاني",
