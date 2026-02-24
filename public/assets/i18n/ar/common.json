@@ -278,5 +278,7 @@
   "first_name_placeholder": "الاسم الأول",
   "last_name_placeholder": "الاسم الأخير",
   "phone_number_placeholder": "رقم الهاتف",
-  "address_placeholder": "العنوان"
+  "address_placeholder": "العنوان",
+
+  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول."
 }

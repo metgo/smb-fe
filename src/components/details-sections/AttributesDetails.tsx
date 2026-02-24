@@ -31,8 +31,6 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   subCategoriesId,
   accessibilitiesId,
 }) => {
-  console.log("🚀 ~ AttributesDetails ~ categoriesId:", categoriesId);
-
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
   const { categories, subCategories, groupTypes, accessibility } = useCommon();

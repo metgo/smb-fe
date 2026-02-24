@@ -1,4 +1,3 @@
-import { getPlainTextFromRichText } from "@/helpers";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
@@ -49,15 +48,14 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
         </div>
       )}
 
-      <p
+      <div
         className={clsx(
           "text-base leading-relaxed pl-11",
           preWrap && "whitespace-pre-wrap",
           isDark ? "text-gray-200" : "text-gray-800",
         )}
-      >
-        {getPlainTextFromRichText(content)}
-      </p>
+        dangerouslySetInnerHTML={{ __html: content || "" }}
+      ></div>
     </div>
   );
 };

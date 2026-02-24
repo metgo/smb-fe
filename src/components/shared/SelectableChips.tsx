@@ -1,5 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 type SelectableChipsProps = {
   label: string;
@@ -14,11 +15,13 @@ const SelectableChips = ({
   selectedIds,
   onSelect,
 }: SelectableChipsProps) => {
+  const { t } = useTranslation("common");
+
   const { textPrimary, textSecondary } = useThemeClasses();
   return (
     <div>
       <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
-        {label}
+        {t(label)}
       </label>
 
       <div className="flex flex-wrap gap-2">

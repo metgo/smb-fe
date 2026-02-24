@@ -104,13 +104,13 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
       </div>
 
       <SelectableChips
-        label="Accessiblities"
+        label="accessiblities"
         items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
       <SelectableChips
-        label="Group Types"
+        label="group_types"
         items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}

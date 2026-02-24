@@ -109,7 +109,7 @@ const ProductAttributes = ({
       </div>
 
       <SelectableChips
-        label={t("sub_categories")}
+        label={"sub_categories"}
         items={filteredSubCategories ?? []}
         selectedIds={formData?.subCategories}
         onSelect={handleToggle}

@@ -17,6 +17,7 @@ import { categoryIds } from "@/lib/utils";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { useCommon } from "@/hooks/useCommon";
+import { CKEditorWrapper } from "@/components/wrapper";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -31,10 +32,8 @@ interface EventBasicInformationProps {
   setShortDescription: React.Dispatch<React.SetStateAction<string>>;
   fullDescription: string;
   setFullDescription: React.Dispatch<React.SetStateAction<string>>;
-  eventStatus: "draft" | "pending" | "approved";
-  setEventStatus: React.Dispatch<
-    React.SetStateAction<"draft" | "pending" | "approved">
-  >;
+  eventStatus: EventStatus;
+  setEventStatus: React.Dispatch<React.SetStateAction<EventStatus>>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -226,17 +225,11 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
 
       {/* Full Description */}
-      <FormFieldWrapper
-        label={t("full_description")}
-        inputHintText={`${fullDescription?.length ?? 0}/500 ${t("max_characters")}`}
-      >
-        <TextareaField
-          rows={8}
+      <FormFieldWrapper label={t("full_description")}>
+        <CKEditorWrapper
           value={fullDescription}
           onChange={setFullDescription}
           placeholder={t("full_event_description")}
-          maxLength={500}
-          inputClasses={`${inputClasses} text-base`}
         />
       </FormFieldWrapper>
 
@@ -244,7 +237,14 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       <FormFieldWrapper label={t("event_status")}>
         <RadioGroupField
           value={eventStatus}
-          options={["draft", "pending", "approved"]}
+          options={[
+            "draft",
+            "pending",
+            "approved",
+            "archived",
+            "rejected",
+            "closed",
+          ]}
           onChange={setEventStatus}
           labelMapper={(v) => t(v)}
           textSecondary={textSecondary}
@@ -253,21 +253,21 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
       {/* Chips */}
       <SelectableChips
-        label="Sub Categories"
+        label="subcategories"
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
       />
 
       <SelectableChips
-        label="Accessiblities"
+        label="accessiblities"
         items={accessibility ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
 
       <SelectableChips
-        label="Group Types"
+        label="group_types"
         items={groupTypes ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
