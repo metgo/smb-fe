@@ -22,11 +22,11 @@ const MobileEventDetails = ({
         />
 
         <section className="px-10 py-4">
-          <h1 className="text-6xl font-bold mt-10">{eventDetails.name}</h1>
+          <h1 className="text-6xl font-bold mt-10">{eventDetails?.name}</h1>
           <div
             className="font-normal text-theme line-clamp-3 mt-4 mb-8"
             dangerouslySetInnerHTML={{
-              __html: eventDetails?.description || "",
+              __html: eventDetails?.shortDescription || "",
             }}
           />
           <div className="flex items-center gap-2 mt-2">
@@ -48,6 +48,13 @@ const MobileEventDetails = ({
         </section>
 
         <EventDateRange {...eventDetails} />
+
+        <div
+          className="font-normal text-theme mt-4 mb-8 px-8"
+          dangerouslySetInnerHTML={{
+            __html: eventDetails?.description || "",
+          }}
+        />
 
         <section className="px-6 py-4">
           <EventLocationMap geoLocation={eventDetails.geoLocation} />

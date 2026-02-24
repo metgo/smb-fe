@@ -75,6 +75,7 @@ declare interface EventDetailsProps {
   slug: string;
   address: Address;
   description: string;
+  shortDescription: string;
   dmoId: string;
   geoLocation: GeoLocation;
   images: ImageItem[];

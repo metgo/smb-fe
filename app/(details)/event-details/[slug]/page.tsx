@@ -57,7 +57,12 @@ const page = async ({ params }: PageProps) => {
         <div className="grid grid-cols-12  mt-15 w-full">
           <div className="col-span-6 text-dark">
             <h2 className="font-bold  text-2xl mb-3">{events.eventDetails}</h2>
-            <p className="font-normal">{eventDetails.description}</p>
+            <div
+              className="font-normal"
+              dangerouslySetInnerHTML={{
+                __html: eventDetails?.description || "",
+              }}
+            />
           </div>
           <div className="col-span-2" />
 
