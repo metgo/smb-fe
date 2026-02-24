@@ -1,3 +1,4 @@
+import { getPlainTextFromRichText } from "@/helpers";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
@@ -7,7 +8,8 @@ type DescriptionCardProps = {
   icon?: ReactNode;
   iconBgClass?: string;
   isDark?: boolean;
-  preWrap?: boolean; // for plain text line breaks
+  preWrap?: boolean;
+  isEvent?: boolean;
 };
 
 const DescriptionCard: React.FC<DescriptionCardProps> = ({
@@ -17,6 +19,7 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
   iconBgClass,
   isDark = false,
   preWrap = false,
+  isEvent = false,
 }) => {
   return (
     <div
@@ -48,14 +51,26 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
         </div>
       )}
 
-      <div
-        className={clsx(
-          "text-base leading-relaxed pl-11",
-          preWrap && "whitespace-pre-wrap",
-          isDark ? "text-gray-200" : "text-gray-800",
-        )}
-        dangerouslySetInnerHTML={{ __html: content || "" }}
-      ></div>
+      {isEvent ? (
+        <div
+          className={clsx(
+            "text-base leading-relaxed pl-11",
+            preWrap && "whitespace-pre-wrap",
+            isDark ? "text-gray-200" : "text-gray-800",
+          )}
+          dangerouslySetInnerHTML={{ __html: content || "" }}
+        ></div>
+      ) : (
+        <div
+          className={clsx(
+            "text-base leading-relaxed pl-11",
+            preWrap && "whitespace-pre-wrap",
+            isDark ? "text-gray-200" : "text-gray-800",
+          )}
+        >
+          {getPlainTextFromRichText(content || "")}
+        </div>
+      )}
     </div>
   );
 };

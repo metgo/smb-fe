@@ -39,7 +39,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           : "border-gray-200 bg-teal-50",
       )}
     >
-      <div>
+      <div className="flex items-center gap-4">
         <span
           className={clsx(
             "text-sm",
@@ -52,7 +52,7 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           type="button"
           onClick={hancleClearSelection}
           className={clsx(
-            "ml-4 text-sm underline font-semibold text-blue-500 hover:text-red-500",
+            "text-sm underline font-semibold text-blue-500 hover:text-red-500",
           )}
         >
           {t("clear_selection")}

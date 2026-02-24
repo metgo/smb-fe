@@ -43,7 +43,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   logoImage,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark } = useThemeClasses();
+  const { isDark, textTertiary } = useThemeClasses();
 
   const handleViewImage = (img: IImageUpload) => {
     window.open(img.previewUrl, "_blank");
@@ -53,7 +53,9 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
     <div className="space-y-6 min-h-150">
       {logoImage && (
         <div>
-          <div className="">{t("logo")}</div>
+          <div className={clsx(textTertiary, "font-bold mb-3")}>
+            {t("logo")}
+          </div>
 
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
@@ -88,7 +90,9 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
 
       {/* Header */}
       <div className={clsx("flex items-center justify-between mb-2")}>
-        <div className="">{t("images")}</div>
+        <div className={clsx(textTertiary, "font-bold  mb-3")}>
+          {t("images")}
+        </div>
 
         {/* <div>
           <h2
@@ -142,28 +146,10 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
         )}
       </div>
 
-      {/* Upload limit warning */}
-      {images.length >= 8 && images.length < 10 && (
-        <div
-          className={clsx(
-            "mt-4 p-3 rounded-lg flex items-center gap-2 text-sm",
-            isDark
-              ? "bg-yellow-500/10 border border-yellow-800/50 text-yellow-400"
-              : "bg-yellow-50 border border-yellow-200 text-yellow-800",
-          )}
-        >
-          <ImageIcon className="w-4 h-4 shrink-0" />
-          <span>
-            You can upload {10 - images.length} more{" "}
-            {10 - images.length === 1 ? "image" : "images"}
-          </span>
-        </div>
-      )}
-
       {/* Image Gallery */}
-      {images.length > 0 ? (
+      {images?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {images.map((img, idx) => (
+          {images?.map((img, idx) => (
             <div
               key={idx}
               className={clsx(
@@ -178,7 +164,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               )}
             >
               <ImageWithFallback
-                src={img.previewUrl}
+                src={img?.previewUrl}
                 alt={`Image ${idx + 1}`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
