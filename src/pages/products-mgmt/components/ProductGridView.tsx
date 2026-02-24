@@ -104,17 +104,6 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
     );
   };
 
-  const getProductTypeLabel = (type: Product["productType"]) => {
-    const labels = {
-      PHYSICAL: t("physical_product"),
-      TABLE_ORDER: t("table_order"),
-      SERVICE: t("service"),
-      HOTEL: t("hotel_room"),
-      EXPERIENCE: t("experience"),
-    };
-    return labels[type] || type;
-  };
-
   const toggleCheckBox = (product: any) => {
     const newSelected = new Set(selectedProducts);
     const key = product._id;
@@ -166,7 +155,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                       }`}
                     />
                   )}
-                  <div>{getStatusBadge(product?.status)}</div>
+                  <div>{getStatusBadge(product?.status?.toLowerCase())}</div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -217,11 +206,6 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                 </p>
 
                 <div className="flex items-center justify-between mb-2">
-                  <div
-                    className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                  >
-                    {getProductTypeLabel(product?.productType)}
-                  </div>
                   <div className={isDark ? "text-white" : "text-gray-900"}>
                     {product?.price?.markedPrice !==
                       product?.price?.sellingPrice && (
