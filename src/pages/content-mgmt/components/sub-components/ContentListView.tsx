@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import type { RefObject } from "react";
 import { getPlainTextFromRichText } from "@/helpers";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface Business {
   id: string;
   name: string;
@@ -29,7 +30,6 @@ const ContentListView = ({
   drag,
   handleClick,
   handleContextMenu,
-  baseClasses = "",
   logoSrc,
   logoAlt,
   business,
@@ -37,12 +37,22 @@ const ContentListView = ({
   isInCategory,
   onRemove,
 }: ContentListViewProps) => {
+  const { isDark } = useThemeClasses();
   return (
     <div
       ref={drag}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      className={`group flex items-center gap-4 p-3 rounded-lg ${baseClasses}`}
+      className={`
+    group flex items-center gap-4 p-3 rounded-lg
+    transition-colors duration-150 cursor-pointer
+    ${
+      isDark
+        ? "bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-100"
+        : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-900"
+    }
+    shadow-sm ${isDark ? "shadow-black/20" : "shadow-gray-100"}
+  `}
     >
       <div className="flex-shrink-0">
         <img
@@ -53,7 +63,13 @@ const ContentListView = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+        <h4
+          className={`
+    font-medium truncate
+    ${isDark ? "text-gray-100" : "text-gray-900"}
+  `}
+        >
+          {" "}
           {business.name ? getPlainTextFromRichText(business.name) : "-"}{" "}
         </h4>
 

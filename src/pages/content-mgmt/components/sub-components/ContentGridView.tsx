@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { getPlainTextFromRichText } from "@/helpers";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { X } from "lucide-react";
 import type { RefObject } from "react";
 
@@ -39,6 +40,8 @@ const ContentGridView = ({
   business,
   primaryCategory,
 }: ContentGridViewProps) => {
+  const { isDark } = useThemeClasses();
+
   return (
     <div
       ref={drag}
@@ -68,17 +71,31 @@ const ContentGridView = ({
         )}
       </div>
 
-      <div className="p-3">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
+      <div
+        className={`
+    p-3
+    ${
+      isDark
+        ? "bg-gray-900 border border-gray-700/50  text-gray-200"
+        : "bg-white border border-gray-200  text-gray-800"
+    }
+  `}
+      >
+        {" "}
+        <h4
+          className={`
+    font-medium truncate mb-1
+    ${isDark ? "text-gray-100" : "text-gray-900"}
+  `}
+        >
+          {" "}
           {business.name}
         </h4>
-
         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
           {business.shortDescription
             ? getPlainTextFromRichText(business.shortDescription)
             : "-"}{" "}
         </p>
-
         {primaryCategory && (
           <span className="inline-block px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
             {primaryCategory.name}

@@ -101,11 +101,11 @@ function DraggableBusinessCard({
   isSelected,
   onSelect,
   onRemove,
-  categories,
+  // categories,
   viewMode,
   isInCategory = false,
   selectedIds,
-  onAddToCategory,
+  // onAddToCategory,
 }: {
   business: any;
   isSelected: boolean;
@@ -130,7 +130,7 @@ function DraggableBusinessCard({
         };
       }
 
-      // When the card IS selected → drag all currently selected items
+      // When the card IS selected drag all currently selected items
       if (selectedIds.size > 0) {
         return {
           ids: Array.from(selectedIds),
@@ -162,9 +162,9 @@ function DraggableBusinessCard({
     }
   };
 
-  const availableCategories = categories.filter(
-    (cat) => !cat.businessIds.includes(business.id),
-  );
+  // const availableCategories = categories.filter(
+  //   (cat) => !cat.businessIds.includes(business.id),
+  // );
 
   // ────────────────────────────────────────────────
   // Common shared parts
@@ -185,16 +185,7 @@ function DraggableBusinessCard({
   const logoSrc = business?.logo?.image;
   const logoAlt = business?.name;
   const primaryCategory = business?.primaryCategoryId;
-  // {
-  //   availableCategories.map((category) => (
-  //     <div
-  //       key={category.id}
-  //       onClick={() => onAddToCategory(business.id, category.id)}
-  //     >
-  //       {category.name}
-  //     </div>
-  //   ));
-  // }
+
   if (viewMode === "list") {
     return (
       <ContentListView
@@ -256,6 +247,8 @@ function CategorySection({
   viewMode: ViewMode;
   onClearSelection?: () => void;
 }) {
+  const { isDark } = useThemeClasses();
+
   const { isRTL } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(category.name);
@@ -279,7 +272,6 @@ function CategorySection({
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
     drop: (item: { ids: string[]; isMultiple: boolean; count: number }) => {
-      console.log("🚀 ~ CategorySection ~ item:", item);
       const newBusinessIds = item?.ids?.filter(
         (id) => !category.businessIds.includes(id),
       );
@@ -318,13 +310,17 @@ function CategorySection({
     <div
       ref={drop}
       className={`
-        rounded-lg border p-4 transition-all
-        ${
-          isOver
-            ? "border-teal-400 dark:border-teal-500 bg-teal-50/50 dark:bg-teal-950/20"
-            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
-        }
-      `}
+    rounded-lg border p-4 transition-all duration-200
+    ${
+      isOver
+        ? isDark
+          ? "border-teal-500 bg-teal-950/30 text-gray-100"
+          : "border-teal-400 bg-teal-50/60 text-gray-900"
+        : isDark
+          ? "border-gray-700 bg-gray-800/50 text-gray-400"
+          : "border-gray-200 bg-gray-50 text-gray-700"
+    }
+  `}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 flex-1">
@@ -372,7 +368,12 @@ function CategorySection({
             </div>
           ) : (
             <>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h3
+                className={`
+    text-lg font-semibold
+    ${isDark ? "text-gray-400" : "text-gray-900"}
+  `}
+              >
                 {category.name}
               </h3>
               <Badge>{categoryBusinesses?.length}</Badge>
@@ -386,27 +387,50 @@ function CategorySection({
               variant="ghost"
               size="sm"
               onClick={() => setShowMenu(!showMenu)}
-              className="hover:bg-gray-200 dark:hover:bg-gray-700"
+              className={`
+    hover:bg-gray-200      ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}
+    ${isDark ? "text-gray-300 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}
+    focus-visible:outline-none focus-visible:ring-2 
+    ${isDark ? "focus-visible:ring-gray-500/50" : "focus-visible:ring-gray-400/50"}
+  `}
             >
               <MoreVertical className="w-4 h-4" />
             </Button>
 
             {showMenu && (
-              <div className="absolute right-0 top-8 z-[9999] min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+              <div
+                className={`
+                    absolute right-0 top-8 z-[9999] 
+                    min-w-[180px] 
+                    rounded-md shadow-lg
+                    border
+                    ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}
+                  `}
+              >
                 <div className="py-1">
                   <button
-                    className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    className={`
+                      w-full flex items-center px-4 py-2 text-sm
+                      cursor-pointer transition-colors duration-150
+                      ${
+                        isDark
+                          ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100 active:bg-gray-600"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200"
+                      }
+                    `}
                     onClick={() => {
                       setIsEditing(true);
                       setShowMenu(false);
                     }}
                   >
-                    <Edit2 className="w-4 h-4 mr-2" />
+                    <Edit2
+                      className={`w-4 h-4 mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                    />
                     Rename Category
                   </button>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   <button
-                    className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 cursor-pointer"
                     onClick={() => {
                       setShowMenu(false);
                       onDelete(category.id);
@@ -707,6 +731,13 @@ export default function ContentMgmtPage({
     () => [...new Set(mockBusinesses.flatMap((b) => b.categories || []))],
     [],
   );
+  const { allWebsites } = useCommon();
+  const [selectedId, setSelectedId] = useState<"all" | string>("all");
+
+  const selectedName =
+    selectedId === "all"
+      ? "כל האתרים"
+      : (allWebsites?.find((s) => s._id === selectedId)?.name ?? "לא ידוע");
 
   const handleSendMessage = (data: MessageData) => {
     const selected = mockBusinesses.filter((b) => selectedBacklogIds.has(b.id));
@@ -742,16 +773,28 @@ export default function ContentMgmtPage({
   return (
     <DndProvider backend={HTML5Backend}>
       <div
-        className={`min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors flex flex-col ${
+        className={`min-h-screen  dark:bg-gray-950 transition-colors flex flex-col ${
           isRTL ? "rtl" : "ltr"
-        }`}
+        } ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
       >
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-hidden flex flex-col">
             {/* Fixed Header Section */}
-            <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
+            <div
+              className={`
+    shrink-0 
+    border-b p-6
+    ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}
+  `}
+            >
               <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <h1
+                  className={`
+    text-2xl font-bold mb-2
+    ${isDark ? "text-gray-400" : "text-gray-900"}
+  `}
+                >
+                  {" "}
                   {"Content Manager"}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
@@ -794,7 +837,9 @@ export default function ContentMgmtPage({
               <div className="flex-1 p-6">
                 <div className="">
                   <div className="mb-4 shrink-0">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    <h2
+                      className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold `}
+                    >
                       Source Backlog
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -1147,19 +1192,55 @@ export default function ContentMgmtPage({
                 <div>
                   <div className="mb-6 flex items-center justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <h2
+                        className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold `}
+                      >
                         Custom Categories
                       </h2>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Organize content for different website sections
                       </p>
                     </div>
-                    <Button variant="outline">
-                      {selectedCategoryWebsite === "all"
-                        ? "All Websites"
-                        : selectedCategoryWebsite}
-                    </Button>
-                    {/* All Websites Negev Sites */}
+                    <select
+                      value={selectedId ?? "all"}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "all") {
+                          setSelectedId("");
+                        } else {
+                          setSelectedId(value);
+                        }
+                      }}
+                      className={`
+    h-10 px-6 pr-8
+    text-sm font-medium
+    rounded-md
+    shadow-sm
+    appearance-none
+    cursor-pointer
+    transition-colors duration-150
+    border
+    ${
+      isDark
+        ? "bg-gray-800 border-gray-600 text-gray-100"
+        : "bg-white border-gray-300 text-gray-900"
+    }
+    focus:outline-none focus:ring-2
+    ${
+      isDark
+        ? "focus:border-blue-500/70 focus:ring-blue-500/30"
+        : "focus:border-blue-500 focus:ring-blue-500/40"
+    }
+  `}
+                    >
+                      <option value="all">All Websites</option>
+
+                      {allWebsites?.map((site) => (
+                        <option key={site._id} value={site._id}>
+                          {site.name}
+                        </option>
+                      ))}
+                    </select>
                     {/* Add more */}
                   </div>
 
@@ -1171,6 +1252,15 @@ export default function ContentMgmtPage({
                       onKeyDown={(e) =>
                         e.key === "Enter" && handleCreateCategory()
                       }
+                      className={`
+                        w-full px-3 py-2 rounded-md border 
+                        ${
+                          isDark
+                            ? "bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-blue-500/70 focus:ring-blue-500/30"
+                            : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/40"
+                        }
+                        focus:outline-none focus:ring-2 transition-colors duration-150
+                      `}
                     />
                     <Button
                       onClick={handleCreateCategory}
