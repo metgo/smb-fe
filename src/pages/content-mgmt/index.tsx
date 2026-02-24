@@ -302,7 +302,7 @@ function CategorySection({
     setIsEditing(false);
   };
 
-  const categoryBusinesses = businesses?.filter((b) =>
+  const categoryBusinesses = businesses?.filter((b: any) =>
     category?.businessIds?.includes(b._id),
   );
 
@@ -458,7 +458,7 @@ function CategorySection({
             <div className="relative">
               <div className="overflow-x-auto max-w-[98vw]">
                 <div className="flex gap-4 ">
-                  {categoryBusinesses?.map((business) => (
+                  {categoryBusinesses?.map((business: any) => (
                     <div key={business.id} className="w-64 flex-shrink-0">
                       <DraggableBusinessCard
                         business={business}
@@ -487,10 +487,7 @@ function CategorySection({
 //  Main Page Component
 // ───────────────────────────────────────────────
 
-export default function ContentMgmtPage({
-  language,
-  theme,
-}: ContentMgmtPageProps) {
+export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
   const { isRTL } = useLanguage();
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
@@ -579,13 +576,12 @@ export default function ContentMgmtPage({
   );
   const [showFilters, setShowFilters] = useState(false);
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories] = useState<string[]>([]);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
   );
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedCategoryWebsite, setSelectedCategoryWebsite] = useState("all");
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     categoryId: string;
@@ -627,7 +623,7 @@ export default function ContentMgmtPage({
   const backlogBusinesses = useMemo(() => {
     return businessData?.data?.filter((business: any) => {
       if (selectedCategories?.length > 0) {
-        const hasCat = business.categories?.some((c) =>
+        const hasCat = business.categories?.some((c: any) =>
           selectedCategories?.includes(c),
         );
         if (!hasCat) return false;
@@ -636,7 +632,7 @@ export default function ContentMgmtPage({
     });
   }, [selectedCategories, businessData?.data]);
 
-  const handleSelectBacklog = (id: string, isMulti: boolean) => {
+  const handleSelectBacklog = (id: string) => {
     setSelectedBacklogIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -719,27 +715,10 @@ export default function ContentMgmtPage({
     toast.success("Category created");
   };
 
-  const uniqueDMOs = useMemo(
-    () => [...new Set(mockBusinesses.map((b) => b.dmo || ""))],
-    [],
-  );
-  const uniqueAuthorities = useMemo(
-    () => [...new Set(mockBusinesses.map((b) => b.authority || ""))],
-    [],
-  );
-  const uniqueBusinessCategories = useMemo(
-    () => [...new Set(mockBusinesses.flatMap((b) => b.categories || []))],
-    [],
-  );
   const { allWebsites } = useCommon();
   const [selectedId, setSelectedId] = useState<"all" | string>("all");
 
-  const selectedName =
-    selectedId === "all"
-      ? "כל האתרים"
-      : (allWebsites?.find((s) => s._id === selectedId)?.name ?? "לא ידוע");
-
-  const handleSendMessage = (data: MessageData) => {
+  const handleSendMessage = () => {
     const selected = mockBusinesses.filter((b) => selectedBacklogIds.has(b.id));
     const results: SendResult[] = selected.map((business) => {
       const emailSuccess = Math.random() > 0.1;
@@ -782,17 +761,17 @@ export default function ContentMgmtPage({
             {/* Fixed Header Section */}
             <div
               className={`
-    shrink-0 
-    border-b p-6
-    ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}
-  `}
+              shrink-0 
+              border-b p-6
+              ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}
+            `}
             >
               <div className="mb-6">
                 <h1
                   className={`
-    text-2xl font-bold mb-2
-    ${isDark ? "text-gray-400" : "text-gray-900"}
-  `}
+                text-2xl font-bold mb-2
+                ${isDark ? "text-gray-400" : "text-gray-900"}
+              `}
                 >
                   {" "}
                   {"Content Manager"}
