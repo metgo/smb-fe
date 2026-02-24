@@ -57,6 +57,7 @@ export default function ProfilePage() {
     localStorage.removeItem("user_info");
     localStorage.removeItem("access_token");
     navigate(routes.auth, { replace: true });
+    window.location.reload();
   };
 
   const bank = banks?.find(
