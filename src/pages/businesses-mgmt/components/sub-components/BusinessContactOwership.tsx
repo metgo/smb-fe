@@ -121,7 +121,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               } top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400`}
             />
             <input
-              type="tel"
+              type="number"
               value={formData.phone}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
@@ -203,7 +203,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             />
 
             <input
-              type="tel"
+              type="number"
               value={formData.contactDetails?.phone}
               onChange={(e) =>
                 setFormData({
