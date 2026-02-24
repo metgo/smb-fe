@@ -13,15 +13,22 @@ import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { type FC } from "react";
 import { ImageWithFallback } from "@/components/shared";
+import { useTranslation } from "react-i18next";
 
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessReviewSubmitProps {
-  theme: "light" | "dark";
+  theme: Theme;
   formData: {
     nameEn: string;
+    nameHe: string;
+    nameAr: string;
     shortDescriptionEn: string;
+    shortDescriptionHe: string;
+    shortDescriptionAr: string;
     fullDescriptionEn: string;
+    fullDescriptionHe: string;
+    fullDescriptionAr: string;
     email: string;
     phone: string;
     address: string;
@@ -68,6 +75,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   images,
   t,
 }) => {
+  const { t: tc } = useTranslation("common");
   const { categories } = useCommon();
   const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
@@ -82,9 +90,8 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   ) => (
     <div
       className={clsx(
-        "flex items-center justify-between px-5 py-3",
+        "flex items-center justify-between px-5 py-3 border-b",
         isDark ? "bg-white/5" : "bg-gray-50",
-        "border-b",
         borderColor,
       )}
     >
@@ -125,6 +132,8 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
     </div>
   );
 
+  const divider = <div className={clsx("border-t mx-5", borderColor)} />;
+
   return (
     <div className="space-y-5">
       {/* Basic Info */}
@@ -135,10 +144,29 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           STEPS.BASIC_INFO,
         )}
         <div className="p-5 space-y-4">
+          {/* Names */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(t("business_name"), formData.nameEn)}
-            {row(t("short_description"), formData.shortDescriptionEn)}
-            {row(t("full_description"), formData.fullDescriptionEn)}
+            {row(tc("name"), formData.nameEn)}
+            {row(tc("name_he"), formData.nameHe)}
+            {row(tc("name_ar"), formData.nameAr)}
+          </div>
+
+          {divider}
+
+          {/* Short descriptions */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {row(tc("short_description_en"), formData.shortDescriptionEn)}
+            {row(tc("short_description_he"), formData.shortDescriptionHe)}
+            {row(tc("short_description_ar"), formData.shortDescriptionAr)}
+          </div>
+
+          {divider}
+
+          {/* Full descriptions */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {row(tc("full_description_en"), formData.fullDescriptionEn)}
+            {row(tc("full_description_he"), formData.fullDescriptionHe)}
+            {row(tc("full_description_ar"), formData.fullDescriptionAr)}
           </div>
         </div>
       </div>
@@ -173,6 +201,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           </div>
         </div>
       </div>
+
       {/* Category */}
       <div className={sectionCard}>
         {sectionHeader(
@@ -196,7 +225,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
         </div>
       </div>
 
-      {/* images */}
+      {/* Images */}
       <div className={sectionCard}>
         {sectionHeader(
           <ImageIcon className="w-4 h-4" />,
@@ -266,6 +295,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             ))}
         </div>
       </div>
+
       {/* HOURS */}
       <div className={sectionCard}>
         {sectionHeader(
@@ -300,6 +330,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           )}
         </div>
       </div>
+
       {/* Online Presence */}
       <div className={sectionCard}>
         {sectionHeader(

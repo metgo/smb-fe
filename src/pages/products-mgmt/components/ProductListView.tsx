@@ -116,9 +116,8 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       key: "status",
       label: t("product_status"),
       render: (product: any) => {
-        const st = (product.status || "").toLowerCase();
-
-        return <>{st ? <StatusBadge status={t(st)} /> : "-"}</>;
+        const st = (product?.status || "").toLowerCase();
+        return <>{st ? <StatusBadge status={st} /> : "-"}</>;
 
         // <span
         //   className={clsx(
