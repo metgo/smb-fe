@@ -119,6 +119,14 @@ CustomEditor.defaultConfig = {
   },
 };
 
+const applyEditorTheme = (editor: any, isDark: boolean) => {
+  const root = editor.ui.view.element; // .ck-editor root
+  if (!root) return;
+
+  if (isDark) root.classList.add("ck-dark");
+  else root.classList.remove("ck-dark");
+};
+
 export default function CKEditorWrapper({
   value = "<p></p>",
   onChange,
@@ -145,13 +153,24 @@ export default function CKEditorWrapper({
     return div.textContent || "";
   };
 
+  // ✅ INIT COUNT FROM INITIAL VALUE
+  useEffect(() => {
+    const plain = getPlainText(value || "");
+    setCharCount(plain.length);
+    setIsAtLimit(plain.length >= maxLength);
+    lastValidHtml.current = value || "<p></p>";
+  }, [value, maxLength]);
+
   // Apply/remove ck-dark class whenever isDark changes
   useEffect(() => {
     if (!wrapperRef.current) return;
-    if (isDark) {
-      wrapperRef.current.classList.add("ck-dark");
-    } else {
-      wrapperRef.current.classList.remove("ck-dark");
+
+    if (isDark) wrapperRef.current.classList.add("ck-dark");
+    else wrapperRef.current.classList.remove("ck-dark");
+
+    // apply to CK root too
+    if (editorInstance.current) {
+      applyEditorTheme(editorInstance.current, isDark);
     }
   }, [isDark]);
 
@@ -206,6 +225,7 @@ export default function CKEditorWrapper({
         onReady={(editor) => {
           // Store editor instance
           editorInstance.current = editor;
+          applyEditorTheme(editor, isDark);
 
           // Disable sticky toolbar
           const toolbarEl = editor.ui.view.toolbar.element;
@@ -235,6 +255,8 @@ export default function CKEditorWrapper({
               // Revert to last valid HTML — preserves all formatting/structure
               isReverting.current = true;
               editor.setData(lastValidHtml.current);
+              applyEditorTheme(editor, isDark);
+
               isReverting.current = false;
 
               setCharCount(maxLength);
