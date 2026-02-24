@@ -99,7 +99,7 @@ function DraggableBusinessCard({
   isSelected,
   onSelect,
   onRemove,
-  // categories,
+  categories,
   viewMode,
   isInCategory = false,
   selectedIds,
@@ -148,9 +148,9 @@ function DraggableBusinessCard({
     }
   };
 
-  // const availableCategories = categories.filter(
-  //   (cat) => !cat.businessIds.includes(business.id),
-  // );
+  const availableCategories = categories.filter(
+    (cat) => !cat.businessIds.includes(business.id),
+  );
 
   // ────────────────────────────────────────────────
   // Common shared parts
@@ -256,6 +256,7 @@ function CategorySection({
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
     drop: (item: { ids: string[]; isMultiple: boolean; count: number }) => {
+      // console.log("🚀 ~ CategorySection ~ item:", item)
       const newBusinessIds = item?.ids?.filter(
         (id) => !category.businessIds.includes(id),
       );
@@ -1089,7 +1090,7 @@ export default function ContentMgmtPage({
                         <DraggableBusinessCard
                           key={business._id}
                           business={business}
-                          isSelected={selectedBacklogIds.has(business.id)}
+                          isSelected={selectedBacklogIds.has(business._id)}
                           onSelect={handleSelectBacklog}
                           categories={categories}
                           onAddToCategory={handleAddToCategory}
