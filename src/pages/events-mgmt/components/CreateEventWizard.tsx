@@ -83,18 +83,16 @@ export default function CreateEventWizard({
   const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>(
     [],
   );
-  const [localTickets, setLocalTickets] = useState([]); // It's for TRK cache issue solved locally.
+  const [localTickets, setLocalTickets] = useState([]);
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [eventName, setEventName] = useState("");
   const [shortDescription, setShortDescription] = useState("");
-  const [fullDescription, setFullDescription] = useState("");
+  const [fullDescription, setFullDescription] = useState("<p></p>");
   const [eventLanguage, setEventLanguage] = useState<Language>("en");
-  const [eventStatus, setEventStatus] = useState<
-    "draft" | "pending" | "approved"
-  >("draft");
+  const [eventStatus, setEventStatus] = useState<EventStatus>("draft");
   const [internalNotes, setInternalNotes] = useState("");
   const [selectedSubCategoriesId, setSubCategoriesId] = useState<string[]>([]);
   const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
