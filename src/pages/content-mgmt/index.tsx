@@ -659,6 +659,7 @@ export default function ContentMgmtPage({
 
   const handleDeleteCategory = (categoryId: string) => {
     const cat = categories.find((c) => c.id === categoryId);
+
     if (!cat) return;
     if (cat?.businessIds?.length > 0) {
       setDeleteConfirmation({
@@ -1078,25 +1079,39 @@ export default function ContentMgmtPage({
                   </div>
 
                   {deleteConfirmation && (
-                    <div className="mb-6 p-4 bg-white dark:bg-gray-900 border rounded-lg shadow">
-                      <p className="font-medium">
-                        Delete "{deleteConfirmation.categoryName}"?
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        This category contains{" "}
-                        {deleteConfirmation.businessCount} business
-                        {deleteConfirmation.businessCount !== 1 ? "es" : ""}.
-                      </p>
-                      <div className="mt-4 flex gap-3 justify-end">
-                        <Button
-                          variant="outline"
-                          onClick={() => setDeleteConfirmation(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button variant="destructive" onClick={confirmDelete}>
-                          Delete
-                        </Button>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                      {/* Backdrop click to close */}
+                      <div
+                        className="absolute inset-0"
+                        onClick={() => setDeleteConfirmation(null)}
+                      />
+
+                      {/* Modal content */}
+                      <div className="relative w-full max-w-md rounded-lg border bg-white p-6 shadow-2xl dark:bg-gray-900 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold">
+                          Delete "{deleteConfirmation.categoryName}"?
+                        </h3>
+
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                          This category contains{" "}
+                          <span className="font-medium text-foreground">
+                            {deleteConfirmation.businessCount} business
+                            {deleteConfirmation.businessCount !== 1 ? "es" : ""}
+                          </span>
+                          . This action cannot be undone.
+                        </p>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                          <Button
+                            variant="outline"
+                            onClick={() => setDeleteConfirmation(null)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button variant="destructive" onClick={confirmDelete}>
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
