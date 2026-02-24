@@ -91,9 +91,12 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   const row = (label: string, value: React.ReactNode) => (
     <div className="flex flex-col gap-0.5">
       <span className={clsx("text-xs", textTertiary)}>{label}</span>
-      <span className={clsx("text-sm font-medium", textPrimary)}>
-        {value || "—"}
-      </span>
+      <div
+        className={clsx("text-sm font-medium", textPrimary)}
+        dangerouslySetInnerHTML={{
+          __html: value ? String(value).replace(/\n/g, "<br />") : "—",
+        }}
+      />
     </div>
   );
 

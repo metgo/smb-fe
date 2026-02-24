@@ -35,64 +35,39 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      {/* <div>
-        <h2
-          className={clsx(
-            "text-2xl font-bold",
-            isDark ? "text-white" : "text-gray-900",
-          )}
-        >
-          {t("event_info")}
-        </h2>
-        <p
-          className={clsx(
-            "text-sm mt-1",
-            isDark ? "text-gray-400" : "text-gray-600",
-          )}
-        >
-          {t("event_info_desc")}
-        </p>
-      </div> */}
+      <DescriptionCard
+        title={t("short_description")}
+        content={
+          eventDetails?.shortDescription ? eventDetails.shortDescription : "-"
+        }
+        icon={
+          <FileText
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-blue-400" : "text-blue-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
+        isDark={isDark}
+      />
 
-      {/* Short Description */}
-      {eventDetails?.shortDescription && (
-        <DescriptionCard
-          title={t("short_description")}
-          content={
-            eventDetails?.shortDescription ? eventDetails.shortDescription : "-"
-          }
-          icon={
-            <FileText
-              className={clsx(
-                "w-5 h-5",
-                isDark ? "text-blue-400" : "text-blue-600",
-              )}
-            />
-          }
-          iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
-          isDark={isDark}
-        />
-      )}
-
-      {/* Full Description */}
-      {eventDetails?.description && (
-        <DescriptionCard
-          title={t("full_description")}
-          content={eventDetails?.description ? eventDetails?.description : "-"}
-          icon={
-            <AlignLeft
-              className={clsx(
-                "w-5 h-5",
-                isDark ? "text-purple-400" : "text-purple-600",
-              )}
-            />
-          }
-          iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
-          isDark={isDark}
-          preWrap={true} // preserves line breaks
-        />
-      )}
+      <DescriptionCard
+        isEvent
+        title={t("full_description")}
+        content={eventDetails?.description ? eventDetails?.description : "-"}
+        icon={
+          <AlignLeft
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-purple-400" : "text-purple-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+        isDark={isDark}
+        preWrap={true}
+      />
 
       {/* Website Connections */}
       {eventDetails?.associatedWebsites &&
@@ -297,39 +272,6 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
           </p>
         </div>
       )}
-
-      {/* Empty State */}
-      {!eventDetails?.shortDescription &&
-        !eventDetails?.description &&
-        !eventDetails?.associatedWebsites?.length &&
-        !eventDetails?.internalNotes &&
-        !(
-          eventDetails?.status === "rejected" && eventDetails?.rejectionNote
-        ) && (
-          <div
-            className={clsx(
-              "rounded-xl border p-12 text-center",
-              isDark
-                ? "bg-gray-800 border-gray-700"
-                : "bg-gray-50 border-gray-200",
-            )}
-          >
-            <FileText
-              className={clsx(
-                "w-12 h-12 mx-auto mb-3",
-                isDark ? "text-gray-600" : "text-gray-400",
-              )}
-            />
-            <p
-              className={clsx(
-                "text-sm",
-                isDark ? "text-gray-400" : "text-gray-500",
-              )}
-            >
-              No additional information available
-            </p>
-          </div>
-        )}
     </div>
   );
 };

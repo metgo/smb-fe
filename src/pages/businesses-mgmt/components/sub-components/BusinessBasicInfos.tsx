@@ -161,7 +161,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               })
             }
             placeholder={getPlaceholder("name")}
-            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
             className={`w-full px-4 py-2 rounded-lg border ${
               errors[getFieldName("name")]
                 ? "border-red-500"
@@ -202,7 +201,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               })
             }
             placeholder={getPlaceholder("short")}
-            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
             className={`w-full px-4 py-2 rounded-lg border ${
               errors[getFieldName("shortDescription")]
                 ? "border-red-500"
@@ -242,7 +240,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               })
             }
             placeholder={getPlaceholder("full")}
-            dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
             className={`w-full px-4 py-2 rounded-lg border ${
               errors[getFieldName("fullDescription")]
                 ? "border-red-500"
