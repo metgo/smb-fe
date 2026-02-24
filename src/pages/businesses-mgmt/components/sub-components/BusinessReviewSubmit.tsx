@@ -1,6 +1,19 @@
+import clsx from "clsx";
+import {
+  Tag,
+  MapPin,
+  Pencil,
+  ImageIcon,
+  Globe,
+  Clock,
+  Users,
+  FileText,
+} from "lucide-react";
 import { useCommon } from "@/hooks/useCommon";
-import { CheckCircle } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { type FC } from "react";
+import { ImageWithFallback } from "@/components/shared";
+
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessReviewSubmitProps {
@@ -14,7 +27,14 @@ interface BusinessReviewSubmitProps {
     address: string;
     primaryCategory: string;
     logo: string | null;
+    tags: string[];
+    socialMedia: any;
+    operatingHours: any[];
+    deliveryArea: any;
   };
+  images?: any;
+  address: string;
+
   errors: Partial<{
     nameEn: string;
     shortDescriptionEn: string;
@@ -28,100 +48,308 @@ interface BusinessReviewSubmitProps {
   business: any;
   t: (key: string) => string;
   currentView: View;
+  setCurrentStep: (v: number) => void;
 }
-
+const STEPS = {
+  BASIC_INFO: 1,
+  CONTACT: 2,
+  ADDRESS: 3,
+  CATEGORY: 4,
+  IMAGES: 5,
+  HOURS: 6,
+  DELIVERY: 7,
+  ONLINE: 8,
+};
 const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
-  theme,
   formData,
-  errors,
 
+  setCurrentStep,
+  address,
+  images,
   t,
 }) => {
   const { categories } = useCommon();
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
+  const { socialMedia } = useCommon();
+  const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
+  const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
-  return (
-    <div className="space-y-6">
-      {/* Review Header */}
-      <div
-        className={`p-4 rounded-lg ${
-          theme === "dark"
-            ? "bg-green-900/20 border border-green-800"
-            : "bg-green-50 border border-green-200"
-        }`}
-      >
-        <CheckCircle className="w-8 h-8 text-green-600 mb-2" />
-        <h3
-          className={`mb-2 ${theme === "dark" ? "text-green-400" : "text-green-800"}`}
+  const sectionHeader = (
+    icon: React.ReactNode,
+    label: string,
+    step: number,
+  ) => (
+    <div
+      className={clsx(
+        "flex items-center justify-between px-5 py-3",
+        isDark ? "bg-white/5" : "bg-gray-50",
+        "border-b",
+        borderColor,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span className={clsx("opacity-60", textSecondary)}>{icon}</span>
+        <span
+          className={clsx(
+            "text-sm font-semibold tracking-wide uppercase",
+            textTertiary,
+          )}
         >
-          {t("review_your_business")}
-        </h3>
-        <p className={theme === "dark" ? "text-green-300" : "text-green-900"}>
-          {t("review_business_details")}
-        </p>
+          {label}
+        </span>
       </div>
 
-      {/* Missing Fields Warning */}
-      {Object.keys(errors).length > 0 && (
-        <div
-          className={`p-4 rounded-lg ${
-            theme === "dark"
-              ? "bg-red-900/20 border border-red-800"
-              : "bg-red-50 border border-red-200"
-          }`}
-        >
-          <h4
-            className={`mb-2 ${theme === "dark" ? "text-red-400" : "text-red-800"}`}
-          >
-            {t("missing_mandatory_fields")}
-          </h4>
-          <ul
-            className={`list-disc list-inside text-sm ${
-              theme === "dark" ? "text-red-300" : "text-red-700"
-            }`}
-          >
-            {errors.nameEn && <li>{t("business_name")}</li>}
-            {errors.shortDescriptionEn && <li>{t("short_description")}</li>}
-            {errors.fullDescriptionEn && <li>{t("full_description")}</li>}
-            {errors.email && <li>{t("business_email")}</li>}
-            {errors.phone && <li>{t("phone_number")}</li>}
-            {errors.address && <li>{t("address")}</li>}
-            {errors.primaryCategory && <li>{t("primary_category")}</li>}
-            {errors.logo && <li>{t("logo_required")}</li>}
-          </ul>
-        </div>
-      )}
-
-      {/* Summary Section */}
-      <div
-        className={`p-4 rounded-lg ${
-          theme === "dark"
-            ? "bg-gray-800/50 border border-gray-700"
-            : "bg-gray-50 border border-gray-200"
-        }`}
+      <button
+        type="button"
+        onClick={() => setCurrentStep(step)}
+        className={clsx(
+          "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
+          isDark
+            ? "text-teal-400 hover:bg-teal-950/50"
+            : "text-teal-600 hover:bg-teal-50",
+        )}
       >
-        <h4
-          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
-          {t("basic_information")}
-        </h4>
-        <div className="space-y-2">
-          <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-            <span className="font-medium">{t("business_name")}: </span>
-            {formData.nameEn || t("not_set")}
-          </p>
-          <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-            <span className="font-medium">{t("short_description")}: </span>
-            {formData.shortDescriptionEn || t("not_set")}
-          </p>
-          <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-            <span className="font-medium">{t("primary_category")}: </span>
-            {formData?.primaryCategory
+        <Pencil className="w-3 h-3" />
+        {t("edit")}
+      </button>
+    </div>
+  );
+
+  const row = (label: string, value: any) => (
+    <div className="flex flex-col gap-0.5">
+      <span className={clsx("text-xs", textTertiary)}>{label}</span>
+      <span className={clsx("text-sm font-medium line-clamp-2", textPrimary)}>
+        {value || "—"}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="space-y-5">
+      {/* Basic Info */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <FileText className="w-4 h-4" />,
+          t("basic_information"),
+          STEPS.BASIC_INFO,
+        )}
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {row(t("business_name"), formData.nameEn)}
+            {row(t("short_description"), formData.shortDescriptionEn)}
+            {row(t("full_description"), formData.fullDescriptionEn)}
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Info */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <Users className="w-4 h-4" />,
+          t("contact_information"),
+          STEPS.CONTACT,
+        )}
+
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {row(t("business_email"), formData.email)}
+            {row(t("phone_number"), formData.phone)}
+          </div>
+        </div>
+      </div>
+
+      {/* Address */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <MapPin className="w-4 h-4" />,
+          t("address"),
+          STEPS.ADDRESS,
+        )}
+
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {row(t("address"), address)}
+          </div>
+        </div>
+      </div>
+      {/* Category */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <Tag className="w-4 h-4" />,
+          t("primary_category"),
+          STEPS.CATEGORY,
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5">
+          {row(
+            t("primary_category"),
+            formData?.primaryCategory
               ? categories?.find(
                   (cat: any) => cat._id === formData.primaryCategory,
                 )?.name
-              : t("not_set")}
-          </p>
+              : "—",
+          )}
+          {row(
+            t("tags"),
+            formData?.tags?.length > 0 ? formData.tags.join(", ") : "—",
+          )}
         </div>
+      </div>
+
+      {/* images */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <ImageIcon className="w-4 h-4" />,
+          t("images"),
+          STEPS.IMAGES,
+        )}
+        <div className="flex flex-wrap gap-2 p-4">
+          {" "}
+          {images?.map((img: any, index: any) => (
+            <ImageWithFallback
+              key={index}
+              src={img?.image || img?.previewUrl}
+              alt="Uploaded image"
+              className="h-50 w-60 rounded-md shadow-md object-cover"
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* delivery */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <MapPin className="w-4 h-4" />,
+          t("delivery_areas_pricing"),
+          STEPS.DELIVERY,
+        )}
+
+        <div className="p-5 space-y-4">
+          {(formData.deliveryArea && formData.deliveryArea.length > 0
+            ? formData.deliveryArea
+            : [{}]
+          ) // fallback to one empty object if no data
+            .map((deliveryArea: any, areaIdx: any) => (
+              <div key={areaIdx} className={`p-4 rounded-lg`}>
+                <div className="grid grid-cols-12 gap-3 mb-3">
+                  {/* Area */}
+                  <div className="col-span-5">
+                    <p
+                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                    >
+                      {row(t("delivery_area"), deliveryArea.area)}
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="col-span-3">
+                    <p
+                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                    >
+                      {row(t("delivery_price"), deliveryArea.price)}
+                    </p>
+                  </div>
+
+                  {/* Pickup Locations Count */}
+                  <div className="col-span-4">
+                    <p
+                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                    >
+                      {row(
+                        t("pickup_locations"),
+                        deliveryArea.pickUpLocation?.length ?? 0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+      {/* HOURS */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <Clock className="w-4 h-4" />,
+          t("opening_hours"),
+          STEPS.HOURS,
+        )}
+        <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {formData.operatingHours && formData.operatingHours.length > 0 ? (
+            formData.operatingHours.map((hour: any) => {
+              const display = hour.isHoliday
+                ? t("closed")
+                : hour.open && hour.close
+                  ? `${hour.open} ${t("to")} ${hour.close}`
+                  : "—";
+
+              return (
+                <div key={hour.day} className="flex flex-col">
+                  <span className={clsx("font-medium text-sm", textTertiary)}>
+                    {t(hour.day)}
+                  </span>
+                  <span className={clsx("text-sm", textPrimary)}>
+                    {display}
+                  </span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="flex flex-col">
+              <span className={clsx("text-sm", textPrimary)}>—</span>
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Online Presence */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <Globe className="w-4 h-4" />,
+          t("online_presence"),
+          STEPS.ONLINE,
+        )}
+
+        {formData.socialMedia?.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 p-5">
+            {formData.socialMedia.map((sm: any) => {
+              const platform = allSocialMedia.find(
+                (p) => p._id === sm.socialMediaId,
+              );
+
+              const label = platform?.name || "Unknown";
+              const iconPath = platform?.icon?.iconPath || "";
+
+              return (
+                <div key={sm.socialMediaId} className="flex items-center gap-2">
+                  {iconPath && (
+                    <img
+                      src={iconPath}
+                      alt={label}
+                      className="w-5 h-5 rounded-md"
+                    />
+                  )}
+                  <span className={clsx("text-sm font-medium", textPrimary)}>
+                    {label}:{" "}
+                    <a
+                      href={sm.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={clsx(
+                        "text-teal-500 hover:underline",
+                        isDark ? "text-teal-400" : "text-teal-600",
+                      )}
+                    >
+                      {sm.url}
+                    </a>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-5">
+            <span className={clsx("text-sm", textPrimary)}>—</span>
+          </div>
+        )}
       </div>
     </div>
   );
