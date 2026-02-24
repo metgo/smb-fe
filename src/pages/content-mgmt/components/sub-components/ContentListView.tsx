@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import type { RefObject } from "react";
-
+import { getPlainTextFromRichText } from "@/helpers";
 interface Business {
   id: string;
   name: string;
@@ -54,11 +54,13 @@ const ContentListView = ({
 
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-          {business.name}
+          {business.name ? getPlainTextFromRichText(business.name) : "-"}{" "}
         </h4>
 
         <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-          {business.shortDescription}
+          {business.shortDescription
+            ? getPlainTextFromRichText(business.shortDescription)
+            : "-"}
         </p>
       </div>
 

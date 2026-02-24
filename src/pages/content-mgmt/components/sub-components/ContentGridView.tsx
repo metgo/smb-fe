@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { getPlainTextFromRichText } from "@/helpers";
 import { X } from "lucide-react";
 import type { RefObject } from "react";
 
@@ -73,7 +74,9 @@ const ContentGridView = ({
         </h4>
 
         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
-          {business.shortDescription}
+          {business.shortDescription
+            ? getPlainTextFromRichText(business.shortDescription)
+            : "-"}{" "}
         </p>
 
         {primaryCategory && (

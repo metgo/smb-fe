@@ -11,6 +11,8 @@ import {
   Trash2,
   Send,
   Badge,
+  Loader2,
+  Loader,
 } from "lucide-react";
 import FilterChips from "@/components/shared/FilterChips";
 
@@ -103,7 +105,7 @@ function DraggableBusinessCard({
   viewMode,
   isInCategory = false,
   selectedIds,
-  // onAddToCategory,
+  onAddToCategory,
 }: {
   business: any;
   isSelected: boolean;
@@ -117,15 +119,27 @@ function DraggableBusinessCard({
 }) {
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.BUSINESS_CARD,
-    canDrag: !isInCategory,
+    canDrag: !isInCategory, //  (prevents dragging out from inside category)
     item: () => {
-      if (isSelected && selectedIds.size > 0) {
+      // When dragging a card that is NOT selected, only drag that one
+      if (!isSelected) {
+        return {
+          ids: [business._id], ///usedrop id not matching
+          isMultiple: false,
+          count: 1,
+        };
+      }
+
+      // When the card IS selected → drag all currently selected items
+      if (selectedIds.size > 0) {
         return {
           ids: Array.from(selectedIds),
           isMultiple: true,
           count: selectedIds.size,
         };
       }
+
+      // fallback (shouldn't happen)
       return {
         ids: [business.id],
         isMultiple: false,
@@ -171,7 +185,16 @@ function DraggableBusinessCard({
   const logoSrc = business?.logo?.image;
   const logoAlt = business?.name;
   const primaryCategory = business?.primaryCategoryId;
-
+  // {
+  //   availableCategories.map((category) => (
+  //     <div
+  //       key={category.id}
+  //       onClick={() => onAddToCategory(business.id, category.id)}
+  //     >
+  //       {category.name}
+  //     </div>
+  //   ));
+  // }
   if (viewMode === "list") {
     return (
       <ContentListView
@@ -222,7 +245,7 @@ function CategorySection({
   onClearSelection,
 }: {
   category: Category;
-  businesses: Business[];
+  businesses: any;
   selectedIds: Set<string>;
   onSelect: (id: string, isMulti: boolean) => void;
   onRemove: (businessId: string) => void;
@@ -256,7 +279,7 @@ function CategorySection({
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
     drop: (item: { ids: string[]; isMultiple: boolean; count: number }) => {
-      // console.log("🚀 ~ CategorySection ~ item:", item)
+      console.log("🚀 ~ CategorySection ~ item:", item);
       const newBusinessIds = item?.ids?.filter(
         (id) => !category.businessIds.includes(id),
       );
@@ -270,6 +293,7 @@ function CategorySection({
             : `${newBusinessIds?.length} businesses added to category`,
         );
         onClearSelection?.();
+        console.log("🚀 ~ CategorySection ~ newBusinessIds:", newBusinessIds);
       } else if (item?.ids?.length > 0) {
         toast.info("Businesses already in this category");
       }
@@ -287,9 +311,8 @@ function CategorySection({
   };
 
   const categoryBusinesses = businesses?.filter((b) =>
-    category?.businessIds?.includes(b.id),
+    category?.businessIds?.includes(b._id),
   );
-  console.log("🚀 ~ CategorySection ~ categoryBusinesses:", categoryBusinesses);
 
   return (
     <div
@@ -599,6 +622,8 @@ export default function ContentMgmtPage({
   };
 
   const handleAddToCategory = (businessId: string, categoryId: string) => {
+    console.log("🚀 ~ handleAddToCategory ~ businessId:", businessId);
+
     setCategories((prev) =>
       prev.map((cat) =>
         cat.id === categoryId
@@ -723,7 +748,7 @@ export default function ContentMgmtPage({
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-hidden flex flex-col">
             {/* Fixed Header Section */}
-            <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
+            <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {"Content Manager"}
@@ -765,9 +790,9 @@ export default function ContentMgmtPage({
             <div className="flex">
               {/* Source Backlog */}
 
-              <div className="flex-1 max-h-[98vh] overflow-y-auto p-6">
+              <div className="flex-1 p-6">
                 <div className="">
-                  <div className="mb-4">
+                  <div className="mb-4 shrink-0">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                       Source Backlog
                     </h2>
@@ -1079,12 +1104,12 @@ export default function ContentMgmtPage({
                   <div
                     className={
                       viewMode === "grid"
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4"
-                        : "space-y-3"
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 max-h-[96vh] overflow-y-auto"
+                        : "space-y-3 max-h-[96vh] overflow-y-auto"
                     }
                   >
                     {isBusinessLoading ? (
-                      <div>{t("no_business")}</div>
+                      <Loader className="w-12 h-12 text-teal-500 animate-spin " />
                     ) : (
                       businessData?.data?.map((business: any) => (
                         <DraggableBusinessCard
@@ -1149,8 +1174,8 @@ export default function ContentMgmtPage({
                         businesses={businessData?.data}
                         selectedIds={new Set()}
                         onSelect={() => {}}
-                        onRemove={(id) =>
-                          handleRemoveFromCategory(category.id, id)
+                        onRemove={(_id) =>
+                          handleRemoveFromCategory(category.id, _id)
                         }
                         categories={categories}
                         onAddToCategory={handleAddToCategory}
