@@ -280,5 +280,7 @@
   "first_name_placeholder": "שם פרטי",
   "last_name_placeholder": "שם משפחה",
   "phone_number_placeholder": "מספר טלפון",
-  "address_placeholder": "כתובת"
+  "address_placeholder": "כתובת",
+
+  "max_length_reached": "הגעת לאורך המקסימלי."
 }
