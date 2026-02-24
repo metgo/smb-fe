@@ -237,14 +237,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       <FormFieldWrapper label={t("event_status")}>
         <RadioGroupField
           value={eventStatus}
-          options={[
-            "draft",
-            "pending",
-            "approved",
-            "archived",
-            "rejected",
-            "closed",
-          ]}
+          options={["draft", "pending", "approved"]}
           onChange={setEventStatus}
           labelMapper={(v) => t(v)}
           textSecondary={textSecondary}
