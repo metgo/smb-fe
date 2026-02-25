@@ -19,7 +19,7 @@ import {
 import FilterChips from "@/components/shared/FilterChips";
 
 import { Button } from "@/components/ui/button";
-
+import { motion, AnimatePresence } from "framer-motion";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
@@ -523,7 +523,6 @@ function CategorySection({
 
 export default function ContentMgmtPage() {
   type SidebarState = "collapsed" | "expanded" | "both";
-
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
   );
@@ -901,7 +900,9 @@ export default function ContentMgmtPage() {
                 <ListCollapse className="w-6 h-6 text-gray-700" />
               )}
             </button>
+
             {/* Scrollable Content */}
+
             <div className="flex">
               {/* Source Backlog */}
 
