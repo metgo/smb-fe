@@ -462,7 +462,7 @@ export default function DistributionCards() {
     (state) => state.auth,
   );
   const [bzStatus, setBzStatus] = useState("APPROVED");
-  const [productStatus, setProductStatus] = useState("active");
+  const [productStatus, setProductStatus] = useState("APPROVED");
   const [poiStatus, setPoiStatus] = useState("APPROVED");
 
   /* ---------------- API Calls --------------- */
