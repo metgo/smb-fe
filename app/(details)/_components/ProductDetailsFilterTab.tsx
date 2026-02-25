@@ -45,7 +45,7 @@ const ProductDetailsFilterTab = ({
   const rederTabContent = () => {
     switch (activeTab) {
       case 1:
-        return <ProductDescriptionTabContent description={description} />;
+        return <ProductDescriptionTabContent description={description || ""} />;
       case 2:
         return (
           <DeliveriesTabContent

@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { paymentMethodType } from "@/lib/utils";
-import TicketListModal from "./TicketListModal";
-import { getHebrewDateInfo } from "@/lib/helpers";
+import { getHebrewDateInfo, removePastDates } from "@/lib/helpers";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import TicketListModal from "./TicketListModal";
 
 const EventDateRange = ({
   _id,
@@ -17,6 +17,11 @@ const EventDateRange = ({
   payment,
 }: EventDetailsProps) => {
   const [openTicketModal, setOpenTicketModal] = useState(false);
+
+  const validDays = useMemo(
+    () => removePastDates(dayDescription || []),
+    [dayDescription],
+  );
 
   function handleOpenTicketModal() {
     setOpenTicketModal(true);
@@ -29,35 +34,37 @@ const EventDateRange = ({
   return (
     <>
       <section className="col-span-4 flex flex-col items-center gap-6 w-full">
-        <div className="w-full overflow-x-auto scroll-smooth pb-2">
-          <div className="flex items-center justify-start gap-2.5 w-max px-4">
-            {dayDescription?.map((item, index) => {
-              const eventInfo = getHebrewDateInfo(item.date);
-              const isActive = false;
+        {/* ===== DATE STRIP ===== */}
+        {validDays?.length > 0 && (
+          <div className="w-full overflow-x-auto scroll-smooth pb-2">
+            <div className="flex justify-center">
+              <div className="flex items-center gap-2.5 w-max px-4">
+                {validDays?.map((item, index) => {
+                  const eventInfo = getHebrewDateInfo(item.date);
+                  return (
+                    <div
+                      key={index}
+                      className={`w-[94px] h-[108px] border-[#D3D3D3] text-theme border rounded-[5px] flex flex-col shrink-0 items-center justify-center font-normal
+                        `}
+                    >
+                      <span>{eventInfo.days}</span>
 
-              return (
-                <div
-                  key={index}
-                  className={`w-[94px] h-[108px] border rounded-[5px] flex flex-col shrink-0 items-center justify-center font-normal
-                    ${
-                      isActive
-                        ? "border-[#E89900] bg-[#FDF5E6] text-[#E89900]"
-                        : "border-[#D3D3D3] text-theme"
-                    }`}
-                >
-                  <span>{eventInfo.days}</span>
-                  <div
-                    className={`font-bold text-[2.5rem] leading-none ${isActive ? "text-[#E89900]" : "text-charcoal"}`}
-                  >
-                    {eventInfo.day}
-                  </div>
-                  <span>{eventInfo.month}</span>
-                </div>
-              );
-            })}
+                      <div
+                        className={`font-bold text-[2.5rem] leading-none text-charcoal `}
+                      >
+                        {eventInfo.day}
+                      </div>
+
+                      <span>{eventInfo.month}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
+        {/* ===== CTA ===== */}
         <div className="space-y-2.5">
           {payment?.method === paymentMethodType?.externalLink ? (
             <Link

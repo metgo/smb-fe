@@ -23,7 +23,9 @@ const MobileProductDetails = ({
         <h1 className="font-bold text-6xl mb-4">{productDetails?.name}</h1>
         <div
           className="font-normal text-2xl text-theme"
-          dangerouslySetInnerHTML={{ __html: productDetails?.description }}
+          dangerouslySetInnerHTML={{
+            __html: productDetails?.description || "",
+          }}
         />
         <PriceTag
           price={productDetails?.price?.sellingPrice}

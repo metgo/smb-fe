@@ -10,12 +10,13 @@ import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { IoIosCloseCircle } from "react-icons/io";
+import { BiCalendar } from "react-icons/bi";
+import { GoClock } from "react-icons/go";
 
 const YourCartProducts = () => {
   const router = useRouter();
   const { cartItems, removeCartItem, getTotalPaidAmount, getTotalQuantity } =
     useCartStore();
-  console.log("🚀 ~ YourCartProducts ~ cartItems:", cartItems);
   const { setPlaceOrderItems } = useCheckoutStore();
 
   function handleRedirectToCheckout() {
@@ -73,17 +74,26 @@ const YourCartProducts = () => {
                           <h3 className="line-clamp-1 font-bold">
                             {item.name}
                           </h3>
-                          {item?.eventDate && (
-                            <span className="font-normal">
-                              {" "}
-                              - {item.eventDate}
-                            </span>
-                          )}
                         </div>
                         <div
-                          className="line-clamp-2 font-normal w-1/2 text-[12px] text-theme"
-                          dangerouslySetInnerHTML={{ __html: item.desc }}
+                          className="line-clamp-2 font-normal w-1/2 text-[14px] text-theme"
+                          dangerouslySetInnerHTML={{ __html: item?.desc || "" }}
                         />
+                        {item?.eventDate &&
+                          item?.startTime &&
+                          item?.endTime && (
+                            <div className="text-sm text-gray-800 mt-1 font-normal flex">
+                              <span className="flex gap-1 items-center">
+                                <BiCalendar /> {item?.eventDate}&nbsp;&nbsp;
+                              </span>
+                              <div className="flex gap-1 items-center">
+                                <GoClock />
+                                <span>
+                                  {item?.startTime} – {item?.endTime}
+                                </span>{" "}
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </div>
 

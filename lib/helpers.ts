@@ -494,3 +494,44 @@ export function groupTicketsByDateTime(
 
   return Array.from(map.values());
 }
+
+interface EventDay {
+  date: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+}
+
+export function removePastDates(days: EventDay[]): EventDay[] {
+  const today = new Date();
+
+  // normalize today → start of day (local)
+  today.setHours(0, 0, 0, 0);
+
+  return days.filter((d) => {
+    const dayDate = new Date(d.date);
+
+    // normalize event day → start of day (local)
+    dayDate.setHours(0, 0, 0, 0);
+
+    return dayDate >= today;
+  });
+}
+
+export function isDateUpcoming(dateStr: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const date = new Date(dateStr);
+  date.setHours(0, 0, 0, 0);
+  return date >= today;
+}
+
+export function formatDateMonth(dateStr: string): string {
+  const d = new Date(dateStr);
+
+  return new Intl.DateTimeFormat("he-IL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(d);
+}

@@ -37,7 +37,9 @@ const page = async ({ params }: PageProps) => {
             <h1 className="font-bold text-[40px]">{productDetails?.name}</h1>
             <div
               className="font-normal"
-              dangerouslySetInnerHTML={{ __html: productDetails?.description }}
+              dangerouslySetInnerHTML={{
+                __html: productDetails?.description || "",
+              }}
             />
 
             <PriceTag
