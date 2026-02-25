@@ -289,5 +289,29 @@
   "role": "תפקיד",
   "viewer_read_only": "צופה (קריאה בלבד)",
   "admin": "מנהל",
-  "user_not_in_system_alert": "אינו במערכת שלנו. אנא ספק את המידע שלו כדי לשלוח הזמנה."
+  "user_not_in_system_alert": "אינו במערכת שלנו. אנא ספק את המידע שלו כדי לשלוח הזמנה.",
+
+  "category_deleted": "הקטגוריה נמחקה",
+  "category_created": "הקטגוריה נוצרה",
+  "messages_sent_to_customers": "הודעות נשלחו ל{{count}} לקוח{{count !== 1 ? 'ים' : ''}}",
+  "business_added_to_category": "עסק נוסף לקטגוריה",
+  "businesses_added_to_category": "{{count}} עסקים נוספו לקטגוריה",
+  "businesses_already_in_category": "עסקים כבר קיימים בקטגוריה זו",
+  "business_removed_from_category": "עסק הוסר מהקטגוריה",
+  "drag_businesses_here_to_add_them_to_this_category": "גרור עסקים לכאן כדי להוסיף אותם לקטגוריה זו",
+  "rename_category": "שנה שם קטגוריה",
+  "delete_category": "מחק קטגוריה",
+
+  "content_manager_title": "מנהל תוכן",
+  "content_manager_description": "ארגן עסקים לקטגוריות מותאמות אישית עבור חלקי האתר שלך",
+  "custom_categories_title": "קטגוריות מותאמות אישית",
+  "custom_categories_description": "ארגן תוכן עבור חלקי אתר שונים",
+  "source_backlog_title": "רשימת עסקים מקורית",
+  "source_backlog_description": "{{count}} עסקים זמינים",
+  "new_category_name_placeholder": "שם קטגוריה חדשה...",
+  "all_websites_option": "כל האתרים",
+  "featured_businesses": "עסקים מובחרים",
+  "homepage_hero_section": "סקשן הדגשה בדף הבית",
+  "recommended_this_week": "מומלץ השבוע",
+  "create": "צור"
 }

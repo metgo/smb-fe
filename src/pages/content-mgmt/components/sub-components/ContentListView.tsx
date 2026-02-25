@@ -12,6 +12,7 @@ interface Business {
 
 interface Category {
   name: string;
+  hebrewName?: string;
 }
 
 interface ContentListViewProps {
@@ -26,6 +27,7 @@ interface ContentListViewProps {
   isInCategory?: boolean;
   onRemove?: (id: string) => void;
   isBusinessLoading?: boolean;
+  language?: any;
 }
 
 const ContentListView = ({
@@ -39,6 +41,7 @@ const ContentListView = ({
   isInCategory,
   onRemove,
   isBusinessLoading,
+  language,
 }: ContentListViewProps) => {
   const { isDark } = useThemeClasses();
   return (
@@ -86,7 +89,9 @@ const ContentListView = ({
       <div className="flex items-center gap-2">
         {primaryCategory && (
           <span className="inline-block px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
-            {primaryCategory.name}
+            {language === "en"
+              ? primaryCategory.name
+              : primaryCategory?.hebrewName}
           </span>
         )}
 

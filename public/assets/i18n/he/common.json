@@ -282,5 +282,6 @@
   "phone_number_placeholder": "מספר טלפון",
   "address_placeholder": "כתובת",
 
-  "max_length_reached": "הגעת לאורך המקסימלי."
+  "max_length_reached": "הגעת לאורך המקסימלי.",
+  "select_options_placeholder": "בחר אפשרויות"
 }

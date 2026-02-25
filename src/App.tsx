@@ -123,7 +123,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      errorElement: <ErrorUiPage />,
+      // errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
 

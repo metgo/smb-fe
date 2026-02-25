@@ -34,13 +34,7 @@ import { useCommon } from "@/hooks/useCommon";
 import ContentGridView from "./components/sub-components/ContentGridView";
 import ContentListView from "./components/sub-components/ContentListView";
 import { ReactMultiSelect } from "@/components/form-fields";
-
-// ───────────────────────────────────────────────
-//  Types
-// ───────────────────────────────────────────────
-
-type Language = "en" | "he" | "ar";
-type Theme = "light" | "dark" | "system";
+import { CKEditorWrapper } from "@/components/wrapper";
 
 interface SendResult {
   customerId: string;
@@ -52,12 +46,12 @@ interface SendResult {
   errorMessage?: string;
 }
 
-interface MessageData {
-  subject: string;
-  emailMessage: string;
-  smsMessage: string;
-  template?: string;
-}
+// interface MessageData {
+//   subject: string;
+//   emailMessage: string;
+//   smsMessage: string;
+//   template?: string;
+// }
 interface Filters {
   status: string;
   hasProductFilter: string;
@@ -65,19 +59,20 @@ interface Filters {
   accessibility: string[];
   groupTypes: string[];
 }
-interface ContentMgmtPageProps {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  onNavigate: (item: string) => void;
-  isBusinessLoading?: boolean;
-}
+// interface ContentMgmtPageProps {
+//   language: Language;
+//   setLanguage: (lang: Language) => void;
+//   theme: Theme;
+//   setTheme: (theme: Theme) => void;
+//   onNavigate: (item: string) => void;
+//   isBusinessLoading?: boolean;
+// }
 
 interface Category {
   id: string;
   name: string;
   businessIds: string[];
+  description: string;
 }
 
 type ViewMode = "grid" | "list";
@@ -92,13 +87,6 @@ const STORAGE_KEY = "content-manager-categories";
 //  Language hook (placeholder — replace with real one)
 // ───────────────────────────────────────────────
 
-const useLanguage = () => ({
-  t: {
-    contentManager: "Content Manager",
-  },
-  isRTL: false,
-});
-
 // ───────────────────────────────────────────────
 //  Draggable Business Card
 // ───────────────────────────────────────────────
@@ -108,6 +96,7 @@ function DraggableBusinessCard({
   isSelected,
   onSelect,
   onRemove,
+  language,
   isBusinessLoading,
   fetchNextPage,
   hasMore,
@@ -118,6 +107,7 @@ function DraggableBusinessCard({
   // onAddToCategory,
 }: {
   business: any;
+  language?: any;
   isSelected: boolean;
   onSelect: (id: string, isMulti: boolean) => void;
   onRemove?: (id: string) => void;
@@ -209,6 +199,7 @@ function DraggableBusinessCard({
         logoSrc={logoSrc}
         logoAlt={logoAlt}
         business={business}
+        language={language}
         isBusinessLoading={isBusinessLoading}
         primaryCategory={primaryCategory}
         fetchNextPage={fetchNextPage}
@@ -230,6 +221,7 @@ function DraggableBusinessCard({
       logoAlt={logoAlt}
       isInCategory={isInCategory}
       fetchNextPage={fetchNextPage}
+      language={language}
       hasMore={hasMore}
       onRemove={onRemove}
       business={business}
@@ -248,6 +240,7 @@ function CategorySection({
   selectedIds,
   onSelect,
   onRemove,
+  language,
   categories,
   onAddToCategory,
   onRename,
@@ -259,6 +252,7 @@ function CategorySection({
 }: {
   category: Category;
   businesses: any;
+  language?: any;
   selectedIds: Set<string>;
   onSelect: (id: string, isMulti: boolean) => void;
   onRemove: (businessId: string) => void;
@@ -272,9 +266,8 @@ function CategorySection({
   hasMore: any;
   onClearSelection?: () => void;
 }) {
-  const { isDark } = useThemeClasses();
-
-  const { isRTL } = useLanguage();
+  const { isDark, isRTL } = useThemeClasses();
+  const { t } = useTranslation("businesses");
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(category.name);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -306,13 +299,14 @@ function CategorySection({
       if (newBusinessIds.length > 0) {
         toast.success(
           newBusinessIds?.length === 1
-            ? "Business added to category"
-            : `${newBusinessIds?.length} businesses added to category`,
+            ? t("business_added_to_category")
+            : t("businesses_added_to_category", {
+                count: newBusinessIds?.length,
+              }),
         );
         onClearSelection?.();
-        console.log("🚀 ~ CategorySection ~ newBusinessIds:", newBusinessIds);
       } else if (item?.ids?.length > 0) {
-        toast.info("Businesses already in this category");
+        toast.info(t("businesses_already_in_category"));
       }
     },
     collect: (monitor) => ({
@@ -413,11 +407,11 @@ function CategorySection({
               size="sm"
               onClick={() => setShowMenu(!showMenu)}
               className={`
-    hover:bg-gray-200      ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}
-    ${isDark ? "text-gray-300 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}
-    focus-visible:outline-none focus-visible:ring-2 
-    ${isDark ? "focus-visible:ring-gray-500/50" : "focus-visible:ring-gray-400/50"}
-  `}
+              hover:bg-gray-200      ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}
+              ${isDark ? "text-gray-300 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}
+              focus-visible:outline-none focus-visible:ring-2 
+              ${isDark ? "focus-visible:ring-gray-500/50" : "focus-visible:ring-gray-400/50"}
+            `}
             >
               <MoreVertical className="w-4 h-4" />
             </Button>
@@ -425,10 +419,10 @@ function CategorySection({
             {showMenu && (
               <div
                 className={`
-                    absolute right-0 top-8 z-9999 
+                    absolute top-8 z-9999 
                     min-w-45 
                     rounded-md shadow-lg
-                    border
+                    border ${isRTL ? "left-0" : "right-0"}
                     ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}
                   `}
               >
@@ -451,7 +445,7 @@ function CategorySection({
                     <Edit2
                       className={`w-4 h-4 mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
                     />
-                    Rename Category
+                    {t("rename_category")}{" "}
                   </button>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   <button
@@ -462,7 +456,7 @@ function CategorySection({
                     }}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Category
+                    {t("delete_category")}{" "}
                   </button>
                 </div>
               </div>
@@ -493,6 +487,7 @@ function CategorySection({
                         categories={categories}
                         onAddToCategory={onAddToCategory}
                         viewMode="grid"
+                        language={language}
                         isBusinessLoading={isBusinessLoading}
                         fetchNextPage={fetchNextPage}
                         hasMore={hasMore}
@@ -515,11 +510,11 @@ function CategorySection({
 //  Main Page Component
 // ───────────────────────────────────────────────
 
-export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
-  const { isRTL } = useLanguage();
+export default function ContentMgmtPage() {
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
   );
+
   const { t } = useTranslation("businesses");
   const [filters, setFilters] = useState<Filters>({
     status: "all",
@@ -542,7 +537,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     setSearchQuery("");
     setPage(1);
   };
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -641,7 +636,6 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     categoryName: string;
     businessCount: number;
   } | null>(null);
-  console.log("🚀 ~ ContentMgmtPage ~ deleteConfirmation:", deleteConfirmation);
 
   const [showMessageComposer, setShowMessageComposer] = useState(false);
   const [showSendResults, setShowSendResults] = useState(false);
@@ -658,9 +652,24 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
       }
     } else {
       const defaults: Category[] = [
-        { id: "featured", name: "Featured Businesses", businessIds: [] },
-        { id: "homepage-hero", name: "Homepage Hero Section", businessIds: [] },
-        { id: "recommended", name: "Recommended This Week", businessIds: [] },
+        {
+          id: "featured",
+          name: t("featured_businesses"),
+          businessIds: [],
+          description: "",
+        },
+        {
+          id: "homepage-hero",
+          name: t("homepage_hero_section"),
+          businessIds: [],
+          description: "",
+        },
+        {
+          id: "recommended",
+          name: t("recommended_this_week"),
+          businessIds: [],
+          description: "",
+        },
       ];
       setCategories(defaults);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
@@ -696,8 +705,6 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
   };
 
   const handleAddToCategory = (businessId: string, categoryId: string) => {
-    console.log("🚀 ~ handleAddToCategory ~ businessId:", businessId);
-
     setCategories((prev) =>
       prev.map((cat) =>
         cat.id === categoryId
@@ -705,7 +712,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
           : cat,
       ),
     );
-    toast.success("Business added to category");
+    toast.success(t("business_added_to_category"));
   };
 
   const handleRemoveFromCategory = (categoryId: string, businessId: string) => {
@@ -719,7 +726,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
           : cat,
       ),
     );
-    toast.success("Business removed from category");
+    toast.success(t("business_removed_from_category"));
   };
 
   const handleRenameCategory = (categoryId: string, newName: string) => {
@@ -728,7 +735,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
         cat.id === categoryId ? { ...cat, name: newName } : cat,
       ),
     );
-    toast.success("Category renamed");
+    toast.success(t("rename_category"));
   };
 
   const handleDeleteCategory = (categoryId: string) => {
@@ -743,7 +750,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
       });
     } else {
       setCategories((prev) => prev.filter((c) => c.id !== categoryId));
-      toast.success("Category deleted");
+      toast.success(t("category_deleted"));
     }
   };
 
@@ -752,7 +759,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
       setCategories((prev) =>
         prev.filter((c) => c.id !== deleteConfirmation.categoryId),
       );
-      toast.success("Category deleted");
+      toast.success(t("category_deleted"));
       setDeleteConfirmation(null);
     }
   };
@@ -763,14 +770,18 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
       id: `cat-${Date.now()}`,
       name: newCategoryName.trim(),
       businessIds: [],
+      description: fullDescription,
     };
     setCategories((prev) => [...prev, newCat]);
+
     setNewCategoryName("");
-    toast.success("Category created");
+    setFullDescription("");
+    toast.success(t("category_created"));
   };
 
   const { allWebsites } = useCommon();
   const [selectedId, setSelectedId] = useState<"all" | string>("all");
+  const [fullDescription, setFullDescription] = useState("<p></p>");
 
   const handleSendMessage = () => {
     const selected = mockBusinesses.filter((b) => selectedBacklogIds.has(b.id));
@@ -798,9 +809,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     setShowSendResults(true);
     setSelectedBacklogIds(new Set());
 
-    toast.success(
-      `Messages sent to ${results?.length} customer${results?.length !== 1 ? "s" : ""}`,
-    );
+    toast.success(t("messages_sent_to_customers", { count: results?.length }));
   };
 
   return (
@@ -820,21 +829,14 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
               ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}
             `}
             >
-              <div className="mb-6">
-                <h1
-                  className={`
-                text-2xl font-bold mb-2
-                ${isDark ? "text-gray-400" : "text-gray-900"}
-              `}
-                >
-                  {" "}
-                  {"Content Manager"}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Organize businesses into custom categories for your website
-                  sections
-                </p>
-              </div>
+              <h1
+                className={`text-2xl font-bold mb-2 ${isDark ? "text-gray-400" : "text-gray-900"}`}
+              >
+                {t("content_manager_title")}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t("content_manager_description")}
+              </p>
 
               {selectedBacklogIds.size > 0 && (
                 <div className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
@@ -871,21 +873,22 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                 <div className="">
                   <div className="mb-4 shrink-0">
                     <h2
-                      className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold `}
+                      className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
                     >
-                      Source Backlog
+                      {t("source_backlog_title")}
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {backlogBusinesses?.length} businesses available
+                      {t("source_backlog_description", {
+                        count: backlogBusinesses?.length,
+                      })}
                     </p>
                   </div>
 
                   <div className="mb-4">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <SearchInput
-                          placeholder="Search businesses..."
+                          placeholder={t("search_businesses_placeholder")}
                           searchTerm={searchQuery}
                           setSearchTerm={setSearchQuery}
                           storageKey="contentSearchTerm"
@@ -1036,7 +1039,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                               </select> */}
                               <ReactMultiSelect
                                 label={t("accessibility")}
-                                options={accessibility.map((cat: any) => ({
+                                options={accessibility?.map((cat: any) => ({
                                   label: t(cat.name),
                                   value: cat._id,
                                 }))}
@@ -1054,7 +1057,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                             <div className="flex flex-col min-w-45">
                               <ReactMultiSelect
                                 label={t("group_types")}
-                                options={groupTypes.map((cat: any) => ({
+                                options={groupTypes?.map((cat: any) => ({
                                   label: t(cat.name),
                                   value: cat._id,
                                 }))}
@@ -1217,6 +1220,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                           categories={categories}
                           onAddToCategory={handleAddToCategory}
                           viewMode={viewMode}
+                          language={language}
                           selectedIds={selectedBacklogIds}
                         />
                       ))
@@ -1232,10 +1236,10 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                       <h2
                         className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold `}
                       >
-                        Custom Categories
+                        {t("custom_categories_title")}
                       </h2>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Organize content for different website sections
+                        {t("custom_categories_description")}
                       </p>
                     </div>
                     <select
@@ -1270,7 +1274,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                       }
                     `}
                     >
-                      <option value="all">All Websites</option>
+                      <option value="all">{t("all_websites_option")}</option>
 
                       {allWebsites?.map((site) => (
                         <option key={site._id} value={site._id}>
@@ -1283,7 +1287,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
 
                   <div className="mb-6 flex gap-3">
                     <input
-                      placeholder="New category name..."
+                      placeholder={t("new_category_name_placeholder")}
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       onKeyDown={(e) =>
@@ -1304,12 +1308,15 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                       disabled={!newCategoryName.trim()}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Create
+                      {t("create")}
                     </Button>
                   </div>
-
+                  <CKEditorWrapper
+                    value={fullDescription}
+                    onChange={setFullDescription}
+                  />
                   <div className="space-y-6">
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                       <CategorySection
                         key={category.id}
                         category={category}
@@ -1319,6 +1326,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                         onRemove={(_id) =>
                           handleRemoveFromCategory(category.id, _id)
                         }
+                        language={language}
                         isBusinessLoading={isBusinessLoading}
                         fetchNextPage={fetchNextPage}
                         hasMore={hasMore}

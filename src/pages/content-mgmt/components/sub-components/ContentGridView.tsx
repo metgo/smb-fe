@@ -14,6 +14,7 @@ interface Business {
 
 interface Category {
   name: string;
+  hebrewName?: string;
 }
 
 interface ContentGridViewProps {
@@ -25,6 +26,7 @@ interface ContentGridViewProps {
   logoSrc: string;
   logoAlt: string;
   isInCategory?: boolean;
+  language?: any;
   onRemove?: (id: string) => void;
   fetchNextPage?: () => void;
   hasMore: any;
@@ -42,6 +44,7 @@ const ContentGridView = ({
   isInCategory,
   onRemove,
   business,
+  language,
   primaryCategory,
   isBusinessLoading,
   fetchNextPage,
@@ -56,6 +59,7 @@ const ContentGridView = ({
     isLoading: isBusinessLoading,
     onLoadMore: fetchNextPage,
   });
+
   return (
     <div
       ref={drag}
@@ -70,11 +74,6 @@ const ContentGridView = ({
       >
         {" "}
         <div className="relative aspect-video">
-          {/* <img
-          src={logoSrc}
-          alt={logoAlt}
-          className="w-full h-full object-cover"
-        /> */}
           <ImageWithFallback
             src={logoSrc}
             alt={logoAlt}
@@ -121,9 +120,12 @@ const ContentGridView = ({
           </p>
           {primaryCategory && (
             <span className="inline-block px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
-              {primaryCategory.name}
+              {language === "en"
+                ? primaryCategory.name
+                : primaryCategory?.hebrewName}
             </span>
           )}
+          {/* <div>{getMatchedItems(categoryFilter, [primaryCategoryId])}</div> */}
         </div>
       </div>
     </div>
