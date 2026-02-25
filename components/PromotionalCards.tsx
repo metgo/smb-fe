@@ -98,9 +98,9 @@ const PromotionalCards = () => {
                   <div dir="rtl" className=" max-w-[120px]">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: removeInlineStylesFromHTML(
-                          item?.shortDescription,
-                        ),
+                        __html:
+                          removeInlineStylesFromHTML(item?.shortDescription) ||
+                          "",
                       }}
                       className="font-bold text-gray-800 line-clamp-1"
                     />

@@ -53,7 +53,7 @@ const MobileCardList = ({
               <h4 className="line-clamp-1 font-bold">{item.name}</h4>
               <div
                 className="line-clamp-1 font-normal text-theme overflow-hidden"
-                dangerouslySetInnerHTML={{ __html: item.description }}
+                dangerouslySetInnerHTML={{ __html: item.description || "" }}
               />
             </div>
           </div>

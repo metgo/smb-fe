@@ -36,7 +36,7 @@ const page = async ({ params }: PageProps) => {
 
         <div
           className="max-sm:px-6 max-w-[50rem] mx-auto mt-16 font-normal"
-          dangerouslySetInnerHTML={{ __html: articleDetails?.content }}
+          dangerouslySetInnerHTML={{ __html: articleDetails?.content || "" }}
         />
       </div>
     </div>

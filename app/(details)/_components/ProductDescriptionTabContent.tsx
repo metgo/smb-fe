@@ -6,7 +6,7 @@ const ProductDescriptionTabContent = ({
   return (
     <div
       className="font-normal"
-      dangerouslySetInnerHTML={{ __html: description }}
+      dangerouslySetInnerHTML={{ __html: description || "" }}
     />
   );
 };

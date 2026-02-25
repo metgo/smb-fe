@@ -52,7 +52,7 @@ const page = async ({ params }: PageProps) => {
                 <div
                   className="font-normal prose block"
                   dangerouslySetInnerHTML={{
-                    __html: ensureListStyles(funDayDetails?.description),
+                    __html: ensureListStyles(funDayDetails?.description) || "",
                   }}
                 />
               )}

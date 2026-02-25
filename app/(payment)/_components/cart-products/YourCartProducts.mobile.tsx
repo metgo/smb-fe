@@ -10,6 +10,8 @@ import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { IoIosCloseCircle } from "react-icons/io";
+import { BiCalendar } from "react-icons/bi";
+import { GoClock } from "react-icons/go";
 
 const MobileYourCartProducts = () => {
   const router = useRouter();
@@ -45,21 +47,21 @@ const MobileYourCartProducts = () => {
   }
 
   return (
-    <div className="max-sm:block md:hidden">
-      <h1 className="font-bold text-3xl mb-4">{cartLabels.myShoppingCart}</h1>
+    <div className="max-sm:block md:hidden mt-20 pt-8 ">
+      <h1 className="font-bold text-3xl my-4">{cartLabels.myShoppingCart}</h1>
 
       <section className=" border border-secondary bg-white p-2 rounded-xl">
         <div className=" overscroll-auto">
           {cartItems?.map((item, index) => {
-            const isThresholdQty = item.quantity === 1;
+            const isThresholdQty = item?.quantity === 1;
             return (
-              <div key={item._id + index}>
+              <div key={item?._id + index}>
                 <div className="grid grid-cols-12 gap-2 items-center justify-between">
                   <div className="flex items-center w-full col-span-7 gap-2">
-                    <div className="w-[60px] flex-shrink-0 h-[60px] bg-gray-200 relative rounded-md">
+                    <div className="w-[80px] flex-shrink-0 h-[80px] bg-gray-200 relative rounded-md">
                       <Image
-                        width={60}
-                        height={60}
+                        width={80}
+                        height={80}
                         quality={100}
                         unoptimized
                         alt={item.name}
@@ -69,8 +71,18 @@ const MobileYourCartProducts = () => {
                     </div>
                     <div className="flex items-start flex-col font-normal">
                       <h3 className="line-clamp-1">{item.name}</h3>
-                      {item?.eventDate && (
-                        <span className=""> - {item.eventDate}</span>
+                      {item?.eventDate && item?.startTime && item?.endTime && (
+                        <div className="text-xs text-gray-800 mt-1 font-normal">
+                          <div className="flex gap-1 items-center">
+                            <BiCalendar /> {item?.eventDate}&nbsp;&nbsp;
+                          </div>
+                          <div className="flex gap-1 items-center">
+                            <GoClock />
+                            <span>
+                              {item?.startTime} – {item?.endTime}
+                            </span>{" "}
+                          </div>
+                        </div>
                       )}
                       <PriceTag
                         price={item?.price}
