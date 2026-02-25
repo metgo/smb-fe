@@ -43,6 +43,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
   dayDescription,
   recurringEventRuleId,
 }) => {
+  console.log("🚀 ~ EventDateTimeDetails ~ dayDescription:", dayDescription);
   const { t } = useTranslation("events");
   const { language } = useAppSelector((state) => state.settings);
   const { isDark } = useThemeClasses();
@@ -110,26 +111,6 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        {/* <div>
-          <h2
-            className={clsx(
-              "text-2xl font-bold",
-              isDark ? "text-white" : "text-gray-900",
-            )}
-          >
-            {t("event_schedule")}
-          </h2>
-          <p
-            className={clsx(
-              "text-sm mt-1",
-              isDark ? "text-gray-400" : "text-gray-600",
-            )}
-          >
-            {dayDescription?.length}{" "}
-            {dayDescription?.length === 1 ? "date" : "dates"} scheduled
-          </p>
-        </div> */}
-
         {recurringEventRuleId && (
           <div
             className={clsx(

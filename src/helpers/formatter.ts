@@ -43,10 +43,62 @@ export function normalizeTime(durationInSec: number): string {
 }
 
 export const formatDate = (dateStr: string, language: string) => {
-  return new Date(dateStr).toLocaleDateString(
-    language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US",
-    { month: "short", day: "numeric", year: "numeric" },
-  );
+  const d = new Date(dateStr);
+
+  // Use UTC values to ignore timezone shift
+  const day = d.getUTCDate();
+  const month = d.getUTCMonth(); // 0-based
+  const year = d.getUTCFullYear();
+
+  // Map month names by locale
+  const monthNames: Record<string, string[]> = {
+    en: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    he: [
+      "ינו",
+      "פבר",
+      "מרץ",
+      "אפר",
+      "מאי",
+      "יונ",
+      "יול",
+      "אוג",
+      "ספט",
+      "אוק",
+      "נוב",
+      "דצמ",
+    ],
+    ar: [
+      "ينا",
+      "فبر",
+      "مارس",
+      "أبريل",
+      "مايو",
+      "يونيو",
+      "يوليو",
+      "أغسطس",
+      "سبتمبر",
+      "أكتوبر",
+      "نوفمبر",
+      "ديسمبر",
+    ],
+  };
+
+  const lang = language === "ar" ? "ar" : language === "he" ? "he" : "en";
+
+  return `${day} ${monthNames[lang][month]} ${year}`;
 };
 
 export function formatToBackendTemplate(html: string) {
