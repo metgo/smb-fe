@@ -1,3 +1,4 @@
+import { ImageWithFallback } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -50,12 +51,16 @@ const ContentGridView = ({
       className={`group rounded-lg overflow-hidden w-full ${baseClasses}`}
     >
       <div className="relative aspect-video">
-        <img
+        {/* <img
+          src={logoSrc}
+          alt={logoAlt}
+          className="w-full h-full object-cover"
+        /> */}
+        <ImageWithFallback
           src={logoSrc}
           alt={logoAlt}
           className="w-full h-full object-cover"
         />
-
         {isInCategory && onRemove && (
           <Button
             variant="destructive"

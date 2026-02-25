@@ -33,6 +33,7 @@ import { useTranslation } from "react-i18next";
 import { useCommon } from "@/hooks/useCommon";
 import ContentGridView from "./components/sub-components/ContentGridView";
 import ContentListView from "./components/sub-components/ContentListView";
+import { ReactMultiSelect } from "@/components/form-fields";
 
 // ───────────────────────────────────────────────
 //  Types
@@ -57,7 +58,13 @@ interface MessageData {
   smsMessage: string;
   template?: string;
 }
-
+interface Filters {
+  status: string;
+  hasProductFilter: string;
+  primaryCategory: string;
+  accessibility: string[];
+  groupTypes: string[];
+}
 interface ContentMgmtPageProps {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -492,12 +499,12 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     (state) => state.auth,
   );
   const { t } = useTranslation("businesses");
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     status: "all",
     hasProductFilter: "all",
     primaryCategory: "all",
-    accessibility: "all",
-    groupTypes: "all",
+    accessibility: [],
+    groupTypes: [],
   });
   const clearFilter = () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -507,8 +514,8 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
       status: "all",
       hasProductFilter: "all",
       primaryCategory: "all",
-      accessibility: "all",
-      groupTypes: "all",
+      accessibility: [],
+      groupTypes: [],
     });
     setSearchQuery("");
     setPage(1);
@@ -542,10 +549,10 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     if (filters.primaryCategory !== "all") {
       params.categories = filters.primaryCategory;
     }
-    if (filters.accessibility !== "all") {
+    if (filters.accessibility.length > 0) {
       params.accessibilityId = filters.accessibility;
     }
-    if (filters.groupTypes !== "all") {
+    if (filters.groupTypes.length > 0) {
       params.groupTypes = filters.groupTypes;
     }
     return params;
@@ -953,7 +960,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
 
                             {/* Accessibility Filter */}
                             <div className="flex flex-col min-w-45">
-                              <label
+                              {/* <label
                                 className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                               >
                                 {t("accessibility")}
@@ -978,46 +985,46 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                                     {cat.name}
                                   </option>
                                 ))}
-                              </select>
+                              </select> */}
+                              <ReactMultiSelect
+                                label={t("accessibility")}
+                                options={accessibility.map((cat: any) => ({
+                                  label: t(cat.name),
+                                  value: cat._id,
+                                }))}
+                                value={filters.accessibility}
+                                onChange={(values) =>
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    accessibility: values,
+                                  }))
+                                }
+                              />
                             </div>
 
                             {/* Group Types Filter */}
                             <div className="flex flex-col min-w-45">
-                              <label
-                                className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                              >
-                                {t("group_types")}
-                              </label>
-                              <select
-                                onChange={(e) =>
-                                  setFilters({
-                                    ...filters,
-                                    groupTypes: e.target.value,
-                                  })
-                                }
+                              <ReactMultiSelect
+                                label={t("group_types")}
+                                options={groupTypes.map((cat: any) => ({
+                                  label: t(cat.name),
+                                  value: cat._id,
+                                }))}
                                 value={filters.groupTypes}
-                                className={`w-full px-3 py-2 rounded-lg border ${
-                                  isDark
-                                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                                    : "bg-white border-gray-300 text-gray-900"
-                                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                              >
-                                <option value="">{t("all")}</option>
-                                {groupTypes?.map((cat: any) => (
-                                  <option key={cat._id} value={cat._id}>
-                                    {cat.name}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(values) =>
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    groupTypes: values,
+                                  }))
+                                }
+                              />
                             </div>
                           </div>
 
                           {/* Active Filters Label + Chips */}
                           {(filters?.status !== "all" ||
                             filters?.hasProductFilter !== "all" ||
-                            filters?.primaryCategory !== "all" ||
-                            filters?.accessibility !== "all" ||
-                            filters?.groupTypes !== "all") && (
+                            filters?.primaryCategory !== "all") && (
                             <div className="flex flex-col min-w-45">
                               {/* Label inline with other filter labels */}
                               <label
@@ -1041,13 +1048,6 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                                       } else if (key === "hasProductFilter") {
                                         displayValue =
                                           value === "yes" ? t("yes") : t("no");
-                                      } else if (key === "accessibility") {
-                                        const selectedAccessibility =
-                                          accessibility?.find(
-                                            (item: any) => item._id === value,
-                                          );
-                                        displayValue =
-                                          selectedAccessibility?.name || value;
                                       } else if (key === "primaryCategory") {
                                         const selectedprimaryCategory =
                                           categoryFilter?.find(
@@ -1056,14 +1056,15 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                                         displayValue =
                                           selectedprimaryCategory?.name ||
                                           value;
-                                      } else if (key === "groupTypes") {
-                                        const selectedgroupTypes =
-                                          groupTypes?.find(
-                                            (item: any) => item._id === value,
-                                          );
-                                        displayValue =
-                                          selectedgroupTypes?.name || value;
                                       }
+                                      //  else if (key === "groupTypes") {
+                                      //   const selectedgroupTypes =
+                                      //     groupTypes?.find(
+                                      //       (item: any) => item._id === value,
+                                      //     );
+                                      //   displayValue =
+                                      //     selectedgroupTypes?.name || value;
+                                      // }
                                       return (
                                         <FilterChips
                                           key={key}
@@ -1073,6 +1074,13 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                                               setFilters((prev) => ({
                                                 ...prev,
                                                 status: "all",
+                                              }));
+                                            } else if (
+                                              key === "accessibility"
+                                            ) {
+                                              setFilters((prev) => ({
+                                                ...prev,
+                                                accessibility: [],
                                               }));
                                             } else {
                                               setFilters((prev) => ({
@@ -1143,7 +1151,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                     className={
                       viewMode === "grid"
                         ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 max-h-[96vh] overflow-y-auto"
-                        : "space-y-3 max-h-[96vh] overflow-y-auto"
+                        : "grid grid-cols-1 space-y-3 max-h-[96vh] overflow-y-auto"
                     }
                   >
                     {isBusinessLoading ? (

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import type { RefObject } from "react";
 import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ImageWithFallback } from "@/components/shared";
 interface Business {
   id: string;
   name: string;
@@ -43,7 +44,7 @@ const ContentListView = ({
       ref={drag}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      className={`
+      className={` xl:max-w-xl
     group flex items-center gap-4 p-3 rounded-lg
     transition-colors duration-150 cursor-pointer
     ${
@@ -54,11 +55,11 @@ const ContentListView = ({
     shadow-sm ${isDark ? "shadow-black/20" : "shadow-gray-100"}
   `}
     >
-      <div className="flex-shrink-0">
-        <img
+      <div className="">
+        <ImageWithFallback
           src={logoSrc}
           alt={logoAlt}
-          className="w-12 h-12 rounded-lg object-cover"
+          className="w-12 h-12 object-cover"
         />
       </div>
 

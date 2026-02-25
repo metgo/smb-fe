@@ -147,7 +147,7 @@ export default function Sidebar() {
     },
     {
       id: "site-management",
-      path: routes.dashboard,
+      path: routes.contentMgmt,
       label: t("site_management") || "Site Management",
       icon: Globe,
       isEnabled: true,
