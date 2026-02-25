@@ -67,11 +67,7 @@ const ContentGridView = ({
       onContextMenu={handleContextMenu}
       className={`group rounded-lg overflow-hidden w-full ${baseClasses}`}
     >
-      <div
-        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
-        id="business-table-scroll"
-        ref={scrollRef}
-      >
+      <div className="">
         {" "}
         <div className="relative aspect-video">
           <ImageWithFallback
