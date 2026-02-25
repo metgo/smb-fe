@@ -40,6 +40,7 @@ import { StatusChangeBtn } from "@/components/btns";
 export default function ProductDetailsPage() {
   const { t } = useTranslation("products");
   const { t: ct } = useTranslation("common");
+  const { t: tt } = useTranslation("toast");
   const navigate = useNavigate();
 
   const { isDark, language, isRTL } = useThemeClasses();
@@ -124,13 +125,13 @@ export default function ProductDetailsPage() {
       try {
         await updateProduct({
           productId,
-          body: { status },
+          body: { status: status.toUpperCase() },
         }).unwrap();
 
         refetch();
-        toast.success("Product status updated successfully!");
+        toast.success(tt("product_status_update_success"));
       } catch (error) {
-        toast.error("Failed to update product status.");
+        toast.error(tt("product_status_update_failed"));
         console.error(error);
       }
   };
@@ -213,7 +214,6 @@ export default function ProductDetailsPage() {
             <div className={clsx("flex items-center gap-3")}>
               <>
                 <StatusChangeBtn
-                  isProduct
                   status={product?.status}
                   handleStatusChange={onStatusChangeHandler}
                 />

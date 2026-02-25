@@ -206,11 +206,11 @@ export default function CreateBusinessWizard({
         nameHe: editData?.nameHe || "",
         nameAr: editData?.nameAr || "",
         shortDescriptionEn: editData?.shortDescription || "",
-        shortDescriptionHe: "",
-        shortDescriptionAr: "",
+        shortDescriptionHe: editData?.shortDescriptionAr || "",
+        shortDescriptionAr: editData?.shortDescriptionHe || "",
         fullDescriptionEn: editData?.description || "",
-        fullDescriptionHe: "",
-        fullDescriptionAr: "",
+        fullDescriptionHe: editData?.descriptionAr || "",
+        fullDescriptionAr: editData?.descriptionHe || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
@@ -291,9 +291,14 @@ export default function CreateBusinessWizard({
     authorityId: selectedAuthorityId,
     // dmoId: selectedDmoId,
     name: formData.nameEn,
+    nameAr: formData.nameAr,
+    nameHe: formData.nameHe,
     shortDescription: formData.shortDescriptionEn,
+    shortDescriptionAr: formData.shortDescriptionAr,
+    shortDescriptionHe: formData.shortDescriptionHe,
     description: formData.fullDescriptionEn,
     internalNotes: formData.internalNotes,
+
     // step 2
     busiEmail: formData.email,
     phoneNumber: formData.phone,
@@ -316,7 +321,7 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    tags: formData.tags,
+    // tags: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -351,13 +356,25 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
-        // if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
-        if (!formData.shortDescriptionEn?.trim())
-          newErrors.shortDescriptionEn = t("required_field");
-        if (!formData.fullDescriptionEn?.trim())
-          newErrors.fullDescriptionEn = t("required_field");
-        if (formData.nameEn?.length < 3)
-          newErrors.nameEn = t("field_too_short");
+        if (
+          !formData.nameEn?.trim() &&
+          !formData.nameAr?.trim() &&
+          !formData.nameHe?.trim()
+        )
+          newErrors.name = t("required_field");
+        if (
+          !formData.shortDescriptionEn?.trim() &&
+          !formData.shortDescriptionAr?.trim() &&
+          !formData.shortDescriptionHe?.trim()
+        )
+          newErrors.shortDescription = t("required_field");
+        if (
+          !formData.fullDescriptionEn?.trim() &&
+          !formData.fullDescriptionAr?.trim() &&
+          !formData.fullDescriptionHe?.trim()
+        )
+          newErrors.fullDescription = t("required_field");
+
         break;
       case 2: {
         if (formData.email?.trim() === "") {
