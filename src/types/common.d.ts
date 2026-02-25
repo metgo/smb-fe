@@ -8,6 +8,8 @@ type TStatus =
   | "closed"
   | "archived";
 
+type EventStatus = "draft" | "pending" | "approved";
+
 interface Geo {
   lat: string;
   lng: string;

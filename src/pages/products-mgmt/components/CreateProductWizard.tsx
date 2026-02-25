@@ -139,7 +139,7 @@ export default function CreateProductWizard({
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("en");
+    useState<Language>("he");
   const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],

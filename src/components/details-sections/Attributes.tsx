@@ -104,13 +104,13 @@ const Attributes: FC<AttributesProps> = ({
       </div>
 
       <SelectableChips
-        label={t("accessiblities")}
+        label={"accessiblities"}
         items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
       <SelectableChips
-        label={t("group_types")}
+        label={"group_types"}
         items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}

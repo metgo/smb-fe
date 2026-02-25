@@ -278,5 +278,7 @@
   "first_name_placeholder": "First Name",
   "last_name_placeholder": "Last Name",
   "phone_number_placeholder": "Phone Number",
-  "address_placeholder": "Address"
+  "address_placeholder": "Address",
+
+  "max_length_reached": "Max length reached."
 }

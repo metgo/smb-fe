@@ -42,7 +42,7 @@ export default function EventsMgmtPage() {
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "true" | "false"
   >(savedState?.registrationFilter || "all");
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(
+  const [statusFilter, setStatusFilter] = useState<any | "all">(
     savedState?.statusFilter || "all",
   );
   const [dateRangeFilter, setDateRangeFilter] = useState({
