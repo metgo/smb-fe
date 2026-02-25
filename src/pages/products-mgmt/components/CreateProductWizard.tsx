@@ -198,7 +198,6 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-  console.log("🚀 ~ CreateProductWizard ~ formData:", formData);
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
@@ -385,7 +384,7 @@ export default function CreateProductWizard({
     descriptionAr: formData.fullDescriptionAr,
 
     primaryCategoryId: formData.primaryCategory,
-    tags: formData.tags,
+    // tags: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
 
