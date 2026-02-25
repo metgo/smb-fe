@@ -16,6 +16,7 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { GetAllBusinessesForMapRequest } from 'src/modules/business/shared/request';
 import { GetAllBusinessForMapQuery } from 'src/modules/business/marketplace/queries/get-all-business-for-map.query';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
 @Controller()
 export class BusinessMarketplaceController {
@@ -41,9 +42,13 @@ export class BusinessMarketplaceController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('businesses/:businessId')
-  async getBusinessDetailForAdmin(@Param('businessId') businessId: string) {
+  async getBusinessDetailForAdmin(
+    @Param('businessId') businessId: string,
+    @Query() query?: LocaleFilterQuery,
+  ) {
     const business = await this.businessServices.getBusiness({
       id: businessId,
+      locale: query.locale,
     });
 
     return business;

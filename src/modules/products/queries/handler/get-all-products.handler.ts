@@ -5,17 +5,19 @@ import { Model } from 'mongoose';
 import { SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { Product } from '../../schema/products.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 import { GetAllProductsQuery } from '../get-all-products.query';
+import { ProductsAudit } from '../../schema/products-audit.schema';
+import { ProductsService } from '../../products.services';
 
 @QueryHandler(GetAllProductsQuery)
 export class GetAllProductsHandler
 implements IQueryHandler<GetAllProductsQuery> {
   constructor(
     private queryBus: QueryBus,
-    @InjectModel(Product.name)
-    private ProductModel: Model<Product>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+    private readonly productsService: ProductsService,
   ) {}
 
   async execute(queries: GetAllProductsQuery): Promise<any> {
@@ -35,6 +37,7 @@ implements IQueryHandler<GetAllProductsQuery> {
         sortBy,
         sortOrder,
         vendorDelivers,
+        locale,
       } = queries.query;
 
       const findQuery = await this.queryBus.execute(
@@ -53,13 +56,13 @@ implements IQueryHandler<GetAllProductsQuery> {
       );
 
       let select
-        = '_id name description images price quantity businessId categories subCategories';
+        = '_id name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId categories subCategories productId';
 
       let populate = [
         {
           path: 'businessId',
           select:
-            '_id logo name address geoLocation location openingHrs isAlwaysOpen slug',
+            '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen slug',
         },
         {
           path: 'categories subCategories',
@@ -72,15 +75,19 @@ implements IQueryHandler<GetAllProductsQuery> {
         populate = [];
       }
 
-      const productsList = await queryhandler<Product>(this.ProductModel, {
-        findQuery,
-        select,
-        page: Number(page),
-        limit: Number(limit),
-        sort: sortBy || 'createdAt',
-        sortOrder: sortOrder || SortOrder.DESC,
-        populate,
-      });
+      const productsList = await queryhandler<ProductsAudit>(
+        this.ProductsAuditModel,
+        {
+          findQuery,
+          select,
+          page: Number(page),
+          limit: Number(limit),
+          sort: sortBy || 'createdAt',
+          sortOrder: sortOrder || SortOrder.DESC,
+          populate,
+          isLean: true,
+        },
+      );
 
       if (!productsList?.data || !productsList.data?.length) {
         return {
@@ -88,6 +95,23 @@ implements IQueryHandler<GetAllProductsQuery> {
           products: [],
         };
       }
+
+      const mappedProducts = await Promise.all(
+        productsList.data.map((product: any) => {
+          const { _id, productId, ...rest } = product.toObject
+            ? product.toObject()
+            : product;
+
+          return {
+            ...rest,
+            _id: productId,
+          };
+        }),
+      );
+
+      productsList.data = await Promise.all(
+        mappedProducts.map(p => this.productsService.localizeProduct(p, locale)),
+      );
 
       return productsList;
     } catch (err) {

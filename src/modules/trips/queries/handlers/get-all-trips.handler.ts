@@ -72,9 +72,7 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
 
     const matchQuery: Record<string, any> = {
       status: TripStatus.APPROVED,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
+      isDeleted: { $ne: true },
       ...(isTrip !== undefined && { isTrip }),
 
       ...(estimatedDurationMin || estimatedDurationMax

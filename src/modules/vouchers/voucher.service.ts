@@ -75,13 +75,16 @@ export class VoucherService {
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
-      const { code, productId } = query;
+      const { code, productId, locale } = query;
 
-      const productDetail = await this.productService.findOne(productId);
+      const productDetail = await this.productService.findOne(
+        productId,
+        locale,
+      );
 
       const findQuery: any = {
         code: code.trim(),
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       const populate = {

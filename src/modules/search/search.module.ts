@@ -4,22 +4,28 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { GetCombinedSearchHandler } from './query/handler/get-combined-search.handler';
 import { SearchController } from './search.controller';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
-import { EventSchema } from '../events/schema/events.schema';
 import { CampaignModule } from '../campaign/campaign.module';
-import { Product, ProductSchema } from '../products/schema/products.schema';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from '../products/schema/products-audit.schema';
 
 @Module({
   imports: [
     CampaignModule,
     CqrsModule,
     MongooseModule.forFeature([
-      { name: Business.name, schema: BusinessSchema },
-      { name: Event.name, schema: EventSchema },
-      { name: Product.name, schema: ProductSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
+      { name: ProductsAudit.name, schema: ProductsAuditSchema },
     ]),
   ],
   controllers: [SearchController],

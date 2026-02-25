@@ -13,6 +13,7 @@ import { EventStatus } from '../../events.type';
 import { TicketStatus } from 'src/modules/tickets/tickets.type';
 import { GetAllTicketsQuery } from 'src/modules/tickets/queries/get-all-tickets.query';
 import { GetAllTicketsRequest } from 'src/modules/tickets/requests/get-all-tickets.request';
+import { EventsAudit } from '../../schema/events-audit.schema';
 
 @QueryHandler(GetEventBySlugQuery)
 export class GetEventBySlugHandler
@@ -20,8 +21,8 @@ implements IQueryHandler<GetEventBySlugQuery> {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     private campaignService: CampaignService,
     private readonly queryBus: QueryBus,
   ) {}
@@ -46,6 +47,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       let findQuery: any = {
         slug,
         status: EventStatus.APPROVED,
+        isActive: true,
 
         dayDescription: {
           $elemMatch: {
@@ -55,7 +57,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
           },
         },
 
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       const orConditions = [];
@@ -83,9 +85,9 @@ implements IQueryHandler<GetEventBySlugQuery> {
       ];
 
       const select
-        = '_id location cover images cover name address countryCode phoneNumber shortDescription description contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug dayDescription payment';
+        = '_id location cover images cover name nameHe nameAr address countryCode phoneNumber shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug dayDescription payment eventId';
 
-      const event = await this.EventModel.findOne(findQuery)
+      const event = await this.EventsAuditModel.findOne(findQuery)
         .populate(populate)
         .lean()
         .select(select);
@@ -94,14 +96,17 @@ implements IQueryHandler<GetEventBySlugQuery> {
       }
 
       const ticketRequest = new GetAllTicketsRequest();
-      ticketRequest.eventId = event._id.toString();
+      ticketRequest.eventId = event.eventId.toString();
       ticketRequest.status = TicketStatus.ACTIVE;
       const tickets = await this.queryBus.execute(
         new GetAllTicketsQuery(ticketRequest),
       );
 
+      const { eventId, ...rest } = event;
+
       const newEvent = {
-        ...event,
+        ...rest,
+        _id: eventId,
         payment: {
           ticketIds: tickets,
         },

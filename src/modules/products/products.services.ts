@@ -7,57 +7,36 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { FlattenMaps, Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
-import {
-  queryhandler,
-  updateOneByManyFields,
-} from 'src/core/helper/query-helper';
-import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { Product } from 'src/modules/products/schema/products.schema';
-import { UploadMediaCommand } from 'src/modules/products/interface';
 import { ProductStatus } from 'src/modules/products/products.type';
-import { UserType } from 'src/modules/users/users.type';
-import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries';
 import { Business } from '../business/shared/schema/business.schema';
+import { ProductsAudit } from './schema/products-audit.schema';
+import { Locale } from 'src/common/enum';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    @InjectModel(Product.name)
-    private ProductModel: Model<Product>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
     private campaignService: CampaignService,
-    private cartService: CartService,
   ) {}
 
-  async seed() {
-    const products = await this.ProductModel.find();
-
-    await Promise.all(
-      products.map(async b => {
-        const impact = getRandomNumberBetween(9, 73);
-        await this.ProductModel.updateOne(
-          { _id: b.id },
-          {
-            $set: { impact },
-          },
-        );
-      }),
-    );
-  }
-
-  async findOne(productId: string | mongoose.Types.ObjectId): Promise<Product> {
+  async findOne(
+    id: string | mongoose.Types.ObjectId,
+    locale: Locale,
+  ): Promise<any> {
     const populate = {
       path: 'categories subCategories',
       select: `${disSelect}`,
@@ -72,12 +51,11 @@ export class ProductsService {
     };
     const select = `${disSelect}`;
     try {
-      const product = await this.ProductModel.findOne({
-        _id: productId,
-        status: ProductStatus.ACTIVE,
-        deletedAt: null,
-        deletedBy: null,
-        isDeleted: false,
+      const product = await this.ProductsAuditModel.findOne({
+        productId: id,
+        isActive: true,
+        status: ProductStatus.APPROVED,
+        isDeleted: { $ne: true },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },
@@ -85,12 +63,20 @@ export class ProductsService {
       })
         .select(select)
         .populate(populate)
-        .populate(populate1);
+        .populate(populate1)
+        .lean();
 
       if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
-      return product;
+
+      const { productId, ...rest } = product;
+
+      const response = { ...rest, _id: productId };
+
+      const mappedResponse = await this.localizeProduct(response, locale);
+
+      return mappedResponse;
     } catch (err) {
       exceptionHandling(err);
     }
@@ -114,19 +100,18 @@ export class ProductsService {
       }
 
       const select
-        = '_id name dmoId authorityId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
+        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
 
       const populate = {
         path: 'categories subCategories',
         select: '_id name hebrewName',
       };
 
-      const product = await this.ProductModel.findOne({
-        _id: productId,
-        status: ProductStatus.ACTIVE,
-        deletedAt: null,
-        deletedBy: null,
-        isDeleted: false,
+      const product = await this.ProductsAuditModel.findOne({
+        productId,
+        isActive: true,
+        status: ProductStatus.APPROVED,
+        isDeleted: { $ne: true },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },
@@ -134,10 +119,11 @@ export class ProductsService {
       })
         .populate<{ businessId: Business }>(
           'businessId',
-          '_id logo name address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
+          '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
         )
         .populate(populate)
-        .select(select);
+        .select(select)
+        .lean();
 
       if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -160,57 +146,84 @@ export class ProductsService {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      const useBusinessInfo: Business = product?.deliveryInfoSameAsBusiness
-        ? product?.businessId
-        : {
-          ...product?.businessId,
-          deliveryArea: [],
-          deliveryAdditionalInfo: '',
-          isPickUpAvailable: false,
-        };
+      const useBusinessInfo: FlattenMaps<Business>
+        = product?.deliveryInfoSameAsBusiness
+          ? product?.businessId
+          : {
+            ...product?.businessId,
+            deliveryArea: [],
+            deliveryAdditionalInfo: '',
+            isPickUpAvailable: false,
+          };
+
+      const response = await this.localizeProduct(product, query.locale);
 
       return {
-        _id: product._id,
-        name: product?.name,
-        dmoId: product?.dmoId,
-        description: product?.description,
-        images: product?.images,
-        price: product?.price,
-        quantity: product?.quantity,
-        businessId: product?.businessId,
-        deliveryArea: product?.deliveryArea?.length
+        _id: response?.productId,
+        name: response?.name,
+        dmoId: response?.dmoId,
+        description: response?.description,
+        images: response?.images,
+        price: response?.price,
+        quantity: response?.quantity,
+        businessId: response?.businessId,
+        deliveryArea: response?.deliveryArea?.length
           ? product.deliveryArea
           : useBusinessInfo?.deliveryArea,
 
         deliveryAdditionalInfo:
-          product?.deliveryAdditionalInfo
+          response?.deliveryAdditionalInfo
           ?? useBusinessInfo?.deliveryAdditionalInfo,
         isPickUpAvailable:
-          product?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
-        deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo,
-        categories: product?.categories,
-        subCategories: product?.subCategories,
+          response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
+        deliverySpecificSellerInfo: response?.deliverySpecificSellerInfo,
+        categories: response?.categories,
+        subCategories: response?.subCategories,
       };
     } catch (err) {
       exceptionHandling(err);
     }
   }
 
-  async findManyById(ids: string[]): Promise<Product[]> {
+  async findManyById(ids: string[]): Promise<ProductsAudit[]> {
     try {
-      const findQuery = { _id: { $in: ids }, status: ProductStatus.ACTIVE };
-      let select: {};
+      const findQuery = {
+        productId: { $in: ids },
+        status: ProductStatus.APPROVED,
+        isActive: true,
+        isDeleted: { $ne: true },
+      };
+      const select = `${disSelect}`;
 
-      const products = await queryhandler<Product>(this.ProductModel, {
-        findQuery,
-        select,
-      });
+      const products = await queryhandler<ProductsAudit>(
+        this.ProductsAuditModel,
+        {
+          findQuery,
+          select,
+          isLean: true,
+        },
+      );
 
       if (!products?.data?.length) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      return products?.data;
+      const mappedProducts = products.data.map((product: any) => {
+        const { _id, productId, ...rest } = product.toObject
+          ? product.toObject()
+          : product;
+
+        return {
+          ...rest,
+          _id: productId,
+        };
+      });
+
+      const response = await Promise.all(
+        mappedProducts.map(p => this.localizeProduct(p, Locale.HEBREW)),
+      );
+
+      return response;
     } catch (error) {
       this.logger.error('[PRODUCT]: FAILED TO LIST PRODUCTS', {
         err: error.message,
@@ -219,106 +232,36 @@ export class ProductsService {
     }
   }
 
-  async uploadMedia(command: UploadMediaCommand) {
-    try {
-      const updatedField = {
-        updatedBy: command.loggedInUserId,
-        updatedAt: new Date(),
-      };
-
-      let updatedProduct: mongoose.Document<unknown, {}, Product> &
-        Product & {
-          _id: mongoose.Types.ObjectId;
-        };
-      if (command.role === UserType.SUPERADMIN) {
-        updatedProduct = await updateOneByManyFields<Product>(
-          this.ProductModel,
-          {
-            _id: command.productId,
-            businessId: command.businessId,
-          },
-          {
-            $push: { images: { $each: command.body } },
-            $set: updatedField,
-          },
-        );
-      } else {
-        updatedProduct = await updateOneByManyFields<Product>(
-          this.ProductModel,
-          {
-            _id: command.productId,
-            businessId: command.businessId,
-            $or: [
-              { primaryUserId: command.loggedInUserId },
-              { collaboratorId: command.loggedInUserId },
-            ],
-          },
-          {
-            $push: { images: { $each: command.body } },
-            $set: updatedField,
-          },
-        );
-      }
-
-      if (!updatedProduct) {
-        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-      }
-
-      this.logger.info(`[PRODUCT]: UPLOADED IMAGES for ${command.productId}`);
-
-      return updatedProduct;
-    } catch (err) {
-      this.logger.error(
-        `[PRODUCT]: FAILED TO UPLOAD IMAGE productId:${command.productId}`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
-
-  async deleteImage(
-    loggedInUserId: string,
-    id: string,
-    imageUrl: any,
-  ): Promise<Product> {
-    const existingProduct = await this.ProductModel.findById(id);
-
-    if (!existingProduct) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-    }
-
-    const images = existingProduct.images.filter(
-      image => image.image !== imageUrl,
-    );
-
-    if (!images?.length) {
-      throw new BadRequestException(ServerErrors.PRODUCT.IMAGE_EMPTY);
-    }
-
-    const updateProduct = await this.ProductModel.findOneAndUpdate(
-      { _id: id },
-      { images, updatedAt: new Date(), updatedBy: loggedInUserId },
-      { new: true },
-    );
-    if (!updateProduct) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-    }
-
-    return updateProduct;
-  }
-
   async getProductInformationForOrders(productInfo) {
     try {
       const ids = productInfo.map(item => item.id?.toString());
-      const products = await this.ProductModel.find({ _id: { $in: ids } });
+      const products = await this.ProductsAuditModel.find({
+        productId: { $in: ids },
+        isActive: true,
+        isDeleted: { $ne: true },
+      }).lean();
 
       if (!products?.length) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      return products;
+      const mappedProducts = await Promise.all(
+        products.map((product: any) => {
+          const { _id, productId, ...rest } = product.toObject
+            ? product.toObject()
+            : product;
+
+          return {
+            ...rest,
+            _id: productId,
+          };
+        }),
+      );
+
+      const response = await Promise.all(
+        mappedProducts.map(p => this.localizeProduct(p, Locale.HEBREW)),
+      );
+      return response;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
         throw new BadRequestException(
@@ -331,21 +274,31 @@ export class ProductsService {
 
   async getProductInformationForCart(productInfo) {
     try {
-      const product = await this.ProductModel.findOne({
-        _id: productInfo?.id,
+      const product = await this.ProductsAuditModel.findOne({
+        productId: productInfo?.id,
         $or: [
           { 'quantity.remaining': { $gte: productInfo?.quantity } },
           { 'quantity.isUnlimited': true },
         ],
-        isDeleted: false,
-        status: ProductStatus.ACTIVE,
-      });
+        isDeleted: { $ne: true },
+        status: ProductStatus.APPROVED,
+        isActive: true,
+      }).lean();
 
       if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      return product;
+      const { productId, ...rest } = product;
+
+      const response = { ...rest, _id: productId };
+
+      const mappedResponse = await this.localizeProduct(
+        response,
+        Locale.HEBREW,
+      );
+
+      return mappedResponse;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
         throw new BadRequestException(
@@ -356,202 +309,10 @@ export class ProductsService {
     }
   }
 
-  // async checkTofreezeQuantity(products: AddProductToCart[]) {
-  //   try {
-  //     const availableProducts = await Promise.all(
-  //       products.map(async productInfo => {
-  //         const product = await this.findOne(productInfo.id);
-
-  //         if (product.quantity.remaining < productInfo.quantity) {
-  //           throw new BadRequestException(
-  //             `Insufficient quantity for product: ${productInfo.id}`,
-  //           );
-  //         }
-  //       }),
-  //     );
-
-  //     return availableProducts;
-  //   } catch (err) {
-  //     this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
-  //       err: err.message,
-  //     });
-  //     exceptionHandling(err);
-  //   }
-  // }
-
-  // async freezeQuantity(
-  //   products: AddProductToCart[],
-  //   cartId: ObjectId,
-  //   loggedInUser?: LoggedInUserInterface,
-  // ) {
-  //   try {
-  //     const updatedProducts = await Promise.all(
-  //       products.map(async productInfo => {
-  //         const product = await this.findOne(productInfo.id);
-
-  //         const updateField = {
-  //           'quantity.remaining':
-  //             product.quantity.remaining - productInfo.quantity,
-  //           $push: {
-  //             freeze: {
-  //               cartId,
-  //               quantity: productInfo.quantity,
-  //             },
-  //           },
-  //           updatedAt: new Date(),
-  //           updatedBy: loggedInUser?.id,
-  //         };
-
-  //         const updatedProduct = await this.ProductModel.findByIdAndUpdate(
-  //           productInfo.id,
-  //           updateField,
-  //           { new: true },
-  //         );
-
-  //         if (!updatedProduct) {
-  //           throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-  //         }
-
-  //         return updatedProduct;
-  //       }),
-  //     );
-
-  //     this.logger.info('[Order-Product]: Quantity freezed', {
-  //       message: updatedProducts,
-  //     });
-
-  //     return updatedProducts;
-  //   } catch (err) {
-  //     this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
-  //       err: err.message,
-  //     });
-  //     exceptionHandling(err);
-  //   }
-  // }
-
-  async deleteFreezeProductPostSuccess(
-    products: {
-      id: ObjectId;
-      quantity: number;
-      price: number;
-      address: string;
-    }[],
-    orderId: string,
-    loggedInUser: LoggedInUserInterface,
-  ) {
-    try {
-      await Promise.all(
-        products.map(async product => {
-          const cart = await this.cartService.findOneByOrderId(orderId);
-          await this.ProductModel.findOneAndUpdate(
-            { _id: product.id },
-            {
-              $set: { updatedAt: new Date(), updatedBy: loggedInUser?.id },
-              $pull: { freeze: { cartId: cart._id } },
-            },
-            { new: true },
-          );
-        }),
-      );
-      this.logger.info('[EXTERNAL-API-PRODUCT]: REMOVE FREEZED ITEM DETAILS', {
-        message: products,
-      });
-    } catch (err) {
-      this.logger.error(
-        '[EXTERNAL-API-PRODUCT]: FAILED TO REMOVE FREEZE DATA',
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
-
-  async reimburseFreezeProductsPostFailure(
-    products: {
-      id: ObjectId;
-      quantity: number;
-      price: number;
-      address: string;
-    }[],
-    orderId: string,
-    loggedInUser: LoggedInUserInterface,
-  ) {
-    try {
-      const cart = await this.cartService.findOneByOrderId(orderId);
-
-      await Promise.all(
-        products.map(async product => {
-          await this.ProductModel.updateOne(
-            { _id: product.id, 'freeze.cartId': cart._id },
-            [
-              {
-                $set: {
-                  updatedAt: new Date(),
-                  updatedBy: loggedInUser?.id,
-                  'quantity.remaining': {
-                    $add: [
-                      '$quantity.remaining',
-                      {
-                        $ifNull: [
-                          {
-                            $arrayElemAt: [
-                              {
-                                $map: {
-                                  input: {
-                                    $filter: {
-                                      input: '$freeze',
-                                      as: 'f',
-                                      cond: { $eq: ['$$f.cartId', cart._id] },
-                                    },
-                                  },
-                                  as: 'filteredFreeze',
-                                  in: '$$filteredFreeze.quantity',
-                                },
-                              },
-                              0,
-                            ],
-                          },
-                          0,
-                        ],
-                      },
-                    ],
-                  },
-                  freeze: {
-                    $filter: {
-                      input: '$freeze',
-                      as: 'f',
-                      cond: { $ne: ['$$f.cartId', cart._id] },
-                    },
-                  },
-                },
-              },
-            ],
-            { new: true },
-          );
-        }),
-      );
-      this.logger.info(
-        '[EXTERNAL-API-PRODUCT]: REIMBURSED PRODUCT QUANTITY ONCE PAYMENT FAILED',
-        {
-          message: products,
-        },
-      );
-    } catch (err) {
-      this.logger.error(
-        '[EXTERNAL-API-PRODUCT]: FAILED TO REIMBURSE QUANITTY AFTER PAYMENT FAILED',
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
-
   async deductQuantity(products) {
     const bulkOps = products.map(pro => ({
       updateOne: {
-        filter: { _id: pro.id },
+        filter: { productId: pro.id, isActive: true },
         update: [
           {
             $set: {
@@ -564,25 +325,71 @@ export class ProductsService {
       },
     }));
 
-    await this.ProductModel.bulkWrite(bulkOps);
+    await this.ProductsAuditModel.bulkWrite(bulkOps);
   }
 
-  async findProductsByField(field: keyof Product, id: ObjectId[]) {
-    const products = await this.ProductModel.find({
+  async findProductsByField(field: keyof ProductsAudit, id: ObjectId[]) {
+    const products = await this.ProductsAuditModel.find({
       [field]: { $in: id },
-      status: ProductStatus.ACTIVE,
-      deletedAt: null,
-      deletedBy: null,
-      isDeleted: false,
+      isActive: true,
+      status: ProductStatus.APPROVED,
+      isDeleted: { $ne: true },
       $or: [
         { 'quantity.remaining': { $gt: 0 } },
         { 'quantity.isUnlimited': true },
       ],
-    }).select('_id');
+    })
+      .select('_id')
+      .lean();
 
     if (!products) {
       throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
     return products;
+  }
+
+  async localizeProduct(product: any, locale: Locale) {
+    const {
+      nameAr,
+      descriptionAr,
+      shortDescriptionAr,
+      name,
+      description,
+      shortDescription,
+      nameHe,
+      descriptionHe,
+      shortDescriptionHe,
+      ...rest
+    } = product;
+
+    switch (locale) {
+      case Locale.ARABIC:
+        return {
+          ...rest,
+          name: nameAr || name || nameHe,
+          description: descriptionAr || description || descriptionHe,
+          shortDescription:
+            shortDescriptionAr || shortDescription || shortDescriptionHe,
+        };
+      case Locale.HEBREW:
+        return {
+          ...rest,
+          name: nameHe || name || nameAr,
+          description: descriptionHe || description || descriptionAr,
+          shortDescription:
+            shortDescriptionHe || shortDescription || shortDescriptionAr,
+        };
+
+      case Locale.ENGLISH:
+        return {
+          ...rest,
+          name: name || nameHe || nameAr,
+          description: description || descriptionHe || descriptionAr,
+          shortDescription:
+            shortDescription || shortDescriptionHe || shortDescriptionAr,
+        };
+      default:
+        return product;
+    }
   }
 }

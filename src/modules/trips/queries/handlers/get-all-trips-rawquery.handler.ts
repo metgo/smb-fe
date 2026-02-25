@@ -5,16 +5,16 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllTripsRawQuery } from '../get-all-trips-rawquery.query';
 import { TripStatus } from '../../trips.types';
 import { InjectModel } from '@nestjs/mongoose';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Model } from 'mongoose';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 
 @QueryHandler(GetAllTripsRawQuery)
 export class GetAllTripsRawQueryHandler
 implements IQueryHandler<GetAllTripsRawQuery> {
   constructor(
     private campaignService: CampaignService,
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
   ) {}
 
   async execute(queries: GetAllTripsRawQuery): Promise<any> {
@@ -86,16 +86,16 @@ implements IQueryHandler<GetAllTripsRawQuery> {
           };
         }
 
-        stationId = await this.BusinessModel.find({
+        stationId = await this.BusinessesAuditModel.find({
           ...findQueryBusiness,
-        }).select('_id');
+        }).select('businessId');
       }
 
       if (!stationId) return { data: [] };
 
       let findQuery: any = {
         status: TripStatus.APPROVED,
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       const orConditions = [];

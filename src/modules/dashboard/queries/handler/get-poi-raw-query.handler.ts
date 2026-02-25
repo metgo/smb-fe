@@ -23,7 +23,7 @@ export class GetPOIRawQueryHandler implements IQueryHandler<GetPOIRawQuery> {
 
       const findQuery: any = {
         status: BusinessStatus.APPROVED,
-        isDeleted: false,
+        isDeleted: { $ne: true },
         serviceType: ServicesTypes.POINT_OF_INTEREST,
       };
 

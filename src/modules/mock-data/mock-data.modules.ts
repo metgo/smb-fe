@@ -5,29 +5,17 @@ import {
   UsersMockData,
   UsersMockDataSchema,
 } from 'src/modules/mock-data/schema/active-users.schema';
-import { MockDataController } from 'src/modules/mock-data/mock-data.controller';
-import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import {
   StatisticsMockData,
   StatisticsMockDataSchema,
 } from 'src/modules/mock-data/schema/impression-engagement.schema';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
-import { Product, ProductSchema } from '../products/schema/products.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: UsersMockData.name, schema: UsersMockDataSchema },
       { name: StatisticsMockData.name, schema: StatisticsMockDataSchema },
-      { name: Business.name, schema: BusinessSchema },
-      { name: Product.name, schema: ProductSchema },
     ]),
   ],
-  controllers: [MockDataController],
-  providers: [MockDataServices],
-  exports: [MockDataServices],
 })
 export class MockDataModule {}

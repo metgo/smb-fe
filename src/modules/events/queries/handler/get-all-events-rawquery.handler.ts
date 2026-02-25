@@ -37,7 +37,8 @@ implements IQueryHandler<GetAllEventsRawQuery> {
 
       let findQuery: any = {
         status: EventStatus.APPROVED,
-        isDeleted: false,
+        isDeleted: { $ne: true },
+        isActive: true,
       };
 
       const orConditions = [];

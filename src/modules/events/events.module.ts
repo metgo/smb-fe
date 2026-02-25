@@ -15,11 +15,15 @@ import { CampaignModule } from '../campaign/campaign.module';
 import { GetSearchRecommendationTourismHandler } from './queries/handler/get-search-recommendation.handler';
 import { GetAllEventsRawQueryHandler } from './queries/handler/get-all-events-rawquery.handler';
 import { GetEventsByIdHandler } from './queries/handler/get-by-ids.handler';
+import { EventsAudit, EventsAuditSchema } from './schema/events-audit.schema';
 
 @Module({
   imports: [
     CqrsModule,
-    MongooseModule.forFeature([{ name: 'Event', schema: EventSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Event', schema: EventSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
+    ]),
     UsersModule,
     MediaModule,
     AuthorityModule,

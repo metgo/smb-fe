@@ -9,8 +9,6 @@ import {
 import { DMOModule } from '../dmo/dmo.module';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { UsersModule } from '../users/users.module';
-import { StatsController } from './stats.controller';
-import { StatsService } from './stats.service';
 import {
   Campaign,
   CampaignSchema,
@@ -57,8 +55,5 @@ import {
     forwardRef(() => UsersModule),
     DMOModule,
   ],
-  providers: [StatsService],
-  controllers: [StatsController],
-  exports: [StatsService],
 })
 export class StatsModule {}

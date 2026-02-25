@@ -9,8 +9,9 @@ export class LocaleFilterQuery extends CommonFilterQuery {
     type: 'enum',
     enum: Locale,
     required: false,
+    default: Locale.HEBREW,
   })
   @IsOptional()
   @IsEnum(Locale)
-    locale: Locale;
+    locale: Locale = Locale.HEBREW;
 }

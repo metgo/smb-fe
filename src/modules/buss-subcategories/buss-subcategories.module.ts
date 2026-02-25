@@ -11,26 +11,32 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
 import { UsersModule } from 'src/modules/users/users.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { GetAllSubCategoriesHandler } from './queries/handler/get-all-subcategories.handler';
-import { Product, ProductSchema } from '../products/schema/products.schema';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
 import {
   Authority,
   AuthoritySchema,
 } from '../authority/schema/authority.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
-import { Event, EventSchema } from '../events/schema/events.schema';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from '../products/schema/products-audit.schema';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: 'BussSubCategory', schema: BussSubCategorySchema },
-      { name: Product.name, schema: ProductSchema },
-      { name: Business.name, schema: BusinessSchema },
-      { name: Event.name, schema: EventSchema },
+      { name: ProductsAudit.name, schema: ProductsAuditSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
       { name: Trip.name, schema: TripSchema },
       { name: Authority.name, schema: AuthoritySchema },
     ]),

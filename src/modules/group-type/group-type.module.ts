@@ -10,18 +10,18 @@ import { GroupTypeService } from './group-type.service';
 import { UsersModule } from '../users/users.module';
 import { GetAllGroupTypesHandler } from './queries/handler/get-all-grouptypes.handler';
 import { CampaignModule } from '../campaign/campaign.module';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: GroupType.name, schema: GroupTypeSchema },
-      { name: Business.name, schema: BusinessSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: Trip.name, schema: TripSchema },
     ]),
     AuthorityModule,

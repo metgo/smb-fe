@@ -26,10 +26,7 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
 
       const query: any = {
         $and: [
-          { $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] },
-          { $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] },
-          { $or: [{ deletedBy: null }, { deletedBy: { $exists: false } }] },
-
+          { isDeleted: { $ne: true } },
           ...(eventId ? [{ eventId }] : []),
           ...(status ? [{ status }] : []),
           ...(type ? [{ type }] : []),

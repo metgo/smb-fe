@@ -10,4 +10,5 @@ export interface QueryHelperInterface {
   populate?: any;
   populate1?: any;
   languageQuery?: Locale;
+  isLean?: boolean;
 }

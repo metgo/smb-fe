@@ -7,21 +7,18 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { GetCombinedSearchQuery } from '../get-combined-search.query';
 import { EventStatus } from 'src/modules/events/events.type';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { Event } from 'src/modules/events/schema/events.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
-import { Product } from 'src/modules/products/schema/products.schema';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
 @QueryHandler(GetCombinedSearchQuery)
 export class GetCombinedSearchHandler
 implements IQueryHandler<GetCombinedSearchQuery> {
   constructor(
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
-    @InjectModel(Product.name)
-    private ProductModel: Model<Product>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     private campaignService: CampaignService,
   ) {}
 
@@ -47,20 +44,24 @@ implements IQueryHandler<GetCombinedSearchQuery> {
 
       const businessBaseQuery: any = {
         status: BusinessStatus.APPROVED,
+        isActive: true,
         $and: [],
       };
 
       const productBaseQuery: any = {
-        status: ProductStatus.ACTIVE,
+        status: ProductStatus.APPROVED,
+        isActive: true,
         $and: [],
       };
 
       const eventBaseQuery: any = {
         status: EventStatus.APPROVED,
+        isActive: true,
         $and: [],
       };
 
-      const select = '_id name description images logo slug';
+      const select
+        = '_id name nameHe nameAr descriptionHe descriptionAr description images logo slug';
 
       const searchConditions = [
         { name: { $regex: search, $options: 'i' } },
@@ -75,7 +76,7 @@ implements IQueryHandler<GetCombinedSearchQuery> {
 
       const businessCampConditions = [
         ...(campDetails.businessIds?.length
-          ? [{ _id: { $in: campDetails.businessIds } }]
+          ? [{ businessId: { $in: campDetails.businessIds } }]
           : []),
         ...(campDetails.dmoIds?.length
           ? [{ dmoId: { $in: campDetails.dmoIds } }]
@@ -100,7 +101,7 @@ implements IQueryHandler<GetCombinedSearchQuery> {
           ? [{ authorityId: { $in: campDetails.authorityIds } }]
           : []),
         ...(campDetails.productIds?.length
-          ? [{ _id: { $in: campDetails.productIds } }]
+          ? [{ productId: { $in: campDetails.productIds } }]
           : []),
       ];
 
@@ -122,11 +123,14 @@ implements IQueryHandler<GetCombinedSearchQuery> {
       }
 
       const [businessResults, eventResults] = await Promise.all([
-        this.BusinessModel.find(businessBaseQuery)
+        this.BusinessesAuditModel.find(businessBaseQuery)
           .select(select)
           .limit(10)
           .lean(),
-        this.EventModel.find(eventBaseQuery).select(select).limit(10).lean(),
+        this.EventsAuditModel.find(eventBaseQuery)
+          .select(select)
+          .limit(10)
+          .lean(),
 
         // this.ProductModel.find(productBaseQuery)
         //   .select(select)

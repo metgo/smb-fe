@@ -4,7 +4,6 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { User } from 'src/modules/users/schema/users.schema';
@@ -209,13 +208,6 @@ export class Event extends AuditableSchema {
 
   @Prop({ default: 200, required: false })
     impact: number;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: BankAccount.name,
-    required: false,
-  })
-    bankAccountId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

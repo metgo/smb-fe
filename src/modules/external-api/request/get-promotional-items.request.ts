@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { Locale } from 'src/common/enum';
 
 export class GetPromotionalItemsRequest {
   @ApiProperty({ required: false })
@@ -20,4 +21,14 @@ export class GetPromotionalItemsRequest {
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
     isTrip?: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: false,
+    default: Locale.HEBREW,
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+    locale: Locale = Locale.HEBREW;
 }

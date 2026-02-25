@@ -18,23 +18,26 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
 import { GetSiteInfoHandler } from './queries/handler/get-site-info.handler';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
-import { EventSchema } from '../events/schema/events.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
 import { GetPromotionalItemsHandler } from './queries/handler/get-promotional-items.handler';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: ExternalApi.name, schema: ExternalApiSchema },
-      { name: Business.name, schema: BusinessSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: Campaign.name, schema: CampaignSchema },
-      { name: Event.name, schema: EventSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
       { name: Trip.name, schema: TripSchema },
     ]),
     forwardRef(() => AuthorityModule),

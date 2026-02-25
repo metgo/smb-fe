@@ -36,6 +36,7 @@ export enum Currency {
 export enum Locale {
   ENGLISH = 'en',
   HEBREW = 'he',
+  ARABIC = 'ar',
 }
 
 export enum SortOrder {

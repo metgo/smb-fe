@@ -9,13 +9,13 @@ import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { GetAllBusinessesRawQuery } from 'src/modules/business/tourism/queries/get-all-businesses-rawquery.query';
 import { GetAllTripsRawQuery } from 'src/modules/trips/queries/get-all-trips-rawquery.query';
 import { GetAllAccessibilityQuery } from '../get-all-accessibility.query';
 import { Purpose } from '../../accessibility.type';
 import { Accessibility } from '../../schema/accessibility.schema';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 
 @QueryHandler(GetAllAccessibilityQuery)
 export class GetAllAccessibilityHandler
@@ -24,8 +24,8 @@ implements ICommandHandler<GetAllAccessibilityQuery> {
     private queryBus: QueryBus,
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    @InjectModel(Business.name)
-    private readonly BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private readonly BusinessesAuditModel: Model<BusinessesAudit>,
     @InjectModel(Trip.name)
     private readonly TripModel: Model<Trip>,
     @InjectModel(Accessibility.name)
@@ -74,7 +74,7 @@ implements ICommandHandler<GetAllAccessibilityQuery> {
           ),
         );
 
-        accessibilityIds = await this.BusinessModel.distinct(
+        accessibilityIds = await this.BusinessesAuditModel.distinct(
           'accessibilitiesId',
           {
             ...findQueryForPurpose,
@@ -101,8 +101,8 @@ implements ICommandHandler<GetAllAccessibilityQuery> {
 
         const businessIds = trips.flatMap(trip => trip.stations.map(station => station._id));
 
-        const businesses = await this.BusinessModel.find({
-          _id: { $in: businessIds },
+        const businesses = await this.BusinessesAuditModel.find({
+          businessId: { $in: businessIds },
         }).select('accessibilitiesId');
 
         const flatAccessibilitiesIds = businesses.flatMap(

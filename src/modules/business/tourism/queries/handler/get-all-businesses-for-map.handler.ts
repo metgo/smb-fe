@@ -4,18 +4,20 @@ import { Model } from 'mongoose';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { Business } from '../../../shared/schema/business.schema';
 import { GetAllBusinessForMapTourismQuery } from '../get-all-businesses-for-map.query';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
 
 @QueryHandler(GetAllBusinessForMapTourismQuery)
 export class GetAllBusinessForMapTourismHandler
 implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
   constructor(
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
     private campaignService: CampaignService,
+    private readonly businessService: BusinessService,
   ) {}
 
   async execute(queries: GetAllBusinessForMapTourismQuery): Promise<any> {
@@ -28,6 +30,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
         bussSubCategoriesId,
         campCode,
         serviceType,
+        locale,
       } = queries.query;
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
@@ -48,6 +51,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
+        isActive: true,
         ...(serviceType && { serviceType }),
       };
 
@@ -62,7 +66,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
       }
 
       if (campDetails?.businessIds?.length) {
-        orConditions.push({ _id: { $in: campDetails.businessIds } });
+        orConditions.push({ businessId: { $in: campDetails.businessIds } });
       }
 
       if (orConditions.length) {
@@ -127,12 +131,33 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
       }
 
       const select
-        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId slug serviceType';
+        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId slug serviceType businessId';
 
-      const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-        findQuery,
-        select,
-      });
+      const allBusiness = await queryhandler<BusinessesAudit>(
+        this.BusinessesAuditModel,
+        {
+          findQuery,
+          select,
+          isLean: true,
+        },
+      );
+
+      const mappedBusiness = await Promise.all(
+        allBusiness.data.map(async (business: any) => {
+          const { businessId, ...rest } = (await business.toObject)
+            ? business.toObject()
+            : business;
+
+          return {
+            ...rest,
+            _id: businessId,
+          };
+        }),
+      );
+
+      allBusiness.data = await Promise.all(
+        mappedBusiness.map(p => this.businessService.localizeBusiness(p, locale)),
+      );
 
       return allBusiness;
     } catch (err) {

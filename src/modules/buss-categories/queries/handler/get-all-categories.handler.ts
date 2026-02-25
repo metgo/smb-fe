@@ -9,10 +9,10 @@ import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { Product } from 'src/modules/products/schema/products.schema';
 import { GetAllCategoriesQuery } from '../get-all-categories.query';
 import { BussCategory } from '../../schema/buss.category.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
 
 @QueryHandler(GetAllCategoriesQuery)
 export class GetAllCategoriesHandler
@@ -20,8 +20,8 @@ implements ICommandHandler<GetAllCategoriesQuery> {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    @InjectModel(Product.name)
-    private readonly ProductModel: Model<Product>,
+    @InjectModel(ProductsAudit.name)
+    private readonly ProductsAuditModel: Model<ProductsAudit>,
     @InjectModel(BussCategory.name)
     private BussCategoryModel: Model<BussCategory>,
     private readonly campaignService: CampaignService,
@@ -48,9 +48,7 @@ implements ICommandHandler<GetAllCategoriesQuery> {
       const queryLimit = limit ? Number(limit) : null;
 
       const findQuery: any = {
-        deletedAt: null,
-        isDeleted: false,
-        deletedBy: null,
+        isDeleted: { $ne: true },
         _id: { $in: categoryIds },
         ...(search && { name: { $regex: search, $options: 'i' } }),
       };
@@ -102,8 +100,9 @@ implements ICommandHandler<GetAllCategoriesQuery> {
       }
 
       const productCountQuery: any = {
-        status: ProductStatus.ACTIVE,
-        isDeleted: false,
+        status: ProductStatus.APPROVED,
+        isDeleted: { $ne: true },
+        isActive: true,
         $and: [
           {
             $or: [
@@ -119,7 +118,7 @@ implements ICommandHandler<GetAllCategoriesQuery> {
           businessId: { $in: campDetails.businessIds },
         }),
         ...(campDetails?.productIds?.length && {
-          _id: { $in: campDetails.productIds },
+          productId: { $in: campDetails.productIds },
         }),
       };
 
@@ -135,7 +134,7 @@ implements ICommandHandler<GetAllCategoriesQuery> {
             icon: matchingCategory?.icon || cat.icon.iconPath,
             color: matchingCategory?.color,
             description: matchingCategory?.description || '',
-            productCount: await this.ProductModel.countDocuments({
+            productCount: await this.ProductsAuditModel.countDocuments({
               ...productCountQuery,
               categories: cat.id,
             }),

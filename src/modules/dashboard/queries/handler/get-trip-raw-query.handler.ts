@@ -31,9 +31,7 @@ export class GetTripRawQueryHandler implements IQueryHandler<GetTripRawQuery> {
 
       const matchQuery: Record<string, any> = {
         status: TripStatus.APPROVED,
-        isDeleted: false,
-        deletedAt: null,
-        deletedBy: null,
+        isDeleted: { $ne: true },
         ...(orConditionsDMO.length > 0 && { $or: orConditionsDMO }),
       };
 

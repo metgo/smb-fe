@@ -9,13 +9,13 @@ import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { GetAllBusinessesRawQuery } from 'src/modules/business/tourism/queries/get-all-businesses-rawquery.query';
 import { GetAllTripsRawQuery } from 'src/modules/trips/queries/get-all-trips-rawquery.query';
 import { GetAllGroupTypesQuery } from '../get-all-grouptypes.query';
 import { GroupType } from '../../schema/group-type.schema';
 import { Purpose } from '../../group-type.type';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 
 @QueryHandler(GetAllGroupTypesQuery)
 export class GetAllGroupTypesHandler
@@ -24,8 +24,8 @@ implements ICommandHandler<GetAllGroupTypesQuery> {
     private queryBus: QueryBus,
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-    @InjectModel(Business.name)
-    private readonly BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private readonly BusinessesAuditModel: Model<BusinessesAudit>,
     @InjectModel(Trip.name)
     private readonly TripModel: Model<Trip>,
     @InjectModel(GroupType.name)
@@ -74,10 +74,13 @@ implements ICommandHandler<GetAllGroupTypesQuery> {
           ),
         );
 
-        groupTypesId = await this.BusinessModel.distinct('groupTypesId', {
-          ...findQueryForPurpose,
-          groupTypesId: { $exists: true, $ne: [] },
-        });
+        groupTypesId = await this.BusinessesAuditModel.distinct(
+          'groupTypesId',
+          {
+            ...findQueryForPurpose,
+            groupTypesId: { $exists: true, $ne: [] },
+          },
+        );
       }
 
       if (purpose === Purpose.TRIP) {
@@ -97,8 +100,8 @@ implements ICommandHandler<GetAllGroupTypesQuery> {
         );
         const businessIds = trips.flatMap(trip => trip.stations.map(station => station._id));
 
-        const businesses = await this.BusinessModel.find({
-          _id: { $in: businessIds },
+        const businesses = await this.BusinessesAuditModel.find({
+          businessId: { $in: businessIds },
         }).select('groupTypesId');
 
         const flatGroupTypesIds = businesses.flatMap(b => b.groupTypesId);

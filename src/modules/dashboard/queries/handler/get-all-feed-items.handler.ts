@@ -10,9 +10,9 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllFeedItemsQuery } from '../get-all-feed-items.query';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { ServicesTypes } from '../../dashboard.type';
-import { Event } from 'src/modules/events/schema/events.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { GetAllFeedItemResponse } from '../../response/get-all-feed-Items.response';
 import { GetBusinessRawQuery } from '../get-business-raw-query.query';
@@ -24,10 +24,10 @@ import { GetPOIRawQuery } from '../get-poi-raw-query.query';
 export class GetAllFeedItemsHandler
 implements IQueryHandler<GetAllFeedItemsQuery> {
   constructor(
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
     private campaignService: CampaignService,
@@ -186,14 +186,17 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
+        = '_id name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
-      const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-        findQuery,
-        select,
-        sort: sortBy || 'createdAt',
-        sortOrder: sortOrder || SortOrder.DESC,
-      });
+      const allBusiness = await queryhandler<BusinessesAudit>(
+        this.BusinessesAuditModel,
+        {
+          findQuery: { ...findQuery, isActive: true },
+          select,
+          sort: sortBy || 'createdAt',
+          sortOrder: sortOrder || SortOrder.DESC,
+        },
+      );
 
       return allBusiness;
     } catch (err) {
@@ -216,14 +219,17 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
+        = '_id name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
-      const allPOI = await queryhandler<Business>(this.BusinessModel, {
-        findQuery,
-        select,
-        sort: sortBy || 'createdAt',
-        sortOrder: sortOrder || SortOrder.DESC,
-      });
+      const allPOI = await queryhandler<BusinessesAudit>(
+        this.BusinessesAuditModel,
+        {
+          findQuery,
+          select,
+          sort: sortBy || 'createdAt',
+          sortOrder: sortOrder || SortOrder.DESC,
+        },
+      );
 
       return allPOI;
     } catch (err) {
@@ -246,10 +252,10 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images address slug groupTypesId accessibilitiesId';
+        = '_id name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr geoLocation images address slug groupTypesId accessibilitiesId';
 
-      const allEvents = await queryhandler<Event>(this.EventModel, {
-        findQuery,
+      const allEvents = await queryhandler<EventsAudit>(this.EventsAuditModel, {
+        findQuery: { ...findQuery, isActive: true },
         select,
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,

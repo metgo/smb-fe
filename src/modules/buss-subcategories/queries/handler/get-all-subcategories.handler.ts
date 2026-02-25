@@ -11,14 +11,15 @@ import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllSubCategoriesQuery } from '../get-all-subcategories.query';
 import { BussSubCategory } from '../../schema/buss-subCategory.schema';
-import { Product } from 'src/modules/products/schema/products.schema';
 import { GetAllProductsRawQuery } from 'src/modules/products/queries/get-all-products-rawquery.query';
 import { Purpose } from '../../buss-subcategories.type';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { GetAllBusinessesRawQuery } from 'src/modules/business/tourism/queries/get-all-businesses-rawquery.query';
 import { GetAllEventsRawQuery } from 'src/modules/events/queries/get-all-events-rawquery.query';
 import { GetAllTripsRawQuery } from 'src/modules/trips/queries/get-all-trips-rawquery.query';
+import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
 @QueryHandler(GetAllSubCategoriesQuery)
 export class GetAllSubCategoriesHandler
@@ -29,12 +30,12 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
     private readonly logger: Logger,
     @InjectModel('BussSubCategory')
     private readonly BussSubCategoryModel: Model<BussSubCategory>,
-    @InjectModel(Product.name)
-    private readonly ProductModel: Model<Product>,
-    @InjectModel(Business.name)
-    private readonly BusinessModel: Model<Business>,
-    @InjectModel(Event.name)
-    private readonly EventModel: Model<Event>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+    @InjectModel(BusinessesAudit.name)
+    private readonly BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(EventsAudit.name)
+    private readonly EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private readonly TripModel: Model<Trip>,
     private readonly campaignService: CampaignService,
@@ -100,10 +101,13 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
           ),
         );
 
-        subCategoryIds = await this.ProductModel.distinct('subCategories', {
-          ...findQueryForPurpose,
-          subCategories: { $exists: true, $ne: [] },
-        });
+        subCategoryIds = await this.ProductsAuditModel.distinct(
+          'subCategories',
+          {
+            ...findQueryForPurpose,
+            subCategories: { $exists: true, $ne: [] },
+          },
+        );
       }
 
       if (purpose === Purpose.BUSINESS) {
@@ -118,7 +122,7 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
           ),
         );
 
-        subCategoryIds = await this.BusinessModel.distinct(
+        subCategoryIds = await this.BusinessesAuditModel.distinct(
           'bussSubCategoriesId',
           {
             ...findQueryForPurpose,
@@ -141,10 +145,13 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
             search,
           ),
         );
-        subCategoryIds = await this.EventModel.distinct('subCategoriesId', {
-          ...findQueryForPurpose,
-          subCategoriesId: { $exists: true, $ne: [] },
-        });
+        subCategoryIds = await this.EventsAuditModel.distinct(
+          'subCategoriesId',
+          {
+            ...findQueryForPurpose,
+            subCategoriesId: { $exists: true, $ne: [] },
+          },
+        );
       }
 
       if (purpose === Purpose.TRIP) {
@@ -164,8 +171,8 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         );
         const businessIds = trips.flatMap(trip => trip.stations.map(station => station._id));
 
-        const businesses = await this.BusinessModel.find({
-          _id: { $in: businessIds },
+        const businesses = await this.BusinessesAuditModel.find({
+          businessId: { $in: businessIds },
         }).select('bussSubCategoriesId');
 
         const flatSubCategoryIds = businesses.flatMap(
@@ -216,20 +223,20 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
 
           let productCount;
           if (purpose === Purpose.PRODUCT) {
-            productCount = await this.ProductModel.countDocuments({
+            productCount = await this.ProductsAuditModel.countDocuments({
               ...findQueryForPurpose,
               subCategories: subCat._id,
             });
           }
           if (purpose === Purpose.BUSINESS) {
-            productCount = await this.BusinessModel.countDocuments({
+            productCount = await this.BusinessesAuditModel.countDocuments({
               ...findQueryForPurpose,
               bussSubCategoriesId: subCat._id,
             });
           }
 
           if (purpose === Purpose.EVENT) {
-            productCount = await this.EventModel.countDocuments({
+            productCount = await this.EventsAuditModel.countDocuments({
               ...findQueryForPurpose,
               subCategoriesId: subCat._id,
             });

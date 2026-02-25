@@ -19,7 +19,7 @@ export class ProductFactory implements BaseFactory<Product> {
     const defaultProduct = {
       name: faker.person.firstName(),
       busiEmail: faker.internet.email(),
-      status: ProductStatus.ACTIVE,
+      status: ProductStatus.APPROVED,
       primaryUserId: new mongoose.Types.ObjectId(),
       businessId: new mongoose.Types.ObjectId(),
       dmoId: new mongoose.Types.ObjectId(),

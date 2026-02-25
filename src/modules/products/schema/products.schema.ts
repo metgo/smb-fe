@@ -2,11 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
+import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { ProductStatus, ProductType } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -152,11 +154,19 @@ export class Product extends AuditableSchema {
     }
   ];
 
-  @Prop({ enum: ProductStatus, default: ProductStatus.ACTIVE })
+  @Prop({ enum: ProductStatus, default: ProductStatus.DRAFT })
     status: ProductStatus;
 
   @Prop({ default: 200, required: false })
     impact: number;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: BussCategory.name,
+    required: false,
+    default: null,
+  })
+    primaryCategoryId: mongoose.Types.ObjectId;
 
   @Prop({
     type: [
@@ -179,6 +189,39 @@ export class Product extends AuditableSchema {
     required: false,
   })
     subCategories: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: GroupType.name,
+      },
+    ],
+    required: false,
+  })
+    groupTypesId: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Accessibility.name,
+      },
+    ],
+    required: false,
+  })
+    accessibilitiesId: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: [String],
+    validate: {
+      validator(value: string[]) {
+        return value.length <= 5;
+      },
+      message: 'Tags should not be more than 5',
+    },
+  })
+    tags: string[];
 
   @Prop({
     type: {

@@ -22,6 +22,7 @@ implements IQueryHandler<GetEventRawQuery> {
       today.setUTCHours(0, 0, 0, 0);
       let findQuery: any = {
         status: EventStatus.APPROVED,
+        isActive: true,
 
         dayDescription: {
           $elemMatch: {
@@ -31,7 +32,7 @@ implements IQueryHandler<GetEventRawQuery> {
           },
         },
 
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       const scopeOrConditions: any[] = [];

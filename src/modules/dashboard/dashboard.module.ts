@@ -7,14 +7,8 @@ import {
   BussSubCategorySchema,
 } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
-import { Product, ProductSchema } from '../products/schema/products.schema';
-import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
 
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
-import { Event, EventSchema } from '../events/schema/events.schema';
 import { DashboardController } from './dashboard.controller';
 import {
   BussCategory,
@@ -40,6 +34,18 @@ import { GetBusinessRawQueryHandler } from './queries/handler/get-business-raw-q
 import { GetEventRawQueryHandler } from './queries/handler/get-event-raw-query.handler';
 import { GetTripRawQueryHandler } from './queries/handler/get-trip-raw-query.handler';
 import { GetPOIRawQueryHandler } from './queries/handler/get-poi-raw-query.handler';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from '../products/schema/products-audit.schema';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
 
 @Module({
   imports: [
@@ -50,9 +56,9 @@ import { GetPOIRawQueryHandler } from './queries/handler/get-poi-raw-query.handl
       { name: ExternalApi.name, schema: ExternalApiSchema },
       { name: Accessibility.name, schema: AccessibilitySchema },
       { name: GroupType.name, schema: GroupTypeSchema },
-      { name: Product.name, schema: ProductSchema },
-      { name: Business.name, schema: BusinessSchema },
-      { name: Event.name, schema: EventSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
+      { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: Trip.name, schema: TripSchema },
     ]),
     ExternalApiModule,

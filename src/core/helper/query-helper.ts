@@ -234,14 +234,19 @@ export async function queryhandler<T>(
     populate,
     populate1,
     languageQuery,
+    isLean,
   } = queries;
 
   const numberedPage = Number(page);
   const numberedLimit = Number(limit);
 
   const datas: any = {};
-  const findQueries = { ...findQuery, deletedAt: { $in: [null] } };
-  datas.data = await model
+  const findQueries = {
+    ...findQuery,
+    isDeleted: { $ne: true },
+  };
+
+  let queryBuilder = model
     .find(findQueries)
     .select(select)
     .collation({ locale: 'en', strength: 2 })
@@ -251,7 +256,13 @@ export async function queryhandler<T>(
     .populate(populate)
     .populate(populate1);
 
-  if (!languageQuery || languageQuery === Locale.HEBREW) {
+  if (isLean) {
+    queryBuilder = queryBuilder.lean();
+  }
+
+  datas.data = await queryBuilder;
+
+  if (languageQuery && languageQuery === Locale.HEBREW) {
     datas.data.map(data => {
       // eslint-disable-next-line no-param-reassign
       data.name = data?.hebrewName || data.name;

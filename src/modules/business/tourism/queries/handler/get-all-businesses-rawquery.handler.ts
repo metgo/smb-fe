@@ -37,7 +37,8 @@ implements IQueryHandler<GetAllBusinessesRawQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
-        isDeleted: false,
+        isActive: true,
+        isDeleted: { $ne: true },
       };
 
       const orConditions = [];
@@ -51,7 +52,7 @@ implements IQueryHandler<GetAllBusinessesRawQuery> {
       }
 
       if (campDetails?.businessIds?.length) {
-        orConditions.push({ _id: { $in: campDetails.businessIds } });
+        orConditions.push({ businessId: { $in: campDetails.businessIds } });
       }
 
       if (orConditions.length) {

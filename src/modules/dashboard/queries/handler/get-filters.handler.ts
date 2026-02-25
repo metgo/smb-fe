@@ -7,7 +7,6 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetFiltersQuery } from '../get-filters.query';
 import { ServicesTypes } from '../../dashboard.type';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
@@ -22,17 +21,19 @@ import { GetBusinessRawQuery } from '../get-business-raw-query.query';
 import { GetEventRawQuery } from '../get-event-raw-query.query';
 import { GetTripRawQuery } from '../get-trip-raw-query.query';
 import { GetPOIRawQuery } from '../get-poi-raw-query.query';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
   constructor(
     private campaignService: CampaignService,
 
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
 
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
 
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
@@ -213,10 +214,22 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         categoriesIds,
         subCategoriesIds,
       ] = await Promise.all([
-        this.getDistincts(this.BusinessModel, 'accessibilitiesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'groupTypesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'bussCategoriesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'bussSubCategoriesId', findQuery),
+        this.getDistincts(this.BusinessesAuditModel, 'accessibilitiesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'groupTypesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'bussCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'bussSubCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
       ]);
 
       return {
@@ -250,10 +263,22 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         categoriesIds,
         subCategoriesIds,
       ] = await Promise.all([
-        this.getDistincts(this.BusinessModel, 'accessibilitiesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'groupTypesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'bussCategoriesId', findQuery),
-        this.getDistincts(this.BusinessModel, 'bussSubCategoriesId', findQuery),
+        this.getDistincts(this.BusinessesAuditModel, 'accessibilitiesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'groupTypesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'bussCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.BusinessesAuditModel, 'bussSubCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
       ]);
 
       return {
@@ -287,10 +312,22 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         categoriesIds,
         subCategoriesIds,
       ] = await Promise.all([
-        this.getDistincts(this.EventModel, 'accessibilitiesId', findQuery),
-        this.getDistincts(this.EventModel, 'groupTypesId', findQuery),
-        this.getDistincts(this.EventModel, 'bussCategoriesId', findQuery),
-        this.getDistincts(this.EventModel, 'subCategoriesId', findQuery),
+        this.getDistincts(this.EventsAuditModel, 'accessibilitiesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.EventsAuditModel, 'groupTypesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.EventsAuditModel, 'bussCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
+        this.getDistincts(this.EventsAuditModel, 'subCategoriesId', {
+          ...findQuery,
+          isActive: true,
+        }),
       ]);
 
       return {

@@ -3,6 +3,7 @@ import {
   IsEnum, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 import { GeoServicesTypes } from '../../business.type';
+import { Locale } from 'src/common/enum';
 
 export class GetAllBusinessesForMapRequest {
   @ApiProperty({ type: String, required: true })
@@ -51,4 +52,14 @@ export class GetAllBusinessesForMapRequest {
   @IsEnum(GeoServicesTypes)
   @IsOptional()
     serviceType: GeoServicesTypes;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: false,
+    default: Locale.HEBREW,
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+    locale: Locale = Locale.HEBREW;
 }

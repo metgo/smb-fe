@@ -1,9 +1,11 @@
 /* eslint-disable no-shadow */
 export enum ProductStatus {
-  DRAFT = 'draft',
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  ARCHIVED = 'archived',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  CLOSED = 'CLOSED',
+  REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED',
 }
 
 export enum ProductType {

@@ -48,8 +48,9 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       let findQuery: any = {
-        status: ProductStatus.ACTIVE,
-        isDeleted: false,
+        status: ProductStatus.APPROVED,
+        isActive: true,
+        isDeleted: { $ne: true },
         $and: [
           {
             $or: [
@@ -82,7 +83,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       if (campDetails?.productIds?.length) {
-        orConditions.push({ _id: { $in: campDetails.productIds } });
+        orConditions.push({ productId: { $in: campDetails.productIds } });
       }
 
       if (orConditions.length) {

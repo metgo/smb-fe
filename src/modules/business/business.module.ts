@@ -8,11 +8,9 @@ import { BusinessSchema } from './shared/schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { HashModule } from 'src/services/hash/hash.module';
-import { Product, ProductSchema } from '../products/schema/products.schema';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { BusinessAuditSchema } from 'src/modules/business/shared/schema/business-audit.schema';
-import { EventsService } from 'src/modules/business/shared/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -25,14 +23,23 @@ import { GetBusinessDetailForMapTourismHandler } from './tourism/queries/handler
 import { GetBusinessDetailForTourismHandler } from './tourism/queries/handler/get-business-detail.handler';
 import { GetSearchRecommendationTourismHandler } from './tourism/queries/handler/get-search-recommendation.handler';
 import { GetAllBusinessesRawQueryHandler } from './tourism/queries/handler/get-all-businesses-rawquery.handler';
+import {
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from './shared/schema/businesses-audit.schema';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from '../products/schema/products-audit.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: 'Business', schema: BusinessSchema },
-      { name: Product.name, schema: ProductSchema },
+      { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: 'BusinessAudit', schema: BusinessAuditSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
     ]),
     ConfigModule,
     HashModule,
@@ -47,7 +54,6 @@ import { GetAllBusinessesRawQueryHandler } from './tourism/queries/handler/get-a
   controllers: [BusinessMarketplaceController, BusinessTourismController],
   providers: [
     BusinessService,
-    EventsService,
     GetAllBusinessForMapHandler,
     GetAllApprovedBusinessesHandler,
     GetAllBusinessForMapTourismHandler,

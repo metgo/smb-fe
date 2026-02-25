@@ -69,7 +69,7 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
       if (voucherId) {
         const findQuery: any = {
           _id: voucherId,
-          isDeleted: false,
+          isDeleted: { $ne: true },
         };
         const voucher = await this.VoucherModel.findOne(findQuery)
           .select(

@@ -3,9 +3,9 @@ import {
   IsEnum, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 import { SortOrder } from 'src/common/enum';
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
-export class GetAllProductsRequest extends CommonFilterQuery {
+export class GetAllProductsRequest extends LocaleFilterQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

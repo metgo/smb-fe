@@ -8,14 +8,14 @@ import { GetSearchRecommendationQuery } from '../get-search-recommendation.query
 import { queryhandler } from 'src/core/helper/query-helper';
 import { SortOrder } from 'src/common/enum';
 import { EventStatus } from '../../events.type';
-import { Event } from '../../schema/events.schema';
+import { EventsAudit } from '../../schema/events-audit.schema';
 
 @QueryHandler(GetSearchRecommendationQuery)
 export class GetSearchRecommendationTourismHandler
 implements IQueryHandler<GetSearchRecommendationQuery> {
   constructor(
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     private campaignService: CampaignService,
   ) {}
 
@@ -23,7 +23,8 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
     try {
       const { campCode } = queries.query;
 
-      const select = '_id name description images cover dmoId slug';
+      const select
+        = '_id name nameHe nameAr description descriptionHe descriptionAr images cover dmoId slug eventId';
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
@@ -43,6 +44,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
 
       let findQuery: any = {
         status: EventStatus.APPROVED,
+        isActive: true,
 
         dayDescription: {
           $elemMatch: {
@@ -52,7 +54,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
           },
         },
 
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       const orConditions = [];
@@ -72,14 +74,30 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
         };
       }
 
-      const allEvents = await queryhandler<Event>(this.EventModel, {
+      const allEvents = await queryhandler<EventsAudit>(this.EventsAuditModel, {
         findQuery,
         select,
         sort: 'startDate',
         sortOrder: SortOrder.ASC,
         page: 1,
         limit: 3,
+        isLean: true,
       });
+
+      const mappedEvents = await Promise.all(
+        allEvents.data.map(async (event: any) => {
+          const { _id, eventId, ...rest } = (await event.toObject)
+            ? event.toObject()
+            : event;
+
+          return {
+            ...rest,
+            _id: eventId,
+          };
+        }),
+      );
+
+      allEvents.data = mappedEvents;
 
       return allEvents;
     } catch (err) {

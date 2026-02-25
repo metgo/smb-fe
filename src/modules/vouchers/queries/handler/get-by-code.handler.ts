@@ -33,10 +33,10 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
     try {
       const { queryData, code, loggedInUser } = queries;
 
-      const { identifierId, productId } = queryData;
+      const { identifierId, productId, locale } = queryData;
       const findQuery: any = {
         code: code.trim(),
-        isDeleted: false,
+        isDeleted: { $ne: true },
       };
 
       console.log(loggedInUser);
@@ -91,7 +91,10 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
           );
         }
 
-        const productDetail = await this.productService.findOne(productId);
+        const productDetail = await this.productService.findOne(
+          productId,
+          locale,
+        );
 
         if (
           !campDetails.dmoIds.includes(productDetail?.dmoId?._id)

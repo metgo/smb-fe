@@ -4,26 +4,27 @@ import { Model } from 'mongoose';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { Product } from '../../schema/products.schema';
 import { GetProductsDeliveryQuery } from '../get-products-delivery-info.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from '../../products.type';
 import { ProductsService } from '../../products.services';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
+import { ProductsAudit } from '../../schema/products-audit.schema';
 
 @QueryHandler(GetProductsDeliveryQuery)
 export class GetProductsDeliveryHandler
 implements IQueryHandler<GetProductsDeliveryQuery> {
   constructor(
-    @InjectModel(Product.name)
-    private ProductModel: Model<Product>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+
     private campaignService: CampaignService,
     private productService: ProductsService,
   ) {}
 
   async execute(queries: GetProductsDeliveryQuery): Promise<any> {
     try {
-      const { campCode, id } = queries.query;
+      const { campCode, id, locale } = queries.query;
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
@@ -76,9 +77,10 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       // const categoryIds = campDetails.category.map(cat => cat.id);
 
       const findQuery = {
-        status: ProductStatus.ACTIVE,
-        isDeleted: false,
-        _id: { $in: filteredProductIds },
+        status: ProductStatus.APPROVED,
+        isActive: true,
+        isDeleted: { $ne: true },
+        productId: { $in: filteredProductIds },
         // categories: { $in: categoryIds },
         $and: [
           {
@@ -91,21 +93,25 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       };
 
       const select
-        = '_id name images price quantity businessId deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo isPickUpAvailable';
+        = '_id productId name nameHe nameAr images price quantity businessId deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo isPickUpAvailable';
 
       const populate = [
         {
           path: 'businessId',
           select:
-            '_id name deliveryArea deliveryAdditionalInfo isPickUpAvailable',
+            '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable',
         },
       ];
 
-      const productsList = await queryhandler<Product>(this.ProductModel, {
-        findQuery,
-        select,
-        populate,
-      });
+      const productsList = await queryhandler<ProductsAudit>(
+        this.ProductsAuditModel,
+        {
+          findQuery,
+          select,
+          populate,
+          isLean: true,
+        },
+      );
 
       if (!productsList?.data || !productsList.data?.length) {
         return {
@@ -115,7 +121,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       }
 
       const productsDeliveryInfo = await Promise.all(
-        productsList.data.map(product => {
+        productsList.data.map(async product => {
           const useBusinessInfo: Business = product?.deliveryInfoSameAsBusiness
             ? product?.businessId
             : {
@@ -125,25 +131,30 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
               isPickUpAvailable: false,
             };
 
+          const response = await this.productService.localizeProduct(
+            product,
+            locale,
+          );
+
           return {
-            _id: product?._id,
-            name: product?.name,
-            images: product?.images[0],
-            price: product?.price?.sellingPrice,
-            businessId: product?.businessId,
+            _id: response?.productId,
+            name: response?.name,
+            images: response?.images[0],
+            price: response?.price?.sellingPrice,
+            businessId: response?.businessId,
             quantity: {
-              remaining: product?.quantity?.remaining,
-              isUnlimited: product?.quantity?.isUnlimited,
+              remaining: response?.quantity?.remaining,
+              isUnlimited: response?.quantity?.isUnlimited,
             },
-            deliveryArea: product?.deliveryArea?.length
+            deliveryArea: response?.deliveryArea?.length
               ? product.deliveryArea
               : useBusinessInfo?.deliveryArea,
 
             deliveryAdditionalInfo:
-              product?.deliveryAdditionalInfo
+              response?.deliveryAdditionalInfo
               ?? useBusinessInfo?.deliveryAdditionalInfo,
             isPickUpAvailable:
-              product?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
+              response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
           };
         }),
       );

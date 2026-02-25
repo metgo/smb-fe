@@ -124,6 +124,7 @@ export class VoucherController {
     const voucher = await this.voucherService.getOneByCodeAndProduct({
       code,
       productId: query.productId,
+      locale: query.locale,
     });
     return voucher;
   }

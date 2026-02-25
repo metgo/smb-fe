@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ForbiddenException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -5,10 +6,10 @@ import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
+import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ExternalApi } from '../../schema/external-api.schema';
 import { ServerErrors } from 'src/common/constant';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { TripStatus } from 'src/modules/trips/trips.types';
 import {
@@ -18,6 +19,8 @@ import {
 import { EventStatus } from 'src/modules/events/events.type';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { GetPromotionalItemsQuery } from '../get-promotional-items.query';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
 @QueryHandler(GetPromotionalItemsQuery)
 export class GetPromotionalItemsHandler
@@ -29,10 +32,10 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     private readonly ExternalApiModel: Model<ExternalApi>,
     @InjectModel(Campaign.name)
     private readonly CampaignModel: Model<Campaign>,
-    @InjectModel(Business.name)
-    private readonly BusinessModel: Model<Business>,
-    @InjectModel(Event.name)
-    private readonly EventModel: Model<Event>,
+    @InjectModel(BusinessesAudit.name)
+    private readonly BusinessesAuditModel: Model<BusinessesAudit>,
+    @InjectModel(EventsAudit.name)
+    private readonly EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private readonly TripModel: Model<Trip>,
   ) {}
@@ -85,8 +88,13 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
             this.getPromotionalBusinesses(
               promotionalBusinessItems,
               campDetails,
+              query.locale,
             ),
-            this.getPromotionalEvents(promotionalEventsItems, campDetails),
+            this.getPromotionalEvents(
+              promotionalEventsItems,
+              campDetails,
+              query.locale,
+            ),
             this.getPromotionalTrips(promotionalTripsItems, campDetails),
           ]);
 
@@ -124,6 +132,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
           promotionalBusinesses = await this.getPromotionalBusinesses(
             promotionalBusinessItems,
             campDetails,
+            query.locale,
           );
         }
 
@@ -131,6 +140,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
           promotionalEvents = await this.getPromotionalEvents(
             promotionalEventsItems,
             campDetails,
+            query.locale,
           );
         }
 
@@ -175,17 +185,17 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
   private async getPromotionalBusinesses(
     promotionalBusinessItems,
     campDetails,
+    locale: Locale,
   ) {
     const campaignOrConditionsBusiness = this.buildOrConditions(campDetails);
     const baseBusinessMatch = {
       status: BusinessStatus.APPROVED,
       serviceType: GeoServicesTypes.BUSINESS,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
+      isActive: true,
+      isDeleted: { $ne: true },
     };
     if (promotionalBusinessItems?.isAll) {
-      return await this.BusinessModel.aggregate([
+      return await this.BusinessesAuditModel.aggregate([
         {
           $match: {
             ...baseBusinessMatch,
@@ -195,10 +205,20 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         { $sample: { size: 10 } },
         {
           $project: {
-            _id: 1,
-            name: 1,
+            _id: '$businessId',
+            name:
+              locale === Locale.HEBREW
+                ? '$nameHe'
+                : locale === Locale.ARABIC
+                  ? '$nameAr'
+                  : 1,
             slug: 1,
-            shortDescription: 1,
+            shortDescription:
+              locale === Locale.HEBREW
+                ? '$shortDescriptionHe'
+                : locale === Locale.ARABIC
+                  ? '$shortDescriptionAr'
+                  : 1,
             image: { $arrayElemAt: ['$images', 0] },
           },
         },
@@ -256,12 +276,12 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       ],
     };
 
-    return await this.BusinessModel.aggregate([
+    return await this.BusinessesAuditModel.aggregate([
       { $match: filters },
       { $sample: { size: 10 } },
       {
         $project: {
-          _id: 1,
+          _id: '$businessId',
           name: 1,
           slug: 1,
           shortDescription: 1,
@@ -271,7 +291,11 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     ]);
   }
 
-  private async getPromotionalEvents(promotionalEventsItems, campDetails) {
+  private async getPromotionalEvents(
+    promotionalEventsItems,
+    campDetails,
+    locale: Locale,
+  ) {
     const campaignOrConditionsEvent = this.buildOrConditions({
       dmoIds: campDetails.dmoIds,
       authorityIds: campDetails.authorityIds,
@@ -279,12 +303,11 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
 
     const baseEventMatch = {
       status: EventStatus.APPROVED,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
+      isActive: true,
+      isDeleted: { $ne: true },
     };
     if (promotionalEventsItems?.isAll) {
-      return await this.EventModel.aggregate([
+      return await this.EventsAuditModel.aggregate([
         {
           $match: {
             ...baseEventMatch,
@@ -294,10 +317,20 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         { $sample: { size: 10 } },
         {
           $project: {
-            _id: 1,
-            name: 1,
+            _id: '$eventId',
+            name:
+              locale === Locale.HEBREW
+                ? '$nameHe'
+                : locale === Locale.ARABIC
+                  ? '$nameAr'
+                  : 1,
             slug: 1,
-            shortDescription: 1,
+            shortDescription:
+              locale === Locale.HEBREW
+                ? '$shortDescriptionHe'
+                : locale === Locale.ARABIC
+                  ? '$shortDescriptionAr'
+                  : 1,
             image: { $arrayElemAt: ['$images', 0] },
           },
         },
@@ -346,15 +379,25 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       ],
     };
 
-    return await this.EventModel.aggregate([
+    return await this.EventsAuditModel.aggregate([
       { $match: filters },
       { $sample: { size: 10 } },
       {
         $project: {
-          _id: 1,
-          name: 1,
+          _id: '$eventId',
+          name:
+            locale === Locale.HEBREW
+              ? '$nameHe'
+              : locale === Locale.ARABIC
+                ? '$nameAr'
+                : 1,
           slug: 1,
-          shortDescription: 1,
+          shortDescription:
+            locale === Locale.HEBREW
+              ? '$shortDescriptionHe'
+              : locale === Locale.ARABIC
+                ? '$shortDescriptionAr'
+                : 1,
           image: { $arrayElemAt: ['$images', 0] },
         },
       },
@@ -369,9 +412,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
 
     const baseTripMatch: any = {
       status: TripStatus.APPROVED,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
+      isDeleted: { $ne: true },
       ...(campaignOrConditionsTrip.length > 0 && {
         $or: campaignOrConditionsTrip,
       }),

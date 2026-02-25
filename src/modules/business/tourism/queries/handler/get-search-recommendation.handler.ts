@@ -5,25 +5,28 @@ import { Model } from 'mongoose';
 import { SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { Business } from '../../../shared/schema/business.schema';
 import { BusinessStatus } from '../../../business.type';
 import { GetSearchRecommendationQuery } from '../get-search-recommendation.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
 
 @QueryHandler(GetSearchRecommendationQuery)
 export class GetSearchRecommendationTourismHandler
 implements IQueryHandler<GetSearchRecommendationQuery> {
   constructor(
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
+    @InjectModel(BusinessesAudit.name)
+    private BusinessesAuditModel: Model<BusinessesAudit>,
     private campaignService: CampaignService,
+    private readonly businessService: BusinessService,
   ) {}
 
   async execute(queries: GetSearchRecommendationQuery): Promise<any> {
     try {
-      const { campCode } = queries.query;
+      const { campCode, locale } = queries.query;
 
-      const select = '_id name description images logo dmoId slug';
+      const select
+        = '_id name description nameHe descriptionHe nameAr descriptionAr images logo dmoId slug businessId';
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
@@ -43,6 +46,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
+        isActive: true,
       };
 
       const orConditions = [];
@@ -56,7 +60,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
       }
 
       if (campDetails?.businessIds?.length) {
-        orConditions.push({ _id: { $in: campDetails.businessIds } });
+        orConditions.push({ businessId: { $in: campDetails.businessIds } });
       }
 
       if (orConditions.length) {
@@ -65,14 +69,35 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
           $or: orConditions,
         };
       }
-      const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-        findQuery,
-        select,
-        sort: 'impact',
-        sortOrder: SortOrder.DESC,
-        page: 1,
-        limit: 3,
-      });
+      const allBusiness = await queryhandler<BusinessesAudit>(
+        this.BusinessesAuditModel,
+        {
+          findQuery,
+          select,
+          sort: 'impact',
+          sortOrder: SortOrder.DESC,
+          page: 1,
+          limit: 3,
+          isLean: true,
+        },
+      );
+
+      const mappedBusiness = await Promise.all(
+        allBusiness.data.map(async (business: any) => {
+          const { businessId, ...rest } = (await business.toObject)
+            ? business.toObject()
+            : business;
+
+          return {
+            ...rest,
+            _id: businessId,
+          };
+        }),
+      );
+
+      allBusiness.data = await Promise.all(
+        mappedBusiness.map(p => this.businessService.localizeBusiness(p, locale)),
+      );
 
       return allBusiness;
     } catch (err) {

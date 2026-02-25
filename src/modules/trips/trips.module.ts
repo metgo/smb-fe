@@ -12,15 +12,15 @@ import { DMOModule } from '../dmo/dmo.module';
 import { CampaignModule } from '../campaign/campaign.module';
 import { GetAllTripsRawQueryHandler } from './queries/handlers/get-all-trips-rawquery.handler';
 import {
-  Business,
-  BusinessSchema,
-} from '../business/shared/schema/business.schema';
+  BusinessesAudit,
+  BusinessesAuditSchema,
+} from '../business/shared/schema/businesses-audit.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Trip.name, schema: TripSchema },
-      { name: Business.name, schema: BusinessSchema },
+      { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
     ]),
     CqrsModule,
     CampaignModule,

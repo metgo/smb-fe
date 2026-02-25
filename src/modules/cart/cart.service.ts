@@ -375,7 +375,10 @@ export class CartService {
 
   async findOneById(id: string): Promise<Cart> {
     try {
-      const cart = await this.CartModel.findOne({ _id: id, isDeleted: false });
+      const cart = await this.CartModel.findOne({
+        _id: id,
+        isDeleted: { $ne: true },
+      });
 
       if (!cart) {
         throw new NotFoundException(ServerErrors.CART.NOT_FOUND);

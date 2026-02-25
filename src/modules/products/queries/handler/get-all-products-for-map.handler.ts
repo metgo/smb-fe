@@ -6,16 +6,18 @@ import { SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { GetAllProductsForMapQuery } from '../get-all-products-for-map.query';
-import { Product } from '../../schema/products.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
+import { ProductsAudit } from '../../schema/products-audit.schema';
+import { ProductsService } from '../../products.services';
 
 @QueryHandler(GetAllProductsForMapQuery)
 export class GetAllProductsForMapHandler
 implements IQueryHandler<GetAllProductsForMapQuery> {
   constructor(
     private queryBus: QueryBus,
-    @InjectModel(Product.name)
-    private ProductModel: Model<Product>,
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+    private readonly productsService: ProductsService,
   ) {}
 
   async execute(queries: GetAllProductsForMapQuery): Promise<any> {
@@ -35,6 +37,7 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
         sortBy,
         sortOrder,
         vendorDelivers,
+        locale,
       } = queries.query;
       const findQuery = await this.queryBus.execute(
         new GetAllProductsRawQuery(
@@ -51,12 +54,13 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
         ),
       );
 
-      const select = '_id name businessId categories subCategories';
+      const select
+        = '_id name nameHe nameAr businessId categories subCategories productId';
 
       const populate = [
         {
           path: 'businessId',
-          select: '_id name address geoLocation',
+          select: '_id name nameHe nameAr address geoLocation',
         },
         {
           path: 'categories subCategories',
@@ -64,15 +68,19 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
         },
       ];
 
-      const productsList = await queryhandler<Product>(this.ProductModel, {
-        findQuery,
-        select,
-        page: Number(page),
-        limit: Number(limit),
-        sort: sortBy || 'createdAt',
-        sortOrder: sortOrder || SortOrder.DESC,
-        populate,
-      });
+      const productsList = await queryhandler<ProductsAudit>(
+        this.ProductsAuditModel,
+        {
+          findQuery,
+          select,
+          page: Number(page),
+          limit: Number(limit),
+          sort: sortBy || 'createdAt',
+          sortOrder: sortOrder || SortOrder.DESC,
+          populate,
+          isLean: true,
+        },
+      );
 
       if (!productsList?.data || !productsList.data?.length) {
         return {
@@ -80,6 +88,23 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
           products: [],
         };
       }
+
+      const mappedProducts = await Promise.all(
+        productsList.data.map((product: any) => {
+          const { _id, productId, ...rest } = product.toObject
+            ? product.toObject()
+            : product;
+
+          return {
+            ...rest,
+            _id: productId,
+          };
+        }),
+      );
+
+      productsList.data = await Promise.all(
+        mappedProducts.map(p => this.productsService.localizeProduct(p, locale)),
+      );
 
       return productsList;
     } catch (err) {

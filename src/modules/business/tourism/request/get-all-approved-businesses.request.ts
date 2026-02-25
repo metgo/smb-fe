@@ -3,11 +3,11 @@ import {
   IsEnum, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { SortOrder } from 'src/common/enum';
 import { GeoServicesTypes } from '../../business.type';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
-export class GetAllApprovedBusinessesRequest extends CommonFilterQuery {
+export class GetAllApprovedBusinessesRequest extends LocaleFilterQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

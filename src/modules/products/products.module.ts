@@ -25,6 +25,10 @@ import { GetAllProductsRawQueryHandler } from './queries/handler/get-all-product
 import { GetAllProductsHandler } from './queries/handler/get-all-products.handler';
 import { GetProductsDeliveryHandler } from './queries/handler/get-products-delivery.handler';
 import { GetAllProductsByBusinessIdHandler } from './queries/handler/get-all-product-by-businessId.handler';
+import {
+  ProductsAudit,
+  ProductsAuditSchema,
+} from './schema/products-audit.schema';
 
 @Module({
   imports: [
@@ -38,6 +42,7 @@ import { GetAllProductsByBusinessIdHandler } from './queries/handler/get-all-pro
         name: BussCategory.name,
         schema: BussCategorySchema,
       },
+      { name: ProductsAudit.name, schema: ProductsAuditSchema },
     ]),
     forwardRef(() => AuthorityModule),
     CartModule,

@@ -7,12 +7,13 @@ import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllEventsQuery } from '../get-all-events.query';
 import { EventStatus } from '../../events.type';
+import { EventsAudit } from '../../schema/events-audit.schema';
 
 @QueryHandler(GetAllEventsQuery)
 export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
   constructor(
-    @InjectModel(Event.name)
-    private EventModel: Model<Event>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
     private campaignService: CampaignService,
   ) {}
 
@@ -54,7 +55,7 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
         },
       },
 
-      isDeleted: false,
+      isDeleted: { $ne: true },
     };
 
     const orConditions = [];
@@ -85,7 +86,8 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
       };
     }
 
-    const select = '_id name description geoLocation images cover address slug';
+    const select
+      = '_id name nameHe nameAr description descriptionHe descriptionAr geoLocation images cover address slug eventId';
 
     if (search) {
       findQuery = {
@@ -97,14 +99,30 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
       };
     }
 
-    const allEvents = await queryhandler<Event>(this.EventModel, {
+    const allEvents = await queryhandler<EventsAudit>(this.EventsAuditModel, {
       findQuery,
       select,
       sort: sortBy || 'createdAt',
       sortOrder: sortOrder || SortOrder.DESC,
       page: Number(page),
       limit: Number(limit),
+      isLean: true,
     });
+
+    const mappedEvents = await Promise.all(
+      allEvents.data.map(async (event: any) => {
+        const { _id, eventId, ...rest } = (await event.toObject)
+          ? event.toObject()
+          : event;
+
+        return {
+          ...rest,
+          _id: eventId,
+        };
+      }),
+    );
+
+    allEvents.data = mappedEvents;
 
     return allEvents;
   }

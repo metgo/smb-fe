@@ -15,9 +15,7 @@ import { BusinessService } from 'src/modules/business/shared/services/business.s
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { DeleteMediaDTO } from 'src/modules/media/dto/delete.dto';
 import { UploadDTO } from 'src/modules/media/dto/upload.dto';
-import { ReferenceType } from 'src/modules/media/media.type';
 import { Media } from 'src/modules/media/schema/media.schema';
-import { ProductsService } from 'src/modules/products/products.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
@@ -27,9 +25,7 @@ export class MediaServices {
     @InjectModel('Media')
     private MediaModel: Model<Media>,
     @Inject(forwardRef(() => BusinessService))
-    private businessService: BusinessService,
     private gcpBucketServices: GcpBucketService,
-    private productService: ProductsService,
   ) {}
 
   async create(
@@ -42,25 +38,6 @@ export class MediaServices {
         // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
 
-        if (
-          body.reference === ReferenceType.BUSINESS
-          || body.reference === ReferenceType.POI
-        ) {
-          // store in media database
-          const newMedia = new this.MediaModel({
-            reference: {
-              refId: body.refId,
-              schema: body.reference,
-            },
-            createdBy: loggedInUser.id,
-            createdAt: new Date(),
-            url: imageUrl,
-            originalName: file.originalname,
-            mimetype: file.mimetype,
-          });
-          await newMedia.save();
-        }
-
         return {
           image: imageUrl,
           caption: file.originalname,
@@ -70,70 +47,8 @@ export class MediaServices {
       }),
     );
 
-    const logoImages = images
-      .filter(image => image.imageType === 'logo')
-      .map(({ image, caption, alt }) => ({ image, caption, alt }));
-    const coverImages = images
-      .filter(image => image.imageType === 'cover')
-      .map(({ image, caption, alt }) => ({ image, caption, alt }));
-    const allImage = images
-      .filter(image => image.imageType === 'image')
-      .map(({ image, caption, alt }) => ({ image, caption, alt }));
-
-    const productImage = images
-      .filter(image => image.imageType === 'file')
-      .map(({ image, caption, alt }) => ({ image, caption, alt }));
-
-    // update to business model
-    if (
-      body.reference === ReferenceType.BUSINESS
-      || body.reference === ReferenceType.POI
-      || body.reference === ReferenceType.EVENT
-    ) {
-      let updateBusiness;
-      if (allImage?.length) {
-        updateBusiness = await this.businessService.uploadMedia(
-          body.refId,
-          loggedInUser.id,
-          allImage,
-          loggedInUser.role,
-        );
-      }
-
-      if (logoImages?.length) {
-        updateBusiness = await this.businessService.uploadMediaByFieldName(
-          body.refId,
-          loggedInUser.id,
-          logoImages,
-          'logo',
-          loggedInUser.role,
-        );
-      }
-
-      if (coverImages?.length) {
-        updateBusiness = await this.businessService.uploadMediaByFieldName(
-          body.refId,
-          loggedInUser.id,
-          coverImages,
-          'cover',
-          loggedInUser.role,
-        );
-      }
-
-      return updateBusiness;
-    }
-
-    // update to product model
-    if (body.reference === ReferenceType.PRODUCT) {
-      const updateProduct = await this.productService.uploadMedia({
-        productId: body.refId,
-        businessId: body.businessId,
-        loggedInUserId: loggedInUser.id,
-        body: productImage,
-        role: loggedInUser.role,
-      });
-      return updateProduct;
-    }
+    console.log(body);
+    console.log(loggedInUser);
 
     return images;
   }
@@ -166,15 +81,6 @@ export class MediaServices {
     //     url: body.imageUrl,
     //   });
     // }
-
-    // delete from product module
-    if (body.reference === ReferenceType.PRODUCT) {
-      deletedImage = await this.productService.deleteImage(
-        loggedInUser.id,
-        body.refId,
-        body.imageUrl,
-      );
-    }
 
     // delete image in gcp
     try {

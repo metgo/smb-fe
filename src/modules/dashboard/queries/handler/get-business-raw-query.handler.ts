@@ -31,8 +31,9 @@ implements IQueryHandler<GetBusinessRawQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
-        isDeleted: false,
+        isDeleted: { $ne: true },
         serviceType: ServicesTypes.BUSINESS,
+        isActive: true,
       };
 
       const scopeOrConditions: any[] = [];
