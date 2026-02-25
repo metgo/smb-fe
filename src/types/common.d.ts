@@ -2,11 +2,10 @@ type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
 type TStatus =
   | "draft"
-  | "active"
-  | "inactive"
   | "pending"
   | "approved"
   | "rejected"
+  | "closed"
   | "archived";
 
 type EventStatus = "draft" | "pending" | "approved";

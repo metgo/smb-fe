@@ -41,6 +41,7 @@ import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
+import { FilterByStatus } from "@/components/filter-fields";
 
 // Column configuration
 const defaultColumns = {
@@ -786,32 +787,7 @@ export default function BusinessesMgmtPage() {
             >
               {/* Active Filters Title */}
               <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
-                {/* Status Filter */}
-                <div className="flex flex-col min-w-45">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("status")}
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) =>
-                      setFilters({ ...filters, status: e.target.value })
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="DRAFT">{t("draft")}</option>
-                    <option value="PENDING">{t("pending")}</option>
-                    <option value="APPROVED">{t("approved")}</option>
-                    <option value="REJECTED">{t("rejected")}</option>
-                    <option value="CLOSED">{t("closed")}</option>
-                  </select>
-                </div>
+                <FilterByStatus filters={filters} setFilters={setFilters} />
 
                 {/* Has Products Filter */}
                 <div className="flex flex-col min-w-45">

@@ -22,6 +22,7 @@ import {
 } from "@/store/api/itemStatsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { InfoTooltip, Spinner } from "@/components/shared";
+import { itemStatuses } from "@/lib/utils";
 
 const getColors = (isDark: boolean) => ({
   sleep: {
@@ -130,7 +131,6 @@ interface DistributionCardProps {
   status: string;
   setStatus: (v: string) => void;
   isLoading: boolean;
-  statuses: { value: string; label: string }[];
   data: {
     _id?: string;
     name: string;
@@ -140,21 +140,6 @@ interface DistributionCardProps {
   }[];
 }
 
-const bzPoiStatuses = [
-  { value: "DRAFT", label: "draft" },
-  { value: "PENDING", label: "pending" },
-  { value: "APPROVED", label: "approved" },
-  { value: "ARCHIVED", label: "archived" },
-  { value: "CLOSED", label: "closed" },
-  { value: "REJECTED", label: "rejected" },
-];
-
-const prodStatuses = [
-  { value: "draft", label: "draft" },
-  { value: "active", label: "active" },
-  { value: "inactive", label: "inactive" },
-];
-
 export function DistributionCard({
   title,
   icon,
@@ -162,7 +147,6 @@ export function DistributionCard({
   data,
   status,
   setStatus,
-  statuses,
   isLoading,
 }: DistributionCardProps) {
   const { t } = useTranslation("dashboard");
@@ -277,7 +261,7 @@ export function DistributionCard({
                 : "bg-gray-50 border-gray-300 text-gray-900",
             )}
           >
-            {statuses?.map((s) => (
+            {itemStatuses?.map((s) => (
               <option key={s.value} value={s.value}>
                 {tc(s.label)}
               </option>
@@ -478,7 +462,7 @@ export default function DistributionCards() {
     (state) => state.auth,
   );
   const [bzStatus, setBzStatus] = useState("APPROVED");
-  const [productStatus, setProductStatus] = useState("active");
+  const [productStatus, setProductStatus] = useState("APPROVED");
   const [poiStatus, setPoiStatus] = useState("APPROVED");
 
   /* ---------------- API Calls --------------- */
@@ -533,7 +517,6 @@ export default function DistributionCards() {
           icon={<Building2 className="w-5 h-5 text-white" />}
           total={businessData?.total}
           data={businessData?.byCategory}
-          statuses={bzPoiStatuses}
           isLoading={isBzStatsLoading}
         />
 
@@ -544,7 +527,6 @@ export default function DistributionCards() {
           icon={<Package className="w-5 h-5 text-white" />}
           total={productData?.total}
           data={productData?.byCategory}
-          statuses={prodStatuses}
           isLoading={isProductStatsLoading}
         />
 
@@ -555,7 +537,6 @@ export default function DistributionCards() {
           icon={<MapPin className="w-5 h-5 text-white" />}
           total={poiData?.total}
           data={poiData?.byCategory}
-          statuses={bzPoiStatuses}
           isLoading={isPoiStatsLoading}
         />
       </div>

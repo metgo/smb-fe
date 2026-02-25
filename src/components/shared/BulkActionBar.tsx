@@ -6,20 +6,13 @@ import { StatusChangeBtn } from "../btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BulkActionBarProps {
-  isProduct?: boolean;
   selectedItemCount: number;
   handleBulkStatusChange: (v: TStatus) => void;
   handleBulkDelete: () => void;
   hancleClearSelection?: () => void;
 }
 
-// const EXPORTS: ActionButton[] = [
-//   { key: "csvExport", label: "csv_export", icon: <File className="w-4 h-4" />, color: "teal" },
-//   { key: "pdfExport", label: "pdf_export", icon: <File className="w-4 h-4" />, color: "red" },
-// ];
-
 const BulkActionBar: React.FC<BulkActionBarProps> = ({
-  isProduct = false,
   handleBulkStatusChange,
   selectedItemCount,
   handleBulkDelete,
@@ -62,7 +55,6 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
       <div className="flex items-center gap-4">
         <StatusChangeBtn
           status="draft"
-          isProduct={isProduct}
           handleStatusChange={handleBulkStatusChange}
         />
 

@@ -42,6 +42,8 @@ import {
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import { removeNulls } from "@/helpers";
+import { ItemStatus } from "@/enums/status.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -61,6 +63,7 @@ export default function CreateProductWizard({
   const { t: tc } = useTranslation("toast");
 
   const [searchParams] = useSearchParams();
+  const { isTraveller } = useUserRoles();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
@@ -195,6 +198,7 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
+  console.log("🚀 ~ CreateProductWizard ~ formData:", formData);
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
@@ -294,8 +298,13 @@ export default function CreateProductWizard({
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name) newErrors.nameEn = t("field_required");
-        if (!formData.shortDescription)
+        if (!formData.name && !formData.nameAr && !formData.nameHe)
+          newErrors.nameEn = t("field_required");
+        if (
+          !formData.shortDescription &&
+          !formData.shortDescriptionAr &&
+          !formData.shortDescriptionHe
+        )
           newErrors.shortDescEn = t("field_required");
         break;
       case 2:
@@ -319,6 +328,7 @@ export default function CreateProductWizard({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSaveDraft = async () => {
     await uploadAll();
     await saveDraft(false);
@@ -419,7 +429,11 @@ export default function CreateProductWizard({
         productId: internalProductId || productId!,
         body: {
           ...payload,
-          status: isPublish ? "active" : "draft",
+          status: isPublish
+            ? isTraveller
+              ? ItemStatus.PENDING
+              : ItemStatus.APPROVED
+            : ItemStatus.DRAFT,
         },
       }).unwrap();
 
