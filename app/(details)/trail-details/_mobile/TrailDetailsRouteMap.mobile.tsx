@@ -127,7 +127,7 @@ const MobileTrailDetailsRouteMap = ({
             <div
               className="text-theme font-normal line-clamp-2"
               dangerouslySetInnerHTML={{
-                __html: ensureListStyles(description),
+                __html: ensureListStyles(description) || "",
               }}
             />
           )}

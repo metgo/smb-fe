@@ -2,18 +2,21 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
 import { FaMinus, FaPlus } from "react-icons/fa6";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 import { Dialog } from "@/components/ui";
 import { itemTypeEnum } from "@/lib/utils";
 import PriceTag from "@/components/PriceTag";
 import useCartStore from "@/stores/cartStore";
-import { groupTicketsByDateTime } from "@/lib/helpers";
 import { staticImages } from "@/constant/staticImages";
 import { buttonLabels, events } from "@/constant/hebrew";
+import { formatDateMonth, isDateUpcoming } from "@/lib/helpers";
+import { BiCalendar } from "react-icons/bi";
+import { GoClock } from "react-icons/go";
+
+/* ===================== TYPES ===================== */
 
 interface TicketListModalProps {
   isOpen: boolean;
@@ -25,9 +28,15 @@ interface TicketListModalProps {
 interface ISelectedTickets {
   key: string;
   ticketId: string;
-  eventDayId: string;
+  eventDayIndex: number;
   quantity: number;
   price: number;
+  name: string;
+  description: string;
+  image?: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 interface ITicketStockInfo {
@@ -46,66 +55,69 @@ const TicketListModal = ({
   const router = useRouter();
   const { setCartItem } = useCartStore();
 
-  const grouped = useMemo(() => groupTicketsByDateTime(ticketIds), [ticketIds]);
-
-  const [openEventDayIds, setOpenEventDayIds] = useState<string[]>([]);
   const [selectedTickets, setSelectedTickets] = useState<ISelectedTickets[]>(
     [],
   );
   const [errorKey, setErrorKey] = useState<string | null>(null);
 
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  /* ===================== KEY ===================== */
 
-  /* ===================== HELPERS ===================== */
-
-  const getSelectionKey = (eventDayId: string, ticketId: string) =>
-    `${eventDayId}_${ticketId}`;
+  /**
+   * Build a unique key from ticketId + dayIndex (index within dayDescription array).
+   * We use index because dayDescription items have no _id field.
+   */
+  const getSelectionKey = (ticketId: string, dayIndex: number) =>
+    `${ticketId}_day${dayIndex}`;
 
   const getSelectedQuantity = (key: string) =>
     selectedTickets.find((t) => t.key === key)?.quantity ?? 0;
+
+  function showError(key: string) {
+    setErrorKey(key);
+    setTimeout(() => setErrorKey(null), 2000);
+  }
+
+  /* ===================== ADD / REMOVE ===================== */
 
   function addTicket(
     prev: ISelectedTickets[],
     payload: {
       key: string;
       ticketId: string;
-      eventDayId: string;
+      eventDayIndex: number;
       price: number;
       stock: ITicketStockInfo;
+      name: string;
+      description: string;
+      image?: string;
+      date?: string;
+      startTime?: string;
+      endTime?: string;
     },
   ): ISelectedTickets[] {
     const existing = prev.find((t) => t.key === payload.key);
     const currentQty = existing?.quantity ?? 0;
 
-    // If both remaining and perUserLimit are null, allow infinite tickets
     const hasLimits =
       payload.stock.remaining !== null || payload.stock.perUserLimit !== null;
 
     if (hasLimits) {
-      // Check remaining stock (if not null)
       if (payload.stock.remaining !== null && payload.stock.remaining <= 0) {
-        setErrorKey(payload.key);
-        setTimeout(() => setErrorKey(null), 2000);
+        showError(payload.key);
         return prev;
       }
-
-      // Check per-user limit (if not null)
       if (
         payload.stock.perUserLimit !== null &&
         currentQty >= payload.stock.perUserLimit
       ) {
-        setErrorKey(payload.key);
-        setTimeout(() => setErrorKey(null), 2000);
+        showError(payload.key);
         return prev;
       }
-
-      // Check if adding one more exceeds remaining stock (if not null)
       if (
         payload.stock.remaining !== null &&
         currentQty + 1 > payload.stock.remaining
       ) {
-        setErrorKey(payload.key);
-        setTimeout(() => setErrorKey(null), 2000);
+        showError(payload.key);
         return prev;
       }
     }
@@ -121,9 +133,15 @@ const TicketListModal = ({
       {
         key: payload.key,
         ticketId: payload.ticketId,
-        eventDayId: payload.eventDayId,
+        eventDayIndex: payload.eventDayIndex,
         quantity: 1,
         price: payload.price,
+        name: payload.name,
+        description: payload.description,
+        image: payload.image,
+        date: formatDateMonth(payload?.date || ("" as string)),
+        startTime: payload.startTime,
+        endTime: payload.endTime,
       },
     ];
   }
@@ -131,11 +149,7 @@ const TicketListModal = ({
   function removeTicket(prev: ISelectedTickets[], key: string) {
     const existing = prev.find((t) => t.key === key);
     if (!existing) return prev;
-
-    if (existing.quantity === 1) {
-      return prev.filter((t) => t.key !== key);
-    }
-
+    if (existing.quantity === 1) return prev.filter((t) => t.key !== key);
     return prev.map((t) =>
       t.key === key ? { ...t, quantity: t.quantity - 1 } : t,
     );
@@ -144,24 +158,19 @@ const TicketListModal = ({
   /* ===================== ADD TO CART ===================== */
 
   function handleTicketAddToCart() {
-    selectedTickets.forEach((selected) => {
-      const eventDay = grouped.find((d) => d._id === selected.eventDayId);
-      const ticket = eventDay?.tickets.find((t) => t._id === selected.ticketId);
-
-      if (!eventDay || !ticket) return;
-
+    selectedTickets.forEach((t) => {
       setCartItem({
-        _id: ticket._id,
-        name: ticket.name,
-        desc: ticket.description,
-        image: ticket.images[0]?.image,
-        price: ticket.price.sellingPrice,
-        quantity: selected.quantity,
+        _id: t.ticketId,
+        name: t.name,
+        desc: t.description,
+        image: t.image || "",
+        price: t.price,
+        quantity: t.quantity,
         itemType: itemTypeEnum.ticket,
         parentId: eventId,
-        eventDate: eventDay.date,
-        startTime: eventDay.startTime,
-        endTime: eventDay.endTime,
+        eventDate: t.date,
+        startTime: t.startTime,
+        endTime: t.endTime,
       });
     });
 
@@ -177,174 +186,161 @@ const TicketListModal = ({
       onClose={() => setIsOpen(false)}
       className="max-w-3xl w-full"
     >
-      <div className="p-10">
+      <div className="p-10 max-sm:px-4 max-sm:py-6">
         <h1 className="font-bold text-2xl text-center">
           {events.eventTicketTitle}
         </h1>
 
-        <div className="mt-6 pb-4 max-h-[60vh] overflow-y-auto space-y-6">
-          {grouped.map((eventDay) => {
-            const isOpen = openEventDayIds.includes(eventDay._id);
+        <div className="mt-6 pb-4 max-h-[60vh] overflow-y-auto space-y-3">
+          {ticketIds?.map((ticket) => {
+            const stock = ticket?.quantity;
+            const hasLimits =
+              stock?.remaining !== null || stock?.perUserLimit !== null;
 
-            return (
-              <div
-                key={eventDay._id}
-                ref={(el) => {
-                  sectionRefs.current[eventDay._id] = el;
-                }}
-              >
-                <div
-                  onClick={() => {
-                    setOpenEventDayIds((prev) =>
-                      prev.includes(eventDay._id)
-                        ? prev.filter((id) => id !== eventDay._id)
-                        : [...prev, eventDay._id],
-                    );
+            // Flatten each day into its own card, filtered to upcoming dates only
+            const upcomingDays = ticket?.dayDescription
+              ?.map((day, index) => ({ day, index }))
+              .filter(({ day }) => isDateUpcoming(day?.date));
 
-                    setTimeout(() => {
-                      sectionRefs.current[eventDay._id]?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      });
-                    }, 50);
-                  }}
-                  className="border rounded-lg px-4 py-3 flex justify-between cursor-pointer"
-                >
-                  <span className="font-bold">{events.chooseCard}</span>
-                  <span className="text-gray-600">{eventDay.date}</span>
-                  <span>
-                    {eventDay.startTime} - {eventDay.endTime}
-                  </span>
-                  {isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
-                </div>
+            if (!upcomingDays || upcomingDays.length === 0) return null;
 
-                {isOpen &&
-                  eventDay.tickets.map((ticket) => {
-                    const key = getSelectionKey(eventDay._id, ticket._id);
-                    const qty = getSelectedQuantity(key);
-                    const isSelected = qty > 0;
+            return upcomingDays?.map(({ day, index }) => {
+              // Unique key combining ticketId + day index — guarantees isolation
+              const key = getSelectionKey(ticket._id, index);
+              const qty = getSelectedQuantity(key);
+              const isSelected = qty > 0;
 
-                    // Check if limits exist
-                    const hasLimits =
-                      ticket.quantity.remaining !== null ||
-                      ticket.quantity.perUserLimit !== null;
+              return (
+                <div key={key}>
+                  <div
+                    className={clsx(
+                      "mt-2 grid grid-cols-12 items-center border rounded-md p-3 transition-colors",
+                      errorKey === key
+                        ? "bg-white border-red-500"
+                        : isSelected
+                          ? "bg-primary border-secondary"
+                          : "hover:bg-gray-50",
+                    )}
+                  >
+                    {/* LEFT */}
+                    <div className="col-span-9 max-sm:col-span-12 max-sm:mb-4 flex gap-3">
+                      <div className="h-20 w-20 shrink-0">
+                        <Image
+                          src={
+                            ticket.images?.[0]?.image ||
+                            staticImages.placeholder
+                          }
+                          alt={ticket.name}
+                          width={80}
+                          height={80}
+                          unoptimized
+                          className="rounded-md h-full w-full object-cover"
+                        />
+                      </div>
 
-                    return (
-                      <div key={key}>
+                      <div>
+                        <h2 className="font-bold">{ticket.name}</h2>
                         <div
-                          className={clsx(
-                            "mt-2 grid grid-cols-12 items-center border rounded-md p-3 transition-colors",
-                            errorKey === key
-                              ? "border-red-500"
-                              : isSelected
-                                ? "bg-primary border-secondary"
-                                : "hover:bg-gray-50",
-                          )}
-                        >
-                          <div className="col-span-7 max-sm:col-span-12 max-sm:mb-4 flex gap-3">
-                            <div className="h-16 w-20">
-                              <Image
-                                src={
-                                  ticket.images?.[0]?.image ||
-                                  staticImages.placeholder
-                                }
-                                alt={ticket.name}
-                                width={40}
-                                height={40}
-                                unoptimized
-                                className="rounded-md h-full w-full object-cover"
-                              />
-                            </div>
-                            <div>
-                              <h2 className="font-bold">{ticket.name}</h2>
-                              <div
-                                className="text-sm line-clamp-1"
-                                dangerouslySetInnerHTML={{
-                                  __html: ticket.description,
-                                }}
-                              />
-                              {/* Only show limits if they exist */}
-                              {hasLimits && (
-                                <p className="text-sm text-gray-500">
-                                  {ticket.quantity.remaining !== null && (
-                                    <>
-                                      {events.remaining}:{" "}
-                                      <strong>
-                                        {ticket.quantity.remaining}
-                                      </strong>
-                                    </>
-                                  )}
-                                  {ticket.quantity.remaining !== null &&
-                                    ticket.quantity.perUserLimit !== null &&
-                                    " | "}
-                                  {ticket.quantity.perUserLimit !== null && (
-                                    <>
-                                      {events.maxPerUser}:{" "}
-                                      <strong>
-                                        {ticket.quantity.perUserLimit}
-                                      </strong>
-                                    </>
-                                  )}
-                                </p>
-                              )}
-                            </div>
-                          </div>
+                          className="text-sm line-clamp-1 mt-0.5"
+                          dangerouslySetInnerHTML={{
+                            __html: ticket?.description || "",
+                          }}
+                        />
 
-                          <div className="col-span-3 max-sm:col-span-8 flex items-center gap-2">
-                            <button
-                              onClick={() =>
-                                setSelectedTickets((prev) =>
-                                  addTicket(prev, {
-                                    key,
-                                    ticketId: ticket._id,
-                                    eventDayId: eventDay._id,
-                                    price: ticket.price.sellingPrice,
-                                    stock: ticket.quantity,
-                                  }),
-                                )
-                              }
-                              className={clsx(
-                                "size-8 rounded-full border flex items-center justify-center cursor-pointer",
-                              )}
-                            >
-                              <FaPlus />
-                            </button>
-
-                            <span className="min-w-6 text-center">{qty}</span>
-
-                            <button
-                              disabled={qty === 0}
-                              onClick={() =>
-                                setSelectedTickets((prev) =>
-                                  removeTicket(prev, key),
-                                )
-                              }
-                              className={clsx(
-                                "size-8 rounded-full border flex items-center justify-center",
-                                qty === 0
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : "cursor-pointer",
-                              )}
-                            >
-                              <FaMinus />
-                            </button>
-                          </div>
-
-                          <PriceTag
-                            price={ticket.price.sellingPrice}
-                            className="col-span-2 text-end"
-                          />
-                        </div>
-                        {errorKey === key && (
-                          <p className="text-red-500">
-                            {events.exceedInfoText}
+                        {hasLimits && (
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            {stock?.remaining !== null && (
+                              <>
+                                {events.remaining}:{" "}
+                                <strong>{stock.remaining}</strong>
+                              </>
+                            )}
+                            {stock?.remaining !== null &&
+                              stock?.perUserLimit !== null &&
+                              " | "}
+                            {stock?.perUserLimit !== null && (
+                              <>
+                                {events.maxPerUser}:{" "}
+                                <strong>{stock.perUserLimit}</strong>
+                              </>
+                            )}
                           </p>
                         )}
+
+                        {/* Date + time badge */}
+                        {day?.date && day?.startTime && day?.endTime && (
+                          <div className=" max-sm:text-sm text-gray-800 mt-1 font-normal flex">
+                            <span className="flex gap-1 items-center">
+                              <BiCalendar /> {formatDateMonth(day?.date)}
+                              &nbsp;&nbsp;
+                            </span>
+                            <div className="flex gap-1 items-center">
+                              <GoClock />
+                              <span>
+                                {day?.startTime} – {day?.endTime}
+                              </span>{" "}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-              </div>
-            );
+                    </div>
+
+                    {/* QTY */}
+                    <div className="col-span-2 max-sm:col-span-8 flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          setSelectedTickets((prev) =>
+                            addTicket(prev, {
+                              key,
+                              ticketId: ticket._id,
+                              eventDayIndex: index,
+                              price: ticket.price.sellingPrice,
+                              stock,
+                              name: ticket.name,
+                              description: ticket.description,
+                              image: ticket.images?.[0]?.image,
+                              date: day.date,
+                              startTime: day.startTime,
+                              endTime: day.endTime,
+                            }),
+                          )
+                        }
+                        className="size-8 rounded-full border flex items-center justify-center cursor-pointer"
+                      >
+                        <FaPlus />
+                      </button>
+
+                      <span className="min-w-6 text-center">{qty}</span>
+
+                      <button
+                        disabled={qty === 0}
+                        onClick={() =>
+                          setSelectedTickets((prev) => removeTicket(prev, key))
+                        }
+                        className={clsx(
+                          "size-8 rounded-full border flex items-center justify-center",
+                          qty === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer",
+                        )}
+                      >
+                        <FaMinus />
+                      </button>
+                    </div>
+
+                    {/* PRICE */}
+                    <PriceTag
+                      price={ticket.price.sellingPrice}
+                      className="col-span-1 text-end"
+                    />
+                  </div>
+
+                  {errorKey === key && (
+                    <p className="text-red-500 mt-1">{events.exceedInfoText}</p>
+                  )}
+                </div>
+              );
+            });
           })}
         </div>
 

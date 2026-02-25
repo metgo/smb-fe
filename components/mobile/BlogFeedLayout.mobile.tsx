@@ -98,7 +98,7 @@ const GalleryView = ({
       </h1>
       <div
         dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(activeFeedItem?.subTitle),
+          __html: removeInlineStylesFromHTML(activeFeedItem?.subTitle) || "",
         }}
         className="line-clamp-3 font-bold text-2xl mt-1"
       />

@@ -38,7 +38,7 @@ const page = async ({ params }: PageProps) => {
                 <div
                   className="font-normal prose block"
                   dangerouslySetInnerHTML={{
-                    __html: ensureListStyles(trailsDetails?.description),
+                    __html: ensureListStyles(trailsDetails?.description) || "",
                   }}
                 />
               )}

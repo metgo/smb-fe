@@ -69,7 +69,7 @@ const PopularBusinessCard = ({
           <h4 className="line-clamp-1">{name}</h4>
           <div
             className="text-[12px] line-clamp-1"
-            dangerouslySetInnerHTML={{ __html: description }}
+            dangerouslySetInnerHTML={{ __html: description || "" }}
           />
           <div className="hidden group-hover:flex items-center justify-between mt-2.5">
             <IconImage
