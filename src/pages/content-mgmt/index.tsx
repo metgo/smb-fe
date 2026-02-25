@@ -71,6 +71,7 @@ interface ContentMgmtPageProps {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   onNavigate: (item: string) => void;
+  isBusinessLoading?: boolean;
 }
 
 interface Category {
@@ -107,6 +108,9 @@ function DraggableBusinessCard({
   isSelected,
   onSelect,
   onRemove,
+  isBusinessLoading,
+  fetchNextPage,
+  hasMore,
   // categories,
   viewMode,
   isInCategory = false,
@@ -118,6 +122,9 @@ function DraggableBusinessCard({
   onSelect: (id: string, isMulti: boolean) => void;
   onRemove?: (id: string) => void;
   categories: Category[];
+  isBusinessLoading?: boolean;
+  fetchNextPage: () => void;
+  hasMore: any;
   onAddToCategory: (businessId: string, categoryId: string) => void;
   viewMode: ViewMode;
   isInCategory?: boolean;
@@ -202,7 +209,10 @@ function DraggableBusinessCard({
         logoSrc={logoSrc}
         logoAlt={logoAlt}
         business={business}
+        isBusinessLoading={isBusinessLoading}
         primaryCategory={primaryCategory}
+        fetchNextPage={fetchNextPage}
+        hasMore={hasMore}
         isInCategory={isInCategory}
         onRemove={onRemove}
       />
@@ -219,8 +229,11 @@ function DraggableBusinessCard({
       logoSrc={logoSrc}
       logoAlt={logoAlt}
       isInCategory={isInCategory}
+      fetchNextPage={fetchNextPage}
+      hasMore={hasMore}
       onRemove={onRemove}
       business={business}
+      isBusinessLoading={isBusinessLoading}
       primaryCategory={primaryCategory}
     />
   );
@@ -240,6 +253,9 @@ function CategorySection({
   onRename,
   onDelete,
   onClearSelection,
+  isBusinessLoading,
+  fetchNextPage,
+  hasMore,
 }: {
   category: Category;
   businesses: any;
@@ -251,6 +267,9 @@ function CategorySection({
   onRename: (categoryId: string, newName: string) => void;
   onDelete: (categoryId: string) => void;
   viewMode: ViewMode;
+  isBusinessLoading?: boolean;
+  fetchNextPage: () => void;
+  hasMore: any;
   onClearSelection?: () => void;
 }) {
   const { isDark } = useThemeClasses();
@@ -474,6 +493,9 @@ function CategorySection({
                         categories={categories}
                         onAddToCategory={onAddToCategory}
                         viewMode="grid"
+                        isBusinessLoading={isBusinessLoading}
+                        fetchNextPage={fetchNextPage}
+                        hasMore={hasMore}
                         isInCategory={true}
                         selectedIds={selectedIds}
                       />
@@ -570,9 +592,34 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
   const {
     data: businessData,
     isLoading: isBusinessLoading,
+    isFetching,
     // isFetching,
     // refetch,
   } = useGetAllbusinessesQuery(queryParams);
+  const hasMore = businessData?.meta?.hasNextPage;
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev: any) => {
+      return prev + 1;
+    });
+  };
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (page === 1) {
+      setCombinedBusinesses(businessData?.data);
+    } else {
+      setCombinedBusinesses((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = businessData?.data.filter(
+          (b: any) => !existingIds.has(b._id),
+        );
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [businessData?.data, page]);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const { categories: categoryFilter, accessibility, groupTypes } = useCommon();
@@ -594,6 +641,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     categoryName: string;
     businessCount: number;
   } | null>(null);
+  console.log("🚀 ~ ContentMgmtPage ~ deleteConfirmation:", deleteConfirmation);
 
   const [showMessageComposer, setShowMessageComposer] = useState(false);
   const [showSendResults, setShowSendResults] = useState(false);
@@ -687,7 +735,7 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
     const cat = categories.find((c) => c.id === categoryId);
 
     if (!cat) return;
-    if (cat?.businessIds?.length > 0) {
+    if (cat) {
       setDeleteConfirmation({
         categoryId: cat.id,
         categoryName: cat.name,
@@ -1157,12 +1205,15 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                     {isBusinessLoading ? (
                       <Loader className="w-12 h-12 text-teal-500 animate-spin " />
                     ) : (
-                      businessData?.data?.map((business: any) => (
+                      combinedBusinesses?.map((business: any) => (
                         <DraggableBusinessCard
                           key={business._id}
                           business={business}
                           isSelected={selectedBacklogIds.has(business._id)}
                           onSelect={handleSelectBacklog}
+                          isBusinessLoading={isBusinessLoading}
+                          fetchNextPage={fetchNextPage}
+                          hasMore={hasMore}
                           categories={categories}
                           onAddToCategory={handleAddToCategory}
                           viewMode={viewMode}
@@ -1198,26 +1249,26 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                         }
                       }}
                       className={`
-    h-10 px-6 pr-8
-    text-sm font-medium
-    rounded-md
-    shadow-sm
-    appearance-none
-    cursor-pointer
-    transition-colors duration-150
-    border
-    ${
-      isDark
-        ? "bg-gray-800 border-gray-600 text-gray-100"
-        : "bg-white border-gray-300 text-gray-900"
-    }
-    focus:outline-none focus:ring-2
-    ${
-      isDark
-        ? "focus:border-blue-500/70 focus:ring-blue-500/30"
-        : "focus:border-blue-500 focus:ring-blue-500/40"
-    }
-  `}
+                      h-10 px-6 pr-8
+                      text-sm font-medium
+                      rounded-md
+                      shadow-sm
+                      appearance-none
+                      cursor-pointer
+                      transition-colors duration-150
+                      border
+                      ${
+                        isDark
+                          ? "bg-gray-800 border-gray-600 text-gray-100"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }
+                      focus:outline-none focus:ring-2
+                      ${
+                        isDark
+                          ? "focus:border-blue-500/70 focus:ring-blue-500/30"
+                          : "focus:border-blue-500 focus:ring-blue-500/40"
+                      }
+                    `}
                     >
                       <option value="all">All Websites</option>
 
@@ -1262,12 +1313,15 @@ export default function ContentMgmtPage({ language }: ContentMgmtPageProps) {
                       <CategorySection
                         key={category.id}
                         category={category}
-                        businesses={businessData?.data}
+                        businesses={combinedBusinesses}
                         selectedIds={new Set()}
                         onSelect={() => {}}
                         onRemove={(_id) =>
                           handleRemoveFromCategory(category.id, _id)
                         }
+                        isBusinessLoading={isBusinessLoading}
+                        fetchNextPage={fetchNextPage}
+                        hasMore={hasMore}
                         categories={categories}
                         onAddToCategory={handleAddToCategory}
                         onRename={handleRenameCategory}

@@ -25,6 +25,7 @@ interface ContentListViewProps {
   primaryCategory?: Category;
   isInCategory?: boolean;
   onRemove?: (id: string) => void;
+  isBusinessLoading?: boolean;
 }
 
 const ContentListView = ({
@@ -37,6 +38,7 @@ const ContentListView = ({
   primaryCategory,
   isInCategory,
   onRemove,
+  isBusinessLoading,
 }: ContentListViewProps) => {
   const { isDark } = useThemeClasses();
   return (
@@ -45,15 +47,15 @@ const ContentListView = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       className={` xl:max-w-xl
-    group flex items-center gap-4 p-3 rounded-lg
-    transition-colors duration-150 cursor-pointer
-    ${
-      isDark
-        ? "bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-100"
-        : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-900"
-    }
-    shadow-sm ${isDark ? "shadow-black/20" : "shadow-gray-100"}
-  `}
+        group flex items-center gap-4 p-3 rounded-lg
+        transition-colors duration-150 cursor-pointer
+        ${
+          isDark
+            ? "bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-100"
+            : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-900"
+        }
+        shadow-sm ${isDark ? "shadow-black/20" : "shadow-gray-100"}
+      `}
     >
       <div className="">
         <ImageWithFallback
@@ -66,9 +68,9 @@ const ContentListView = ({
       <div className="flex-1 min-w-0">
         <h4
           className={`
-    font-medium truncate
-    ${isDark ? "text-gray-100" : "text-gray-900"}
-  `}
+          font-medium truncate
+          ${isDark ? "text-gray-100" : "text-gray-900"}
+        `}
         >
           {" "}
           {business.name ? getPlainTextFromRichText(business.name) : "-"}{" "}
