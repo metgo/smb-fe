@@ -503,35 +503,67 @@ interface EventDay {
 }
 
 export function removePastDates(days: EventDay[]): EventDay[] {
-  const today = new Date();
+  const now = new Date();
+  const todayUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
 
-  // normalize today → start of day (local)
-  today.setHours(0, 0, 0, 0);
-
-  return days.filter((d) => {
-    const dayDate = new Date(d.date);
-
-    // normalize event day → start of day (local)
-    dayDate.setHours(0, 0, 0, 0);
-
-    return dayDate >= today;
-  });
+  return days
+    .filter((d) => {
+      const date = new Date(d.date);
+      const dateUTC = Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+      );
+      return dateUTC >= todayUTC;
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
 export function isDateUpcoming(dateStr: string): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const todayUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
+
   const date = new Date(dateStr);
-  date.setHours(0, 0, 0, 0);
-  return date >= today;
+  const dateUTC = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+  );
+
+  return dateUTC >= todayUTC;
 }
 
 export function formatDateMonth(dateStr: string): string {
   const d = new Date(dateStr);
 
-  return new Intl.DateTimeFormat("he-IL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(d);
+  // Use UTC values to ignore timezone
+  const day = d.getUTCDate();
+  const month = d.getUTCMonth(); // 0-based
+  const year = d.getUTCFullYear();
+
+  // Hebrew month names (full)
+  const hebrewMonths = [
+    "ינואר",
+    "פברואר",
+    "מרץ",
+    "אפריל",
+    "מאי",
+    "יוני",
+    "יולי",
+    "אוגוסט",
+    "ספטמבר",
+    "אוקטובר",
+    "נובמבר",
+    "דצמבר",
+  ];
+
+  return `${day} ${hebrewMonths[month]} ${year}`;
 }
