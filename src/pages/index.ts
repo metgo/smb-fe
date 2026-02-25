@@ -9,8 +9,10 @@ import EventDetailsPage from "./events-mgmt/details";
 import BusinessDetailsPage from "./businesses-mgmt/details";
 import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
+import ErrorUiPage from "./error-ui";
 export {
   AuthPage,
+  ErrorUiPage,
   ProfilePage,
   BusinessesMgmtPage,
   BusinessDetailsPage,

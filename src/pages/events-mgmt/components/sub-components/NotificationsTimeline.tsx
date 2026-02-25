@@ -161,7 +161,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         setEditingNotification(notification);
                         setShowNotificationForm(true);
                       }}
-                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700 text-white/60" : "hover:bg-gray-200"}`}
                     >
                       <PenBox className="w-4 h-4" />
                     </button>
@@ -173,7 +173,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         };
                         setNotifications((prev) => [...prev, duplicated]);
                       }}
-                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700 text-blue-500" : "hover:bg-gray-200"}`}
                     >
                       <Copy className="w-4 h-4" />
                     </button>

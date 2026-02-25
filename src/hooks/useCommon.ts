@@ -39,16 +39,9 @@ export function useCommon() {
     { value: "all_time", label: t("all_time") },
   ];
 
-  const languages: { value: Language; label: string }[] = [
-    { value: "en", label: "English" },
-    { value: "ar", label: "العربية" },
-    { value: "he", label: "עברית" },
-  ];
-
   return {
     websites,
     dateRanges,
-    languages,
     dmosAuthorities,
     socialMedia,
     allWebsites,

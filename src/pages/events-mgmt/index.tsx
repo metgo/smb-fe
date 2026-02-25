@@ -35,14 +35,13 @@ export default function EventsMgmtPage() {
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
-  console.log("🚀 ~ EventsMgmtPage ~ searchQuery:", searchQuery);
   const [eventTypeFilter, setEventTypeFilter] = useState<
     "all" | "free" | "paid"
   >(savedState?.eventTypeFilter || "all");
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "true" | "false"
   >(savedState?.registrationFilter || "all");
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(
+  const [statusFilter, setStatusFilter] = useState<any | "all">(
     savedState?.statusFilter || "all",
   );
   const [dateRangeFilter, setDateRangeFilter] = useState({

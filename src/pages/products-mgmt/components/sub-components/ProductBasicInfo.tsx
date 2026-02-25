@@ -139,82 +139,87 @@ const ProductBasicInfo = ({
             }
             className={`px-3 py-1.5 rounded-lg border ${borderColor} ${bgTertiary} ${textSecondary} text-sm`}
           >
-            <option value="en">English</option>
             <option value="he">עברית</option>
+            <option value="en">English</option>
             <option value="ar">العربية</option>
           </select>
         </div>
       </div>
 
-      {/* Product Name */}
-      <FormFieldWrapper
-        required
-        label={t("product_name")}
-        error={errors?.nameEn}
-        inputHintText={`${
-          (formData[currentNameKey] as string)?.length ?? 0
-        }/50 ${tc("max_characters")}`}
+      <div
+        dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+        className="space-y-6"
       >
-        <input
-          type="text"
-          value={(formData[currentNameKey] as string) || ""}
-          maxLength={50}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [currentNameKey]: e.target.value,
-            })
-          }
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-          placeholder={getPlaceholder("name")}
-        />
-      </FormFieldWrapper>
+        {/* Product Name */}
+        <FormFieldWrapper
+          required
+          label={t("product_name")}
+          error={errors?.nameEn}
+          inputHintText={`${
+            (formData[currentNameKey] as string)?.length ?? 0
+          }/50 ${tc("max_characters")}`}
+        >
+          <input
+            type="text"
+            value={(formData[currentNameKey] as string) || ""}
+            maxLength={50}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [currentNameKey]: e.target.value,
+              })
+            }
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+            placeholder={getPlaceholder("name")}
+          />
+        </FormFieldWrapper>
 
-      {/* Short Description */}
-      <FormFieldWrapper
-        required
-        label={t("product_short_description")}
-        error={errors?.shortDescEn}
-        inputHintText={`${
-          (formData[currentShortKey] as string)?.length ?? 0
-        }/50 ${tc("max_characters")}`}
-      >
-        <textarea
-          value={(formData[currentShortKey] as string) || ""}
-          maxLength={50}
-          rows={3}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [currentShortKey]: e.target.value,
-            })
-          }
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-          placeholder={getPlaceholder("short")}
-        />
-      </FormFieldWrapper>
+        {/* Short Description */}
+        <FormFieldWrapper
+          required
+          label={t("product_short_description")}
+          error={errors?.shortDescEn}
+          inputHintText={`${
+            (formData[currentShortKey] as string)?.length ?? 0
+          }/50 ${tc("max_characters")}`}
+        >
+          <textarea
+            value={(formData[currentShortKey] as string) || ""}
+            maxLength={50}
+            rows={3}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [currentShortKey]: e.target.value,
+              })
+            }
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+            placeholder={getPlaceholder("short")}
+          />
+        </FormFieldWrapper>
 
-      {/* Full Description */}
-      <FormFieldWrapper
-        label={t("product_full_description")}
-        inputHintText={`${
-          (formData[currentFullKey] as string)?.length ?? 0
-        }/500 ${tc("max_characters")}`}
-      >
-        <textarea
-          value={(formData[currentFullKey] as string) || ""}
-          maxLength={500}
-          rows={6}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              [currentFullKey]: e.target.value,
-            })
-          }
-          className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-          placeholder={getPlaceholder("full")}
-        />
-      </FormFieldWrapper>
+        {/* Full Description */}
+        <FormFieldWrapper
+          label={t("product_full_description")}
+          inputHintText={`${
+            (formData[currentFullKey] as string)?.length ?? 0
+          }/500 ${tc("max_characters")}`}
+        >
+          <textarea
+            value={(formData[currentFullKey] as string) || ""}
+            maxLength={500}
+            rows={6}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [currentFullKey]: e.target.value,
+              })
+            }
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+            placeholder={getPlaceholder("full")}
+          />
+        </FormFieldWrapper>
+      </div>
     </div>
   );
 };

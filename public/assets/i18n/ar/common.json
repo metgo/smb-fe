@@ -16,6 +16,7 @@
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
   "users": "المستخدمون",
+  "points_of_interest": "نقاط الاهتمام",
   "delete_business": "حذف العمل التجاري",
   "delete_business_confirm": "تأكيد حذف العمل التجاري؟",
   "edit_location": "تعديل الموقع",
@@ -145,6 +146,11 @@
   "download_pdf": "تحميل PDF",
   "download_csv": "تحميل CSV",
 
+  "error_title": "عذرًا، حدث خطأ ما!",
+  "error_description": "حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
+  "go_back_home": "العودة إلى الصفحة الرئيسية",
+  "reload_page": "إعادة تحميل الصفحة",
+
   "overview": "نظرة عامة",
   "date_time": "التاريخ والوقت",
   "location_map": "الموقع والخريطة",
@@ -272,5 +278,7 @@
   "first_name_placeholder": "الاسم الأول",
   "last_name_placeholder": "الاسم الأخير",
   "phone_number_placeholder": "رقم الهاتف",
-  "address_placeholder": "العنوان"
+  "address_placeholder": "العنوان",
+
+  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول."
 }

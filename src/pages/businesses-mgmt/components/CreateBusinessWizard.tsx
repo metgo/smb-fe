@@ -489,8 +489,11 @@ export default function CreateBusinessWizard({
       t,
       formData,
       errors,
+      setCurrentStep,
+      address,
       setFormData,
       markDirty,
+      images,
       business: editData,
       currentView,
     };
