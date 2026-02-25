@@ -48,6 +48,7 @@ const ProductBasicInfo = ({
   searchBusiness,
   presetBusinessId,
 }: ProductBasicInfoProps) => {
+  console.log("🚀 ~ ProductBasicInfo ~ errors:", errors);
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
 
