@@ -11,7 +11,6 @@ import {
   Trash2,
   Send,
   Badge,
-  Loader2,
   Loader,
 } from "lucide-react";
 import FilterChips from "@/components/shared/FilterChips";
@@ -400,8 +399,8 @@ function CategorySection({
             {showMenu && (
               <div
                 className={`
-                    absolute right-0 top-8 z-[9999] 
-                    min-w-[180px] 
+                    absolute right-0 top-8 z-9999 
+                    min-w-45 
                     rounded-md shadow-lg
                     border
                     ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}
@@ -459,7 +458,7 @@ function CategorySection({
               <div className="overflow-x-auto max-w-[98vw]">
                 <div className="flex gap-4 ">
                   {categoryBusinesses?.map((business: any) => (
-                    <div key={business.id} className="w-64 flex-shrink-0">
+                    <div key={business.id} className="w-64 shrink-0">
                       <DraggableBusinessCard
                         business={business}
                         isSelected={selectedIds.has(business.id)}
