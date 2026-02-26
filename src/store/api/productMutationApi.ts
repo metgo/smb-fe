@@ -18,7 +18,6 @@ export const productMutationApi = createApi({
         method: "POST",
         data: {
           businessId,
-          name: "",
         },
       }),
       invalidatesTags: ["Product"],

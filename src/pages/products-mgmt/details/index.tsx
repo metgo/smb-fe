@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpDown,
+  Copy,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -36,12 +37,14 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { StatusChangeBtn } from "@/components/btns";
+import { IOpMode } from "@/enums/operation.types";
 
 export default function ProductDetailsPage() {
+  const navigate = useNavigate();
+
   const { t } = useTranslation("products");
   const { t: ct } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
-  const navigate = useNavigate();
 
   const { isDark, language, isRTL } = useThemeClasses();
   const [updateProduct] = useUpdateProductMutation();
@@ -60,8 +63,9 @@ export default function ProductDetailsPage() {
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
   const [activeTab, setActiveTab] = useState("overview");
+
   const salesStats = [
     {
       id: 1,
@@ -95,8 +99,9 @@ export default function ProductDetailsPage() {
     refetch();
     setIsEditOpen(false);
   };
-  const handleEdit = () => {
+  const handleEdit = (mode: TOpMode) => {
     setIsEditOpen(true);
+    setOpMode(mode);
   };
 
   const {
@@ -217,19 +222,19 @@ export default function ProductDetailsPage() {
                   status={product?.status}
                   handleStatusChange={onStatusChangeHandler}
                 />
-                {/* <button
-                    // onClick={onDuplicate}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                      isDark
-                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                        : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                    } transition-colors`}
-                  >
-                    <Copy className="w-4 h-4" />
-                    <span>{t("duplicate") || "Duplicate"}</span>
-                  </button> */}
                 <button
-                  onClick={handleEdit}
+                  onClick={() => handleEdit(IOpMode.DUPLICATE)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                      : "border-gray-300 hover:bg-gray-50 text-gray-700"
+                  } transition-colors`}
+                >
+                  <Copy className="w-4 h-4" />
+                  <span>{t("duplicate") || "Duplicate"}</span>
+                </button>
+                <button
+                  onClick={() => handleEdit(IOpMode.EDIT)}
                   className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   <Edit className="w-4 h-4" />
@@ -257,10 +262,12 @@ export default function ProductDetailsPage() {
                   isDark ? "text-white" : "text-gray-900"
                 }`}
               >
-                {product?.name}
+                {product?.nameHe || product?.name || product?.nameAr}
               </h1>
               <p className={isDark ? "text-gray-400" : "text-gray-600"}>
-                {product?.shortDescription}
+                {product?.shortDescriptionHe ||
+                  product?.shortDescription ||
+                  product?.shortDescriptionAr}
               </p>
             </div>
           </div>
@@ -286,11 +293,13 @@ export default function ProductDetailsPage() {
       >
         {renderContent()}
       </div>
+
       {isEditOpen && (
         <CreateProductWizard
           onClose={handleClose}
           refetch={refetch}
           product={product}
+          opMode={opMode}
         />
       )}
     </div>

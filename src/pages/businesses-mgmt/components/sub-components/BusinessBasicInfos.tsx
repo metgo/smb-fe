@@ -28,7 +28,6 @@ interface BusinessFormData {
 interface FormErrors {
   [key: string]: string;
 }
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessBasicInfosProps {
   t: (key: string) => string;
@@ -41,7 +40,6 @@ interface BusinessBasicInfosProps {
   selectedAuthorityId?: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
-  currentView: View;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   businessAssociatedWebsites?: IAssociatedWebsiteIds[];
@@ -63,8 +61,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   businessAssociatedWebsites = [],
 }) => {
   const { isSuperadmin } = useUserRoles();
-  const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
   const { t: tc } = useTranslation("common");
+
+  const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("he");
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);

@@ -81,7 +81,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
-        content={product?.shortDescription ? product?.shortDescription : "-"}
+        content={
+          product?.shortDescriptionHe ||
+          product?.shortDescription ||
+          product?.shortDescriptionAr ||
+          "-"
+        }
         icon={
           <FileText
             className={clsx(
@@ -97,7 +102,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/*  Description */}
       <DescriptionCard
         title={t("description")}
-        content={product?.description ? product?.description : "-"}
+        content={
+          product?.descriptionHe ||
+          product?.description ||
+          product?.description ||
+          "-"
+        }
         icon={
           <AlignLeft
             className={clsx(

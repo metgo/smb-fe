@@ -15,10 +15,7 @@ import { type FC } from "react";
 import { ImageWithFallback } from "@/components/shared";
 import { useTranslation } from "react-i18next";
 
-type View = "list" | "details" | "create" | "edit" | undefined;
-
 interface BusinessReviewSubmitProps {
-  theme: Theme;
   formData: {
     nameEn: string;
     nameHe: string;
@@ -42,19 +39,7 @@ interface BusinessReviewSubmitProps {
   images?: any;
   address: string;
 
-  errors: Partial<{
-    nameEn: string;
-    shortDescriptionEn: string;
-    fullDescriptionEn: string;
-    email: string;
-    phone: string;
-    address: string;
-    primaryCategory: string;
-    logo: string;
-  }>;
-  business: any;
   t: (key: string) => string;
-  currentView: View;
   setCurrentStep: (v: number) => void;
 }
 const STEPS = {
@@ -67,13 +52,13 @@ const STEPS = {
   DELIVERY: 7,
   ONLINE: 8,
 };
-const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
-  formData,
 
+const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
+  t,
+  formData,
   setCurrentStep,
   address,
   images,
-  t,
 }) => {
   const { t: tc } = useTranslation("common");
   const { categories } = useCommon();

@@ -17,6 +17,7 @@ type ProductType =
   | "TABLE_ORDER"
   | "HOTEL"
   | "EXPERIENCE";
+
 interface Product {
   _id: string;
   createdAt: string;
@@ -24,6 +25,9 @@ interface Product {
   isDeleted: boolean;
 
   name: string;
+  nameHe: string;
+  nameAr: string;
+
   slug: string;
   productType: ProductType;
 
@@ -68,7 +72,12 @@ interface Product {
   features: unknown[];
 
   shortDescription: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
+
   description: string;
+  descriptionHe: string;
+  descriptionAr: string;
 
   price: ProductPrice;
   quantity: ProductQuantity;
