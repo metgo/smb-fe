@@ -649,9 +649,9 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                           </h4>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          {ticket?.dayDescription?.map((day) => (
+                          {ticket?.dayDescription?.map((day, index) => (
                             <div
-                              key={day._id}
+                              key={index}
                               className={clsx(
                                 "flex items-center gap-2 text-sm border rounded-md px-2 py-1",
                                 borderColor,

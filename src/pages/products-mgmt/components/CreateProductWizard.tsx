@@ -198,7 +198,6 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-  console.log("🚀 ~ CreateProductWizard ~ formData:", formData);
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
