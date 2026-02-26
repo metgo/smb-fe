@@ -126,7 +126,7 @@ export default function CreateBusinessWizard({
 
     // Step 4
     primaryCategory: "",
-    tags: [] as string[],
+    tags: [],
     accessibility: [] as string[],
     groupTypes: [] as string[],
     // subcategories: [] as string[],
@@ -322,9 +322,9 @@ export default function CreateBusinessWizard({
     //  step 4
     primaryCategoryId: formData.primaryCategory,
     tagsId: formData.tags.map((tag: any) => ({
-      en: tag,
-      he: tag,
-      ar: tag,
+      en: tag.en,
+      he: tag.he,
+      ar: tag.ar,
     })),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),

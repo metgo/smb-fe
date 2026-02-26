@@ -6,10 +6,16 @@ import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
 
+interface Tag {
+  en: string;
+  he: string;
+  ar: string;
+}
+
 interface AttributesFormData {
   primaryCategory: string;
   serviceType: string;
-  tags: string[];
+  tags: Tag[];
   accessibility: string[];
   groupTypes: string[];
 }
@@ -17,6 +23,7 @@ interface AttributesFormData {
 interface FormErrors {
   primaryCategory?: string;
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface AttributesProps {
   name: string;
@@ -28,9 +35,9 @@ interface AttributesProps {
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
+  currentView?: View;
+  productId?: any;
 }
-
-/* ---------------- Component ---------------- */
 
 const Attributes: FC<AttributesProps> = ({
   errors,
@@ -42,6 +49,8 @@ const Attributes: FC<AttributesProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
+  currentView,
+  productId,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
@@ -49,53 +58,51 @@ const Attributes: FC<AttributesProps> = ({
 
   const [getGeneratedTags] = useGenerateTagsMutation();
 
-  // Tag autocomplete states
-  const [tagInput, setTagInput] = useState("");
+  const [tagInput, setTagInput] = useState<string>("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
 
   useEffect(() => {
-    if (name || description) {
-      getGeneratedTags({ name, description }).then((res: any) => {
-        console.log("🚀 ~ Attributes ~ res:", res?.data);
-        if (res?.data) {
-          const extractedTags = res.data.map((tag: any) => tag.en);
+    if (currentView === "edit" || productId) return;
+    if (!name && !description) return;
 
-          const newTags = extractedTags.filter(
-            (tag: string) => !formData.tags.includes(tag),
-          );
+    getGeneratedTags({ name, description }).then((res: any) => {
+      if (res?.data?.length) {
+        const newTags: Tag[] = res.data
+          .filter((tag: Tag) => {
+            return !formData.tags.some((existing) => existing.en === tag.en);
+          })
+          .map((tag: any) => ({
+            en: tag.en || "",
+            he: tag.he || "",
+            ar: tag.ar || "",
+          }));
 
+        if (newTags.length > 0) {
           setFormData({
             ...formData,
             tags: [...formData.tags, ...newTags],
           });
         }
-      });
-    }
-  }, [name, description]);
-
-  console.log("formdata", formData);
+      }
+    });
+  }, [name, description, setFormData]);
+  console.log("🚀 ~ Attributes ~ formData:", formData.tags);
 
   const handleGroupTypeSelect = (itemId: string) => {
-    const exists = selectedGroupTypesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedGroupTypesId?.filter((id) => id !== itemId);
-      setGroupTypesId(updated);
-    } else {
-      setGroupTypesId([...selectedGroupTypesId, itemId]);
-    }
+    setGroupTypesId(
+      selectedGroupTypesId.includes(itemId)
+        ? selectedGroupTypesId.filter((id) => id !== itemId)
+        : [...selectedGroupTypesId, itemId],
+    );
   };
 
   const handleAccessibilitySelect = (itemId: string) => {
-    const exists = selectedAccessiblitiesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedAccessiblitiesId?.filter((id) => id !== itemId);
-      setAccessiblitiesId(updated);
-    } else {
-      setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
-    }
+    setAccessiblitiesId(
+      selectedAccessiblitiesId.includes(itemId)
+        ? selectedAccessiblitiesId.filter((id) => id !== itemId)
+        : [...selectedAccessiblitiesId, itemId],
+    );
   };
 
   return (
@@ -133,13 +140,13 @@ const Attributes: FC<AttributesProps> = ({
       </div>
 
       <SelectableChips
-        label={"accessiblities"}
+        label="accessiblities"
         items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
       />
       <SelectableChips
-        label={"group_types"}
+        label="group_types"
         items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
@@ -148,18 +155,13 @@ const Attributes: FC<AttributesProps> = ({
       {/* Tags */}
       <div>
         <label
-          className={`block text-sm mb-1 ${
-            isDark ? "text-gray-300" : "text-gray-700"
-          }`}
+          className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
         >
           {t("tags")}
         </label>
 
-        {/* Info text */}
         <p
-          className={`text-xs mb-2 ${
-            isDark ? "text-gray-400" : "text-gray-500"
-          }`}
+          className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
         >
           {t("tag_input_hint")}
         </p>
@@ -170,13 +172,13 @@ const Attributes: FC<AttributesProps> = ({
           }`}
         >
           <div className="flex flex-wrap gap-2 items-center">
-            {/* Existing tags */}
-            {formData.tags.map((tag: string, idx: number) => (
+            {/* Render existing tags */}
+            {formData.tags.map((tag, idx) => (
               <span
-                key={`${tag}-${idx}`}
+                key={`${tag.en}-${idx}`}
                 className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
               >
-                {tag}
+                {tag.en}
                 <button
                   type="button"
                   onClick={() =>
@@ -203,11 +205,14 @@ const Attributes: FC<AttributesProps> = ({
                 setSelectedTagIndex(0);
               }}
               onKeyDown={(e) => {
-                const filteredSuggestions = subCategories?.filter(
-                  (item: any) =>
-                    item.name.toLowerCase().includes(tagInput.toLowerCase()) &&
-                    !formData.tags.includes(item.name),
-                );
+                const filteredSuggestions =
+                  subCategories?.filter(
+                    (item: any) =>
+                      item.name
+                        ?.toLowerCase()
+                        .includes(tagInput.toLowerCase()) &&
+                      !formData.tags.some((t) => t.en === item.name),
+                  ) ?? [];
 
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
@@ -228,15 +233,20 @@ const Attributes: FC<AttributesProps> = ({
 
                   if (showTagSuggestions && filteredSuggestions.length > 0) {
                     const selected = filteredSuggestions[selectedTagIndex].name;
-
                     setFormData({
                       ...formData,
-                      tags: [...formData.tags, selected],
+                      tags: [
+                        ...formData.tags,
+                        { en: selected, he: "", ar: "" },
+                      ],
                     });
                   } else if (tagInput.trim()) {
                     setFormData({
                       ...formData,
-                      tags: [...formData.tags, tagInput.trim()],
+                      tags: [
+                        ...formData.tags,
+                        { en: tagInput.trim(), he: "", ar: "" },
+                      ],
                     });
                   }
 
@@ -251,7 +261,10 @@ const Attributes: FC<AttributesProps> = ({
                   if (tagInput.trim()) {
                     setFormData({
                       ...formData,
-                      tags: [...formData.tags, tagInput.trim()],
+                      tags: [
+                        ...formData.tags,
+                        { en: tagInput.trim(), he: "", ar: "" },
+                      ],
                     });
                     setTagInput("");
                     setShowTagSuggestions(false);
@@ -274,14 +287,16 @@ const Attributes: FC<AttributesProps> = ({
           {/* Autocomplete Dropdown */}
           {showTagSuggestions &&
             (() => {
-              const filteredSuggestions = subCategories?.filter(
-                (item: any) =>
-                  item?.name?.toLowerCase()?.includes(tagInput.toLowerCase()) &&
-                  !formData?.tags.includes(item.name),
-              );
+              const filteredSuggestions =
+                subCategories?.filter(
+                  (item: any) =>
+                    item?.name
+                      ?.toLowerCase()
+                      ?.includes(tagInput.toLowerCase()) &&
+                    !formData.tags.some((t) => t.en === item.name),
+                ) ?? [];
 
-              if (!filteredSuggestions || filteredSuggestions.length === 0)
-                return null;
+              if (filteredSuggestions.length === 0) return null;
 
               return (
                 <div
@@ -291,7 +306,7 @@ const Attributes: FC<AttributesProps> = ({
                       : "bg-white border-gray-300"
                   }`}
                 >
-                  {filteredSuggestions?.map((item: any, idx: number) => (
+                  {filteredSuggestions.map((item: any, idx: number) => (
                     <button
                       key={item._id}
                       type="button"
@@ -299,7 +314,10 @@ const Attributes: FC<AttributesProps> = ({
                         e.preventDefault();
                         setFormData({
                           ...formData,
-                          tags: [...formData.tags, item.name],
+                          tags: [
+                            ...formData.tags,
+                            { en: item.name, he: "", ar: "" },
+                          ],
                         });
                         setTagInput("");
                         setShowTagSuggestions(false);
