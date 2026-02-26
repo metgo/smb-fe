@@ -14,6 +14,7 @@ import {
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 import { FormFieldWrapper } from "@/components/form-fields";
+import { IOpMode } from "@/enums/operation.types";
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
@@ -257,7 +258,7 @@ const CreateTicketWizard = ({
 
     try {
       const res =
-        editData?._id && opMode !== "DUPLICATE"
+        editData?._id && opMode !== IOpMode.DUPLICATE
           ? await updateTicket({
               body: payload,
               ticketId: editData?._id,

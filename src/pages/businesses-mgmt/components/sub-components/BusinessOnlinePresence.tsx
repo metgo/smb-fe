@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { IOpMode } from "@/enums/operation.types";
 
 interface SocialMediaItem {
   _id: string;
@@ -24,9 +25,8 @@ interface BusinessOnlinePresenceProps {
   };
   setFormData: (data: any) => void;
   business: any;
-  currentView: View;
+  opMode: TOpMode;
 }
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
   t,
@@ -34,7 +34,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
   business,
   formData,
   setFormData,
-  currentView,
+  opMode,
 }) => {
   const { socialMedia } = useCommon();
   const { isDark } = useThemeClasses();
@@ -76,7 +76,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
   };
 
   useEffect(() => {
-    if (!business || currentView !== "edit") return;
+    if (!business || opMode === IOpMode.CREATE) return;
 
     const normalizedSocialMedia = (business.socialMedia ?? []).map(
       (item: any) => ({
@@ -92,7 +92,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
       ...prev,
       socialMedia: normalizedSocialMedia,
     }));
-  }, [business, setFormData, currentView]);
+  }, [business, setFormData, opMode]);
 
   return (
     <div className="space-y-6">

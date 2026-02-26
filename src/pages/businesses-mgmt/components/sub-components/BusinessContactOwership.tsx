@@ -33,9 +33,7 @@ interface BusinessContactOwershipProps {
   formData: BusinessContactFormData;
   setFormData: (data: BusinessContactFormData) => void;
   errors: FormErrors;
-  currentView: View;
 }
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
   isRTL,
