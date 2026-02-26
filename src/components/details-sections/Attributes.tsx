@@ -54,7 +54,8 @@ const Attributes: FC<AttributesProps> = ({
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
-  const { categories, accessibility, groupTypes, subCategories } = useCommon();
+  const { categories, accessibility, groupTypes, subCategories, allTags } =
+    useCommon();
 
   const [getGeneratedTags] = useGenerateTagsMutation();
 
@@ -288,7 +289,7 @@ const Attributes: FC<AttributesProps> = ({
           {showTagSuggestions &&
             (() => {
               const filteredSuggestions =
-                subCategories?.filter(
+                allTags?.filter(
                   (item: any) =>
                     item?.name
                       ?.toLowerCase()

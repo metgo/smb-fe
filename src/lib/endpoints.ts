@@ -25,6 +25,8 @@ export const endpoints = {
 
   categories: "/admin/buss-category",
   subCategories: "admin/buss-sub-category",
+  tags: "/tags",
+
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
   dmos: "/dmos",

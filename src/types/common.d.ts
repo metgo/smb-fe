@@ -24,7 +24,14 @@ interface IWebsite {
   authorityIds: string[];
 }
 
+interface ITag {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+}
 type TAllWebsites = IWebsite[];
+type TAllTags = ITag[];
 
 interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];

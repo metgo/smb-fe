@@ -6,6 +6,7 @@ import {
   useGetAllWebsitesQuery,
   useGetDmosQuery,
   useGetSubCategoriesQuery,
+  useGetAllTagsQuery,
 } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +23,8 @@ export function useCommon() {
 
   const dmosAuthorities: IDmo[] = data?.data;
   const { data: allWebsites } = useGetAllWebsitesQuery();
+
+  const { data: allTags } = useGetAllTagsQuery();
 
   const websites = [
     { value: "all", label: t("all_websites") },
@@ -49,5 +52,6 @@ export function useCommon() {
     accessibility: accessibility?.datas?.data,
     categories: primaryCategories?.datas?.data,
     subCategories: subCategories?.datas?.data,
+    allTags,
   };
 }
