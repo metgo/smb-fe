@@ -57,14 +57,24 @@ const Attributes: FC<AttributesProps> = ({
   useEffect(() => {
     if (name || description) {
       getGeneratedTags({ name, description }).then((res: any) => {
-        console.log("🚀 ~ Attributes ~ res?.data?.tags:", res?.data?.tags);
-        if (res?.data?.tags) {
-          // const newTags = res.data.tags.filter((tag: string) => !formData.tags.includes(tag));
-          // setFormData({ ...formData, tags: [...formData.tags, ...newTags] })
+        console.log("🚀 ~ Attributes ~ res:", res?.data);
+        if (res?.data) {
+          const extractedTags = res.data.map((tag: any) => tag.en);
+
+          const newTags = extractedTags.filter(
+            (tag: string) => !formData.tags.includes(tag),
+          );
+
+          setFormData({
+            ...formData,
+            tags: [...formData.tags, ...newTags],
+          });
         }
       });
     }
   }, [name, description]);
+
+  console.log("formdata", formData);
 
   const handleGroupTypeSelect = (itemId: string) => {
     const exists = selectedGroupTypesId?.some((id) => id === itemId);

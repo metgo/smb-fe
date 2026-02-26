@@ -240,7 +240,7 @@ export default function CreateBusinessWizard({
         operatingHours: editData?.openingHrs,
         //attributes
         primaryCategory: editData?.primaryCategoryId || "",
-        tags: editData?.tags || [],
+        tags: editData?.tagsId || [],
       });
       setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
       setGroupTypesId(removeNulls(editData?.groupTypesId));
@@ -316,7 +316,7 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    tags: formData.tags,
+    tagsId: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
