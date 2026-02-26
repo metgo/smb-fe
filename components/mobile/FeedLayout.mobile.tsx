@@ -172,7 +172,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       <div className="bg-black/40">
         {isFilterDrawerOpen && (
           <MobileFeedFilterDrawer
-            itemCount={businesses?.length}
+            itemCount={infiniteData?.totalData ?? 0}
             isOpen={isFilterDrawerOpen}
             setIsOpen={setIsFilterDrawerOpen}
             filters={filters}

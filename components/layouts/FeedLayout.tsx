@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
+import { misc } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
@@ -16,7 +17,6 @@ import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
-import { misc } from "@/constant/hebrew";
 import { filterBusinesses } from "@/lib/helpers";
 import { SunsetButton } from "../filter-icon/SunsetButton";
 
@@ -128,7 +128,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
               appliedFilterCount={appliedFilterCount}
             />
             {!alreadyShownFilterTooltip && (
-              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold ">
+              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold">
                 {misc.filterIconTooltip}
               </div>
             )}
@@ -140,7 +140,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       {/* Filter Drawer */}
       {isFilterDrawerOpen && (
         <FeedFilterDrawer
-          itemCount={visibleFeedItems.length}
+          itemCount={infiniteData?.totalData ?? 0}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}
