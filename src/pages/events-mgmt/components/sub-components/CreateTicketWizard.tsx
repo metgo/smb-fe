@@ -289,8 +289,8 @@ const CreateTicketWizard = ({
     ]);
   };
 
-  const removeEventDay = (id: string | number) => {
-    setTicketDateTime((prev) => prev.filter((day) => day._id !== id));
+  const removeEventDay = (pDay: any) => {
+    setTicketDateTime((prev) => prev.filter((day) => day !== pDay));
   };
 
   const updateTicketDay = (
@@ -433,7 +433,7 @@ const CreateTicketWizard = ({
             <div className="space-y-4 mt-2">
               {ticketDateTime?.map((day, index) => (
                 <div
-                  key={day._id}
+                  key={index}
                   ref={(el) => {
                     if (el) sectionRefs.current[`day-${index}`] = el;
                   }}
@@ -501,7 +501,7 @@ const CreateTicketWizard = ({
 
                     <button
                       type="button"
-                      onClick={() => removeEventDay(day?._id || "")}
+                      onClick={() => removeEventDay(day || "")}
                       className="col-span-1 p-2 text-red-500 hover:text-red-600 bg-red-100 dark:bg-red-900/30 rounded-md flex items-center justify-center"
                     >
                       <Trash2 size={18} />

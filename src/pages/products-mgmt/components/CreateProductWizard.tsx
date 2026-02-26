@@ -384,7 +384,7 @@ export default function CreateProductWizard({
     descriptionAr: formData.fullDescriptionAr,
 
     primaryCategoryId: formData.primaryCategory,
-    // tags: formData.tags,
+    tags: formData.tags,
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
 

@@ -63,7 +63,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   businessAssociatedWebsites = [],
 }) => {
   const { isSuperadmin } = useUserRoles();
-  const { borderColor, isDark } = useThemeClasses();
+  const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
   const { t: tc } = useTranslation("common");
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("he");
@@ -166,13 +166,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("name")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors.name
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
         </div>
@@ -200,13 +194,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("short")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors.shortDescription
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
         </div>
@@ -234,13 +222,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("full")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors.fullDescription
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
         </div>
