@@ -9,7 +9,6 @@ import { UserRole } from "@/enums/user.types";
 
 interface StatusChangeBtnProps {
   status: TStatus;
-  isProduct?: boolean;
   handleStatusChange: (status: TStatus) => void;
 }
 

@@ -2,11 +2,10 @@ import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState, type FC } from "react";
 
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper } from "@/components/form-fields";
 import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface BusinessFormData {
   authority: string;
@@ -63,8 +62,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
 }) => {
-  const { userRole } = useAppSelector((state) => state.auth);
-  const { borderColor, isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
+  const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
   const { t: tc } = useTranslation("common");
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("he");
@@ -167,21 +166,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("name")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors[getFieldName("name")]
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
-
-          {errors[getFieldName("name")] && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors[getFieldName("name")]}
-            </p>
-          )}
         </div>
 
         {/* Short Description */}
@@ -190,7 +177,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             required
             label={t("short_description")}
             error={errors?.shortDescription}
-            inputHintText={`${formData.shortDescriptionEn?.length ?? 0}/50 ${tc("max_characters")}`}
+            inputHintText={`${formData?.shortDescriptionEn?.length ?? 0}/50 ${tc("max_characters")}`}
           >
             <textarea
               rows={3}
@@ -207,20 +194,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("short")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors[getFieldName("shortDescription")]
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
-          {errors[getFieldName("shortDescription")] && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors[getFieldName("shortDescription")]}
-            </p>
-          )}
         </div>
 
         {/* Full Description */}
@@ -246,25 +222,14 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                 })
               }
               placeholder={getPlaceholder("full")}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                errors[getFieldName("fullDescription")]
-                  ? "border-red-500"
-                  : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
             />
           </FormFieldWrapper>
-          {errors[getFieldName("fullDescription")] && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors[getFieldName("fullDescription")]}
-            </p>
-          )}
         </div>
       </div>
 
       {/* Internal Notes */}
-      {userRole === UserRole.SUPERADMIN && (
+      {isSuperadmin && (
         <div>
           <label
             className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}

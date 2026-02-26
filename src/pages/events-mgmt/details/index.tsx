@@ -104,7 +104,7 @@ export default function EventDetailsPage() {
     try {
       await updateEvent({
         eventId,
-        body: { status: status.toUpperCase() },
+        body: { status: status?.toUpperCase() },
       }).unwrap();
 
       refetch();
