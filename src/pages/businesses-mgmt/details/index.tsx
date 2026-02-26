@@ -25,7 +25,6 @@ import {
   ChangeOwnerModal,
 } from "./components";
 import { routes } from "@/lib/routes";
-import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
@@ -46,10 +45,14 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { businessTabs } from "@/constants/tabs";
+import { IOpMode } from "@/enums/operation.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
-  const { t: tc } = useTranslation("toast");
+  const { t: tt } = useTranslation("toast");
+
+  const { isSuperadmin } = useUserRoles();
 
   const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
@@ -113,17 +116,10 @@ export default function BusinessDetailsPage() {
   );
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditClicked, setIsEditClicked] = useState(false);
   const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
-
-  const canChangeStatus = [
-    "superadmin",
-    "admin",
-    "dmo",
-    "authority",
-    "traveller",
-  ].includes(userRole);
 
   const {
     images,
@@ -154,36 +150,6 @@ export default function BusinessDetailsPage() {
     onChange: setBusinessLogoImage,
   });
 
-  // useEffect(() => {
-  //   if (!business?.logo || !business?.images?.length) return;
-  //   const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
-
-  //   if (business) {
-  //     const logo = {
-  //       id: Date.now(),
-  //       previewUrl: business?.logo?.image,
-  //       progress: 100,
-  //       status: "success",
-  //       isPrimary: false,
-  //       gcsURL: business?.logo?.image,
-  //     };
-  //     const gallery = business?.images?.map((item: any, index: number) => ({
-  //       id: Date.now() + index,
-  //       previewUrl: item.image,
-  //       progress: 100,
-  //       status: "success",
-  //       isPrimary: item.isPrimary || (!hasPrimary && index === 0),
-  //       gcsURL: item.image,
-  //     }));
-  //     setBusinessMedia({
-  //       logo,
-  //       gallery,
-  //     });
-  //   }
-  // }, [business, businessSlug]);
-
-  // const [updateBusiness] = useUpdateBusinessMutation();
-
   useEffect(() => {
     setGalleryImages(business?.images);
     setBusinessLogoImage({ image: business?.logo?.image });
@@ -195,34 +161,15 @@ export default function BusinessDetailsPage() {
     }
   }, [isEditClicked]);
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     let logoUrl = businessLogoImage?.image ?? null;
-
-  //     // upload logo only if replaced
-  //     if (logoImage?.file) {
-  //       logoUrl = await uploadLogoImage();
-  //     }
-  //     // upload gallery images
-  //     await uploadAll();
-
-  //     const body = {
-  //       logo: { image: logoUrl },
-  //       images: galleryImages,
-  //     };
-
-  //     await updateBusiness({ body, businessId }).unwrap();
-
-  //     console.log("Business updated", galleryImages);
-  //   } catch {
-  //     console.error("Failed to save");
-  //   }
-  // };
-
   const onCreateProduct = () => {
     navigate(
       `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
     );
+  };
+
+  const handleMutateData = (mode: TOpMode) => {
+    setIsEditClicked(true);
+    setOpMode(mode);
   };
 
   const onStatusChangeHandler = async (status: string) => {
@@ -232,10 +179,10 @@ export default function BusinessDetailsPage() {
         body: { status: status.toUpperCase() },
       }).unwrap();
 
-      toast.success(tc("business_status_update_success"));
+      toast.success(tt("business_status_update_success"));
       refetch();
     } catch (error) {
-      toast.error(tc("business_status_update_failed"));
+      toast.error(tt("business_status_update_failed"));
       console.error(error);
     }
   };
@@ -320,14 +267,12 @@ export default function BusinessDetailsPage() {
           <BackToListBtn navPath={routes.businessMgmt} />
 
           <div className="flex items-center gap-2">
-            {canChangeStatus && (
-              <StatusChangeBtn
-                handleStatusChange={onStatusChangeHandler}
-                status={business?.status}
-              />
-            )}
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={business?.status}
+            />
 
-            {userRole === UserRole.SUPERADMIN && (
+            {isSuperadmin && (
               <button
                 onClick={() => setIsOwnerChangeModalOpen(true)}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
@@ -341,13 +286,17 @@ export default function BusinessDetailsPage() {
               </button>
             )}
             {/* <button
-              onClick={onClickView}
-              className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+              onClick={() => handleMutateData(IOpMode.DUPLICATE)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${isDark
+                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                : "border-gray-300 hover:bg-gray-50 text-gray-700"
+                } transition-colors`}
             >
-              {t("view_product")}
+              <Copy className="w-4 h-4" />
+              <span>{tc("duplicate") || "Duplicate"}</span>
             </button> */}
             <button
-              onClick={() => setIsEditClicked(true)}
+              onClick={() => handleMutateData(IOpMode.EDIT)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Edit className="w-4 h-4" />
@@ -394,9 +343,9 @@ export default function BusinessDetailsPage() {
       {isEditClicked && (
         <CreateBusinessWizard
           editData={business}
-          currentView={"edit"}
           onClose={() => setIsEditClicked(false)}
           refetch={refetch}
+          opMode={opMode}
         />
       )}
     </div>

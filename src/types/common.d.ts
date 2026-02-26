@@ -9,6 +9,7 @@ type TStatus =
   | "archived";
 
 type EventStatus = "draft" | "pending" | "approved";
+type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 
 interface Geo {
   lat: string;

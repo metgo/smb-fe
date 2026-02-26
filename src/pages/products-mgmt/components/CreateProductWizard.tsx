@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   Check,
@@ -41,14 +41,15 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { removeNulls } from "@/helpers";
+import { modelTitle, removeNulls } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { IOpMode } from "@/enums/operation.types";
+import { routes } from "@/lib/routes";
 
 interface ProductWizardProps {
   onClose: () => void;
-  editingProduct?: ProductFormData | null;
-  selectedProduct?: any;
+  opMode?: TOpMode;
   isOpen?: boolean;
   product?: any;
   refetch?: any;
@@ -58,7 +59,9 @@ export default function CreateProductWizard({
   onClose,
   refetch,
   product,
+  opMode = IOpMode.CREATE,
 }: ProductWizardProps) {
+  const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
 
@@ -229,9 +232,18 @@ export default function CreateProductWizard({
     setFormData({
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
-      name: product?.name || "",
-      nameHe: product?.nameHe || "",
-      nameAr: product?.nameAr || "",
+      name:
+        opMode === IOpMode.DUPLICATE
+          ? `${product?.name || ""} (Duplicate)`
+          : product?.name || "",
+      nameHe:
+        opMode === IOpMode.DUPLICATE
+          ? `${product?.nameHe || ""} (שכפל)`
+          : product?.nameHe || "",
+      nameAr:
+        opMode === IOpMode.DUPLICATE
+          ? `${product?.nameAr || ""} (نسخ)`
+          : product?.nameAr || "",
 
       shortDescription: product?.shortDescription || "",
       shortDescriptionHe: product?.shortDescriptionHe || "",
@@ -245,7 +257,7 @@ export default function CreateProductWizard({
       categories: product?.categories || [],
       subCategories: product?.subCategories || [],
       primaryCategory: product?.primaryCategoryId || "",
-      tags: product?.tags || [],
+      tags: product?.tagsId || [],
 
       //step-3: pricing, stock & dates
       markedPrice: product?.price?.markedPrice || "",
@@ -275,7 +287,12 @@ export default function CreateProductWizard({
 
     setAccessiblitiesId(removeNulls(product?.accessibilitiesId));
     setGroupTypesId(removeNulls(product?.groupTypesId));
-    setGalleryImages(product?.images);
+
+    if (opMode === IOpMode.EDIT) {
+      setGalleryImages(product?.images);
+    } else {
+      setGalleryImages([]);
+    }
   }, [productId, product]);
 
   const [initProductCreate, { isLoading: isCreating }] =
@@ -361,10 +378,6 @@ export default function CreateProductWizard({
 
     await saveDraft(true);
     setIsPublishing(false);
-
-    // toast.success(t("Product created succesfully"));
-    refetch();
-    onClose();
   };
 
   // Draft Save Payload per Step
@@ -418,8 +431,10 @@ export default function CreateProductWizard({
       let internalProductId;
 
       // 1️⃣ Initialize product if not created yet
-      if (!productId) {
-        const res = await initProductCreate({ businessId }).unwrap();
+      if (!productId || opMode !== IOpMode.EDIT) {
+        const res = await initProductCreate({
+          businessId: product?.businessId?._id || formData?.businessId,
+        }).unwrap();
         internalProductId = res?.id;
       }
 
@@ -439,11 +454,17 @@ export default function CreateProductWizard({
             : ItemStatus.DRAFT,
         },
       }).unwrap();
-
+      if (opMode === IOpMode.DUPLICATE) {
+        navigate(
+          `${routes.productDetails}?productId=${internalProductId || productId}`,
+        );
+      } else {
+        refetch();
+      }
+      onClose();
       toast.success(isPublish ? tc("product_published") : tc("draft_saved"));
     } catch (error: any) {
-      // setIsSaving(false);
-      toast.error(tc("draft_failed"));
+      toast.error(error?.data?.message || tc("draft_failed"));
     }
   };
 
@@ -533,7 +554,7 @@ export default function CreateProductWizard({
       >
         <div>
           <h2 className={`text-2xl ${textPrimary} mb-1`}>
-            {productId ? t("edit_product") : t("create_product")}
+            {modelTitle(opMode, t)} {t("product")}
           </h2>
           <p className={`text-sm ${textTertiary}`}>
             {t("step")} {currentStep} {t("of")} 6:{" "}

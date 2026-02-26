@@ -19,7 +19,7 @@ const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
               isDark ? "text-gray-100" : "text-gray-900"
             }`}
           >
-            {business?.name}
+            {business?.nameHe || business?.name || business?.nameAr}
           </h1>
 
           <div className="flex items-center gap-4">

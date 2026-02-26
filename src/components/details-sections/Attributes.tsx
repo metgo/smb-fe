@@ -5,6 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
+import { IOpMode } from "@/enums/operation.types";
 
 interface Tag {
   en: string;
@@ -23,7 +24,6 @@ interface AttributesFormData {
 interface FormErrors {
   primaryCategory?: string;
 }
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface AttributesProps {
   name: string;
@@ -35,7 +35,7 @@ interface AttributesProps {
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  currentView?: View;
+  opMode?: any;
   productId?: any;
 }
 
@@ -49,22 +49,21 @@ const Attributes: FC<AttributesProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
-  currentView,
+  opMode,
   productId,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
-  const { categories, accessibility, groupTypes, subCategories, allTags } =
-    useCommon();
-
+  const { categories, accessibility, groupTypes, allTags } = useCommon();
+  const { language } = useThemeClasses();
   const [getGeneratedTags] = useGenerateTagsMutation();
-
   const [tagInput, setTagInput] = useState<string>("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
+  console.log("currentview", opMode);
 
   useEffect(() => {
-    if (currentView === "edit" || productId) return;
+    if (opMode === IOpMode.EDIT || productId) return;
     if (!name && !description) return;
 
     getGeneratedTags({ name, description }).then((res: any) => {
@@ -87,7 +86,7 @@ const Attributes: FC<AttributesProps> = ({
         }
       }
     });
-  }, [name, description, setFormData]);
+  }, [name, description, formData, opMode]);
   console.log("🚀 ~ Attributes ~ formData:", formData.tags);
 
   const handleGroupTypeSelect = (itemId: string) => {
@@ -179,7 +178,7 @@ const Attributes: FC<AttributesProps> = ({
                 key={`${tag.en}-${idx}`}
                 className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
               >
-                {tag.en}
+                {tag[language]}
                 <button
                   type="button"
                   onClick={() =>
@@ -207,7 +206,7 @@ const Attributes: FC<AttributesProps> = ({
               }}
               onKeyDown={(e) => {
                 const filteredSuggestions =
-                  subCategories?.filter(
+                  allTags?.filter(
                     (item: any) =>
                       item.name
                         ?.toLowerCase()
