@@ -269,14 +269,16 @@ const TicketListModal = ({
 
                         {/* Date + time badge */}
                         {day?.date && day?.startTime && day?.endTime && (
-                          <div className=" max-sm:text-sm text-gray-800 mt-1 font-normal flex">
-                            <span className="flex gap-1 items-center">
-                              <BiCalendar /> {formatDateMonth(day?.date)}
-                              &nbsp;&nbsp;
-                            </span>
+                          <div className=" max-sm:text-sm text-gray-800 mt-1 font-normal flex items-center gap-3">
                             <div className="flex gap-1 items-center">
-                              <GoClock />
-                              <span>
+                              <BiCalendar />
+                              <span className="mt-0.5">
+                                {formatDateMonth(day?.date)}
+                              </span>
+                            </div>
+                            <div className="flex gap-1 items-center">
+                              <GoClock className="text-sm font-bold border rounded-full" />
+                              <span className="mt-0.5">
                                 {day?.startTime} – {day?.endTime}
                               </span>{" "}
                             </div>

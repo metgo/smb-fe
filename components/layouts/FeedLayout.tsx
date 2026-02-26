@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
+import { misc } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
@@ -16,7 +17,6 @@ import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
-import { misc } from "@/constant/hebrew";
 import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface FeedLayoutProps {
@@ -25,7 +25,7 @@ interface FeedLayoutProps {
 }
 
 const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
-  const observerTarget = useRef<HTMLDivElement>(null); // Element to observe
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   /* ---------------------- Global Stores ---------------------- */
   const {
@@ -99,18 +99,21 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
 
   /* ---------------------- Infinite Scroll Observer ---------------------- */
   useEffect(() => {
-    if (!observerTarget.current || isFetchingNextPage || !hasNextPage) return;
+    const target = observerTarget.current;
+    if (!target) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        // Guard inside callback — not in effect setup —
+        // so the observer stays attached and fires correctly.
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
       { threshold: 0.1 },
     );
 
-    observer.observe(observerTarget.current);
+    observer.observe(target);
 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
@@ -153,20 +156,23 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
             {/* Infinite Scroll Trigger + Loading Indicator */}
             {activeFilterTab === "gallery" && (
               <>
-                {hasNextPage && (
-                  <div ref={observerTarget} className="py-8 text-center">
-                    {isFetchingNextPage ? (
-                      <div className="flex justify-center items-center">
-                        {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
-                        <span className="ml-3 text-charcoal">
-                          {misc.feedItemsLoading}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="h-10" />
-                    )}
-                  </div>
-                )}
+                {/* Sentinel element — always rendered while in gallery tab,
+                    visibility controlled by hasNextPage to keep ref stable */}
+                <div ref={observerTarget} className="py-8 text-center">
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center items-center">
+                      <span className="ml-3 text-charcoal">
+                        {misc.feedItemsLoading}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Spacer keeps the sentinel visible for the observer
+                      even when neither loading nor end-of-list message shows */}
+                  {!isFetchingNextPage && hasNextPage && (
+                    <div className="h-10" />
+                  )}
+                </div>
 
                 {!hasNextPage && totalBusiness > 10 && (
                   <div className="py-8 text-center text-charcoal">
@@ -187,7 +193,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
               appliedFilterCount={appliedFilterCount}
             />
             {!alreadyShownFilterTooltip && (
-              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold ">
+              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold">
                 {misc.filterIconTooltip}
               </div>
             )}
@@ -200,7 +206,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
       {/* Filter Drawer */}
       {isFilterDrawerOpen && (
         <FeedFilterDrawer
-          itemCount={visibleFeedItems.length}
+          itemCount={infiniteData?.pages?.[0]?.totalData ?? 0}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

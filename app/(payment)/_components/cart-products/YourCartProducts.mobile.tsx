@@ -1,6 +1,9 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { GoClock } from "react-icons/go";
+import { BiCalendar } from "react-icons/bi";
+import { IoIosCloseCircle } from "react-icons/io";
 
 import { pathNames } from "@/lib/endpoints";
 import PriceTag from "@/components/PriceTag";
@@ -9,9 +12,6 @@ import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import useCheckoutStore from "@/stores/checkoutStore";
-import { IoIosCloseCircle } from "react-icons/io";
-import { BiCalendar } from "react-icons/bi";
-import { GoClock } from "react-icons/go";
 
 const MobileYourCartProducts = () => {
   const router = useRouter();
@@ -72,13 +72,14 @@ const MobileYourCartProducts = () => {
                     <div className="flex items-start flex-col font-normal">
                       <h3 className="line-clamp-1">{item.name}</h3>
                       {item?.eventDate && item?.startTime && item?.endTime && (
-                        <div className="text-xs text-gray-800 mt-1 font-normal">
+                        <div className=" max-sm:text-sm text-gray-800 mt-1 font-normal flex items-center gap-3">
                           <div className="flex gap-1 items-center">
-                            <BiCalendar /> {item?.eventDate}&nbsp;&nbsp;
+                            <BiCalendar />
+                            <span className="mt-0.5">{item?.eventDate}</span>
                           </div>
                           <div className="flex gap-1 items-center">
-                            <GoClock />
-                            <span>
+                            <GoClock className="text-sm font-bold border rounded-full" />
+                            <span className="mt-0.5">
                               {item?.startTime} – {item?.endTime}
                             </span>{" "}
                           </div>
