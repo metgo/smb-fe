@@ -316,7 +316,11 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    tagsId: formData.tags,
+    tagsId: formData.tags.map((tag: any) => ({
+      en: tag,
+      he: tag,
+      ar: tag,
+    })),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -547,6 +551,7 @@ export default function CreateBusinessWizard({
             setAddress={setAddress}
           />
         );
+
       case 4:
         return (
           <Attributes
