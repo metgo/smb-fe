@@ -885,6 +885,7 @@ export default function ContentMgmtPage() {
                 </div>
               )}
             </div>
+
             <button
               onClick={toggleState}
               className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-200 transition-colors duration-200 focus:outline-none mt-4 ml-4"
@@ -903,11 +904,18 @@ export default function ContentMgmtPage() {
 
             {/* Scrollable Content */}
 
-            <div className="flex">
+            <div className="flex flex-1 overflow-hidden h-full">
               {/* Source Backlog */}
-
+              {/* <div
+                className={`
+                flex flex-col transition-all duration-300 ease-in-out
+                overflow-hidden
+                ${sidebarState === "expanded" ? "w-0" : "w-full lg:w-1/2 xl:w-3/5"}
+                ${sidebarState === "collapsed" ? "w-full" : ""}
+              `}
+              > */}
               {(sidebarState === "collapsed" || sidebarState === "both") && (
-                <div className="flex-1 p-6">
+                <div className="flex-1 min-w-0">
                   <div className="">
                     <div className="mb-4 shrink-0">
                       <h2
@@ -1280,10 +1288,12 @@ export default function ContentMgmtPage() {
                   </div>
                 </div>
               )}
-
+              {/* </div> */}
               {/* Custom Categories */}
+
               {(sidebarState === "expanded" || sidebarState === "both") && (
-                <div className="flex-1 max-h-[96vh] overflow-y-auto p-6">
+                <div className="min-w-0 flex-1 p-6">
+                  {" "}
                   <div>
                     <div className="mb-6 flex items-center justify-between">
                       <div>
