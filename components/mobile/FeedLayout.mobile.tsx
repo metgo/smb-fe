@@ -11,14 +11,14 @@ import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import useGeneralStore from "@/stores/generalStore";
-import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
-import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
-import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
-import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { SunsetButton } from "../filter-icon/SunsetButton";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
+import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
+import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
@@ -264,7 +264,7 @@ const MobileFeedLayout = ({
       <div className="bg-black/40">
         {isFilterDrawerOpen && (
           <MobileFeedFilterDrawer
-            itemCount={businesses?.length}
+            itemCount={infiniteData?.pages?.[0]?.totalData ?? 0}
             isOpen={isFilterDrawerOpen}
             setIsOpen={setIsFilterDrawerOpen}
             filters={filters}

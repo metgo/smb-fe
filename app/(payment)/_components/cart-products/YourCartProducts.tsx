@@ -82,13 +82,16 @@ const YourCartProducts = () => {
                         {item?.eventDate &&
                           item?.startTime &&
                           item?.endTime && (
-                            <div className="text-sm text-gray-800 mt-1 font-normal flex">
-                              <span className="flex gap-1 items-center">
-                                <BiCalendar /> {item?.eventDate}&nbsp;&nbsp;
-                              </span>
+                            <div className=" max-sm:text-sm text-gray-800 mt-1 font-normal flex items-center gap-3">
                               <div className="flex gap-1 items-center">
-                                <GoClock />
-                                <span>
+                                <BiCalendar />
+                                <span className="mt-0.5">
+                                  {item?.eventDate}
+                                </span>
+                              </div>
+                              <div className="flex gap-1 items-center">
+                                <GoClock className="text-sm font-bold border rounded-full" />
+                                <span className="mt-0.5">
                                   {item?.startTime} – {item?.endTime}
                                 </span>{" "}
                               </div>
