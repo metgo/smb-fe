@@ -1,9 +1,10 @@
-import { useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { X } from "lucide-react";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
+import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
 
 interface AttributesFormData {
   primaryCategory: string;
@@ -18,6 +19,8 @@ interface FormErrors {
 }
 
 interface AttributesProps {
+  name: string;
+  description: string;
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
   errors: FormErrors;
@@ -31,6 +34,8 @@ interface AttributesProps {
 
 const Attributes: FC<AttributesProps> = ({
   errors,
+  name,
+  description,
   formData,
   setFormData,
   setGroupTypesId,
@@ -42,10 +47,24 @@ const Attributes: FC<AttributesProps> = ({
   const { isDark } = useThemeClasses();
   const { categories, accessibility, groupTypes, subCategories } = useCommon();
 
+  const [getGeneratedTags] = useGenerateTagsMutation();
+
   // Tag autocomplete states
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
+
+  useEffect(() => {
+    if (name || description) {
+      getGeneratedTags({ name, description }).then((res: any) => {
+        console.log("🚀 ~ Attributes ~ res?.data?.tags:", res?.data?.tags);
+        if (res?.data?.tags) {
+          // const newTags = res.data.tags.filter((tag: string) => !formData.tags.includes(tag));
+          // setFormData({ ...formData, tags: [...formData.tags, ...newTags] })
+        }
+      });
+    }
+  }, [name, description]);
 
   const handleGroupTypeSelect = (itemId: string) => {
     const exists = selectedGroupTypesId?.some((id) => id === itemId);

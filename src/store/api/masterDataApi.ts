@@ -83,6 +83,14 @@ export const masterDataApi = createApi({
       }),
     }),
 
+    generateTags: builder.mutation<any, any>({
+      query: (payload) => ({
+        url: endpoints.generateTags,
+        method: "POST",
+        data: payload,
+      }),
+    }),
+
     patchBusinessOwner: builder.mutation<any, any>({
       query: (body) => ({
         url: endpoints.changeOwner,
@@ -101,6 +109,7 @@ export const masterDataApi = createApi({
 });
 
 export const {
+  useGenerateTagsMutation,
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
   usePatchBusinessOwnerMutation,

@@ -551,6 +551,12 @@ export default function CreateBusinessWizard({
         return (
           <Attributes
             {...commonProps}
+            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            description={
+              formData.fullDescriptionHe ||
+              formData.fullDescriptionEn ||
+              formData.fullDescriptionAr
+            }
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
