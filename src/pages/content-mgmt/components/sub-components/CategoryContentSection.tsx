@@ -13,6 +13,7 @@ interface Category {
   businessIds: string[];
   description: string;
 }
+
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
 };
@@ -260,21 +261,7 @@ const CategoryContentSection = ({
                 <div className="flex gap-4 ">
                   {categoryBusinesses?.map((business: any) => (
                     <div key={business.id} className="w-64 shrink-0">
-                      {/* <DraggableBusinessCard
-                        business={business}
-                        isSelected={selectedIds.has(business.id)}
-                        onSelect={onSelect}
-                        onRemove={onRemove}
-                        categories={categories}
-                        onAddToCategory={onAddToCategory}
-                        viewMode="grid"
-                        language={language}
-                        isBusinessLoading={isBusinessLoading}
-                        fetchNextPage={fetchNextPage}
-                        hasMore={hasMore}
-                        isInCategory={true}
-                        selectedIds={selectedIds}
-                      /> */}
+                    {/* Business Card */}
                     </div>
                   ))}
                 </div>

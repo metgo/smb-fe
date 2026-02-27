@@ -1,5 +1,4 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CategoryContentSection, ContentSection } from "./sub-components";
 import { CKEditorWrapper } from "@/components/wrapper";
 import { toast } from "sonner";
 import { useCommon } from "@/hooks/useCommon";
@@ -9,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 
-interface ContentComposerProps {
 
+interface ContentComposerProps {
+  templateContents: IContentTemplate[];
+  setTemplateContent: (value: IContentTemplate[]) => void;
 }
 
 
@@ -24,7 +25,10 @@ interface Category {
 const STORAGE_KEY = "content-manager-categories";
 
 
-const ContentComposer = ({ }: ContentComposerProps) => {
+const ContentComposer = ({
+  templateContents,
+  setTemplateContent,
+}: ContentComposerProps) => {
   const { t } = useTranslation("businesses");
 
   const { isDark } = useThemeClasses()
@@ -118,18 +122,16 @@ const ContentComposer = ({ }: ContentComposerProps) => {
 
     if (!cat) return;
     if (cat) {
-      setDeleteConfirmation({
-        categoryId: cat.id,
-        categoryName: cat.name,
-        businessCount: cat?.businessIds?.length,
-      });
+      // setDeleteConfirmation({
+      //   categoryId: cat.id,
+      //   categoryName: cat.name,
+      //   businessCount: cat?.businessIds?.length,
+      // });
     } else {
       setCategories((prev) => prev.filter((c) => c.id !== categoryId));
       toast.success(t("category_deleted"));
     }
   };
-
-
 
   const handleCreateCategory = () => {
     if (!newCategoryName.trim()) return;
@@ -235,24 +237,10 @@ const ContentComposer = ({ }: ContentComposerProps) => {
         </div>
 
         <div className="space-y-6">
-          {categories?.map((category) => (
-            <CategoryContentSection
-              key={category.id}
-              category={category}
-              businesses={combinedBusinesses}
-              selectedIds={new Set()}
-              onSelect={() => { }}
-              onRemove={(_id) =>
-                handleRemoveFromCategory(category.id, _id)
-              }
-              categories={categories}
-              onAddToCategory={handleAddToCategory}
-              onRename={handleRenameCategory}
-              onDelete={handleDeleteCategory}
-              onClearSelection={() =>
-                setSelectedBacklogIds(new Set())
-              }
-            />
+          {templateContents?.map((template) => (
+            <div>
+
+            </div>
           ))}
 
           {categories?.length === 0 && (

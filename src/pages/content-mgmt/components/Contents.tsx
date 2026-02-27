@@ -1,10 +1,7 @@
-import { ContentGridView, ContentListView } from "./sub-components";
-import React, { useState, useEffect, useMemo, useRef } from "react";
-
-
-import { Button } from "@/components/ui/button";
-import { useDrag} from "react-dnd";
+import clsx from "clsx";
 import { toast } from "sonner";
+import { useDrag } from "react-dnd";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 
 import SearchInput from "@/components/shared/SearchInput";
 import { ViewModeToggle } from "@/components/shared";
@@ -17,6 +14,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
 import FilterChips from "@/components/shared/FilterChips";
+import { ContentCard } from "./sub-components";
 
 interface Filters {
   status: string;
@@ -46,10 +44,17 @@ const Contents = () => {
   const { t } = useTranslation("businesses");
 
 
- const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
   );
   const { categories: categoryFilter, accessibility, groupTypes } = useCommon();
+
+  const [isSelected, setIsSelected] = useState(false)
+  const [isInCategory, setIsInCategory] = useState(false)
+
+  const [selectedIds, setSelectedIds] = useState(new Set())
+
+
 
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -168,6 +173,15 @@ const Contents = () => {
     setSearchQuery("");
     setPage(1);
   };
+
+  const onSelect = (itemId: string, key: boolean) => {
+
+  }
+
+  const onRemove = (itemId: string) => {
+
+  }
+
   const fetchNextPage = () => {
     console.log("fetch next");
     if (!hasMore || isFetching) return;
@@ -175,7 +189,7 @@ const Contents = () => {
       return prev + 1;
     });
   };
- 
+
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.BUSINESS_CARD,
@@ -184,7 +198,7 @@ const Contents = () => {
       // When dragging a card that is NOT selected, only drag that one
       if (!isSelected) {
         return {
-          ids: [business._id], ///usedrop id not matching
+          // ids: [business._id], ///usedrop id not matching
           isMultiple: false,
           count: 1,
         };
@@ -201,7 +215,7 @@ const Contents = () => {
 
       // fallback (shouldn't happen)
       return {
-        ids: [business.id],
+        // ids: [business.id],
         isMultiple: false,
         count: 1,
       };
@@ -211,14 +225,14 @@ const Contents = () => {
     }),
   });
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent, itemId: string) => {
     const isMulti = e.ctrlKey || e.metaKey || e.shiftKey;
-    onSelect(business.id, isMulti);
+    onSelect(itemId, isMulti);
   };
 
-  const handleContextMenu = () => {
+  const handleContextMenu = (itemId: string) => {
     if (!isSelected) {
-      onSelect(business.id, false);
+      onSelect(itemId, false);
     }
   };
 
@@ -259,9 +273,7 @@ const Contents = () => {
       ${selectionClasses}
     `;
 
-  const logoSrc = business?.logo?.image;
-  const logoAlt = business?.name;
-  const primaryCategory = business?.primaryCategoryId;
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
 
@@ -274,356 +286,278 @@ const Contents = () => {
 
   return (
     <div className="flex-1 min-w-0">
-      <div className="">
-        <div className="mb-4 shrink-0">
-          <h2
-            className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
-          >
-            {t("source_backlog_title")}
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t("source_backlog_description", {
-              count: backlogBusinesses?.length,
-            })}
-          </p>
-        </div>
-
-        <div className="mb-4">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1 relative">
-              <SearchInput
-                placeholder={t("search_businesses_placeholder")}
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
-                storageKey="contentSearchTerm"
-              />
-            </div>
-            <FilterButton
-              value={showFilters}
-              onChange={setShowFilters}
-            />
-
-            <ViewModeToggle
-              onChange={setViewMode}
-              value={viewMode}
-              tableName="contentViewMode"
+      <div className="mb-4  py-2">
+        <h2
+          className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
+        >
+          {t("source_backlog_title")}
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {t("source_backlog_description", {
+            count: backlogBusinesses?.length,
+          })}
+        </p>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex-1 relative">
+            <SearchInput
+              placeholder={t("search_businesses_placeholder")}
+              searchTerm={searchQuery}
+              setSearchTerm={setSearchQuery}
+              storageKey="contentSearchTerm"
             />
           </div>
+          <FilterButton
+            value={showFilters}
+            onChange={setShowFilters}
+          />
 
-          {/* Filters Panel */}
-          {showFilters && (
-            <div
-              className={` border-t py-2 ${isDark
-                ? "border-gray-800 bg-gray-900/30"
-                : "border-gray-200 bg-gray-50"
-                }`}
-            >
-              {/* Active Filters Title */}
-              <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Status Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("status")}
-                    </label>
-                    <select
-                      value={filters.status}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          status: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                        } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="all">{t("all")}</option>
-                      <option value="DRAFT">{t("draft")}</option>
-                      <option value="PENDING">
-                        {t("pending")}
-                      </option>
-                      <option value="APPROVED">
-                        {t("approved")}
-                      </option>
-                      <option value="REJECTED">
-                        {t("rejected")}
-                      </option>
-                      <option value="CLOSED">{t("closed")}</option>
-                    </select>
-                  </div>
-
-                  {/* Has Products Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("has_products")}
-                    </label>
-                    <select
-                      value={filters.hasProductFilter}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          hasProductFilter: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                        } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="all">{t("all")}</option>
-                      <option value="yes">{t("yes")}</option>
-                      <option value="no">{t("no")}</option>
-                    </select>
-                  </div>
-
-                  {/* Category Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("primary_category")}
-                    </label>
-                    <select
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          primaryCategory: e.target.value,
-                        })
-                      }
-                      value={filters.primaryCategory}
-                      className={`w-full px-3 py-2 rounded-lg border ${isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                        } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="">{t("all")}</option>
-                      {categoryFilter?.map((cat: any) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Accessibility Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <ReactMultiSelect
-                      label={t("accessibility")}
-                      options={accessibility?.map((cat: any) => ({
-                        label: t(cat.name),
-                        value: cat._id,
-                      }))}
-                      value={filters.accessibility}
-                      onChange={(values) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          accessibility: values,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  {/* Group Types Filter */}
-                  <div className="flex flex-col min-w-45">
-                    <ReactMultiSelect
-                      label={t("group_types")}
-                      options={groupTypes?.map((cat: any) => ({
-                        label: t(cat.name),
-                        value: cat._id,
-                      }))}
-                      value={filters.groupTypes}
-                      onChange={(values) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          groupTypes: values,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Active Filters Label + Chips */}
-                {(filters?.status !== "all" ||
-                  filters?.hasProductFilter !== "all" ||
-                  filters?.primaryCategory !== "all") && (
-                    <div className="flex flex-col min-w-45">
-                      {/* Label inline with other filter labels */}
-                      <label
-                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        {t("active_filters")}
-                      </label>
-                      <div className="flex gap-2 items-center">
-                        {" "}
-                        {/* Chips row */}
-                        <div className="flex flex-wrap gap-2 mb-2 mt-2">
-                          {Object.entries(filters).map(
-                            ([key, value]) => {
-                              if (!value || value === "all")
-                                return null;
-
-                              let displayValue = value;
-                              if (key === "status") {
-                                displayValue =
-                                  t(value.toLowerCase()) || value;
-                              } else if (key === "hasProductFilter") {
-                                displayValue =
-                                  value === "yes"
-                                    ? t("yes")
-                                    : t("no");
-                              } else if (key === "primaryCategory") {
-                                const selectedprimaryCategory =
-                                  categoryFilter?.find(
-                                    (item: any) => item._id === value,
-                                  );
-                                displayValue =
-                                  selectedprimaryCategory?.name ||
-                                  value;
-                              }
-                              return (
-                                <FilterChips
-                                  key={key}
-                                  label={displayValue}
-                                  onRemove={() => {
-                                    if (key === "status") {
-                                      setFilters((prev) => ({
-                                        ...prev,
-                                        status: "all",
-                                      }));
-                                    } else if (
-                                      key === "accessibility"
-                                    ) {
-                                      setFilters((prev) => ({
-                                        ...prev,
-                                        accessibility: [],
-                                      }));
-                                    } else {
-                                      setFilters((prev) => ({
-                                        ...prev,
-                                        [key]: "all",
-                                      }));
-                                    }
-                                  }}
-                                />
-                              );
-                            },
-                          )}
-                        </div>
-                        {/* Clear All Button */}
-                        <button
-                          onClick={clearFilter}
-                          className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
-                        >
-                          {t("clear_all")}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-              </div>
-            </div>
-          )}
+          <ViewModeToggle
+            onChange={setViewMode}
+            value={viewMode}
+            tableName="contentViewMode"
+          />
         </div>
 
-        {deleteConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            {/* Backdrop click to close */}
-            <div
-              className="absolute inset-0"
-              onClick={() => setDeleteConfirmation(null)}
-            />
+        {/* Filters Panel */}
+        {showFilters && (
+          <div
+            className={` border-t py-2 ${isDark
+              ? "border-gray-800 bg-gray-900/30"
+              : "border-gray-200 bg-gray-50"
+              }`}
+          >
+            {/* Active Filters Title */}
+            <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
+              <div className="grid grid-cols-3 gap-2">
+                {/* Status Filter */}
+                <div className="flex flex-col min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("status")}
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        status: e.target.value,
+                      })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${isDark
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="DRAFT">{t("draft")}</option>
+                    <option value="PENDING">
+                      {t("pending")}
+                    </option>
+                    <option value="APPROVED">
+                      {t("approved")}
+                    </option>
+                    <option value="REJECTED">
+                      {t("rejected")}
+                    </option>
+                    <option value="CLOSED">{t("closed")}</option>
+                  </select>
+                </div>
 
-            {/* Modal content */}
-            <div className="relative w-full max-w-md rounded-lg border bg-white p-6 shadow-2xl dark:bg-gray-900 dark:border-gray-700">
-              <h3 className="text-lg font-semibold">
-                Delete "{deleteConfirmation.categoryName}"?
-              </h3>
+                {/* Has Products Filter */}
+                <div className="flex flex-col min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("has_products")}
+                  </label>
+                  <select
+                    value={filters.hasProductFilter}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        hasProductFilter: e.target.value,
+                      })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${isDark
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="yes">{t("yes")}</option>
+                    <option value="no">{t("no")}</option>
+                  </select>
+                </div>
 
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                This category contains{" "}
-                <span className="font-medium text-foreground">
-                  {deleteConfirmation.businessCount} business
-                  {deleteConfirmation.businessCount !== 1
-                    ? "es"
-                    : ""}
-                </span>
-                . This action cannot be undone.
-              </p>
+                {/* Category Filter */}
+                <div className="flex flex-col min-w-45">
+                  <label
+                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("primary_category")}
+                  </label>
+                  <select
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        primaryCategory: e.target.value,
+                      })
+                    }
+                    value={filters.primaryCategory}
+                    className={`w-full px-3 py-2 rounded-lg border ${isDark
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="">{t("all")}</option>
+                    {categoryFilter?.map((cat: any) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setDeleteConfirmation(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={confirmDelete}
-                >
-                  Delete
-                </Button>
+                {/* Accessibility Filter */}
+                <div className="flex flex-col min-w-45">
+                  <ReactMultiSelect
+                    label={t("accessibility")}
+                    options={accessibility?.map((cat: any) => ({
+                      label: t(cat.name),
+                      value: cat._id,
+                    }))}
+                    value={filters.accessibility}
+                    onChange={(values) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        accessibility: values,
+                      }))
+                    }
+                  />
+                </div>
+
+                {/* Group Types Filter */}
+                <div className="flex flex-col min-w-45">
+                  <ReactMultiSelect
+                    label={t("group_types")}
+                    options={groupTypes?.map((cat: any) => ({
+                      label: t(cat.name),
+                      value: cat._id,
+                    }))}
+                    value={filters.groupTypes}
+                    onChange={(values) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        groupTypes: values,
+                      }))
+                    }
+                  />
+                </div>
               </div>
+
+              {/* Active Filters Label + Chips */}
+              {(filters?.status !== "all" ||
+                filters?.hasProductFilter !== "all" ||
+                filters?.primaryCategory !== "all") && (
+                  <div className="flex flex-col min-w-45">
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("active_filters")}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      {" "}
+                      {/* Chips row */}
+                      <div className="flex flex-wrap gap-2 mb-2 mt-2">
+                        {Object.entries(filters).map(
+                          ([key, value]) => {
+                            if (!value || value === "all")
+                              return null;
+
+                            let displayValue = value;
+                            if (key === "status") {
+                              displayValue =
+                                t(value.toLowerCase()) || value;
+                            } else if (key === "hasProductFilter") {
+                              displayValue =
+                                value === "yes"
+                                  ? t("yes")
+                                  : t("no");
+                            } else if (key === "primaryCategory") {
+                              const selectedprimaryCategory =
+                                categoryFilter?.find(
+                                  (item: any) => item._id === value,
+                                );
+                              displayValue =
+                                selectedprimaryCategory?.name ||
+                                value;
+                            }
+                            return (
+                              <FilterChips
+                                key={key}
+                                label={displayValue}
+                                onRemove={() => {
+                                  if (key === "status") {
+                                    setFilters((prev) => ({
+                                      ...prev,
+                                      status: "all",
+                                    }));
+                                  } else if (
+                                    key === "accessibility"
+                                  ) {
+                                    setFilters((prev) => ({
+                                      ...prev,
+                                      accessibility: [],
+                                    }));
+                                  } else {
+                                    setFilters((prev) => ({
+                                      ...prev,
+                                      [key]: "all",
+                                    }));
+                                  }
+                                }}
+                              />
+                            );
+                          },
+                        )}
+                      </div>
+                      {/* Clear All Button */}
+                      <button
+                        onClick={clearFilter}
+                        className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         )}
+      </div>
 
-        <div
-          className={
-            viewMode === "grid"
-              ? `grid gap-4 max-h-[96vh] overflow-y-auto ${sidebarState === "collapsed"
-                ? "grid-cols-4"
-                : "grid-cols-1  lg:grid-cols-2"
-              }`
-              : "grid grid-cols-1 space-y-3 max-h-[96vh] overflow-y-auto"
-          }
-        >
-          {combinedBusinesses?.map((business: any) => {
-            return (
-              <div>
-                <ContentListView
-                  drag={drag}
-                  handleClick={handleClick}
-                  handleContextMenu={handleContextMenu}
-                  baseClasses={baseClasses}
-                  logoSrc={logoSrc}
-                  logoAlt={logoAlt}
-                  business={business}
-                  language={language}
-                  fetchNextPage={fetchNextPage}
-                  hasMore={hasMore}
-                  isBusinessLoading={isBusinessLoading}
-                  primaryCategory={primaryCategory}
-                  isInCategory={isInCategory}
-                  onRemove={onRemove}
-                />
 
-                <ContentGridView
-                  drag={drag}
-                  handleClick={handleClick}
-                  handleContextMenu={handleContextMenu}
-                  baseClasses={baseClasses}
-                  logoSrc={logoSrc}
-                  logoAlt={logoAlt}
-                  isInCategory={isInCategory}
-                  fetchNextPage={fetchNextPage}
-                  language={language}
-                  hasMore={hasMore}
-                  onRemove={onRemove}
-                  business={business}
-                  isBusinessLoading={isBusinessLoading}
-                  primaryCategory={primaryCategory}
-                />
-              </div>
-            )
-          })
-          }
-        </div>
+      {/* Content */}
+      <div className={clsx("grid grid-cols-12 gap-2")}>
+        {combinedBusinesses?.map((item: any) => {
+          return (
+            <ContentCard
+              key={item._id}
+              _id={item._id}
+              name={item?.name}
+              descripition={item?.shortDescription}
+              image={item?.images?.[0]?.image}
+              categoryName=""
+              isDragging={isDragging}
+              drag={drag}
+              // viewMode="list"
+              handleClick={handleClick}
+              handleContextMenu={handleContextMenu}
+            />
+          )
+        })
+        }
       </div>
     </div>
   )

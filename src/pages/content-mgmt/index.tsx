@@ -1,4 +1,7 @@
-import  { useState, } from "react";
+import { toast } from "sonner";
+import { useState, } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { mockBusinesses } from "@/helpers/mockBusinesses";
 import {
   X,
@@ -10,9 +13,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {  DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { toast } from "sonner";
 
 import { MessageComposerModal } from "./components/MessageComposerModal";
 import { SendResultsModal } from "./components/SendResultsModal";
@@ -32,36 +32,50 @@ interface SendResult {
 }
 
 
-
 type SidebarState = "collapsed" | "expanded" | "both";
 
 
 export default function ContentMgmtPage() {
   const { isDark } = useThemeClasses();
- 
+  const { t } = useTranslation("businesses");
+
+  const intitialTemplateContent = [
+    {
+      title: t("featured_businesses"),
+      subTitle: "",
+      description: "",
+      contents: [],
+    },
+    {
+      title: t("homepage_hero_section"),
+      subTitle: "",
+      description: "",
+      contents: [],
+    },
+    {
+      title: t("recommended_this_week"),
+      subTitle: "",
+      description: "",
+      contents: [],
+    },
+  ]
+
+  const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(intitialTemplateContent)
+
   const [sidebarState, setSidebarState] = useState<SidebarState>("expanded");
-    const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
-      new Set(),
-    );
+  const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
+    new Set(),
+  );
   const toggleState = () => {
     if (sidebarState === "collapsed") setSidebarState("both");
     else if (sidebarState === "both") setSidebarState("expanded");
     else setSidebarState("collapsed");
   };
-  const { t } = useTranslation("businesses");
-
-
-
-
 
 
   const [showMessageComposer, setShowMessageComposer] = useState(false);
   const [showSendResults, setShowSendResults] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
-
-
-
-
 
 
   const handleSendMessage = () => {
@@ -161,15 +175,15 @@ export default function ContentMgmtPage() {
             </button>
 
             {/* Scrollable Content */}
-            <div className="flex flex-1 overflow-hidden h-full">
-         
+            <div className="flex h-full px-4">
               {(sidebarState === "collapsed" || sidebarState === "both") && (
-                <Contents/>
+                <Contents />
               )}
 
               {(sidebarState === "expanded" || sidebarState === "both") && (
                 <ContentComposer
-
+                  templateContents={templateContents}
+                  setTemplateContent={setTemplateContent}
                 />
               )}
             </div>
