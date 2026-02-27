@@ -513,6 +513,7 @@ export default function CreateBusinessWizard({
       errors,
       setCurrentStep,
       address,
+      geo,
       setFormData,
       markDirty,
       images,
@@ -595,7 +596,13 @@ export default function CreateBusinessWizard({
       case 8:
         return <BusinessOnlinePresence {...commonProps} />;
       case 9:
-        return <BusinessReviewSubmit {...commonProps} />;
+        return (
+          <BusinessReviewSubmit
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+          />
+        );
       default:
         return null;
     }

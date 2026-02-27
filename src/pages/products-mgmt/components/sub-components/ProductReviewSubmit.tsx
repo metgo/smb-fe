@@ -7,16 +7,18 @@ import {
   Truck,
   ImageIcon,
 } from "lucide-react";
-import { getMatchedItems } from "@/helpers";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { ImageWithFallback } from "@/components/shared";
+import SectionAttributeCard from "@/components/details-sections/SectionAttributeCard";
 
 interface ProductReviewSubmitProps {
   formData: any;
   images: IImageUpload[];
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  selectedGroupTypesId: string[];
+  selectedAccessiblitiesId: string[];
 }
 
 // Step index map for edit navigation
@@ -32,6 +34,8 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   formData,
   images,
   setCurrentStep,
+  selectedGroupTypesId,
+  selectedAccessiblitiesId,
 }) => {
   const {
     textPrimary,
@@ -41,11 +45,10 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     isDark,
     bgTertiary,
     bgSecondary,
-    language,
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
-  const { categories } = useCommon();
+  const { categories, accessibility, groupTypes } = useCommon();
 
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -165,44 +168,42 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           STEPS.ATTRIBUTES,
         )}
 
-        <div className="p-5 space-y-4">
-          <div>
-            <p className={clsx("text-xs mb-2", textTertiary)}>
-              {t("categories")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {getMatchedItems(categories, formData?.categories)?.map(
-                (item: any) => badge(item.name, item._id),
-              ) || <span className={clsx("text-sm", textTertiary)}>—</span>}
-            </div>
-          </div>
-
-          {divider}
-
-          <div>
-            <span className={clsx(textTertiary, "text-sm")}>{t("tags")}</span>
-            {formData?.tags?.length > 0 ? (
-              <div className="flex items-center flex-wrap gap-1">
-                {formData?.tags
-                  .filter((tag: any) => tag?.[language]?.trim())
-                  .map((tag: any, idx: number) => (
-                    <span
-                      key={idx}
-                      className={`px-1 rounded flex items-center gap-2 ${
-                        isDark
-                          ? "bg-orange-900/30 text-orange-400 border border-orange-800"
-                          : "bg-orange-100 text-orange-800 border border-orange-300"
-                      }`}
-                    >
-                      {tag[language]}
-                    </span>
-                  ))}
-              </div>
-            ) : (
-              <div>-</div>
-            )}
-          </div>
-        </div>
+        <SectionAttributeCard
+          isDark={isDark}
+          rows={[
+            {
+              label: t("primary_category"),
+              value: formData?.primaryCategory
+                ? categories?.find(
+                    (cat: any) => cat._id === formData.primaryCategory,
+                  )?.name
+                : "—",
+            },
+            {
+              label: tb("accessibility"),
+              value: selectedAccessiblitiesId
+                ? accessibility
+                    ?.filter((cat: any) =>
+                      selectedAccessiblitiesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+            {
+              label: t("group_types"),
+              value: selectedGroupTypesId
+                ? groupTypes
+                    ?.filter((cat: any) =>
+                      selectedGroupTypesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+          ]}
+          tags={formData?.tags}
+        />
       </div>
 
       {/* ══════════════════════════════════════════════

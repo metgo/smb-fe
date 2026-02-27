@@ -151,27 +151,45 @@ const Attributes: FC<AttributesProps> = ({
           {t("primary_category")} <span className="text-red-500">*</span>
         </label>
 
-        <select
-          value={formData.primaryCategory}
-          onChange={(e) =>
-            setFormData({ ...formData, primaryCategory: e.target.value })
-          }
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors.primaryCategory
-              ? "border-red-500"
-              : isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="">{t("select")}</option>
-          {categories?.map((cat: any) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-6 gap-3">
+          {categories?.map((cat: any) => {
+            const isSelected = formData.primaryCategory === cat._id;
 
+            return (
+              <button
+                key={cat._id}
+                type="button"
+                onClick={() =>
+                  setFormData({ ...formData, primaryCategory: cat._id })
+                }
+                className={`
+                w-full h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                ${
+                  isSelected
+                    ? "border-4 border-teal-600 text-teal-600"
+                    : isDark
+                      ? "border border-gray-700 text-gray-300 hover:border-teal-500"
+                      : "border border-gray-300 text-gray-700 hover:border-teal-500"
+                }
+              `}
+              >
+                {/* Icon */}
+                <img
+                  src={cat.icon?.iconPath}
+                  alt={cat.icon?.iconAlt || cat.name}
+                  className={`w-14 h-14 object-contain transition-all ${
+                    isSelected ? "" : "opacity-70"
+                  }`}
+                />
+
+                {/* Text */}
+                <span className="text-sm font-medium text-center">
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         {errors.primaryCategory && (
           <p className="text-red-500 text-sm mt-1">{errors.primaryCategory}</p>
         )}
@@ -295,9 +313,9 @@ const Attributes: FC<AttributesProps> = ({
             />
           </div>
 
-          {showTagSuggestions && filteredSuggestions.length > 0 && (
+          {showTagSuggestions && filteredSuggestions?.length > 0 && (
             <div
-              className={`absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto rounded-lg border shadow-lg z-50 ${
+              className={`absolute left-0 right-0 top-full mt-1 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-lg border shadow-lg z-50 ${
                 isDark
                   ? "bg-gray-800 border-gray-700"
                   : "bg-white border-gray-300"

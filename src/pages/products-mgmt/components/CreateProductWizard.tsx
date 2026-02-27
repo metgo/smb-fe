@@ -458,6 +458,7 @@ export default function CreateProductWizard({
         navigate(
           `${routes.productDetails}?productId=${internalProductId || productId}`,
         );
+        window.location.reload();
       } else {
         refetch();
       }
@@ -541,7 +542,13 @@ export default function CreateProductWizard({
           />
         );
       case 6:
-        return <ProductReviewSubmit {...commonProps} />;
+        return (
+          <ProductReviewSubmit
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+          />
+        );
       default:
         return null;
     }

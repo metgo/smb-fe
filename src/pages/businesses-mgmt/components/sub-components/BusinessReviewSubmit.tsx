@@ -14,8 +14,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { type FC } from "react";
 import { ImageWithFallback } from "@/components/shared";
 import { useTranslation } from "react-i18next";
+import SectionAttributeCard from "@/components/details-sections/SectionAttributeCard";
 
 interface BusinessReviewSubmitProps {
+  selectedGroupTypesId: string[];
+  selectedAccessiblitiesId: string[];
   formData: {
     nameEn: string;
     nameHe: string;
@@ -29,16 +32,20 @@ interface BusinessReviewSubmitProps {
     email: string;
     phone: string;
     address: string;
+    geo?: string;
     primaryCategory: string;
     logo: string | null;
-    tags: ITags[];
+    tags: any;
     socialMedia: any;
     operatingHours: any[];
     deliveryArea: any;
   };
   images?: any;
   address: string;
-
+  geo?: {
+    lat: string;
+    lng: string;
+  };
   t: (key: string) => string;
   setCurrentStep: (v: number) => void;
 }
@@ -58,19 +65,17 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   formData,
   setCurrentStep,
   address,
+  geo,
   images,
+  selectedGroupTypesId,
+  selectedAccessiblitiesId,
 }) => {
+  console.log("🚀 ~ BusinessReviewSubmit ~ formData:", formData);
   const { t: tc } = useTranslation("common");
-  const { categories, socialMedia } = useCommon();
-
-  const {
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-    isDark,
-    language,
-  } = useThemeClasses();
+  const { categories, socialMedia, accessibility, groupTypes } = useCommon();
+  console.log("geo", formData?.tags);
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -189,6 +194,12 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {row(t("address"), address)}
+            {row(
+              t("geo"),
+              geo?.lat && geo?.lng
+                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.lng).toFixed(4)}`
+                : null,
+            )}
           </div>
         </div>
       </div>
@@ -197,43 +208,45 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
       <div className={sectionCard}>
         {sectionHeader(
           <Tag className="w-4 h-4" />,
-          t("primary_category"),
+          t("attributes"),
           STEPS.CATEGORY,
         )}
-        <div className="px-4 py-2 space-y-4">
-          {row(
-            t("primary_category"),
-            formData?.primaryCategory
-              ? categories?.find(
-                  (cat: any) => cat._id === formData.primaryCategory,
-                )?.name
-              : "—",
-          )}
-
-          <div>
-            <span className={clsx(textTertiary, "text-sm")}>{t("tags")}</span>
-            {formData?.tags?.length > 0 ? (
-              <div className="flex items-center flex-wrap gap-1">
-                {formData?.tags
-                  .filter((tag) => tag?.[language]?.trim())
-                  .map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className={`px-1 rounded flex items-center gap-2 ${
-                        isDark
-                          ? "bg-orange-900/30 text-orange-400 border border-orange-800"
-                          : "bg-orange-100 text-orange-800 border border-orange-300"
-                      }`}
-                    >
-                      {tag[language]}
-                    </span>
-                  ))}
-              </div>
-            ) : (
-              <div>-</div>
-            )}
-          </div>
-        </div>
+        <SectionAttributeCard
+          isDark={isDark}
+          rows={[
+            {
+              label: t("primary_category"),
+              value: formData?.primaryCategory
+                ? categories?.find(
+                    (cat: any) => cat._id === formData.primaryCategory,
+                  )?.name
+                : "—",
+            },
+            {
+              label: t("accessiblities"),
+              value: selectedAccessiblitiesId
+                ? accessibility
+                    ?.filter((cat: any) =>
+                      selectedAccessiblitiesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+            {
+              label: t("group_types"),
+              value: selectedGroupTypesId
+                ? groupTypes
+                    ?.filter((cat: any) =>
+                      selectedGroupTypesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+          ]}
+          tags={formData?.tags}
+        />
       </div>
 
       {/* Images */}
