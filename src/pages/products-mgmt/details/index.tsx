@@ -161,11 +161,10 @@ export default function ProductDetailsPage() {
       case "attributes":
         return (
           <AttributesDetails
-            title="Product Attributes"
             categoriesId={[product?.primaryCategoryId]}
             groupTypesId={product?.groupTypesId}
             accessibilitiesId={product?.accessibilitiesId}
-            tags={product?.tags}
+            tags={product?.tagsId}
           />
         );
       case "pricing":

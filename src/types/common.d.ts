@@ -16,6 +16,12 @@ interface Geo {
   lng: string;
 }
 
+interface ITags {
+  he: string;
+  ar: string;
+  en: string;
+}
+
 interface IWebsite {
   _id: string;
   name: string;
@@ -25,7 +31,14 @@ interface IWebsite {
   authorityIds: string[];
 }
 
+interface ITag {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+}
 type TAllWebsites = IWebsite[];
+type TAllTags = ITag[];
 
 interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];

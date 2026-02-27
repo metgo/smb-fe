@@ -25,6 +25,8 @@ export const endpoints = {
 
   categories: "/admin/buss-category",
   subCategories: "admin/buss-sub-category",
+  tags: "/tags",
+
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
   dmos: "/dmos",
@@ -58,6 +60,8 @@ export const endpoints = {
   websites: "/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
+
+  generateTags: "/generate-tags",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

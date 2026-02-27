@@ -197,7 +197,7 @@ export default function CreateProductWizard({
     deliverySpecificSellerInfo: [] as string[],
 
     primaryCategory: "",
-    tags: [] as string[],
+    tags: [],
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
@@ -257,7 +257,7 @@ export default function CreateProductWizard({
       categories: product?.categories || [],
       subCategories: product?.subCategories || [],
       primaryCategory: product?.primaryCategoryId || "",
-      tags: product?.tags || [],
+      tags: product?.tagsId || [],
 
       //step-3: pricing, stock & dates
       markedPrice: product?.price?.markedPrice || "",
@@ -397,7 +397,11 @@ export default function CreateProductWizard({
     descriptionAr: formData.fullDescriptionAr,
 
     primaryCategoryId: formData.primaryCategory,
-    // tags: formData.tags,
+    tagsId: formData.tags.map((tag: any) => ({
+      en: tag.en,
+      he: tag.he,
+      ar: tag.ar,
+    })),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
 
@@ -471,6 +475,7 @@ export default function CreateProductWizard({
       setFormData,
       errors,
       images,
+
       selectedFormLanguage,
       setSelectedFormLanguage,
       handleImageUpload,
@@ -507,6 +512,13 @@ export default function CreateProductWizard({
       case 2:
         return (
           <Attributes
+            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            description={
+              formData.fullDescriptionHe ||
+              formData.fullDescriptionEn ||
+              formData.fullDescriptionAr
+            }
+            productId={productId}
             {...commonProps}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}

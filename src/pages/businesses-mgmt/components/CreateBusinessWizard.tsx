@@ -127,7 +127,7 @@ export default function CreateBusinessWizard({
 
     // Step 4
     primaryCategory: "",
-    tags: [] as string[],
+    tags: [],
     accessibility: [] as string[],
     groupTypes: [] as string[],
     // subcategories: [] as string[],
@@ -251,7 +251,7 @@ export default function CreateBusinessWizard({
         operatingHours: editData?.openingHrs,
         //attributes
         primaryCategory: editData?.primaryCategoryId || "",
-        tags: editData?.tags || [],
+        tags: editData?.tagsId || [],
       });
       setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
       setGroupTypesId(removeNulls(editData?.groupTypesId));
@@ -314,6 +314,8 @@ export default function CreateBusinessWizard({
     shortDescriptionAr: formData.shortDescriptionAr,
     shortDescriptionHe: formData.shortDescriptionHe,
     description: formData.fullDescriptionEn,
+    descriptionAr: formData.fullDescriptionAr,
+    descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
 
     // step 2
@@ -338,7 +340,11 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    // tags: formData.tags,
+    tagsId: formData.tags.map((tag: any) => ({
+      en: tag.en,
+      he: tag.he,
+      ar: tag.ar,
+    })),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -563,10 +569,17 @@ export default function CreateBusinessWizard({
             setAddress={setAddress}
           />
         );
+
       case 4:
         return (
           <Attributes
             {...commonProps}
+            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            description={
+              formData.fullDescriptionHe ||
+              formData.fullDescriptionEn ||
+              formData.fullDescriptionAr
+            }
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}

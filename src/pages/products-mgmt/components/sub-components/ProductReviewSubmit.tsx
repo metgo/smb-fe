@@ -41,10 +41,11 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     isDark,
     bgTertiary,
     bgSecondary,
+    language,
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
-  const { categories, subCategories } = useCommon();
+  const { categories } = useCommon();
 
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -119,9 +120,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-      {/* ══════════════════════════════════════════════
-          STEP 1 – Basic Info
-      ══════════════════════════════════════════════ */}
       <div className={sectionCard}>
         {sectionHeader(
           <Tag className="w-4 h-4" />,
@@ -182,14 +180,27 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           {divider}
 
           <div>
-            <p className={clsx("text-xs mb-2", textTertiary)}>
-              {t("sub_categories")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {getMatchedItems(subCategories, formData?.subCategories)?.map(
-                (item: any) => badge(item.name, item._id),
-              ) || <span className={clsx("text-sm", textTertiary)}>—</span>}
-            </div>
+            <span className={clsx(textTertiary, "text-sm")}>{t("tags")}</span>
+            {formData?.tags?.length > 0 ? (
+              <div className="flex items-center flex-wrap gap-1">
+                {formData?.tags
+                  .filter((tag: any) => tag?.[language]?.trim())
+                  .map((tag: any, idx: number) => (
+                    <span
+                      key={idx}
+                      className={`px-1 rounded flex items-center gap-2 ${
+                        isDark
+                          ? "bg-orange-900/30 text-orange-400 border border-orange-800"
+                          : "bg-orange-100 text-orange-800 border border-orange-300"
+                      }`}
+                    >
+                      {tag[language]}
+                    </span>
+                  ))}
+              </div>
+            ) : (
+              <div>-</div>
+            )}
           </div>
         </div>
       </div>
