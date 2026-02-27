@@ -93,6 +93,7 @@ const EventDateRange = ({
           setIsOpen={setOpenTicketModal}
           ticketIds={payment?.ticketIds}
           eventId={_id}
+          eventName={name}
         />
       )}
     </>
