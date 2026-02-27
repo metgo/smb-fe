@@ -16,6 +16,12 @@ interface Geo {
   lng: string;
 }
 
+interface ITags {
+  he: string;
+  ar: string;
+  en: string;
+}
+
 interface IWebsite {
   _id: string;
   name: string;

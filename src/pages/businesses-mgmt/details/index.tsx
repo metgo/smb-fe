@@ -25,7 +25,6 @@ import {
   ChangeOwnerModal,
 } from "./components";
 import { routes } from "@/lib/routes";
-import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -49,16 +48,16 @@ import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 export default function BusinessDetailsPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
 
   const { isSuperadmin } = useUserRoles();
 
-  const navigate = useNavigate();
   const { borderColor, isDark } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
 
-  const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
   ///business detail stats
   const {
@@ -109,6 +108,7 @@ export default function BusinessDetailsPage() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
+  console.log("🚀 ~ BusinessDetailsPage ~ business:", business);
   const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
@@ -218,7 +218,7 @@ export default function BusinessDetailsPage() {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
       case "contact":
-        return <BusinessContactDetails {...commonProps} USER_ROLE={userRole} />;
+        return <BusinessContactDetails {...commonProps} />;
       case "location":
         return (
           <LocationDetails
@@ -242,11 +242,10 @@ export default function BusinessDetailsPage() {
       case "accessibility":
         return (
           <AttributesDetails
-            title="Business Attributes"
             categoriesId={[business?.primaryCategoryId]}
             groupTypesId={business?.groupTypesId}
             accessibilitiesId={business?.accessibilitiesId}
-            tags={business?.tags}
+            tags={business?.tagsId}
           />
         );
       case "hours":
@@ -335,7 +334,6 @@ export default function BusinessDetailsPage() {
       {isOwnerChangeModalOpen && (
         <ChangeOwnerModal
           setIsOpen={setIsOwnerChangeModalOpen}
-          USER_ROLE={userRole}
           currentOwner={business?.owner}
         />
       )}

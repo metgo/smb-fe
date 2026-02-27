@@ -199,7 +199,6 @@ export default function EventDetailsPage() {
       case "attributes":
         return (
           <AttributesDetails
-            title={t("event_attributes")}
             groupTypesId={eventDetails?.groupTypesId}
             subCategoriesId={eventDetails?.subCategoriesId}
             accessibilitiesId={eventDetails?.accessibilitiesId}

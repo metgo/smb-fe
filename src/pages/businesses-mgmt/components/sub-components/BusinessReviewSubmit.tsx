@@ -31,7 +31,7 @@ interface BusinessReviewSubmitProps {
     address: string;
     primaryCategory: string;
     logo: string | null;
-    tags: string[];
+    tags: ITags[];
     socialMedia: any;
     operatingHours: any[];
     deliveryArea: any;
@@ -61,10 +61,16 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   images,
 }) => {
   const { t: tc } = useTranslation("common");
-  const { categories } = useCommon();
-  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
-    useThemeClasses();
-  const { socialMedia } = useCommon();
+  const { categories, socialMedia } = useCommon();
+
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    isDark,
+    language,
+  } = useThemeClasses();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -194,7 +200,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           t("primary_category"),
           STEPS.CATEGORY,
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5">
+        <div className="px-4 py-2 space-y-4">
           {row(
             t("primary_category"),
             formData?.primaryCategory
@@ -203,10 +209,30 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
                 )?.name
               : "—",
           )}
-          {row(
-            t("tags"),
-            formData?.tags?.length > 0 ? formData.tags.join(", ") : "—",
-          )}
+
+          <div>
+            <span className={clsx(textTertiary, "text-sm")}>{t("tags")}</span>
+            {formData?.tags?.length > 0 ? (
+              <div className="flex items-center flex-wrap gap-1">
+                {formData?.tags
+                  .filter((tag) => tag?.[language]?.trim())
+                  .map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-1 rounded flex items-center gap-2 ${
+                        isDark
+                          ? "bg-orange-900/30 text-orange-400 border border-orange-800"
+                          : "bg-orange-100 text-orange-800 border border-orange-300"
+                      }`}
+                    >
+                      {tag[language]}
+                    </span>
+                  ))}
+              </div>
+            ) : (
+              <div>-</div>
+            )}
+          </div>
         </div>
       </div>
 
