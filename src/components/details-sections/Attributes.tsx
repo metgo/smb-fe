@@ -141,6 +141,10 @@ const Attributes: FC<AttributesProps> = ({
 
   /* ---------------- UI ---------------- */
 
+  console.log(
+    "🚀 ~ Attributes ~ selectedAccessiblitiesId:",
+    selectedAccessiblitiesId,
+  );
   return (
     <div className="space-y-6">
       {/* Primary Category */}
@@ -151,7 +155,7 @@ const Attributes: FC<AttributesProps> = ({
           {t("primary_category")} <span className="text-red-500">*</span>
         </label>
 
-        <select
+        {/* <select
           value={formData.primaryCategory}
           onChange={(e) =>
             setFormData({ ...formData, primaryCategory: e.target.value })
@@ -170,8 +174,46 @@ const Attributes: FC<AttributesProps> = ({
               {cat.name}
             </option>
           ))}
-        </select>
+        </select> */}
+        <div className="grid grid-cols-3 gap-3">
+          {categories?.map((cat: any) => {
+            const isSelected = formData.primaryCategory === cat._id;
 
+            return (
+              <button
+                key={cat._id}
+                type="button"
+                onClick={() =>
+                  setFormData({ ...formData, primaryCategory: cat._id })
+                }
+                className={`
+                w-full h-48 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                ${
+                  isSelected
+                    ? "border-4 border-teal-600 text-teal-600 bg-teal-50 dark:bg-teal-900/20"
+                    : isDark
+                      ? "border border-gray-700 text-gray-300 hover:border-teal-500"
+                      : "border border-gray-300 text-gray-700 hover:border-teal-500"
+                }
+              `}
+              >
+                {/* Icon */}
+                <img
+                  src={cat.icon?.iconPath}
+                  alt={cat.icon?.iconAlt || cat.name}
+                  className={`w-14 h-14 object-contain transition-all ${
+                    isSelected ? "" : "opacity-70"
+                  }`}
+                />
+
+                {/* Text */}
+                <span className="text-sm font-medium text-center">
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         {errors.primaryCategory && (
           <p className="text-red-500 text-sm mt-1">{errors.primaryCategory}</p>
         )}
@@ -297,7 +339,7 @@ const Attributes: FC<AttributesProps> = ({
 
           {showTagSuggestions && filteredSuggestions.length > 0 && (
             <div
-              className={`absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto rounded-lg border shadow-lg z-50 ${
+              className={`absolute left-0 right-0 top-full mt-1 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-lg border shadow-lg z-50 ${
                 isDark
                   ? "bg-gray-800 border-gray-700"
                   : "bg-white border-gray-300"

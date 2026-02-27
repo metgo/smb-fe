@@ -541,7 +541,13 @@ export default function CreateProductWizard({
           />
         );
       case 6:
-        return <ProductReviewSubmit {...commonProps} />;
+        return (
+          <ProductReviewSubmit
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+          />
+        );
       default:
         return null;
     }
