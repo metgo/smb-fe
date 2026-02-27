@@ -32,6 +32,14 @@ export const masterDataApi = createApi({
       keepUnusedDataFor: 60 * 60 * 24,
     }),
 
+    getAllTags: builder.query<TAllTags, void>({
+      query: () => ({
+        url: endpoints.tags,
+        method: "GET",
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
     getAccessibility: builder.query<any, Params>({
       query: (params) => ({
         url: endpoints.accessibility,
@@ -83,6 +91,14 @@ export const masterDataApi = createApi({
       }),
     }),
 
+    generateTags: builder.mutation<any, any>({
+      query: (payload) => ({
+        url: endpoints.generateTags,
+        method: "POST",
+        data: payload,
+      }),
+    }),
+
     patchBusinessOwner: builder.mutation<any, any>({
       query: (body) => ({
         url: endpoints.changeOwner,
@@ -101,6 +117,7 @@ export const masterDataApi = createApi({
 });
 
 export const {
+  useGenerateTagsMutation,
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
   usePatchBusinessOwnerMutation,
@@ -111,4 +128,5 @@ export const {
   useLazyGetUserByEmailQuery,
   useGetAllWebsitesQuery,
   useGetAllSocialMediaQuery,
+  useGetAllTagsQuery,
 } = masterDataApi;

@@ -11,6 +11,7 @@ import { useSearchParams } from "react-router-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface ChangeOwnerModalProps {
   setIsOpen: (v: boolean) => void;
@@ -19,17 +20,17 @@ interface ChangeOwnerModalProps {
     email: string;
     phone: string;
   };
-  USER_ROLE: string;
 }
 
 export default function ChangeOwnerModal({
   setIsOpen,
   currentOwner,
-  USER_ROLE,
 }: ChangeOwnerModalProps) {
+  const { userRole } = useAppSelector((state) => state.auth);
   const { isDark } = useThemeClasses();
-  const [getUserByEmail] = useLazyGetUserByEmailQuery();
   const { t } = useTranslation("common");
+  const [getUserByEmail] = useLazyGetUserByEmailQuery();
+
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "create-user">("email");
   const [isChecking, setIsChecking] = useState(false);
@@ -122,7 +123,7 @@ export default function ChangeOwnerModal({
         phoneNumber: phone,
         address,
         languagePreference: language,
-        role: USER_ROLE,
+        role: userRole,
       });
     }
 

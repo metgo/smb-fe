@@ -2,7 +2,7 @@ import { useState, type FC } from "react";
 import { UserCog, Mail, Phone, Plus } from "lucide-react";
 
 import ChangeOwnerModal from "./ChangeOwnerModal";
-import { UserRole } from "@/enums/user.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface BusinessContactDetailsProps {
   isDark: boolean;
@@ -17,7 +17,6 @@ interface BusinessContactDetailsProps {
     };
     collabrationUser?: any[]; // For collaborators list (not used here)
   };
-  USER_ROLE: string;
   // on_change_owner?: () => void;
   on_invite_collaborator?: () => void;
 }
@@ -26,9 +25,10 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
   t,
   isDark,
   business,
-  USER_ROLE,
   on_invite_collaborator,
 }) => {
+  const { isSuperadmin } = useUserRoles();
+
   const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
 
   return (
@@ -54,7 +54,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
               </h3>
             </div>
 
-            {USER_ROLE === UserRole.SUPERADMIN && (
+            {isSuperadmin && (
               <button
                 onClick={() => setIsOwnerChangeModalOpen(true)}
                 className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-1 ${
@@ -78,7 +78,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
             >
               {t("no_owner_assigned")}
             </p>
-            {USER_ROLE === "admin" && (
+            {isSuperadmin && (
               <button
                 onClick={() => setIsOwnerChangeModalOpen(true)}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2 mx-auto"
@@ -192,10 +192,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
         </div>
       </div>
       {isOwnerChangeModalOpen && (
-        <ChangeOwnerModal
-          setIsOpen={setIsOwnerChangeModalOpen}
-          USER_ROLE={USER_ROLE}
-        />
+        <ChangeOwnerModal setIsOpen={setIsOwnerChangeModalOpen} />
       )}
     </>
   );

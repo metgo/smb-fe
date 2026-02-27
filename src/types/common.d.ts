@@ -9,10 +9,17 @@ type TStatus =
   | "archived";
 
 type EventStatus = "draft" | "pending" | "approved";
+type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 
 interface Geo {
   lat: string;
   lng: string;
+}
+
+interface ITags {
+  he: string;
+  ar: string;
+  en: string;
 }
 
 interface IWebsite {
@@ -24,7 +31,14 @@ interface IWebsite {
   authorityIds: string[];
 }
 
+interface ITag {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+}
 type TAllWebsites = IWebsite[];
+type TAllTags = ITag[];
 
 interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];

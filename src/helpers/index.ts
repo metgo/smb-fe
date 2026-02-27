@@ -116,5 +116,18 @@ export function getMatchedItems(originalList: any, selectedIds?: string[]) {
 }
 
 export function removeNulls(arr: string[]) {
-  return arr.filter((item) => item !== null);
+  return arr?.filter((item) => item !== null);
 }
+
+export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
+  switch (mode) {
+    case "CREATE":
+      return t("create");
+    case "EDIT":
+      return t("edit");
+    case "DUPLICATE":
+      return t("duplicate");
+    default:
+      return "";
+  }
+};
