@@ -145,6 +145,7 @@ const Attributes: FC<AttributesProps> = ({
     "🚀 ~ Attributes ~ selectedAccessiblitiesId:",
     selectedAccessiblitiesId,
   );
+  console.log("🚀 ~ Attributes ~ formData:", formData.primaryCategory);
   return (
     <div className="space-y-6">
       {/* Primary Category */}
@@ -175,7 +176,7 @@ const Attributes: FC<AttributesProps> = ({
             </option>
           ))}
         </select> */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-6 gap-3">
           {categories?.map((cat: any) => {
             const isSelected = formData.primaryCategory === cat._id;
 
@@ -187,7 +188,7 @@ const Attributes: FC<AttributesProps> = ({
                   setFormData({ ...formData, primaryCategory: cat._id })
                 }
                 className={`
-                w-full h-48 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                w-full h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
                 ${
                   isSelected
                     ? "border-4 border-teal-600 text-teal-600 bg-teal-50 dark:bg-teal-900/20"

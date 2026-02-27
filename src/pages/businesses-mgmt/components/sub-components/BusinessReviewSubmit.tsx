@@ -35,7 +35,7 @@ interface BusinessReviewSubmitProps {
     geo?: string;
     primaryCategory: string;
     logo: string | null;
-    tags: ITags[];
+    tags: any;
     socialMedia: any;
     operatingHours: any[];
     deliveryArea: any;
@@ -74,14 +74,8 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   const { t: tc } = useTranslation("common");
   const { categories, socialMedia, accessibility, groupTypes } = useCommon();
   console.log("geo", formData?.tags);
-  const {
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-    isDark,
-    language,
-  } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 

@@ -7,7 +7,6 @@ import {
   Truck,
   ImageIcon,
 } from "lucide-react";
-import { getMatchedItems } from "@/helpers";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
@@ -46,7 +45,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     isDark,
     bgTertiary,
     bgSecondary,
-    language,
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");

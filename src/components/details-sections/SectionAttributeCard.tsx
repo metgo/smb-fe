@@ -1,5 +1,6 @@
 import React from "react";
 import clsx from "clsx";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Row {
   label: string;
@@ -11,8 +12,7 @@ interface SectionAttributeCardProps {
   title?: string;
   step?: string | number;
   rows?: Row[];
-  tags: TAllTags;
-  language?: string;
+  tags: ITags[];
   isDark?: boolean;
 }
 
@@ -22,9 +22,9 @@ const SectionAttributeCard: React.FC<SectionAttributeCardProps> = ({
   step,
   rows = [],
   tags,
-  language = "en",
   isDark = false,
 }) => {
+  const { language } = useThemeClasses();
   return (
     <div className="section-card border rounded-none shadow-sm p-4">
       {/* Header */}

@@ -458,6 +458,7 @@ export default function CreateProductWizard({
         navigate(
           `${routes.productDetails}?productId=${internalProductId || productId}`,
         );
+        window.location.reload();
       } else {
         refetch();
       }
