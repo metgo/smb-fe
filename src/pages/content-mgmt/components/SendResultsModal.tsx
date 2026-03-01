@@ -18,12 +18,12 @@ interface SendResultsModalProps {
   theme?: "light" | "dark";
 }
 
-export function SendResultsModal({
+const SendResultsModal = ({
   isOpen,
   onClose,
   results,
   theme,
-}: SendResultsModalProps) {
+}: SendResultsModalProps) => {
   const isDark = theme === "dark";
 
   if (!isOpen) return null;
@@ -304,4 +304,5 @@ export function SendResultsModal({
       </div>
     </div>
   );
-}
+};
+export default SendResultsModal;

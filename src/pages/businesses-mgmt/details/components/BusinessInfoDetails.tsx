@@ -11,7 +11,11 @@ import DescriptionCard from "@/components/shared/DescriptionCard";
 
 interface Business {
   shortDescription: string;
+  shortDescriptionAr: string;
+  shortDescriptionHe: string;
   description: string;
+  descriptionHe: string;
+  descriptionAr: string;
   primaryCategoryId: string;
   subcategories: string[];
   tags: string[];
@@ -92,7 +96,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
-        content={business?.shortDescription ? business?.shortDescription : "-"}
+        content={
+          business?.shortDescriptionHe ||
+          business?.shortDescription ||
+          business?.shortDescriptionAr ||
+          "-"
+        }
         icon={
           <FileText
             className={clsx(
@@ -108,7 +117,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Full Description */}
       <DescriptionCard
         title={t("full_description")}
-        content={business?.description ? business?.description : "-"}
+        content={
+          business?.descriptionHe ||
+          business?.description ||
+          business?.descriptionAr ||
+          "-"
+        }
         icon={
           <AlignLeft
             className={clsx(

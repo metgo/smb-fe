@@ -15,16 +15,14 @@ import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface AttributesDetailsProps {
-  title: string;
   categoriesId?: string[];
   groupTypesId?: string[];
   subCategoriesId?: string[];
   accessibilitiesId?: string[];
-  tags?: string[];
+  tags?: ITags[];
 }
 
 const AttributesDetails: FC<AttributesDetailsProps> = ({
-  // title,
   tags = [],
   categoriesId,
   groupTypesId,
@@ -32,7 +30,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   accessibilitiesId,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const { categories, subCategories, groupTypes, accessibility } = useCommon();
 
   const filteredCategories = getMatchedItems(categories, categoriesId) || [];
@@ -51,26 +49,6 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      {/* <div>
-        <h2
-          className={clsx(
-            "text-2xl font-bold",
-            isDark ? "text-white" : "text-gray-900",
-          )}
-        >
-          {title}
-        </h2>
-        <p
-          className={clsx(
-            "text-sm mt-1",
-            isDark ? "text-gray-400" : "text-gray-600",
-          )}
-        >
-          {t("attributes_desc")}
-        </p>
-      </div> */}
-
       {/* categories */}
       {categoriesId && categoriesId?.length > 0 && (
         <div
@@ -325,7 +303,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
       )}
 
       {/* Group Types */}
-      {tags.length > 0 && (
+      {tags?.length > 0 && (
         <div
           className={clsx(
             "rounded-xl border p-6 transition-all duration-200",
@@ -367,19 +345,21 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
           </div>
 
           <div className="flex items-center flex-wrap gap-3">
-            {tags.map((tag: string, idx: number) => (
-              <span
-                key={idx}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                  isDark
-                    ? "bg-orange-900/30 text-orange-400 border border-orange-800"
-                    : "bg-orange-100 text-orange-800 border border-orange-300"
-                }`}
-              >
-                <TagIcon className="w-4 h-4" />
-                {tag}
-              </span>
-            ))}
+            {tags
+              .filter((tag) => tag?.[language]?.trim())
+              .map((tag, idx) => (
+                <span
+                  key={idx}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
+                    isDark
+                      ? "bg-orange-900/30 text-orange-400 border border-orange-800"
+                      : "bg-orange-100 text-orange-800 border border-orange-300"
+                  }`}
+                >
+                  <TagIcon className="w-4 h-4" />
+                  {tag[language]}
+                </span>
+              ))}
           </div>
         </div>
       )}

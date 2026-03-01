@@ -10,16 +10,13 @@ import {
   Badge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import { Button } from "./ui/button";
-// import { Input } from "./ui/input";
-// import { Badge } from "./ui/badge";
 
 interface MessageComposerModalProps {
   isOpen: boolean;
   onClose: () => void;
   recipientCount: number;
   onSend: (data: MessageData) => void;
-  theme?: "light" | "dark";
+  theme?: Theme;
 }
 
 export interface MessageData {
@@ -77,13 +74,13 @@ const DEFAULT_TEMPLATES: MessageTemplate[] = [
   },
 ];
 
-export function MessageComposerModal({
+const MessageComposerModal = ({
   isOpen,
   onClose,
   recipientCount,
   onSend,
   theme,
-}: MessageComposerModalProps) {
+}: MessageComposerModalProps) => {
   const [isSplitView, setIsSplitView] = useState(false);
   const [subject, setSubject] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
@@ -517,4 +514,6 @@ export function MessageComposerModal({
       </div>
     </div>
   );
-}
+};
+
+export default MessageComposerModal;

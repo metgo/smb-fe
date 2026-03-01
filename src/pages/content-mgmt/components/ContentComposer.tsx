@@ -1,257 +1,365 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CKEditorWrapper } from "@/components/wrapper";
-import { toast } from "sonner";
-import { useCommon } from "@/hooks/useCommon";
-import { useEffect, useState } from "react";
+import clsx from "clsx";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { useDrag, useDrop } from "react-dnd";
+import { GripVertical, ChevronDown, ChevronRight, Layers } from "lucide-react";
 
+import { useCommon } from "@/hooks/useCommon";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
+import {
+  ContentConfigHeader,
+  TopicCategoryCard,
+  TopicHeader,
+} from "./sub-components";
+
+// ─── DnD type for topic reordering ───────────────────────────────────────────
+const TOPIC_TYPE = "TOPIC_ITEM";
 
 interface ContentComposerProps {
   templateContents: IContentTemplate[];
   setTemplateContent: (value: IContentTemplate[]) => void;
 }
 
-
-interface Category {
-  id: string;
-  name: string;
-  businessIds: string[];
-  description: string;
+// ─── Draggable Topic Block ────────────────────────────────────────────────────
+interface TopicBlockProps {
+  topic: IContentTemplate;
+  index: number;
+  isDark: boolean;
+  templateContents: IContentTemplate[];
+  setTemplateContent: (value: IContentTemplate[]) => void;
+  onDelete: (index: number) => void;
+  moveItem: (from: number, to: number) => void;
 }
 
-const STORAGE_KEY = "content-manager-categories";
+const TopicBlock = ({
+  topic,
+  index,
+  isDark,
+  templateContents,
+  setTemplateContent,
+  onDelete,
+  moveItem,
+}: TopicBlockProps) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
+  // ── drag this topic ──
+  const [{ isDragging }, drag, dragPreview] = useDrag({
+    type: TOPIC_TYPE,
+    item: { index },
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
 
+  // ── drop another topic onto this position ──
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: TOPIC_TYPE,
+    hover: (draggedItem: { index: number }, monitor) => {
+      if (!ref.current) return;
+      const from = draggedItem.index;
+      const to = index;
+      if (from === to) return;
+
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+      // Only move when cursor has crossed 30% of the item
+      if (from < to && hoverClientY < hoverMiddleY * 0.6) return;
+      if (from > to && hoverClientY > hoverMiddleY * 1.4) return;
+
+      moveItem(from, to);
+      draggedItem.index = to;
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+
+  // Attach dragPreview and drop after render to avoid accessing ref during render
+  useEffect(() => {
+    dragPreview(drop(ref));
+  }, [dragPreview, drop]);
+
+  const hasMultipleCategories = topic.groups.length > 1;
+  const totalItems = topic.groups.reduce(
+    (sum, g) => sum + g.contents.length,
+    0,
+  );
+
+  return (
+    <div
+      ref={ref}
+      className={clsx(
+        "transition-all duration-200",
+        isDragging && "opacity-40 scale-[0.98]",
+        isOver && canDrop && "translate-y-0.5",
+      )}
+    >
+      {/* ── Drop indicator line above ── */}
+      <div
+        className={clsx(
+          "h-0.5 rounded-full mb-1 transition-all duration-150",
+          isOver && canDrop
+            ? "bg-teal-400 opacity-100 scale-x-100"
+            : "opacity-0 scale-x-0",
+        )}
+      />
+
+      {/* ── Topic Group Card ── */}
+      <div
+        className={clsx(
+          "rounded-xl border border-r-2 transition-all duration-200",
+          isDark
+            ? "bg-gray-900 border-gray-700/60 border-r-teal-500/70"
+            : "bg-white border-gray-200 border-r-teal-500",
+        )}
+      >
+        {/* ── Topic Header Row ── */}
+        <div
+          className={clsx(
+            "flex items-center gap-2 px-3 py-2 rounded-t-xl",
+            isDark ? "bg-gray-800/60" : "bg-gray-50",
+            hasMultipleCategories
+              ? isDark
+                ? "border-b border-gray-700"
+                : "border-b border-gray-200"
+              : collapsed
+                ? ""
+                : isDark
+                  ? "border-b border-gray-700/40"
+                  : "border-b border-gray-100",
+          )}
+        >
+          {/* Drag handle */}
+          <div
+            ref={(node) => {
+              drag(node);
+            }}
+            className={clsx(
+              "cursor-grab active:cursor-grabbing p-1 rounded transition-colors",
+              isDark
+                ? "text-gray-600 hover:text-gray-400 hover:bg-gray-700"
+                : "text-gray-300 hover:text-gray-500 hover:bg-gray-100",
+            )}
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className={clsx(
+              "p-1 rounded transition-colors",
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-500 hover:bg-gray-100",
+            )}
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Topic name + meta */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <TopicHeader
+              topic={{ index, name: topic.topic }}
+              onDelete={onDelete}
+              onRename={() => {}}
+            />
+          </div>
+
+          {/* Right badges */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span
+              className={clsx(
+                "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                isDark
+                  ? "bg-teal-900/50 text-teal-300 border border-teal-700/50"
+                  : "bg-teal-50 text-teal-700 border border-teal-200",
+              )}
+            >
+              <Layers className="w-3 h-3" />
+              {topic.groups.length} categories
+            </span>
+
+            {/* Item count badge */}
+            <span
+              className={clsx(
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                isDark
+                  ? "bg-gray-700 text-gray-300"
+                  : "bg-gray-100 text-gray-600",
+              )}
+            >
+              {totalItems} item{totalItems !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Categories inside this topic ── */}
+        {!collapsed && (
+          <div className="p-3">
+            {topic.groups.length === 0 ? (
+              <div
+                className={clsx(
+                  "text-center py-8 rounded-lg border-2 border-dashed text-sm",
+                  isDark
+                    ? "border-gray-700 text-gray-500"
+                    : "border-gray-200 text-gray-400",
+                )}
+              >
+                No categories yet. Add one above.
+              </div>
+            ) : (
+              <div className={clsx("space-y-2")}>
+                {topic.groups.map((group, categoryIndex) => (
+                  <div key={categoryIndex} className="relative">
+                    <TopicCategoryCard
+                      group={group}
+                      topicIndex={index}
+                      categoryIndex={categoryIndex}
+                      templateContents={templateContents}
+                      setTemplateContent={setTemplateContent}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Main ContentComposer ─────────────────────────────────────────────────────
 const ContentComposer = ({
   templateContents,
   setTemplateContent,
 }: ContentComposerProps) => {
   const { t } = useTranslation("businesses");
-
-  const { isDark } = useThemeClasses()
+  const { isDark } = useThemeClasses();
   const { allWebsites } = useCommon();
-  const [selectedId, setSelectedId] = useState<"all" | string>("all");
-  const [fullDescription, setFullDescription] = useState("<p></p>");
 
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedId, setSelectedId] = useState("all");
 
-
-  // Load categories
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setCategories(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to load categories:", e);
-      }
-    } else {
-      const defaults: Category[] = [
-        {
-          id: "featured",
-          name: t("featured_businesses"),
-          businessIds: [],
-          description: "",
-        },
-        {
-          id: "homepage-hero",
-          name: t("homepage_hero_section"),
-          businessIds: [],
-          description: "",
-        },
-        {
-          id: "recommended",
-          name: t("recommended_this_week"),
-          businessIds: [],
-          description: "",
-        },
-      ];
-      setCategories(defaults);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
-    }
-  }, []);
-
-  // Save categories
-  useEffect(() => {
-    if (categories?.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
-    }
-  }, [categories]);
-
-
-  const handleAddToCategory = (businessId: string, categoryId: string) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId
-          ? { ...cat, businessIds: [...cat.businessIds, businessId] }
-          : cat,
-      ),
-    );
-    toast.success(t("business_added_to_category"));
+  const deleteTopic = (index: number) => {
+    const updated = [...templateContents];
+    updated.splice(index, 1);
+    setTemplateContent(updated);
   };
 
-  const handleRemoveFromCategory = (categoryId: string, businessId: string) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId
-          ? {
-            ...cat,
-            businessIds: cat.businessIds.filter((id) => id !== businessId),
-          }
-          : cat,
-      ),
-    );
-    toast.success(t("business_removed_from_category"));
-  };
-
-  const handleRenameCategory = (categoryId: string, newName: string) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId ? { ...cat, name: newName } : cat,
-      ),
-    );
-    toast.success(t("rename_category"));
-  };
-
-  const handleDeleteCategory = (categoryId: string) => {
-    const cat = categories.find((c) => c.id === categoryId);
-
-    if (!cat) return;
-    if (cat) {
-      // setDeleteConfirmation({
-      //   categoryId: cat.id,
-      //   categoryName: cat.name,
-      //   businessCount: cat?.businessIds?.length,
-      // });
-    } else {
-      setCategories((prev) => prev.filter((c) => c.id !== categoryId));
-      toast.success(t("category_deleted"));
-    }
-  };
-
-  const handleCreateCategory = () => {
-    if (!newCategoryName.trim()) return;
-    const newCat: Category = {
-      id: `cat-${Date.now()}`,
-      name: newCategoryName.trim(),
-      businessIds: [],
-      description: fullDescription,
-    };
-    setCategories((prev) => [...prev, newCat]);
-
-    setNewCategoryName("");
-    setFullDescription("");
-    toast.success(t("category_created"));
+  // Reorder topics by swapping indices
+  const moveItem = (from: number, to: number) => {
+    const updated = [...templateContents];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    setTemplateContent(updated);
   };
 
   return (
-    <div className="min-w-0 flex-1 p-6">
-      {" "}
-      <div>
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2
-              className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold `}
-            >
-              {t("custom_categories_title")}
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t("custom_categories_description")}
-            </p>
-          </div>
-          <select
-            value={selectedId ?? "all"}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === "all") {
-                setSelectedId("");
-              } else {
-                setSelectedId(value);
-              }
-            }}
-            className={`
-                      h-10 px-6 pr-8
-                      text-sm font-medium
-                      rounded-md
-                      shadow-sm
-                      appearance-none
-                      cursor-pointer
-                      transition-colors duration-150
-                      border
-                      ${isDark
-                ? "bg-gray-800 border-gray-600 text-gray-100"
-                : "bg-white border-gray-300 text-gray-900"
-              }
-                      focus:outline-none focus:ring-2
-                      ${isDark
-                ? "focus:border-blue-500/70 focus:ring-blue-500/30"
-                : "focus:border-blue-500 focus:ring-blue-500/40"
-              }
-                    `}
+    <div className="min-w-0 flex-1 pt-6">
+      {/* ── Header ── */}
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2
+            className={clsx(
+              "text-lg font-semibold",
+              isDark ? "text-gray-300" : "text-gray-700",
+            )}
           >
-            <option value="all">{t("all_websites_option")}</option>
-
-            {allWebsites?.map((site) => (
-              <option key={site._id} value={site._id}>
-                {site.name}
-              </option>
-            ))}
-          </select>
-          {/* Add more */}
-        </div>
-
-        <div className="mb-6 flex gap-3">
-          <input
-            placeholder={t("new_category_name_placeholder")}
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === "Enter" && handleCreateCategory()
-            }
-            className={`
-                        w-full px-3 py-2 rounded-md border 
-                        ${isDark
-                ? "bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-blue-500/70 focus:ring-blue-500/30"
-                : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/40"
-              }
-                        focus:outline-none focus:ring-2 transition-colors duration-150
-                      `}
-          />
-          <Button
-            onClick={handleCreateCategory}
-            disabled={!newCategoryName.trim()}
+            {t("custom_categories_title")}
+          </h2>
+          <p
+            className={clsx(
+              "text-sm",
+              isDark ? "text-gray-500" : "text-gray-500",
+            )}
           >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("create")}
-          </Button>
-        </div>
-        <div className="my-4">
-          <CKEditorWrapper
-            value={fullDescription}
-            onChange={setFullDescription}
-          />
+            {t("custom_categories_description")}
+          </p>
         </div>
 
-        <div className="space-y-6">
-          {templateContents?.map((template) => (
-            <div>
+        <select
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          className={clsx(
+            "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
+            isDark
+              ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
+              : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
+          )}
+        >
+          <option value="all">{t("all_websites_option")}</option>
+          {allWebsites?.map((site) => (
+            <option key={site._id} value={site._id}>
+              {site.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-            </div>
+      <div className="overflow-y-scroll h-[64vh]">
+        {/* Add topic / config controls */}
+        <ContentConfigHeader
+          templateContents={templateContents}
+          setTemplateContent={setTemplateContent}
+        />
+
+        {/* Drag hint */}
+        {templateContents.length > 1 && (
+          <p
+            className={clsx(
+              "text-xs mb-2 flex items-center gap-1",
+              isDark ? "text-gray-600" : "text-gray-400",
+            )}
+          >
+            <GripVertical className="w-3 h-3" />
+            Drag the handle to reorder topics
+          </p>
+        )}
+
+        {/* Topic list */}
+        <div className="space-y-3">
+          {templateContents.map((topic, index) => (
+            <TopicBlock
+              key={`${topic.topic}-${index}`}
+              topic={topic}
+              index={index}
+              isDark={isDark}
+              templateContents={templateContents}
+              setTemplateContent={setTemplateContent}
+              onDelete={deleteTopic}
+              moveItem={moveItem}
+            />
           ))}
 
-          {categories?.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No categories yet. Create one to begin.
+          {templateContents.length === 0 && (
+            <div
+              className={clsx(
+                "text-center py-16 rounded-xl border-2 border-dashed",
+                isDark
+                  ? "border-gray-700 text-gray-500"
+                  : "border-gray-200 text-gray-400",
+              )}
+            >
+              <Layers className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No topics yet. Add one to get started.</p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ContentComposer
+export default ContentComposer;

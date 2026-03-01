@@ -1,15 +1,6 @@
-import CategoryContentSection from "./CategoryContentSection";
 import ContentCard from "./ContentCard";
-import ContentGridView from "./ContentGridView";
-import ContentListView from "./ContentListView";
-import ContentSection from "./ContentSection";
+import ContentConfigHeader from "./ContentConfigHeader";
+import TopicCategoryCard from "./TopicCategoryCard";
+import TopicHeader from "./TopicHeader";
 
-
-export{
-  ContentCard,
-  ContentGridView,
-  ContentListView,
-  ContentSection,
-  CategoryContentSection,
-
-}
+export { TopicHeader, ContentCard, ContentConfigHeader, TopicCategoryCard };

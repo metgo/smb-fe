@@ -14,11 +14,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { type FC } from "react";
 import { ImageWithFallback } from "@/components/shared";
 import { useTranslation } from "react-i18next";
-
-type View = "list" | "details" | "create" | "edit" | undefined;
+import SectionAttributeCard from "@/components/details-sections/SectionAttributeCard";
 
 interface BusinessReviewSubmitProps {
-  theme: Theme;
+  selectedGroupTypesId: string[];
+  selectedAccessiblitiesId: string[];
   formData: {
     nameEn: string;
     nameHe: string;
@@ -32,29 +32,21 @@ interface BusinessReviewSubmitProps {
     email: string;
     phone: string;
     address: string;
+    geo?: string;
     primaryCategory: string;
     logo: string | null;
-    tags: string[];
+    tags: any;
     socialMedia: any;
     operatingHours: any[];
     deliveryArea: any;
   };
   images?: any;
   address: string;
-
-  errors: Partial<{
-    nameEn: string;
-    shortDescriptionEn: string;
-    fullDescriptionEn: string;
-    email: string;
-    phone: string;
-    address: string;
-    primaryCategory: string;
-    logo: string;
-  }>;
-  business: any;
+  geo?: {
+    lat: string;
+    lng: string;
+  };
   t: (key: string) => string;
-  currentView: View;
   setCurrentStep: (v: number) => void;
 }
 const STEPS = {
@@ -67,19 +59,23 @@ const STEPS = {
   DELIVERY: 7,
   ONLINE: 8,
 };
-const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
-  formData,
 
+const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
+  t,
+  formData,
   setCurrentStep,
   address,
+  geo,
   images,
-  t,
+  selectedGroupTypesId,
+  selectedAccessiblitiesId,
 }) => {
+  console.log("🚀 ~ BusinessReviewSubmit ~ formData:", formData);
   const { t: tc } = useTranslation("common");
-  const { categories } = useCommon();
+  const { categories, socialMedia, accessibility, groupTypes } = useCommon();
+  console.log("geo", formData?.tags);
   const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
-  const { socialMedia } = useCommon();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -198,6 +194,12 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {row(t("address"), address)}
+            {row(
+              t("geo"),
+              geo?.lat && geo?.lng
+                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.lng).toFixed(4)}`
+                : null,
+            )}
           </div>
         </div>
       </div>
@@ -206,23 +208,45 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
       <div className={sectionCard}>
         {sectionHeader(
           <Tag className="w-4 h-4" />,
-          t("primary_category"),
+          t("attributes"),
           STEPS.CATEGORY,
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5">
-          {row(
-            t("primary_category"),
-            formData?.primaryCategory
-              ? categories?.find(
-                  (cat: any) => cat._id === formData.primaryCategory,
-                )?.name
-              : "—",
-          )}
-          {row(
-            t("tags"),
-            formData?.tags?.length > 0 ? formData.tags.join(", ") : "—",
-          )}
-        </div>
+        <SectionAttributeCard
+          isDark={isDark}
+          rows={[
+            {
+              label: t("primary_category"),
+              value: formData?.primaryCategory
+                ? categories?.find(
+                    (cat: any) => cat._id === formData.primaryCategory,
+                  )?.name
+                : "—",
+            },
+            {
+              label: t("accessiblities"),
+              value: selectedAccessiblitiesId
+                ? accessibility
+                    ?.filter((cat: any) =>
+                      selectedAccessiblitiesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+            {
+              label: t("group_types"),
+              value: selectedGroupTypesId
+                ? groupTypes
+                    ?.filter((cat: any) =>
+                      selectedGroupTypesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+          ]}
+          tags={formData?.tags}
+        />
       </div>
 
       {/* Images */}

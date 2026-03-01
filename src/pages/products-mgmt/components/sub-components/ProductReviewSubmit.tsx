@@ -7,16 +7,18 @@ import {
   Truck,
   ImageIcon,
 } from "lucide-react";
-import { getMatchedItems } from "@/helpers";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { ImageWithFallback } from "@/components/shared";
+import SectionAttributeCard from "@/components/details-sections/SectionAttributeCard";
 
 interface ProductReviewSubmitProps {
   formData: any;
   images: IImageUpload[];
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  selectedGroupTypesId: string[];
+  selectedAccessiblitiesId: string[];
 }
 
 // Step index map for edit navigation
@@ -32,6 +34,8 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   formData,
   images,
   setCurrentStep,
+  selectedGroupTypesId,
+  selectedAccessiblitiesId,
 }) => {
   const {
     textPrimary,
@@ -44,7 +48,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
-  const { categories, subCategories } = useCommon();
+  const { categories, accessibility, groupTypes } = useCommon();
 
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -119,9 +123,6 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-      {/* ══════════════════════════════════════════════
-          STEP 1 – Basic Info
-      ══════════════════════════════════════════════ */}
       <div className={sectionCard}>
         {sectionHeader(
           <Tag className="w-4 h-4" />,
@@ -167,31 +168,42 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           STEPS.ATTRIBUTES,
         )}
 
-        <div className="p-5 space-y-4">
-          <div>
-            <p className={clsx("text-xs mb-2", textTertiary)}>
-              {t("categories")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {getMatchedItems(categories, formData?.categories)?.map(
-                (item: any) => badge(item.name, item._id),
-              ) || <span className={clsx("text-sm", textTertiary)}>—</span>}
-            </div>
-          </div>
-
-          {divider}
-
-          <div>
-            <p className={clsx("text-xs mb-2", textTertiary)}>
-              {t("sub_categories")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {getMatchedItems(subCategories, formData?.subCategories)?.map(
-                (item: any) => badge(item.name, item._id),
-              ) || <span className={clsx("text-sm", textTertiary)}>—</span>}
-            </div>
-          </div>
-        </div>
+        <SectionAttributeCard
+          isDark={isDark}
+          rows={[
+            {
+              label: t("primary_category"),
+              value: formData?.primaryCategory
+                ? categories?.find(
+                    (cat: any) => cat._id === formData.primaryCategory,
+                  )?.name
+                : "—",
+            },
+            {
+              label: tb("accessibility"),
+              value: selectedAccessiblitiesId
+                ? accessibility
+                    ?.filter((cat: any) =>
+                      selectedAccessiblitiesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+            {
+              label: t("group_types"),
+              value: selectedGroupTypesId
+                ? groupTypes
+                    ?.filter((cat: any) =>
+                      selectedGroupTypesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
+                : "—",
+            },
+          ]}
+          tags={formData?.tags}
+        />
       </div>
 
       {/* ══════════════════════════════════════════════

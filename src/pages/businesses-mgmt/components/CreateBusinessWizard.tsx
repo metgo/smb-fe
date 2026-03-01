@@ -35,30 +35,31 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { parseAddress, removeNulls } from "@/helpers";
+import { modelTitle, parseAddress, removeNulls } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import {
   Attributes,
   DeliveryPolicyOption,
 } from "@/components/details-sections";
-type View = "list" | "details" | "create" | "edit" | undefined;
+import { IOpMode } from "@/enums/operation.types";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
-  currentView?: View;
   editData?: any;
   refetch?: any;
+  opMode?: TOpMode;
 }
 
 export default function CreateBusinessWizard({
   onClose,
-  currentView,
   editData,
   refetch,
+  opMode = IOpMode.CREATE,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
-  const { t: tc } = useTranslation("toast");
+  const { t: tt } = useTranslation("toast");
+  const { t: tc } = useTranslation("common");
 
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
@@ -126,7 +127,7 @@ export default function CreateBusinessWizard({
 
     // Step 4
     primaryCategory: "",
-    tags: [] as string[],
+    tags: [],
     accessibility: [] as string[],
     groupTypes: [] as string[],
     // subcategories: [] as string[],
@@ -197,25 +198,35 @@ export default function CreateBusinessWizard({
     }
   }, []);
   useEffect(() => {
-    if (businessId === "" || currentView !== "edit") return;
+    if (businessId === "" || opMode === IOpMode.CREATE) return;
 
-    if (currentView === "edit" && businessId) {
+    if (editData && businessId) {
       setFormData({
         //basic info
-        nameEn: editData?.name || "",
-        nameHe: editData?.nameHe || "",
-        nameAr: editData?.nameAr || "",
+        nameEn:
+          opMode === IOpMode.DUPLICATE
+            ? `${editData?.name || ""} (Duplicate)`
+            : editData?.name || "",
+        nameHe:
+          opMode === IOpMode.DUPLICATE
+            ? `${editData?.nameHe || ""} (שכפל)`
+            : editData?.nameHe || "",
+        nameAr:
+          opMode === IOpMode.DUPLICATE
+            ? `${editData?.nameAr || ""} (نسخ)`
+            : editData?.nameAr || "",
+
         shortDescriptionEn: editData?.shortDescription || "",
-        shortDescriptionHe: "",
-        shortDescriptionAr: "",
+        shortDescriptionHe: editData?.shortDescriptionAr || "",
+        shortDescriptionAr: editData?.shortDescriptionHe || "",
         fullDescriptionEn: editData?.description || "",
-        fullDescriptionHe: "",
-        fullDescriptionAr: "",
+        fullDescriptionHe: editData?.descriptionAr || "",
+        fullDescriptionAr: editData?.descriptionHe || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
-        logo: editData?.logo?.image,
-        images: editData?.images,
+        logo: opMode === IOpMode.EDIT ? editData?.logo?.image : "",
+        images: opMode === IOpMode.EDIT ? editData?.images : [],
         //location
         type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
@@ -240,7 +251,7 @@ export default function CreateBusinessWizard({
         operatingHours: editData?.openingHrs,
         //attributes
         primaryCategory: editData?.primaryCategoryId || "",
-        tags: editData?.tags || [],
+        tags: editData?.tagsId || [],
       });
       setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
       setGroupTypesId(removeNulls(editData?.groupTypesId));
@@ -268,10 +279,16 @@ export default function CreateBusinessWizard({
 
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
-      setGalleryImages(editData?.images);
-      setBusinessLogoImage({ image: editData?.logo?.image });
+
+      if (opMode === IOpMode.EDIT) {
+        setGalleryImages(editData?.images);
+        setBusinessLogoImage({ image: editData?.logo?.image });
+      } else {
+        setGalleryImages([]);
+        setBusinessLogoImage(null);
+      }
     }
-  }, [editData, currentView, businessId]);
+  }, [editData, opMode, businessId]);
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
@@ -291,9 +308,16 @@ export default function CreateBusinessWizard({
     authorityId: selectedAuthorityId,
     // dmoId: selectedDmoId,
     name: formData.nameEn,
+    nameAr: formData.nameAr,
+    nameHe: formData.nameHe,
     shortDescription: formData.shortDescriptionEn,
+    shortDescriptionAr: formData.shortDescriptionAr,
+    shortDescriptionHe: formData.shortDescriptionHe,
     description: formData.fullDescriptionEn,
+    descriptionAr: formData.fullDescriptionAr,
+    descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
+
     // step 2
     busiEmail: formData.email,
     phoneNumber: formData.phone,
@@ -316,7 +340,11 @@ export default function CreateBusinessWizard({
     geoLocation: geo,
     //  step 4
     primaryCategoryId: formData.primaryCategory,
-    tags: formData.tags,
+    tagsId: formData.tags.map((tag: any) => ({
+      en: tag.en,
+      he: tag.he,
+      ar: tag.ar,
+    })),
     accessibilitiesId: removeNulls(selectedAccessiblitiesId),
     groupTypesId: removeNulls(selectedGroupTypesId),
     // subcategories: formData.subcategories,
@@ -338,6 +366,9 @@ export default function CreateBusinessWizard({
   };
 
   const { markDirty, saveDraft } = useBusinessDraftSaver({
+    opMode,
+    onClose,
+    refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -351,13 +382,25 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
-        // if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
-        if (!formData.shortDescriptionEn?.trim())
-          newErrors.shortDescriptionEn = t("required_field");
-        if (!formData.fullDescriptionEn?.trim())
-          newErrors.fullDescriptionEn = t("required_field");
-        if (formData.nameEn?.length < 3)
-          newErrors.nameEn = t("field_too_short");
+        if (
+          !formData.nameEn?.trim() &&
+          !formData.nameAr?.trim() &&
+          !formData.nameHe?.trim()
+        )
+          newErrors.name = t("required_field");
+        if (
+          !formData.shortDescriptionEn?.trim() &&
+          !formData.shortDescriptionAr?.trim() &&
+          !formData.shortDescriptionHe?.trim()
+        )
+          newErrors.shortDescription = t("required_field");
+        if (
+          !formData.fullDescriptionEn?.trim() &&
+          !formData.fullDescriptionAr?.trim() &&
+          !formData.fullDescriptionHe?.trim()
+        )
+          newErrors.fullDescription = t("required_field");
+
         break;
       case 2: {
         if (formData.email?.trim() === "") {
@@ -417,25 +460,6 @@ export default function CreateBusinessWizard({
     }
   };
 
-  // useEffect(() => {
-  //   if (!logoGcsUrl) return;
-
-  //   const patchLogo = async () => {
-  //     try {
-  //       await updateBusiness({
-  //         businessId: businessId!,
-  //         body: {
-  //           logo: { image: logoGcsUrl },
-  //         },
-  //       }).unwrap();
-  //     } catch (err) {
-  //       console.error("Failed to update logo", err);
-  //     }
-  //   };
-
-  //   patchLogo();
-  // }, [logoGcsUrl]);
-
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     // Validate all steps
@@ -448,28 +472,26 @@ export default function CreateBusinessWizard({
       }
     }
     if (!allValid) {
-      toast.error(tc("fill_all_fields"));
+      toast.error(tt("fill_all_fields"));
       return;
     }
 
     setIsPublishing(true);
-    await saveDraft(true);
     if (businessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
         itemId: businessId,
       });
     }
+    await saveDraft(true);
     setIsPublishing(false);
-    // toast.success(t("business created succesfully"));
-    refetch();
-    onClose();
   };
+
   useEffect(() => {
-    if (currentView === "edit") {
+    if (opMode !== IOpMode.CREATE) {
       setBusinessId(editData?._id);
     }
-  }, [currentView, businessId]);
+  }, [opMode, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
@@ -491,11 +513,12 @@ export default function CreateBusinessWizard({
       errors,
       setCurrentStep,
       address,
+      geo,
       setFormData,
       markDirty,
       images,
       business: editData,
-      currentView,
+      opMode,
     };
     const mediaProps = {
       theme,
@@ -547,10 +570,17 @@ export default function CreateBusinessWizard({
             setAddress={setAddress}
           />
         );
+
       case 4:
         return (
           <Attributes
             {...commonProps}
+            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            description={
+              formData.fullDescriptionHe ||
+              formData.fullDescriptionEn ||
+              formData.fullDescriptionAr
+            }
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
@@ -566,7 +596,13 @@ export default function CreateBusinessWizard({
       case 8:
         return <BusinessOnlinePresence {...commonProps} />;
       case 9:
-        return <BusinessReviewSubmit {...commonProps} errors={errors} />;
+        return (
+          <BusinessReviewSubmit
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+          />
+        );
       default:
         return null;
     }
@@ -579,9 +615,7 @@ export default function CreateBusinessWizard({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className={clsx("text-2xl", textPrimary)}>
-              {currentView === "edit"
-                ? t("edit_business")
-                : t("create_new_business")}
+              {modelTitle(opMode, tc)} {t("business")}
             </h2>
             <p
               className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}

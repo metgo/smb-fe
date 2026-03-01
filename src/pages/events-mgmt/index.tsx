@@ -13,6 +13,7 @@ import {
 import { EventsWithViewMode, CreateEventWizard } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
+import { FilterByStatus } from "@/components/filter-fields";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
@@ -276,23 +277,12 @@ export default function EventsMgmtPage() {
 
                 {/* Status */}
                 <div className="col-span-2">
-                  <label className={`block text-sm mb-2 ${textSecondary}`}>
-                    {t("status")}
-                  </label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-900 border-gray-700 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="all">{tc("all")}</option>
-                    <option value="PENDING">{tc("pending")}</option>
-                    <option value="APPROVED">{tc("approved")}</option>
-                    <option value="DRAFT">{tc("draft")}</option>
-                  </select>
+                  <FilterByStatus
+                    filters={statusFilter}
+                    setFilters={(newStatus) =>
+                      setStatusFilter(newStatus.status)
+                    }
+                  />
                 </div>
 
                 {/* Date Range */}
@@ -342,7 +332,7 @@ export default function EventsMgmtPage() {
                 dateRangeFilter.start ||
                 dateRangeFilter.end ||
                 searchQuery) && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
+                <div className=" pt-4 flex items-center gap-2 flex-wrap">
                   <span className={`text-sm ${textTertiary}`}>
                     {t("active_filters")}:
                   </span>

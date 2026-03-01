@@ -171,7 +171,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsConfirmOpen(true);
-                      setItemToDelete(product._id);
+                      setItemToDelete(product?._id);
                     }}
                   />
                 </div>

@@ -1,8 +1,9 @@
-import { UserRole } from "@/enums/user.types";
-import { useAppSelector } from "@/hooks/hooks";
-import { useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+
+import { ItemStatus } from "@/enums/status.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useCallback, useState } from "react";
 
 interface UseEventDraftSaverProps {
   currentStep: number;
@@ -23,7 +24,7 @@ export function useEventDraftSaver({
   stepPayloadMap,
   // debounceMs = 3600,
 }: UseEventDraftSaverProps) {
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isTraveller } = useUserRoles();
 
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   // const debounceTimer = useRef<number | null>(null);
@@ -68,7 +69,7 @@ export function useEventDraftSaver({
         if (isPublish) {
           payload = {
             ...payload,
-            status: userRole === UserRole.TRAVELLER ? "PENDING" : "APPROVED",
+            status: isTraveller ? ItemStatus.PENDING : ItemStatus.APPROVED,
           };
         }
 
@@ -100,7 +101,7 @@ export function useEventDraftSaver({
       updateEvent,
       setEventId,
       t,
-      userRole,
+      isTraveller,
     ],
   );
 

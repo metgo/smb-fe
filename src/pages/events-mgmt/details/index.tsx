@@ -104,7 +104,7 @@ export default function EventDetailsPage() {
     try {
       await updateEvent({
         eventId,
-        body: { status: status.toUpperCase() },
+        body: { status: status?.toUpperCase() },
       }).unwrap();
 
       refetch();
@@ -199,7 +199,6 @@ export default function EventDetailsPage() {
       case "attributes":
         return (
           <AttributesDetails
-            title={t("event_attributes")}
             groupTypesId={eventDetails?.groupTypesId}
             subCategoriesId={eventDetails?.subCategoriesId}
             accessibilitiesId={eventDetails?.accessibilitiesId}

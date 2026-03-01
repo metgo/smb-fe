@@ -1,0 +1,202 @@
+import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
+import { Check, Edit2, MoreVertical, Trash2, X } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
+interface TopicHeaderProps {
+  topic: {
+    index: number;
+    name: string;
+  };
+  onRename: (topicIdx: number, newName: string) => void;
+  onDelete: (topicIdx: number) => void;
+}
+
+const TopicHeader = ({ topic, onRename, onDelete }: TopicHeaderProps) => {
+  const { isDark } = useThemeClasses();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(topic.name);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Keep editValue in sync if topic.name changes externally
+  useEffect(() => {
+    setEditValue(topic.name);
+  }, [topic.name]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMenu]);
+
+  const handleRename = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== topic.name) {
+      onRename(topic.index, trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(topic.name);
+    setIsEditing(false);
+  };
+
+  return (
+    <div
+      className={clsx(
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors",
+        isDark
+          ? "bg-gray-800/70 border-gray-700 text-gray-100"
+          : "bg-linear-to-r from-slate-50 to-gray-50 border-gray-200 text-gray-900",
+      )}
+    >
+      {/* Topic index pill */}
+      <span
+        className={clsx(
+          "shrink-0 w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center",
+          isDark ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600",
+        )}
+      >
+        {topic.index + 1}
+      </span>
+
+      {/* Name or edit input */}
+      {isEditing ? (
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleRename();
+              if (e.key === "Escape") handleCancel();
+            }}
+            className={clsx(
+              "h-8 text-sm flex-1",
+              isDark
+                ? "bg-gray-900 border-gray-600 text-gray-100"
+                : "bg-white border-gray-300 text-gray-900",
+            )}
+            autoFocus
+          />
+          <Button
+            size="sm"
+            onClick={handleRename}
+            className={clsx(
+              "h-8 px-2",
+              isDark
+                ? "bg-teal-700 hover:bg-teal-600 text-white"
+                : "bg-teal-600 hover:bg-teal-500 text-white",
+            )}
+          >
+            <Check className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleCancel}
+            className={clsx(
+              "h-8 px-2",
+              isDark
+                ? "hover:bg-gray-700 text-gray-400"
+                : "hover:bg-gray-100 text-gray-500",
+            )}
+          >
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      ) : (
+        <>
+          <h3
+            className={clsx(
+              "flex-1 text-sm font-semibold truncate",
+              isDark ? "text-gray-100" : "text-gray-800",
+            )}
+          >
+            {topic.name}
+          </h3>
+
+          {/* Three-dot menu */}
+          <div ref={menuRef} className="relative shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMenu((v) => !v)}
+              className={clsx(
+                "h-7 w-7 p-0 rounded-md transition-colors",
+                isDark
+                  ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                  : "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
+              )}
+            >
+              <MoreVertical className="w-4 h-4" />
+            </Button>
+
+            {showMenu && (
+              <div
+                className={clsx(
+                  "absolute right-0 top-8 z-50 w-44 rounded-lg border shadow-lg overflow-hidden",
+                  isDark
+                    ? "bg-gray-800 border-gray-700"
+                    : "bg-white border-gray-200",
+                )}
+              >
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                  )}
+                  onClick={() => {
+                    setIsEditing(true);
+                    setShowMenu(false);
+                  }}
+                >
+                  <Edit2 className="w-3.5 h-3.5 shrink-0" />
+                  Rename Topic
+                </button>
+
+                <div
+                  className={clsx(
+                    "mx-3 my-1 h-px",
+                    isDark ? "bg-gray-700" : "bg-gray-100",
+                  )}
+                />
+
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                    isDark
+                      ? "text-red-400 hover:bg-gray-700 hover:text-red-300"
+                      : "text-red-600 hover:bg-red-50 hover:text-red-700",
+                  )}
+                  onClick={() => {
+                    setShowMenu(false);
+                    onDelete(topic.index);
+                  }}
+                >
+                  <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                  Delete Topic
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default TopicHeader;

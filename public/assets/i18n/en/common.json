@@ -70,6 +70,8 @@
   "confirm": "Confirm",
   "details": "Details",
   "edit": "Edit",
+  "create": "Create",
+  "duplicate": "Duplicate",
   "continue": "Continue",
   "send_invite": "Send Invite",
   "back_to_list": "Back to List",
