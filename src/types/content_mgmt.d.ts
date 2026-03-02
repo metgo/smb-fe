@@ -9,6 +9,7 @@ interface IContent {
 interface IContentGroup {
   category: string;
   isPrimary: boolean;
+  isHideCategory: boolean;
   contents: IContent[];
 }
 
@@ -16,5 +17,6 @@ interface IContentTemplate {
   header: string;
   topic: string;
   isPrimary: boolean;
+  isHideTopic: boolean;
   groups: IContentGroup[];
 }

@@ -86,10 +86,6 @@ const TopicBlock = ({
   }, [dragPreview, drop]);
 
   const hasMultipleCategories = topic.groups.length > 1;
-  const totalItems = topic.groups.reduce(
-    (sum, g) => sum + g.contents.length,
-    0,
-  );
 
   return (
     <div
@@ -189,18 +185,6 @@ const TopicBlock = ({
             >
               <Layers className="w-3 h-3" />
               {topic.groups.length} categories
-            </span>
-
-            {/* Item count badge */}
-            <span
-              className={clsx(
-                "px-2 py-0.5 rounded-full text-xs font-medium",
-                isDark
-                  ? "bg-gray-700 text-gray-300"
-                  : "bg-gray-100 text-gray-600",
-              )}
-            >
-              {totalItems} item{totalItems !== 1 ? "s" : ""}
             </span>
           </div>
         </div>

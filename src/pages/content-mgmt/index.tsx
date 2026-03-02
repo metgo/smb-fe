@@ -118,19 +118,49 @@ export default function ContentMgmtPage() {
       header: "",
       topic: t("featured_businesses"),
       isPrimary: true,
-      groups: [{ isPrimary: true, category: "Category 2", contents: [] }],
+      isHideTopic: false,
+      groups: [
+        {
+          isPrimary: false,
+          isHideCategory: false,
+          category: "Restaurants & Cafés",
+          contents: [],
+        },
+        {
+          isPrimary: true,
+          isHideCategory: false,
+          category: "Retail & Shopping",
+          contents: [],
+        },
+      ],
     },
     {
       header: "",
       topic: t("homepage_hero_section"),
       isPrimary: false,
-      groups: [{ isPrimary: false, category: "Category 1", contents: [] }],
+      isHideTopic: false,
+      groups: [
+        {
+          isPrimary: false,
+          isHideCategory: false,
+          category: "Limited Time Offers",
+          contents: [],
+        },
+      ],
     },
     {
       header: "",
       topic: t("recommended_this_week"),
       isPrimary: false,
-      groups: [{ isPrimary: false, category: "", contents: [] }],
+      isHideTopic: false,
+      groups: [
+        {
+          isPrimary: false,
+          isHideCategory: false,
+          category: "Trending This Week",
+          contents: [],
+        },
+      ],
     },
   ];
 

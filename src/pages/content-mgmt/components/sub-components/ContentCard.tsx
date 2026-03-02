@@ -191,8 +191,9 @@ const ContentCard = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       className={clsx(
-        "group rounded-lg overflow-hidden w-full relative col-span-12",
+        "group rounded-lg overflow-hidden w-full relative",
         baseClasses,
+        isExpanded ? "col-span-12" : "col-span-6",
       )}
     >
       <div className="grid grid-cols-12 h-20">
@@ -218,7 +219,7 @@ const ContentCard = ({
               isDark ? "text-gray-100" : "text-gray-900",
             )}
           >
-            {name}
+            {name ? name : "-"}
           </h4>
           <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
             {descripition ? getPlainTextFromRichText(descripition) : "-"}

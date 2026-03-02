@@ -102,7 +102,12 @@ const Contents = ({
 
   return (
     <div className="flex-1 min-w-0 pt-6">
-      <div className="border border-gray-200 mb-2 px-2 rounded-md">
+      <div
+        className={clsx(
+          "border p-2 rounded-md",
+          isDark ? "border-gray-500" : "border-gray-200",
+        )}
+      >
         <div className="flex items-center gap-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
@@ -245,7 +250,7 @@ const Contents = ({
                             key={key}
                             label={displayValue}
                             onRemove={() =>
-                              setFilters((prev: any) => ({
+                              setFilters((prev) => ({
                                 ...prev,
                                 [key as keyof Filters]: "all",
                               }))

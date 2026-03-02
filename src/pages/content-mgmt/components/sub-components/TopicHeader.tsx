@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
-import { Check, Edit2, MoreVertical, Trash2, X } from "lucide-react";
+import { Check, Edit2, Eye, MoreVertical, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -167,7 +167,21 @@ const TopicHeader = ({ topic, onRename, onDelete }: TopicHeaderProps) => {
                   <Edit2 className="w-3.5 h-3.5 shrink-0" />
                   Rename Topic
                 </button>
-
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                  )}
+                  onClick={() => {
+                    setIsEditing(true);
+                    setShowMenu(false);
+                  }}
+                >
+                  <Eye className="w-3.5 h-3.5 shrink-0" />
+                  Hide Topic
+                </button>
                 <div
                   className={clsx(
                     "mx-3 my-1 h-px",
