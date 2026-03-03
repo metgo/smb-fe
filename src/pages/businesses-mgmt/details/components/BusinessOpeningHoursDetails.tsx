@@ -1,95 +1,274 @@
+import React, { useMemo } from "react";
+import {
+  Clock,
+  CalendarCheck,
+  XCircle,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 interface OperatingHour {
-  day: string;
-  open: string;
-  close: string;
+  day?: string;
+  days?: string;
+  open?: string;
+  close?: string;
   isHoliday?: boolean;
 }
 
-interface BusinessOpeningHoursDetailsProps {
+interface Props {
   isDark: boolean;
   business: {
     openingHrs: OperatingHour[];
   };
+  showCurrentTime?: boolean;
+  timezone?: string;
 }
+
 const dayOrder = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-const getDayDisplay = (day: string) =>
-  day?.charAt(0)?.toUpperCase() + day?.slice(1)?.toLowerCase();
+const normalizeDay = (value?: string): string | null => {
+  if (!value) return null;
 
-const BusinessOpeningHoursDetails: React.FC<
-  BusinessOpeningHoursDetailsProps
-> = ({ isDark, business }) => {
-  const openingHrs = business?.openingHrs || [];
-
-  const formatTime = (time: string) => {
-    if (!time) return null;
-    return time.replace(/^0/, "") || "00:00";
+  const map: Record<string, string> = {
+    sun: "SUN",
+    mon: "MON",
+    tue: "TUE",
+    tues: "TUE",
+    wed: "WED",
+    thu: "THU",
+    thurs: "THU",
+    fri: "FRI",
+    sat: "SAT",
   };
 
-  if (openingHrs.length === 0) {
+  return map[value.toLowerCase().trim()] || null;
+};
+
+const formatTime = (time?: string) => {
+  if (!time || time === "00:00") return "";
+  const [h, m] = time.split(":").map(Number);
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+};
+
+const isCurrentlyOpen = (open?: string, close?: string, timezone?: string) => {
+  if (!open || !close || open === "00:00" || close === "00:00") return false;
+
+  const now = timezone
+    ? new Date(new Date().toLocaleString("en-US", { timeZone: timezone }))
+    : new Date();
+
+  const current = now.getHours() * 60 + now.getMinutes();
+
+  const [oH, oM] = open.split(":").map(Number);
+  const [cH, cM] = close.split(":").map(Number);
+
+  const openMin = oH * 60 + oM;
+  const closeMin = cH * 60 + cM;
+
+  if (closeMin < openMin) {
+    return current >= openMin || current <= closeMin;
+  }
+
+  return current >= openMin && current <= closeMin;
+};
+
+const BusinessOpeningHoursDetails: React.FC<Props> = ({
+  isDark,
+  business,
+  showCurrentTime = true,
+  timezone,
+}) => {
+  const { t } = useTranslation("common");
+  const openingHrs = business?.openingHrs || [];
+
+  const normalizedHours = useMemo(() => {
+    return dayOrder.map((day) => {
+      const entry = openingHrs.find(
+        (e) => normalizeDay(e.day || e.days) === day,
+      );
+      return { day, entry };
+    });
+  }, [openingHrs]);
+
+  const todayKey = dayOrder[new Date().getDay()];
+
+  const currentTimeDisplay = useMemo(() => {
+    try {
+      return new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: timezone,
+      });
+    } catch {
+      return new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+  }, [timezone]);
+
+  /* ---------------- Empty State ---------------- */
+
+  if (!openingHrs.length) {
     return (
       <div
-        className={`py-4 px-6 rounded ${
+        className={`p-6 rounded-xl border text-center ${
           isDark
-            ? "bg-gray-800 text-white border-gray-700"
-            : "bg-gray-50 text-gray-700 border-gray-200"
+            ? "bg-gray-800 border-gray-700 text-gray-400"
+            : "bg-gray-50 border-gray-200 text-gray-500"
         }`}
       >
-        No schedule available
+        <CalendarCheck
+          className={`w-8 h-8 mx-auto mb-3 ${
+            isDark ? "text-gray-600" : "text-gray-400"
+          }`}
+        />
+        <p className="font-medium">{t("no_schedule_available")}</p>
+        <small>{t("not_set_opening_hours")}</small>
       </div>
     );
   }
 
-  const hoursMap = new Map(openingHrs?.map((h) => [h?.day?.toUpperCase(), h]));
   return (
-    <div>
-      <h2
-        className={`mb-3 px-4 py-2 rounded ${
-          isDark
-            ? "border-gray-700 text-white bg-gray-900"
-            : "bg-gray-50 border-gray-200 text-gray-900"
-        }`}
-      >
-        Weekly Schedule
-      </h2>
+    <div className="w-full space-y-4">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2
+          className={`flex items-center gap-2 font-semibold ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}
+        >
+          <Clock
+            className={`w-5 h-5 ${isDark ? "text-teal-400" : "text-teal-600"}`}
+          />
+          {t("weekly_schedule")}
+        </h2>
 
-      <div className="space-y-3 px-4">
-        {dayOrder?.map((day) => {
-          const entry = hoursMap.get(day);
+        {showCurrentTime && (
+          <span
+            className={`text-xs px-3 py-1 rounded-full ${
+              isDark ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600"
+            }`}
+          >
+            {currentTimeDisplay}
+          </span>
+        )}
+      </div>
 
-          let displayText = "Closed";
+      {/* Days */}
+      <div className="space-y-2">
+        {normalizedHours.map(({ day, entry }) => {
+          const isToday = day === todayKey;
+
+          let Icon = AlertCircle;
+          let color = isDark ? "text-gray-400" : "text-gray-500";
+          let bg = isDark ? "bg-gray-800/50" : "bg-white";
+          let border = isDark ? "border-gray-700" : "border-gray-200";
+          let content: React.ReactNode = t("not_set");
 
           if (entry) {
             if (entry.isHoliday) {
-              displayText = "Holiday";
-            } else if (entry.open && entry.close) {
-              if (entry.open === "00:00" && entry.close === "00:00") {
-                displayText = "Closed";
-              } else {
-                displayText = `${formatTime(entry.open)} – ${formatTime(
-                  entry.close,
-                )}`;
-              }
+              Icon = CalendarCheck;
+              color = isDark ? "text-amber-400" : "text-amber-600";
+              bg = isDark ? "bg-amber-900/20" : "bg-amber-50";
+              border = isDark ? "border-amber-800" : "border-amber-200";
+              content = t("holiday");
+            } else if (!entry.open || entry.open === "00:00") {
+              Icon = XCircle;
+              color = isDark ? "text-red-400" : "text-red-600";
+              content = t("closed");
+            } else {
+              Icon = CheckCircle2;
+              color = isDark ? "text-green-400" : "text-green-600";
+              bg = isDark ? "bg-green-900/10" : "bg-green-50";
+              border = isDark ? "border-green-800/40" : "border-green-200";
+
+              const baseTime = `${formatTime(entry.open)} – ${formatTime(
+                entry.close,
+              )}`;
+
+              const showOpenNow =
+                isToday &&
+                showCurrentTime &&
+                isCurrentlyOpen(entry.open, entry.close, timezone);
+
+              content = showOpenNow ? (
+                <span className="flex items-center gap-2">
+                  {baseTime}
+                  <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full">
+                    {t("open_now")}
+                  </span>
+                </span>
+              ) : (
+                baseTime
+              );
             }
           }
 
           return (
             <div
               key={day}
-              className={`flex justify-between items-center py-3 px-4 rounded-lg ${
-                isDark
-                  ? "bg-gray-800/50 border border-gray-700 text-white hover:bg-gray-700"
-                  : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-              }`}
+              className={`
+                flex justify-between items-center p-4 rounded-xl border transition
+                ${bg} ${border}
+                ${
+                  isToday
+                    ? `ring-2 ${
+                        isDark ? "ring-teal-500/40" : "ring-teal-400/50"
+                      }`
+                    : ""
+                }
+                ${isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"}
+              `}
             >
-              <span>{getDayDisplay(day)}</span>
-              <span>{displayText}</span>
+              <div>
+                <div
+                  className={`font-medium ${
+                    isDark ? "text-white" : "text-gray-800"
+                  }`}
+                >
+                  {t(day.toLowerCase())}
+                </div>
+                {isToday && (
+                  <small className="text-teal-500">{t("today")}</small>
+                )}
+              </div>
+
+              <div className={`flex items-center gap-2 ${color}`}>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="text-sm font-medium">{content}</span>
+              </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div
+        className={`flex gap-5 text-xs pt-3 border-t ${
+          isDark
+            ? "border-gray-700 text-gray-400"
+            : "border-gray-200 text-gray-500"
+        }`}
+      >
+        <span className="flex items-center gap-1">
+          <CheckCircle2 className="w-3 h-3 text-green-500" />
+          {t("open")}
+        </span>
+        <span className="flex items-center gap-1">
+          <XCircle className="w-3 h-3 text-red-500" />
+          {t("closed")}
+        </span>
+        <span className="flex items-center gap-1">
+          <CalendarCheck className="w-3 h-3 text-amber-500" />
+          {t("holiday")}
+        </span>
       </div>
     </div>
   );
 };
 
-export default BusinessOpeningHoursDetails;
+export default React.memo(BusinessOpeningHoursDetails);

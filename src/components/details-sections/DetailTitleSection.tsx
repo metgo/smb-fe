@@ -2,10 +2,10 @@ import clsx from "clsx";
 import { TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { getLngWiseStr } from "@/helpers";
 import { formatDateTime } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getLngWiseStr } from "@/helpers";
-import { ImageWithFallback } from "../shared";
+import { ImageWithFallback } from "@/components/shared";
 
 interface DetailTitleSectionProps {
   name: string;
@@ -37,7 +37,7 @@ const DetailTitleSection = ({
         src={imageSrc}
         alt={name || nameHe || nameAr}
         className={clsx(
-          "w-24 h-22 rounded object-cover border-2",
+          "w-24 h-22 rounded-xl object-cover border-2",
           isDark ? "border-gray-600" : "border-gray-300",
         )}
       />

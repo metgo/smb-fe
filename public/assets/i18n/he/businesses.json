@@ -105,7 +105,7 @@
   "back_to_businesses": "חזור לעסקים",
   "business": "עסק",
   "change_status": "שנה סטטוס",
-  "completion_percentage": "אחוז השלמה",
+
   "brief_description": "תיאור קצר",
   "sunday": "ראשון",
   "monday": "שני",
@@ -166,8 +166,11 @@
   "phoneNumber": "מספר טלפון",
   "productsCount": "מספר מוצרים",
   "lifetimeSales": "מכירות מצטברות",
+
   "business_owner": "בעל העסק",
+  "assign_owner": "הקצה בעלים",
   "no_owner_assigned": "לא הוקצה בעלים",
+
   "tripCount": "מספר טיולים",
   "websiteUrl": "כתובת אתר",
   "contactPhone": "טלפון איש קשר",
