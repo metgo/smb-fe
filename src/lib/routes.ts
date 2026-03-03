@@ -14,6 +14,7 @@ export const routes = {
   orderDetails: "/order-details",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
+  notificationMgmt: "/notifications-management",
 
   funDays: "/fun-days",
   vouchers: "/vouchers",

@@ -26,6 +26,7 @@ import {
   Users,
   File,
   UserCircle,
+  Calendar1,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -91,6 +92,13 @@ export default function Sidebar() {
       path: routes.eventsMgmt,
       label: t("events") || "Events",
       icon: Calendar,
+      isEnabled: true,
+    },
+    {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: Calendar1,
       isEnabled: true,
     },
     {

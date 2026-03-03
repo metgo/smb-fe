@@ -26,6 +26,7 @@ import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
+import NotificationsMgmtPage from "./pages/notification-mgmt";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -140,6 +141,8 @@ function App() {
 
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+        { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
+
         { path: "/*", element: <DashboardPage /> },
       ],
     },
