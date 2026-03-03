@@ -26,7 +26,7 @@ import {
   Users,
   File,
   UserCircle,
-  Calendar1,
+  BellIcon,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -98,7 +98,7 @@ export default function Sidebar() {
       id: "notifications",
       path: routes.notificationMgmt,
       label: t("notifications") || "Notifications",
-      icon: Calendar1,
+      icon: BellIcon,
       isEnabled: true,
     },
     {

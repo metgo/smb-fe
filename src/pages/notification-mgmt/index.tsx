@@ -8,6 +8,7 @@ import {
   CheckCheck,
   X,
 } from "lucide-react";
+import { generateMockNotifications } from "@/lib/notifications";
 import { useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
 import { FilterButton } from "@/components/btns";
@@ -58,15 +59,16 @@ export default function NotificationsMgmtPage({
     generateMockNotifications(),
   );
 
-  // Theme-aware classes
-  const bgPrimary = theme === "dark" ? "bg-gray-950" : "bg-gray-50";
-  const bgSecondary = theme === "dark" ? "bg-gray-900" : "bg-white";
-  const bgTertiary = theme === "dark" ? "bg-gray-800" : "bg-gray-100";
-  const textPrimary = theme === "dark" ? "text-white" : "text-gray-900";
-  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
-  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
-  const borderColor = theme === "dark" ? "border-gray-800" : "border-gray-200";
-  const hoverBg = theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-50";
+  const {
+    textTertiary,
+    bgPrimary,
+    bgSecondary,
+    bgTertiary,
+    textPrimary,
+    textSecondary,
+    borderColor,
+    hoverBg,
+  } = useThemeClasses();
 
   // Filter notifications
   const filteredNotifications = notifications.filter((notification) => {
@@ -532,87 +534,5 @@ export default function NotificationsMgmtPage({
         </div>
       </main>
     </div>
-  );
-}
-
-// Mock data generator
-function generateMockNotifications(): Notification[] {
-  const types: Notification["type"][] = ["info", "action", "warning", "error"];
-  const notifications: Notification[] = [];
-
-  const templates = [
-    {
-      type: "action" as const,
-      title: "New business awaiting approval",
-      description:
-        "Desert Lodge Hotel has submitted their business profile for review",
-      relatedTo: { module: "businesses", id: "biz-1" },
-    },
-    {
-      type: "info" as const,
-      title: "Order completed",
-      description: "Order #12345 has been completed and paid",
-      relatedTo: { module: "orders", id: "order-1" },
-    },
-    {
-      type: "warning" as const,
-      title: "Product stock running low",
-      description: "Camel Desert Tour - only 3 spots remaining",
-      relatedTo: { module: "products", id: "product-1" },
-    },
-    {
-      type: "error" as const,
-      title: "Payment failed",
-      description: "Payment processing error for order #12346",
-      relatedTo: { module: "orders", id: "order-2" },
-    },
-    {
-      type: "action" as const,
-      title: "Event needs approval",
-      description: "Negev Music Festival 2025 is pending your review",
-      relatedTo: { module: "events", id: "event-1" },
-    },
-    {
-      type: "info" as const,
-      title: "New voucher issued",
-      description: "10% discount voucher created for Summer Campaign",
-      relatedTo: { module: "vouchers", id: "voucher-1" },
-    },
-    {
-      type: "warning" as const,
-      title: "Trip capacity reached",
-      description: "Ramon Crater Hiking Trip is now fully booked",
-      relatedTo: { module: "trips", id: "trip-1" },
-    },
-    {
-      type: "info" as const,
-      title: "New review posted",
-      description:
-        "A new 5-star review was posted for Be'er Sheva Wellness Spa",
-      relatedTo: { module: "businesses", id: "biz-2" },
-    },
-  ];
-
-  for (let i = 0; i < 25; i++) {
-    const template = templates[i % templates.length];
-    const daysAgo = Math.floor(Math.random() * 30);
-    const hoursAgo = Math.floor(Math.random() * 24);
-    const minutesAgo = Math.floor(Math.random() * 60);
-
-    notifications.push({
-      id: `notification-${i + 1}`,
-      ...template,
-      timestamp: new Date(
-        Date.now() -
-          daysAgo * 24 * 60 * 60 * 1000 -
-          hoursAgo * 60 * 60 * 1000 -
-          minutesAgo * 60 * 1000,
-      ),
-      read: Math.random() > 0.4, // 60% read, 40% unread
-    });
-  }
-
-  return notifications.sort(
-    (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
   );
 }
