@@ -99,6 +99,7 @@
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
   "deletd_notification": "Delete Notification",
   "delete_notification_cofirm": "Are you sure you want to delete this notification?",
+  "notifications": "Notifications",
   "unsaved_changes": "Unsaved Changes",
   "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
   "delete_event": "Delete Event",

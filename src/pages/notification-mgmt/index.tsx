@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
+import { PageHeader } from "@/components/shared";
+import { FilterButton } from "@/components/btns";
+import SearchInput from "@/components/shared/SearchInput";
 
 interface Notification {
   id: string;
@@ -35,10 +38,10 @@ export default function NotificationsMgmtPage({
   onNavigate,
 }: NotificationsMgmtPageProps) {
   const { t, i18n } = useTranslation("notifications");
+  const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
-
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [readFilter, setReadFilter] = useState<"all" | "read" | "unread">(
@@ -51,14 +54,6 @@ export default function NotificationsMgmtPage({
   const [selectedNotifications, setSelectedNotifications] = useState<
     Set<string>
   >(new Set());
-
-  // Sidebar state
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  // Global header states
-  const [selectedAuthority, setSelectedAuthority] = useState("all");
-  const [selectedWebsite, setSelectedWebsite] = useState("all");
-  const [dateRange, setDateRange] = useState("last30days");
 
   // Mock notifications data
   const [notifications, setNotifications] = useState<Notification[]>(
@@ -213,81 +208,76 @@ export default function NotificationsMgmtPage({
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl mb-2 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  {t.notifications || "Notifications"}
+                  {t("notifications")}
                 </h1>
-                <p className={textSecondary}>
-                  {t.manageNotifications ||
-                    "Manage your notifications and stay updated"}
-                </p>
+                <p className={textSecondary}>{t("manage_notifications")}</p>
               </div>
+
               {unreadNotifications > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
                   className="px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
                 >
                   <CheckCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {t.markAllRead || "Mark all read"}
-                  </span>
+                  <span className="hidden sm:inline">{t("mark_all_read")}</span>
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Fixed Stats & Toolbar */}
+        {/* Stats & Toolbar */}
         <div className="flex-shrink-0 p-6 pb-0">
           <div className="max-w-[1600px] mx-auto">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {/* Total */}
               <div
                 className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Bell className="w-5 h-5 text-blue-600" />
                   <span className={`text-sm ${textPrimary}`}>
-                    {t.totalNotifications || "Total"}
+                    {t("total_notifications")}
                   </span>
                 </div>
                 <p className={`text-2xl ${textPrimary} mb-1`}>
                   {totalNotifications}
                 </p>
-                <p className={`text-xs ${textTertiary}`}>
-                  {t.allTime || "All time"}
-                </p>
+                <p className={`text-xs ${textTertiary}`}>{t("all_time")}</p>
               </div>
 
+              {/* Unread */}
               <div
                 className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Info className="w-5 h-5 text-teal-600" />
                   <span className={`text-sm ${textPrimary}`}>
-                    {t.unread || "Unread"}
+                    {t("unread")}
                   </span>
                 </div>
                 <p className={`text-2xl ${textPrimary} mb-1`}>
                   {unreadNotifications}
                 </p>
-                <p className={`text-xs ${textTertiary}`}>
-                  {t.newMessages || "New messages"}
-                </p>
+                <p className={`text-xs ${textTertiary}`}>{t("new_messages")}</p>
               </div>
 
+              {/* Action Required */}
               <div
                 className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
               >
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-5 h-5 text-purple-600" />
                   <span className={`text-sm ${textPrimary}`}>
-                    {t.actionRequired || "Action Required"}
+                    {t("action_required")}
                   </span>
                 </div>
                 <p className={`text-2xl ${textPrimary} mb-1`}>
                   {actionRequiredNotifications}
                 </p>
                 <p className={`text-xs ${textTertiary}`}>
-                  {t.needsAttention || "Needs attention"}
+                  {t("needs_attention")}
                 </p>
               </div>
             </div>
@@ -295,38 +285,18 @@ export default function NotificationsMgmtPage({
             {/* Toolbar */}
             <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
               {/* Search */}
-              <div className="flex-1 min-w-[200px] max-w-md">
-                <div className="relative">
-                  <Search
-                    className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${textTertiary}`}
-                  />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={
-                      t.searchNotifications || "Search notifications..."
-                    }
-                    className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} placeholder-gray-400`}
-                  />
-                </div>
+              <div className="flex-1 relative">
+                <SearchInput
+                  placeholder={t("search_notifications")}
+                  searchTerm={searchQuery}
+                  setSearchTerm={setSearchQuery}
+                  storageKey={SEARCH_STORAGE_KEY}
+                />
               </div>
 
-              {/* Right Section */}
+              {/* Filters Button */}
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`px-3 py-2 rounded-lg border ${borderColor} ${
-                    showFilters
-                      ? "bg-teal-50 dark:bg-teal-950 border-teal-500"
-                      : bgSecondary
-                  } ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2`}
-                >
-                  <Filter className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {t.filters || "Filters"}
-                  </span>
-                </button>
+                <FilterButton value={showFilters} onChange={setShowFilters} />
               </div>
             </div>
 
@@ -336,91 +306,56 @@ export default function NotificationsMgmtPage({
                 className={`mb-6 p-4 rounded-xl border ${borderColor} ${bgSecondary}`}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Read Status */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.readStatus || "Read Status"}
+                      {t("read_status")}
                     </label>
                     <select
                       value={readFilter}
                       onChange={(e) => setReadFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t.all || "All"}</option>
-                      <option value="unread">{t.unread || "Unread"}</option>
-                      <option value="read">{t.read || "Read"}</option>
+                      <option value="all">{t("all")}</option>
+                      <option value="unread">{t("unread")}</option>
+                      <option value="read">{t("read")}</option>
                     </select>
                   </div>
 
+                  {/* Type */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.notificationType || "Type"}
+                      {t("notification_type")}
                     </label>
                     <select
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t.allTypes || "All Types"}</option>
-                      <option value="info">{t.info || "Info"}</option>
-                      <option value="action">
-                        {t.actionRequired || "Action Required"}
-                      </option>
-                      <option value="warning">{t.warning || "Warning"}</option>
-                      <option value="error">{t.error || "Error"}</option>
+                      <option value="all">{t("all_types")}</option>
+                      <option value="info">{t("info")}</option>
+                      <option value="action">{t("action_required")}</option>
+                      <option value="warning">{t("warning")}</option>
+                      <option value="error">{t("error")}</option>
                     </select>
                   </div>
 
+                  {/* Date Range */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t.dateRange || "Date Range"}
+                      {t("date_range")}
                     </label>
                     <select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t.allTime || "All time"}</option>
-                      <option value="today">{t.today || "Today"}</option>
-                      <option value="week">{t.thisWeek || "This week"}</option>
-                      <option value="month">
-                        {t.thisMonth || "This month"}
-                      </option>
+                      <option value="all">{t("all_time")}</option>
+                      <option value="today">{t("today")}</option>
+                      <option value="week">{t("this_week")}</option>
+                      <option value="month">{t("this_month")}</option>
                     </select>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bulk Actions */}
-            {selectedNotifications.size > 0 && (
-              <div
-                className={`mb-6 p-4 rounded-xl border ${borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
-              >
-                <div className="flex items-center gap-3">
-                  <CheckCheck className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                  <span className={textSecondary}>
-                    {selectedNotifications.size} {t.selected || "selected"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleBulkMarkAsRead}
-                    className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-                  >
-                    {t.markAsRead || "Mark as read"}
-                  </button>
-                  <button
-                    onClick={handleBulkDelete}
-                    className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-                  >
-                    {t.delete || "Delete"}
-                  </button>
-                  <button
-                    onClick={() => setSelectedNotifications(new Set())}
-                    className={`p-1.5 rounded-lg ${hoverBg} ${textSecondary}`}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             )}
@@ -431,7 +366,6 @@ export default function NotificationsMgmtPage({
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <div className="max-w-[1600px] mx-auto">
             {filteredNotifications.length === 0 ? (
-              // Empty State
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
               >
@@ -440,23 +374,23 @@ export default function NotificationsMgmtPage({
                 >
                   <CheckCheck className={`w-8 h-8 ${textTertiary}`} />
                 </div>
+
                 <h3 className={`text-lg ${textPrimary} mb-2`}>
                   {searchQuery || showFilters
-                    ? t.noNotificationsFound || "No notifications found"
-                    : t.allCaughtUp || "You're all caught up"}
+                    ? t("no_notifications_found")
+                    : t("all_caught_up")}
                 </h3>
+
                 <p className={`${textTertiary}`}>
                   {searchQuery || showFilters
-                    ? t.tryAdjustingFilters || "Try adjusting your filters"
-                    : t.noNewNotifications || "No new notifications"}
+                    ? t("try_adjusting_filters")
+                    : t("no_new_notifications")}
                 </p>
               </div>
             ) : (
-              // Notifications List
               <div
                 className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden`}
               >
-                {/* Table Header */}
                 <div
                   className={`${bgTertiary} border-b ${borderColor} px-4 py-3 flex items-center gap-3`}
                 >
@@ -470,26 +404,18 @@ export default function NotificationsMgmtPage({
                     className="rounded"
                   />
                   <span className={`text-sm ${textSecondary}`}>
-                    {t.selectAll || "Select all"}
+                    {t("select_all")}
                   </span>
                 </div>
 
-                {/* Notifications */}
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredNotifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`flex items-start gap-3 px-4 py-4 ${hoverBg} transition-colors border-${isRTL ? "r" : "l"}-2 ${getBorderColor(
-                        notification.type,
-                      )} ${
-                        !notification.read
-                          ? theme === "dark"
-                            ? "bg-gray-800/50"
-                            : "bg-blue-50/50"
-                          : ""
-                      }`}
+                      className={`flex items-start gap-3 px-4 py-4 ${hoverBg} transition-colors border-${isRTL ? "r" : "l"}-2 ${getBorderColor(notification.type)} ${!notification.read ? (theme === "dark" ? "bg-gray-800/50" : "bg-blue-50/50") : ""}`}
                     >
-                      {/* Checkbox */}
+                      {" "}
+                      {/* Checkbox */}{" "}
                       <input
                         type="checkbox"
                         checked={selectedNotifications.has(notification.id)}
@@ -504,33 +430,37 @@ export default function NotificationsMgmtPage({
                         }}
                         onClick={(e) => e.stopPropagation()}
                         className="rounded mt-1"
-                      />
-
-                      {/* Icon */}
+                      />{" "}
+                      {/* Icon */}{" "}
                       <div className="flex-shrink-0 mt-0.5">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-
-                      {/* Content */}
+                        {" "}
+                        {getNotificationIcon(notification.type)}{" "}
+                      </div>{" "}
+                      {/* Content */}{" "}
                       <button
                         onClick={() => handleNotificationClick(notification)}
                         className={`flex-1 min-w-0 text-${isRTL ? "right" : "left"}`}
                       >
+                        {" "}
                         <div className="flex items-start justify-between gap-2 mb-1">
+                          {" "}
                           <h4 className={`text-sm font-medium ${textPrimary}`}>
-                            {notification.title}
-                          </h4>
+                            {" "}
+                            {notification.title}{" "}
+                          </h4>{" "}
                           {!notification.read && (
                             <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
-                          )}
-                        </div>
+                          )}{" "}
+                        </div>{" "}
                         <p className={`text-sm ${textSecondary} mb-1`}>
-                          {notification.description}
-                        </p>
+                          {" "}
+                          {notification.description}{" "}
+                        </p>{" "}
                         <span className={`text-xs ${textTertiary}`}>
-                          {getRelativeTime(notification.timestamp)}
-                        </span>
-                      </button>
+                          {" "}
+                          {getRelativeTime(notification.timestamp)}{" "}
+                        </span>{" "}
+                      </button>{" "}
                     </div>
                   ))}
                 </div>
