@@ -19,6 +19,24 @@ export const images = {
     favicon: "/images/favicon/negevtime.ico",
     contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
+  KEFBA: {
+    logo: {
+      image: {
+        black: `${BUCKET_URL}/images/logo/black.svg`,
+        white: `${BUCKET_URL}/images/logo/white.svg`,
+      },
+      size: {
+        height: 100,
+        width: 80,
+      },
+    },
+    thumbnail: {
+      desktop: `${BUCKET_URL}/images/thumbnail/desktop.webp`,
+      mobile: `${BUCKET_URL}/images/thumbnail/mobile.webp`,
+    },
+    favicon: "/images/favicon/negevtime.ico",
+    contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
+  },
   TAV8: {
     logo: {
       image: {
