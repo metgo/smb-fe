@@ -17,6 +17,8 @@ import {
 const TOPIC_TYPE = "TOPIC_ITEM";
 
 interface ContentComposerProps {
+  header: string;
+  setHeader: (v: string) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
 }
@@ -41,9 +43,10 @@ const TopicBlock = ({
   onDelete,
   moveItem,
 }: TopicBlockProps) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
   const { t } = useTranslation("content");
+  const ref = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+
   // ── drag this topic ──
   const [{ isDragging }, drag, dragPreview] = useDrag({
     type: TOPIC_TYPE,
@@ -249,6 +252,8 @@ const TopicBlock = ({
 
 // ─── Main ContentComposer ─────────────────────────────────────────────────────
 const ContentComposer = ({
+  header,
+  setHeader,
   templateContents,
   setTemplateContent,
 }: ContentComposerProps) => {
@@ -318,18 +323,19 @@ const ContentComposer = ({
       </div>
 
       <div className="overflow-y-scroll h-[64vh]">
-        {/* Add topic / config controls */}
         <ContentConfigHeader
+          header={header}
+          setHeader={setHeader}
           templateContents={templateContents}
           setTemplateContent={setTemplateContent}
         />
 
         {/* Drag hint */}
-        {templateContents.length > 1 && (
+        {templateContents?.length > 1 && (
           <p
             className={clsx(
-              "text-xs mb-2 flex items-center gap-1",
-              isDark ? "text-gray-600" : "text-gray-400",
+              "text-xs font-bold italic mb-2 flex items-center gap-1",
+              isDark ? "text-gray-300" : "text-gray-600",
             )}
           >
             <GripVertical className="w-3 h-3" />
@@ -339,9 +345,9 @@ const ContentComposer = ({
 
         {/* Topic list */}
         <div className="space-y-3">
-          {templateContents.map((topic, index) => (
+          {templateContents?.map((topic, index) => (
             <TopicBlock
-              key={`${topic.topic}-${index}`}
+              key={index}
               topic={topic}
               index={index}
               isDark={isDark}

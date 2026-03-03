@@ -1,4 +1,9 @@
 {
+  "expand": "توسيع",
+  "split": "تقسيم",
+  "loading_text": "جاري تحميل المزيد من العناصر...",
+  "loading_end_text": "لا توجد عناصر أخرى",
+
   "create_new_topic": "إنشاء موضوع جديد",
   "placeholder_new_topic": "مثال: أقسام الصفحة الرئيسية، المحتوى المميز...",
   "button_create": "إنشاء",

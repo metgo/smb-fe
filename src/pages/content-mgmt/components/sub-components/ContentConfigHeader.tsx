@@ -1,25 +1,28 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { CKEditorWrapper } from "@/components/wrapper";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { CKEditorWrapper } from "@/components/wrapper";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
 interface ContentConfigHeaderProps {
+  header: string;
+  setHeader: (v: string) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: (value: IContentTemplate[]) => void;
 }
 
 const ContentConfigHeader = ({
+  header,
+  setHeader,
   templateContents,
   setTemplateContent,
 }: ContentConfigHeaderProps) => {
   const { isDark } = useThemeClasses();
   const { t } = useTranslation("content");
-  const [newHeader, setNewHeader] = useState("<p></p>");
   const [newTopicName, setNewTopicName] = useState<string>("");
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [selectedTopicForNewCategory, setSelectedTopicForNewCategory] =
@@ -34,7 +37,6 @@ const ContentConfigHeader = ({
     if (!newTopicName.trim()) return;
 
     const newTopic: IContentTemplate = {
-      header: newHeader,
       topic: newTopicName,
       isPrimary: false,
       groups: [],
@@ -72,6 +74,16 @@ const ContentConfigHeader = ({
 
   return (
     <div className="mb-4 shrink-0 space-y-2 border p-2 rounded-lg">
+      {/* Header */}
+      <div
+        className={clsx(
+          "font-semibold",
+          isDark ? "text-gray-300" : "text-gray-800",
+        )}
+      >
+        {t("feed_header")}
+      </div>{" "}
+      <CKEditorWrapper value={header} onChange={setHeader} />
       {/* Create Topic */}
       <div
         className={clsx(
@@ -98,7 +110,7 @@ const ContentConfigHeader = ({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCreateTopic();
             }}
-            className={clsx(isDark ? "bg-gray-900" : "bg-white")}
+            className={clsx(isDark ? "bg-gray-900 text-white" : "bg-white")}
           />
 
           <Button
@@ -111,7 +123,6 @@ const ContentConfigHeader = ({
           </Button>
         </div>
       </div>
-
       {/* Create Category */}
       <div
         className={clsx(
@@ -132,15 +143,6 @@ const ContentConfigHeader = ({
 
         {topics.length > 0 && (
           <div>
-            <label
-              className={clsx(
-                "block text-xs font-medium mb-2",
-                isDark ? "text-teal-200" : "text-teal-800",
-              )}
-            >
-              {t("select_topic_label")}
-            </label>
-
             <select
               value={selectedTopicForNewCategory}
               onChange={(e) => setSelectedTopicForNewCategory(e.target.value)}
@@ -199,21 +201,6 @@ const ContentConfigHeader = ({
           </p>
         )}
       </div>
-
-      {/* Header */}
-      {selectedTopicForNewCategory && (
-        <>
-          <div
-            className={clsx(
-              "font-semibold",
-              isDark ? "text-gray-300" : "text-gray-800",
-            )}
-          >
-            {t("feed_header")}
-          </div>{" "}
-          <CKEditorWrapper value={newHeader} onChange={setNewHeader} />
-        </>
-      )}
     </div>
   );
 };

@@ -70,9 +70,11 @@ interface PanelExpandButtonProps {
   expandLabel: string;
   collapseIcon: React.ReactNode;
   isDark: boolean;
+  t: (key: string) => string;
 }
 
 const PanelExpandButton = ({
+  t,
   isExpanded,
   onToggle,
   expandLabel,
@@ -96,7 +98,9 @@ const PanelExpandButton = ({
     )}
   >
     {isExpanded ? (
-      <>{collapseIcon} Split</>
+      <>
+        {collapseIcon} {t("split")}
+      </>
     ) : (
       <>
         <Maximize2 className="w-3.5 h-3.5" /> {expandLabel}
@@ -117,7 +121,6 @@ export default function ContentMgmtPage() {
 
   const initialTemplateContent: IContentTemplate[] = [
     {
-      header: "",
       topic: t("featured_businesses"),
       isPrimary: true,
       isHideTopic: false,
@@ -137,7 +140,6 @@ export default function ContentMgmtPage() {
       ],
     },
     {
-      header: "",
       topic: t("homepage_hero_section"),
       isPrimary: false,
       isHideTopic: false,
@@ -151,7 +153,6 @@ export default function ContentMgmtPage() {
       ],
     },
     {
-      header: "",
       topic: t("recommended_this_week"),
       isPrimary: false,
       isHideTopic: false,
@@ -166,9 +167,12 @@ export default function ContentMgmtPage() {
     },
   ];
 
+  const [header, setHeader] = useState("<p></p>");
+  console.log("🚀 ~ ContentMgmtPage ~ header:", header);
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
+  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
   );
@@ -396,9 +400,10 @@ export default function ContentMgmtPage() {
                     style={{ minWidth: 0 }}
                   >
                     <PanelExpandButton
+                      t={t}
                       isExpanded={focus === "left"}
                       onToggle={expandLeft}
-                      expandLabel="Expand"
+                      expandLabel={t("expand")}
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                       isDark={isDark}
                     />
@@ -451,13 +456,16 @@ export default function ContentMgmtPage() {
                     style={{ minWidth: 0 }}
                   >
                     <PanelExpandButton
+                      t={t}
                       isExpanded={focus === "right"}
                       onToggle={expandRight}
-                      expandLabel="Expand"
+                      expandLabel={t("expand")}
                       collapseIcon={<PanelLeftClose className="w-3.5 h-3.5" />}
                       isDark={isDark}
                     />
                     <ContentComposer
+                      header={header}
+                      setHeader={setHeader}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
                     />

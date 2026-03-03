@@ -14,7 +14,6 @@ interface IContentGroup {
 }
 
 interface IContentTemplate {
-  header: string;
   topic: string;
   isPrimary: boolean;
   isHideTopic?: boolean;

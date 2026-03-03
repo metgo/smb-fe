@@ -1,4 +1,9 @@
 {
+  "expand": "Expand",
+  "split": "Split",
+  "loading_text": "Loading more items...",
+  "loading_end_text": "No more items",
+
   "create_new_topic": "Create New Topic",
   "placeholder_new_topic": "e.g., Homepage Sections, Featured Content...",
   "button_create": "Create",

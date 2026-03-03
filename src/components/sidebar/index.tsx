@@ -294,9 +294,7 @@ export default function Sidebar() {
                 : isDark
                   ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-          } ${isSidebarCollapsed ? "justify-center" : ""} ${
-            isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""
-          }`}
+          } ${isSidebarCollapsed ? "justify-center" : ""}`}
         >
           <Icon
             className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}

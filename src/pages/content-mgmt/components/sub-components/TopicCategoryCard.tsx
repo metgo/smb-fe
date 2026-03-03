@@ -1,10 +1,11 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useDrop } from "react-dnd";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Check,
   ChevronDown,
@@ -18,8 +19,6 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -40,7 +39,7 @@ const TopicCategoryCard = ({
   templateContents,
   setTemplateContent,
 }: Props) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, bgPrimary, bgSecondary, bgTertiary } = useThemeClasses();
   const { t } = useTranslation("content");
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -117,8 +116,6 @@ const TopicCategoryCard = ({
     );
   };
 
-  console.log("🚀 ~ togglePrimary ~ templateContents:", templateContents);
-
   const togglePrimary = () => {
     const updated = [...templateContents];
     updated[topicIndex].groups = updated[topicIndex].groups.map((g, i) => ({
@@ -146,15 +143,20 @@ const TopicCategoryCard = ({
         drop(node);
       }}
       className={clsx(
-        "rounded-lg border p-4 transition-all",
+        "rounded-lg border transition-all",
         isDark
-          ? "border-gray-700 bg-gray-800/50"
-          : "border-gray-200 bg-gray-50",
+          ? "border-gray-300 bg-gray-800/50"
+          : "border-gray-400 bg-gray-50",
         isOver && "ring-2 ring-blue-400 bg-blue-50/10",
       )}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div
+        className={clsx(
+          "flex items-center justify-between border border-gray-400 px-2 py-1 rounded-t-md",
+          bgTertiary,
+        )}
+      >
         <div className="flex items-center gap-2 flex-1">
           <Button
             size="sm"
@@ -210,12 +212,14 @@ const TopicCategoryCard = ({
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 )}
               </h3>
-              <Badge>{group.contents.length}</Badge>
+              <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
+                {group.contents.length}
+              </span>
             </>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex">
           <Button
             size="sm"
             variant="ghost"
@@ -285,11 +289,11 @@ const TopicCategoryCard = ({
 
       {/* CONTENT AREA */}
       {expanded && (
-        <div className="mt-4">
+        <div className="mt-4 px-2 pb-1">
           {group?.contents?.length > 0 ? (
             <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
               {group.contents.map((content) => (
-                <div key={content._id} className="w-40 shrink-0">
+                <div key={content._id} className="w-44 shrink-0">
                   <ContentCard
                     _id={content._id}
                     name={content.name}
@@ -305,7 +309,7 @@ const TopicCategoryCard = ({
           ) : (
             <div
               className={clsx(
-                "w-full text-center py-12 border-2 border-dashed rounded-lg transition-colors",
+                "w-full text-center py-18 border-2 border-dashed rounded-lg transition-colors mb-2",
                 isOver
                   ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20"
                   : "border-gray-300 dark:border-gray-700",
@@ -313,7 +317,7 @@ const TopicCategoryCard = ({
               )}
             >
               <p className="text-sm">
-                Drag businesses here to add them to this category
+                {t("drag_businesses_here_to_add_them_to_this_category")}
               </p>
             </div>
           )}

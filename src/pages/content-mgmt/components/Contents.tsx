@@ -7,7 +7,12 @@ import { useCommon } from "@/hooks/useCommon";
 import { ContentCard } from "./sub-components";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { FilterChips, SearchInput, ViewModeToggle } from "@/components/shared";
+import {
+  FilterChips,
+  SearchInput,
+  Spinner,
+  ViewModeToggle,
+} from "@/components/shared";
 
 interface Filters {
   status: string;
@@ -31,7 +36,7 @@ interface ContentsProps {
 }
 
 const Contents = ({
-  // isLoading,
+  isLoading,
   isExpanded,
   viewMode,
   hasMore,
@@ -295,6 +300,7 @@ const Contents = ({
         className="overflow-y-scroll h-[60vh] p-2"
         onClick={handleContainerClick}
       >
+        <Spinner isLoading={isLoading} />
         <InfiniteScroll
           dataLength={combinedBusinesses?.length}
           next={fetchNextPage}
@@ -302,13 +308,13 @@ const Contents = ({
           scrollableTarget="scrollableDiv"
           loader={
             <p className={clsx("text-center mt-4", textTertiary)}>
-              טוען מוצרים נוספים...
+              {t("loading_text")}
             </p>
           }
           endMessage={
             !hasMore && (
               <p className={clsx("text-center mt-4", textTertiary)}>
-                אין עוד מוצרים
+                {t("loading_end_text")}
               </p>
             )
           }
