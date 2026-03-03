@@ -291,29 +291,5 @@
   "role": "الدور",
   "viewer_read_only": "مشاهد (قراءة فقط)",
   "admin": "مدير",
-  "user_not_in_system_alert": "غير موجود في نظامنا. يرجى تقديم معلوماته لإرسال الدعوة.",
-
-  "category_deleted": "تم حذف الفئة",
-  "category_created": "تم إنشاء الفئة",
-  "messages_sent_to_customers": "تم إرسال رسائل إلى {{count}} زبون{{count !== 1 ? 'زبان' : ''}}",
-  "business_added_to_category": "تمت إضافة النشاط التجاري إلى الفئة",
-  "businesses_added_to_category": "تمت إضافة {{count}} نشاط تجاري إلى الفئة",
-  "businesses_already_in_category": "النشاطات التجارية موجودة بالفعل في هذه الفئة",
-  "business_removed_from_category": "تمت إزالة النشاط التجاري من الفئة",
-  "drag_businesses_here_to_add_them_to_this_category": "اسحب الأنشطة التجارية هنا لإضافتها إلى هذه الفئة",
-  "rename_category": "إعادة تسمية الفئة",
-  "delete_category": "حذف الفئة",
-
-  "content_manager_title": "مدير المحتوى",
-  "content_manager_description": "نظم الأعمال في فئات مخصصة لأقسام موقعك",
-  "custom_categories_title": "الفئات المخصصة",
-  "custom_categories_description": "نظم المحتوى لأقسام مختلفة من موقعك",
-  "source_backlog_title": "سجل المصدر",
-  "source_backlog_description": "{{count}} نشاط تجاري متاح",
-  "new_category_name_placeholder": "اسم الفئة الجديدة...",
-  "all_websites_option": "جميع المواقع",
-  "featured_businesses": "أعمال مميزة",
-  "homepage_hero_section": "قسم البطل في الصفحة الرئيسية",
-  "recommended_this_week": "موصى به هذا الأسبوع",
-  "create": "إنشاء"
+  "user_not_in_system_alert": "غير موجود في نظامنا. يرجى تقديم معلوماته لإرسال الدعوة."
 }

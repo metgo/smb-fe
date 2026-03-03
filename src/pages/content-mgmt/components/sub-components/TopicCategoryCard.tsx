@@ -5,7 +5,16 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Edit2, Eye, EyeClosed, Star, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Edit2,
+  Eye,
+  EyeClosed,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
@@ -168,7 +177,7 @@ const TopicCategoryCard = ({
                 autoFocus
               />
               <Button size="sm" onClick={renameCategory}>
-                Save
+                <Check className="w-3.5 h-3.5" />
               </Button>
               <Button
                 size="sm"
@@ -178,7 +187,7 @@ const TopicCategoryCard = ({
                   setEditValue(group.category);
                 }}
               >
-                Cancel
+                <X className="w-3.5 h-3.5" />
               </Button>
             </>
           ) : (

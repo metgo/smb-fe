@@ -108,7 +108,7 @@ const PanelExpandButton = ({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ContentMgmtPage() {
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("content");
   const { isDark, language } = useThemeClasses();
 
   const [viewMode, setViewMode] = useState<TViewMode>(

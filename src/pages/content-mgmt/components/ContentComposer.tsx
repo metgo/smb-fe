@@ -12,8 +12,6 @@ import {
   TopicCategoryCard,
   TopicHeader,
 } from "./sub-components";
-import { PublishButton } from "@/components/btns";
-import DraftButton from "@/components/btns/DraftButton";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -45,7 +43,7 @@ const TopicBlock = ({
 }: TopicBlockProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
+  const { t } = useTranslation("content");
   // ── drag this topic ──
   const [{ isDragging }, drag, dragPreview] = useDrag({
     type: TOPIC_TYPE,
@@ -208,7 +206,7 @@ const TopicBlock = ({
               )}
             >
               <Layers className="w-3 h-3" />
-              {topic.groups.length} categories
+              {topic.groups.length} {t("categories")}
             </span>
           </div>
         </div>
@@ -225,7 +223,7 @@ const TopicBlock = ({
                     : "border-gray-200 text-gray-400",
                 )}
               >
-                No categories yet. Add one above.
+                {t("no_categories_yet")}{" "}
               </div>
             ) : (
               <div className={clsx("space-y-2")}>
@@ -254,7 +252,7 @@ const ContentComposer = ({
   templateContents,
   setTemplateContent,
 }: ContentComposerProps) => {
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const { allWebsites } = useCommon();
 
@@ -335,7 +333,7 @@ const ContentComposer = ({
             )}
           >
             <GripVertical className="w-3 h-3" />
-            Drag the handle to reorder topics
+            {t("drag_handle_instruction")}
           </p>
         )}
 
@@ -364,7 +362,7 @@ const ContentComposer = ({
               )}
             >
               <Layers className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">No topics yet. Add one to get started.</p>
+              <p className="text-sm">{t("no_topics_yet")}</p>
             </div>
           )}
         </div>

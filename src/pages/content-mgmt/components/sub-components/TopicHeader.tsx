@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface TopicHeaderProps {
   topic: {
@@ -38,6 +39,7 @@ const TopicHeader = ({
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const { t } = useTranslation("content");
   // Keep editValue in sync if topic.name changes externally
   useEffect(() => {
     setEditValue(topic.name);
@@ -77,7 +79,6 @@ const TopicHeader = ({
           : "bg-linear-to-r from-slate-50 to-gray-50 border-gray-200 text-gray-900",
       )}
     >
-      {/* Topic index pill */}
       <span
         className={clsx(
           "shrink-0 w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center",
@@ -87,7 +88,6 @@ const TopicHeader = ({
         {topic.index + 1}
       </span>
 
-      {/* Name or edit input */}
       {isEditing ? (
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Input
@@ -142,7 +142,6 @@ const TopicHeader = ({
             {topic.name}
           </h3>
 
-          {/* Three-dot menu */}
           <div ref={menuRef} className="relative shrink-0">
             <Button
               variant="ghost"
@@ -180,8 +179,9 @@ const TopicHeader = ({
                   }}
                 >
                   <Edit2 className="w-3.5 h-3.5 shrink-0" />
-                  Rename Topic
+                  {t("rename_topic")}
                 </button>
+
                 <button
                   className={clsx(
                     "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
@@ -190,7 +190,7 @@ const TopicHeader = ({
                       : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                   )}
                   onClick={() => {
-                    onToggleVisibility(topic.index); // toggle visibility
+                    onToggleVisibility(topic.index);
                     setShowMenu(false);
                   }}
                 >
@@ -199,8 +199,9 @@ const TopicHeader = ({
                   ) : (
                     <EyeClosed className="w-3.5 h-3.5 shrink-0" />
                   )}
-                  {topic.isHidden ? "Show Topic" : "Hide Topic"}{" "}
+                  {topic.isHidden ? t("show_topic") : t("hide_topic")}
                 </button>
+
                 <div
                   className={clsx(
                     "mx-3 my-1 h-px",
@@ -221,7 +222,7 @@ const TopicHeader = ({
                   }}
                 >
                   <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                  Delete Topic
+                  {t("delete_topic")}
                 </button>
               </div>
             )}

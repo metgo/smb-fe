@@ -42,7 +42,7 @@ const Contents = ({
   filters,
   setFilters,
 }: ContentsProps) => {
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("content");
   const { isDark, textTertiary } = useThemeClasses();
   const { categories: categoryFilter } = useCommon();
 

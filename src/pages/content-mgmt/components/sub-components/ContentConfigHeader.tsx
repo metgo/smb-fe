@@ -18,7 +18,7 @@ const ContentConfigHeader = ({
   setTemplateContent,
 }: ContentConfigHeaderProps) => {
   const { isDark } = useThemeClasses();
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("content");
   const [newHeader, setNewHeader] = useState("<p></p>");
   const [newTopicName, setNewTopicName] = useState<string>("");
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -86,12 +86,12 @@ const ContentConfigHeader = ({
             isDark ? "text-purple-100" : "text-purple-900",
           )}
         >
-          Create New Topic
+          {t("create_new_topic")}
         </label>
 
         <div className="flex gap-2">
           <Input
-            placeholder="e.g., Homepage Sections, Featured Content..."
+            placeholder={t("placeholder_new_topic")}
             value={newTopicName}
             onChange={(e) => setNewTopicName(e.target.value)}
             onKeyDown={(e) => {
@@ -106,7 +106,7 @@ const ContentConfigHeader = ({
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             <Plus className="w-4 h-4" />
-            Create
+            {t("button_create")}
           </Button>
         </div>
       </div>
@@ -126,7 +126,7 @@ const ContentConfigHeader = ({
             isDark ? "text-teal-100" : "text-teal-900",
           )}
         >
-          Create New Category
+          {t("create_new_category")}
         </label>
 
         {topics.length > 0 && (
@@ -137,7 +137,7 @@ const ContentConfigHeader = ({
                 isDark ? "text-teal-200" : "text-teal-800",
               )}
             >
-              Select Topic
+              {t("select_topic_label")}
             </label>
 
             <select
@@ -150,7 +150,7 @@ const ContentConfigHeader = ({
                   : "bg-white border-teal-300 text-gray-900",
               )}
             >
-              <option value="">Choose a topic...</option>
+              <option value="">{t("select_topic_placeholder")}</option>
 
               {topics.map((topic) => (
                 <option key={topic.id} value={topic.name}>
@@ -163,7 +163,7 @@ const ContentConfigHeader = ({
 
         <div className="flex gap-2">
           <Input
-            placeholder="New category name..."
+            placeholder={t("placeholder_new_category")}
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             onKeyDown={(e) => {
@@ -178,7 +178,7 @@ const ContentConfigHeader = ({
             className="bg-teal-600 hover:bg-teal-700 text-white"
           >
             <Plus className="w-4 h-4" />
-            Create
+            {t("button_create")}
           </Button>
         </div>
 
@@ -189,10 +189,11 @@ const ContentConfigHeader = ({
               isDark ? "text-teal-300" : "text-teal-700",
             )}
           >
-            Create a topic first before adding categories
+            {t("info_create_topic_first")}
           </p>
         )}
       </div>
+
       {/* Header */}
       {selectedTopicForNewCategory && (
         <>
