@@ -25,6 +25,8 @@ import {
   SendResultsModal,
 } from "./components";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import DraftButton from "@/components/btns/DraftButton";
+import { PublishButton } from "@/components/btns";
 
 interface SendResult {
   customerId: string;
@@ -289,6 +291,10 @@ export default function ContentMgmtPage() {
 
   const expandLeft = () => setFocus((p) => (p === "left" ? "both" : "left"));
   const expandRight = () => setFocus((p) => (p === "right" ? "both" : "right"));
+  const handlePublish = () => {
+    console.log("pulished");
+  };
+  const [isPublishing, setIsPublishing] = useState(false);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -309,17 +315,34 @@ export default function ContentMgmtPage() {
                   : "bg-white border-gray-200",
               )}
             >
-              <h1
-                className={clsx(
-                  "text-2xl font-bold mb-2",
-                  isDark ? "text-gray-400" : "text-gray-900",
-                )}
-              >
-                {t("content_manager_title")}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {t("content_manager_description")}
-              </p>
+              <div className="flex justify-between items-start w-full">
+                {/* left section */}
+                <div className="flex flex-col">
+                  <h1
+                    className={clsx(
+                      "text-2xl font-bold mb-2",
+                      isDark ? "text-gray-400" : "text-gray-900",
+                    )}
+                  >
+                    {t("content_manager_title")}
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {t("content_manager_description")}
+                  </p>
+                </div>
+
+                {/* right section */}
+                <div className="flex gap-3 mt-4">
+                  <DraftButton
+                    onClick={handlePublish}
+                    isLoading={isPublishing}
+                  />
+                  <PublishButton
+                    onClick={handlePublish}
+                    isLoading={isPublishing}
+                  />
+                </div>
+              </div>
 
               <AnimatePresence>
                 {selectedBacklogIds.size > 0 && (

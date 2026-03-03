@@ -12,6 +12,8 @@ import {
   TopicCategoryCard,
   TopicHeader,
 } from "./sub-components";
+import { PublishButton } from "@/components/btns";
+import DraftButton from "@/components/btns/DraftButton";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -87,6 +89,16 @@ const TopicBlock = ({
 
   const hasMultipleCategories = topic.groups.length > 1;
 
+  const renameTopic = (topicIndex: number, newName: string) => {
+    const updated = [...templateContents];
+
+    updated[topicIndex] = {
+      ...updated[topicIndex],
+      topic: newName,
+    };
+
+    setTemplateContent(updated);
+  };
   return (
     <div
       ref={ref}
@@ -169,7 +181,7 @@ const TopicBlock = ({
             <TopicHeader
               topic={{ index, name: topic.topic }}
               onDelete={onDelete}
-              onRename={() => {}}
+              onRename={renameTopic}
             />
           </div>
 
@@ -253,43 +265,46 @@ const ContentComposer = ({
   return (
     <div className="min-w-0 flex-1 pt-6">
       {/* ── Header ── */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2
-            className={clsx(
-              "text-lg font-semibold",
-              isDark ? "text-gray-300" : "text-gray-700",
-            )}
-          >
-            {t("custom_categories_title")}
-          </h2>
-          <p
-            className={clsx(
-              "text-sm",
-              isDark ? "text-gray-500" : "text-gray-500",
-            )}
-          >
-            {t("custom_categories_description")}
-          </p>
-        </div>
+      <div className="mb-4">
+        {/* Second Row - Title + Description + Dropdown */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2
+              className={clsx(
+                "text-lg font-semibold",
+                isDark ? "text-gray-300" : "text-gray-700",
+              )}
+            >
+              {t("custom_categories_title")}
+            </h2>
+            <p
+              className={clsx(
+                "text-sm",
+                isDark ? "text-gray-500" : "text-gray-500",
+              )}
+            >
+              {t("custom_categories_description")}
+            </p>
+          </div>
 
-        <select
-          value={selectedId}
-          onChange={(e) => setSelectedId(e.target.value)}
-          className={clsx(
-            "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
-            isDark
-              ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
-              : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
-          )}
-        >
-          <option value="all">{t("all_websites_option")}</option>
-          {allWebsites?.map((site) => (
-            <option key={site._id} value={site._id}>
-              {site.name}
-            </option>
-          ))}
-        </select>
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className={clsx(
+              "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
+              isDark
+                ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
+                : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
+            )}
+          >
+            <option value="all">{t("all_websites_option")}</option>
+            {allWebsites?.map((site) => (
+              <option key={site._id} value={site._id}>
+                {site.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="overflow-y-scroll h-[64vh]">

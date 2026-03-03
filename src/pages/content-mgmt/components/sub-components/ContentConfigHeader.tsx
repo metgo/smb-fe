@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CKEditorWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface ContentConfigHeaderProps {
   templateContents: IContentTemplate[];
@@ -17,7 +18,7 @@ const ContentConfigHeader = ({
   setTemplateContent,
 }: ContentConfigHeaderProps) => {
   const { isDark } = useThemeClasses();
-
+  const { t } = useTranslation("businesses");
   const [newHeader, setNewHeader] = useState("<p></p>");
   const [newTopicName, setNewTopicName] = useState<string>("");
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -71,6 +72,7 @@ const ContentConfigHeader = ({
   return (
     <div className="mb-4 shrink-0 space-y-2 border p-2 rounded-lg">
       {/* Header */}
+      <div className="font-semibold text-gray-800">{t("feed_header")}</div>
       <CKEditorWrapper value={newHeader} onChange={setNewHeader} />
 
       {/* Create Topic */}

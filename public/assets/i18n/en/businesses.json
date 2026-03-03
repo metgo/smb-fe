@@ -323,5 +323,6 @@
   "featured_businesses": "Featured Businesses",
   "homepage_hero_section": "Homepage Hero Section",
   "recommended_this_week": "Recommended This Week",
-  "create": "Create"
+  "create": "Create",
+  "feed_header": "Feed Header (Optional)"
 }
