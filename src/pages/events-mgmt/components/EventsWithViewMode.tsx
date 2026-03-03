@@ -14,7 +14,6 @@ import {
   CheckCircle,
   XCircle,
   CalendarRange,
-  TrashIcon,
   Loader,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +24,7 @@ import {
   BulkActionBar,
   ConfirmDialog,
   ImageWithFallback,
+  ItemStatusBadge,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
@@ -37,6 +37,8 @@ import QuickSnapEventDetails from "./QuickSnapEventDetails";
 import CreateEventWizard from "./CreateEventWizard";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
+import { DeleteIconBtn } from "@/components/btns";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -99,14 +101,8 @@ export default function EventsWithViewMode({
 
   const language = i18n.language || "en";
   const navigate = useNavigate();
-  const {
-    bgPrimary,
-    bgSecondary,
-    bgTertiary,
-    borderColor,
-    textTertiary,
-    textPrimary,
-  } = useThemeClasses();
+  const { bgPrimary, bgSecondary, borderColor, textTertiary, textPrimary } =
+    useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
@@ -231,6 +227,12 @@ export default function EventsWithViewMode({
     await deleteEvent({ eventId });
     toast.success(tc("event_deleted_success"));
     refetch();
+  };
+  const toggleCheckBox = (itemId: string) => {
+    const newSelected = new Set(selectedEvents);
+    if (newSelected.has(itemId)) newSelected.delete(itemId);
+    else newSelected.add(itemId);
+    if (setSelectedEvents) setSelectedEvents(newSelected);
   };
 
   // Events on a given date
@@ -458,8 +460,8 @@ export default function EventsWithViewMode({
     }
 
     return (
-      <div className="py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="py-4 px-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {isLoading ? (
             Array.from({ length: 7 }).map((_, index) => (
               <EventCardSkeleton key={index} />
@@ -467,6 +469,8 @@ export default function EventsWithViewMode({
           ) : (
             <>
               {displayed?.map((event) => {
+                const isChecked = selectedEvents?.has(event?._id) ?? false;
+
                 return (
                   <div
                     key={event._id}
@@ -477,7 +481,7 @@ export default function EventsWithViewMode({
                       " relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
                     )}
                   >
-                    <div className="relative h-52">
+                    <div className="relative h-40">
                       {event?.images?.[0]?.image ? (
                         <ImageWithFallback
                           src={event?.images?.[0]?.image}
@@ -491,22 +495,35 @@ export default function EventsWithViewMode({
                       )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsConfirmOpen(true);
-                        setEventToDelete(event._id);
-                      }}
-                      className={clsx(
-                        "absolute top-3 right-3 z-50 cursor-pointer p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600 border",
-                        bgTertiary,
-                      )}
+                    <div
+                      className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <TrashIcon size={16} />
-                    </button>
+                      <div className="flex items-center gap-2">
+                        {selectedEvents && (
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={() => toggleCheckBox(event?._id)}
+                            className={`cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500`}
+                          />
+                        )}
+                        <ItemStatusBadge
+                          status={event?.status?.toLowerCase()}
+                        />
+                      </div>
 
-                    <div className="p-5">
+                      <div className="flex items-center gap-2">
+                        <DeleteIconBtn
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsConfirmOpen(true);
+                            setEventToDelete(event?._id);
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-2">
                       <h3 className="font-semibold text-lg mb-3 line-clamp-2">
                         {event.name}
                       </h3>
@@ -522,7 +539,7 @@ export default function EventsWithViewMode({
                           </span>
                         </div>
                       </div>
-                      <div className="mt-5 flex justify-between items-center">
+                      <div className="flex justify-between items-center">
                         <span
                           className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
                         >
@@ -822,7 +839,7 @@ export default function EventsWithViewMode({
         className={clsx(
           bgSecondary,
           borderColor,
-          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)]",
+          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)] rounded-2xl",
         )}
       >
         {calendarViewMode === "calendar-month" && viewMode === "calendar" && (

@@ -21,7 +21,6 @@ import {
   BusinessInfoDetails,
   BusinessOnlinePresenceDetails,
   BusinessOpeningHoursDetails,
-  BusinessTitleSection,
   ChangeOwnerModal,
 } from "./components";
 import { routes } from "@/lib/routes";
@@ -40,6 +39,7 @@ import { CreateBusinessWizard } from "../components";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
+  DetailTitleSection,
   LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
@@ -108,7 +108,7 @@ export default function BusinessDetailsPage() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
-  console.log("🚀 ~ BusinessDetailsPage ~ business:", business);
+
   const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
@@ -256,7 +256,7 @@ export default function BusinessDetailsPage() {
   };
 
   return (
-    <div className=" flex flex-col overflow-hidden relative ">
+    <div className=" flex flex-col overflow-hidden relative h-[88vh] ">
       <Spinner isLoading={isLoading} />
 
       {/* Header */}
@@ -314,7 +314,10 @@ export default function BusinessDetailsPage() {
           </div>
         </div>
 
-        <BusinessTitleSection business={business} t={t} />
+        <DetailTitleSection
+          {...business}
+          imageSrc={business?.images?.[0]?.image}
+        />
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
