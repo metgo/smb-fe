@@ -54,7 +54,7 @@ export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
 
-  const { isSuperadmin } = useUserRoles();
+  const { isTraveller } = useUserRoles();
 
   const { borderColor, isDark } = useThemeClasses();
 
@@ -218,7 +218,12 @@ export default function BusinessDetailsPage() {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
       case "contact":
-        return <BusinessContactDetails {...commonProps} />;
+        return (
+          <BusinessContactDetails
+            {...commonProps}
+            refetch={businessDataRefetch}
+          />
+        );
       case "location":
         return (
           <LocationDetails
@@ -271,7 +276,7 @@ export default function BusinessDetailsPage() {
               status={business?.status}
             />
 
-            {isSuperadmin && (
+            {!isTraveller && (
               <button
                 onClick={() => setIsOwnerChangeModalOpen(true)}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${

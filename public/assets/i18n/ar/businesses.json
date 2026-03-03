@@ -107,7 +107,6 @@
 
   "business": "العمل التجاري",
   "change_status": "تغيير الحالة",
-  "completion_percentage": "نسبة الإكمال",
   "brief_description": "وصف مختصر",
   "sunday": "الأحد",
   "monday": "الإثنين",
@@ -168,8 +167,11 @@
   "phoneNumber": "رقم الهاتف",
   "productsCount": "عدد المنتجات",
   "lifetimeSales": "إجمالي المبيعات مدى الحياة",
+
   "business_owner": "مالك العمل التجاري",
   "no_owner_assigned": "لم يتم تعيين مالك",
+  "assign_owner": "تعيين مالك",
+
   "tripCount": "عدد الرحلات",
   "websiteUrl": "رابط الموقع",
   "contactPhone": "هاتف جهة الاتصال",

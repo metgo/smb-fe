@@ -93,7 +93,11 @@
   "paid": "Paid",
   "required": "Required",
   "not_required": "Not Required",
+
   "change_status": "Change Status",
+  "completion_percentage": "Completion",
+  "created": "Created",
+  "updated": "Updated",
 
   "delete_ticket": "Delete Ticket",
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
@@ -128,6 +132,7 @@
   "thursday": "Thursday",
   "friday": "Friday",
   "saturday": "Saturday",
+
   "sun": "Sun",
   "mon": "Mon",
   "tue": "Tue",
@@ -135,6 +140,14 @@
   "thu": "Thu",
   "fri": "Fri",
   "sat": "Sat",
+
+  "open": "Open",
+  "holiday": "Holiday",
+  "today": "Today",
+  "open_now": "Open now",
+  "weekly_schedule": "Weekly Schedule",
+  "no_schedule_available": "No schedule available",
+  "not_set_opening_hours": "Business hours haven't been set yet",
 
   "all": "All",
   "select_dmo": "Select DMO",
