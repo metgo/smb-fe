@@ -99,6 +99,17 @@ const TopicBlock = ({
 
     setTemplateContent(updated);
   };
+
+  const handleToggleTopic = (templateIndex: number) => {
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) =>
+        tIndex === templateIndex
+          ? { ...template, isHideTopic: !template.isHideTopic }
+          : template,
+      ),
+    );
+  };
+
   return (
     <div
       ref={ref}
@@ -179,9 +190,10 @@ const TopicBlock = ({
           {/* Topic name + meta */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <TopicHeader
-              topic={{ index, name: topic.topic }}
+              topic={{ index, name: topic.topic, isHidden: topic.isHideTopic }}
               onDelete={onDelete}
               onRename={renameTopic}
+              onToggleVisibility={handleToggleTopic}
             />
           </div>
 

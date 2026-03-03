@@ -1,6 +1,14 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
-import { Check, Edit2, Eye, MoreVertical, Trash2, X } from "lucide-react";
+import {
+  Check,
+  Edit2,
+  Eye,
+  EyeClosed,
+  MoreVertical,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +18,19 @@ interface TopicHeaderProps {
   topic: {
     index: number;
     name: string;
+    isHidden: boolean | undefined;
   };
   onRename: (topicIdx: number, newName: string) => void;
   onDelete: (topicIdx: number) => void;
+  onToggleVisibility: (topicIdx: number) => void;
 }
 
-const TopicHeader = ({ topic, onRename, onDelete }: TopicHeaderProps) => {
+const TopicHeader = ({
+  topic,
+  onRename,
+  onDelete,
+  onToggleVisibility,
+}: TopicHeaderProps) => {
   const { isDark } = useThemeClasses();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -175,12 +190,16 @@ const TopicHeader = ({ topic, onRename, onDelete }: TopicHeaderProps) => {
                       : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                   )}
                   onClick={() => {
-                    setIsEditing(true);
+                    onToggleVisibility(topic.index); // toggle visibility
                     setShowMenu(false);
                   }}
                 >
-                  <Eye className="w-3.5 h-3.5 shrink-0" />
-                  Hide Topic
+                  {topic.isHidden ? (
+                    <Eye className="w-3.5 h-3.5 shrink-0" />
+                  ) : (
+                    <EyeClosed className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  {topic.isHidden ? "Show Topic" : "Hide Topic"}{" "}
                 </button>
                 <div
                   className={clsx(

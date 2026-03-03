@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Edit2, Star, Trash2 } from "lucide-react";
+import { ChevronDown, Edit2, Eye, EyeClosed, Star, Trash2 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
@@ -83,6 +83,31 @@ const TopicCategoryCard = ({
     setTemplateContent(updated);
     setEditing(false);
   };
+
+  const toggleCategoryVisibility = (
+    templateIndex: number,
+    groupIndex: number,
+  ) => {
+    setTemplateContent((prev: IContentTemplate[]) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== templateIndex) return template;
+
+        return {
+          ...template,
+          groups: template.groups.map((group, gIndex) => {
+            if (gIndex !== groupIndex) return group;
+
+            return {
+              ...group,
+              isHideCategory: !group.isHideCategory,
+            };
+          }),
+        };
+      }),
+    );
+  };
+
+  console.log("🚀 ~ togglePrimary ~ templateContents:", templateContents);
 
   const togglePrimary = () => {
     const updated = [...templateContents];
@@ -182,6 +207,18 @@ const TopicCategoryCard = ({
             title="Rename"
           >
             <Edit2 className="w-4 h-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => toggleCategoryVisibility(topicIndex, categoryIndex)}
+            title="Visibility"
+          >
+            {group.isHideCategory ? (
+              <EyeClosed className="w-4 h-4 opacity-50" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
           </Button>
           <Button
             size="sm"
