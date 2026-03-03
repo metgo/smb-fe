@@ -71,10 +71,6 @@ const ContentConfigHeader = ({
 
   return (
     <div className="mb-4 shrink-0 space-y-2 border p-2 rounded-lg">
-      {/* Header */}
-      <div className="font-semibold text-gray-800">{t("feed_header")}</div>
-      <CKEditorWrapper value={newHeader} onChange={setNewHeader} />
-
       {/* Create Topic */}
       <div
         className={clsx(
@@ -197,6 +193,13 @@ const ContentConfigHeader = ({
           </p>
         )}
       </div>
+      {/* Header */}
+      {selectedTopicForNewCategory && (
+        <>
+          <div className="font-semibold text-gray-800">{t("feed_header")}</div>
+          <CKEditorWrapper value={newHeader} onChange={setNewHeader} />
+        </>
+      )}
     </div>
   );
 };
