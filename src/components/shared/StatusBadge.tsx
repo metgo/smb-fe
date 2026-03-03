@@ -15,7 +15,6 @@ interface StatusBadgeProps {
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
-  console.log("🚀 ~ StatusBadge ~ status:", status);
   const { t } = useTranslation("common");
 
   const statusConfig: Record<StatusKey, { color: string; label: string }> = {

@@ -11,7 +11,6 @@ import {
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventTicketDetails,
-  EventTitleSection,
 } from "./components";
 import { routes } from "@/lib/routes";
 import {
@@ -27,6 +26,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
   AttributesDetails,
+  DetailTitleSection,
   LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
@@ -247,8 +247,10 @@ export default function EventDetailsPage() {
 
         {/* Title & Tabs */}
         <div className="px-6 pb-3">
-          <EventTitleSection {...(eventDetails ?? {})} />
-
+          <DetailTitleSection
+            {...eventDetails}
+            imageSrc={eventDetails?.images?.[0]?.image}
+          />
           <PageStats
             stats={singleEventStats}
             isLoading={isStatsLoading}
