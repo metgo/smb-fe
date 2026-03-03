@@ -5,6 +5,7 @@ import FilterChips from "./FilterChips";
 import IdleLogout from "./IdleLogout";
 import ImageWithFallback from "./ImageWithFallback";
 import InfoTooltip from "./InfoTooltip";
+import ItemStatusBadge from "./ItemStatusBadge";
 import PageHeader from "./PageHeader";
 import PageStats from "./PageStats";
 import ReordableDataTable from "./ReordableDataTable";
@@ -31,6 +32,7 @@ export {
   BulkActionBar,
   ViewModeToggle,
   SelectableChips,
+  ItemStatusBadge,
   ImageWithFallback,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,

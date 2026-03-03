@@ -34,6 +34,7 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
+  DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
 import { StatusChangeBtn } from "@/components/btns";
@@ -243,47 +244,22 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className={clsx("flex items-center gap-4")}>
-            <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-              {product?.images?.length > 0 ? (
-                <img
-                  src={product?.images[0]?.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Package className="w-8 h-8 text-white" />
-              )}
-            </div>
-            <div>
-              <h1
-                className={`text-2xl mb-1 ${
-                  isDark ? "text-white" : "text-gray-900"
-                }`}
-              >
-                {product?.nameHe || product?.name || product?.nameAr}
-              </h1>
-              <p className={isDark ? "text-gray-400" : "text-gray-600"}>
-                {product?.shortDescriptionHe ||
-                  product?.shortDescription ||
-                  product?.shortDescriptionAr}
-              </p>
-            </div>
-          </div>
+          <DetailTitleSection
+            {...product}
+            imageSrc={product?.images?.[0]?.image}
+          />
+          <PageStats
+            stats={salesStats}
+            isLoading={isStatsLoading}
+            className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 mt-4`}
+          />
+
+          <TabsSection
+            tabs={productTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
         </div>
-
-        {/* Analytics Stats */}
-        <PageStats
-          stats={salesStats}
-          isLoading={isStatsLoading}
-          className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 px-4`}
-        />
-
-        <TabsSection
-          tabs={productTabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
       </div>
 
       {/* Content */}

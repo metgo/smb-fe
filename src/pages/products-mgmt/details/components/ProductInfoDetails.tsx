@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Clock,
-  FileText,
-  AlignLeft,
-  BriefcaseBusinessIcon,
-} from "lucide-react";
+import { FileText, AlignLeft, BriefcaseBusinessIcon } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import clsx from "clsx";
@@ -20,7 +15,6 @@ interface ProductInfoDetailsProps {
 const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
   t,
   product,
-  language,
 }) => {
   const { isDark } = useThemeClasses();
   // const [showQRDropdown, setShowQRDropdown] = useState(false);
@@ -120,22 +114,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         isDark={isDark}
         preWrap={true} // preserves line breaks
       />
-      {/* Business */}
-      {/* <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("business_name")}
-        </h3>
-        <div
-          className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
-        >
-          <MapPin className="w-4 h-4" />
-          <span>
-            {product?.businessId?.name ? product?.businessId?.name : "-"}
-          </span>
-        </div>
-      </div> */}
+
       <DescriptionCard
         title={t("business_name")}
         content={product?.businessId?.name ? product?.businessId?.name : "-"}
@@ -195,21 +174,6 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           </div>
         )}
       </div> */}
-
-      {/* Last Updated */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("last_updated")}
-        </h3>
-        <div
-          className={`flex  gap-2 items-center text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          <Clock className="w-4 h-4" />
-          <span>{new Date(product?.updatedAt).toLocaleString(language)}</span>
-        </div>
-      </div>
     </div>
   );
 };

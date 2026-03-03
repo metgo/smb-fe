@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -43,10 +42,8 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
   dayDescription,
   recurringEventRuleId,
 }) => {
-  console.log("🚀 ~ EventDateTimeDetails ~ dayDescription:", dayDescription);
   const { t } = useTranslation("events");
-  const { language } = useAppSelector((state) => state.settings);
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
   const getPatternLabel = (pattern: string) => {
     const patterns: Record<string, string> = {
