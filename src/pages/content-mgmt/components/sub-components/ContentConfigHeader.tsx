@@ -170,7 +170,12 @@ const ContentConfigHeader = ({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCreateCategory();
             }}
-            className={clsx(isDark ? "bg-gray-900" : "bg-white")}
+            className={clsx(
+              "w-full px-3 py-2 rounded-lg outline-none focus:outline-none",
+              isDark
+                ? "bg-gray-900 border-teal-600 text-gray-100 placeholder-gray-200 hover:border-teal-500"
+                : "bg-white border-teal-400 text-gray-900 placeholder-gray-500 hover:border-teal-400",
+            )}
           />
 
           <Button

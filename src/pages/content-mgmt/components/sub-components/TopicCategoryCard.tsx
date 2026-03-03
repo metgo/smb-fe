@@ -30,7 +30,7 @@ interface Props {
   topicIndex: number;
   categoryIndex: number;
   templateContents: IContentTemplate[];
-  setTemplateContent: (value: IContentTemplate[]) => void;
+  setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
 }
 
 const TopicCategoryCard = ({
