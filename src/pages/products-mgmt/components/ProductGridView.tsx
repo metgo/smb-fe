@@ -1,17 +1,22 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Loader, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Building2, Loader, Package } from "lucide-react";
 
 import { routes } from "@/lib/routes";
-import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { DeleteIconBtn, EditIconBtn } from "@/components/btns";
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
+import {
+  ConfirmDialog,
+  ImageWithFallback,
+  ItemStatusBadge,
+} from "@/components/shared";
 
 interface ProductGridViewProps {
   products: any[];
@@ -36,9 +41,9 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("products");
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { isDark, language } = useThemeClasses();
 
-  const { borderColor, isDark } = useThemeClasses();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useInfiniteScroll({
     ref: scrollRef,
@@ -57,58 +62,10 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
     refetch();
   };
 
-  const getStatusBadge = (status: Product["status"]) => {
-    const badges = {
-      draft: isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700",
-
-      pending: isDark
-        ? "bg-yellow-900/30 text-yellow-100"
-        : "bg-yellow-100 text-yellow-700",
-
-      approved: isDark
-        ? "bg-green-900/30 text-green-100"
-        : "bg-green-100 text-green-700",
-
-      rejected: isDark
-        ? "bg-red-900/30 text-red-100"
-        : "bg-red-100 text-red-700",
-
-      archived: isDark
-        ? "bg-zinc-800 text-zinc-100"
-        : "bg-zinc-100 text-zinc-600",
-
-      active: isDark
-        ? "bg-blue-900/60 text-blue-100"
-        : "bg-blue-100 text-blue-700",
-
-      inactive: isDark
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-200 text-gray-600",
-    };
-
-    const labels = {
-      draft: t("draft"),
-      pending: t("pending"),
-      approved: t("approved"),
-      rejected: t("rejected"),
-      archived: t("archived"),
-      active: t("active"),
-      inactive: t("inactive"),
-    };
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${badges[status]}`}
-      >
-        {labels[status]}
-      </span>
-    );
-  };
-
-  const toggleCheckBox = (product: any) => {
+  const toggleCheckBox = (itemId: string) => {
     const newSelected = new Set(selectedProducts);
-    const key = product._id;
-    if (newSelected.has(key)) newSelected.delete(key);
-    else newSelected.add(key);
+    if (newSelected.has(itemId)) newSelected.delete(itemId);
+    else newSelected.add(itemId);
     if (setSelectedProducts) setSelectedProducts(newSelected);
   };
 
@@ -120,7 +77,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
 
   return (
     <div
-      className={`py-6 px-4 rounded-xl ${
+      className={`py-3 px-2 rounded-xl ${
         isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"
       }`}
     >
@@ -129,99 +86,115 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
         id="business-table-scroll"
         className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
-          {products?.map((product) => (
-            <div
-              key={product?._id}
-              onClick={() => handleProductClick(product?._id)}
-              className={`rounded-xl border ${borderColor} ${
-                isDark ? "bg-gray-900 text-gray-300" : "bg-white text-gray-900"
-              } overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`}
-            >
-              {/* Checkbox and Delete Button */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-2">
+          {products?.map((product) => {
+            const isChecked = selectedProducts?.has(product._id) ?? false;
+            return (
               <div
-                className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
-                onClick={(e) => e.stopPropagation()}
+                key={product?._id}
+                onClick={() => handleProductClick(product?._id)}
+                className={clsx(
+                  `rounded-xl border-2 overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`,
+                  isDark
+                    ? "bg-gray-900 text-gray-300"
+                    : "bg-white text-gray-900",
+                  isChecked ? "border-teal-500" : "border-gray-300",
+                )}
               >
-                <div className="flex items-center gap-2">
-                  {selectedProducts && (
-                    <Checkbox
-                      checked={selectedProducts?.has(product._id) ?? false}
-                      onCheckedChange={() => toggleCheckBox(product)}
-                      className={`cursor-pointer border transition-colors ${
-                        isDark
-                          ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                          : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
-                      }`}
-                    />
-                  )}
-                  <div>{getStatusBadge(product?.status?.toLowerCase())}</div>
-                </div>
+                {/* Checkbox and Delete Button */}
+                <div
+                  className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-2">
+                    {selectedProducts && (
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => toggleCheckBox(product?._id)}
+                        className={`cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 `}
+                      />
+                    )}
+                    <ItemStatusBadge status={product?.status?.toLowerCase()} />
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  {handleEditClick && (
-                    <EditIconBtn
+                  <div className="flex items-center gap-2">
+                    {handleEditClick && (
+                      <EditIconBtn
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(product._id);
+                        }}
+                      />
+                    )}
+                    <DeleteIconBtn
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditClick(product._id);
+                        setIsConfirmOpen(true);
+                        setItemToDelete(product?._id);
                       }}
                     />
+                  </div>
+                </div>
+
+                {/* Product Image */}
+                <div className="relative h-40 bg-linear-to-br from-blue-500 to-indigo-600">
+                  {product?.images?.length > 0 ? (
+                    <ImageWithFallback
+                      src={product?.images?.[0]?.image}
+                      alt={product?.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-16 h-16 text-white opacity-50" />
+                    </div>
                   )}
-                  <DeleteIconBtn
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsConfirmOpen(true);
-                      setItemToDelete(product?._id);
-                    }}
-                  />
                 </div>
-              </div>
 
-              {/* Product Image */}
-              <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
-                {product?.images?.length > 0 ? (
-                  <ImageWithFallback
-                    src={product?.images?.[0]?.image}
-                    alt={product?.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-16 h-16 text-white opacity-50" />
-                  </div>
-                )}
-              </div>
-
-              {/* Product Info */}
-              <div className="p-4">
-                <h3
-                  className={`${isDark ? "text-white" : "text-gray-900"} mb-2 font-medium line-clamp-2`}
-                >
-                  {product?.name}
-                </h3>
-                <p
-                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"} mb-3 line-clamp-1`}
-                >
-                  {getPlainTextFromRichText(product?.description)}
-                </p>
-
-                <div className="flex items-center justify-between mb-2">
-                  <div className={isDark ? "text-white" : "text-gray-900"}>
-                    {product?.price?.markedPrice !==
-                      product?.price?.sellingPrice && (
-                      <span className="text-xs text-gray-400 line-through mr-2">
-                        ₪{product?.price?.markedPrice}
-                      </span>
+                {/* Product Info */}
+                <div className="p-2">
+                  <h3
+                    className={`${isDark ? "text-white" : "text-gray-900"} mb-2 font-medium line-clamp-2`}
+                  >
+                    {getLngWiseStr(
+                      language,
+                      product?.name,
+                      product?.nameHe,
+                      product?.nameAr,
                     )}
-                    <span className="font-medium">
-                      ₪{product?.price?.sellingPrice}
-                    </span>
+                  </h3>
+                  <p
+                    className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"} mb-3 line-clamp-1`}
+                  >
+                    {getPlainTextFromRichText(
+                      getLngWiseStr(
+                        language,
+                        product?.description,
+                        product?.descriptionHe,
+                        product?.descriptionAr,
+                      ),
+                    )}
+                  </p>
+
+                  <div className=" items-center justify-between">
+                    <div
+                      className={clsx(isDark ? "text-white" : "text-gray-900")}
+                    >
+                      <span className="font-bold">
+                        ₪ {product?.price?.sellingPrice ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Building2 size={16} />
+                      <span className="text-sm">
+                        {product?.businessId?.name}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <p className="text-sm">{product?.businessId?.name}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {isLoading && (

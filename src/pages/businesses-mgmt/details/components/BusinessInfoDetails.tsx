@@ -186,48 +186,50 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {business?.associatedWebsites?.map((website: any) => (
-                <button
-                  key={website._id}
-                  onClick={() => handleWebsiteClick(website)}
-                  className={clsx(
-                    "group relative flex items-center gap-3 px-4 py-3 border rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
-                    isDark
-                      ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 hover:bg-gray-900"
-                      : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100",
-                  )}
-                  title={`Open ${website.name}`}
-                >
-                  <div
+              {business?.associatedWebsites?.map(
+                (website: any, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => handleWebsiteClick(website)}
                     className={clsx(
-                      "p-2 rounded-lg",
-                      isDark ? "bg-gray-800" : "bg-gray-100",
-                    )}
-                  >
-                    <ImageWithFallback
-                      src={website?.logo || website?.url}
-                      alt={website?.name}
-                      className="w-6 h-6 object-contain"
-                    />
-                  </div>
-                  <span
-                    className={clsx(
-                      "font-medium text-sm flex-1 text-left",
-                      isDark ? "text-gray-200" : "text-gray-800",
-                    )}
-                  >
-                    {website.name}
-                  </span>
-                  <ExternalLink
-                    className={clsx(
-                      "w-4 h-4 transition-all duration-200",
+                      "group relative flex items-center gap-3 px-4 py-3 border rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
                       isDark
-                        ? "text-gray-500 group-hover:text-blue-400"
-                        : "text-gray-400 group-hover:text-blue-600",
+                        ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 hover:bg-gray-900"
+                        : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100",
                     )}
-                  />
-                </button>
-              ))}
+                    title={`Open ${website.name}`}
+                  >
+                    <div
+                      className={clsx(
+                        "p-2 rounded-lg",
+                        isDark ? "bg-gray-800" : "bg-gray-100",
+                      )}
+                    >
+                      <ImageWithFallback
+                        src={website?.logo || website?.url}
+                        alt={website?.name}
+                        className="w-6 h-6 object-contain"
+                      />
+                    </div>
+                    <span
+                      className={clsx(
+                        "font-medium text-sm flex-1 text-left",
+                        isDark ? "text-gray-200" : "text-gray-800",
+                      )}
+                    >
+                      {website.name}
+                    </span>
+                    <ExternalLink
+                      className={clsx(
+                        "w-4 h-4 transition-all duration-200",
+                        isDark
+                          ? "text-gray-500 group-hover:text-blue-400"
+                          : "text-gray-400 group-hover:text-blue-600",
+                      )}
+                    />
+                  </button>
+                ),
+              )}
             </div>
           </div>
         )}

@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 import { routes } from "@/lib/routes";
 import {
@@ -43,8 +43,29 @@ import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
 
-// Column configuration
-const defaultColumns = {
+// Constants & Types
+const LIMIT = 20;
+const STORAGE_KEY = "business_query_state";
+const COLUMNS_STORAGE_KEY = "businessesTableColumns";
+const SEARCH_STORAGE_KEY = "businessSearchTerm";
+
+type ColumnVisibility = {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  contactDetails: boolean;
+  busiEmail: boolean;
+  phoneNumber: boolean;
+  productCount: boolean;
+  status: boolean;
+  lifetimeSales: boolean;
+  tripCount: boolean;
+  associatedWebsites: boolean;
+  contactPhone: boolean;
+  categories: boolean;
+};
+
+const defaultColumns: ColumnVisibility = {
   impact: true,
   name: true,
   shortDescription: true,
@@ -60,110 +81,129 @@ const defaultColumns = {
   categories: false,
 };
 
-type ColumnVisibility = typeof defaultColumns;
-
-// Column definitions with default status
-const columnDefinitions = [
-  { key: "impact" as keyof ColumnVisibility, isDefault: true },
-  { key: "name" as keyof ColumnVisibility, isDefault: true },
-  { key: "shortDescription" as keyof ColumnVisibility, isDefault: true },
-  { key: "contactDetails" as keyof ColumnVisibility, isDefault: true },
-  { key: "busiEmail" as keyof ColumnVisibility, isDefault: true },
-  { key: "phoneNumber" as keyof ColumnVisibility, isDefault: true },
-  { key: "productCount" as keyof ColumnVisibility, isDefault: true },
-  { key: "status" as keyof ColumnVisibility, isDefault: true },
-  { key: "lifetimeSales" as keyof ColumnVisibility, isDefault: true },
-  { key: "tripCount" as keyof ColumnVisibility, isDefault: false },
-  { key: "associatedWebsites" as keyof ColumnVisibility, isDefault: false },
-  { key: "contactPhone" as keyof ColumnVisibility, isDefault: false },
-  { key: "categories" as keyof ColumnVisibility, isDefault: false },
+const columnDefinitions: Array<{
+  key: keyof ColumnVisibility;
+  isDefault: boolean;
+}> = [
+  { key: "impact", isDefault: true },
+  { key: "name", isDefault: true },
+  { key: "shortDescription", isDefault: true },
+  { key: "contactDetails", isDefault: true },
+  { key: "busiEmail", isDefault: true },
+  { key: "phoneNumber", isDefault: true },
+  { key: "productCount", isDefault: true },
+  { key: "status", isDefault: true },
+  { key: "lifetimeSales", isDefault: true },
+  { key: "tripCount", isDefault: false },
+  { key: "associatedWebsites", isDefault: false },
+  { key: "contactPhone", isDefault: false },
+  { key: "categories", isDefault: false },
 ];
 
-const LIMIT = 20;
-
+// Main Component
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("toast");
-
   const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
     useThemeClasses();
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Auth state
   const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
+  // ─── Local State ─────────────────────────────────────────
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-  //infinite scroll states
-  // const [page, setPage] = useState<number>(1);
-
-  const [viewMode, setViewMode] = useState<"list" | "grid">(
-    (localStorage.getItem("businessViewMode") as "list" | "grid") ?? "list",
-  );
-
-  const [error, _setError] = useState(false);
-  // const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const columnSettingsRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    status: "all",
+    hasProductFilter: "all" as const,
+  });
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
-  // for setting filters to local storage
-  const STORAGE_KEY = "business_query_state";
-  const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  // const hasSavedFilter =
-  //   savedState?.status !== "all" && savedState?.hasProductFilter !== "all";
-  // Filters
-  const [filters, setFilters] = useState({
-    status: savedState?.filters?.status || "all",
-    hasProductFilter: savedState?.filters?.hasProductFilter || "all",
-  });
+  const columnSettingsRef = useRef<HTMLDivElement>(null);
   const hasSavedFilters =
-    filters?.hasProductFilter !== "all" || filters?.status !== "all";
+    filters.hasProductFilter !== "all" || filters.status !== "all";
 
-  const [searchTerm, setSearchTerm] = useState(savedState?.searchTerm || "");
+  // ─── Load persisted state on mount (safe, no render loop) ─────────
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (saved?.filters) setFilters(saved.filters);
+      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
+      if (saved?.page) setPage(saved.page);
+      if (saved?.viewMode) setViewMode(saved.viewMode);
+    } catch (e) {
+      console.error("Failed to load saved state:", e);
+    }
+  }, []);
 
-  const [page, setPage] = useState(savedState?.page || 1);
-  // console.log("showFilters:", showFilters, "hasSavedFilter:", hasSavedFilter);
+  // Load column visibility
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setColumnVisibility((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch (e) {
+      console.error("Failed to load column settings:", e);
+    }
+  }, []);
+
+  // ─── Persist state to localStorage (debounced via effect) ─────────
+  useEffect(() => {
+    const queryState = { page, filters, searchTerm, viewMode };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+  }, [page, filters, searchTerm, viewMode]);
 
   useEffect(() => {
-    const queryState = {
-      page,
-      filters,
-      dmoId,
-      authorityId,
-      startDate,
-      endDate,
-      websiteId,
-      language,
+    localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
+    } else {
+      localStorage.removeItem(SEARCH_STORAGE_KEY);
+    }
+  }, [searchTerm]);
+
+  // ─── Close column dropdown on outside click ─────────
+  useEffect(() => {
+    if (!showColumnSettings) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        columnSettingsRef.current &&
+        !columnSettingsRef.current.contains(event.target as Node)
+      ) {
+        setShowColumnSettings(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showColumnSettings]);
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [
-    page,
-    filters,
-    dmoId,
-    authorityId,
-    startDate,
-    endDate,
-    websiteId,
-    language,
-  ]);
+  // ─── Reset page when filters/search change ─────────
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
 
-  const handleBusinessClick = (business: any) => {
-    navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
-      replace: true,
-    });
-  };
-
+  // ─── Query Parameters (memoized, stable reference) ─────────
   const queryParams = useMemo(() => {
-    const params: any = {
+    const params: Record<string, any> = {
       page,
       dmoId,
       startDate,
@@ -173,19 +213,11 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-
-    const finalSearchTerm =
-      localStorage.getItem("businessSearchTerm") ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
-
-    if (filters.status !== "all") {
-      params.status = filters.status;
-    }
-
+    if (searchTerm) params.search = searchTerm;
+    if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
     }
-
     return params;
   }, [
     page,
@@ -199,79 +231,36 @@ export default function BusinessesMgmtPage() {
     websiteId,
   ]);
 
-  // Only append search, status, hasProductFilter to URL
+  // ─── URL Sync: Only navigate if params actually changed ─────────
   useEffect(() => {
-    const urlParams: Record<string, any> = {};
+    const currentParams = new URLSearchParams(window.location.search);
+    const newParams = new URLSearchParams();
 
-    if (queryParams.search) urlParams.search = queryParams.search;
-    if (queryParams.status) urlParams.status = queryParams.status;
-    if (queryParams.hasProductFilter !== undefined)
-      urlParams.hasProductFilter = queryParams.hasProductFilter;
+    if (queryParams.search) newParams.set("search", queryParams.search);
+    if (queryParams.status) newParams.set("status", queryParams.status);
+    if (queryParams.hasProductFilter !== undefined) {
+      newParams.set("hasProductFilter", String(queryParams.hasProductFilter));
+    }
 
-    const searchParams = new URLSearchParams(urlParams).toString();
-    navigate(`?${searchParams}`, { replace: true });
-  }, [queryParams, navigate]);
+    // Only navigate if the stringified params differ
+    if (currentParams.toString() !== newParams.toString()) {
+      navigate(`?${newParams.toString()}`, { replace: true });
+    }
+  }, [
+    queryParams.search,
+    queryParams.status,
+    queryParams.hasProductFilter,
+    navigate,
+  ]);
 
+  // ─── API Queries ─────────
   const statsQueryParams = useMemo(() => {
     const { page, limit, locale, ...rest } = queryParams;
     return rest;
   }, [queryParams]);
 
-  // Then call your query
   const { data: businessStatsData, isLoading: isStatsLoading } =
     useGetBusinessStatsQuery(statsQueryParams);
-
-  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
-    useBulkBusinessesUpdateMutation();
-
-  const clearFilter = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem("businessSearchTerm");
-
-    setFilters({ status: "all", hasProductFilter: "all" });
-    setSearchTerm("");
-    setPage(1);
-  };
-
-  // Column visibility - load from localStorage or use defaults
-  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(
-    () => {
-      try {
-        const saved = localStorage.getItem("businessesTableColumns");
-        if (saved) {
-          return { ...defaultColumns, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error("Failed to load column settings:", e);
-      }
-      return defaultColumns;
-    },
-  );
-
-  // Close column settings when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        columnSettingsRef.current &&
-        !columnSettingsRef.current.contains(event.target as Node)
-      ) {
-        setShowColumnSettings(false);
-      }
-    };
-
-    if (showColumnSettings) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showColumnSettings]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
-
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
   const {
     data: businessData,
@@ -280,53 +269,72 @@ export default function BusinessesMgmtPage() {
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
 
-  const businesses = businessData?.data ?? [];
+  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
+    useBulkBusinessesUpdateMutation();
+
   const hasMore = businessData?.meta?.hasNextPage;
   const totalData = businessData?.totalData;
 
+  // ─── Infinite Scroll: Merge new data safely ─────────
   useEffect(() => {
-    if (page === 1) {
-      setCombinedBusinesses(businesses);
-    } else {
-      setCombinedBusinesses((prev) => {
-        // Prevent duplicates (important!)
-        const existingIds = new Set(prev.map((b) => b._id));
-        const newItems = businesses.filter((b: any) => !existingIds.has(b._id));
-
-        return [...prev, ...newItems];
-      });
+    if (!businessData?.data?.length) {
+      setCombinedBusinesses([]);
+      return;
     }
-  }, [businesses, page]);
 
-  const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
-    setPage((prev: any) => {
-      return prev + 1;
+    setCombinedBusinesses((prev) => {
+      if (page === 1) return businessData?.data;
+      const existingIds = new Set(prev.map((b) => b._id));
+      const newItems = businessData?.data?.filter(
+        (b: any) => !existingIds.has(b._id),
+      );
+      return newItems.length ? [...prev, ...newItems] : prev;
     });
-  };
+  }, [businessData, page]);
 
-  // Reset to default columns
-  const resetToDefault = () => {
+  const fetchNextPage = useCallback(() => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => prev + 1);
+  }, [hasMore, isFetching]);
+
+  // ─── Handlers (memoized to prevent re-renders) ─────────
+  const handleBusinessClick = useCallback(
+    (business: any) => {
+      navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const clearFilter = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SEARCH_STORAGE_KEY);
+    setFilters({ status: "all", hasProductFilter: "all" });
+    setSearchTerm("");
+    setPage(1);
+  }, []);
+
+  const resetToDefault = useCallback(() => {
     setColumnVisibility(defaultColumns);
-  };
-  const promptBulkDelete = () => {
-    if (selectedBusinesses.size === 0) return;
-    setIsBulkDelete(true); // mark bulk delete mode
-    setIsConfirmOpen(true); // open confirmation dialog
-  };
-  const handleBulkDelete = async () => {
+  }, []);
+
+  const promptBulkDelete = useCallback(() => {
     if (!selectedBusinesses.size) return;
+    setIsBulkDelete(true);
     setIsConfirmOpen(true);
+  }, [selectedBusinesses.size]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (!selectedBusinesses.size) return;
     const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
         businessesId: Array.from(selectedBusinesses),
         isDeleted: true,
       });
-
       if (results?.data) {
-        const message = tc("business_deleted_success");
-        toast.success(message, { id: toastId });
+        toast.success(tc("business_deleted_success"), { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
@@ -334,280 +342,151 @@ export default function BusinessesMgmtPage() {
       toast.error(error?.message || tc("business_delete_failed"), {
         id: toastId,
       });
+    } finally {
+      setIsConfirmOpen(false);
+      setIsBulkDelete(false);
     }
-  };
+  }, [selectedBusinesses, bulkBusinessesUpdate, refetch, tc]);
 
-  const handleBulkStatusChange = async (status: TStatus) => {
-    if (!selectedBusinesses.size) return;
-    const toastId = toast.loading(tc("business_status_change_loading"));
-
-    try {
-      const results = await bulkBusinessesUpdate({
-        businessesId: Array.from(selectedBusinesses),
-        status: status?.toLocaleUpperCase(),
-      });
-
-      if (results?.data) {
-        const message = tc("business_status_update_success");
-        toast.success(message, { id: toastId });
-        setSelectedBusinesses(new Set());
-        refetch();
+  const handleBulkStatusChange = useCallback(
+    async (status: TStatus) => {
+      if (!selectedBusinesses.size) return;
+      const toastId = toast.loading(tc("business_status_change_loading"));
+      try {
+        const results = await bulkBusinessesUpdate({
+          businessesId: Array.from(selectedBusinesses),
+          status: status?.toLocaleUpperCase(),
+        });
+        if (results?.data) {
+          toast.success(tc("business_status_update_success"), { id: toastId });
+          setSelectedBusinesses(new Set());
+          refetch();
+        }
+      } catch (error: any) {
+        toast.error(error?.message || tc("business_status_update_failed"), {
+          id: toastId,
+        });
       }
-    } catch (error: any) {
-      toast.error(error?.message || tc("business_status_update_failed"), {
-        id: toastId,
-      });
-    }
-  };
+    },
+    [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
+  );
 
-  const handleExport = () => {
-    // 1. Determine which businesses to export
+  // ─── Export Logic (extracted for clarity) ─────────
+  const handleExport = useCallback(() => {
     const businessesToExport =
       selectedBusinesses.size > 0
-        ? (businessData?.data?.filter((business: any) =>
-            selectedBusinesses.has(business._id),
+        ? (businessData?.data?.filter((b: any) =>
+            selectedBusinesses.has(b._id),
           ) ?? [])
         : (businessData?.data ?? []);
 
-    if (businessesToExport.length === 0) {
-      alert(t("noBusinessesToExport") || "No businesses to export");
+    if (!businessesToExport.length) {
+      toast.info(t("noBusinessesToExport") || "No businesses to export");
       return;
     }
 
-    // 2. CSV escaping utility
     const escapeCSV = (value: any): string => {
-      if (value === null || value === undefined) return "";
-      const stringValue = String(value);
-      if (
-        stringValue.includes(",") ||
-        stringValue.includes('"') ||
-        stringValue.includes("\n")
-      ) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    // 3. Build headers & corresponding keys based on visible columns
-    const headers: string[] = [];
-    const columnKeys: string[] = [];
+    const columns = Object.entries(columnVisibility)
+      .filter(([_, visible]) => visible)
+      .map(([key]) => key as keyof ColumnVisibility);
 
-    if (visibleColumns.impact) {
-      headers.push(t("impactScore"));
-      columnKeys.push("impact");
-    }
-    if (visibleColumns.name) {
-      headers.push(t("businessName"));
-      columnKeys.push("name"); // actual field is .name
-    }
-    if (visibleColumns.shortDescription) {
-      headers.push(t("shortDescription"));
-      columnKeys.push("shortDescription");
-    }
-    if (visibleColumns.contactDetails) {
-      headers.push(t("contactPerson"));
-      columnKeys.push("contactName");
-    }
-    if (visibleColumns.busiEmail) {
-      headers.push(t("businessEmail"));
-      columnKeys.push("busiEmail"); // field name in data
-    }
-    if (visibleColumns.phoneNumber) {
-      headers.push(t("phoneNumber"));
-      columnKeys.push("phoneNumber");
-    }
-    if (visibleColumns.productCount) {
-      headers.push(t("productsCount"));
-      columnKeys.push("productCount"); // field name in data
-    }
-    if (visibleColumns.status) {
-      headers.push(t("status"));
-      columnKeys.push("status");
-    }
-    if (visibleColumns.lifetimeSales) {
-      headers.push(t("lifetimeSales"));
-      columnKeys.push("lifetimeSales");
-    }
-    if (visibleColumns.tripCount) {
-      headers.push(t("tripCount"));
-      columnKeys.push("tripCount");
-    }
-    if (visibleColumns.associatedWebsites) {
-      headers.push(t("websiteUrl"));
-      columnKeys.push("associatedWebsites");
-    }
-    if (visibleColumns.contactPhone) {
-      headers.push(t("contactPhone"));
-      columnKeys.push("contactPhone");
-    }
-    if (visibleColumns.categories) {
-      headers.push(t("categories"));
-      columnKeys.push("categories");
-    }
-
-    // 4. Build CSV content
-    let csvContent = headers.map(escapeCSV).join(",") + "\n";
-
-    businessesToExport.forEach((business: any) => {
-      const row: string[] = [];
-
-      columnKeys.forEach((key) => {
-        let value: any;
-
-        switch (key) {
-          case "impactScore":
-            value = business.impact ?? 0;
-            break;
-          case "name":
-            value =
-              business.name || business.slug || t("unnamed_business") || "-";
-            break;
-          case "busiEmail":
-            value = business.busiEmail || "-";
-            break;
-          case "phoneNumber":
-            value = business.phoneNumber || "-";
-            break;
-          case "productCount":
-            value = business.productCount ?? 0;
-            break;
-          case "status":
-            value = business.status || "unknown";
-            break;
-          case "tripCount":
-            value = business.tripCount ?? getTripCount(business); // fallback to your helper
-            break;
-          case "websiteUrl": {
-            // Pick first valid URL if array
-            const sites = business.associatedWebsites || [];
-            value = sites?.find((s: any) => s.url)?.url || "-";
-            break;
+    const headers = columns.map((key) => t(key));
+    const csvRows = businessesToExport.map((business: any) =>
+      columns
+        .map((key) => {
+          let value: any = business[key];
+          if (key === "associatedWebsites") {
+            value = business.associatedWebsites?.[0]?.url || "-";
+          } else if (key === "categories" && Array.isArray(value)) {
+            value = value.join(", ");
+          } else if (key === "tripCount" && value == null) {
+            value = Math.floor((business.productCount * business.impact) / 10);
           }
-          case "categories": {
-            value = Array.isArray(business.categories)
-              ? business.categories.join(", ")
-              : "-";
-            break;
-          }
-          case "lifetimeSales":
-          case "shortDescription":
-          case "contactName":
-          case "contactPhone":
-            // Add these fields when they exist in your real data
-            value = business[key] ?? "-";
-            break;
-          default:
-            value = "-";
-        }
-
-        row.push(escapeCSV(value));
-      });
-
-      csvContent += row.join(",") + "\n";
-    });
-
-    // 5. Trigger download
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 10);
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", `businesses_export_${timestamp}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  // Mock calculation based on products count and impact score
-  const getTripCount = (business: any): number => {
-    return Math.floor((business.productCount * business.impact) / 10);
-  };
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h3
-            className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
-          >
-            {t("error_loading_businesses")}
-          </h3>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
-          >
-            {t("retry") || "Retry"}
-          </button>
-        </div>
-      </div>
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
     );
-  }
 
-  const businessStats = [
-    {
-      id: 1,
-      title: t("total_businesses") || "Total Businesses",
-      value: businessStatsData?.totalBusinesses,
-      label: t("registered") || "Registered",
-      icon: <Map className="w-5 h-5 text-purple-600" />,
-    },
-    {
-      id: 2,
-      title: t("active_businesses") || "Active Businesses",
-      value: businessStatsData?.activeBusinesses,
-      label: t("approved") || "Approved",
-      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-    },
-    {
-      id: 3,
-      title: t("total_products") || "Total Products",
-      value: businessStatsData?.totalProducts,
-      label: t("listed") || "Listed",
-      icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
-    },
-    {
-      id: 4,
-      title: t("avg_impact") || "Avg. Impact",
-      value: businessStatsData?.averageImpactScore,
-      label: t("score") || "Score",
-      icon: <Theater className="w-5 h-5 text-orange-600" />,
-    },
-    {
-      id: 5,
-      title: t("pending_approval") || "Pending Approval",
-      value: businessStatsData?.pendingApproval,
-      label: t("awaiting") || "Awaiting",
-      icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
-    },
-    {
-      id: 6,
-      title: t("avg_completion") || "Avg. Completion",
-      value: businessStatsData?.averageCompletion,
-      label: t("profile_data") || "Profile Data",
-      icon: <Landmark className="w-5 h-5 text-teal-600" />,
-    },
-  ];
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `businesses_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [selectedBusinesses, businessData, columnVisibility, t]);
 
+  // ─── Stats Cards ─────────
+  const businessStats = useMemo(
+    () => [
+      {
+        id: 1,
+        title: t("total_businesses"),
+        value: businessStatsData?.totalBusinesses,
+        label: t("registered"),
+        icon: <Map className="w-5 h-5 text-purple-600" />,
+      },
+      {
+        id: 2,
+        title: t("active_businesses"),
+        value: businessStatsData?.activeBusinesses,
+        label: t("approved"),
+        icon: <CheckCircle className="w-5 h-5 text-green-600" />,
+      },
+      {
+        id: 3,
+        title: t("total_products"),
+        value: businessStatsData?.totalProducts,
+        label: t("listed"),
+        icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
+      },
+      {
+        id: 4,
+        title: t("avg_impact"),
+        value: businessStatsData?.averageImpactScore,
+        label: t("score"),
+        icon: <Theater className="w-5 h-5 text-orange-600" />,
+      },
+      {
+        id: 5,
+        title: t("pending_approval"),
+        value: businessStatsData?.pendingApproval,
+        label: t("awaiting"),
+        icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
+      },
+      {
+        id: 6,
+        title: t("avg_completion"),
+        value: businessStatsData?.averageCompletion,
+        label: t("profile_data"),
+        icon: <Landmark className="w-5 h-5 text-teal-600" />,
+      },
+    ],
+    [businessStatsData, t],
+  );
+
+  // ─── Render ─────────
   return (
     <>
-      <div className="flex flex-col  ">
+      <div className="flex flex-col">
         {/* Sticky Header */}
         <div
-          className={`border-b ${
-            isDark ? " border-gray-800" : "bg-transparent border-gray-200"
-          } z-10`}
+          className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
         >
           <PageHeader
             title={t("businesses_management")}
             description={t("businesses_management_desc")}
             btnLabel={t("add_business")}
             onClick={() => setIsCreateModalOpen(true)}
-            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
             totalCount={totalData ?? 0}
           />
           <PageStats
@@ -616,21 +495,19 @@ export default function BusinessesMgmtPage() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
           />
 
-          {/* Search and Filters */}
+          {/* Search & Actions */}
           <div className="py-4 flex flex-col lg:flex-row gap-3">
-            {/* Search */}
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey="businessSearchTerm"
+                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
             <FilterButton value={showFilters} onChange={setShowFilters} />
 
-            {/* Column Settings */}
             {viewMode === "list" && (
               <div className="relative" ref={columnSettingsRef}>
                 <button
@@ -650,10 +527,13 @@ export default function BusinessesMgmtPage() {
                   )}
                 </button>
 
-                {/* Column Settings Dropdown */}
                 {showColumnSettings && (
                   <div
-                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-96 overflow-y-auto border z-50 ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
                   >
                     <div
                       className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
@@ -662,101 +542,51 @@ export default function BusinessesMgmtPage() {
                         <h3
                           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
                         >
-                          {t("column_settings") || "Column Settings"}
+                          {t("column_settings")}
                         </h3>
                         <button
                           onClick={resetToDefault}
-                          className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+                          className="text-xs text-teal-600 hover:text-teal-700"
                         >
-                          {t("reset_to_default") || "Reset to Default"}
+                          {t("reset_to_default")}
                         </button>
                       </div>
                       <p
                         className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >
-                        {t("select_columns_to_display") ||
-                          "Select columns to display"}
+                        {t("select_columns_to_display")}
                       </p>
                     </div>
-                    <div className="p-3 max-h-96 overflow-y-auto">
-                      {/* Default Columns */}
-                      {Object.entries(columnVisibility)
-                        .filter(
-                          ([key]) =>
-                            columnDefinitions.find((col) => col.key === key)
-                              ?.isDefault,
-                        )
-                        .map(([key, visible]) => (
-                          <label
-                            key={key}
-                            className={`flex items-center gap-2 p-2 rounded cursor-pointer  dark:hover:bg-gray-700 ${
-                              isRTL ? "flex-row-reverse justify-end" : ""
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={visible}
-                              onChange={(e) =>
-                                setColumnVisibility((prev) => ({
-                                  ...prev,
-                                  [key]: e.target.checked,
-                                }))
-                              }
-                              className="rounded"
-                            />
-                            <span className={`text-sm ${textSecondary}`}>
-                              {t(key as keyof typeof t)}
-                            </span>
-                          </label>
-                        ))}
-
-                      {/* Divider */}
-                      {columnDefinitions.some((col) => !col.isDefault) && (
-                        <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
-                      )}
-
-                      {/* Non-default Columns */}
-                      <p
-                        className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        Optional Columns
-                      </p>
-                      {Object.entries(columnVisibility)
-                        .filter(
-                          ([key]) =>
-                            !columnDefinitions.find((col) => col.key === key)
-                              ?.isDefault,
-                        )
-                        .map(([key, visible]) => (
-                          <label
-                            key={key}
-                            className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                              isRTL ? "flex-row-reverse justify-end" : ""
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={visible}
-                              onChange={(e) =>
-                                setColumnVisibility((prev) => ({
-                                  ...prev,
-                                  [key]: e.target.checked,
-                                }))
-                              }
-                              className="rounded"
-                            />
-                            <span className={`text-sm ${textSecondary}`}>
-                              {t(key as keyof typeof t)}
-                            </span>
-                          </label>
-                        ))}
+                    <div className="p-3 space-y-1">
+                      {columnDefinitions.map(({ key }) => (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 p-2 rounded cursor-pointer ${
+                            isRTL ? "flex-row-reverse" : ""
+                          } ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={columnVisibility[key]}
+                            onChange={(e) =>
+                              setColumnVisibility((prev) => ({
+                                ...prev,
+                                [key]: e.target.checked,
+                              }))
+                            }
+                            className="rounded"
+                          />
+                          <span className={`text-sm ${textSecondary}`}>
+                            {t(key)}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Export */}
             <button
               onClick={handleExport}
               className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
@@ -770,7 +600,16 @@ export default function BusinessesMgmtPage() {
             </button>
 
             <ViewModeToggle
-              onChange={setViewMode}
+              onChange={(mode) => {
+                setViewMode(mode);
+                localStorage.setItem(
+                  STORAGE_KEY,
+                  JSON.stringify({
+                    ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
+                    viewMode: mode,
+                  }),
+                );
+              }}
               value={viewMode}
               tableName="businessViewMode"
             />
@@ -779,17 +618,10 @@ export default function BusinessesMgmtPage() {
           {/* Filters Panel */}
           {(showFilters || hasSavedFilters) && (
             <div
-              className={` border-t py-2 ${
-                isDark
-                  ? "border-gray-800 bg-gray-900/30"
-                  : "border-gray-200 bg-gray-50"
-              }`}
+              className={`border-t py-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
             >
-              {/* Active Filters Title */}
-              <div className="flex flex-wrap items-start gap-4 ml-4  w-full">
+              <div className="flex flex-wrap items-start gap-4 ml-4 w-full">
                 <FilterByStatus filters={filters} setFilters={setFilters} />
-
-                {/* Has Products Filter */}
                 <div className="flex flex-col min-w-45">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -801,7 +633,7 @@ export default function BusinessesMgmtPage() {
                     onChange={(e) =>
                       setFilters({
                         ...filters,
-                        hasProductFilter: e.target.value,
+                        hasProductFilter: e.target.value as any,
                       })
                     }
                     className={`w-full px-3 py-2 rounded-lg border ${
@@ -815,56 +647,38 @@ export default function BusinessesMgmtPage() {
                     <option value="no">{t("no")}</option>
                   </select>
                 </div>
-
-                {/* Active Filters Label + Chips */}
-                {(filters?.status !== "all" ||
-                  filters?.hasProductFilter !== "all") && (
+                {hasSavedFilters && (
                   <div className="flex flex-col min-w-45">
-                    {/* Label inline with other filter labels */}
                     <label
                       className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                     >
                       {t("active_filters")}
                     </label>
                     <div className="flex gap-2 items-center">
-                      {" "}
-                      {/* Chips row */}
-                      <div className="flex flex-wrap gap-2 mb-2 mt-2">
-                        {Object.entries(filters).map(([key, value]) => {
-                          if (!value || value === "all") return null;
-
-                          let displayValue = value;
-                          if (key === "status") {
-                            displayValue = t(value.toLowerCase()) || value;
-                          } else if (key === "hasProductFilter") {
-                            displayValue = value === "yes" ? t("yes") : t("no");
-                          }
-
-                          return (
-                            <FilterChips
-                              key={key}
-                              label={displayValue}
-                              onRemove={() => {
-                                if (key === "status") {
-                                  setFilters((prev) => ({
-                                    ...prev,
-                                    status: "all",
-                                  }));
-                                } else {
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(filters).map(
+                          ([key, value]) =>
+                            value !== "all" && (
+                              <FilterChips
+                                key={key}
+                                label={t(
+                                  value === "yes" || value === "no"
+                                    ? value
+                                    : value.toLowerCase(),
+                                )}
+                                onRemove={() =>
                                   setFilters((prev) => ({
                                     ...prev,
                                     [key]: "all",
-                                  }));
+                                  }))
                                 }
-                              }}
-                            />
-                          );
-                        })}
+                              />
+                            ),
+                        )}
                       </div>
-                      {/* Clear All Button */}
                       <button
                         onClick={clearFilter}
-                        className="px-3 py-1 mb-2 mt-2 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors whitespace-nowrap"
+                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                       >
                         {t("clear_all")}
                       </button>
@@ -876,14 +690,16 @@ export default function BusinessesMgmtPage() {
           )}
 
           <BulkActionBar
-            selectedItemCount={selectedBusinesses.size || 0}
+            selectedItemCount={selectedBusinesses.size}
             handleBulkStatusChange={handleBulkStatusChange}
             handleBulkDelete={promptBulkDelete}
             hancleClearSelection={() => setSelectedBusinesses(new Set())}
           />
         </div>
+
+        {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-2">
-          {combinedBusinesses?.length === 0 && !(isFetching || isLoading) ? (
+          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
@@ -892,29 +708,30 @@ export default function BusinessesMgmtPage() {
           ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
-              hasMore={hasMore}
+              hasMore={!!hasMore}
               next={fetchNextPage}
               isLoading={isLoading || isFetching}
               columnVisibility={columnVisibility}
-              businesses={combinedBusinesses || []}
+              businesses={combinedBusinesses}
               onBusinessClick={handleBusinessClick}
               selectedBusinesses={selectedBusinesses}
               setSelectedBusinesses={setSelectedBusinesses}
             />
           ) : (
-            <div className="overflow-y-auto ">
-              <BusinessGridView
-                t={t}
-                refetch={refetch}
-                hasMore={hasMore}
-                next={fetchNextPage}
-                data={combinedBusinesses || []}
-                onRowClick={handleBusinessClick}
-                isLoading={isLoading || isFetching}
-              />
-            </div>
+            <BusinessGridView
+              refetch={refetch}
+              hasMore={!!hasMore}
+              next={fetchNextPage}
+              data={combinedBusinesses}
+              onRowClick={handleBusinessClick}
+              isLoading={isLoading || isFetching}
+              selectedItems={selectedBusinesses}
+              setSelectedItems={setSelectedBusinesses}
+            />
           )}
         </div>
+
+        {/* Modals */}
         <ConfirmDialog
           open={isConfirmOpen}
           title={t("delete_business")}
@@ -924,29 +741,22 @@ export default function BusinessesMgmtPage() {
           variant="danger"
           onCancel={() => {
             setIsConfirmOpen(false);
-            setItemToDelete(null);
+            setIsBulkDelete(false);
           }}
           onConfirm={() => {
-            setIsConfirmOpen(false);
-
             if (isBulkDelete) {
               handleBulkDelete();
-              setIsBulkDelete(false);
-              setIsConfirmOpen(false);
-            } else {
-              if (!itemToDelete) return;
-              setItemToDelete(null);
             }
+            setIsConfirmOpen(false);
           }}
         />
+        {isCreateModalOpen && (
+          <CreateBusinessWizard
+            onClose={() => setIsCreateModalOpen(false)}
+            refetch={refetch}
+          />
+        )}
       </div>
-
-      {isCreateModalOpen && (
-        <CreateBusinessWizard
-          onClose={() => setIsCreateModalOpen(false)}
-          refetch={refetch}
-        />
-      )}
     </>
   );
 }

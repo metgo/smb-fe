@@ -131,3 +131,22 @@ export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
       return "";
   }
 };
+
+export function getLngWiseStr(
+  lng: Language,
+  en?: string,
+  he?: string,
+  ar?: string,
+) {
+  switch (lng) {
+    case "he":
+      return he || en || ar || "-";
+
+    case "ar":
+      return ar || en || he || "-";
+
+    case "en":
+    default:
+      return en || he || ar || "-";
+  }
+}
