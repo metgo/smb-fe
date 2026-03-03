@@ -18,7 +18,7 @@ const TOPIC_TYPE = "TOPIC_ITEM";
 
 interface ContentComposerProps {
   templateContents: IContentTemplate[];
-  setTemplateContent: (value: IContentTemplate[]) => void;
+  setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ interface TopicBlockProps {
   index: number;
   isDark: boolean;
   templateContents: IContentTemplate[];
-  setTemplateContent: (value: IContentTemplate[]) => void;
+  setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
   onDelete: (index: number) => void;
   moveItem: (from: number, to: number) => void;
 }

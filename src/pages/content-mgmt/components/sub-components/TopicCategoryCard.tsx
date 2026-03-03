@@ -19,6 +19,7 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -40,7 +41,7 @@ const TopicCategoryCard = ({
   setTemplateContent,
 }: Props) => {
   const { isDark } = useThemeClasses();
-
+  const { t } = useTranslation("content");
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(group.category);
@@ -57,7 +58,7 @@ const TopicCategoryCard = ({
       // Iterate over all dragged items (works for both single and multi)
       for (const draggedItem of item.items) {
         if (existingIds.has(draggedItem._id)) {
-          toast.info("Already exist in this category");
+          toast.info(t("businesses_already_in_category"));
           continue;
         } // skip duplicates
 
@@ -159,6 +160,12 @@ const TopicCategoryCard = ({
             size="sm"
             variant="ghost"
             onClick={() => setExpanded(!expanded)}
+            className={clsx(
+              "p-1 rounded",
+              isDark
+                ? "text-gray-100 hover:bg-gray-700"
+                : "text-gray-800 hover:bg-gray-200",
+            )}
           >
             <ChevronDown
               className={clsx(
@@ -214,14 +221,25 @@ const TopicCategoryCard = ({
             variant="ghost"
             onClick={() => setEditing(true)}
             title="Rename"
+            className={clsx(
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-500 hover:bg-gray-200",
+            )}
           >
             <Edit2 className="w-4 h-4" />
           </Button>
+
           <Button
             size="sm"
             variant="ghost"
             onClick={() => toggleCategoryVisibility(topicIndex, categoryIndex)}
             title="Visibility"
+            className={clsx(
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-500 hover:bg-gray-200",
+            )}
           >
             {group.isHideCategory ? (
               <EyeClosed className="w-4 h-4 opacity-50" />
@@ -234,13 +252,18 @@ const TopicCategoryCard = ({
             variant="ghost"
             onClick={togglePrimary}
             title="Set primary"
+            className={clsx(
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-500 hover:bg-gray-200",
+            )}
           >
             <Star
               className={clsx(
                 "w-4 h-4",
                 group.isPrimary
                   ? "text-yellow-400 fill-yellow-400"
-                  : "text-gray-400",
+                  : "text-gray-400 hover:bg-gray-200",
               )}
             />
           </Button>
@@ -249,6 +272,11 @@ const TopicCategoryCard = ({
             variant="ghost"
             onClick={deleteCategory}
             title="Delete"
+            className={clsx(
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-500 hover:bg-gray-200",
+            )}
           >
             <Trash2 className="w-4 h-4 text-red-500" />
           </Button>

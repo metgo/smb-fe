@@ -57,6 +57,7 @@ const ContentConfigHeader = ({
               category: newCategoryName,
               isPrimary: false,
               contents: [],
+              isHideCategory: false,
             },
           ],
         };
@@ -197,7 +198,14 @@ const ContentConfigHeader = ({
       {/* Header */}
       {selectedTopicForNewCategory && (
         <>
-          <div className="font-semibold text-gray-800">{t("feed_header")}</div>
+          <div
+            className={clsx(
+              "font-semibold",
+              isDark ? "text-gray-300" : "text-gray-800",
+            )}
+          >
+            {t("feed_header")}
+          </div>{" "}
           <CKEditorWrapper value={newHeader} onChange={setNewHeader} />
         </>
       )}

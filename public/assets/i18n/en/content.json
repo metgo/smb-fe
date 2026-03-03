@@ -51,5 +51,7 @@
   "has_products": "Has Products",
   "yes": "Yes",
   "no": "No",
-  "primary_category": "Primary Category"
+  "primary_category": "Primary Category",
+  "active_filters": "Active Filters",
+  "clear_all": "Clear All"
 }

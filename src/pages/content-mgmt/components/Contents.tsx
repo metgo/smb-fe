@@ -22,7 +22,7 @@ interface ContentsProps {
   combinedBusinesses: any[];
   hasMore: boolean;
   filters: Filters;
-  setFilters: (v: Filters) => void;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   fetchNextPage: () => void;
   clearFilter: () => void;
   setViewMode: (v: TViewMode) => void;
@@ -250,7 +250,7 @@ const Contents = ({
                             key={key}
                             label={displayValue}
                             onRemove={() =>
-                              setFilters((prev) => ({
+                              setFilters((prev: Filters) => ({
                                 ...prev,
                                 [key as keyof Filters]: "all",
                               }))

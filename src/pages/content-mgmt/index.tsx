@@ -294,7 +294,7 @@ export default function ContentMgmtPage() {
   const handlePublish = () => {
     console.log("pulished");
   };
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishing, _setIsPublishing] = useState(false);
 
   return (
     <DndProvider backend={HTML5Backend}>
