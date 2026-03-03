@@ -105,7 +105,6 @@
   "back_to_businesses": "Back to Businesses",
   "business": "Business",
   "change_status": "Change Status",
-  "completion_percentage": "Completion",
 
   "brief_description": "Brief Description",
 
@@ -170,6 +169,7 @@
   "lifetimeSales": "Lifetime Sales",
   "business_owner": "Business Owner",
 
+  "assign_owner": "Assign Owner",
   "no_owner_assigned": "No owner assigned",
   "tripCount": "Trip Count",
   "websiteUrl": "Website URL",
