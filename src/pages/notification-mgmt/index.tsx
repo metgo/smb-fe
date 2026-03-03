@@ -5,16 +5,14 @@ import {
   AlertCircle,
   AlertTriangle,
   XCircle,
-  Search,
-  Filter,
-  X,
   CheckCheck,
+  X,
 } from "lucide-react";
 import { useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
-import { PageHeader } from "@/components/shared";
 import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Notification {
   id: string;
@@ -37,11 +35,11 @@ interface NotificationsMgmtPageProps {
 export default function NotificationsMgmtPage({
   onNavigate,
 }: NotificationsMgmtPageProps) {
-  const { t, i18n } = useTranslation("notifications");
+  const { t } = useTranslation("notifications");
   const SEARCH_STORAGE_KEY = "notificationSearchTerm";
-
+  const { isDark } = useThemeClasses();
   const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const language = i18n.language;
+  // const language = i18n.language;
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [readFilter, setReadFilter] = useState<"all" | "read" | "unread">(
@@ -142,16 +140,16 @@ export default function NotificationsMgmtPage({
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return t.justNow || "Just now";
+      return t("just_now") || "Just now";
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} ${t.minutesAgo || "minutes ago"}`;
+      return `${minutes} ${t("minutesAgo") || "minutes ago"}`;
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} ${t.hoursAgo || "hours ago"}`;
+      return `${hours} ${t("hoursAgo") || "hours ago"}`;
     } else if (diffInSeconds < 604800) {
       const days = Math.floor(diffInSeconds / 86400);
-      return `${days} ${t.daysAgo || "days ago"}`;
+      return `${days} ${t("daysAgo") || "days ago"}`;
     } else {
       return date.toLocaleDateString();
     }
@@ -200,14 +198,16 @@ export default function NotificationsMgmtPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors flex flex-col">
+    <div
+      className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"}  dark:bg-gray-950 transition-colors flex flex-col`}
+    >
       <main className="h-[calc(100vh-64px)] flex flex-col">
         {/* Fixed Header */}
-        <div className="flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="max-w-[1600px] mx-auto">
+        <div className="shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="max-w-400 mx-auto">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl mb-2 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl mb-2 bg-linear-to-r from-blue-500 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                   {t("notifications")}
                 </h1>
                 <p className={textSecondary}>{t("manage_notifications")}</p>
@@ -216,7 +216,7 @@ export default function NotificationsMgmtPage({
               {unreadNotifications > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-linear-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
                 >
                   <CheckCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">{t("mark_all_read")}</span>
@@ -227,8 +227,8 @@ export default function NotificationsMgmtPage({
         </div>
 
         {/* Stats & Toolbar */}
-        <div className="flex-shrink-0 p-6 pb-0">
-          <div className="max-w-[1600px] mx-auto">
+        <div className="shrink-0 p-6 pb-0">
+          <div className="max-w-400 mx-auto">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {/* Total */}
@@ -364,7 +364,7 @@ export default function NotificationsMgmtPage({
 
         {/* Scrollable Notifications List */}
         <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <div className="max-w-[1600px] mx-auto">
+          <div className="max-w-400 mx-auto">
             {filteredNotifications.length === 0 ? (
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
@@ -391,6 +391,68 @@ export default function NotificationsMgmtPage({
               <div
                 className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden`}
               >
+                {selectedNotifications.size > 0 && (
+                  <div
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl mb-3 
+                  ${bgTertiary} border ${borderColor}`}
+                  >
+                    {/* Left Side */}
+                    <div className="flex items-center gap-2">
+                      {/* Double Check Icon */}
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                        <svg
+                          className="w-4 h-4 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 13l4 4L23 7"
+                          />
+                        </svg>
+                      </div>
+
+                      <span className={`text-sm font-medium ${textPrimary}`}>
+                        {selectedNotifications.size} selected
+                      </span>
+                    </div>
+
+                    {/* Right Side Buttons */}
+                    <div className="flex items-center gap-2">
+                      {/* Mark as Read */}
+                      <button
+                        onClick={handleBulkMarkAsRead}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                      >
+                        Mark as read
+                      </button>
+
+                      {/* Delete */}
+                      <button
+                        onClick={handleBulkDelete}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+
+                      {/* Close / Clear Selection */}
+                      <button
+                        onClick={() => setSelectedNotifications(new Set())}
+                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                      >
+                        <X className="h-6 w-6" />
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div
                   className={`${bgTertiary} border-b ${borderColor} px-4 py-3 flex items-center gap-3`}
                 >
@@ -432,7 +494,7 @@ export default function NotificationsMgmtPage({
                         className="rounded mt-1"
                       />{" "}
                       {/* Icon */}{" "}
-                      <div className="flex-shrink-0 mt-0.5">
+                      <div className="shrink-0 mt-0.5">
                         {" "}
                         {getNotificationIcon(notification.type)}{" "}
                       </div>{" "}
@@ -449,7 +511,7 @@ export default function NotificationsMgmtPage({
                             {notification.title}{" "}
                           </h4>{" "}
                           {!notification.read && (
-                            <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
+                            <span className="shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
                           )}{" "}
                         </div>{" "}
                         <p className={`text-sm ${textSecondary} mb-1`}>
