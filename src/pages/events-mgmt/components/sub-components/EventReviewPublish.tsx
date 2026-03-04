@@ -1,10 +1,18 @@
 import React from "react";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
-import { CheckCircle } from "lucide-react";
+import {
+  CopyCheck,
+  FileText,
+  ImageIcon,
+  MapPin,
+  Pencil,
+  TicketCheck,
+} from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
 import { extractCenterAddressText } from "@/helpers";
+import clsx from "clsx";
+import { ImageWithFallback } from "@/components/shared";
 
 interface CustomQuestion {
   id: string;
@@ -36,7 +44,15 @@ interface EventReviewPublishProps {
 
   // Tickets (Step 4)
   tickets: TicketData[];
+  images?: any;
 }
+const STEPS = {
+  BASIC_INFO: 1,
+  ADDRESS: 2,
+  REGISTRATION: 3,
+  TICKET: 4,
+  IMAGES: 6,
+};
 
 const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   setCurrentStep,
@@ -54,10 +70,11 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   capacity,
   customQuestions,
   tickets,
+  images,
 }) => {
   const { t, i18n } = useTranslation("events");
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
 
   const language = i18n.language as Language;
 
@@ -66,156 +83,164 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
     fallback: string = "not_set",
   ) => value || t(fallback);
 
-  return (
-    <div className="space-y-10 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="text-center">
-        <CheckCircle className="w-20 h-20 mx-auto mb-5 text-teal-500" />
-        <h2 className={`text-3xl font-bold mb-3 ${textPrimary}`}>
-          {t("review_your_event")}
-        </h2>
-        <p className={`text-lg ${textTertiary}`}>{t("review_all_details")}</p>
+  //helpers
+  const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
+
+  const sectionHeader = (
+    icon: React.ReactNode,
+    label: string,
+    step: number,
+  ) => (
+    <div
+      className={clsx(
+        "flex items-center justify-between px-5 py-3 border-b",
+        isDark ? "bg-white/5" : "bg-gray-50",
+        borderColor,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span className={clsx("opacity-60", textSecondary)}>{icon}</span>
+        <span
+          className={clsx(
+            "text-sm font-semibold tracking-wide uppercase",
+            textTertiary,
+          )}
+        >
+          {label}
+        </span>
       </div>
 
-      {/* Basic Information */}
-      <div
-        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
+      <button
+        type="button"
+        onClick={() => setCurrentStep(step)}
+        className={clsx(
+          "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
+          isDark
+            ? "text-teal-400 hover:bg-teal-950/50"
+            : "text-teal-600 hover:bg-teal-50",
+        )}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-xl font-semibold ${textPrimary}`}>
-            {t("basic_information")}
-          </h3>
-          <button
-            onClick={() => setCurrentStep(1)}
-            className="text-teal-500 hover:text-teal-600 font-medium transition-colors"
-          >
-            {t("edit")}
-          </button>
-        </div>
-        <div
-          className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}
-        >
-          <p>
-            <strong>{t("name")}:</strong> {formatValue(eventName)}
-          </p>
-          <p>
-            <strong>{t("language")}:</strong> {eventLanguage.toUpperCase()}
-          </p>
-          <p>
-            <strong>{t("description")}:</strong> {formatValue(shortDescription)}
-          </p>
-          <p>
-            <strong>{t("event_status")}:</strong>{" "}
-            <span className="capitalize">{t(eventStatus)}</span>
-          </p>
+        <Pencil className="w-3 h-3" />
+        {t("edit")}
+      </button>
+    </div>
+  );
+
+  const row = (label: string, value: any) => (
+    <div className="flex flex-col gap-0.5">
+      <span className={clsx("text-xs", textTertiary)}>{label}</span>
+      <span className={clsx("text-sm font-medium line-clamp-2", textPrimary)}>
+        {value || "—"}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="space-y-10 max-w-4xl mx-auto">
+      {/* Basic Information */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <FileText className="w-4 h-4" />,
+          t("basic_information"),
+          STEPS.BASIC_INFO,
+        )}
+
+        <div className="p-5 space-y-4">
+          {/* Basic Info Rows */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {row(t("name"), formatValue(eventName))}
+            {row(t("language"), eventLanguage.toUpperCase())}
+            {row(t("description"), formatValue(shortDescription))}
+            {row(
+              t("event_status"),
+              <span className="capitalize">{t(eventStatus)}</span>,
+            )}
+          </div>
         </div>
       </div>
 
       {/* Date & Location */}
-      <div
-        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-xl font-semibold ${textPrimary}`}>
-            {t("date_location")}
-          </h3>
-          <button
-            onClick={() => setCurrentStep(2)}
-            className="text-teal-500 hover:text-teal-600 font-medium transition-colors"
-          >
-            {t("edit")}
-          </button>
-        </div>
-        <div
-          className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}
-        >
-          <p>
-            <strong>{t("format")}:</strong>{" "}
-            <span className="capitalize">{t(eventFormat)}</span>
-          </p>
-          <p>
-            <strong>{t("type")}:</strong>{" "}
-            {isMultiDay
-              ? t("multi_day_event_text")
-              : t("single_day_event_text")}
-          </p>
-          {!isMultiDay && (
-            <p>
-              <strong>{t("date")}:</strong> {formatDate(startDate, language)}
-            </p>
-          )}
-          {eventFormat !== "online" && (
-            <p>
-              <strong>{t("address")}:</strong>{" "}
-              {extractCenterAddressText(address)}
-            </p>
-          )}
-          {eventFormat !== "physical" && (
-            <p>
-              <strong>{t("online_link")}:</strong>{" "}
-              {formatValue(onlineLink, "not_applicable")}
-            </p>
-          )}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <MapPin className="w-4 h-4" />,
+          t("date_location"),
+          STEPS.ADDRESS,
+        )}
+
+        <div className="p-5 space-y-4">
+          {/* Event Format and Type */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {row(
+              t("format"),
+              <span className="capitalize">{t(eventFormat)}</span>,
+            )}
+            {row(
+              t("type"),
+              isMultiDay
+                ? t("multi_day_event_text")
+                : t("single_day_event_text"),
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {row(t("date"), !isMultiDay && formatDate(startDate, language))}
+            {row(
+              t("address"),
+              eventFormat !== "online" && extractCenterAddressText(address),
+            )}
+            {row(
+              t("online_link"),
+              eventFormat !== "physical" &&
+                formatValue(onlineLink, "not_applicable"),
+            )}
+          </div>
         </div>
       </div>
 
       {/* Registration */}
-      <div
-        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-xl font-semibold ${textPrimary}`}>
-            {t("registration")}
-          </h3>
-          <button
-            onClick={() => setCurrentStep(3)}
-            className="text-teal-500 hover:text-teal-600 font-medium transition-colors"
-          >
-            {t("edit")}
-          </button>
-        </div>
-        <div className={`space-y-4 text-base ${textSecondary}`}>
-          <p>
-            <strong>{t("required")}:</strong>{" "}
-            {registrationRequired ? t("yes") : t("no")}
-          </p>
-          {registrationRequired && (
-            <>
-              <p>
-                <strong>{t("capacity")}:</strong>{" "}
-                {capacityType === "unlimited"
+      <div className={sectionCard}>
+        {sectionHeader(
+          <CopyCheck className="w-4 h-4" />,
+          t("registration"),
+          STEPS.REGISTRATION,
+        )}
+
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {row(t("required"), registrationRequired ? t("yes") : t("no"))}
+            {row(
+              t("capacity"),
+              registrationRequired
+                ? capacityType === "unlimited"
                   ? t("unlimited")
-                  : `${capacity ?? 0} ${t("attendees")}`}
-              </p>
-              <p>
-                <strong>{t("custom_questions")}:</strong>{" "}
-                {customQuestions?.length}{" "}
-                {customQuestions?.length === 1 ? t("question") : t("questions")}
-              </p>
-            </>
-          )}
+                  : `${capacity ?? 0} ${t("attendees")}`
+                : null,
+            )}
+            {row(
+              t("custom_questions"),
+              registrationRequired
+                ? `${customQuestions?.length ?? 0} ${
+                    (customQuestions?.length ?? 0) === 1
+                      ? t("question")
+                      : t("questions")
+                  }`
+                : null,
+            )}
+          </div>
         </div>
       </div>
 
       {/* Tickets */}
-      <div
-        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-xl font-semibold ${textPrimary}`}>
-            {t("tickets")}
-          </h3>
-          <button
-            onClick={() => setCurrentStep(4)}
-            className="text-teal-500 hover:text-teal-600 font-medium transition-colors"
-          >
-            {t("edit")}
-          </button>
-        </div>
-        <div className={`text-base ${textSecondary}`}>
-          <p className="mb-3">
-            <strong>{t("total_tickets")}:</strong> {tickets?.length}
-          </p>
+      <div className={sectionCard}>
+        {sectionHeader(
+          <TicketCheck className="w-4 h-4" />,
+          t("tickets"),
+          STEPS.TICKET,
+        )}
+
+        <div className="p-5 space-y-4">
+          {row(t("total_tickets"), tickets?.length)}
+
           {tickets?.length > 0 ? (
             <ul className="space-y-2 ml-6 list-disc">
               {tickets?.map((ticket, i) => (
@@ -228,6 +253,25 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
           ) : (
             <p className="italic">{t("no_tickets_created")}</p>
           )}
+        </div>
+      </div>
+
+      {/* Images */}
+      <div className={sectionCard}>
+        {sectionHeader(
+          <ImageIcon className="w-4 h-4" />,
+          t("images"),
+          STEPS.IMAGES,
+        )}
+        <div className="flex flex-wrap gap-2 p-4">
+          {images?.map((img: any, index: any) => (
+            <ImageWithFallback
+              key={index}
+              src={img?.image || img?.previewUrl}
+              alt="Uploaded image"
+              className="h-50 w-60 rounded-md shadow-md object-cover"
+            />
+          ))}
         </div>
       </div>
     </div>

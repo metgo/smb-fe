@@ -480,11 +480,11 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   {t("recurrence_pattern") || "Recurrence Pattern"}
                 </label>
 
-                <div className="space-y-2">
+                <div className=" grid grid-cols-4 gap-2">
                   {["daily", "weekly", "monthly", "custom"].map((pattern) => (
                     <label
                       key={pattern}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center gap-5 p-2 rounded-lg border cursor-pointer transition-colors ${
                         recurrencePattern === pattern
                           ? "border-teal-500 bg-teal-500/10"
                           : isDark

@@ -24,7 +24,7 @@ import {
   BusinessBasicInfos,
   BusinessContactOwership,
   BusinessLocation,
-  BusinessMedia,
+  // BusinessMedia,
   BusinessOnlinePresence,
   BusinessOpeningHours,
   BusinessReviewSubmit,
@@ -43,6 +43,7 @@ import {
   DeliveryPolicyOption,
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
+import Media from "@/components/details-sections/Media";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -522,7 +523,6 @@ export default function CreateBusinessWizard({
     };
     const mediaProps = {
       theme,
-      t,
       errors,
       markDirty,
       logoImage,
@@ -588,7 +588,7 @@ export default function CreateBusinessWizard({
           />
         );
       case 5:
-        return <BusinessMedia {...mediaProps} business={editData} />;
+        return <Media {...mediaProps} business={editData} isBusiness={true} />;
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:

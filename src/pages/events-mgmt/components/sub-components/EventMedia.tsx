@@ -1,8 +1,7 @@
-import clsx from "clsx";
 import { useEffect } from "react";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
-import { ConfirmDialog } from "@/components/shared";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
@@ -36,12 +35,12 @@ const EventMedia: React.FC<EventMediaProps> = ({
   handleDeleteImage,
 }) => {
   const { t: tc } = useTranslation("common");
-  const { textPrimary, textSecondary, textTertiary, isDark } =
-    useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   useEffect(() => {
     markDirty(6);
   }, [images, markDirty, imagesRef]);
+
   useEffect(() => {
     if (images) {
       imagesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -52,130 +51,107 @@ const EventMedia: React.FC<EventMediaProps> = ({
   return (
     <>
       <div className="space-y-8 max-w-3xl mx-auto">
-        {/* Header */}
-        <div>
-          <h2 className={`text-2xl font-bold mb-2 ${textPrimary}`}>
-            {t("event_images")}
-          </h2>
-          <p className={`text-base ${textTertiary}`}>{t("upload_images")}</p>
-        </div>
-
-        {/* Upload Area */}
-        <div
-          className={`p-16 rounded-2xl border-2 border-dashed text-center transition-colors cursor-pointer ${
-            isDark
-              ? "border-gray-700 bg-gray-800/30 hover:border-teal-500/50"
-              : "border-gray-300 bg-gray-50 hover:border-teal-500/50"
-          }`}
-          onClick={() => document.getElementById("image-upload")?.click()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files) handleImageUpload({ target: { files } } as any);
-          }}
-          onDragOver={(e) => e.preventDefault()}
-        >
-          <Upload
-            className={`w-20 h-20 mx-auto mb-6 opacity-60 ${textTertiary}`}
-          />
-          <p className={`text-lg font-medium mb-2 ${textSecondary}`}>
-            {t("drag_drop_images")}
-          </p>
-          <p className={`text-sm mb-6 ${textTertiary}`}>{t("or")}</p>
-          <button className="px-8 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium transition-all shadow-lg shadow-teal-600/20">
-            {t("browse_files")}
-          </button>
-          <p className={`text-xs mt-6 ${textTertiary}`}>
-            {t("supported_formats")}
-          </p>
-          {/* Hidden file input */}
-          <input
-            id="image-upload"
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) =>
-              e.target.files && handleImageUpload(e.target.files)
-            }
-            className="hidden"
-          />
-        </div>
-
         {/* Images Grid */}
-        {images?.length > 0 && (
-          <div className="relative" ref={imagesRef}>
-            <h3 className={`text-xl mb-2 font-semibold ${textPrimary}`}>
-              {t("your_images")} ({images?.length})
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {images?.map((img, index) => (
-                <div
-                  key={index}
-                  className={`relative rounded-xl overflow-hidden border-2 transition-all group ${
-                    primaryImageIndex === index
-                      ? "border-teal-500 ring-2 ring-teal-500/30"
-                      : isDark
-                        ? "border-gray-700 hover:border-teal-400"
-                        : "border-gray-200 hover:border-teal-300"
-                  }`}
+        <div>
+          <label
+            className={`block text-sm mb-2 ${
+              isDark ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {tc("image_gallery")}
+            <span className="text-xs ml-2 text-gray-500">
+              ({tc("upload_up_to_10_images")})
+            </span>
+          </label>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {images.map((img, idx) => (
+              <div
+                key={idx}
+                className={`relative aspect-square rounded-lg overflow-hidden border group ${
+                  isDark ? "border-gray-700" : "border-gray-300"
+                }`}
+              >
+                <ImageWithFallback
+                  src={img.previewUrl}
+                  alt={`Image ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Delete */}
+                <button
+                  onClick={() => handleDeleteImage(img, idx)}
+                  className="absolute top-2 right-2 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700 z-10"
                 >
-                  <img
-                    src={img.previewUrl}
-                    alt={`Event ${index + 1}`}
-                    className="w-full h-50 object-cover transition-transform group-hover:scale-105"
-                  />
+                  <X className="w-4 h-4" />
+                </button>
+                {img.status === "uploading" && (
+                  <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center">
+                    {/* Circular loader */}
+                    <Loader2 className="w-16 h-16 text-white animate-spin" />
 
-                  {/* Progress Bar Overlay */}
-                  {img.status === "uploading" && (
-                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center">
-                      {/* Circular loader */}
-                      <Loader2 className="w-16 h-16 text-white animate-spin" />
-
-                      {/* Progress text */}
-                      <span className="mt-2 text-white font-bold text-xs">
-                        {img.progress}%
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Primary Image Badge */}
-                  {primaryImageIndex === index && (
-                    <div className="absolute top-2 left-3 z-10 px-2 bg-orange-500 text-white text-sm font-semibold rounded shadow-lg">
-                      {tc("primary")}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => handleDeleteImage(img, index)}
-                    className="p-1 absolute top-2 right-3 z-20 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-all cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-
-                  {/* Action Buttons */}
-                  <div
-                    className={clsx(
-                      "absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all hidden group-hover:flex items-end p-4 ",
-                      img.status === "uploading" && "bg-black/60",
-                    )}
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <button
-                        onClick={() => setPrimaryImage(index)}
-                        className={`flex-1 cursor-pointer px-4 py-2 rounded-lg font-medium transition-all ${
-                          primaryImageIndex === index
-                            ? "bg-teal-500 text-white"
-                            : "bg-white/90 text-gray-900 hover:bg-white"
-                        }`}
-                      >
-                        {tc("set_as_primary")}
-                      </button>
-                    </div>
+                    {/* Progress text */}
+                    <span className="mt-2 text-white font-bold text-xs">
+                      {img.progress}%
+                    </span>
                   </div>
+                )}
+                {/* Primary Badge */}
+                {idx === primaryImageIndex && (
+                  <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded z-10">
+                    {tc("primary")}
+                  </div>
+                )}
+
+                {/* Set as Primary */}
+                <button
+                  onClick={() => setPrimaryImage(idx)}
+                  className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
+                >
+                  {tc("set_as_primary") || "Set as Primary"}
+                </button>
+              </div>
+            ))}
+
+            {/* Upload New Image */}
+            {images?.length < 10 && (
+              <div
+                className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
+                  isDark
+                    ? "border-gray-700 hover:border-gray-600"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+                onClick={() => document.getElementById("image-upload")?.click()}
+              >
+                {/* Hidden file input */}
+                <input
+                  id="image-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) =>
+                    e.target.files && handleImageUpload(e.target.files)
+                  }
+                  className="hidden"
+                />
+                <div className="text-center">
+                  <Plus
+                    className={`w-8 h-8 mx-auto mb-1 ${
+                      isDark ? "text-gray-600" : "text-gray-400"
+                    }`}
+                  />
+                  <p
+                    className={`text-xs ${
+                      isDark ? "text-gray-600" : "text-gray-500"
+                    }`}
+                  >
+                    {t("upload_images") || "Upload"}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <ConfirmDialog

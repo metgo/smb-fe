@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import {
   ProductBasicInfo,
-  ProductMedia,
   ProductPricingAvailability,
   ProductReviewSubmit,
 } from "./sub-components";
@@ -46,6 +45,7 @@ import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
+import Media from "@/components/details-sections/Media";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -530,7 +530,7 @@ export default function CreateProductWizard({
       case 3:
         return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <ProductMedia {...mediaProps} {...commonProps} />;
+        return <Media {...mediaProps} {...commonProps} />;
       case 5:
         return (
           <DeliveryPolicyOption
