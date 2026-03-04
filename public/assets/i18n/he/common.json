@@ -267,6 +267,8 @@
   "user_found_description": "המשתמש כבר קיים במערכת",
   "new_user": "משתמש חדש",
   "new_user_description": "כתובת האימייל הזו אינה קיימת במערכת. אנא צור משתמש חדש.",
+  "upload_up_to_10_images": "העלה עד 10 תמונות",
+
   "user_found_in_system": "משתמש נמצא במערכת",
   "user_name_label": "שם:",
   "user_email_label": "אימייל:",
