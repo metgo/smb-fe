@@ -25,6 +25,7 @@ import {
 import {
   EventBasicInformation,
   EventDateTimeFormat,
+  // EventMedia,
   EventRegistrationCapacity,
   EventReviewPublish,
   EventTickets,
@@ -403,18 +404,18 @@ export default function CreateEventWizard({
 
   const eventBasicInfoPayload = {
     name: eventName,
-    nameHe: eventNameHe,
-    nameAr: eventNameAr,
+    // nameHe: eventNameHe,
+    // nameAr: eventNameAr,
 
     // Short Description
     shortDescription: shortDescription,
-    shortDescriptionHe: shortDescriptionHe,
-    shortDescriptionAr: shortDescriptionAr,
+    // shortDescriptionHe: shortDescriptionHe,
+    // shortDescriptionAr: shortDescriptionAr,
 
     // Full Description
     description: fullDescription,
-    descriptionHe: fullDescriptionHe,
-    descriptionAr: fullDescriptionAr,
+    // descriptionHe: fullDescriptionHe,
+    // descriptionAr: fullDescriptionAr,
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
     status: eventStatus?.toUpperCase(),

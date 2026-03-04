@@ -62,7 +62,7 @@ const Media: FC<MediaProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("businesses");
   useEffect(() => {
     markDirty?.(6);
   }, [images, markDirty, imagesRef]);

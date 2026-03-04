@@ -40,6 +40,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
   useEffect(() => {
     markDirty(6);
   }, [images, markDirty, imagesRef]);
+
   useEffect(() => {
     if (images) {
       imagesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
