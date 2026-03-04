@@ -21,12 +21,13 @@ import {
   BusinessDetailsPage,
   ProductDetailsPage,
   ErrorUiPage,
+  NotificationsMgmtPage,
 } from "@/pages";
-import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch } from "@/hooks/hooks";
+import { IdleLogout } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
-import NotificationsMgmtPage from "./pages/notification-mgmt";
+import { useSocket } from "./providers/SocketProvider";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -71,7 +72,20 @@ interface ProtectedRouteProps {
 }
 
 function App() {
+  const socket = useSocket();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("notification", (data) => {
+      console.log("🔔", data);
+    });
+
+    return () => {
+      socket.off("notification");
+    };
+  }, [socket]);
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {

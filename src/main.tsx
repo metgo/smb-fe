@@ -8,13 +8,15 @@ import { createRoot } from "react-dom/client";
 
 import App from "./App.tsx";
 import { store } from "./store/store.ts";
+import { SocketProvider } from "./providers/SocketProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-      {/* <ProgressBar/> */}
-      <Toaster position="top-center" richColors />
-      <App />
+      <SocketProvider>
+        <Toaster position="top-center" richColors />
+        <App />
+      </SocketProvider>
     </Provider>
   </StrictMode>,
 );
