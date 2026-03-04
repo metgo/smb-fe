@@ -111,6 +111,9 @@
   "delete_event": "מחיקת אירוע",
   "delete_event_confirm": "האם אתה בטוח שברצונך למחוק את האירוע הזה?",
 
+  "logo_required": "לוגו (חובה)",
+  "upload_logo": "העלה לוגו",
+
   "images": "תמונות",
   "image_upload_info": "העלאת התמונה החלה. נא להמתין…",
   "delete_image": "מחיקת תמונה",

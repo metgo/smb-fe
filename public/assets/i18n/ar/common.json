@@ -112,6 +112,9 @@
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
 
+  "logo_required": "الشعار (مطلوب)",
+  "upload_logo": "رفع الشعار",
+
   "images": "الصور",
   "image_upload_info": "بدأ رفع الصورة. يرجى الانتظار…",
   "delete_image": "حذف الصورة",

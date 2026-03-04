@@ -29,6 +29,8 @@
   "address": "Address",
 
   "logo": "Logo",
+  "upload_logo": "Upload Logo",
+  "logo_required": "Logo (Required)",
   "add": "Add",
   "cancel": "Cancel",
   "city": "City",

@@ -307,7 +307,10 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         </div>
       </div>
       {/* Event Name */}
-      <div ref={nameSectionRef}>
+      <div
+        ref={nameSectionRef}
+        dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+      >
         <FormFieldWrapper
           required
           label={t("event_name")}
@@ -325,7 +328,10 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
 
       {/* Short Description */}
-      <div ref={shortDescSectionRef}>
+      <div
+        ref={shortDescSectionRef}
+        dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+      >
         <FormFieldWrapper
           required
           label={t("short_description")}
@@ -343,13 +349,18 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
 
       {/* Full Description */}
-      <FormFieldWrapper label={t("full_description")}>
-        <CKEditorWrapper
-          value={getFieldValue("full")}
-          onChange={(val) => handleFieldChange("full", val)}
-          placeholder={getPlaceholder("full")}
-        />
-      </FormFieldWrapper>
+      <div dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}>
+        <FormFieldWrapper
+          label={t("full_description")}
+          inputHintText={`${getFieldValue("full")?.length ?? 0}/50 ${t("max_characters")}`}
+        >
+          <CKEditorWrapper
+            value={getFieldValue("full")}
+            onChange={(val) => handleFieldChange("full", val)}
+            placeholder={getPlaceholder("full")}
+          />
+        </FormFieldWrapper>
+      </div>
 
       {/* Event Status */}
       <FormFieldWrapper label={t("event_status")}>

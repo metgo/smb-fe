@@ -25,7 +25,6 @@ import {
 import {
   EventBasicInformation,
   EventDateTimeFormat,
-  EventMedia,
   EventRegistrationCapacity,
   EventReviewPublish,
   EventTickets,
@@ -40,6 +39,7 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/hooks/hooks";
+import Media from "@/components/details-sections/Media";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -855,8 +855,7 @@ export default function CreateEventWizard({
           />
         )}
         {currentStep === 6 && (
-          <EventMedia
-            t={t}
+          <Media
             markDirty={markDirty}
             images={images}
             imagesRef={imagesRef}
