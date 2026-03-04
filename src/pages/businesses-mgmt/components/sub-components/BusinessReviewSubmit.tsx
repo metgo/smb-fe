@@ -70,7 +70,6 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
 }) => {
-  console.log("🚀 ~ BusinessReviewSubmit ~ formData:", formData);
   const { t: tc } = useTranslation("common");
   const { categories, socialMedia, accessibility, groupTypes } = useCommon();
   console.log("geo", formData?.tags);

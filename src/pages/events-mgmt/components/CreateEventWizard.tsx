@@ -825,6 +825,7 @@ export default function CreateEventWizard({
 
         {currentStep === 7 && (
           <EventReviewPublish
+            images={images}
             setCurrentStep={setCurrentStep}
             eventName={eventName}
             shortDescription={shortDescription}
