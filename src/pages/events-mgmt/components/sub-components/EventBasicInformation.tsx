@@ -308,8 +308,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
       {/* Event Name */}
       <div
-        ref={nameSectionRef}
         dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+        ref={nameSectionRef}
       >
         <FormFieldWrapper
           required
@@ -329,8 +329,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
       {/* Short Description */}
       <div
-        ref={shortDescSectionRef}
         dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
+        ref={shortDescSectionRef}
       >
         <FormFieldWrapper
           required
