@@ -1,6 +1,5 @@
-import clsx from "clsx";
 import { useEffect } from "react";
-import { Loader2, Plus, Upload, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";

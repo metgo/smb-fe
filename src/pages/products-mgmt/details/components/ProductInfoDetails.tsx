@@ -95,7 +95,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
 
       {/*  Description */}
       <DescriptionCard
-        title={t("description")}
+        title={t("full_description")}
         content={
           product?.descriptionHe ||
           product?.description ||
