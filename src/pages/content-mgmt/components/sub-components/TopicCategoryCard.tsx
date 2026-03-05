@@ -39,7 +39,7 @@ const TopicCategoryCard = ({
   templateContents,
   setTemplateContent,
 }: Props) => {
-  const { isDark, bgPrimary, bgSecondary, bgTertiary } = useThemeClasses();
+  const { isDark, bgTertiary, inputClasses } = useThemeClasses();
   const { t } = useTranslation("content");
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -66,7 +66,7 @@ const TopicCategoryCard = ({
           name: draggedItem.name,
           desc: draggedItem.description,
           imageUrl: draggedItem.image,
-          category: "",
+          primaryCategory: "",
         });
 
         existingIds.add(draggedItem._id); // prevent double-add within the same drop
@@ -180,30 +180,35 @@ const TopicCategoryCard = ({
           {editing ? (
             <>
               <Input
+                autoFocus
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && renameCategory()}
-                autoFocus
+                className={inputClasses}
               />
-              <Button size="sm" onClick={renameCategory}>
+              <button
+                onClick={renameCategory}
+                className={clsx(
+                  "p-1.5 rounded bg-green-400 text-white hover:shadow-md",
+                )}
+              >
                 <Check className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
+              </button>
+              <button
                 onClick={() => {
                   setEditing(false);
                   setEditValue(group.category);
                 }}
+                className={clsx("p-1.5 rounded bg-red-400 text-white")}
               >
                 <X className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </>
           ) : (
             <>
               <h3
                 className={clsx(
-                  "text-lg font-semibold flex items-center gap-2",
+                  "text-lg font-semibold flex items-center gap-2 w-80",
                   isDark ? "text-gray-100" : "text-gray-900",
                 )}
               >

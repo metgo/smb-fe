@@ -42,6 +42,8 @@
   "create": "Create",
   "search_businesses_placeholder": "Search businesses by name, email, or phone...",
 
+  "select_website": "Select Website",
+
   "drag_handle_instruction": "Drag the handle to reorder topics",
   "no_topics_yet": "No topics yet. Add one to get started.",
   "categories": "Categories",

@@ -10,6 +10,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ContentConfigHeaderProps {
   header: string;
+  isExpanded: boolean;
   setHeader: (v: string) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: (value: IContentTemplate[]) => void;
@@ -18,10 +19,11 @@ interface ContentConfigHeaderProps {
 const ContentConfigHeader = ({
   header,
   setHeader,
+  isExpanded,
   templateContents,
   setTemplateContent,
 }: ContentConfigHeaderProps) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, inputClasses } = useThemeClasses();
   const { t } = useTranslation("content");
   const [newTopicName, setNewTopicName] = useState<string>("");
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -38,7 +40,6 @@ const ContentConfigHeader = ({
 
     const newTopic: IContentTemplate = {
       topic: newTopicName,
-      isPrimary: false,
       groups: [],
     };
 
@@ -73,7 +74,7 @@ const ContentConfigHeader = ({
   };
 
   return (
-    <div className="mb-4 shrink-0 space-y-2 border p-2 rounded-lg">
+    <div className="mb-4 shrink-0 space-y-2 border rounded-lg">
       {/* Header */}
       <div
         className={clsx(
@@ -82,124 +83,134 @@ const ContentConfigHeader = ({
         )}
       >
         {t("feed_header")}
-      </div>{" "}
-      <CKEditorWrapper value={header} onChange={setHeader} />
-      {/* Create Topic */}
-      <div
-        className={clsx(
-          "border rounded-lg p-4",
-          isDark
-            ? "bg-purple-950/20 border-purple-800"
-            : "bg-linear-to-r from-purple-50 to-indigo-50 border-purple-200",
-        )}
-      >
-        <label
-          className={clsx(
-            "block text-sm font-medium mb-2",
-            isDark ? "text-purple-100" : "text-purple-900",
-          )}
-        >
-          {t("create_new_topic")}
-        </label>
-
-        <div className="flex gap-2">
-          <Input
-            placeholder={t("placeholder_new_topic")}
-            value={newTopicName}
-            onChange={(e) => setNewTopicName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreateTopic();
-            }}
-            className={clsx(isDark ? "bg-gray-900 text-white" : "bg-white")}
-          />
-
-          <Button
-            onClick={handleCreateTopic}
-            disabled={!newTopicName.trim()}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
-          >
-            <Plus className="w-4 h-4" />
-            {t("button_create")}
-          </Button>
-        </div>
       </div>
-      {/* Create Category */}
       <div
-        className={clsx(
-          "border rounded-lg p-4 space-y-3",
-          isDark
-            ? "bg-teal-950/20 border-teal-800"
-            : "bg-linear-to-r from-teal-50 to-cyan-50 border-teal-200",
-        )}
+        className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
       >
-        <label
-          className={clsx(
-            "block text-sm font-medium",
-            isDark ? "text-teal-100" : "text-teal-900",
-          )}
-        >
-          {t("create_new_category")}
-        </label>
-
-        {topics.length > 0 && (
-          <div>
-            <select
-              value={selectedTopicForNewCategory}
-              onChange={(e) => setSelectedTopicForNewCategory(e.target.value)}
+        <CKEditorWrapper value={header} onChange={setHeader} height={150} />
+        <div className="space-y-2">
+          {/* Create Topic */}
+          <div
+            className={clsx(
+              "border rounded-lg p-4",
+              isDark
+                ? "bg-purple-950/20 border-purple-800"
+                : "bg-linear-to-r from-purple-50 to-indigo-50 border-purple-200",
+            )}
+          >
+            <label
               className={clsx(
-                "w-full border rounded-lg px-3 py-2 text-sm",
-                isDark
-                  ? "bg-gray-900 border-teal-700 text-gray-100"
-                  : "bg-white border-teal-300 text-gray-900",
+                "block text-sm font-medium mb-2",
+                isDark ? "text-purple-100" : "text-purple-900",
               )}
             >
-              <option value="">{t("select_topic_placeholder")}</option>
+              {t("create_new_topic")}
+            </label>
 
-              {topics.map((topic) => (
-                <option key={topic.id} value={topic.name}>
-                  {topic.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <Input
+                placeholder={t("placeholder_new_topic")}
+                value={newTopicName}
+                onChange={(e) => setNewTopicName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateTopic();
+                }}
+                className={clsx(inputClasses)}
+              />
+
+              <Button
+                onClick={handleCreateTopic}
+                disabled={!newTopicName.trim()}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <Plus className="w-4 h-4" />
+                {t("button_create")}
+              </Button>
+            </div>
           </div>
-        )}
-
-        <div className="flex gap-2">
-          <Input
-            placeholder={t("placeholder_new_category")}
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleCreateCategory();
-            }}
+          {/* Create Category */}
+          <div
             className={clsx(
-              "w-full px-3 py-2 rounded-lg outline-none focus:outline-none",
+              "border rounded-lg p-4 space-y-3",
               isDark
-                ? "bg-gray-900 border-teal-600 text-gray-100 placeholder-gray-200 hover:border-teal-500"
-                : "bg-white border-teal-400 text-gray-900 placeholder-gray-500 hover:border-teal-400",
+                ? "bg-teal-950/20 border-teal-800"
+                : "bg-linear-to-r from-teal-50 to-cyan-50 border-teal-200",
             )}
-          />
-
-          <Button
-            onClick={handleCreateCategory}
-            disabled={!newCategoryName.trim() || !selectedTopicForNewCategory}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
           >
-            <Plus className="w-4 h-4" />
-            {t("button_create")}
-          </Button>
+            <label
+              className={clsx(
+                "block text-sm font-medium",
+                isDark ? "text-teal-100" : "text-teal-900",
+              )}
+            >
+              {t("create_new_category")}
+            </label>
+
+            {topics.length > 0 && (
+              <div>
+                <select
+                  value={selectedTopicForNewCategory}
+                  onChange={(e) =>
+                    setSelectedTopicForNewCategory(e.target.value)
+                  }
+                  className={clsx(
+                    "w-full border rounded-lg px-3 py-2 text-sm",
+                    isDark
+                      ? "bg-gray-900 border-teal-700 text-gray-100"
+                      : "bg-white border-teal-300 text-gray-900",
+                  )}
+                >
+                  <option value="">{t("select_topic_placeholder")}</option>
+
+                  {topics.map((topic) => (
+                    <option key={topic.id} value={topic.name}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Input
+                placeholder={t("placeholder_new_category")}
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateCategory();
+                }}
+                className={clsx(
+                  "w-full px-3 py-2 rounded-lg outline-none focus:outline-none",
+                  isDark
+                    ? "bg-gray-900 border-teal-600 text-gray-100 placeholder-gray-200 hover:border-teal-500"
+                    : "bg-white border-teal-400 text-gray-900 placeholder-gray-500 hover:border-teal-400",
+                )}
+              />
+
+              <Button
+                onClick={handleCreateCategory}
+                disabled={
+                  !newCategoryName.trim() || !selectedTopicForNewCategory
+                }
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                <Plus className="w-4 h-4" />
+                {t("button_create")}
+              </Button>
+            </div>
+
+            {templateContents.length === 0 && (
+              <p
+                className={clsx(
+                  "text-xs",
+                  isDark ? "text-teal-300" : "text-teal-700",
+                )}
+              >
+                {t("info_create_topic_first")}
+              </p>
+            )}
+          </div>
         </div>
-
-        {templateContents.length === 0 && (
-          <p
-            className={clsx(
-              "text-xs",
-              isDark ? "text-teal-300" : "text-teal-700",
-            )}
-          >
-            {t("info_create_topic_first")}
-          </p>
-        )}
       </div>
     </div>
   );

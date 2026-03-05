@@ -193,7 +193,7 @@ const ContentCard = ({
       className={clsx(
         "group rounded-lg overflow-hidden w-full relative",
         baseClasses,
-        isExpanded ? "col-span-12" : "col-span-6",
+        isExpanded ? "col-span-12" : "col-span-4",
       )}
     >
       <div className="grid grid-cols-12 h-20">

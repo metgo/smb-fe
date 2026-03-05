@@ -27,6 +27,7 @@ interface ContentsProps {
   combinedBusinesses: any[];
   hasMore: boolean;
   filters: Filters;
+  totalData: number;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   fetchNextPage: () => void;
   clearFilter: () => void;
@@ -46,6 +47,7 @@ const Contents = ({
   clearFilter,
   filters,
   setFilters,
+  totalData,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
   const { isDark, textTertiary } = useThemeClasses();
@@ -113,18 +115,14 @@ const Contents = ({
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
             {t("source_backlog_title")}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            (
-            {t("source_backlog_description", {
-              count: combinedBusinesses?.length,
-            })}
-            )
+            ({t("source_backlog_description", { count: totalData })})
           </p>
         </div>
 
@@ -297,7 +295,7 @@ const Contents = ({
       {/* Scrollable card grid */}
       <div
         id="scrollableDiv"
-        className="overflow-y-scroll h-[60vh] p-2"
+        className="overflow-y-scroll h-[56vh] px-2 py-4"
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />

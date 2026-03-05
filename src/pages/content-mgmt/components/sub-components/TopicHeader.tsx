@@ -98,44 +98,33 @@ const TopicHeader = ({
               if (e.key === "Escape") handleCancel();
             }}
             className={clsx(
-              "h-8 text-sm flex-1",
+              "h-8 text-sm flex-1 min-w-60",
               isDark
                 ? "bg-gray-900 border-gray-600 text-gray-100"
                 : "bg-white border-gray-300 text-gray-900",
             )}
             autoFocus
           />
-          <Button
-            size="sm"
+          <button
             onClick={handleRename}
             className={clsx(
-              "h-8 px-2",
-              isDark
-                ? "bg-teal-700 hover:bg-teal-600 text-white"
-                : "bg-teal-600 hover:bg-teal-500 text-white",
+              "p-1.5 rounded bg-green-400 text-white hover:shadow-md",
             )}
           >
             <Check className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
+          </button>
+          <button
             onClick={handleCancel}
-            className={clsx(
-              "h-8 px-2",
-              isDark
-                ? "hover:bg-gray-700 text-gray-400"
-                : "hover:bg-gray-100 text-gray-500",
-            )}
+            className={clsx("p-1.5 rounded bg-red-400 text-white")}
           >
             <X className="w-3.5 h-3.5" />
-          </Button>
+          </button>
         </div>
       ) : (
         <>
           <h3
             className={clsx(
-              "flex-1 text-sm font-semibold truncate",
+              "flex-1 text-sm font-semibold truncate min-w-60",
               isDark ? "text-gray-100" : "text-gray-800",
             )}
           >

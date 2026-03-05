@@ -24,9 +24,16 @@ import {
   MessageComposerModal,
   SendResultsModal,
 } from "./components";
-import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
-import DraftButton from "@/components/btns/DraftButton";
+import { Spinner } from "@/components/shared";
 import { PublishButton } from "@/components/btns";
+import { skipToken } from "@reduxjs/toolkit/query";
+import DraftButton from "@/components/btns/DraftButton";
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { useGetContentByExternalIdQuery } from "@/store/api/contentQueryApi";
+import {
+  useCreateContentMutation,
+  useUpdateContentMutation,
+} from "@/store/api/contentMutationApi";
 
 interface SendResult {
   customerId: string;
@@ -70,6 +77,7 @@ interface PanelExpandButtonProps {
   expandLabel: string;
   collapseIcon: React.ReactNode;
   isDark: boolean;
+  posClass: string;
   t: (key: string) => string;
 }
 
@@ -80,6 +88,7 @@ const PanelExpandButton = ({
   expandLabel,
   collapseIcon,
   isDark,
+  posClass,
 }: PanelExpandButtonProps) => (
   <motion.button
     onClick={onToggle}
@@ -87,11 +96,11 @@ const PanelExpandButton = ({
     initial={{ opacity: 0, y: -4 }}
     animate={{ opacity: 1, y: 0 }}
     className={clsx(
-      "absolute  z-50 flex items-center gap-1 py-2 rounded-md text-xs font-medium",
+      "absolute z-50 flex items-center gap-1 py-2 rounded-md text-xs font-medium",
       "hidden group-hover:flex transition-opacity duration-150",
       isExpanded
         ? "left-0 right-0 mx-auto w-max top-0 px-4"
-        : "px-2 top-2 right-0",
+        : `px-2 top-0 ${posClass}`,
       isDark
         ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
         : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm border border-gray-200",
@@ -113,35 +122,39 @@ const PanelExpandButton = ({
 
 export default function ContentMgmtPage() {
   const { t } = useTranslation("content");
-  const { isDark, language } = useThemeClasses();
+  const { t: tt } = useTranslation("toast");
+
+  const { isDark, language, isRTL } = useThemeClasses();
+
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [viewMode, setViewMode] = useState<TViewMode>(
-    (localStorage.getItem("contentViewMode") as TViewMode) ?? "list",
+    (localStorage.getItem("contentViewMode") as TViewMode) ?? "grid",
+  );
+  const [header, setHeader] = useState("<p></p>");
+  const [externalApiId, setExternalApiId] = useState("");
+  const [contentStatus, setContentStatus] = useState<TStatus>("draft");
+  const [templateContentId, setTemplateContentId] = useState<string | null>(
+    null,
+  );
+
+  const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
+  const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
+
+  const {
+    refetch,
+    data: templateContentsData,
+    isLoading: isTemplateLoading,
+    isFetching: isTemplateFetching,
+  } = useGetContentByExternalIdQuery(
+    externalApiId ? { externalApiId } : skipToken,
   );
 
   const initialTemplateContent: IContentTemplate[] = [
     {
-      topic: t("featured_businesses"),
-      isPrimary: true,
-      isHideTopic: false,
-      groups: [
-        {
-          isPrimary: false,
-          isHideCategory: false,
-          category: "Restaurants & Cafés",
-          contents: [],
-        },
-        {
-          isPrimary: true,
-          isHideCategory: false,
-          category: "Retail & Shopping",
-          contents: [],
-        },
-      ],
-    },
-    {
       topic: t("homepage_hero_section"),
-      isPrimary: false,
       isHideTopic: false,
       groups: [
         {
@@ -154,7 +167,6 @@ export default function ContentMgmtPage() {
     },
     {
       topic: t("recommended_this_week"),
-      isPrimary: false,
       isHideTopic: false,
       groups: [
         {
@@ -165,14 +177,16 @@ export default function ContentMgmtPage() {
         },
       ],
     },
+    {
+      topic: t("featured_businesses"),
+      isHideTopic: false,
+      groups: [],
+    },
   ];
 
-  const [header, setHeader] = useState("<p></p>");
-  console.log("🚀 ~ ContentMgmtPage ~ header:", header);
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
   );
@@ -181,12 +195,44 @@ export default function ContentMgmtPage() {
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
 
-  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
+  useEffect(() => {
+    if (templateContentsData && externalApiId) {
+      if (externalApiId === templateContentsData.externalApiId._id) {
+        const formattedTemplateContents = templateContentsData?.siteTopics?.map(
+          (topic) => ({
+            topic: topic.title,
+            order: topic.order,
+            isHideTopic: topic.isArchived,
+            groups: topic.siteCategories?.map((item) => ({
+              isPrimary: item.isPrimary,
+              isHideCategory: item.isArchived,
+              category: item.title,
+              contents: item?.businessIds?.map((content) => ({
+                _id: content._id,
+                name: content.name,
+                desc: content.description,
+                imageUrl: content?.images[0]?.image,
+                primaryCategory: content?.primaryCategoryId?.name,
+              })),
+            })),
+          }),
+        );
+        setContentStatus(
+          templateContentsData?.status?.toLowerCase() as TStatus,
+        );
+        setTemplateContent(formattedTemplateContents);
+        setHeader(templateContentsData?.header || "");
+        setTemplateContentId(templateContentsData._id);
+      } else {
+        setHeader("<p></p>");
+        setTemplateContentId(null);
+        setContentStatus("draft");
+        setTemplateContent(initialTemplateContent);
+      }
+    }
+  }, [templateContentsData, externalApiId]);
 
   // ─── Multi-select state ───────────────────────────────────────────────────
-
   const [filters, setFilters] = useState<Filters>({
     status: "all",
     hasProductFilter: "all",
@@ -269,6 +315,82 @@ export default function ContentMgmtPage() {
     setPage(1);
   };
 
+  const onStatusChangeHandler = async (status: string) => {
+    if (templateContentId)
+      try {
+        const res = await updateContent({
+          contentId: templateContentId,
+          body: {
+            externalApiId,
+            status: status.toUpperCase(),
+          },
+        }).unwrap();
+
+        refetch();
+        toast.success(res.message);
+      } catch (error: any) {
+        toast.error(error?.message);
+      }
+  };
+
+  const handleSubmit = async (status: string) => {
+    try {
+      const payload = {
+        header,
+        status,
+        externalApiId,
+        siteTopics: templateContents
+          ?.map((template, index) => {
+            const filteredCategories = template?.groups
+              ?.filter((group) => group?.contents?.length > 0)
+              ?.map((group) => ({
+                title: group.category,
+                isPrimary: group.isPrimary,
+                isArchived: group.isHideCategory,
+                businessIds: group.contents.map((item) => item._id),
+              }));
+
+            if (!filteredCategories || filteredCategories.length === 0) {
+              return null;
+            }
+
+            return {
+              title: template.topic,
+              isArchived: template.isHideTopic,
+              order: index,
+              siteCategories: filteredCategories,
+            };
+          })
+          ?.filter(Boolean),
+      };
+
+      if (!payload.siteTopics?.length) {
+        toast.error(tt("empty_content_info"));
+        return;
+      }
+      if (!externalApiId) {
+        toast.error(tt("website_select_info"));
+        return;
+      }
+
+      const res = templateContentId
+        ? await updateContent({
+            body: payload,
+            contentId: templateContentId,
+          }).unwrap()
+        : await createContent(payload).unwrap();
+
+      toast.success(res?.message || "Saved successfully");
+    } catch (error: any) {
+      const errorMessage =
+        error?.data?.message ||
+        error?.error ||
+        "Something went wrong. Please try again.";
+
+      toast.error(errorMessage);
+    }
+  };
+
   const handleSendMessage = () => {
     const selected = mockBusinesses.filter((b) => selectedBacklogIds.has(b.id));
     const results: SendResult[] = selected.map((business) => {
@@ -295,10 +417,6 @@ export default function ContentMgmtPage() {
 
   const expandLeft = () => setFocus((p) => (p === "left" ? "both" : "left"));
   const expandRight = () => setFocus((p) => (p === "right" ? "both" : "right"));
-  const handlePublish = () => {
-    console.log("pulished");
-  };
-  const [isPublishing, _setIsPublishing] = useState(false);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -308,6 +426,7 @@ export default function ContentMgmtPage() {
           isDark ? "bg-gray-900" : "bg-gray-50",
         )}
       >
+        <Spinner isLoading={isTemplateFetching || isTemplateLoading} />
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-hidden flex flex-col">
             {/* ── Page Header ── */}
@@ -330,6 +449,7 @@ export default function ContentMgmtPage() {
                   >
                     {t("content_manager_title")}
                   </h1>
+
                   <p className="text-gray-600 dark:text-gray-400">
                     {t("content_manager_description")}
                   </p>
@@ -338,12 +458,12 @@ export default function ContentMgmtPage() {
                 {/* right section */}
                 <div className="flex gap-3 mt-4">
                   <DraftButton
-                    onClick={handlePublish}
-                    isLoading={isPublishing}
+                    onClick={() => handleSubmit("DRAFT")}
+                    isLoading={isCreating || isUpdating}
                   />
                   <PublishButton
-                    onClick={handlePublish}
-                    isLoading={isPublishing}
+                    onClick={() => handleSubmit("APPROVED")}
+                    isLoading={isCreating || isUpdating}
                   />
                 </div>
               </div>
@@ -401,16 +521,18 @@ export default function ContentMgmtPage() {
                   >
                     <PanelExpandButton
                       t={t}
-                      isExpanded={focus === "left"}
+                      isDark={isDark}
                       onToggle={expandLeft}
                       expandLabel={t("expand")}
+                      isExpanded={focus === "left"}
+                      posClass={isRTL ? "left-0" : "right-0"}
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
-                      isDark={isDark}
                     />
                     <Contents
                       isExpanded={focus === "both"}
                       viewMode={viewMode}
                       setViewMode={setViewMode}
+                      totalData={businessData?.totalData}
                       combinedBusinesses={combinedBusinesses}
                       fetchNextPage={fetchNextPage}
                       clearFilter={clearFilter}
@@ -457,17 +579,24 @@ export default function ContentMgmtPage() {
                   >
                     <PanelExpandButton
                       t={t}
-                      isExpanded={focus === "right"}
+                      isDark={isDark}
                       onToggle={expandRight}
                       expandLabel={t("expand")}
+                      isExpanded={focus === "right"}
+                      posClass={isRTL ? "right-0" : "left-0"}
                       collapseIcon={<PanelLeftClose className="w-3.5 h-3.5" />}
-                      isDark={isDark}
                     />
                     <ContentComposer
                       header={header}
                       setHeader={setHeader}
+                      contentStatus={contentStatus}
+                      isExpanded={focus === "both"}
+                      externalApiId={externalApiId}
+                      setExternalApiId={setExternalApiId}
                       templateContents={templateContents}
+                      templateContentId={templateContentId}
                       setTemplateContent={setTemplateContent}
+                      onStatusChangeHandler={onStatusChangeHandler}
                     />
                   </motion.div>
                 )}
