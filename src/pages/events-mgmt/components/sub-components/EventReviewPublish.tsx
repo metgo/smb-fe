@@ -72,11 +72,15 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   tickets,
   images,
 }) => {
-  const { t, i18n } = useTranslation("events");
-  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
-    useThemeClasses();
-
-  const language = i18n.language as Language;
+  const { t } = useTranslation("events");
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    isDark,
+    language,
+  } = useThemeClasses();
 
   const formatValue = (
     value: string | undefined,
@@ -136,7 +140,7 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   );
 
   return (
-    <div className="space-y-10 max-w-4xl mx-auto">
+    <div className="space-y-4 max-w-4xl mx-auto">
       {/* Basic Information */}
       <div className={sectionCard}>
         {sectionHeader(
@@ -245,7 +249,9 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
             <ul className="space-y-2 ml-6 list-disc">
               {tickets?.map((ticket, i) => (
                 <li key={i}>
-                  <span className="font-medium">{ticket?.name}</span>{" "}
+                  <span className={clsx("font-medium", textPrimary)}>
+                    {ticket?.name}
+                  </span>{" "}
                   <span className="text-teal-500">({t(ticket?.type)})</span>
                 </li>
               ))}
