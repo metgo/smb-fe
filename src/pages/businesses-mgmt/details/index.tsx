@@ -108,7 +108,6 @@ export default function BusinessDetailsPage() {
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
-
   const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(

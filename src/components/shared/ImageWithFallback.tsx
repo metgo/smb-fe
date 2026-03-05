@@ -1,3 +1,5 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import React, { useState } from "react";
 
 const ERROR_IMG_SRC =
@@ -6,6 +8,7 @@ const ERROR_IMG_SRC =
 export default function ImageWithFallback(
   props: React.ImgHTMLAttributes<HTMLImageElement>,
 ) {
+  const { isDark } = useThemeClasses();
   const [didError, setDidError] = useState(false);
 
   const handleError = () => {
@@ -19,7 +22,12 @@ export default function ImageWithFallback(
       className={`inline-block text-center align-middle ${className ?? ""}`}
       style={style}
     >
-      <div className="flex items-center justify-center w-full h-full">
+      <div
+        className={clsx(
+          "flex items-center justify-center w-full h-full",
+          isDark ? "bg-orange-500/20" : "",
+        )}
+      >
         <img
           src={ERROR_IMG_SRC}
           alt="Error loading image"

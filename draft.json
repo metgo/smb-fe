@@ -1,447 +1,74 @@
 {
-    "_id": "68bd710c51c6e361b7141b17",
-    "createdAt": "2025-09-07T11:48:27.548Z",
-    "updatedAt": "2026-03-03T06:33:11.005Z",
+    "_id": "69a81f8e17df34ac8475ff86",
+    "createdAt": "2026-03-04T12:03:26.815Z",
+    "updatedAt": null,
+    "createdBy": "659649e04267dd2b02174cc3",
+    "updatedBy": null,
+    "deletedBy": null,
+    "deletedAt": null,
     "isDeleted": false,
-    "name": "תיירות כרמים אגש\"ח",
-    "address": {
-        "country": "Israel",
-        "city": "Kramim",
-        "location": "3251"
+    "header": "<p>Negev time.</p>",
+    "headerDescription": null,
+    "headerHe": null,
+    "headerDescriptionHe": null,
+    "headerAr": null,
+    "headerDescriptionAr": null,
+    "externalApiId": {
+        "_id": "689aca6896fc4dd7086c8834",
+        "name": "הנגב הפורח"
     },
-    "countryCode": "972",
-    "phoneNumber": "5022222222",
-    "busiEmail": "vendor1234@mailinator.com",
-    "shortDescription": "<p>תיירות כרמים לינה כפרית ומתחם סדנאות</p>",
-    "description": "<p>בין גבעות ירוקות ונוף פתוח עד האופק, מחכה לכם חוויית אירוח כפרית בקיבוץ כרמים – מקום שבו הטבע, האנשים והשקט מתחברים ליצירת חופשה מושלמת.</p><p>ב\"גן הכרמים\" תמצאו 45 יחידות אירוח נעימות לזוגות, משפחות וקבוצות, עם מדשאות רחבות, פינות ישיבה מוצלות ובריכת קיץ קיבוצית מרעננת. המקום אידיאלי לאירוח שבתות חתן, חגים, ימי גיבוש וריטריטים – עם ארוחות כשרות באווירה קיבוצית חמה.</p><p>במרכז \"שהות\" תוכלו לשלב חוויה מעצימה של סדנאות גוף-נפש, כנסים ואירועים באווירה רגועה ומלאת השראה.</p><p>אז אם אתם מחפשים חופשה שקטה בדרום – זה הזמן לעצור, לנשום ולגלות את קסם כרמים.</p>",
     "status": "DRAFT",
-    "isPreview": true,
-    "website": {
-        "url": "https://tav-8.co.il/business/68bd710c51c6e361b7141b17"
-    },
-    "contactDetails": {
-        "name": "0528422202",
-        "countryCode": "972",
-        "phone": "5022222222",
-        "address": "קיבוץ כרמים ד.נ הנגב 8496300",
-        "email": "ghisingkarma740@gmail.com",
-        "whatsAppCountryCode": "972",
-        "whatsAppNumber": "5022222222",
-        "prefferedChannel": "whatsApp"
-    },
-    "collabrationUser": [],
-    "userId": {
-        "_id": "695cb972c09da104791aabb0",
-        "createdAt": "2026-01-06T07:27:46.666Z",
-        "updatedAt": "2026-01-06T08:17:43.968Z",
-        "firstName": "Karma",
-        "lastName": "Lama",
-        "email": "ghisingkarma740@gmail.com",
-        "languagePreference": "en",
-        "role": "traveller",
-        "phoneNumber": "9284274"
-    },
-    "authorityId": {
-        "_id": "61dc551b1fd34e871d6abf0d",
-        "name": "בני שמעון מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "createdAt": "2024-02-09T09:46:16.659Z",
-        "isDeleted": false,
-        "adminIds": [
-            "66b2171cdd81ed9ddc347411",
-            "6886653458482207681bc8d2",
-            "68b565cb555b78602b290092",
-            "68c00bc8a390f66f5066fb2b",
-            "68f6002aa00d969c2836026c"
-        ],
-        "updatedAt": "2025-10-20T09:26:02.803Z",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/IaAGb79pwq37FyCy.png"
-    },
-    "dmoId": {
-        "_id": "61dc551b1fd34e871d6abf0d",
-        "name": "אשכול רשויות נגב מערבי",
-        "createdAt": "2022-01-10T15:47:39.028Z",
-        "updatedAt": "2026-02-23T09:32:37.281Z",
-        "adminIds": [
-            "6569dbc7dd6a04099067845b",
-            "6742ff9652b004326c0b9dd2",
-            "660c6db357374645fa2da33d",
-            "687ca7bde0d3c018107d9937",
-            "699c1eb5817243bdbfe6076a"
-        ],
-        "imagePath": "https://storage.googleapis.com/metgo_staging/2024/6/Eyf7pBQi0FawsIcK.png",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/l6GMbNXLS3R3yyNj.webp",
-        "categoryIds": [
-            "6566fcd4a77d2a477266d3b9",
-            "6566e31ca77d2a477266d2d6",
-            "6566e36ba77d2a477266d2f4",
-            "6566e3aaa77d2a477266d314",
-            "6566e256a77d2a477266d2c0",
-            "6566fd7fa77d2a477266d3ca",
-            "6797ac8696ec7e63875e0971"
-        ]
-    },
-    "geoLocation": {
-        "lat": "31.304167",
-        "long": null
-    },
-    "location": {
-        "type": "Point",
-        "coordinates": [
-            34.917879,
-            31.333464
-        ]
-    },
-    "images": [
+    "siteTopics": [
         {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/4VBQwulbW7eDl5Cb",
-            "isPrimary": true
-        },
-        {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/u_oU6w65M8qiS3rV",
-            "isPrimary": false
-        },
-        {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/dbFgaJi9YrlL64qI",
-            "isPrimary": false
-        },
-        {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/qQW_mQoeLJaOvZ1Z",
-            "isPrimary": false
-        },
-        {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/irTXiiPpoOzcKuTm",
-            "isPrimary": false
-        },
-        {
-            "image": "https://storage.googleapis.com/metgo_staging/2025/8/WNRROCTcp_XnXWyW",
-            "isPrimary": false
-        }
-    ],
-    "socialMedia": [
-        {
-            "socialMediaId": {
-                "_id": "6568528ef60dab2e71898591",
-                "createdAt": "2023-11-30T08:22:09.711Z",
-                "updatedAt": null,
-                "isDeleted": false,
-                "name": "Website",
-                "icon": {
-                    "_id": "65685279f60dab2e7189858e",
-                    "createdAt": "2023-11-30T08:22:09.711Z",
-                    "updatedAt": null,
-                    "isDeleted": false,
-                    "name": "Website",
-                    "iconPath": "https://storage.googleapis.com/metgo_staging/2023/10/EXa1b44ySaVnP6-x.png",
-                    "iconAlt": "website"
-                }
-            },
-            "url": "WWW.KRAMIMT.CO.IL",
-            "_id": "68ff5080a00d969c283e5948"
-        }
-    ],
-    "groupTypesId": [
-        "656c4f91a835f8bf39f58a53",
-        "656c4fc9a835f8bf39f58a58",
-        "656c4ff5a835f8bf39f58a60",
-        "656c5010a835f8bf39f58a65",
-        "656c5074a835f8bf39f58a6f",
-        "656c508da835f8bf39f58a77",
-        "656c50aba835f8bf39f58a81",
-        "656c5098a835f8bf39f58a7c",
-        "656c5020a835f8bf39f58a6a"
-    ],
-    "accessibilitiesId": [
-        "6566ff8fa77d2a477266d3fc",
-        "6773a98b3fdf6c4652adbc26",
-        "65670014a77d2a477266d415",
-        "68b93dcf556a0cbd382f0667",
-        "65670096a77d2a477266d43f",
-        "656700bfa77d2a477266d449",
-        "65670045a77d2a477266d435",
-        "6773a95b3fdf6c4652adbc25",
-        "667db02225c7258c9656979f",
-        "6566fe6aa77d2a477266d3e2",
-        "656700f1a77d2a477266d453",
-        "6567013aa77d2a477266d475"
-    ],
-    "primaryCategoryId": "6566e256a77d2a477266d2c0",
-    "bussCategoriesId": [
-        {
-            "_id": "6566fcd4a77d2a477266d3b9",
-            "createdAt": "2023-11-29T06:49:50.624Z",
-            "updatedAt": "2024-11-13T08:50:38.689Z",
-            "isDeleted": false,
-            "name": "Sleep",
-            "icon": {
-                "_id": "6566fcbea77d2a477266d3b4",
-                "createdAt": "2023-11-29T06:49:50.624Z",
-                "updatedAt": "2024-03-14T08:25:03.976Z",
-                "isDeleted": false,
-                "name": "sleep",
-                "iconPath": "https://storage.googleapis.com/metgo_staging/2024/2/0cHYDdvVU9vyzG9a.png",
-                "iconAlt": "sleep"
-            },
-            "hebrewName": "לישון",
-            "iconBnW": "65f2c8185e66b15274c6b979",
-            "isVisible": true
-        },
-        {
-            "_id": "6566e3aaa77d2a477266d314",
-            "createdAt": "2023-11-22T06:52:50.624Z",
-            "updatedAt": "2024-11-30T08:50:38.689Z",
-            "isDeleted": false,
-            "name": "Eat",
-            "icon": {
-                "_id": "6566e392a77d2a477266d306",
-                "createdAt": "2023-11-29T06:49:50.624Z",
-                "updatedAt": "2024-03-14T08:27:11.319Z",
-                "isDeleted": false,
-                "name": "eat",
-                "iconPath": "https://storage.googleapis.com/metgo_staging/2024/2/x0Tdp3WxF2RkCxDc.png",
-                "iconAlt": "food"
-            },
-            "hebrewName": "לאכול",
-            "iconBnW": "65f2c9815e66b15274c6b990",
-            "isVisible": true
-        },
-        {
-            "_id": "6566e36ba77d2a477266d2f4",
-            "createdAt": "2023-11-20T09:49:50.624Z",
-            "updatedAt": "2024-11-20T08:50:38.689Z",
-            "isDeleted": false,
-            "name": "Culture",
-            "icon": {
-                "_id": "6566e35fa77d2a477266d2ef",
-                "createdAt": "2023-11-29T06:49:50.624Z",
-                "updatedAt": "2024-03-14T08:27:57.585Z",
-                "isDeleted": false,
-                "name": "culture",
-                "iconPath": "https://storage.googleapis.com/metgo_staging/2024/2/nk_jKiFWrXx6DI6A.png",
-                "iconAlt": "culture"
-            },
-            "hebrewName": "תרבות",
-            "iconBnW": "65f2c9c65e66b15274c6b99a",
-            "isVisible": true
-        }
-    ],
-    "bussSubCategoriesId": [
-        {
-            "_id": "67c2bfcee728f7bf6133624e",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Groups and conferences",
-            "icon": null,
-            "bussCategoryId": [
+            "title": "Featured Businesses",
+            "titleHe": null,
+            "titleAr": null,
+            "description": null,
+            "descriptionHe": null,
+            "descriptionAr": null,
+            "siteCategories": [
                 {
-                    "_id": "6566fcd4a77d2a477266d3b9",
-                    "createdAt": "2023-11-29T06:49:50.624Z",
-                    "updatedAt": "2024-11-13T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Sleep",
-                    "icon": "6566fcbea77d2a477266d3b4",
-                    "hebrewName": "לישון",
-                    "iconBnW": "65f2c8185e66b15274c6b979",
-                    "isVisible": true
+                    "title": "Restaurants & Cafés",
+                    "titleHe": null,
+                    "titleAr": null,
+                    "description": null,
+                    "descriptionHe": null,
+                    "descriptionAr": null,
+                    "businessIds": [
+                        {
+                            "nameHe": null,
+                            "nameAr": null,
+                            "_id": "68c845cda5a8c7c031521e48",
+                            "name": "עומר חלילי",
+                            "address": {
+                                "country": "Israel",
+                                "city": "Netivot",
+                                "location": "שבטי ישראל 143, Netivot, Israel",
+                                "_id": "68c845cda5a8c7c031521e49"
+                            },
+                            "shortDescription": "<p>מגשי פירות</p>",
+                            "description": "<p>מגשי פירות </p><p>מגשי אירוח </p><p>שף פרטי לארוחות בשריות וחלביות </p><p>קייטרינג חלבי</p>",
+                            "images": [
+                                {
+                                    "image": "https://storage.googleapis.com/metgo_staging/2025/8/8l5BfGOVmjalPZzk.jpg",
+                                    "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+                                    "alt": "metgoBusinessPrimaryImageIncoming.jpg",
+                                }
+                            ],
+                            "primaryCategoryId": {
+                                "_id": "6566e3aaa77d2a477266d314",
+                                "name": "Eat",
+                                "hebrewName": "לאכול"
+                            }
+                        }
+                    ],
+                    "isPrimary": false,
+                    "isArchived": false
                 }
             ],
-            "hebrewName": "קבוצות וכנסים"
-        },
-        {
-            "_id": "65671990e91479847b2bd19b",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Picnic Baskets",
-            "icon": null,
-            "bussCategoryId": [
-                {
-                    "_id": "6566e3aaa77d2a477266d314",
-                    "createdAt": "2023-11-22T06:52:50.624Z",
-                    "updatedAt": "2024-11-30T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Eat",
-                    "icon": "6566e392a77d2a477266d306",
-                    "hebrewName": "לאכול",
-                    "iconBnW": "65f2c9815e66b15274c6b990",
-                    "isVisible": true
-                }
-            ],
-            "hebrewName": "סלי פיקניק"
-        },
-        {
-            "_id": "65671958e91479847b2bd180",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Catering",
-            "icon": null,
-            "bussCategoryId": [
-                {
-                    "_id": "6566e3aaa77d2a477266d314",
-                    "createdAt": "2023-11-22T06:52:50.624Z",
-                    "updatedAt": "2024-11-30T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Eat",
-                    "icon": "6566e392a77d2a477266d306",
-                    "hebrewName": "לאכול",
-                    "iconBnW": "65f2c9815e66b15274c6b990",
-                    "isVisible": true
-                }
-            ],
-            "hebrewName": "קייטרינג"
-        },
-        {
-            "_id": "67c2b8e5e728f7bf61336245",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Coffe carts",
-            "icon": null,
-            "bussCategoryId": [
-                {
-                    "_id": "6566e3aaa77d2a477266d314",
-                    "createdAt": "2023-11-22T06:52:50.624Z",
-                    "updatedAt": "2024-11-30T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Eat",
-                    "icon": "6566e392a77d2a477266d306",
-                    "hebrewName": "לאכול",
-                    "iconBnW": "65f2c9815e66b15274c6b990",
-                    "isVisible": true
-                }
-            ],
-            "hebrewName": "עגלות קפה"
-        },
-        {
-            "_id": "65672169e91479847b2bd2e4",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Body & soul",
-            "icon": null,
-            "bussCategoryId": [
-                {
-                    "_id": "6566e36ba77d2a477266d2f4",
-                    "createdAt": "2023-11-20T09:49:50.624Z",
-                    "updatedAt": "2024-11-20T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Culture",
-                    "icon": "6566e35fa77d2a477266d2ef",
-                    "hebrewName": "תרבות",
-                    "iconBnW": "65f2c9c65e66b15274c6b99a",
-                    "isVisible": true
-                }
-            ],
-            "hebrewName": "לגוף ולנשמה"
-        },
-        {
-            "_id": "6567213ee91479847b2bd2d2",
-            "createdAt": "2023-11-29T10:22:31.935Z",
-            "updatedAt": null,
-            "isDeleted": false,
-            "name": "Art",
-            "icon": null,
-            "bussCategoryId": [
-                {
-                    "_id": "6566e36ba77d2a477266d2f4",
-                    "createdAt": "2023-11-20T09:49:50.624Z",
-                    "updatedAt": "2024-11-20T08:50:38.689Z",
-                    "isDeleted": false,
-                    "name": "Culture",
-                    "icon": "6566e35fa77d2a477266d2ef",
-                    "hebrewName": "תרבות",
-                    "iconBnW": "65f2c9c65e66b15274c6b99a",
-                    "isVisible": true
-                }
-            ],
-            "hebrewName": "אומנות"
+            "order": 0,
+            "isArchived": false
         }
     ],
-    "tags": [
-        "Food Workshops",
-        "Food truck",
-        "Playground",
-        "Sports Activities",
-        "Playgrounds"
-    ],
-    "openingHrs": [
-        {
-            "days": "Sun",
-            "open": "09:30",
-            "close": "20:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Mon",
-            "open": "09:30",
-            "close": "20:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Tues",
-            "open": "09:30",
-            "close": "20:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Wed",
-            "open": "09:30",
-            "close": "20:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Thurs",
-            "open": "09:30",
-            "close": "20:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Fri",
-            "open": "10:30",
-            "close": "19:00",
-            "isHoliday": "false"
-        },
-        {
-            "days": "Sat",
-            "open": "10:30",
-            "close": "19:00",
-            "isHoliday": "false"
-        }
-    ],
-    "isAlwaysOpen": true,
-    "productsId": [],
-    "slug": "-avu",
-    "serviceType": "business",
-    "currency": "ILS",
-    "price": null,
-    "registrationLink": null,
-    "meetingLink": null,
-    "startDate": null,
-    "endDate": null,
-    "deliveryArea": [],
-    "deliverySpecificSellerInfo": [],
-    "deliveryReturnExchange": [],
-    "deliveryAdditionalInfo": "",
-    "isPickUpAvailable": false,
-    "impact": 200,
-    "completionPercent": 75,
-    "bankAccountId": "68bd710b51c6e361b7141b13",
-    "logo": {
-        "image": ""
-    },
-    "cover": {
-        "image": "https://storage.googleapis.com/metgo_staging/2025/8/wujRucjyjmyg_hvh",
-        "caption": "blob",
-        "alt": "blob",
-        "subCoordinates": {
-            "xMax": 1,
-            "xMin": 0,
-            "yMax": 0.8442211055276382,
-            "yMin": 0
-        }
-    },
-    "associatedWebsites": [],
-    "tagsId": []
+    "__v": 0
 }

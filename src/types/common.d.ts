@@ -1,5 +1,8 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
+
+type TViewMode = "list" | "grid";
+
 type TStatus =
   | "draft"
   | "pending"

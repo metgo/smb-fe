@@ -300,5 +300,6 @@
   "phone_number_placeholder": "رقم الهاتف",
   "address_placeholder": "العنوان",
 
-  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول."
+  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول.",
+  "select_options_placeholder": "اختر الخيارات"
 }
