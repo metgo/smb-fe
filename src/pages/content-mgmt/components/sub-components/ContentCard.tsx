@@ -155,7 +155,7 @@ const ContentCard = ({
         </div>
         <div
           className={clsx(
-            "px-3",
+            "px-3 py-4",
             isDark
               ? "bg-gray-900 border border-gray-700/50 text-gray-200"
               : "bg-white border border-gray-200 text-gray-800",
@@ -196,7 +196,7 @@ const ContentCard = ({
         isExpanded ? "col-span-12" : "col-span-6",
       )}
     >
-      <div className="grid grid-cols-12 h-20">
+      <div className="grid grid-cols-12 h-26">
         <div className="relative col-span-2">
           <ImageWithFallback
             src={image}
