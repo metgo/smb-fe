@@ -90,8 +90,8 @@ const ContentCard = ({
   });
 
   const selectionClasses = isSelected
-    ? "bg-teal-50 dark:bg-teal-950/30 border-teal-400 dark:border-teal-600 ring-2 ring-teal-400/50"
-    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600";
+    ? "bg-teal-50 dark:bg-teal-950/30 border-teal-600 ring-2 ring-teal-400/50"
+    : "bg-white border-gray-400 hover:border-gray-300 dark:hover:border-gray-600";
 
   const baseClasses = clsx(
     "cursor-grab active:cursor-grabbing transition-all border select-none",
@@ -193,7 +193,7 @@ const ContentCard = ({
       className={clsx(
         "group rounded-lg overflow-hidden w-full relative",
         baseClasses,
-        isExpanded ? "col-span-12" : "col-span-6",
+        isExpanded ? "col-span-12" : "col-span-4",
       )}
     >
       <div className="grid grid-cols-12 h-26">

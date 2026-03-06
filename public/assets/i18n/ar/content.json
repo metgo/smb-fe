@@ -1,4 +1,9 @@
 {
+  "expand": "توسيع",
+  "split": "تقسيم",
+  "loading_text": "جاري تحميل المزيد من العناصر...",
+  "loading_end_text": "لا توجد عناصر أخرى",
+
   "create_new_topic": "إنشاء موضوع جديد",
   "placeholder_new_topic": "مثال: أقسام الصفحة الرئيسية، المحتوى المميز...",
   "button_create": "إنشاء",
@@ -26,6 +31,7 @@
   "delete_category": "حذف الفئة",
   "delete_topic_confirm": "سيتم حذف جميع الفئات المتعلقة بهذا الموضوع أيضًا",
   "delete_category_confirm": "سيتم حذف كافة الأعمال الموجودة في هذه الفئة أيضًا",
+  "select_website": "اختر الموقع",
 
   "content_manager_title": "مدير المحتوى",
   "content_manager_description": "نظم الأعمال في فئات مخصصة لأقسام موقعك",

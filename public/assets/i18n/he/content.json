@@ -1,4 +1,9 @@
 {
+  "expand": "הרחב",
+  "split": "פצל",
+  "loading_text": "טוען פריטים נוספים...",
+  "loading_end_text": "אין עוד פריטים",
+
   "create_new_topic": "צור נושא חדש",
   "placeholder_new_topic": "למשל, מדורי בית, תוכן מובלט...",
   "button_create": "צור",
@@ -26,6 +31,7 @@
 
   "delete_topic_confirm": "כל הקטגוריות הקשורות לנושא זה יימחקו גם כן",
   "topic_deleted": "הנושא נמחק בהצלחה",
+  "select_website": "בחר אתר",
 
   "content_manager_title": "מנהל תוכן",
   "content_manager_description": "ארגן עסקים לקטגוריות מותאמות אישית עבור חלקי האתר שלך",

@@ -40,6 +40,7 @@
   "offline_vouchers": "רכישות שוברי הנחה לא מקוונות",
   "cash_in": "הפקדה",
   "cash_back": "החזר מזומן",
+  "content_mgmt": "ניהול תוכן",
   "site_management": "ניהול אתר",
   "home": "דף הבית",
   "promotions": "מבצעים",
@@ -96,7 +97,11 @@
   "paid": "בתשלום",
   "required": "חובה",
   "not_required": "לא חובה",
+
   "change_status": "שנה סטטוס",
+  "completion_percentage": "אחוז השלמה",
+  "created": "נוצר",
+  "updated": "עודכן",
 
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק את הכרטיס הזה?",
@@ -130,6 +135,7 @@
   "thursday": "חמישי",
   "friday": "שישי",
   "saturday": "שבת",
+
   "sun": "א'",
   "mon": "ב'",
   "tue": "ג'",
@@ -137,6 +143,14 @@
   "thu": "ה'",
   "fri": "ו'",
   "sat": "ש'",
+
+  "open": "פתוח",
+  "holiday": "חג",
+  "today": "היום",
+  "open_now": "פתוח עכשיו",
+  "weekly_schedule": "לוח זמנים שבועי",
+  "no_schedule_available": "אין לוח זמנים זמין",
+  "not_set_opening_hours": "שעות הפעילות טרם הוגדרו",
 
   "all": "הכל",
   "select_dmo": "בחר DMO",

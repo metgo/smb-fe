@@ -1,16 +1,16 @@
 import { toast } from "sonner";
 import { useState } from "react";
-
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { Mail, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+
 import {
   useLazyGetUserByEmailQuery,
   usePatchBusinessOwnerMutation,
   usePostUserAdminMutation,
 } from "@/store/api/masterDataApi";
-import { useSearchParams } from "react-router-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
 
 interface ChangeOwnerModalProps {
@@ -20,10 +20,12 @@ interface ChangeOwnerModalProps {
     email: string;
     phone: string;
   };
+  refetch?: () => void;
 }
 
 export default function ChangeOwnerModal({
   setIsOpen,
+  refetch,
   currentOwner,
 }: ChangeOwnerModalProps) {
   const { userRole } = useAppSelector((state) => state.auth);
@@ -103,6 +105,7 @@ export default function ChangeOwnerModal({
           lastName: foundUser.lastName,
         }),
       });
+      if (refetch) refetch();
       setFoundUser("");
       handleClose();
       setEmail("");
@@ -133,6 +136,7 @@ export default function ChangeOwnerModal({
         lastName,
       }),
     });
+    if (refetch) refetch();
     handleClose();
   };
 

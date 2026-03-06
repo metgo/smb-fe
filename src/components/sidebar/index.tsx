@@ -26,7 +26,7 @@ import {
   Users,
   File,
   UserCircle,
-  CopyCheck,
+  Layers2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -154,7 +154,7 @@ export default function Sidebar() {
       subItems: [
         {
           id: "home",
-          path: routes.dashboard,
+          path: routes.home,
           label: t("home") || "Home",
           icon: Home,
           isEnabled: false,
@@ -162,8 +162,8 @@ export default function Sidebar() {
         {
           id: "content-mgmt",
           path: routes.contentMgmt,
-          label: t("content-mgmt") || "Content Management",
-          icon: CopyCheck,
+          label: t("content_mgmt") || "Content Management",
+          icon: Layers2,
           isEnabled: true,
         },
         {
@@ -294,9 +294,7 @@ export default function Sidebar() {
                 : isDark
                   ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-          } ${isSidebarCollapsed ? "justify-center" : ""} ${
-            isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""
-          }`}
+          } ${isSidebarCollapsed ? "justify-center" : ""}`}
         >
           <Icon
             className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}

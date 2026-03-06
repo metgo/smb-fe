@@ -357,7 +357,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         <div className="space-y-4">
           {eventDays?.map((day, index) => (
             <div
-              key={day.id}
+              key={index}
               className={`p-4 rounded-lg border ${
                 isDark
                   ? "border-gray-700 bg-gray-800/50"
@@ -518,10 +518,10 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   </label>
 
                   <div className="flex gap-2 flex-wrap">
-                    {weekDays.map((day) => {
+                    {weekDays.map((day, index) => {
                       return (
                         <button
-                          key={day.value}
+                          key={index}
                           type="button"
                           onClick={() => toggleWeekday(day.value)}
                           className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${

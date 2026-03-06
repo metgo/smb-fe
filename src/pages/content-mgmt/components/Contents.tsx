@@ -7,7 +7,12 @@ import { useCommon } from "@/hooks/useCommon";
 import { ContentCard } from "./sub-components";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { FilterChips, SearchInput, ViewModeToggle } from "@/components/shared";
+import {
+  FilterChips,
+  SearchInput,
+  Spinner,
+  ViewModeToggle,
+} from "@/components/shared";
 
 interface Filters {
   status: string;
@@ -22,6 +27,7 @@ interface ContentsProps {
   combinedBusinesses: any[];
   hasMore: boolean;
   filters: Filters;
+  totalData: number;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   fetchNextPage: () => void;
   clearFilter: () => void;
@@ -31,7 +37,7 @@ interface ContentsProps {
 }
 
 const Contents = ({
-  // isLoading,
+  isLoading,
   isExpanded,
   viewMode,
   hasMore,
@@ -41,6 +47,7 @@ const Contents = ({
   clearFilter,
   filters,
   setFilters,
+  totalData,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
   const { isDark, textTertiary } = useThemeClasses();
@@ -108,18 +115,14 @@ const Contents = ({
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
             {t("source_backlog_title")}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            (
-            {t("source_backlog_description", {
-              count: combinedBusinesses?.length,
-            })}
-            )
+            ({t("source_backlog_description", { count: totalData })})
           </p>
         </div>
 
@@ -292,9 +295,10 @@ const Contents = ({
       {/* Scrollable card grid */}
       <div
         id="scrollableDiv"
-        className="overflow-y-scroll h-[60vh] p-2"
+        className="overflow-y-scroll h-[56vh] px-2 py-4"
         onClick={handleContainerClick}
       >
+        <Spinner isLoading={isLoading} />
         <InfiniteScroll
           dataLength={combinedBusinesses?.length}
           next={fetchNextPage}
@@ -302,13 +306,13 @@ const Contents = ({
           scrollableTarget="scrollableDiv"
           loader={
             <p className={clsx("text-center mt-4", textTertiary)}>
-              טוען מוצרים נוספים...
+              {t("loading_text")}
             </p>
           }
           endMessage={
             !hasMore && (
               <p className={clsx("text-center mt-4", textTertiary)}>
-                אין עוד מוצרים
+                {t("loading_end_text")}
               </p>
             )
           }

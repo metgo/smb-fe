@@ -19,6 +19,8 @@ import { productMutationApi } from "./api/productMutationApi";
 import { productQueryApi } from "./api/productQueryApi";
 import { commonMutationApi } from "./api/commonMutationApi";
 import { saveSettings, saveUserInfo } from "@/lib/storage";
+import { contentMutationApi } from "./api/contentMutationApi";
+import { contentQueryApi } from "./api/contentQueryApi";
 
 export const store = configureStore({
   reducer: {
@@ -31,19 +33,24 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
-    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
     [masterDataApi.reducerPath]: masterDataApi.reducer,
-    [userMutationApi.reducerPath]: userMutationApi.reducer,
-    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
+    [commonMutationApi.reducerPath]: commonMutationApi.reducer,
 
     [productMutationApi.reducerPath]: productMutationApi.reducer,
     [productQueryApi.reducerPath]: productQueryApi.reducer,
-    [commonMutationApi.reducerPath]: commonMutationApi.reducer,
+
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
+    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
 
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
+    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+
     [userQueryApi.reducerPath]: userQueryApi.reducer,
+    [userMutationApi.reducerPath]: userMutationApi.reducer,
+
+    [contentQueryApi.reducerPath]: contentQueryApi.reducer,
+    [contentMutationApi.reducerPath]: contentMutationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -61,6 +68,8 @@ export const store = configureStore({
       productMutationApi.middleware,
       productQueryApi.middleware,
       commonMutationApi.middleware,
+      contentMutationApi.middleware,
+      contentQueryApi.middleware,
     ),
 });
 

@@ -1,7 +1,7 @@
 import clsx from "clsx";
-import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { GripVertical, ChevronDown, ChevronRight, Layers } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
@@ -13,11 +13,20 @@ import {
   TopicHeader,
 } from "./sub-components";
 import { toast } from "sonner";
+import { StatusChangeBtn } from "@/components/btns";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
 
 interface ContentComposerProps {
+  header: string;
+  isExpanded: boolean;
+  contentStatus: TStatus;
+  setHeader: (v: string) => void;
+  externalApiId: string;
+  templateContentId: string | null;
+  setExternalApiId: (v: string) => void;
+  onStatusChangeHandler: (v: TStatus) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
 }
@@ -50,9 +59,10 @@ const TopicBlock = ({
   showDeleteConfirm,
   setShowDeleteConfirm,
 }: TopicBlockProps) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
   const { t } = useTranslation("content");
+  const ref = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+
   // ── drag this topic ──
   const [{ isDragging }, drag, dragPreview] = useDrag({
     type: TOPIC_TYPE,
@@ -90,9 +100,10 @@ const TopicBlock = ({
   });
 
   // Attach dragPreview and drop after render to avoid accessing ref during render
-  useEffect(() => {
-    dragPreview(drop(ref));
-  }, [dragPreview, drop]);
+  const setRefs = (node: HTMLDivElement | null) => {
+    ref.current = node;
+    dragPreview(drop(node));
+  };
 
   const hasMultipleCategories = topic.groups.length > 1;
 
@@ -119,7 +130,7 @@ const TopicBlock = ({
 
   return (
     <div
-      ref={ref}
+      ref={setRefs}
       className={clsx(
         "transition-all duration-200",
         isDragging && "opacity-40 scale-[0.98]",
@@ -262,14 +273,21 @@ const TopicBlock = ({
 
 // ─── Main ContentComposer ─────────────────────────────────────────────────────
 const ContentComposer = ({
+  header,
+  setHeader,
+  isExpanded,
+  contentStatus,
+  externalApiId,
+  setExternalApiId,
   templateContents,
+  templateContentId,
   setTemplateContent,
+  onStatusChangeHandler,
 }: ContentComposerProps) => {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const { allWebsites } = useCommon();
 
-  const [selectedId, setSelectedId] = useState("all");
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -318,39 +336,49 @@ const ContentComposer = ({
             </p>
           </div>
 
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className={clsx(
-              "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
-              isDark
-                ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
-                : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
+          <div className="flex items-center gap-2">
+            {templateContentId && (
+              <StatusChangeBtn
+                status={contentStatus}
+                handleStatusChange={onStatusChangeHandler}
+              />
             )}
-          >
-            <option value="all">{t("all_websites_option")}</option>
-            {allWebsites?.map((site) => (
-              <option key={site._id} value={site._id}>
-                {site.name}
-              </option>
-            ))}
-          </select>
+            <select
+              value={externalApiId}
+              onChange={(e) => setExternalApiId(e.target.value)}
+              className={clsx(
+                "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
+                isDark
+                  ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
+              )}
+            >
+              <option value="all">{t("select_website")}</option>
+              {allWebsites?.map((site) => (
+                <option key={site._id} value={site._id}>
+                  {site.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="overflow-y-scroll h-[64vh]">
-        {/* Add topic / config controls */}
+      <div className="overflow-y-scroll h-[64vh] pb-8">
         <ContentConfigHeader
+          header={header}
+          setHeader={setHeader}
+          isExpanded={isExpanded}
           templateContents={templateContents}
           setTemplateContent={setTemplateContent}
         />
 
         {/* Drag hint */}
-        {templateContents.length > 1 && (
+        {templateContents?.length > 1 && (
           <p
             className={clsx(
-              "text-xs mb-2 flex items-center gap-1",
-              isDark ? "text-gray-600" : "text-gray-400",
+              "text-xs font-bold italic mb-2 flex items-center gap-1",
+              isDark ? "text-gray-300" : "text-gray-600",
             )}
           >
             <GripVertical className="w-3 h-3" />
@@ -360,9 +388,9 @@ const ContentComposer = ({
 
         {/* Topic list */}
         <div className="space-y-3">
-          {templateContents.map((topic, index) => (
+          {templateContents?.map((topic, index) => (
             <TopicBlock
-              key={`${topic.topic}-${index}`}
+              key={index}
               topic={topic}
               index={index}
               isDark={isDark}

@@ -1,4 +1,9 @@
 {
+  "expand": "Expand",
+  "split": "Split",
+  "loading_text": "Loading more items...",
+  "loading_end_text": "No more items",
+
   "create_new_topic": "Create New Topic",
   "placeholder_new_topic": "e.g., Homepage Sections, Featured Content...",
   "button_create": "Create",
@@ -38,6 +43,8 @@
   "recommended_this_week": "Recommended This Week",
   "create": "Create",
   "search_businesses_placeholder": "Search businesses by name, email, or phone...",
+
+  "select_website": "Select Website",
 
   "drag_handle_instruction": "Drag the handle to reorder topics",
   "no_topics_yet": "No topics yet. Add one to get started.",
