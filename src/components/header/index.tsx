@@ -27,14 +27,9 @@ export default function Header() {
   const { t, i18n } = useTranslation("common");
 
   const { allWebsites, dateRanges: timeframes, dmosAuthorities } = useCommon();
-  const {
-    authorityId,
-    dmoId,
-    websiteId,
-    userRole,
-    timeFrame,
-    associatedWebsite,
-  } = useAppSelector((state) => state.auth);
+  const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
   const { textPrimary, selectInputClasses, isDark, language } =
