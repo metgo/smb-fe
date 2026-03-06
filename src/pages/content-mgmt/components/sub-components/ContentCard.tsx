@@ -229,12 +229,12 @@ const ContentCard = ({
             </h4>
 
             <span className="ml-2 px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full whitespace-nowrap">
-              {categoryName}
+              {categoryName ? categoryName : "-"}
             </span>
           </div>
 
           {/* Description */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
             {descripition ? getPlainTextFromRichText(descripition) : "-"}
           </p>
         </div>
