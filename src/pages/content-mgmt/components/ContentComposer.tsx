@@ -12,6 +12,7 @@ import {
   TopicCategoryCard,
   TopicHeader,
 } from "./sub-components";
+import { toast } from "sonner";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -30,6 +31,10 @@ interface TopicBlockProps {
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
   onDelete: (index: number) => void;
   moveItem: (from: number, to: number) => void;
+  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
+  setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
+  showDeleteConfirm?: boolean;
+  topicToDelete?: number | null;
 }
 
 const TopicBlock = ({
@@ -40,6 +45,10 @@ const TopicBlock = ({
   setTemplateContent,
   onDelete,
   moveItem,
+  topicToDelete,
+  setTopicToDelete,
+  showDeleteConfirm,
+  setShowDeleteConfirm,
 }: TopicBlockProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -192,6 +201,10 @@ const TopicBlock = ({
               onDelete={onDelete}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
+              topicToDelete={topicToDelete}
+              setTopicToDelete={setTopicToDelete}
+              showDeleteConfirm={showDeleteConfirm}
+              setShowDeleteConfirm={setShowDeleteConfirm}
             />
           </div>
 
@@ -257,11 +270,19 @@ const ContentComposer = ({
   const { allWebsites } = useCommon();
 
   const [selectedId, setSelectedId] = useState("all");
+  const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const deleteTopic = (index: number) => {
+    if (!topicToDelete) return;
+
     const updated = [...templateContents];
     updated.splice(index, 1);
     setTemplateContent(updated);
+    toast.success(t("topic_deleted"));
+
+    setTopicToDelete(null);
+    setShowDeleteConfirm(false);
   };
 
   // Reorder topics by swapping indices
@@ -349,6 +370,10 @@ const ContentComposer = ({
               setTemplateContent={setTemplateContent}
               onDelete={deleteTopic}
               moveItem={moveItem}
+              topicToDelete={topicToDelete}
+              setTopicToDelete={setTopicToDelete}
+              showDeleteConfirm={showDeleteConfirm}
+              setShowDeleteConfirm={setShowDeleteConfirm}
             />
           ))}
 

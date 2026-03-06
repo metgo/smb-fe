@@ -68,6 +68,7 @@ const ContentConfigHeader = ({
 
     setTemplateContent(updated);
     setNewCategoryName("");
+    setSelectedTopicForNewCategory("");
   };
 
   return (

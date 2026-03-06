@@ -12,7 +12,8 @@
   "show_topic": "Show Topic",
   "hide_topic": "Hide Topic",
   "delete_topic": "Delete Topic",
-
+  "topic_deleted": "Topic Deleted",
+  "delete_topic_confirm": "All the categories related to this topic will also be deleted",
   "category_deleted": "Category deleted",
   "category_created": "Category created",
   "messages_sent_to_customers": "Messages sent to {{count}} customer{{count !== 1 ? 's' : ''}}",
@@ -23,6 +24,7 @@
   "drag_businesses_here_to_add_them_to_this_category": "Drag businesses here to add them to this category",
   "rename_category": "Rename Category",
   "delete_category": "Delete Category",
+  "delete_category_confirm": "All businesses inside this category will also be deleted",
   "content_manager_title": "Content Manager",
   "content_manager_description": "Organize businesses into custom categories for your website sections",
   "custom_categories_title": "Custom Categories",

@@ -20,6 +20,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { ConfirmDialog } from "@/components/shared";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -45,6 +46,11 @@ const TopicCategoryCard = ({
   const [expanded, setExpanded] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(group.category);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{
+    topicIndex: number;
+    categoryIndex: number;
+  } | null>(null);
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
@@ -81,10 +87,26 @@ const TopicCategoryCard = ({
     }),
   });
 
-  const deleteCategory = () => {
-    const updated = [...templateContents];
-    updated[topicIndex].groups.splice(categoryIndex, 1);
-    setTemplateContent(updated);
+  const requestDeleteCategory = (topicIdx: number, catIdx: number) => {
+    setCategoryToDelete({ topicIndex: topicIdx, categoryIndex: catIdx });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDeleteCategory = () => {
+    if (!categoryToDelete) return;
+
+    const { topicIndex, categoryIndex } = categoryToDelete;
+
+    setTemplateContent((prev) => {
+      const updated = [...prev];
+      updated[topicIndex].groups.splice(categoryIndex, 1);
+      return updated;
+    });
+
+    toast.success(t("category_deleted"));
+
+    setIsConfirmOpen(false);
+    setCategoryToDelete(null);
   };
 
   const renameCategory = () => {
@@ -270,7 +292,7 @@ const TopicCategoryCard = ({
           <Button
             size="sm"
             variant="ghost"
-            onClick={deleteCategory}
+            onClick={() => requestDeleteCategory(topicIndex, categoryIndex)}
             title="Delete"
             className={clsx(
               isDark
@@ -319,6 +341,18 @@ const TopicCategoryCard = ({
           )}
         </div>
       )}
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("delete_category")}
+        message={t("delete_category_confirm")}
+        variant="danger"
+        confirmText={t("delete")}
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setCategoryToDelete(null);
+        }}
+        onConfirm={confirmDeleteCategory}
+      />
     </div>
   );
 };
