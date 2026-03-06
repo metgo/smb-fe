@@ -1,12 +1,15 @@
 import BulkActionBar from "./BulkActionBar";
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
+import FilterChips from "./FilterChips";
 import IdleLogout from "./IdleLogout";
 import ImageWithFallback from "./ImageWithFallback";
 import InfoTooltip from "./InfoTooltip";
+import ItemStatusBadge from "./ItemStatusBadge";
 import PageHeader from "./PageHeader";
 import PageStats from "./PageStats";
 import ReordableDataTable from "./ReordableDataTable";
+import SearchInput from "./SearchInput";
 import SelectableChips from "./SelectableChips";
 import Spinner from "./Spinner";
 import TabsSection from "./TabsSection";
@@ -23,10 +26,13 @@ export {
   TabsSection,
   WizardFooter,
   WebsiteSelect,
+  SearchInput,
+  FilterChips,
   ConfirmDialog,
   BulkActionBar,
   ViewModeToggle,
   SelectableChips,
+  ItemStatusBadge,
   ImageWithFallback,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,

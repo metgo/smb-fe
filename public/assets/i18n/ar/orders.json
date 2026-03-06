@@ -12,10 +12,12 @@
   "totalAmount": "المبلغ الإجمالي",
   "createdAt": "تاريخ الإنشاء",
   "paymentDate": "تاريخ الدفع",
+  "sending": "جارٍ الإرسال...",
   "purchaser_name": "اسم المشتري",
   "purchaser_information": "معلومات المشتري",
   "order_type": "نوع الطلب",
   "online": "عبر الإنترنت",
+  "refund_in_process": "استرداد الأموال قيد المعالجة",
   "offline": "غير متصل",
   "status": "الحالة",
   "field_required": "هذا الحقل مطلوب",
@@ -28,6 +30,8 @@
   "paid_orders": "الطلبات المدفوعة",
   "cancelled_orders": "الطلبات الملغاة",
   "totalOrders": "إجمالي الطلبات",
+  "order_cancelled_successfully": "تم إلغاء الطلب بنجاح",
+  "cancel_failed": "فشل الإلغاء",
   "all": "الكل",
   "addOrder": "إضافة طلب",
   "revenue": "الإيرادات",
@@ -152,5 +156,8 @@
   "failed_draft": "فشل حفظ المسودة",
   "order_published": "تم نشر الطلب",
   "draft_saved": "تم حفظ المسودة",
-  "enterDetails": "أدخل التفاصيل"
+  "enterDetails": "أدخل التفاصيل",
+  "vendor": "البائع",
+  "category": "الفئة",
+  "description": "الوصف"
 }

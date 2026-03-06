@@ -1,13 +1,13 @@
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Users, Activity, Eye, Clock, Target } from "lucide-react";
-import clsx from "clsx";
 
+import { useAppSelector } from "@/hooks/hooks";
 import { InfoTooltip } from "@/components/shared";
 import { normalizeTime } from "@/helpers/formatter";
-import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
+import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
 
 const COLORS = {
   blue: {
@@ -311,7 +311,7 @@ export default function GAOverview() {
                   isDark ? "text-gray-400" : "text-gray-600",
                 )}
               >
-                Key performance metrics and trends
+                {t("ga_desc")}
               </p>
             </div>
             <InfoTooltip

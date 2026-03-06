@@ -39,8 +39,7 @@ export default function ProfilePage() {
 
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
-  const { language } = useAppSelector((state) => state.settings);
-  const { isDark, textSecondary } = useThemeClasses();
+  const { isDark, textSecondary, language, isRTL } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -58,6 +57,7 @@ export default function ProfilePage() {
     localStorage.removeItem("user_info");
     localStorage.removeItem("access_token");
     navigate(routes.auth, { replace: true });
+    window.location.reload();
   };
 
   const bank = banks?.find(
@@ -106,8 +106,17 @@ export default function ProfilePage() {
               onClick={handleLogout}
               className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl cursor-pointer"
             >
-              <LogOut className="w-5 h-5" />
-              {t("logout")}
+              {isRTL ? (
+                <>
+                  {t("logout")}
+                  <LogOut className="w-5 h-5 rotate-180" />
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-5 h-5" />
+                  {t("logout")}
+                </>
+              )}
             </button>
           </div>
         </div>

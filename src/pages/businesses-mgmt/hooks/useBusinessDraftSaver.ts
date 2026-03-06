@@ -1,7 +1,16 @@
 import { toast } from "sonner";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ItemStatus } from "@/enums/status.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { IOpMode } from "@/enums/operation.types";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 interface UseBusinessDraftSaverProps {
+  opMode: IOpMode;
+  refetch: () => void;
+  onClose: () => void;
   currentStep: number;
   businessId: string;
   setBusinessId: (id: string) => void;
@@ -11,6 +20,9 @@ interface UseBusinessDraftSaverProps {
 }
 
 export function useBusinessDraftSaver({
+  opMode,
+  onClose,
+  refetch,
   currentStep,
   businessId,
   setBusinessId,
@@ -18,8 +30,10 @@ export function useBusinessDraftSaver({
   updateBusiness,
   stepPayloadMap,
 }: UseBusinessDraftSaverProps) {
+  const navigate = useNavigate();
+  const { isTraveller } = useUserRoles();
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
-
+  const { t } = useTranslation("toast");
   // 🔹 Mark step dirty
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -32,12 +46,11 @@ export function useBusinessDraftSaver({
         let internalbusinessId;
 
         // 1️⃣ Initialize event if not created yet
-        if (!businessId) {
+        if (opMode !== IOpMode.EDIT) {
           const res = await initBusinessCreate().unwrap();
           internalbusinessId = res?.id;
           setBusinessId(res?.id);
         }
-
         // 2️⃣ Build base payload
         let payload = stepPayloadMap;
 
@@ -45,14 +58,14 @@ export function useBusinessDraftSaver({
         if (isPublish) {
           payload = {
             ...payload,
-            status: "APPROVED",
+            status: isTraveller ? ItemStatus.PENDING : ItemStatus.APPROVED,
           };
         }
 
         if (!Object.keys(payload).length) return;
 
         // 4️⃣ Update event
-        const res = await updateBusiness({
+        await updateBusiness({
           businessId: internalbusinessId || businessId!,
           body: payload,
         }).unwrap();
@@ -64,20 +77,32 @@ export function useBusinessDraftSaver({
           return next;
         });
 
-        toast.success(
-          res?.message ?? (isPublish ? "Event published" : "Draft saved"),
-        );
+        if (opMode === IOpMode.DUPLICATE) {
+          navigate(
+            `${routes.businessDetails}?businessId=${internalbusinessId}`,
+          );
+        } else {
+          refetch();
+        }
+        onClose();
+        toast.success(isPublish ? t("business_published") : t("draft_saved"));
       } catch (err: any) {
-        toast.error(err?.message || "Failed to save draft");
+        toast.error(err?.data?.message || t("draft_failed"));
       }
     },
     [
+      t,
       currentStep,
       stepPayloadMap,
       initBusinessCreate,
       businessId,
       updateBusiness,
       setBusinessId,
+      isTraveller,
+      refetch,
+      onClose,
+      navigate,
+      opMode,
     ],
   );
 

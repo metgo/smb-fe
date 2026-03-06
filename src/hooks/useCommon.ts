@@ -6,6 +6,7 @@ import {
   useGetAllWebsitesQuery,
   useGetDmosQuery,
   useGetSubCategoriesQuery,
+  useGetAllTagsQuery,
 } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
@@ -23,6 +24,8 @@ export function useCommon() {
   const dmosAuthorities: IDmo[] = data?.data;
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
+  const { data: allTags } = useGetAllTagsQuery();
+
   const websites = [
     { value: "all", label: t("all_websites") },
     { value: "visitnegev", label: "visitnegev.co.il" },
@@ -36,24 +39,19 @@ export function useCommon() {
     { value: "last_30_days", label: t("last_30_days") },
     { value: "last_90_days", label: t("last_90_days") },
     { value: "last_year", label: t("last_year") },
-  ];
-
-  const languages: { value: Language; label: string }[] = [
-    { value: "en", label: "English" },
-    { value: "ar", label: "العربية" },
-    { value: "he", label: "עברית" },
+    { value: "all_time", label: t("all_time") },
   ];
 
   return {
     websites,
     dateRanges,
-    languages,
     dmosAuthorities,
-    primaryCategories,
-    accessibility,
-    groupTypes,
     socialMedia,
     allWebsites,
+    groupTypes: groupTypes?.datas?.data,
+    accessibility: accessibility?.datas?.data,
+    categories: primaryCategories?.datas?.data,
     subCategories: subCategories?.datas?.data,
+    allTags,
   };
 }

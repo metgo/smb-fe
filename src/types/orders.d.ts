@@ -1,9 +1,9 @@
 type TPaymentStatus =
-  | "pending"
-  | "success"
-  | "failed"
-  | "refunded"
-  | "partially_refunded";
+  | "PENDING"
+  | "SUCCESS"
+  | "FAILED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
 type TOrderStatus =
   | "draft"
   | "processing"
@@ -11,7 +11,7 @@ type TOrderStatus =
   | "confirmed"
   | "delivered"
   | "completed"
-  | "cancelled"
+  | "canceled"
   | "partially_cancelled"
   | "failed";
 type TOrderType = "online" | "offline";

@@ -11,6 +11,14 @@ import {
 import { useTranslation } from "react-i18next";
 
 interface MediaDetailsProps {
+  logoImage?: IImageUpload | null;
+  handleLogoImageSelect?: (file: File) => void;
+  confirmDeleteLogo?: () => void;
+  deleteTargetLogo?: string | null;
+  setDeleteTargetLogo?: (imgUrl: string | null) => void;
+  isLogoImageDeleting?: boolean;
+  handleDeleteLogoImage?: (logoImg: IImageUpload) => void;
+
   images: IImageUpload[];
   primaryImageIndex: number;
   setPrimaryImage: (idx: number) => void;
@@ -32,9 +40,10 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
   confirmDelete,
   isImageDeleting,
   handleImageUpload,
+  logoImage,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark, rowDir } = useThemeClasses();
+  const { isDark, textTertiary } = useThemeClasses();
 
   const handleViewImage = (img: IImageUpload) => {
     window.open(img.previewUrl, "_blank");
@@ -42,9 +51,50 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
 
   return (
     <div className="space-y-6 min-h-150">
-      {/* Header */}
-      <div className={clsx("flex items-center justify-between mb-2", rowDir)}>
+      {logoImage && (
         <div>
+          <div className={clsx(textTertiary, "font-bold mb-3")}>
+            {t("logo")}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
+              <ImageWithFallback
+                src={logoImage?.previewUrl}
+                alt={"Business logo"}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* <div className="flex gap-2">
+            <label
+              htmlFor="logo-image-upload"
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {t("replace_logo")}
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleLogoImageSelect(file);
+              }}
+              className="hidden"
+              id="logo-image-upload"
+            />
+          </div> */}
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className={clsx("flex items-center justify-between mb-2")}>
+        <div className={clsx(textTertiary, "font-bold  mb-3")}>
+          {t("images")}
+        </div>
+
+        {/* <div>
           <h2
             className={clsx(
               "text-2xl font-bold",
@@ -59,12 +109,13 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               isDark ? "text-gray-400" : "text-gray-600",
             )}
           >
-            {images.length} {images.length === 1 ? "image" : "images"} uploaded
-            {images.length < 10 && ` • ${10 - images.length} more allowed`}
+            {images?.length} {images?.length === 1 ? "image" : "images"}{" "}
+            uploaded
+            {images?.length < 10 && ` • ${10 - images.length} more allowed`}
           </p>
-        </div>
+        </div> */}
 
-        {images.length < 10 && (
+        {images?.length < 10 && (
           <>
             {/* ---------FUTURE USE----------- */}
             {/* <button
@@ -95,28 +146,10 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
         )}
       </div>
 
-      {/* Upload limit warning */}
-      {images.length >= 8 && images.length < 10 && (
-        <div
-          className={clsx(
-            "mt-4 p-3 rounded-lg flex items-center gap-2 text-sm",
-            isDark
-              ? "bg-yellow-500/10 border border-yellow-800/50 text-yellow-400"
-              : "bg-yellow-50 border border-yellow-200 text-yellow-800",
-          )}
-        >
-          <ImageIcon className="w-4 h-4 shrink-0" />
-          <span>
-            You can upload {10 - images.length} more{" "}
-            {10 - images.length === 1 ? "image" : "images"}
-          </span>
-        </div>
-      )}
-
       {/* Image Gallery */}
-      {images.length > 0 ? (
+      {images?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {images.map((img, idx) => (
+          {images?.map((img, idx) => (
             <div
               key={idx}
               className={clsx(
@@ -131,7 +164,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
               )}
             >
               <ImageWithFallback
-                src={img.previewUrl}
+                src={img?.previewUrl}
                 alt={`Image ${idx + 1}`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
@@ -218,7 +251,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
                     )}
                   >
                     <Star className="w-3.5 h-3.5 fill-white" />
-                    {t("primary_image") || "Primary"}
+                    {t("primary") || "Primary"}
                   </div>
                 </div>
               )}

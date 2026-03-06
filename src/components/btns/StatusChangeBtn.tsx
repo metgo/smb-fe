@@ -1,41 +1,86 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface StatusChangeBtnProps {
   status: TStatus;
   handleStatusChange: (status: TStatus) => void;
 }
 
+type StatusOption = {
+  color: string; // dot bg color
+  textColor: string; // button text color
+  borderColor: string; // button border color
+  label: string;
+};
+
 const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   status,
   handleStatusChange,
 }) => {
   const { t } = useTranslation("common");
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
+  const { userRole } = useAppSelector((state) => state.auth);
 
-  const [currentStatus, setCurrentStatus] = useState<TStatus>(
-    status?.toLowerCase() as TStatus,
-  );
+  const [currentStatus, setCurrentStatus] = useState<TStatus | undefined>();
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (status) {
+      setCurrentStatus(status?.toLowerCase() as TStatus);
+    }
+  }, [status]);
+
   /* -------------------- Status Config -------------------- */
-  const statusConfig = useMemo(
-    () => ({
-      draft: { color: "bg-gray-500", label: t("draft") },
-      pending: { color: "bg-yellow-500", label: t("pending") },
-      approved: { color: "bg-green-500", label: t("approved") },
-      rejected: { color: "bg-red-500", label: t("rejected") },
-      archived: { color: "bg-gray-400", label: t("archived") },
-    }),
-    [t],
-  );
+  const allStatuses: Record<TStatus, StatusOption> = {
+    draft: {
+      color: "bg-gray-400",
+      textColor: "text-gray-400",
+      borderColor: "border-gray-400",
+      label: t("draft"),
+    },
+    pending: {
+      color: "bg-yellow-500",
+      textColor: "text-yellow-500",
+      borderColor: "border-yellow-500",
+      label: t("pending"),
+    },
+    archived: {
+      color: "bg-orange-400",
+      textColor: "text-orange-400",
+      borderColor: "border-orange-400",
+      label: t("archived"),
+    },
+    approved: {
+      color: "bg-green-500",
+      textColor: "text-green-500",
+      borderColor: "border-green-500",
+      label: t("approved"),
+    },
+    rejected: {
+      color: "bg-red-500",
+      textColor: "text-red-500",
+      borderColor: "border-red-500",
+      label: t("rejected"),
+    },
+    closed: {
+      color: "bg-red-600",
+      textColor: "text-red-600",
+      borderColor: "border-red-600",
+      label: t("closed"),
+    },
+  };
+
+  const activeOption = currentStatus ? allStatuses[currentStatus] : undefined;
+  const restrictedStatuses: TStatus[] = ["approved", "rejected"];
+  const isTraveller = userRole === UserRole.TRAVELLER;
 
   /* -------------------- Outside Click Handler -------------------- */
   useEffect(() => {
@@ -70,58 +115,89 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 text-gray-200 font-medium"
+        className={clsx(
+          "flex items-center gap-2 px-4 py-2 rounded-md text-sm border font-medium transition-colors duration-200",
+          activeOption
+            ? [activeOption.textColor, activeOption.borderColor]
+            : isDark
+              ? "text-gray-400 border-gray-500"
+              : "text-gray-400 border-gray-300",
+        )}
       >
-        <span>{t("change_status")}</span>
+        {activeOption ? (
+          <>
+            <span
+              className={clsx("w-2.5 h-2.5 rounded-full", activeOption.color)}
+            />
+            <span>{activeOption.label}</span>
+          </>
+        ) : (
+          <span>{t("change_status")}</span>
+        )}
+
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={clsx(
+            "w-4 h-4 transition-transform",
+            isOpen ? "rotate-180" : "",
+            activeOption ? activeOption.textColor : "text-gray-400",
+          )}
         />
       </button>
 
       {isOpen && (
         <div
-          className={`absolute top-full mt-2 w-48 rounded-lg shadow-lg border z-60
-            ${isRTL ? "left-0" : "-right-4"}
-            ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300"}
-          `}
+          className={clsx(
+            "absolute top-full mt-2 w-48 rounded-lg shadow-lg border z-60",
+            isRTL ? "left-0" : "-right-4",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300",
+          )}
         >
           <div
-            className={`p-2 border-b ${
-              isDark ? "border-gray-700" : "border-gray-200"
-            }`}
+            className={clsx(
+              "p-2 border-b",
+              isDark ? "border-gray-700" : "border-gray-200",
+            )}
           >
             <p
-              className={`text-xs px-2 py-1 ${
-                isDark ? "text-gray-400" : "text-gray-600"
-              }`}
+              className={clsx(
+                "text-xs px-2 py-1",
+                isDark ? "text-gray-400" : "text-gray-600",
+              )}
             >
               {t("status")}
             </p>
           </div>
 
           <div className="p-2">
-            {(Object.keys(statusConfig) as TStatus[]).map((key) => {
-              const option = statusConfig[key];
+            {(Object.keys(allStatuses) as TStatus[]).map((key) => {
+              const option = allStatuses[key];
+              if (!option) return null;
+
               const isActive = key === currentStatus;
+              const isDisabled =
+                isTraveller && restrictedStatuses?.includes(key);
 
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => handleChange(key)}
-                  className={`w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between
-                    ${isRTL ? "text-right" : "text-left"}
-                    ${
-                      isDark
+                  onClick={() => !isDisabled && handleChange(key)}
+                  disabled={isDisabled}
+                  className={clsx(
+                    "w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors duration-150",
+                    isRTL ? "text-right" : "text-left",
+
+                    isDisabled
+                      ? "cursor-not-allowed opacity-60 text-gray-500"
+                      : isDark
                         ? "text-gray-300 hover:bg-gray-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }
-                  `}
+                        : "text-gray-700 hover:bg-gray-100",
+                  )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className={`w-3 h-3 rounded-full ${option.color}`} />
+                  <div className={clsx("flex items-center gap-2")}>
+                    <span
+                      className={clsx("w-3 h-3 rounded-full", option.color)}
+                    />
                     <span>{option.label}</span>
                   </div>
 

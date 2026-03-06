@@ -26,6 +26,7 @@ import {
   Users,
   File,
   UserCircle,
+  Layers2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -50,8 +51,7 @@ export default function Sidebar() {
 
   const dispatch = useAppDispatch();
 
-  const { isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { isDark, isRTL } = useThemeClasses();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -78,7 +78,7 @@ export default function Sidebar() {
       path: routes.productsMgmt,
       label: t("products") || "Products",
       icon: Package,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "orders",
@@ -147,17 +147,24 @@ export default function Sidebar() {
     },
     {
       id: "site-management",
-      path: routes.dashboard,
+      path: routes.contentMgmt,
       label: t("site_management") || "Site Management",
       icon: Globe,
-      isEnabled: false,
+      isEnabled: true,
       subItems: [
         {
           id: "home",
-          path: routes.dashboard,
+          path: routes.home,
           label: t("home") || "Home",
           icon: Home,
           isEnabled: false,
+        },
+        {
+          id: "content-mgmt",
+          path: routes.contentMgmt,
+          label: t("content_mgmt") || "Content Management",
+          icon: Layers2,
+          isEnabled: true,
         },
         {
           id: "promotions",
@@ -248,7 +255,9 @@ export default function Sidebar() {
     navigate(item.path);
   };
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) =>
+    location.pathname.slice(0, 5) === path.slice(0, 5);
+
   const isExpanded = (path: string) => expandedItems.includes(path);
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
@@ -285,9 +294,7 @@ export default function Sidebar() {
                 : isDark
                   ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-          } ${isSidebarCollapsed ? "justify-center" : ""} ${
-            isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""
-          }`}
+          } ${isSidebarCollapsed ? "justify-center" : ""}`}
         >
           <Icon
             className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}

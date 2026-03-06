@@ -17,7 +17,7 @@ export const useSingleImageUpload = ({
   initialImage,
   onChange,
 }: UseSingleImageUploadProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("toast");
 
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [deleteMedia, { isLoading: isImageDeleting }] =

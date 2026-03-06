@@ -5,10 +5,14 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface ProductMultilingualContentProps {
   t: (key: string) => string;
   formData: {
-    name: { he: string; ar: string };
-    shortDescription: { he: string; ar: string };
+    name: string;
+    nameHe: string;
+    nameAr: string;
+    shortDescription: string;
+    shortDescriptionHe: string;
+    shortDescriptionAr: string;
   };
-  setFormData: (data: any) => void;
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
@@ -41,11 +45,11 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
             </label>
             <input
               type="text"
-              value={formData.name.he}
+              value={formData.nameHe}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  name: { ...formData.name, he: e.target.value },
+                  nameHe: e.target.value,
                 })
               }
               className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
@@ -57,14 +61,11 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
               {t("product_short_description")}
             </label>
             <textarea
-              value={formData.shortDescription.he}
+              value={formData.shortDescriptionHe}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  shortDescription: {
-                    ...formData.shortDescription,
-                    he: e.target.value,
-                  },
+                  shortDescriptionHe: e.target.value,
                 })
               }
               rows={2}
@@ -88,11 +89,11 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
             </label>
             <input
               type="text"
-              value={formData.name.ar}
+              value={formData.nameAr}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  name: { ...formData.name, ar: e.target.value },
+                  nameAr: e.target.value,
                 })
               }
               className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
@@ -104,14 +105,11 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
               {t("product_short_description")}
             </label>
             <textarea
-              value={formData.shortDescription.ar}
+              value={formData.shortDescriptionAr}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  shortDescription: {
-                    ...formData.shortDescription,
-                    ar: e.target.value,
-                  },
+                  shortDescriptionAr: e.target.value,
                 })
               }
               rows={2}

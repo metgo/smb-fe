@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Calendar, MapPin, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { formatDate } from "@/helpers/formatter";
@@ -10,16 +10,15 @@ import { ImageWithFallback, InfoTooltip } from "@/components/shared";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 
 export default function UpcomingEvents() {
-  const { t, i18n } = useTranslation("dashboard");
-  const language = i18n?.language as Language;
-  const { isDark } = useThemeClasses();
+  const { t } = useTranslation("dashboard");
+  const { isDark, language, isRTL } = useThemeClasses();
 
   const { data: events } = useGetAllEventsQuery({
     page: 1,
     limit: 3,
   });
 
-  if (events?.length === 0) return null;
+  if (events?.totalData === 0) return null;
 
   return (
     <section>
@@ -42,7 +41,7 @@ export default function UpcomingEvents() {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events?.map((event: any) => (
+        {events?.data?.map((event: any) => (
           <Link
             key={event._id}
             to={`${routes.eventDetails}?eventId=${event?._id}`}
@@ -113,7 +112,11 @@ export default function UpcomingEvents() {
         >
           <div className="text-center">
             <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-              <ArrowRight className="w-6 h-6 text-white" />
+              {isRTL ? (
+                <ArrowLeft className="w-6 h-6 text-white" />
+              ) : (
+                <ArrowRight className="w-6 h-6 text-white" />
+              )}
             </div>
 
             <p

@@ -96,3 +96,57 @@ export const parseAddress = (address: any) => {
     country: parts[2]?.trim(), // Israel
   };
 };
+
+export function getPlainTextFromRichText(html: string): string {
+  if (!html) return "";
+
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+
+  return temp.textContent?.trim() || "";
+}
+
+export function getMatchedItems(originalList: any, selectedIds?: string[]) {
+  if (!originalList?.length || !selectedIds?.length) return [];
+
+  const matchedItems = originalList?.filter((item: any) =>
+    selectedIds?.includes(item._id),
+  );
+  return matchedItems ?? [];
+}
+
+export function removeNulls(arr: string[]) {
+  return arr?.filter((item) => item !== null);
+}
+
+export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
+  switch (mode) {
+    case "CREATE":
+      return t("create");
+    case "EDIT":
+      return t("edit");
+    case "DUPLICATE":
+      return t("duplicate");
+    default:
+      return "";
+  }
+};
+
+export function getLngWiseStr(
+  lng: Language,
+  en?: string,
+  he?: string,
+  ar?: string,
+) {
+  switch (lng) {
+    case "he":
+      return he || en || ar || "-";
+
+    case "ar":
+      return ar || en || he || "-";
+
+    case "en":
+    default:
+      return en || he || ar || "-";
+  }
+}

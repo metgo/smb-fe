@@ -15,12 +15,14 @@
   "email": "אימייל",
   "phone": "טלפון",
   "status": "סטטוס",
+  "sending": "שולח...",
   "totalAmount": "סכום כולל",
   "createdAt": "תאריך יצירה",
   "paymentDate": "תאריך תשלום",
   "field_required": "שדה חובה",
   "noOrdersFound": "לא נמצאו הזמנות",
   "order_status": "סטטוס הזמנה",
+  "refund_in_process": "החזר כספי בתהליך",
   "payment_status": "סטטוס תשלום",
   "payment_method": "אמצעי תשלום",
   "delivery_type": "סוג משלוח",
@@ -91,6 +93,8 @@
   "add_order_wizard_placeholder": "אשף הוספת הזמנה - בקרוב",
   "qr_scanner_placeholder": "תצוגת מצלמה תופיע כאן",
   "name": "שם",
+  "order_cancelled_successfully": "ההזמנה בוטלה בהצלחה",
+  "cancel_failed": "הביטול נכשל",
   "total": "סה\"כ",
   "columns": "עמודות",
   "gross": "ברוטו",
@@ -152,5 +156,8 @@
   "failed_draft": "שמירת הטיוטה נכשלה",
   "order_published": "ההזמנה פורסמה",
   "draft_saved": "הטיוטה נשמרה",
-  "enterDetails": "הזן פרטים"
+  "enterDetails": "הזן פרטים",
+  "vendor": "ספק",
+  "category": "קטגוריה",
+  "description": "תיאור"
 }

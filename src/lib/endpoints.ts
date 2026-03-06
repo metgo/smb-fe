@@ -1,6 +1,9 @@
 export const endpoints = {
   login: "/auth/login",
+  forgotPassword: "/auth/send-otp",
   signUp: "/auth/signUp",
+  verifyOtp: "/auth/verify-otp",
+  resetPassword: "/auth/forget-password",
   googleAuth: "/auth/google/url",
   registerStep1: "/auth/register-step1",
   registerStep2: "/auth/register-step2",
@@ -22,6 +25,8 @@ export const endpoints = {
 
   categories: "/admin/buss-category",
   subCategories: "admin/buss-sub-category",
+  tags: "/tags",
+
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
   dmos: "/dmos",
@@ -30,6 +35,7 @@ export const endpoints = {
   // business
   business: "/businesses",
   businesses: "/businesses",
+  searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
 
@@ -42,7 +48,9 @@ export const endpoints = {
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/bulk-orders-update",
   orderStatus: "/admin/cancel-orders",
+  orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
+  productsStats: "/products-stat",
 
   // events
   events: "/events",
@@ -60,6 +68,11 @@ export const endpoints = {
   websites: "/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
+
+  generateTags: "/generate-tags",
+
+  // Content
+  contentConfig: "/site-filter-config",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

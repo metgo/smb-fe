@@ -44,14 +44,18 @@ interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
   editData?: any;
+  refetch?: () => void;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
   editData,
+  refetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("toast");
+
   const [searchParams] = useSearchParams();
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
   const { userRole, dmoId, authorityId } = useAppSelector(
@@ -78,18 +82,16 @@ export default function CreateEventWizard({
   const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>(
     [],
   );
-  const [localTickets, setLocalTickets] = useState([]); // It's for TRK cache issue solved locally.
+  const [localTickets, setLocalTickets] = useState([]);
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [eventName, setEventName] = useState("");
   const [shortDescription, setShortDescription] = useState("");
-  const [fullDescription, setFullDescription] = useState("");
+  const [fullDescription, setFullDescription] = useState("<p></p>");
   const [eventLanguage, setEventLanguage] = useState<Language>("en");
-  const [eventStatus, setEventStatus] = useState<
-    "draft" | "pending" | "approved"
-  >("draft");
+  const [eventStatus, setEventStatus] = useState<EventStatus>("draft");
   const [internalNotes, setInternalNotes] = useState("");
   const [selectedSubCategoriesId, setSubCategoriesId] = useState<string[]>([]);
   const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
@@ -515,7 +517,7 @@ export default function CreateEventWizard({
     }
 
     if (!allValid) {
-      toast.error(t("requried_fill_up_info"));
+      toast.error(tc("fill_all_fields"));
       return;
     }
     setIsPublishing(true);
@@ -527,7 +529,10 @@ export default function CreateEventWizard({
       });
     }
     setIsPublishing(false);
-    toast.success(t("event_published_success"));
+    toast.success(tc("event_published"));
+    if (refetch) {
+      refetch();
+    }
     onClose();
   };
 
@@ -840,7 +845,7 @@ export default function CreateEventWizard({
 
       <WizardFooter
         currentStep={currentStep}
-        totalSteps={7}
+        totalSteps={steps?.length}
         isSaving={isEventUpdating}
         isPublishing={isPublishing}
         onPrevious={handlePrevious}

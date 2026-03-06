@@ -9,10 +9,13 @@ import { ModalWrapper } from "@/components/wrapper";
 import {
   useUpdateOrderConfirmationMutation,
   useUpdateOrderStatusMutation,
+  useUpdateProductOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
+import { ImageWithFallback } from "@/components/shared";
+import clsx from "clsx";
 
 interface OrderDetailsModalProps {
   theme: Theme;
@@ -23,6 +26,8 @@ interface OrderDetailsModalProps {
   getOrderStatusBadge: any;
   getPaymentStatusBadge: any;
   isLoading: any;
+  isFetching: any;
+  refetch: any;
 }
 
 function OrderDetailsModal({
@@ -31,7 +36,9 @@ function OrderDetailsModal({
   theme,
   isRTL,
   t,
+  refetch,
   isLoading,
+  isFetching,
   getOrderStatusBadge,
   getPaymentStatusBadge,
 }: OrderDetailsModalProps) {
@@ -41,37 +48,34 @@ function OrderDetailsModal({
     null,
   );
   const [showProductModal, setShowProductModal] = useState(false);
-  const [orderProducts, setOrderProducts] = useState<IOrderProduct[]>(
-    order?.products,
-  );
+
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [updateProductOrderStatus] = useUpdateProductOrderStatusMutation();
   const [updateOrderConfirmation, { isLoading: isSendingEmail }] =
     useUpdateOrderConfirmationMutation();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
-
-  console.log("oder", order);
+  console.log("🚀 ~ OrderDetailsModal ~ itemToCancel:", itemToCancel);
 
   const handleResendNotification = async () => {
     try {
       const res = await updateOrderConfirmation({
-        orderId: order?.map((order: any) => order?._id), // make sure you have this value
-        body: {}, // or whatever payload your API expects
+        orderId: order?._id,
+        body: {},
       }).unwrap();
       toast.success(res?.message);
-      console.log("Notification resent:", res);
     } catch (error) {
       toast.error("failed");
       console.error("Failed to resend notification:", error);
     }
   };
   return (
-    <ModalWrapper onClose={onClose} height="20vh" showSpinner={isLoading}>
+    <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
       {/* Header */}
 
       <div
-        className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+        className={`flex items-center  justify-between ${isRTL ? "flex-row-reverse" : ""}`}
       >
         <div className="flex flex-col p-6">
           <div className="flex">
@@ -79,16 +83,16 @@ function OrderDetailsModal({
             <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
           </div>
           <div className="flex gap-2 mt-2 items-center">
-            <span className="text-sm font-medium">Order:</span>
+            <span className={textTertiary}>{t("order_status")}</span>
             {getOrderStatusBadge(order?.status)}
-            <span className="text-sm font-medium">Payment:</span>
+            <span className={textTertiary}>{t("payment_status")}</span>
             {getPaymentStatusBadge(order?.paymentStatus)}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-6 overflow-y-auto overflow-hidden space-y-6">
         {/* Purchaser Information */}
         <div>
           <h3 className={`text-lg mb-3 ${textPrimary}`}>
@@ -111,7 +115,7 @@ function OrderDetailsModal({
             {/* Email - Clickable */}
             <div>
               <p
-                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
+                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} `}
               >
                 {t("purchaser_email") || "Email"}
               </p>
@@ -119,8 +123,10 @@ function OrderDetailsModal({
                 href={`mailto:${order?.buyerEmail}`}
                 className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
               >
-                <Mail className="w-3 h-3" />
-                {order?.buyerEmail}
+                <div>
+                  <Mail className="w-3 h-3" />
+                </div>
+                <div>{order?.buyerEmail}</div>
               </a>
             </div>
 
@@ -139,20 +145,22 @@ function OrderDetailsModal({
                 {order?.buyerPhone ? order?.buyerPhone : "-"}
               </a>
             </div>
-            {/* 
-              <InfoRow
-                label={t("campaign") || "Campaign"}
-                value={`${order?.campaign} (${order?.campaignCode})`}
-                theme={theme}
-              /> */}
 
-            {order?.buyerAddress && (
-              <InfoRow
-                label={t("purchaser_address") || "Address"}
-                value={order?.buyerAddress}
-                theme={theme}
-              />
-            )}
+            <InfoRow
+              label={t("campaign") || "Campaign"}
+              value={
+                order?.campaign
+                  ? `${order.campaign}${order?.campaignCode ? ` (${order.campaignCode})` : ""}`
+                  : "-"
+              }
+              theme={theme}
+            />
+
+            <InfoRow
+              label={t("purchaser_address") || "Address"}
+              value={order?.buyerAddress ? order.buyerAddress : "-"}
+              theme={theme}
+            />
           </div>
         </div>
 
@@ -164,7 +172,7 @@ function OrderDetailsModal({
           <div
             className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
           >
-            {orderProducts?.map((product, idx) => (
+            {order?.products?.map((product: any, idx: number) => (
               <div
                 key={product?._id}
                 className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
@@ -178,10 +186,15 @@ function OrderDetailsModal({
                     }}
                     className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
-                    <img
-                      src={product?.image?.image}
+                    <ImageWithFallback
+                      src={product?.images?.image}
                       alt={product?.name}
-                      className={`w-20 h-20 object-cover rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
+                      className={clsx(
+                        "w-24 h-22 rounded-xl object-cover border-2",
+                        theme === "dark"
+                          ? "border-gray-600"
+                          : "border-gray-300",
+                      )}
                     />
                   </div>
 
@@ -199,10 +212,10 @@ function OrderDetailsModal({
                       {product?.name}
                     </p>
                     <p className={`text-sm ${textTertiary}`}>
-                      {product?.vendor}
+                      {product?.vendor ? product.vendor : "-"}
                     </p>
                     <p className={`text-xs ${textTertiary} mt-1`}>
-                      {product?.category}
+                      {product?.category ? product.category : "-"}
                     </p>
                   </div>
 
@@ -268,28 +281,32 @@ function OrderDetailsModal({
               <span className={textTertiary}>
                 {t("voucher_amount") || "Voucher"}
               </span>
-              {/* <span className={textPrimary}>
-                  ₪{order?.voucherAmount.toLocaleString()}
-                </span> */}
+              <span className={textPrimary}>
+                {order?.voucherAmount
+                  ? `₪${order.voucherAmount.toLocaleString()}`
+                  : "-"}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className={textTertiary}>
                 {t("credit_card_amount") || "Credit Card"}
               </span>
-              {/* <span className={textPrimary}>
-                  ₪{order?.creditCardAmount.toLocaleString()}
-                </span> */}
+              <span className={textPrimary}>
+                {order?.creditCardPayment
+                  ? `₪${order.creditCardPayment.toLocaleString()}`
+                  : "-"}
+              </span>
             </div>
-            {order?.deliveryFee > 0 && (
-              <div className="flex justify-between">
-                <span className={textTertiary}>
-                  {t("delivery_fee") || "Delivery Fee"}
-                </span>
-                <span className={textPrimary}>
-                  ₪{order?.deliveryFee?.toLocaleString()}
-                </span>
-              </div>
-            )}
+            <div className="flex justify-between">
+              <span className={textTertiary}>
+                {t("delivery_fee") || "Delivery Fee"}
+              </span>
+              <span className={textPrimary}>
+                {order?.deliveryFee
+                  ? `₪${order.deliveryFee.toLocaleString()}`
+                  : "-"}
+              </span>
+            </div>
             <div
               className={`flex justify-between pt-2 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
             >
@@ -302,35 +319,40 @@ function OrderDetailsModal({
         </div>
 
         {/* Actions */}
-        {userRole === UserRole.AUTHORITY && (
-          <div
-            className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
-          >
-            <button
-              onClick={() => {
-                setCancelType("order");
-                setItemToCancel(null);
-                setShowCancelDialog(true);
-              }}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+        {userRole === UserRole.AUTHORITY ||
+          (userRole === UserRole.SUPERADMIN && (
+            <div
+              className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
-              {t("cancel_order") || "Cancel Order"}
-            </button>
-            <button
-              onClick={handleResendNotification}
-              disabled={isSendingEmail}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {isSendingEmail
-                ? t("sending") || "Sending..."
-                : t("resend_notification") || "Resend Notification"}
-            </button>
-          </div>
-        )}
+              {order?.status !== "canceled" && (
+                <button
+                  onClick={() => {
+                    setCancelType("order");
+                    setItemToCancel(null);
+                    setShowCancelDialog(true);
+                  }}
+                  disabled={order?.status === "canceled"}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                >
+                  {t("cancel_order") || "Cancel Order"}
+                </button>
+              )}
+
+              <button
+                onClick={handleResendNotification}
+                disabled={isSendingEmail}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  theme === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {isSendingEmail
+                  ? t("sending") || "Sending..."
+                  : t("resend_notification") || "Resend Notification"}
+              </button>
+            </div>
+          ))}
       </div>
 
       {/* Cancellation Dialog */}
@@ -342,32 +364,40 @@ function OrderDetailsModal({
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
-          onConfirm={async (reason, notes) => {
+          onConfirm={async (reason, _notes) => {
             try {
-              if (cancelType === "item" && itemToCancel) {
-                setOrderProducts((prev) =>
-                  prev.map((p) =>
-                    p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
-                  ),
-                );
-              } else {
+              if (cancelType === "order") {
+                // Cancel the entire order
                 await updateOrderStatus({
-                  orderId: order.map((order: any) => order?._id),
+                  orderId: order?._id,
                   body: {
-                    status: "pending",
-                    canceled_reason: reason || "Cancelled by user",
+                    status: "canceled",
+                    canceled_reason: reason,
                     isQrScan: true,
-                    externalApiId: notes || "",
+                    externalApiId: order?.externalApiId || "",
                   },
                 }).unwrap();
-
-                toast.success("Order cancelled successfully");
+                refetch();
+              } else if (cancelType === "item") {
+                // Cancel a specific product in the order
+                await updateProductOrderStatus({
+                  orderProductId: order?._id,
+                  body: {
+                    status: "canceled",
+                    canceled_reason: reason,
+                    isQrScan: true,
+                    externalApiId: order?.externalApiId || "",
+                    // productId: itemToCancel?._id,  specific product id
+                  },
+                }).unwrap();
               }
+
+              toast.success(t("order_cancelled_successfully"));
 
               setShowCancelDialog(false);
               setItemToCancel(null);
             } catch (error) {
-              toast.error("Cancel failed");
+              toast.error(t("cancel_failed"));
             }
           }}
         />

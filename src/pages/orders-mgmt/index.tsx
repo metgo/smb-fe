@@ -18,7 +18,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { BulkActionBar, PageStats, ViewModeToggle } from "@/components/shared";
+import { PageStats, ViewModeToggle } from "@/components/shared";
 import {
   // CreateOrderWizard,
   FilterSelect,
@@ -32,7 +32,6 @@ import {
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
-import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
@@ -45,8 +44,9 @@ const defaultColumns = {
   phone: true,
   status: true,
   totalAmount: true,
-  createdAt: false,
   // paymentStatus: false,
+
+  createdAt: false,
   paymentDate: false,
 };
 
@@ -71,7 +71,7 @@ export default function OrdersMgmtPage() {
   // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+  // const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -210,51 +210,51 @@ export default function OrdersMgmtPage() {
     }
   }, [orderss, page]);
 
-  const handleBulkDelete = async () => {
-    if (!selectedOrders.size) return;
-    const toastId = toast.loading("Please wait. Orders are deleting...");
-    try {
-      const results = await bulkOrdersUpdate({
-        ordersId: Array.from(selectedOrders),
-        isDeleted: true,
-      });
+  // const handleBulkDelete = async () => {
+  //   if (!selectedOrders.size) return;
+  //   const toastId = toast.loading("Please wait. Orders are deleting...");
+  //   try {
+  //     const results = await bulkOrdersUpdate({
+  //       ordersId: Array.from(selectedOrders),
+  //       isDeleted: true,
+  //     });
 
-      if (results?.data) {
-        const message = "Orders deleted successfully";
-        toast.success(message, { id: toastId });
-        setSelectedOrders(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Orders", {
-        id: toastId,
-      });
-    }
-  };
-  const handleBulkStatusChange = async (status: TStatus) => {
-    if (!selectedOrders.size) return;
-    const toastId = toast.loading(
-      "Please wait. Order's status are changing...",
-    );
+  //     if (results?.data) {
+  //       const message = "Orders deleted successfully";
+  //       toast.success(message, { id: toastId });
+  //       setSelectedOrders(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to delete Orders", {
+  //       id: toastId,
+  //     });
+  //   }
+  // };
+  // const handleBulkStatusChange = async (status: TStatus) => {
+  //   if (!selectedOrders.size) return;
+  //   const toastId = toast.loading(
+  //     "Please wait. Order's status are changing...",
+  //   );
 
-    try {
-      const results = await bulkOrdersUpdate({
-        ordersId: Array.from(selectedOrders),
-        status: status?.toLocaleUpperCase(),
-      });
+  //   try {
+  //     const results = await bulkOrdersUpdate({
+  //       ordersId: Array.from(selectedOrders),
+  //       status: status?.toLocaleUpperCase(),
+  //     });
 
-      if (results?.data) {
-        const message = "Orders status updated successfully";
-        toast.success(message, { id: toastId });
-        setSelectedOrders(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to change Orders status", {
-        id: toastId,
-      });
-    }
-  };
+  //     if (results?.data) {
+  //       const message = "Orders status updated successfully";
+  //       toast.success(message, { id: toastId });
+  //       setSelectedOrders(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to change Orders status", {
+  //       id: toastId,
+  //     });
+  //   }
+  // };
   const defaultFilters = {
     orderType: "all",
     deliveryType: "all",
@@ -408,13 +408,16 @@ export default function OrdersMgmtPage() {
   }[];
 
   //order details
-  const { data: orderDetails, isLoading: isOrderDetailLoading } =
-    useGetOrderByIdQuery(
-      { orderId: selectedOrder?._id ?? null },
-      {
-        skip: !selectedOrder?._id, // only fetch if selectedOrder exists
-      },
-    );
+  const {
+    data: orderDetails,
+    isLoading: isOrderDetailLoading,
+    isFetching: isOrderDetailFetching,
+  } = useGetOrderByIdQuery(
+    { orderId: selectedOrder?._id ?? null },
+    {
+      skip: !selectedOrder?._id, // only fetch if selectedOrder exists
+    },
+  );
 
   // Statistics
   const statistics = useMemo(() => {
@@ -597,32 +600,32 @@ export default function OrdersMgmtPage() {
     document.body.removeChild(link);
   };
 
-  const handleResendOrderDetails = () => {
-    const ordersToResend =
-      selectedOrders.size > 0
-        ? orders.filter((order: IOrder) => selectedOrders.has(order._id))
-        : [];
+  // const handleResendOrderDetails = () => {
+  //   const ordersToResend =
+  //     selectedOrders.size > 0
+  //       ? orders.filter((order: IOrder) => selectedOrders.has(order._id))
+  //       : [];
 
-    if (ordersToResend.length === 0) {
-      alert(t("noOrdersSelected") || "No orders selected");
-      return;
-    }
+  //   if (ordersToResend.length === 0) {
+  //     alert(t("noOrdersSelected") || "No orders selected");
+  //     return;
+  //   }
 
-    ordersToResend.forEach((order: IOrder) => {
-      console.log(
-        `Sending order details to ${order.email} for order ${order._id}`,
-      );
-    });
+  //   ordersToResend.forEach((order: IOrder) => {
+  //     console.log(
+  //       `Sending order details to ${order.email} for order ${order._id}`,
+  //     );
+  //   });
 
-    const message =
-      ordersToResend.length === 1
-        ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
-        : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
+  //   const message =
+  //     ordersToResend.length === 1
+  //       ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
+  //       : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
 
-    alert(message);
+  //   alert(message);
 
-    setSelectedOrders(new Set());
-  };
+  //   setSelectedOrders(new Set());
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -714,7 +717,7 @@ export default function OrdersMgmtPage() {
         text: "text-emerald-800 dark:text-emerald-400",
         label: t("completed"),
       },
-      cancelled: {
+      canceled: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
@@ -724,6 +727,7 @@ export default function OrdersMgmtPage() {
         text: "text-orange-800 dark:text-orange-400",
         label: t("partially_cancelled"),
       },
+
       failed: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
@@ -742,27 +746,32 @@ export default function OrdersMgmtPage() {
 
   const getPaymentStatusBadge = (status: IOrder["paymentStatus"]) => {
     const badges = {
-      pending: {
+      PENDING: {
         bg: "bg-yellow-100 dark:bg-yellow-900/30",
         text: "text-yellow-800 dark:text-yellow-400",
         label: t("pending"),
       },
-      success: {
+      SUCCESS: {
         bg: "bg-green-100 dark:bg-green-900/30",
         text: "text-green-800 dark:text-green-400",
         label: t("success"),
       },
-      failed: {
+      FAILED: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("failed"),
       },
-      refunded: {
+      REFUNDED: {
         bg: "bg-purple-100 dark:bg-purple-900/30",
         text: "text-purple-800 dark:text-purple-400",
         label: t("refunded"),
       },
-      partially_refunded: {
+      REFUND_IN_PROCESS: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("refund_in_process"),
+      },
+      PARTIALLY_REFUNDED: {
         bg: "bg-orange-100 dark:bg-orange-900/30",
         text: "text-orange-800 dark:text-orange-400",
         label: t("partiallyRefunded"),
@@ -831,8 +840,10 @@ export default function OrdersMgmtPage() {
               placeholder={t("search_orders")}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              isRTL={isRTL}
-              isDark={isDark}
+              storageKey="orderSearchTerm"
+
+              // isRTL={isRTL}
+              // isDark={isDark}
             />
           </div>
 
@@ -993,7 +1004,7 @@ export default function OrdersMgmtPage() {
           </div>
         )}
       </div>
-      <BulkActionBar
+      {/* <BulkActionBar
         selectedItemCount={selectedOrders.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
         onBulkAction={{
@@ -1002,7 +1013,7 @@ export default function OrdersMgmtPage() {
           csvExport: handleExportCSV,
         }}
         isDelete={true}
-      />
+      /> */}
       {/* Bulk Actions Toolbar */}
       {/* {selectedOrders.size > 0 && (
         <div
@@ -1101,8 +1112,10 @@ export default function OrdersMgmtPage() {
           t={t}
           isRTL={isRTL}
           theme={theme}
-          order={orderDetails?.datas}
+          refetch={refetch}
+          order={orderDetails?.datas[0]}
           isLoading={isOrderDetailLoading}
+          isFetching={isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
           getPaymentStatusBadge={getPaymentStatusBadge}

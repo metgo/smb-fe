@@ -52,6 +52,17 @@ export const orderMutationApi = createApi({
       }),
       invalidatesTags: ["Order"],
     }),
+    updateProductOrderStatus: builder.mutation<
+      any,
+      { body: any; orderProductId: string }
+    >({
+      query: ({ body, orderProductId }) => ({
+        url: `${endpoints.orderProductStatus}/${orderProductId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Order"],
+    }),
     updateOrderConfirmation: builder.mutation<
       any,
       { body: any; orderId: string }
@@ -72,5 +83,6 @@ export const {
   useDeleteOrderMutation,
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
+  useUpdateProductOrderStatusMutation,
   useUpdateOrderConfirmationMutation,
 } = orderMutationApi;

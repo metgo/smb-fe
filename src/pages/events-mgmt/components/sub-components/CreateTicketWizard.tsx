@@ -14,6 +14,7 @@ import {
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 import { FormFieldWrapper } from "@/components/form-fields";
+import { IOpMode } from "@/enums/operation.types";
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
@@ -124,14 +125,14 @@ const CreateTicketWizard = ({
     let firstInvalidField: string | null = null;
 
     // Name
-    if (!editData.name?.trim()) {
+    if (!editData?.name?.trim()) {
       newErrors.name = t("ticket_name_required") || "Ticket name is required";
       isValid = false;
       firstInvalidField = firstInvalidField ?? "name";
     }
 
     // Description
-    if (!editData.description?.trim()) {
+    if (!editData?.description?.trim()) {
       newErrors.description =
         t("description_required") || "Ticket description is required";
       isValid = false;
@@ -167,13 +168,13 @@ const CreateTicketWizard = ({
 
     // Prices - only when paid or VIP
     if (isPaidOrVip) {
-      if (!editData.price?.markedPrice || editData.price.markedPrice <= 0) {
+      if (!editData?.price?.markedPrice || editData?.price.markedPrice <= 0) {
         newErrors.markedPrice =
           t("marked_price_required") || "Marked price is required";
         isValid = false;
         firstInvalidField = firstInvalidField ?? "markedPrice";
       }
-      if (!editData.price?.sellingPrice || editData.price.sellingPrice <= 0) {
+      if (!editData?.price?.sellingPrice || editData?.price.sellingPrice <= 0) {
         newErrors.sellingPrice =
           t("selling_price_required") || "Selling price is required";
         isValid = false;
@@ -230,20 +231,20 @@ const CreateTicketWizard = ({
 
     const payload: ITicketPayload = {
       eventId,
-      name: editData.name.trim(),
-      description: editData.description?.trim() || "",
+      name: editData?.name.trim(),
+      description: editData?.description?.trim() || "",
       price: {
-        markedPrice: editData.price?.markedPrice || 0,
-        sellingPrice: editData.price?.sellingPrice || 0,
+        markedPrice: editData?.price?.markedPrice || 0,
+        sellingPrice: editData?.price?.sellingPrice || 0,
         discountPercent: editData?.price?.discountPercent || 0,
         discountAmount: editData?.price?.discountAmount || 0,
       },
       quantity: {
-        initial: editData.quantity?.initial || 0,
+        initial: editData?.quantity?.initial || 0,
         sold: 0,
-        remaining: editData.quantity?.initial || 0,
-        isUnlimited: editData.quantity?.isUnlimited || false,
-        perUserLimit: editData.quantity?.perUserLimit || 0,
+        remaining: editData?.quantity?.initial || 0,
+        isUnlimited: editData?.quantity?.isUnlimited || false,
+        perUserLimit: editData?.quantity?.perUserLimit || 0,
       },
       dayDescription: ticketDateTime.map((item) => ({
         date: item.date,
@@ -252,15 +253,15 @@ const CreateTicketWizard = ({
       })),
       images: [{ image: uploadImageUrl ?? image?.gcsURL }],
       status: editData?.status,
-      type: editData.type.toUpperCase(),
+      type: editData?.type.toUpperCase(),
     };
 
     try {
       const res =
-        editData._id && opMode !== "DUPLICATE"
+        editData?._id && opMode !== IOpMode.DUPLICATE
           ? await updateTicket({
               body: payload,
-              ticketId: editData._id,
+              ticketId: editData?._id,
             }).unwrap()
           : await createTicket(payload).unwrap();
 
@@ -289,8 +290,8 @@ const CreateTicketWizard = ({
     ]);
   };
 
-  const removeEventDay = (id: string | number) => {
-    setTicketDateTime((prev) => prev.filter((day) => day._id !== id));
+  const removeEventDay = (pDay: any) => {
+    setTicketDateTime((prev) => prev.filter((day) => day !== pDay));
   };
 
   const updateTicketDay = (
@@ -339,7 +340,7 @@ const CreateTicketWizard = ({
               required
               label={t("ticket_name")}
               error={errors?.name}
-              inputHintText={`${editData.name?.length ?? 0}/50 ${t("max_characters")}`}
+              inputHintText={`${editData?.name?.length ?? 0}/50 ${t("max_characters")}`}
             >
               <input
                 type="text"
@@ -433,7 +434,7 @@ const CreateTicketWizard = ({
             <div className="space-y-4 mt-2">
               {ticketDateTime?.map((day, index) => (
                 <div
-                  key={day._id}
+                  key={index}
                   ref={(el) => {
                     if (el) sectionRefs.current[`day-${index}`] = el;
                   }}
@@ -501,7 +502,7 @@ const CreateTicketWizard = ({
 
                     <button
                       type="button"
-                      onClick={() => removeEventDay(day?._id || "")}
+                      onClick={() => removeEventDay(day || "")}
                       className="col-span-1 p-2 text-red-500 hover:text-red-600 bg-red-100 dark:bg-red-900/30 rounded-md flex items-center justify-center"
                     >
                       <Trash2 size={18} />

@@ -1,10 +1,28 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
-type TStatus = "draft" | "pending" | "approved" | "rejected" | "archived";
+
+type TViewMode = "list" | "grid";
+
+type TStatus =
+  | "draft"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "closed"
+  | "archived";
+
+type EventStatus = "draft" | "pending" | "approved";
+type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
 
 interface Geo {
   lat: string;
   lng: string;
+}
+
+interface ITags {
+  he: string;
+  ar: string;
+  en: string;
 }
 
 interface IWebsite {
@@ -16,7 +34,14 @@ interface IWebsite {
   authorityIds: string[];
 }
 
+interface ITag {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+}
 type TAllWebsites = IWebsite[];
+type TAllTags = ITag[];
 
 interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];
@@ -41,8 +66,8 @@ interface ThemeClasses {
 }
 
 interface PageStats {
-  id: number;
-  title: string;
+  id?: number;
+  title?: string;
   value: string | number;
   label?: string;
   labelClass?: string;
@@ -102,4 +127,10 @@ interface IAssociatedWebsiteIds {
   _id: string;
   name: string;
   url: string;
+}
+
+interface ISearchBusiness {
+  _id: string;
+  name: string;
+  slug: string;
 }

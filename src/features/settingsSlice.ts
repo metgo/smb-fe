@@ -2,7 +2,7 @@ import { loadSettings } from "@/lib/storage";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface SettingsState {
-  language: string;
+  language: Language;
   theme: Theme;
   isRTL: boolean;
 }
@@ -19,7 +19,7 @@ const settingsSlice = createSlice({
   name: "settings",
   initialState,
   reducers: {
-    setLanguage: (state, action: PayloadAction<string>) => {
+    setLanguage: (state, action: PayloadAction<Language>) => {
       state.language = action.payload;
       state.isRTL = action.payload === "he" || action.payload === "ar";
     },

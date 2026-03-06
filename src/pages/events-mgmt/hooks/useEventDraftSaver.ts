@@ -1,5 +1,9 @@
-import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+
+import { ItemStatus } from "@/enums/status.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useCallback, useState } from "react";
 
 interface UseEventDraftSaverProps {
   currentStep: number;
@@ -20,9 +24,11 @@ export function useEventDraftSaver({
   stepPayloadMap,
   // debounceMs = 3600,
 }: UseEventDraftSaverProps) {
+  const { isTraveller } = useUserRoles();
+
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   // const debounceTimer = useRef<number | null>(null);
-
+  const { t } = useTranslation("toast");
   // 🔹 Mark step dirty
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -41,7 +47,7 @@ export function useEventDraftSaver({
       });
 
     return payload;
-  }, [dirtySteps, currentStep, stepPayloadMap]);
+  }, [dirtySteps, currentStep, stepPayloadMap, t]);
 
   // 🔹 Save Draft (manual or autosave)
   const saveDraft = useCallback(
@@ -63,14 +69,14 @@ export function useEventDraftSaver({
         if (isPublish) {
           payload = {
             ...payload,
-            status: "APPROVED",
+            status: isTraveller ? ItemStatus.PENDING : ItemStatus.APPROVED,
           };
         }
 
         if (!Object.keys(payload).length) return;
 
         // 4️⃣ Update event
-        const res = await updateEvent({
+        await updateEvent({
           eventId: internalEventId || eventId!,
           body: payload,
         }).unwrap();
@@ -82,11 +88,9 @@ export function useEventDraftSaver({
           return next;
         });
 
-        toast.success(
-          res?.message ?? (isPublish ? "Event published" : "Draft saved"),
-        );
+        toast.success(isPublish ? t("event_published") : t("draft_saved"));
       } catch (err: any) {
-        toast.error(err?.message || "Failed to save draft");
+        toast.error(t("draft_failed"));
       }
     },
     [
@@ -96,6 +100,8 @@ export function useEventDraftSaver({
       eventId,
       updateEvent,
       setEventId,
+      t,
+      isTraveller,
     ],
   );
 

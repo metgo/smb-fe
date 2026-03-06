@@ -6,11 +6,7 @@ import {
   DmoAuthorityWebsiteSelector,
   SelectableChips,
 } from "@/components/shared";
-import {
-  useGetAccessibilityQuery,
-  useGetGroupTypesQuery,
-  useGetSubCategoriesQuery,
-} from "@/store/api/masterDataApi";
+import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   InputField,
@@ -18,8 +14,9 @@ import {
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import { useCommon } from "@/hooks/useCommon";
+import { CKEditorWrapper } from "@/components/wrapper";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -34,10 +31,8 @@ interface EventBasicInformationProps {
   setShortDescription: React.Dispatch<React.SetStateAction<string>>;
   fullDescription: string;
   setFullDescription: React.Dispatch<React.SetStateAction<string>>;
-  eventStatus: "draft" | "pending" | "approved";
-  setEventStatus: React.Dispatch<
-    React.SetStateAction<"draft" | "pending" | "approved">
-  >;
+  eventStatus: EventStatus;
+  setEventStatus: React.Dispatch<React.SetStateAction<EventStatus>>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -82,7 +77,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   eventAssociatedWebsites = [],
 }) => {
   const { t, i18n } = useTranslation("events");
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isSuperadmin } = useUserRoles();
   const { textSecondary, inputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
@@ -90,8 +85,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     bussCategoryId: categoryIds.event,
     locale,
   });
-  const { data: accessibility } = useGetAccessibilityQuery({ locale });
-  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+
+  const { groupTypes, accessibility } = useCommon();
 
   // Individual refs for scroll targets
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -229,17 +224,11 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       </div>
 
       {/* Full Description */}
-      <FormFieldWrapper
-        label={t("full_description")}
-        inputHintText={`${fullDescription?.length ?? 0}/500 ${t("max_characters")}`}
-      >
-        <TextareaField
-          rows={8}
+      <FormFieldWrapper label={t("full_description")}>
+        <CKEditorWrapper
           value={fullDescription}
           onChange={setFullDescription}
           placeholder={t("full_event_description")}
-          maxLength={500}
-          inputClasses={`${inputClasses} text-base`}
         />
       </FormFieldWrapper>
 
@@ -256,31 +245,28 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
       {/* Chips */}
       <SelectableChips
-        label="Sub Categories"
+        label="subcategories"
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
-        label="Accessiblities"
-        items={accessibility?.datas?.data ?? []}
+        label="accessiblities"
+        items={accessibility ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
-        label="Group Types"
-        items={groupTypes?.datas?.data ?? []}
+        label="group_types"
+        items={groupTypes ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Internal Notes */}
-      {userRole === UserRole.SUPERADMIN && (
+      {isSuperadmin && (
         <FormFieldWrapper
           label={t("internal_notes")}
           hint={t("visible_only_to_admins")}

@@ -5,6 +5,21 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const locales: { value: Language; label: string; flag?: string }[] = [
+  { value: "en", label: "English", flag: "/assets/images/gb.png" },
+  { value: "he", label: "עברית", flag: "/assets/images/il.png" },
+  { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
+];
+
+export const itemStatuses = [
+  { value: "DRAFT", label: "draft" },
+  { value: "PENDING", label: "pending" },
+  { value: "ARCHIVED", label: "archived" },
+  { value: "APPROVED", label: "approved" },
+  { value: "CLOSED", label: "closed" },
+  { value: "REJECTED", label: "rejected" },
+];
+
 export const categoryIds = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",
@@ -50,4 +65,26 @@ export const googlePointOfInterest = [
   //   elementType: 'labels.text',
   //   stylers: [{ visibility: 'off' }]
   // }
+];
+
+export const DELIVERY_RETURN_EXCHANGE_OPTIONS = [
+  "return_option1",
+  "return_option2",
+  "return_option3",
+  "return_option4",
+  "return_option5",
+  "return_option6",
+  "return_option7",
+  "return_option8",
+];
+export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
+  "seller_info_option1",
+  "seller_info_option2",
+  "seller_info_option3",
+  "seller_info_option4",
+  "seller_info_option5",
+  "seller_info_option6",
+  "seller_info_option7",
+  "seller_info_option8",
+  "seller_info_option9",
 ];

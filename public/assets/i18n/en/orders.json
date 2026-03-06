@@ -24,11 +24,13 @@
   "payment_status": "Payment Status",
   "payment_method": "Payment Method",
   "delivery_type": "Delivery Type",
+  "sending": "Sending...",
   "avg_order_value": "Avg Order Value",
   "paid_orders": "Paid Orders",
   "cancelled_orders": "Cancelled",
   "totalOrders": "Total Orders",
   "all": "All",
+  "refund_in_process": "Refund in Process",
   "addOrder": "Add Order",
   "revenue": "Revenue",
   "avgOrderValue": "Avg Order Value",
@@ -58,6 +60,8 @@
   "from": "From",
   "to": "To",
   "searchOrders": "Search by Order ID, Name, Email, Phone...",
+  "order_cancelled_successfully": "Order cancelled successfully",
+  "cancel_failed": "Cancel failed",
   "partially_cancelled": "Partially Cancelled",
   "failed": "Failed",
   "pending": "Pending",
@@ -152,5 +156,8 @@
   "failed_draft": "Failed to save draft",
   "order_published": "Order published",
   "draft_saved": "Draft saved",
-  "enterDetails": "Enter Details"
+  "enterDetails": "Enter Details",
+  "vendor": "Vendor",
+  "category": "Category",
+  "description": "Description"
 }

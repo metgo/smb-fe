@@ -1,18 +1,21 @@
-import { useState, type FC } from "react";
-import i18n from "@/i18n";
-
-import { Tag, ExternalLink, Download, ChevronDown, Globe } from "lucide-react";
-import { toast } from "sonner";
-import { useGetCategoriesQuery } from "@/store/api/masterDataApi";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
 import clsx from "clsx";
+import { toast } from "sonner";
+import { type FC } from "react";
+import { AlignLeft, ExternalLink, FileText, Globe } from "lucide-react";
+
+import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import DescriptionCard from "@/components/shared/DescriptionCard";
 
 interface Business {
   shortDescription: string;
+  shortDescriptionAr: string;
+  shortDescriptionHe: string;
   description: string;
+  descriptionHe: string;
+  descriptionAr: string;
   primaryCategoryId: string;
   subcategories: string[];
   tags: string[];
@@ -28,25 +31,21 @@ interface BusinessInfoDetailsProps {
   business: Business;
 }
 
-const qrSites = [
-  { id: "tav8", name: "TAV8" },
-  { id: "negevtime", name: "NegevTime" },
-  { id: "visitnegev", name: "Visit Negev" },
-  { id: "tourism-il", name: "Tourism IL" },
-  { id: "google-business", name: "Google My Business" },
-];
+// const qrSites = [
+//   { id: "tav8", name: "TAV8" },
+//   { id: "negevtime", name: "NegevTime" },
+//   { id: "visitnegev", name: "Visit Negev" },
+//   { id: "tourism-il", name: "Tourism IL" },
+//   { id: "google-business", name: "Google My Business" },
+// ];
 
 /* ---------- Component ---------- */
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
-  const locale = i18n.language as Language;
-
   const { isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
-  const [showQRDropdown, setShowQRDropdown] = useState(false);
-
-  const { data: primaryCategories } = useGetCategoriesQuery({ locale });
+  // const [_showQRDropdown, setShowQRDropdown] = useState(false);
 
   const handleWebsiteClick = (website: any) => {
     if (website.url) {
@@ -58,142 +57,84 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
     });
   };
 
-  const handleQRDownload = (site: (typeof qrSites)[0]) => {
-    toast.success(t("qr_code_downloaded"), {
-      description: t(`qr_code_download_description, ${site.name} `),
-      duration: 2000,
-    });
-    setShowQRDropdown(false);
+  // const handleQRDownload = (site: (typeof qrSites)[0]) => {
+  //   toast.success(t("qr_code_downloaded"), {
+  //     description: t(`qr_code_download_description, ${site.name} `),
+  //     duration: 2000,
+  //   });
+  //   setShowQRDropdown(false);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = 300;
-    canvas.height = 300;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, 300, 300);
-      ctx.fillStyle = "black";
-      for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 10; j++) {
-          if (Math.random() > 0.5) ctx.fillRect(i * 30, j * 30, 28, 28);
-        }
-      }
+  //   const canvas = document.createElement("canvas");
+  //   canvas.width = 300;
+  //   canvas.height = 300;
+  //   const ctx = canvas.getContext("2d");
+  //   if (ctx) {
+  //     ctx.fillStyle = "white";
+  //     ctx.fillRect(0, 0, 300, 300);
+  //     ctx.fillStyle = "black";
+  //     for (let i = 0; i < 10; i++) {
+  //       for (let j = 0; j < 10; j++) {
+  //         if (Math.random() > 0.5) ctx.fillRect(i * 30, j * 30, 28, 28);
+  //       }
+  //     }
 
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${business}-${site.id}-qr-code.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      });
-    }
-  };
+  //     canvas.toBlob((blob) => {
+  //       if (blob) {
+  //         const url = URL.createObjectURL(blob);
+  //         const a = document.createElement("a");
+  //         a.href = url;
+  //         a.download = `${business}-${site.id}-qr-code.png`;
+  //         a.click();
+  //         URL.revokeObjectURL(url);
+  //       }
+  //     });
+  //   }
+  // };
 
   return (
     <div className="space-y-6">
       {/* Short Description */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("short_description")}
-        </h3>
-        <div
-          className={isDark ? "text-gray-300" : "text-gray-700"}
-          dangerouslySetInnerHTML={{ __html: business?.shortDescription || "" }}
-        />
-      </div>
+      <DescriptionCard
+        title={t("short_description")}
+        content={
+          business?.shortDescriptionHe ||
+          business?.shortDescription ||
+          business?.shortDescriptionAr ||
+          "-"
+        }
+        icon={
+          <FileText
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-blue-400" : "text-blue-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
+        isDark={isDark}
+      />
 
       {/* Full Description */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("full_description")}
-        </h3>
-        <div
-          className={isDark ? "text-gray-300" : "text-gray-700"}
-          dangerouslySetInnerHTML={{ __html: business?.description || "" }}
-        />
-      </div>
-
-      {/* Categories */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("categories")}
-        </h3>
-
-        <div className="flex flex-wrap gap-2">
-          {(() => {
-            const category = primaryCategories?.datas?.data.find(
-              (cat: any) => cat._id === business?.primaryCategoryId,
-            );
-            return category ? category.name : "-";
-          })()}
-        </div>
-      </div>
-
-      {/* Subcategories */}
-      {business?.subcategories?.length > 0 && (
-        <div>
-          <h3
-            className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("subcategories")}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {business?.subcategories?.map((subcat, idx) => (
-              <span
-                key={idx}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  isDark
-                    ? "bg-blue-900/30 text-blue-400"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {subcat}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tags */}
-      <h3
-        className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-      >
-        {t("tags")}
-      </h3>
-      {business?.tags?.length > 0 ? (
-        <div>
-          <div className="flex flex-wrap gap-2">
-            {business?.tags?.map((tag, idx) => (
-              <span
-                key={idx}
-                className={`px-2 py-1 rounded text-xs ${
-                  isDark
-                    ? "bg-gray-800 text-gray-400"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                <Tag className="w-3 h-3 inline mr-1" />
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <p
-          className={`text-sm italic ${isDark ? "text-gray-500" : "text-gray-400"}`}
-        >
-          -
-        </p>
-      )}
+      <DescriptionCard
+        title={t("full_description")}
+        content={
+          business?.descriptionHe ||
+          business?.description ||
+          business?.descriptionAr ||
+          "-"
+        }
+        icon={
+          <AlignLeft
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-purple-400" : "text-purple-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+        isDark={isDark}
+        preWrap={true} // preserves line breaks
+      />
 
       {/* Website Connections */}
       {business?.associatedWebsites &&
@@ -245,54 +186,56 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {business?.associatedWebsites?.map((website: any) => (
-                <button
-                  key={website._id}
-                  onClick={() => handleWebsiteClick(website)}
-                  className={clsx(
-                    "group relative flex items-center gap-3 px-4 py-3 border rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
-                    isDark
-                      ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 hover:bg-gray-900"
-                      : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100",
-                  )}
-                  title={`Open ${website.name}`}
-                >
-                  <div
+              {business?.associatedWebsites?.map(
+                (website: any, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => handleWebsiteClick(website)}
                     className={clsx(
-                      "p-2 rounded-lg",
-                      isDark ? "bg-gray-800" : "bg-gray-100",
-                    )}
-                  >
-                    <ImageWithFallback
-                      src={website?.logo || website?.url}
-                      alt={website?.name}
-                      className="w-6 h-6 object-contain"
-                    />
-                  </div>
-                  <span
-                    className={clsx(
-                      "font-medium text-sm flex-1 text-left",
-                      isDark ? "text-gray-200" : "text-gray-800",
-                    )}
-                  >
-                    {website.name}
-                  </span>
-                  <ExternalLink
-                    className={clsx(
-                      "w-4 h-4 transition-all duration-200",
+                      "group relative flex items-center gap-3 px-4 py-3 border rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
                       isDark
-                        ? "text-gray-500 group-hover:text-blue-400"
-                        : "text-gray-400 group-hover:text-blue-600",
+                        ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 hover:bg-gray-900"
+                        : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100",
                     )}
-                  />
-                </button>
-              ))}
+                    title={`Open ${website.name}`}
+                  >
+                    <div
+                      className={clsx(
+                        "p-2 rounded-lg",
+                        isDark ? "bg-gray-800" : "bg-gray-100",
+                      )}
+                    >
+                      <ImageWithFallback
+                        src={website?.logo || website?.url}
+                        alt={website?.name}
+                        className="w-6 h-6 object-contain"
+                      />
+                    </div>
+                    <span
+                      className={clsx(
+                        "font-medium text-sm flex-1 text-left",
+                        isDark ? "text-gray-200" : "text-gray-800",
+                      )}
+                    >
+                      {website.name}
+                    </span>
+                    <ExternalLink
+                      className={clsx(
+                        "w-4 h-4 transition-all duration-200",
+                        isDark
+                          ? "text-gray-500 group-hover:text-blue-400"
+                          : "text-gray-400 group-hover:text-blue-600",
+                      )}
+                    />
+                  </button>
+                ),
+              )}
             </div>
           </div>
         )}
 
       {/* QR Code Download */}
-      <div
+      {/* <div
         className={`p-4 rounded-lg border ${
           isDark
             ? "bg-gray-800/30 border-gray-700"
@@ -361,7 +304,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}>
           {t("qr_code_description")}
         </p>
-      </div>
+      </div> */}
 
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (

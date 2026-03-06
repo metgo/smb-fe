@@ -6,7 +6,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface PickupLocation {
   address: string;
   isAlwaysOpen: boolean;
-  openingHrs: { day: string; open: string; close: string }[]; // match your state type
+  openingHrs: { day: string; open: string; close: string }[];
 }
 
 interface DeliveryArea {
@@ -283,7 +283,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     </button>
                   </div>
                 </div>
-                {deliveryArea?.pickUpLocation.length > 0 && (
+                {deliveryArea?.pickUpLocation?.length > 0 && (
                   <label
                     className={`block text-xs mb-1 ${
                       isDark ? "text-gray-400" : "text-gray-500"

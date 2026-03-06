@@ -1,3 +1,48 @@
+const monthNames: Record<string, string[]> = {
+  en: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+  he: [
+    "ינו",
+    "פבר",
+    "מרץ",
+    "אפר",
+    "מאי",
+    "יונ",
+    "יול",
+    "אוג",
+    "ספט",
+    "אוק",
+    "נוב",
+    "דצמ",
+  ],
+  ar: [
+    "ينا",
+    "فبر",
+    "مارس",
+    "أبريل",
+    "مايو",
+    "يونيو",
+    "يوليو",
+    "أغسطس",
+    "سبتمبر",
+    "أكتوبر",
+    "نوفمبر",
+    "ديسمبر",
+  ],
+};
+
 export const formatDateRange = (
   start: string,
   end: string,
@@ -43,10 +88,35 @@ export function normalizeTime(durationInSec: number): string {
 }
 
 export const formatDate = (dateStr: string, language: string) => {
-  return new Date(dateStr).toLocaleDateString(
-    language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US",
-    { month: "short", day: "numeric", year: "numeric" },
-  );
+  const d = new Date(dateStr);
+
+  // Use UTC values to ignore timezone shift
+  const day = d.getUTCDate();
+  const month = d.getUTCMonth(); // 0-based
+  const year = d.getUTCFullYear();
+
+  const lang = language === "ar" ? "ar" : language === "he" ? "he" : "en";
+
+  return `${day} ${monthNames[lang][month]} ${year}`;
+};
+
+export const formatDateTime = (dateStr: string, language: string) => {
+  const d = new Date(dateStr);
+
+  // Always use UTC to avoid timezone shift
+  const day = d.getUTCDate();
+  const month = d.getUTCMonth(); // 0-based
+  const year = d.getUTCFullYear();
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
+  const seconds = d.getUTCSeconds();
+
+  const lang = language === "ar" ? "ar" : language === "he" ? "he" : "en";
+
+  // Pad time values (04 instead of 4)
+  const pad = (num: number) => num.toString().padStart(2, "0");
+
+  return `${day} ${monthNames[lang][month]} ${year} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
 export function formatToBackendTemplate(html: string) {

@@ -1,0 +1,45 @@
+{
+  "business_published": "Business Published successfully",
+  "product_published": "Product Published successfully",
+  "event_published": "Event Published successfully",
+
+  "required_fill_up_info": "Please fill up all required information",
+
+  "draft_saved": "Draft Saved",
+  "draft_failed": "Failed to save draft",
+  "fill_all_fields": "Fill all required fields before proceeding",
+  "image_upload_info": "Image upload has started. Please wait…",
+  "image_upload_success": "Image uploaded successfully",
+  "image_upload_failed": "Image upload failed",
+  "image_deleted": "Image deleted successfully",
+  "delete_failed": "Failed to delete image",
+  "login_failed": "Login failed",
+
+  "business_delete_loading": "Please wait. Businesses are deleting...",
+  "business_deleted_success": "Businesses deleted successfully",
+  "business_delete_failed": "Failed to delete businesses",
+  "business_status_change_loading": "Please wait. Businesses' status is changing...",
+  "business_status_update_success": "Businesses status updated successfully",
+  "business_status_update_failed": "Failed to change businesses status",
+  "noBusinessesToExport": "No businesses to export",
+
+  "event_published_success": "Event published successfully",
+  "event_status_change_loading": "Please wait. Event's status is changing...",
+  "event_status_update_success": "Event status updated successfully",
+  "event_status_update_failed": "Failed to change events status",
+  "event_delete_loading": "Please wait. Events are deleting...",
+  "event_deleted_success": "Events deleted successfully",
+  "event_delete_failed": "Failed to delete events",
+  "event_details_fetched": "Event details fetched",
+  "event_edit_data_fetching": "Event's edit data fetching. Please wait...",
+
+  "product_delete_loading": "Please wait. Products are deleting...",
+  "product_deleted_success": "Products deleted successfully",
+  "product_delete_failed": "Failed to delete products",
+  "product_status_change_loading": "Please wait. Product's status is changing...",
+  "product_status_update_success": "Products status updated successfully",
+  "product_status_update_failed": "Failed to change products status",
+
+  "website_select_info": "Please select the website first to specify where this content should be displayed.",
+  "empty_content_info": "Please add at least one category with businesses."
+}

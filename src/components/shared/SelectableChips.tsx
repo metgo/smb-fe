@@ -1,12 +1,12 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 type SelectableChipsProps = {
   label: string;
   items?: { _id: string; name: string }[];
   selectedIds: string[];
   onSelect: (id: string) => void;
-  textSecondary: string;
 };
 
 const SelectableChips = ({
@@ -14,18 +14,19 @@ const SelectableChips = ({
   items = [],
   selectedIds,
   onSelect,
-  textSecondary,
 }: SelectableChipsProps) => {
-  const { textPrimary } = useThemeClasses();
+  const { t } = useTranslation("common");
+
+  const { textPrimary, textSecondary } = useThemeClasses();
   return (
     <div>
       <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
-        {label}
+        {t(label)}
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {items.map((item) => {
-          const isSelected = selectedIds.includes(item._id);
+        {items?.map((item) => {
+          const isSelected = selectedIds?.includes(item._id);
 
           return (
             <div
