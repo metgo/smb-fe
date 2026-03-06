@@ -17,6 +17,7 @@
   "show_topic": "إظهار الموضوع",
   "hide_topic": "إخفاء الموضوع",
   "delete_topic": "حذف الموضوع",
+  "topic_deleted": "تم حذف الموضوع بنجاح",
   "category_deleted": "تم حذف الفئة",
   "category_created": "تم إنشاء الفئة",
   "messages_sent_to_customers": "تم إرسال رسائل إلى {{count}} زبون{{count !== 1 ? 'زبان' : ''}}",
@@ -28,6 +29,8 @@
   "drag_businesses_here_to_add_them_to_this_category": "اسحب الأنشطة التجارية هنا لإضافتها إلى هذه الفئة",
   "rename_category": "إعادة تسمية الفئة",
   "delete_category": "حذف الفئة",
+  "delete_topic_confirm": "سيتم حذف جميع الفئات المتعلقة بهذا الموضوع أيضًا",
+  "delete_category_confirm": "سيتم حذف كافة الأعمال الموجودة في هذه الفئة أيضًا",
   "select_website": "اختر الموقع",
 
   "content_manager_title": "مدير المحتوى",

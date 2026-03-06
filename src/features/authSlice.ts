@@ -36,6 +36,7 @@ interface AuthState {
   startDate: string;
   endDate: string;
   timeFrame: string;
+  associatedWebsite: TAllWebsites;
 }
 
 const persisted = loadUserInfo();
@@ -50,6 +51,7 @@ const initialState: AuthState = {
   startDate: persisted?.startDate ?? "",
   endDate: persisted?.endDate ?? "",
   timeFrame: persisted?.timeFrame ?? "all_time",
+  associatedWebsite: [],
 };
 
 const authSlice = createSlice({
@@ -80,6 +82,9 @@ const authSlice = createSlice({
         state.websiteId = "";
       }
     },
+    setFilteredWebsite: (state, action: PayloadAction<TAllWebsites>) => {
+      state.associatedWebsite = action.payload;
+    },
     setAuthority: (state, action: PayloadAction<string>) => {
       state.authorityId = action.payload;
     },
@@ -104,5 +109,6 @@ export const {
   setWebsite,
   setTimeFrame,
   setTimeFrameValue,
+  setFilteredWebsite,
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -4,6 +4,10 @@ interface IContent {
   desc: string;
   imageUrl: string;
   primaryCategory: string;
+  primaryCategoryId?: {
+    _id: string;
+    name: string;
+  };
 }
 
 interface IContentGroup {
