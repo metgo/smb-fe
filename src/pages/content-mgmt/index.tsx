@@ -45,7 +45,6 @@ interface SendResult {
   errorMessage?: string;
 }
 interface Filters {
-  status: string;
   hasProductFilter: string;
   primaryCategory: string;
 }
@@ -234,7 +233,6 @@ export default function ContentMgmtPage() {
 
   // ─── Multi-select state ───────────────────────────────────────────────────
   const [filters, setFilters] = useState<Filters>({
-    status: "all",
     hasProductFilter: "all",
     primaryCategory: "all",
   });
@@ -255,7 +253,7 @@ export default function ContentMgmtPage() {
     };
 
     if (searchQuery) params.search = searchQuery;
-    if (filters.status !== "all") params.status = filters.status;
+    params.status = "APPROVED";
     if (filters.hasProductFilter !== "all")
       params.hasProductFilter = filters.hasProductFilter === "yes";
 
@@ -307,7 +305,6 @@ export default function ContentMgmtPage() {
   };
   const clearFilter = () => {
     setFilters({
-      status: "all",
       hasProductFilter: "all",
       primaryCategory: "all",
     });

@@ -4,7 +4,6 @@ import { useDrag, useDrop } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { GripVertical, ChevronDown, ChevronRight, Layers } from "lucide-react";
 
-import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import {
@@ -12,7 +11,11 @@ import {
   TopicCategoryCard,
   TopicHeader,
 } from "./sub-components";
+import { toast } from "sonner";
 import { StatusChangeBtn } from "@/components/btns";
+import { ConfirmDialog } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
+import { ReactSelect } from "@/components/form-fields";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -37,8 +40,9 @@ interface TopicBlockProps {
   isDark: boolean;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
-  onDelete: (index: number) => void;
   moveItem: (from: number, to: number) => void;
+  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
+  setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const TopicBlock = ({
@@ -47,8 +51,9 @@ const TopicBlock = ({
   isDark,
   templateContents,
   setTemplateContent,
-  onDelete,
   moveItem,
+  setTopicToDelete,
+  setShowDeleteConfirm,
 }: TopicBlockProps) => {
   const { t } = useTranslation("content");
   const ref = useRef<HTMLDivElement>(null);
@@ -200,9 +205,10 @@ const TopicBlock = ({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <TopicHeader
               topic={{ index, name: topic.topic, isHidden: topic.isHideTopic }}
-              onDelete={onDelete}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
+              setTopicToDelete={setTopicToDelete}
+              setShowDeleteConfirm={setShowDeleteConfirm}
             />
           </div>
 
@@ -273,12 +279,21 @@ const ContentComposer = ({
 }: ContentComposerProps) => {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
-  const { allWebsites } = useCommon();
+  const { associatedWebsite } = useAppSelector((state) => state.auth);
+
+  const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const deleteTopic = (index: number) => {
+    if (!topicToDelete) return;
+
     const updated = [...templateContents];
     updated.splice(index, 1);
     setTemplateContent(updated);
+    toast.success(t("topic_deleted"));
+
+    setTopicToDelete(null);
+    setShowDeleteConfirm(false);
   };
 
   // Reorder topics by swapping indices
@@ -321,23 +336,13 @@ const ContentComposer = ({
                 handleStatusChange={onStatusChangeHandler}
               />
             )}
-            <select
+            <ReactSelect
+              minWidth={180}
               value={externalApiId}
-              onChange={(e) => setExternalApiId(e.target.value)}
-              className={clsx(
-                "h-10 px-4 pr-8 text-sm font-medium rounded-lg border transition-colors",
-                isDark
-                  ? "bg-gray-800 border-gray-600 text-gray-100 hover:border-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 hover:border-gray-400",
-              )}
-            >
-              <option value="all">{t("select_website")}</option>
-              {allWebsites?.map((site) => (
-                <option key={site._id} value={site._id}>
-                  {site.name}
-                </option>
-              ))}
-            </select>
+              items={associatedWebsite}
+              onChange={(value) => setExternalApiId(value)}
+              placeholder={t("select_website")}
+            />
           </div>
         </div>
       </div>
@@ -374,8 +379,9 @@ const ContentComposer = ({
               isDark={isDark}
               templateContents={templateContents}
               setTemplateContent={setTemplateContent}
-              onDelete={deleteTopic}
               moveItem={moveItem}
+              setTopicToDelete={setTopicToDelete}
+              setShowDeleteConfirm={setShowDeleteConfirm}
             />
           ))}
 
@@ -394,6 +400,23 @@ const ContentComposer = ({
           )}
         </div>
       </div>
+
+      {showDeleteConfirm && topicToDelete && (
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          title={t("delete_topic")}
+          message={t("delete_topic_confirm")}
+          confirmText={t("delete")}
+          variant="danger"
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            if (topicToDelete !== null) {
+              deleteTopic(topicToDelete);
+            }
+            setShowDeleteConfirm(false);
+          }}
+        />
+      )}
     </div>
   );
 };
