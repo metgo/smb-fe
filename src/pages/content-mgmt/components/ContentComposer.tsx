@@ -14,6 +14,7 @@ import {
 } from "./sub-components";
 import { toast } from "sonner";
 import { StatusChangeBtn } from "@/components/btns";
+import { ConfirmDialog } from "@/components/shared";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -209,12 +210,9 @@ const TopicBlock = ({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <TopicHeader
               topic={{ index, name: topic.topic, isHidden: topic.isHideTopic }}
-              onDelete={onDelete}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
-              topicToDelete={topicToDelete}
               setTopicToDelete={setTopicToDelete}
-              showDeleteConfirm={showDeleteConfirm}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />
           </div>
@@ -267,6 +265,22 @@ const TopicBlock = ({
           </div>
         )}
       </div>
+      {showDeleteConfirm && topicToDelete && (
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          title={t("delete_topic")}
+          message={t("delete_topic_confirm")}
+          confirmText={t("delete")}
+          variant="danger"
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            if (topicToDelete !== null) {
+              onDelete(topicToDelete);
+            }
+            setShowDeleteConfirm(false);
+          }}
+        />
+      )}
     </div>
   );
 };

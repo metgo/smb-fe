@@ -76,9 +76,19 @@ const ContentConfigHeader = ({
 
   return (
     <div className="mb-4 shrink-0 space-y-2 border rounded-lg">
+      {/* Header */}
+      <div
+        className={clsx(
+          "font-semibold p-2",
+          isDark ? "text-gray-300" : "text-gray-800",
+        )}
+      >
+        {t("feed_header")}
+      </div>
       <div
         className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
       >
+        <CKEditorWrapper value={header} onChange={setHeader} height={150} />
         <div className="space-y-2">
           {/* Create Topic */}
           <div
@@ -189,24 +199,6 @@ const ContentConfigHeader = ({
                 {t("button_create")}
               </Button>
             </div>
-            {selectedTopicForNewCategory && (
-              <div>
-                {/* Header */}
-                <div
-                  className={clsx(
-                    "font-semibold",
-                    isDark ? "text-gray-300" : "text-gray-800",
-                  )}
-                >
-                  {t("feed_header")}
-                </div>
-                <CKEditorWrapper
-                  value={header}
-                  onChange={setHeader}
-                  height={150}
-                />
-              </div>
-            )}
 
             {templateContents.length === 0 && (
               <p

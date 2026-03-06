@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
-import { ConfirmDialog } from "@/components/shared";
 
 interface TopicHeaderProps {
   topic: {
@@ -23,22 +22,16 @@ interface TopicHeaderProps {
     isHidden: boolean | undefined;
   };
   onRename: (topicIdx: number, newName: string) => void;
-  onDelete: (topicIdx: number) => void;
   onToggleVisibility: (topicIdx: number) => void;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
-  showDeleteConfirm?: boolean;
-  topicToDelete?: number | null;
 }
 
 const TopicHeader = ({
   topic,
   onRename,
-  onDelete,
   onToggleVisibility,
-  topicToDelete,
   setTopicToDelete,
-  showDeleteConfirm,
   setShowDeleteConfirm,
 }: TopicHeaderProps) => {
   const { isDark } = useThemeClasses();
@@ -228,22 +221,6 @@ const TopicHeader = ({
             )}
           </div>
         </>
-      )}
-      {showDeleteConfirm && topicToDelete && (
-        <ConfirmDialog
-          open={showDeleteConfirm}
-          title={t("delete_topic")}
-          message={t("delete_topic_confirm")}
-          confirmText={t("delete")}
-          variant="danger"
-          onCancel={() => setShowDeleteConfirm(false)}
-          onConfirm={() => {
-            if (topicToDelete !== null) {
-              onDelete(topicToDelete);
-            }
-            setShowDeleteConfirm(false);
-          }}
-        />
       )}
     </div>
   );

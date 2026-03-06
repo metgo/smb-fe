@@ -151,6 +151,7 @@ const ContentCard = ({
             alt={name}
             className="w-full h-full object-cover"
           />
+
           {cardContent}
         </div>
         <div
@@ -196,7 +197,8 @@ const ContentCard = ({
         isExpanded ? "col-span-12" : "col-span-4",
       )}
     >
-      <div className="grid grid-cols-12 h-26">
+      <div className="grid grid-cols-12 h-20">
+        {/* Image */}
         <div className="relative col-span-2">
           <ImageWithFallback
             src={image}
@@ -205,30 +207,36 @@ const ContentCard = ({
           />
           {cardContent}
         </div>
+
+        {/* Content */}
         <div
           className={clsx(
-            "p-3 col-span-10",
+            "p-3 col-span-10 flex flex-col",
             isDark
               ? "bg-gray-900 border border-gray-700/50 text-gray-200"
               : "bg-white border border-gray-200 text-gray-800",
           )}
         >
-          <h4
-            className={clsx(
-              "font-medium truncate mb-1",
-              isDark ? "text-gray-100" : "text-gray-900",
-            )}
-          >
-            {name ? name : "-"}
-          </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
-            {descripition ? getPlainTextFromRichText(descripition) : "-"}
-          </p>
-          {categoryName && (
-            <span className="inline-block px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
+          {/* Name + Category */}
+          <div className="flex items-start justify-between mb-1">
+            <h4
+              className={clsx(
+                "font-medium truncate",
+                isDark ? "text-gray-100" : "text-gray-900",
+              )}
+            >
+              {name ? name : "-"}
+            </h4>
+
+            <span className="ml-2 px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full whitespace-nowrap">
               {categoryName}
             </span>
-          )}
+          </div>
+
+          {/* Description */}
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+            {descripition ? getPlainTextFromRichText(descripition) : "-"}
+          </p>
         </div>
       </div>
     </div>
