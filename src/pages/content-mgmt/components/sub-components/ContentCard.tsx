@@ -46,7 +46,7 @@ const ContentCard = ({
   handleRemove,
   handleContextMenu,
 }: ContentCardProps) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, bgTertiary } = useThemeClasses();
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.BUSINESS_CARD,
@@ -174,7 +174,12 @@ const ContentCard = ({
             {descripition ? getPlainTextFromRichText(descripition) : "-"}
           </p>
           {categoryName && (
-            <span className="inline-block px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full">
+            <span
+              className={clsx(
+                "inline-block px-3 py-1 text-xs font-bold rounded-full",
+                bgTertiary,
+              )}
+            >
               {categoryName}
             </span>
           )}

@@ -211,7 +211,6 @@ const TopicHeader = ({
                     setShowMenu(false);
                     setTopicToDelete(topic.index);
                     setShowDeleteConfirm(true);
-                    // onDelete(topic.index);
                   }}
                 >
                   <Trash2 className="w-3.5 h-3.5 shrink-0" />

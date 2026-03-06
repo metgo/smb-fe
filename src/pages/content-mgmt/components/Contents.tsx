@@ -15,7 +15,6 @@ import {
 } from "@/components/shared";
 
 interface Filters {
-  status: string;
   hasProductFilter: string;
   primaryCategory: string;
 }
@@ -149,32 +148,9 @@ const Contents = ({
             className={`border-t pt-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
           >
             <div className="flex flex-wrap items-start gap-4 w-full">
-              <div className="grid grid-cols-3 gap-2 pb-2">
-                {/* Status */}
-                <div className="flex flex-col">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("status")}
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) =>
-                      setFilters({ ...filters, status: e.target.value })
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="DRAFT">{t("draft")}</option>
-                    <option value="PENDING">{t("pending")}</option>
-                    <option value="APPROVED">{t("approved")}</option>
-                    <option value="REJECTED">{t("rejected")}</option>
-                    <option value="CLOSED">{t("closed")}</option>
-                  </select>
-                </div>
-
+              <div className="grid grid-cols-8 gap-2 pb-2">
                 {/* Has Products */}
-                <div className="flex flex-col">
+                <div className="flex flex-col col-span-4">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -197,7 +173,7 @@ const Contents = ({
                 </div>
 
                 {/* Category */}
-                <div className="flex flex-col">
+                <div className="flex flex-col col-span-4">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -224,10 +200,9 @@ const Contents = ({
               </div>
 
               {/* Active Filter Chips */}
-              {(filters.status !== "all" ||
-                filters.hasProductFilter !== "all" ||
+              {(filters.hasProductFilter !== "all" ||
                 filters.primaryCategory !== "all") && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -238,9 +213,7 @@ const Contents = ({
                       {Object.entries(filters).map(([key, value]) => {
                         if (!value || value === "all") return null;
                         let displayValue = value;
-                        if (key === "status")
-                          displayValue = t(value.toLowerCase()) || value;
-                        else if (key === "hasProductFilter")
+                        if (key === "hasProductFilter")
                           displayValue = value === "yes" ? t("yes") : t("no");
                         else if (key === "primaryCategory") {
                           const found = categoryFilter?.find(
