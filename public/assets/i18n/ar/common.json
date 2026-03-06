@@ -41,6 +41,7 @@
   "offline_vouchers": "مشتريات القسائم غير المتصلة",
   "cash_in": "إيداع نقدي",
   "cash_back": "استرداد نقدي",
+  "content_mgmt": "إدارة المحتوى",
   "site_management": "إدارة الموقع",
   "home": "الرئيسية",
   "promotions": "العروض الترويجية",
@@ -295,5 +296,6 @@
   "phone_number_placeholder": "رقم الهاتف",
   "address_placeholder": "العنوان",
 
-  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول."
+  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول.",
+  "select_options_placeholder": "اختر الخيارات"
 }

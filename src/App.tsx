@@ -20,6 +20,7 @@ import {
   EventDetailsPage,
   BusinessDetailsPage,
   ProductDetailsPage,
+  ContentMgmtPage,
   ErrorUiPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
@@ -122,7 +123,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      errorElement: <ErrorUiPage />,
+      // errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
 
@@ -137,6 +138,7 @@ function App() {
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.eventDetails, element: <EventDetailsPage /> },
         { path: routes.productDetails, element: <ProductDetailsPage /> },
+        { path: routes.contentMgmt, element: <ContentMgmtPage /> },
 
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },

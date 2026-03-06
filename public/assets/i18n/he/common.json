@@ -40,6 +40,7 @@
   "offline_vouchers": "רכישות שוברי הנחה לא מקוונות",
   "cash_in": "הפקדה",
   "cash_back": "החזר מזומן",
+  "content_mgmt": "ניהול תוכן",
   "site_management": "ניהול אתר",
   "home": "דף הבית",
   "promotions": "מבצעים",
@@ -297,5 +298,6 @@
   "phone_number_placeholder": "מספר טלפון",
   "address_placeholder": "כתובת",
 
-  "max_length_reached": "הגעת לאורך המקסימלי."
+  "max_length_reached": "הגעת לאורך המקסימלי.",
+  "select_options_placeholder": "בחר אפשרויות"
 }

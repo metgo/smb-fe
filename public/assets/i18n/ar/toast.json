@@ -34,5 +34,8 @@
   "product_delete_failed": "فشل حذف المنتجات",
   "product_status_change_loading": "يرجى الانتظار. جاري تغيير حالة المنتج…",
   "product_status_update_success": "تم تحديث حالة المنتجات بنجاح",
-  "product_status_update_failed": "فشل تغيير حالة المنتجات"
+  "product_status_update_failed": "فشل تغيير حالة المنتجات",
+
+  "website_select_info": "يرجى اختيار الموقع أولاً لتحديد المكان الذي سيتم عرض هذا المحتوى فيه.",
+  "empty_content_info": "يرجى إضافة فئة واحدة على الأقل تحتوي على أعمال."
 }

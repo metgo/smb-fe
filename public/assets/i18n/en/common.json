@@ -21,6 +21,7 @@
   "products": "Products",
   "businesses": "Businesses",
   "users": "Users",
+  "content-mgmt": "Content Management",
   "delete_business": "Delete Business",
   "delete_business_confirm": "Confirm Delete Business?",
   "edit_location": "Edit Location",
@@ -45,6 +46,7 @@
   "cash_in": "Cash-In",
   "cash_back": "Cash-Back",
   "site_management": "Site Management",
+  "content_mgmt": "Content Management",
   "home": "Home",
   "promotions": "Promotions",
   "blog": "Blog",
@@ -295,5 +297,6 @@
   "phone_number_placeholder": "Phone Number",
   "address_placeholder": "Address",
 
-  "max_length_reached": "Max length reached."
+  "max_length_reached": "Max length reached.",
+  "select_options_placeholder": "Select options"
 }

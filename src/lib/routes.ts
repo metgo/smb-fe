@@ -1,5 +1,6 @@
 export const routes = {
   dashboard: "/",
+  home: "/home",
 
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
@@ -12,6 +13,9 @@ export const routes = {
 
   ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
+
+  contentMgmt: "/content-management",
+
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
 

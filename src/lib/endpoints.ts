@@ -63,6 +63,9 @@ export const endpoints = {
 
   generateTags: "/generate-tags",
 
+  // Content
+  contentConfig: "/site-filter-config",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
 };

@@ -16,6 +16,7 @@
   "contact_name": "Contact Person",
   "location_address": "Location Address",
   "trips": "Trips",
+  "category_name_description": "Category Name Description",
   "no_business": "not found",
   "no_businesses_desc": "Start by creating your own business",
   "select_dmo": "Select DMO",
