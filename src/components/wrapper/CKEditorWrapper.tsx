@@ -26,6 +26,7 @@ interface CKEditorWrapperProps {
   onChange: (value: string) => void;
   placeholder?: string;
   maxLength?: number;
+  height?: number | string;
 }
 
 class CustomEditor extends ClassicEditor {}
@@ -132,6 +133,7 @@ export default function CKEditorWrapper({
   onChange,
   placeholder,
   maxLength = 500,
+  height = 200,
 }: CKEditorWrapperProps) {
   const { t } = useTranslation("common");
   const { isDark, isRTL } = useThemeClasses();
@@ -232,6 +234,7 @@ export default function CKEditorWrapper({
           if (toolbarEl) {
             toolbarEl.style.position = "relative";
             toolbarEl.style.top = "auto";
+            toolbarEl.style.zIndex = "30";
           }
 
           // Set initial direction
@@ -332,6 +335,12 @@ export default function CKEditorWrapper({
 
       {/* Styles */}
       <style>{`
+        .ckeditor-wrapper .ck-editor__editable {
+          min-height: ${typeof height === "number" ? `${height}px` : height} !important;
+          max-height: ${typeof height === "number" ? `${height}px` : height} !important;
+          overflow-y: auto !important;
+        }
+          
         /* ===== Disable CK sticky ===== */
         .ckeditor-wrapper .ck-sticky-panel,
         .ckeditor-wrapper .ck-sticky-panel__content {

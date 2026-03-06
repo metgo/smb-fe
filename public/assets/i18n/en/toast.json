@@ -38,5 +38,8 @@
   "product_delete_failed": "Failed to delete products",
   "product_status_change_loading": "Please wait. Product's status is changing...",
   "product_status_update_success": "Products status updated successfully",
-  "product_status_update_failed": "Failed to change products status"
+  "product_status_update_failed": "Failed to change products status",
+
+  "website_select_info": "Please select the website first to specify where this content should be displayed.",
+  "empty_content_info": "Please add at least one category with businesses."
 }

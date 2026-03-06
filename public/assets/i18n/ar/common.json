@@ -43,6 +43,7 @@
   "offline_vouchers": "مشتريات القسائم غير المتصلة",
   "cash_in": "إيداع نقدي",
   "cash_back": "استرداد نقدي",
+  "content_mgmt": "إدارة المحتوى",
   "site_management": "إدارة الموقع",
   "home": "الرئيسية",
   "promotions": "العروض الترويجية",
@@ -97,7 +98,11 @@
   "paid": "مدفوع",
   "required": "مطلوب",
   "not_required": "غير مطلوب",
+
   "change_status": "تغيير الحالة",
+  "completion_percentage": "نسبة الإكمال",
+  "created": "تم الإنشاء",
+  "updated": "تم التحديث",
 
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد من حذف هذه التذكرة؟",
@@ -131,6 +136,7 @@
   "thursday": "الخميس",
   "friday": "الجمعة",
   "saturday": "السبت",
+
   "sun": "أحد",
   "mon": "إثنين",
   "tue": "ثلاثاء",
@@ -138,6 +144,14 @@
   "thu": "خميس",
   "fri": "جمعة",
   "sat": "سبت",
+
+  "open": "مفتوح",
+  "holiday": "عطلة",
+  "today": "اليوم",
+  "open_now": "مفتوح الآن",
+  "weekly_schedule": "الجدول الأسبوعي",
+  "no_schedule_available": "لا يوجد جدول متاح",
+  "not_set_opening_hours": "لم يتم تحديد ساعات العمل بعد",
 
   "all": "الكل",
   "select_dmo": "اختر منظمة تسويق الوجهة (DMO)",
@@ -284,5 +298,6 @@
   "phone_number_placeholder": "رقم الهاتف",
   "address_placeholder": "العنوان",
 
-  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول."
+  "max_length_reached": "تم الوصول إلى الحد الأقصى للطول.",
+  "select_options_placeholder": "اختر الخيارات"
 }

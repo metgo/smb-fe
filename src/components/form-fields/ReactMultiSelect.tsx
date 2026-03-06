@@ -1,5 +1,6 @@
 import Select, { type MultiValue } from "react-select";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 export interface MultiSelectOption {
   label: string;
@@ -20,10 +21,12 @@ const ReactMultiSelect: React.FC<ReactMultiSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = "Select options",
+  placeholder,
   isDisabled = false,
 }) => {
   const { isDark } = useThemeClasses();
+  const { t } = useTranslation("common");
+  const finalPlaceholder = placeholder || t("select_options_placeholder");
 
   // Convert string[] → option[]
   const selectedOptions = options.filter((opt) => value.includes(opt.value));
@@ -53,7 +56,7 @@ const ReactMultiSelect: React.FC<ReactMultiSelectProps> = ({
         options={options}
         value={selectedOptions}
         onChange={handleChange}
-        placeholder={placeholder}
+        placeholder={finalPlaceholder}
         classNamePrefix="react-select"
         styles={{
           control: (base, state) => ({

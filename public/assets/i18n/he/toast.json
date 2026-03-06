@@ -34,5 +34,8 @@
   "product_delete_failed": "מחיקת המוצרים נכשלה",
   "product_status_change_loading": "אנא המתן. סטטוס המוצר משתנה…",
   "product_status_update_success": "סטטוס המוצרים עודכן בהצלחה",
-  "product_status_update_failed": "כישלון בשינוי סטטוס המוצרים"
+  "product_status_update_failed": "כישלון בשינוי סטטוס המוצרים",
+
+  "website_select_info": "אנא בחר תחילה את האתר שבו תרצה להציג תוכן זה.",
+  "empty_content_info": "אנא הוסף לפחות קטגוריה אחת עם עסקים."
 }

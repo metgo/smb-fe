@@ -1,5 +1,5 @@
 type FilterChipsProps = {
-  label: string;
+  label: string | string[];
   onRemove?: () => void;
   className?: string;
   removable?: boolean;
