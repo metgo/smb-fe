@@ -322,19 +322,19 @@ function OrderDetailsModal({
             <div
               className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
-              {order?.status !== "canceled" && (
-                <button
-                  onClick={() => {
-                    setCancelType("order");
-                    setItemToCancel(null);
-                    setShowCancelDialog(true);
-                  }}
-                  disabled={order?.status === "canceled"}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                >
-                  {t("cancel_order") || "Cancel Order"}
-                </button>
-              )}
+              {order?.status !== "canceled" &&
+                order?.status !== "completed" && (
+                  <button
+                    onClick={() => {
+                      setCancelType("order");
+                      setItemToCancel(null);
+                      setShowCancelDialog(true);
+                    }}
+                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                  >
+                    {t("cancel_order") || "Cancel Order"}
+                  </button>
+                )}
 
               <button
                 onClick={handleResendNotification}
@@ -362,7 +362,7 @@ function OrderDetailsModal({
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
-          onConfirm={async (reason, _notes) => {
+          onConfirm={async (reason) => {
             try {
               if (cancelType === "order") {
                 // Cancel the entire order
