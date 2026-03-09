@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 interface ConfirmDialogProps {
   open: boolean;
   title?: string;
-  message: string;
+  message?: string;
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
@@ -54,7 +54,9 @@ export default function ConfirmDialog({
             <h3 className={clsx("text-lg font-semibold", textSecondary)}>
               {t(title)}
             </h3>
-            <p className={clsx("text-sm mt-1", textPrimary)}>{t(message)}</p>
+            <p className={clsx("text-sm mt-1", textPrimary)}>
+              {t(message ?? "")}
+            </p>
           </div>
         </div>
 

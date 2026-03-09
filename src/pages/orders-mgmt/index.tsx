@@ -29,6 +29,7 @@ import {
   BulkActionBar,
   ConfirmDialog,
   FilterChips,
+  PageHeader,
   PageStats,
   ViewModeToggle,
 } from "@/components/shared";
@@ -71,8 +72,7 @@ export default function OrdersMgmtPage() {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
 
-  const { textPrimary, textSecondary, textTertiary, isDark } =
-    useThemeClasses();
+  const { textSecondary, textTertiary, isDark } = useThemeClasses();
   //view mode toggle
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   // const [orders, setOrders] = useState<IOrder[]>([]);
@@ -91,6 +91,69 @@ export default function OrdersMgmtPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
+  //camera persmissions
+  const [stream, setStream] = useState<MediaStream | null>(null);
+
+  // Optional: clean up on unmount / close
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
+  async function getVideoStream() {
+    try {
+      const permissionStatus = await navigator.permissions.query({
+        name: "camera" as PermissionName,
+      });
+
+      if (permissionStatus.state === "denied") {
+        console.error("Camera permission has been denied");
+        // Optionally show UI: "Please enable camera permission in site settings"
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking camera permissions:", error);
+      // still try anyway — query can fail in some browsers
+    }
+
+    let newStream: MediaStream | null = null;
+
+    try {
+      newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment", // ← back camera on phones (most QR use-case)
+          // facingMode: "user"       // ← front camera if you prefer
+        },
+      });
+
+      setStream(newStream);
+      setShowQRScanner(true);
+    } catch (error) {
+      console.error("Error getting video stream:", error);
+      // Show nice error message to user
+      alert("Cannot access camera: " + (error as Error).message);
+    }
+  }
+  // Cleanup function — call this on close / unmount
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop(); // ← this is what turns off the camera
+      });
+      setStream(null);
+      setShowQRScanner(false);
+    }
+  }, [stream]);
+
+  // Important: also clean up if component unmounts while stream is active
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
     setPage((prev) => {
@@ -200,7 +263,7 @@ export default function OrdersMgmtPage() {
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
   const hasMore = orders?.datas?.meta?.hasNextPage;
-
+  const totalData = orders?.datas?.totalData;
   const orderss = orders?.datas?.data ?? [];
   useEffect(() => {
     if (!orderss?.length) return;
@@ -836,17 +899,20 @@ export default function OrdersMgmtPage() {
       <div
         className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 ${isRTL ? "md:flex-row-reverse" : ""}`}
       >
-        <div>
-          <h1 className={`text-2xl ${textPrimary}`}>
-            {t("online_orders_management")}
-          </h1>
-          <p className={`text-sm ${textTertiary} mt-1`}>
-            {t("online_orders_subtitle")}
-          </p>
+        <div
+          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
+        >
+          {" "}
+          <PageHeader
+            title={t("online_orders_management")}
+            description={t("online_orders_subtitle")}
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            totalCount={totalData ?? 0}
+          />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
           <button
-            onClick={() => setShowQRScanner(true)}
+            onClick={getVideoStream}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -1178,12 +1244,11 @@ export default function OrdersMgmtPage() {
       </Activity> */}
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
-        <QRScannerModal onClose={() => setShowQRScanner(false)} />
+        <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
       <ConfirmDialog
         open={isConfirmOpen}
         title={t("resend_notification")}
-        message={t("resend_notification_confirm")}
         confirmText="delete"
         variant="danger"
         onCancel={() => {
