@@ -163,5 +163,8 @@
   "email_sent": "האימייל נשלח בהצלחה",
   "scan_successful": "הסריקה הצליחה!",
   "scan_again": "סרוק שוב",
-  "done": "סיימתי"
+  "done": "סיימתי",
+  "resend_failed": "ההעברה מחדש נכשלה",
+  "resend_loading": "מעביר מחדש...",
+  "resend_success": "הועבר מחדש בהצלחה!"
 }

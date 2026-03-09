@@ -164,5 +164,8 @@
   "email_sent": "Email sent successfully",
   "scan_successful": "Scan Successful!",
   "scan_again": "Scan Again",
-  "done": "Done"
+  "done": "Done",
+  "resend_failed": "Resend failed",
+  "resend_loading": "Resending...",
+  "resend_success": "Resent successfully!"
 }

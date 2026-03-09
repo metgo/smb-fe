@@ -15,14 +15,6 @@ export const orderQueryApi = createApi({
       }),
     }),
 
-    getOrdersStats: builder.query<any, any>({
-      query: (params) => ({
-        url: endpoints.ordersStats,
-        method: "GET",
-        params,
-      }),
-    }),
-
     getOrderById: builder.query<any, { orderId: string | null }>({
       query: ({ orderId }) => ({
         url: `${endpoints.orders}/${orderId}`,
@@ -36,19 +28,11 @@ export const orderQueryApi = createApi({
         params,
       }),
     }),
-
-    // getOrderStatsById: builder.query<any, string>({
-    //   query: (id) => ({
-    //     url: `${endpoints.ordersStats}`,
-    //     method: "GET",
-    //     params: { productId: id },
-    //   }),
-    // }),
   }),
 });
 
 export const {
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
-  useGetOrdersStatsQuery,
+  useGetOrderStatsQuery,
 } = orderQueryApi;

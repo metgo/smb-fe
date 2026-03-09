@@ -43,6 +43,7 @@ import {
 import {
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
+  // useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
@@ -94,7 +95,7 @@ export default function OrdersMgmtPage() {
   //camera persmissions
   const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Optional: clean up on unmount / close
+  //  clean up on unmount / close
   useEffect(() => {
     return () => {
       if (stream) {
@@ -111,12 +112,10 @@ export default function OrdersMgmtPage() {
 
       if (permissionStatus.state === "denied") {
         console.error("Camera permission has been denied");
-        // Optionally show UI: "Please enable camera permission in site settings"
         return;
       }
     } catch (error) {
       console.error("Error checking camera permissions:", error);
-      // still try anyway — query can fail in some browsers
     }
 
     let newStream: MediaStream | null = null;
@@ -124,8 +123,8 @@ export default function OrdersMgmtPage() {
     try {
       newStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "environment", // ← back camera on phones (most QR use-case)
-          // facingMode: "user"       // ← front camera if you prefer
+          facingMode: "environment",
+          // facingMode: "user"       //  front camera
         },
       });
 
@@ -133,22 +132,21 @@ export default function OrdersMgmtPage() {
       setShowQRScanner(true);
     } catch (error) {
       console.error("Error getting video stream:", error);
-      // Show nice error message to user
       alert("Cannot access camera: " + (error as Error).message);
     }
   }
-  // Cleanup function — call this on close / unmount
+  // Cleanup function call this on close
   const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach((track) => {
-        track.stop(); // ← this is what turns off the camera
+        track.stop(); //  this is what turns off the camera
       });
       setStream(null);
       setShowQRScanner(false);
     }
   }, [stream]);
 
-  // Important: also clean up if component unmounts while stream is active
+  // clean up if component unmounts while stream is active
   useEffect(() => {
     return () => {
       stopCamera();
@@ -256,6 +254,10 @@ export default function OrdersMgmtPage() {
 
     return params;
   }, [page, limit, searchTerm, filters]);
+
+  //  const { data: orderStat, isLoading: isStatsLoading } =
+  //   useGetOrderStatsQuery(orderQueryParams);
+
   const {
     data: orders,
     isLoading,
@@ -522,32 +524,12 @@ export default function OrdersMgmtPage() {
     };
   }, [orderss]);
 
-  // // Bulk selection handlers
-  // const handleSelectAll = () => {
-  //   if (selectedOrders.size === filteredOrders.length) {
-  //     setSelectedOrders(new Set());
-  //   } else {
-  //     setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-  //   }
-  // };
-
-  // const handleSelectOrder = (orderId: string) => {
-  //   const newSelected = new Set(selectedOrders);
-  //   if (newSelected.has(orderId)) {
-  //     newSelected.delete(orderId);
-  //   } else {
-  //     newSelected.add(orderId);
-  //   }
-  //   setSelectedOrders(newSelected);
-  // };
-
   const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
 
   const handleExportCSV = () => {
-    // const ordersToExport = selectedOrders;
     const ordersToExport =
       selectedOrders.size > 1
         ? orders?.datas?.data?.filter((order: any) =>
@@ -676,34 +658,6 @@ export default function OrdersMgmtPage() {
     setIsConfirmOpen(true);
   }, [selectedOrders.size]);
 
-  // const handleResendOrderDetails = () => {
-  //   const ordersToResend =
-  //     selectedOrders.size > 0
-  //       ? orders?.datas?.data?.filter((order: IOrder) =>
-  //           selectedOrders.has(order._id),
-  //         )
-  //       : [];
-
-  //   if (ordersToResend.length === 0) {
-  //     toast.info(t("noOrdersSelected") || "No orders selected");
-  //     return;
-  //   }
-
-  //   ordersToResend.forEach((order: IOrder) => {
-  //     toast.info(
-  //       `Sending order details to ${order.email} for order ${order._id}`,
-  //     );
-  //   });
-
-  //   const message =
-  //     ordersToResend.length === 1
-  //       ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
-  //       : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
-
-  //   toast.info(message);
-
-  //   setSelectedOrders(new Set());
-  // };
   const handleBulkResend = useCallback(async () => {
     if (!selectedOrders.size) return;
 
@@ -713,13 +667,12 @@ export default function OrdersMgmtPage() {
       const results = await bulkOrdersUpdate({
         ordersId: Array.from(selectedOrders),
         isResend: true,
-        // optional: other params like force: true, etc.
       });
 
       if (results?.data) {
         toast.success(t("resend_success"), { id: toastId });
         setSelectedOrders(new Set());
-        refetch(); // refresh the list
+        refetch();
       }
     } catch (error: any) {
       toast.error(error?.message || t("resend_failed"), {
@@ -1117,59 +1070,6 @@ export default function OrdersMgmtPage() {
           hancleClearSelection={() => setSelectedOrders(new Set())}
         />
       )}
-      {/* <BulkActionBar
-        selectedItemCount={selectedOrders.size || 0}
-        handleBulkStatusChange={handleBulkStatusChange}
-        onBulkAction={{
-          delete: handleBulkDelete,
-          resend: handleResendOrderDetails,
-          csvExport: handleExportCSV,
-        }}
-        isDelete={true}
-      /> */}
-      {/* Bulk Actions Toolbar */}
-      {/* {selectedOrders.size > 0 && (
-        <div
-          className={`${theme === "dark" ? "bg-teal-900/30 border-teal-800" : "bg-teal-50 border-teal-200"} border rounded-lg p-4 mb-4 flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}
-        >
-          <span className={`${textPrimary}`}>
-            {selectedOrders.size} {t("selected")}
-          </span>
-          <button
-            onClick={handleResendOrderDetails}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-blue-800 hover:bg-blue-700 text-blue-100"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-          >
-            <Mail className="w-4 h-4" />
-            <span className="text-sm">{t("resendOrderDetails")}</span>
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "bg-white hover:bg-gray-100 text-gray-700"
-            }`}
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm">{t("exportCSV")}</span>
-          </button>
-          <button
-            onClick={handleExportXLS}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "bg-white hover:bg-gray-100 text-gray-700"
-            }`}
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm">{t("exportXLS")}</span>
-          </button>
-        </div>
-      )} */}
 
       {/* Orders Table */}
       {viewMode === "list" ? (
@@ -1248,8 +1148,8 @@ export default function OrdersMgmtPage() {
       <ConfirmDialog
         open={isConfirmOpen}
         title={t("resend_notification")}
-        confirmText="delete"
-        variant="danger"
+        confirmText={t("resend")}
+        variant="info"
         onCancel={() => {
           setIsConfirmOpen(false);
           setIsBulkDelete(false);
