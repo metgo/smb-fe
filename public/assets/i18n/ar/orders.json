@@ -159,5 +159,6 @@
   "enterDetails": "أدخل التفاصيل",
   "vendor": "البائع",
   "category": "الفئة",
-  "description": "الوصف"
+  "description": "الوصف",
+  "email_sent": "تم إرسال البريد الإلكتروني بنجاح"
 }

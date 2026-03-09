@@ -159,5 +159,6 @@
   "enterDetails": "הזן פרטים",
   "vendor": "ספק",
   "category": "קטגוריה",
-  "description": "תיאור"
+  "description": "תיאור",
+  "email_sent": "האימייל נשלח בהצלחה"
 }

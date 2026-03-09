@@ -56,18 +56,16 @@ function OrderDetailsModal({
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
-  console.log("🚀 ~ OrderDetailsModal ~ itemToCancel:", itemToCancel);
 
   const handleResendNotification = async () => {
     try {
-      const res = await updateOrderConfirmation({
+      await updateOrderConfirmation({
         orderId: order?._id,
         body: {},
       }).unwrap();
-      toast.success(res?.message);
+      toast.success(t("email_sent"));
     } catch (error) {
       toast.error("failed");
-      console.error("Failed to resend notification:", error);
     }
   };
   return (

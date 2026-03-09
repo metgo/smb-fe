@@ -159,5 +159,7 @@
   "enterDetails": "Enter Details",
   "vendor": "Vendor",
   "category": "Category",
-  "description": "Description"
+  "description": "Description",
+
+  "email_sent": "Email sent successfully"
 }

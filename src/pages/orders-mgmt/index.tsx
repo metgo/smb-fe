@@ -1,5 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef, Activity } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Activity,
+  useCallback,
+} from "react";
 import {
   Download,
   // Plus,
@@ -18,7 +25,13 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, ViewModeToggle } from "@/components/shared";
+import {
+  BulkActionBar,
+  ConfirmDialog,
+  FilterChips,
+  PageStats,
+  ViewModeToggle,
+} from "@/components/shared";
 import {
   // CreateOrderWizard,
   FilterSelect,
@@ -35,6 +48,7 @@ import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
+import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 
 // Default columns configuration
 const defaultColumns = {
@@ -71,7 +85,9 @@ export default function OrdersMgmtPage() {
   // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  // const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 20;
 
@@ -131,14 +147,6 @@ export default function OrdersMgmtPage() {
     return chips;
   }, [filters]);
 
-  const FilterChip = ({ value, onRemove }: any) => (
-    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-blue-100 text-sm">
-      <span>{value}</span>
-      <button onClick={onRemove} className=" transition">
-        ✕
-      </button>
-    </div>
-  );
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
@@ -599,20 +607,27 @@ export default function OrdersMgmtPage() {
     link.click();
     document.body.removeChild(link);
   };
+  const promptBulkResend = useCallback(() => {
+    if (!selectedOrders.size) return;
+    setIsBulkDelete(true);
+    setIsConfirmOpen(true);
+  }, [selectedOrders.size]);
 
   // const handleResendOrderDetails = () => {
   //   const ordersToResend =
   //     selectedOrders.size > 0
-  //       ? orders.filter((order: IOrder) => selectedOrders.has(order._id))
+  //       ? orders?.datas?.data?.filter((order: IOrder) =>
+  //           selectedOrders.has(order._id),
+  //         )
   //       : [];
 
   //   if (ordersToResend.length === 0) {
-  //     alert(t("noOrdersSelected") || "No orders selected");
+  //     toast.info(t("noOrdersSelected") || "No orders selected");
   //     return;
   //   }
 
   //   ordersToResend.forEach((order: IOrder) => {
-  //     console.log(
+  //     toast.info(
   //       `Sending order details to ${order.email} for order ${order._id}`,
   //     );
   //   });
@@ -622,10 +637,36 @@ export default function OrdersMgmtPage() {
   //       ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
   //       : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
 
-  //   alert(message);
+  //   toast.info(message);
 
   //   setSelectedOrders(new Set());
   // };
+  const handleBulkResend = useCallback(async () => {
+    if (!selectedOrders.size) return;
+
+    const toastId = toast.loading(t("resend_loading"));
+
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        isResend: true,
+        // optional: other params like force: true, etc.
+      });
+
+      if (results?.data) {
+        toast.success(t("resend_success"), { id: toastId });
+        setSelectedOrders(new Set());
+        refetch(); // refresh the list
+      }
+    } catch (error: any) {
+      toast.error(error?.message || t("resend_failed"), {
+        id: toastId,
+      });
+    } finally {
+      setIsConfirmOpen(false);
+      setIsBulkDelete(false);
+    }
+  }, [selectedOrders, bulkOrdersUpdate, refetch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -978,18 +1019,11 @@ export default function OrdersMgmtPage() {
 
             {activeFilterChips.length > 0 && (
               <div className="flex gap-5 items-center mt-4">
-                <button
-                  onClick={() => setFilters(defaultFilters)}
-                  className="text-sm text-green-600"
-                >
-                  {t("clear_all")}
-                </button>
-
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-3">
                   {activeFilterChips.map((chip) => (
-                    <FilterChip
+                    <FilterChips
                       key={chip.key}
-                      value={chip.value}
+                      label={chip.value}
                       onRemove={() =>
                         setFilters((prev) => ({
                           ...prev,
@@ -999,11 +1033,25 @@ export default function OrdersMgmtPage() {
                     />
                   ))}
                 </div>
+                <button
+                  onClick={() => setFilters(defaultFilters)}
+                  className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                >
+                  {t("clear_all")}
+                </button>
               </div>
             )}
           </div>
         )}
       </div>
+      {selectedOrders.size > 0 && (
+        <BulkActionBar
+          selectedItemCount={selectedOrders.size}
+          handleResendOrderDetails={promptBulkResend}
+          handleExportCSV={handleExportCSV}
+          hancleClearSelection={() => setSelectedOrders(new Set())}
+        />
+      )}
       {/* <BulkActionBar
         selectedItemCount={selectedOrders.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
@@ -1132,6 +1180,23 @@ export default function OrdersMgmtPage() {
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal onClose={() => setShowQRScanner(false)} />
       </Activity>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("resend_notification")}
+        message={t("resend_notification_confirm")}
+        confirmText="delete"
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setIsBulkDelete(false);
+        }}
+        onConfirm={() => {
+          if (isBulkDelete) {
+            handleBulkResend();
+          }
+          setIsConfirmOpen(false);
+        }}
+      />
     </div>
   );
 }
