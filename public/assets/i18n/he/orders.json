@@ -160,5 +160,8 @@
   "vendor": "ספק",
   "category": "קטגוריה",
   "description": "תיאור",
-  "email_sent": "האימייל נשלח בהצלחה"
+  "email_sent": "האימייל נשלח בהצלחה",
+  "scan_successful": "הסריקה הצליחה!",
+  "scan_again": "סרוק שוב",
+  "done": "סיימתי"
 }

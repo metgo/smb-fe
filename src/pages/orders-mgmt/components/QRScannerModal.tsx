@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import { Camera, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
+import QRScanner from "./QRScanner";
 
 interface QRScannerModalProps {
   onClose: () => void;
-  stream: MediaStream | null; // ← pass the stream from parent
+  stream: MediaStream | null;
 }
 
 export default function QRScannerModal({
@@ -25,7 +26,6 @@ export default function QRScannerModal({
     video.srcObject = stream;
     video.play().catch((e) => console.error("Video play failed:", e));
 
-    // Optional: mirror front camera if you ever use facingMode: "user"
     video.style.transform = "scaleX(-1)";
 
     return () => {
@@ -55,10 +55,7 @@ export default function QRScannerModal({
             <h2 className={`text-2xl ${textPrimary}`}>
               {t("scan_qr_code") || "Scan QR Code"}
             </h2>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
+            <button onClick={onClose} className="p-2 rounded-lg ">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -66,13 +63,7 @@ export default function QRScannerModal({
 
         <div className="p-6">
           {stream ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full aspect-square object-cover rounded-lg bg-black"
-            />
+            <QRScanner onClose={onClose} />
           ) : (
             <div className="w-full aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
               <Camera className="w-24 h-24 text-gray-400" />

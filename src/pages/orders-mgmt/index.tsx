@@ -918,7 +918,6 @@ export default function OrdersMgmtPage() {
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
-            title={t("scanQRCode")}
           >
             <Camera className="w-4 h-4" />
           </button>

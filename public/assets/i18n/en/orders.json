@@ -161,5 +161,8 @@
   "category": "Category",
   "description": "Description",
 
-  "email_sent": "Email sent successfully"
+  "email_sent": "Email sent successfully",
+  "scan_successful": "Scan Successful!",
+  "scan_again": "Scan Again",
+  "done": "Done"
 }
