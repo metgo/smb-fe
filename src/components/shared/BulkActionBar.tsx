@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Trash } from "lucide-react";
+import { Download, Mail, Trash } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { StatusChangeBtn } from "../btns";
@@ -7,9 +7,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BulkActionBarProps {
   selectedItemCount: number;
-  handleBulkStatusChange: (v: TStatus) => void;
-  handleBulkDelete: () => void;
+  handleBulkStatusChange?: (v: TStatus) => void;
+  handleBulkDelete?: () => void;
   hancleClearSelection?: () => void;
+  handleResendOrderDetails?: () => void;
+  handleExportCSV?: () => void;
 }
 
 const BulkActionBar: React.FC<BulkActionBarProps> = ({
@@ -17,9 +19,14 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   selectedItemCount,
   handleBulkDelete,
   hancleClearSelection,
+  handleResendOrderDetails,
+  handleExportCSV,
 }) => {
   const { t } = useTranslation("common");
-  const { isDark } = useThemeClasses();
+  const { t: to } = useTranslation("orders");
+
+  const { theme } = useThemeClasses();
+  const isDark = theme === "dark";
 
   if (!selectedItemCount) return null;
 
@@ -50,25 +57,56 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
         >
           {t("clear_selection")}
         </button>
+        {handleResendOrderDetails && (
+          <button
+            type="button"
+            onClick={handleResendOrderDetails}
+            className={clsx(
+              "px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 border",
+              `border-blue-500 text-white bg-blue-500`,
+              `hover:bg-blue-500 hover:text-white`,
+            )}
+          >
+            {" "}
+            <Mail className="w-4 h-4" />
+            <span>{to("resend_order_details")}</span>
+          </button>
+        )}
+        {handleExportCSV && (
+          <button
+            onClick={handleExportCSV}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              isDark
+                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            <span>{to("downloadCSV")}</span>
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
-        <StatusChangeBtn
-          status="draft"
-          handleStatusChange={handleBulkStatusChange}
-        />
-
-        <button
-          onClick={handleBulkDelete}
-          className={clsx(
-            "px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 border",
-            `border-red-500 text-red-500`,
-            `hover:bg-red-500 hover:text-white`,
-          )}
-        >
-          <Trash size={18} />
-          {t("delete")}
-        </button>
+        {handleBulkStatusChange && (
+          <StatusChangeBtn
+            status="draft"
+            handleStatusChange={handleBulkStatusChange}
+          />
+        )}
+        {handleBulkDelete && (
+          <button
+            onClick={handleBulkDelete}
+            className={clsx(
+              "px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 border",
+              `border-red-500 text-red-500`,
+              `hover:bg-red-500 hover:text-white`,
+            )}
+          >
+            <Trash size={18} />
+            {t("delete")}
+          </button>
+        )}
 
         {/* Exports */}
         {/* <div className="flex items-center gap-2">

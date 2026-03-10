@@ -39,25 +39,25 @@ export const mockProducts = [
   },
 ];
 
-export const generateMockOrders = (count: number): IOrder[] => {
-  const statuses: IOrder["orderStatus"][] = [
+export const generateMockOrders = (count: number): any[] => {
+  const statuses: IOrder["status"][] = [
     "draft",
     "processing",
     "paid",
     "confirmed",
     "delivered",
     "completed",
-    "cancelled",
+    "canceled",
     "partially_cancelled",
     "failed",
   ];
-  const paymentStatuses: IOrder["paymentStatus"][] = [
-    "pending",
-    "success",
-    "failed",
-    "refunded",
-    "partially_refunded",
-  ];
+  // const paymentStatuses: IOrder["paymentStatus"][] = [
+  //   "pending",
+  //   "success",
+  //   "failed",
+  //   "refunded",
+  //   "partially_refunded",
+  // ];
   const deliveryTypes: IOrder["deliveryType"][] = [
     "pickup",
     "delivery",
@@ -131,7 +131,7 @@ export const generateMockOrders = (count: number): IOrder[] => {
   ];
 
   return Array.from({ length: count }, (_, i) => {
-    const orderProducts: IOrderProduct[] = Array.from(
+    const orderProducts: any[] = Array.from(
       { length: Math.floor(Math.random() * 3) + 1 },
       (_, j) => {
         const product = products[Math.floor(Math.random() * products.length)];
@@ -167,8 +167,8 @@ export const generateMockOrders = (count: number): IOrder[] => {
       phone: `+972-50-${String(Math.floor(Math.random() * 10000000)).padStart(7, "0")}`,
       orderType: Math.random() > 0.5 ? "online" : "offline",
       orderStatus: statuses[Math.floor(Math.random() * statuses.length)],
-      paymentStatus:
-        paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
+      // paymentStatus:
+      //   paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
       paymentMethod:
         voucherPortion > 0 ? ["voucher", "credit_card"] : ["credit_card"],
       totalAmount: totalAmount + deliveryFee,

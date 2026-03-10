@@ -1,9 +1,9 @@
 type TPaymentStatus =
-  | "pending"
-  | "success"
-  | "failed"
-  | "refunded"
-  | "partially_refunded";
+  | "PENDING"
+  | "SUCCESS"
+  | "FAILED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
 type TOrderStatus =
   | "draft"
   | "processing"
@@ -11,19 +11,19 @@ type TOrderStatus =
   | "confirmed"
   | "delivered"
   | "completed"
-  | "cancelled"
+  | "canceled"
   | "partially_cancelled"
   | "failed";
 type TOrderType = "online" | "offline";
 type TDeliveryType = "pickup" | "delivery" | "digital";
 
 interface IOrder {
-  id: string;
-  purchaserName: string;
+  _id: string;
+  firstName: string;
   email: string;
   phone: string;
   orderType: TOrderType;
-  orderStatus: TOrderStatus;
+  status: TOrderStatus;
   paymentStatus: TPaymentStatus;
   paymentMethod: string[];
   totalAmount: number;
@@ -32,7 +32,7 @@ interface IOrder {
   vendors: string[];
   campaign: string;
   deliveryType: TDeliveryType;
-  createdDate: string;
+  createdAt: string;
   paymentDate: string;
   products: OrderProduct[];
   address?: string;
@@ -42,14 +42,17 @@ interface IOrder {
 }
 
 interface IOrderProduct {
-  id: string;
+  _id: string;
   name: string;
   quantity: number;
-  unitPrice: number;
+  amount: number;
   vendor: string;
   deliveryType: "pickup" | "delivery";
-  imageUrl: string;
+  images: {
+    image: string;
+  };
   description: string;
   category: string;
   cancelled?: boolean;
+  orderedProductId?: string;
 }

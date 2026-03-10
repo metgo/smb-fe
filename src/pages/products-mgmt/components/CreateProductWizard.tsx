@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -19,7 +19,7 @@ import {
   ProductPricingAvailability,
   ProductReviewSubmit,
 } from "./sub-components";
-import { WizardFooter } from "@/components/shared";
+import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useInitProductCreateMutation,
@@ -138,6 +138,9 @@ export default function CreateProductWizard({
   const [businessId, setBusinessId] = useState(bzIdForProdCreate || "");
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+  const [showClosePopup, setShowClosePopup] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -201,6 +204,11 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
+
+  const initialFormData = useRef(formData);
+  const isFormDirty = () => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
+  };
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
@@ -346,6 +354,8 @@ export default function CreateProductWizard({
   };
 
   const handleSaveDraft = async () => {
+    setIsDraftBtnClicked(true);
+
     await uploadAll();
     await saveDraft(false);
   };
@@ -360,8 +370,17 @@ export default function CreateProductWizard({
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+  const handleClose = () => {
+    if (isFormDirty() && !isPublishBtnClicked && !isDraftBtnClicked) {
+      setShowClosePopup(true);
+      return;
+    }
 
+    onClose();
+  };
   const handlePublish = async () => {
+    setIsPublishBtnClicked(true);
+
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
@@ -555,7 +574,7 @@ export default function CreateProductWizard({
   };
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+    <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       <div
         className={`p-6 border-b ${borderColor} flex items-center justify-between`}
       >
@@ -644,6 +663,20 @@ export default function CreateProductWizard({
         onNext={handleNext}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+      />
+      <ConfirmDialog
+        open={showClosePopup}
+        title={tc("unsaved_changes")}
+        message={tc("close_without_saving")}
+        confirmText={tc("close")}
+        variant="danger"
+        onCancel={() => {
+          setShowClosePopup(false);
+        }}
+        onConfirm={() => {
+          setShowClosePopup(false);
+          onClose();
+        }}
       />
     </ModalWrapper>
   );

@@ -6,9 +6,9 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   h1Gradient?: string;
-  onClick: () => void;
+  onClick?: () => void;
   onRefreshClick?: () => void;
-  btnLabel: string;
+  btnLabel?: string;
   isRefreshing?: boolean;
   totalCount?: number;
 }
@@ -51,7 +51,9 @@ export default function PageHeader({
                 isRefreshing={isRefreshing}
               />
             )}
-            <AddButton label={btnLabel} handleClick={onClick} />
+            {btnLabel && onClick && (
+              <AddButton label={btnLabel} handleClick={onClick} />
+            )}
           </div>
         </div>
       </div>

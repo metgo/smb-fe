@@ -229,7 +229,6 @@ export default function EventDetailsPage() {
         {/* Top controls row */}
         <div className="px-6 pt-4 pb-3 flex items-center justify-between">
           <BackToListBtn navPath={routes.eventsMgmt} />
-
           <div className="flex items-center gap-3">
             <StatusChangeBtn
               handleStatusChange={onStatusChangeHandler}

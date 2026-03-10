@@ -37,7 +37,7 @@ export default function CancellationDialog({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-60 flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div
@@ -51,7 +51,7 @@ export default function CancellationDialog({
         <h3
           className={`text-xl font-semibold mb-4 ${isRTL ? "text-right" : "text-left"}`}
         >
-          {type === "order" ? t("cancelOrder") : t("cancelItem")}
+          {type === "order" ? t("cancel_order") : t("cancel_item")}
         </h3>
 
         {itemName && (

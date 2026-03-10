@@ -1,52 +1,72 @@
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef, Activity } from "react";
 import {
-  Search,
-  Filter,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Activity,
+  useCallback,
+} from "react";
+import {
   Download,
-  Plus,
+  // Plus,
   ChevronDown,
   ChevronUp,
-  XCircle,
   Loader,
   AlertCircle,
   Columns,
   Mail,
   Phone,
-  Truck,
-  ShoppingBag,
   DollarSign,
   TrendingUp,
   Camera,
   ShoppingCart,
+  ShoppingBag,
+  Truck,
+  XCircle,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
-import { generateMockOrders } from "@/constants/data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, ReordableDataTable } from "@/components/shared";
 import {
-  CreateOrderWizard,
+  BulkActionBar,
+  ConfirmDialog,
+  FilterChips,
+  PageHeader,
+  PageStats,
+  ViewModeToggle,
+} from "@/components/shared";
+import {
+  // CreateOrderWizard,
   FilterSelect,
   MonthFilter,
   OrderDetailsModal,
   QRScannerModal,
 } from "./components";
+import {
+  useGetAllOrdersQuery,
+  useGetOrderByIdQuery,
+  useGetOrderStatsQuery,
+  // useGetOrderStatsQuery,
+} from "@/store/api/orderQueryApi";
+import { FilterButton } from "@/components/btns";
+import { toast } from "sonner";
+import SearchInput from "@/components/shared/SearchInput";
+import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
+import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
+import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 
 // Default columns configuration
 const defaultColumns = {
-  orderId: true,
-  purchaserName: true,
+  _id: true,
+  firstName: true,
   email: true,
   phone: true,
-  orderStatus: true,
+  status: true,
   totalAmount: true,
-  paymentStatus: false,
-  voucherAmount: false,
-  creditCardAmount: false,
-  vendors: false,
-  campaign: false,
-  createdDate: false,
+  // paymentStatus: false,
+
+  createdAt: false,
   paymentDate: false,
 };
 
@@ -54,22 +74,96 @@ type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
   const { t, i18n } = useTranslation("orders");
+  const { t: tb } = useTranslation("businesses");
+
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
 
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
-
-  const [orders, setOrders] = useState<IOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { textSecondary, textTertiary, isDark } = useThemeClasses();
+  //view mode toggle
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
-  const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
+  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  //camera persmissions
+  const [stream, setStream] = useState<MediaStream | null>(null);
+
+  //  clean up on unmount / close
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
+  async function getVideoStream() {
+    try {
+      const permissionStatus = await navigator.permissions.query({
+        name: "camera" as PermissionName,
+      });
+
+      if (permissionStatus.state === "denied") {
+        console.error("Camera permission has been denied");
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking camera permissions:", error);
+    }
+
+    let newStream: MediaStream | null = null;
+
+    try {
+      newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+          // facingMode: "user"       //  front camera
+        },
+      });
+
+      setStream(newStream);
+      setShowQRScanner(true);
+    } catch (error) {
+      console.error("Error getting video stream:", error);
+      alert("Cannot access camera: " + (error as Error).message);
+    }
+  }
+  // Cleanup function call this on close
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop(); //  this is what turns off the camera
+      });
+      setStream(null);
+      setShowQRScanner(false);
+    }
+  }, [stream]);
+
+  // clean up if component unmounts while stream is active
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => {
+      return prev + 1;
+    });
+  };
 
   // Filters
   const [filters, setFilters] = useState({
@@ -78,132 +172,335 @@ export default function OrdersMgmtPage() {
     vendor: "all",
     campaign: "all",
     deliveryType: "all",
-    dateFrom: "",
-    dateTo: "",
+    status: "all",
+    startDate: "",
+    endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
   });
+  //active filter chips
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: string; value: string }[] = [];
+
+    if (filters.deliveryType !== "all")
+      chips.push({
+        key: "deliveryType",
+        value: t(filters.deliveryType),
+      });
+    if (filters.status !== "all")
+      chips.push({
+        key: "status",
+        value: t(filters.status),
+      });
+
+    if (filters.paymentMethod !== "all")
+      chips.push({
+        key: "paymentMethod",
+        value: filters.paymentMethod,
+      });
+
+    if (filters.month !== "all" && filters.month !== "custom")
+      chips.push({ key: "month", value: filters.month });
+
+    if (filters.month === "custom") {
+      if (filters.startDate)
+        chips.push({
+          key: "dateFrom",
+          value: filters.startDate,
+        });
+
+      if (filters.endDate)
+        chips.push({ key: "dateTo", value: filters.endDate });
+    }
+
+    return chips;
+  }, [filters]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters]);
+
+  const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
+  const orderQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit,
+    };
+
+    if (searchTerm) params.search = searchTerm;
+
+    if (filters.orderType !== "all") {
+      params.orderType = filters.orderType;
+    }
+
+    if (filters.deliveryType !== "all") {
+      params.deliveryType = filters.deliveryType;
+    }
+
+    if (filters.paymentMethod !== "all") {
+      params.paymentMethod = filters.paymentMethod;
+    }
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
+    if (filters.vendor !== "all") {
+      params.vendor = filters.vendor;
+    }
+
+    if (filters.campaign !== "all") {
+      params.campaign = filters.campaign;
+    }
+
+    // Month filter
+    if (filters.month !== "all" && filters.month !== "custom") {
+      params.startDate = filters.month;
+    }
+
+    // Custom date range
+    if (filters.month === "custom") {
+      if (filters.startDate) params.dateFrom = filters.startDate;
+      if (filters.endDate) params.dateTo = filters.endDate;
+    }
+
+    return params;
+  }, [page, limit, searchTerm, filters]);
+
+  const { data: orderStat, isLoading: isStatsLoading } =
+    useGetOrderStatsQuery(orderQueryParams);
+
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetAllOrdersQuery(orderQueryParams);
+  const hasMore = orders?.datas?.meta?.hasNextPage;
+  const totalData = orders?.datas?.totalData;
+  const orderss = orders?.datas?.data ?? [];
+  useEffect(() => {
+    if (!orderss?.length) return;
+
+    if (page === 1) {
+      setCombinedOrders(orderss);
+    } else {
+      setCombinedOrders((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = orderss.filter((b: any) => !existingIds.has(b._id));
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [orderss, page]);
+
+  // const handleBulkDelete = async () => {
+  //   if (!selectedOrders.size) return;
+  //   const toastId = toast.loading("Please wait. Orders are deleting...");
+  //   try {
+  //     const results = await bulkOrdersUpdate({
+  //       ordersId: Array.from(selectedOrders),
+  //       isDeleted: true,
+  //     });
+
+  //     if (results?.data) {
+  //       const message = "Orders deleted successfully";
+  //       toast.success(message, { id: toastId });
+  //       setSelectedOrders(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to delete Orders", {
+  //       id: toastId,
+  //     });
+  //   }
+  // };
+  // const handleBulkStatusChange = async (status: TStatus) => {
+  //   if (!selectedOrders.size) return;
+  //   const toastId = toast.loading(
+  //     "Please wait. Order's status are changing...",
+  //   );
+
+  //   try {
+  //     const results = await bulkOrdersUpdate({
+  //       ordersId: Array.from(selectedOrders),
+  //       status: status?.toLocaleUpperCase(),
+  //     });
+
+  //     if (results?.data) {
+  //       const message = "Orders status updated successfully";
+  //       toast.success(message, { id: toastId });
+  //       setSelectedOrders(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to change Orders status", {
+  //       id: toastId,
+  //     });
+  //   }
+  // };
+  const defaultFilters = {
+    orderType: "all",
+    deliveryType: "all",
+    paymentMethod: "all",
+    vendor: "all",
+    status: "all",
+    campaign: "all",
+    month: "all",
+    startDate: "",
+    endDate: "",
+  };
 
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+  const columns = [
+    { key: "checkbox", label: "", width: "50px" },
 
-  // Load mock data
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setOrders(generateMockOrders(100));
-      setLoading(false);
-    }, 800);
-  }, []);
+    columnVisibility._id && {
+      key: "_id",
+      label: t("order_id"),
+      sortable: true,
+      render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
+    },
+    columnVisibility.firstName && {
+      key: "firstName",
+      label: t("purchaser_name_field"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm">{order.firstName}</div>
+      ),
+    },
 
-  // Filter and search orders
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      // Search filter
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        const matchesSearch =
-          order.id.toLowerCase().includes(search) ||
-          order.purchaserName.toLowerCase().includes(search) ||
-          order.email.toLowerCase().includes(search) ||
-          order.phone.includes(search);
-        if (!matchesSearch) return false;
-      }
+    columnVisibility.email && {
+      key: "email",
+      label: t("purchaser_email"),
+      render: (order: IOrder) => (
+        <a
+          href={`mailto:${order.email}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+        >
+          <Mail className="w-3 h-3" />
+          {order.email}
+        </a>
+      ),
+    },
 
-      // Status filters
-      if (filters.orderType !== "all" && order.orderType !== filters.orderType)
-        return false;
-      if (
-        filters.deliveryType !== "all" &&
-        order.deliveryType !== filters.deliveryType
-      )
-        return false;
-      if (
-        filters.paymentMethod !== "all" &&
-        !order.paymentMethod.includes(filters.paymentMethod)
-      )
-        return false;
-      if (filters.vendor !== "all" && !order.vendors.includes(filters.vendor))
-        return false;
-      if (filters.campaign !== "all" && order.campaign !== filters.campaign)
-        return false;
+    columnVisibility.phone && {
+      key: "phone",
+      label: t("purchaser_phone"),
+      render: (order: IOrder) => (
+        <a
+          href={`tel:${order.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+        >
+          <Phone className="w-3 h-3" />
+          {order.phone}
+        </a>
+      ),
+    },
 
-      // Month filter
-      if (filters.month !== "all" && filters.month !== "custom") {
-        const orderDate = new Date(order.createdDate);
-        const orderMonth = `${String(orderDate.getMonth() + 1).padStart(2, "0")}-${orderDate.getFullYear()}`;
-        if (orderMonth !== filters.month) return false;
-      }
+    columnVisibility.status && {
+      key: "status",
+      label: t("order_status"),
+      render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
 
-      // Custom date range filter
-      if (filters.month === "custom") {
-        if (filters.dateFrom) {
-          const orderDate = new Date(order.createdDate);
-          const fromDate = new Date(filters.dateFrom);
-          if (orderDate < fromDate) return false;
-        }
-        if (filters.dateTo) {
-          const orderDate = new Date(order.createdDate);
-          const toDate = new Date(filters.dateTo);
-          toDate.setHours(23, 59, 59, 999); // Include the entire day
-          if (orderDate > toDate) return false;
-        }
-      }
+    columnVisibility.totalAmount && {
+      key: "totalAmount",
+      label: t("total_amount"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          ₪{order?.totalAmount?.toLocaleString()}
+        </div>
+      ),
+    },
 
-      return true;
-    });
-  }, [orders, searchTerm, filters]);
+    // columnVisibility.paymentStatus && {
+    //   key: "paymentStatus",
+    //   label: t("payment_status"),
+    //   render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+    // },
 
-  // Statistics
-  const statistics = useMemo(() => {
-    const totalOrders = filteredOrders.length;
-    const totalRevenue = filteredOrders.reduce(
-      (sum, o) => sum + o.totalAmount,
-      0,
-    );
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const pickups = filteredOrders.filter(
-      (o) => o.deliveryType === "pickup",
-    ).length;
-    const deliveries = filteredOrders.filter(
-      (o) => o.deliveryType === "delivery",
-    ).length;
-    const paidOrders = filteredOrders.filter(
-      (o) => o.paymentStatus === "success",
-    ).length;
-    const cancelledOrders = filteredOrders.filter(
-      (o) => o.orderStatus === "cancelled",
-    ).length;
+    // columnVisibility.voucherAmount && {
+    //   key: "voucherAmount",
+    //   label: t("voucher_amount"),
+    //   sortable: true,
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">
+    //       ₪{order.voucherAmount.toLocaleString()}
+    //     </div>
+    //   ),
+    // },
 
-    return {
-      totalOrders,
-      totalRevenue,
-      avgOrderValue,
-      pickups,
-      deliveries,
-      paidOrders,
-      cancelledOrders,
-    };
-  }, [filteredOrders]);
+    // columnVisibility.creditCardAmount && {
+    //   key: "creditCardAmount",
+    //   label: t("credit_card_amount"),
+    //   sortable: true,
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">
+    //       ₪{order.creditCardAmount.toLocaleString()}
+    //     </div>
+    //   ),
+    // },
 
-  // // Bulk selection handlers
-  // const handleSelectAll = () => {
-  //   if (selectedOrders.size === filteredOrders.length) {
-  //     setSelectedOrders(new Set());
-  //   } else {
-  //     setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-  //   }
-  // };
+    // columnVisibility.vendors && {
+    //   key: "vendors",
+    //   label: t("vendors"),
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">{order.vendors.join(", ")}</div>
+    //   ),
+    // },
 
-  // const handleSelectOrder = (orderId: string) => {
-  //   const newSelected = new Set(selectedOrders);
-  //   if (newSelected.has(orderId)) {
-  //     newSelected.delete(orderId);
-  //   } else {
-  //     newSelected.add(orderId);
-  //   }
-  //   setSelectedOrders(newSelected);
-  // };
+    // columnVisibility.campaign && {
+    //   key: "campaign",
+    //   label: t("campaign"),
+    //   render: (order: IOrder) => (
+    //     <div className="text-sm text-gray-500">{order.campaign}</div>
+    //   ),
+    // },
+
+    columnVisibility.createdAt && {
+      key: "createdAt",
+      label: t("created_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {new Date(order.createdAt).toLocaleDateString(language)}
+        </div>
+      ),
+    },
+
+    columnVisibility.paymentDate && {
+      key: "paymentDate",
+      label: t("payment_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {new Date(order.paymentDate).toLocaleDateString(language)}
+        </div>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: IOrder) => React.ReactNode;
+  }[];
+
+  //order details
+  const {
+    data: orderDetails,
+    isLoading: isOrderDetailLoading,
+    isFetching: isOrderDetailFetching,
+  } = useGetOrderByIdQuery(
+    { orderId: selectedOrder?._id ?? null },
+    {
+      skip: !selectedOrder?._id, // only fetch if selectedOrder exists
+    },
+  );
 
   const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
@@ -212,12 +509,16 @@ export default function OrdersMgmtPage() {
 
   const handleExportCSV = () => {
     const ordersToExport =
-      selectedOrders.size > 0
-        ? filteredOrders.filter((order) => selectedOrders.has(order.id))
-        : filteredOrders;
+      selectedOrders.size > 1
+        ? orders?.datas?.data?.filter((order: any) =>
+            selectedOrders.has(order._id),
+          )
+        : orders?.datas?.data;
+    console.log("export cvs", ordersToExport);
+    console.log("export cvs", selectedOrders);
 
     if (ordersToExport?.length === 0) {
-      alert(t("noOrdersToExport") || "No orders to export");
+      toast.message(t("noOrdersToExport") || "No orders to export");
       return;
     }
 
@@ -237,13 +538,9 @@ export default function OrdersMgmtPage() {
     const headers: string[] = [];
     const columnKeys: string[] = [];
 
-    if (columnVisibility.orderId) {
-      headers.push(t("orderId"));
-      columnKeys.push("orderId");
-    }
-    if (columnVisibility.purchaserName) {
-      headers.push(t("purchaserName"));
-      columnKeys.push("purchaserName");
+    if (columnVisibility.firstName) {
+      headers.push(t("firstName"));
+      columnKeys.push("firstName");
     }
     if (columnVisibility.email) {
       headers.push(t("email"));
@@ -253,37 +550,37 @@ export default function OrdersMgmtPage() {
       headers.push(t("phone"));
       columnKeys.push("phone");
     }
-    if (columnVisibility.orderStatus) {
-      headers.push(t("orderStatus"));
-      columnKeys.push("orderStatus");
+    if (columnVisibility.status) {
+      headers.push(t("status"));
+      columnKeys.push("status");
     }
     if (columnVisibility.totalAmount) {
       headers.push(t("totalAmount"));
       columnKeys.push("totalAmount");
     }
-    if (columnVisibility.paymentStatus) {
-      headers.push(t("paymentStatus"));
-      columnKeys.push("paymentStatus");
-    }
-    if (columnVisibility.voucherAmount) {
-      headers.push(t("voucherAmount"));
-      columnKeys.push("voucherAmount");
-    }
-    if (columnVisibility.creditCardAmount) {
-      headers.push(t("creditCardAmount"));
-      columnKeys.push("creditCardAmount");
-    }
-    if (columnVisibility.vendors) {
-      headers.push(t("vendors"));
-      columnKeys.push("vendors");
-    }
-    if (columnVisibility.campaign) {
-      headers.push(t("campaign"));
-      columnKeys.push("campaign");
-    }
-    if (columnVisibility.createdDate) {
-      headers.push(t("createdDate"));
-      columnKeys.push("createdDate");
+    // if (columnVisibility.paymentStatus) {
+    //   headers.push(t("paymentStatus"));
+    //   columnKeys.push("paymentStatus");
+    // }
+    // if (columnVisibility.voucherAmount) {
+    //   headers.push(t("voucherAmount"));
+    //   columnKeys.push("voucherAmount");
+    // }
+    // if (columnVisibility.creditCardAmount) {
+    //   headers.push(t("creditCardAmount"));
+    //   columnKeys.push("creditCardAmount");
+    // }
+    // if (columnVisibility.vendors) {
+    //   headers.push(t("vendors"));
+    //   columnKeys.push("vendors");
+    // }
+    // if (columnVisibility.campaign) {
+    //   headers.push(t("campaign"));
+    //   columnKeys.push("campaign");
+    // }
+    if (columnVisibility.createdAt) {
+      headers.push(t("createdAt"));
+      columnKeys.push("createdAt");
     }
     if (columnVisibility.paymentDate) {
       headers.push(t("paymentDate"));
@@ -292,16 +589,15 @@ export default function OrdersMgmtPage() {
 
     let csvContent = headers.map(escapeCSV).join(",") + "\n";
 
-    ordersToExport.forEach((order) => {
+    ordersToExport.forEach((order: IOrder) => {
       const row: string[] = [];
 
       columnKeys.forEach((key) => {
-        if (key === "orderId") row.push(escapeCSV(order.id));
-        else if (key === "purchaserName")
-          row.push(escapeCSV(order.purchaserName));
+        if (key === "orderId") row.push(escapeCSV(order._id));
+        else if (key === "firstName") row.push(escapeCSV(order.firstName));
         else if (key === "email") row.push(escapeCSV(order.email));
         else if (key === "phone") row.push(escapeCSV(order.phone));
-        else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
+        else if (key === "orderStatus") row.push(escapeCSV(order.status));
         else if (key === "totalAmount")
           row.push(escapeCSV(`₪${order.totalAmount}`));
         else if (key === "paymentStatus")
@@ -313,8 +609,8 @@ export default function OrdersMgmtPage() {
         else if (key === "vendors")
           row.push(escapeCSV(order.vendors.join(", ")));
         else if (key === "campaign") row.push(escapeCSV(order.campaign));
-        else if (key === "createdDate")
-          row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
+        else if (key === "createdAt")
+          row.push(escapeCSV(new Date(order.createdAt).toLocaleDateString()));
         else if (key === "paymentDate")
           row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
       });
@@ -334,38 +630,37 @@ export default function OrdersMgmtPage() {
     link.click();
     document.body.removeChild(link);
   };
+  const promptBulkResend = useCallback(() => {
+    if (!selectedOrders.size) return;
+    setIsBulkDelete(true);
+    setIsConfirmOpen(true);
+  }, [selectedOrders.size]);
 
-  const handleExportXLS = () => {
-    console.log("Exporting XLS...");
-    // XLS export logic
-  };
+  const handleBulkResend = useCallback(async () => {
+    if (!selectedOrders.size) return;
 
-  const handleResendOrderDetails = () => {
-    const ordersToResend =
-      selectedOrders.size > 0
-        ? orders.filter((order) => selectedOrders.has(order.id))
-        : [];
+    const toastId = toast.loading(t("resend_loading"));
 
-    if (ordersToResend.length === 0) {
-      alert(t("noOrdersSelected") || "No orders selected");
-      return;
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        isResend: true,
+      });
+
+      if (results?.data) {
+        toast.success(t("resend_success"), { id: toastId });
+        setSelectedOrders(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || t("resend_failed"), {
+        id: toastId,
+      });
+    } finally {
+      setIsConfirmOpen(false);
+      setIsBulkDelete(false);
     }
-
-    ordersToResend.forEach((order) => {
-      console.log(
-        `Sending order details to ${order.email} for order ${order.id}`,
-      );
-    });
-
-    const message =
-      ordersToResend.length === 1
-        ? `${t("orderDetailsSent")} ${ordersToResend[0].email}`
-        : `${t("orderDetailsSent")} ${ordersToResend.length} ${t("customers")}`;
-
-    alert(message);
-
-    setSelectedOrders(new Set());
-  };
+  }, [selectedOrders, bulkOrdersUpdate, refetch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -384,48 +679,48 @@ export default function OrdersMgmtPage() {
     {
       id: 1,
       title: t("totalOrders"),
-      value: statistics.totalOrders.toLocaleString(),
+      value: orderStat?.totalOrders?.toLocaleString(),
       label: t("all"),
       icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
     },
     {
       id: 2,
       title: t("revenue"),
-      value: `₪${statistics.totalRevenue.toLocaleString()}`,
+      value: `₪${orderStat?.totalRevenue?.toLocaleString()}`,
       label: t("gross"),
       icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
     {
       id: 3,
       title: t("avgOrderValue"),
-      value: `₪${Math.round(statistics.avgOrderValue).toLocaleString()}`,
+      value: `₪${Math.round(orderStat?.avgOrderValue).toLocaleString()}`,
       label: t("perOrder"),
       icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
     },
     {
       id: 4,
       title: t("pickups"),
-      value: statistics.pickups.toLocaleString(),
+      value: orderStat?.totalPickups?.toLocaleString(),
       label: t("orders"),
       icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
     },
     {
       id: 5,
       title: t("deliveries"),
-      value: statistics.deliveries.toLocaleString(),
+      value: orderStat?.totalDeliveries?.toLocaleString(),
       label: t("orders"),
       icon: <Truck className="w-5 h-5 text-teal-500" />,
     },
     {
       id: 6,
       title: t("cancelledOrders"),
-      value: statistics.cancelledOrders.toLocaleString(),
+      value: orderStat?.totalCanceledOrders?.toLocaleString(),
       label: t("cancelled"),
       icon: <XCircle className="w-5 h-5 text-red-500" />,
     },
   ];
 
-  const getOrderStatusBadge = (status: IOrder["orderStatus"]) => {
+  const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
       draft: {
         bg: "bg-gray-100 dark:bg-gray-800",
@@ -457,7 +752,7 @@ export default function OrdersMgmtPage() {
         text: "text-emerald-800 dark:text-emerald-400",
         label: t("completed"),
       },
-      cancelled: {
+      canceled: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
@@ -467,6 +762,7 @@ export default function OrdersMgmtPage() {
         text: "text-orange-800 dark:text-orange-400",
         label: t("partially_cancelled"),
       },
+
       failed: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
@@ -485,27 +781,32 @@ export default function OrdersMgmtPage() {
 
   const getPaymentStatusBadge = (status: IOrder["paymentStatus"]) => {
     const badges = {
-      pending: {
+      PENDING: {
         bg: "bg-yellow-100 dark:bg-yellow-900/30",
         text: "text-yellow-800 dark:text-yellow-400",
         label: t("pending"),
       },
-      success: {
+      SUCCESS: {
         bg: "bg-green-100 dark:bg-green-900/30",
         text: "text-green-800 dark:text-green-400",
         label: t("success"),
       },
-      failed: {
+      FAILED: {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("failed"),
       },
-      refunded: {
+      REFUNDED: {
         bg: "bg-purple-100 dark:bg-purple-900/30",
         text: "text-purple-800 dark:text-purple-400",
         label: t("refunded"),
       },
-      partially_refunded: {
+      REFUND_IN_PROCESS: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("refund_in_process"),
+      },
+      PARTIALLY_REFUNDED: {
         bg: "bg-orange-100 dark:bg-orange-900/30",
         text: "text-orange-800 dark:text-orange-400",
         label: t("partiallyRefunded"),
@@ -523,45 +824,48 @@ export default function OrdersMgmtPage() {
 
   return (
     <div
-      className={`h-[calc(108vh-210px)] flex flex-col ${theme === "dark" ? "bg-gray-950" : "bg-gray-50"}`}
+      className={`h-[calc(108vh-210px)] flex flex-col ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
     >
       {/* Page Header */}
       <div
         className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 ${isRTL ? "md:flex-row-reverse" : ""}`}
       >
-        <div>
-          <h1 className={`text-2xl ${textPrimary}`}>
-            {t("online_orders_management")}
-          </h1>
-          <p className={`text-sm ${textTertiary} mt-1`}>
-            {t("online_orders_subtitle")}
-          </p>
+        <div
+          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
+        >
+          {" "}
+          <PageHeader
+            title={t("online_orders_management")}
+            description={t("online_orders_subtitle")}
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            totalCount={totalData ?? 0}
+          />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
           <button
-            onClick={() => setShowQRScanner(true)}
+            onClick={getVideoStream}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
-            title={t("scanQRCode")}
           >
             <Camera className="w-4 h-4" />
           </button>
-          <button
+          {/* <button
             onClick={() => setShowAddOrderWizard(true)}
             className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>{t("addOrder")}</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
       <PageStats
         stats={orderStats}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
+        isLoading={isStatsLoading}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-3"
       />
 
       {/* Search and Filters */}
@@ -570,26 +874,21 @@ export default function OrdersMgmtPage() {
           className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
         >
           <div className="flex-1 relative">
-            <Search
-              className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-            />
-            <input
-              type="text"
-              placeholder={t("searchOrders")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full ${isRTL ? "pr-10 text-right" : "pl-10"} py-2 rounded-lg border transition-colors ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              }`}
+            <SearchInput
+              placeholder={t("search_orders")}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              storageKey="orderSearchTerm"
+
+              // isRTL={isRTL}
+              // isDark={isDark}
             />
           </div>
 
           <button
             onClick={handleExportCSV}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
@@ -599,375 +898,271 @@ export default function OrdersMgmtPage() {
             <span>{t("downloadCSV")}</span>
           </button>
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            <span>{t("filters")}</span>
-            {showFilters ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
-
-          <div className="relative" ref={columnSettingsRef}>
-            <button
-              onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                theme === "dark"
-                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-              }`}
-            >
-              <Columns className="w-4 h-4" />
-              <span>{t("columns")}</span>
-            </button>
-
-            {showColumnSettings && (
-              <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+          <FilterButton value={showFilters} onChange={setShowFilters} />
+          {viewMode === "list" && (
+            <div className="relative" ref={columnSettingsRef}>
+              <button
+                onClick={() => setShowColumnSettings(!showColumnSettings)}
+                className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
-                <div className="p-3 max-h-96 overflow-y-auto">
-                  {Object.entries(columnVisibility).map(([key, visible]) => (
-                    <label
-                      key={key}
-                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={visible}
-                        onChange={(e) =>
-                          setColumnVisibility((prev) => ({
-                            ...prev,
-                            [key]: e.target.checked,
-                          }))
-                        }
-                        className="rounded"
-                      />
-                      <span className={`text-sm ${textSecondary}`}>
-                        {t(key as keyof typeof t)}
-                      </span>
-                    </label>
-                  ))}
+                <Columns className="w-5 h-5" />
+                {t("show_columns")}
+                {showColumnSettings ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+
+              {showColumnSettings && (
+                <div
+                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                >
+                  <div className="p-3 max-h-96 overflow-y-auto">
+                    {Object.entries(columnVisibility).map(([key, visible]) => (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer ${isRTL ? "flex-row-reverse justify-end" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visible}
+                          onChange={(e) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="rounded"
+                        />
+                        <span className={`text-sm ${textSecondary}`}>
+                          {t(key as keyof typeof t)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+
+          <ViewModeToggle onChange={setViewMode} value={viewMode} />
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <FilterSelect
-              label={t("orderType")}
-              value={filters.orderType}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, orderType: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "online", label: t("online") },
-                { value: "offline", label: t("offline") },
-              ]}
-            />
-            <FilterSelect
-              label={t("deliveryType")}
-              value={filters.deliveryType}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, deliveryType: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "pickup", label: t("pickup") },
-                { value: "delivery", label: t("delivery") },
-                { value: "digital", label: t("digital") },
-              ]}
-            />
-            <FilterSelect
-              label={t("paymentMethod")}
-              value={filters.paymentMethod}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, paymentMethod: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "voucher", label: t("voucher") },
-                { value: "credit_card", label: t("creditCard") },
-              ]}
-            />
-            <MonthFilter
-              label={t("month")}
-              value={filters.month}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, month: value }))
-              }
-              dateFrom={filters.dateFrom}
-              dateTo={filters.dateTo}
-              onDateFromChange={(value) =>
-                setFilters((prev) => ({ ...prev, dateFrom: value }))
-              }
-              onDateToChange={(value) =>
-                setFilters((prev) => ({ ...prev, dateTo: value }))
-              }
-              theme={theme}
-              isRTL={isRTL}
-              t={t}
-            />
+          <div className="flex flex-wrap items-start gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            {/* Delivery Type */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("deliveryType")}
+                value={filters.deliveryType}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, deliveryType: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pick_up", label: t("pickups") },
+                  { value: "deliver", label: t("delivery") },
+                ]}
+              />
+            </div>
+            {/* Status */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("status")}
+                value={filters.status}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, status: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pending", label: t("pending") },
+                  { value: "processing", label: t("processing") },
+                  { value: "completed", label: t("completed") },
+                  { value: "shipped", label: t("shipped") },
+
+                  { value: "canceled", label: t("canceled") },
+                ]}
+              />
+            </div>
+            {/* Payment Method */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("paymentMethod")}
+                value={filters.paymentMethod}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, paymentMethod: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "voucher", label: t("voucher") },
+                  { value: "card", label: t("creditCard") },
+                ]}
+              />
+            </div>
+
+            {/* Month Filter */}
+            <div className="min-w-[220px]">
+              <MonthFilter
+                label={t("month")}
+                value={filters.month}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, month: value }))
+                }
+                dateFrom={filters.startDate}
+                dateTo={filters.endDate}
+                onDateFromChange={(value) =>
+                  setFilters((prev) => ({ ...prev, startDate: value }))
+                }
+                onDateToChange={(value) =>
+                  setFilters((prev) => ({ ...prev, endDate: value }))
+                }
+                theme={theme}
+                isRTL={isRTL}
+                t={t}
+              />
+            </div>
+
+            {/* Active Filters */}
+            <div className="">
+              {activeFilterChips.length > 0 && (
+                <div className="mb-3 text-sm text-gray-500">
+                  {tb("active_filters")}:
+                </div>
+              )}
+              {activeFilterChips.length > 0 && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex flex-wrap gap-2">
+                    {activeFilterChips.map((chip) => (
+                      <FilterChips
+                        key={chip.key}
+                        label={t(chip.value)}
+                        onRemove={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            [chip.key]: chip.key.includes("date") ? "" : "all",
+                          }))
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  {/* Clear All */}
+                  <button
+                    onClick={() => setFilters(defaultFilters)}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Bulk Actions Toolbar */}
       {selectedOrders.size > 0 && (
-        <div
-          className={`${theme === "dark" ? "bg-teal-900/30 border-teal-800" : "bg-teal-50 border-teal-200"} border rounded-lg p-4 mb-4 flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}
-        >
-          <span className={`${textPrimary}`}>
-            {selectedOrders.size} {t("selected")}
-          </span>
-          <button
-            onClick={handleResendOrderDetails}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-blue-800 hover:bg-blue-700 text-blue-100"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
-            }`}
-          >
-            <Mail className="w-4 h-4" />
-            <span className="text-sm">{t("resendOrderDetails")}</span>
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "bg-white hover:bg-gray-100 text-gray-700"
-            }`}
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm">{t("exportCSV")}</span>
-          </button>
-          <button
-            onClick={handleExportXLS}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "bg-white hover:bg-gray-100 text-gray-700"
-            }`}
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm">{t("exportXLS")}</span>
-          </button>
-        </div>
+        <BulkActionBar
+          selectedItemCount={selectedOrders.size}
+          handleResendOrderDetails={promptBulkResend}
+          handleExportCSV={handleExportCSV}
+          hancleClearSelection={() => setSelectedOrders(new Set())}
+        />
       )}
 
       {/* Orders Table */}
-      <div
-        className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
-      >
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader className="w-8 h-8 animate-spin text-teal-500" />
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
-            <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
-            <ReordableDataTable
-              rowKey="id"
-              data={filteredOrders}
-              selectedItems={selectedOrders}
-              onSelectionChange={() => setSelectedOrders}
+      {viewMode === "list" ? (
+        <div
+          className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader className="w-8 h-8 animate-spin text-teal-500" />
+            </div>
+          ) : orders?.datas?.data?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
+              <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
+            </div>
+          ) : (
+            <OrderListView
+              theme={theme}
+              isLoading={isLoading || isFetching}
+              hasMore={hasMore}
+              orders={orders}
+              combinedOrders={combinedOrders}
+              fetchNextPage={fetchNextPage}
+              selectedOrders={selectedOrders}
+              setSelectedOrders={setSelectedOrders}
+              handleRowClick={handleRowClick}
+              columns={columns}
+              textTertiary={textTertiary}
+              textSecondary={textSecondary}
+              t={t}
+            />
+          )}
+        </div>
+      ) : (
+        viewMode === "grid" && (
+          <div className="overflow-y-auto ">
+            <OrderGridView
+              selectedOrders={selectedOrders}
+              setSelectedOrders={setSelectedOrders}
+              data={combinedOrders || []}
+              next={fetchNextPage}
+              hasMore={hasMore}
+              isLoading={isLoading || isFetching}
               onRowClick={handleRowClick}
-              storageKey="ordersTableColumnOrder"
-              columns={
-                [
-                  { key: "checkbox", label: "", width: "50px" },
-                  columnVisibility.orderId && {
-                    key: "orderId",
-                    label: t("order_id"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm">{order.id}</div>
-                    ),
-                  },
-
-                  columnVisibility.purchaserName && {
-                    key: "purchaserName",
-                    label: t("purchaser_name_field"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm">{order.purchaserName}</div>
-                    ),
-                  },
-
-                  columnVisibility.email && {
-                    key: "email",
-                    label: t("purchaser_email"),
-                    render: (order: IOrder) => (
-                      <a
-                        href={`mailto:${order.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                      >
-                        <Mail className="w-3 h-3" />
-                        {order.email}
-                      </a>
-                    ),
-                  },
-
-                  columnVisibility.phone && {
-                    key: "phone",
-                    label: t("purchaser_phone"),
-                    render: (order: IOrder) => (
-                      <a
-                        href={`tel:${order.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                      >
-                        <Phone className="w-3 h-3" />
-                        {order.phone}
-                      </a>
-                    ),
-                  },
-
-                  columnVisibility.orderStatus && {
-                    key: "orderStatus",
-                    label: t("order_status"),
-                    render: (order: IOrder) =>
-                      getOrderStatusBadge(order.orderStatus),
-                  },
-
-                  columnVisibility.totalAmount && {
-                    key: "totalAmount",
-                    label: t("total_amount"),
-                    sortable: true,
-                    render: (order: any) => (
-                      <div className="text-sm font-medium">
-                        ₪{order.totalAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.paymentStatus && {
-                    key: "paymentStatus",
-                    label: t("payment_status"),
-                    render: (order: IOrder) =>
-                      getPaymentStatusBadge(order.paymentStatus),
-                  },
-
-                  columnVisibility.voucherAmount && {
-                    key: "voucherAmount",
-                    label: t("voucher_amount"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        ₪{order.voucherAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.creditCardAmount && {
-                    key: "creditCardAmount",
-                    label: t("credit_card_amount"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        ₪{order.creditCardAmount.toLocaleString()}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.vendors && {
-                    key: "vendors",
-                    label: t("vendors"),
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {order.vendors.join(", ")}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.campaign && {
-                    key: "campaign",
-                    label: t("campaign"),
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {order.campaign}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.createdDate && {
-                    key: "createdDate",
-                    label: t("created_date"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.createdDate).toLocaleDateString(
-                          language,
-                        )}
-                      </div>
-                    ),
-                  },
-
-                  columnVisibility.paymentDate && {
-                    key: "paymentDate",
-                    label: t("payment_date"),
-                    sortable: true,
-                    render: (order: IOrder) => (
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.paymentDate).toLocaleDateString(
-                          language,
-                        )}
-                      </div>
-                    ),
-                  },
-                ].filter(Boolean) as {
-                  key: string;
-                  label: string;
-                  width?: string;
-                  sortable?: boolean;
-                  render?: (row: IOrder) => React.ReactNode;
-                }[]
-              }
+              t={t}
             />
           </div>
-        )}
-      </div>
+        )
+      )}
 
       <Activity mode={selectedOrder && showOrderDetails ? "visible" : "hidden"}>
         <OrderDetailsModal
           t={t}
           isRTL={isRTL}
           theme={theme}
-          order={selectedOrder!}
+          refetch={refetch}
+          order={orderDetails}
+          isLoading={isOrderDetailLoading}
+          isFetching={isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
           getPaymentStatusBadge={getPaymentStatusBadge}
         />
       </Activity>
 
-      <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
+      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
-          onAddOrder={(newOrder) => {
-            setOrders((prev) => [newOrder as IOrder, ...prev]);
-          }}
+          onOpen={() => setShowAddOrderWizard(true)}
         />
-      </Activity>
+      </Activity> */}
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
-        <QRScannerModal onClose={() => setShowQRScanner(false)} />
+        <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={t("resend_notification")}
+        confirmText={t("resend")}
+        variant="info"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setIsBulkDelete(false);
+        }}
+        onConfirm={() => {
+          if (isBulkDelete) {
+            handleBulkResend();
+          }
+          setIsConfirmOpen(false);
+        }}
+      />
     </div>
   );
 }

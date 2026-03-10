@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   CheckCircle,
@@ -29,7 +29,7 @@ import {
   BusinessOpeningHours,
   BusinessReviewSubmit,
 } from "./sub-components";
-import { WizardFooter } from "@/components/shared";
+import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
@@ -67,7 +67,10 @@ export default function CreateBusinessWizard({
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
-  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+  const [showClosePopup, setShowClosePopup] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -151,7 +154,10 @@ export default function CreateBusinessWizard({
     // Step 8
     socialMedia: [],
   });
-
+  const initialFormData = useRef(formData);
+  const isFormDirty = () => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
+  };
   const {
     images,
     imagesRef,
@@ -434,6 +440,14 @@ export default function CreateBusinessWizard({
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleClose = () => {
+    if (isFormDirty() && !isPublishBtnClicked && !isDraftBtnClicked) {
+      setShowClosePopup(true);
+      return;
+    }
+
+    onClose();
+  };
   const handleNext = async () => {
     // if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 5) {
@@ -449,6 +463,7 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
+    setIsDraftBtnClicked(true);
     const logoUrl = await uploadLogoImage();
     setLogoGcsUrl(logoUrl);
     await uploadAll();
@@ -609,7 +624,7 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+    <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
       <div className={clsx("px-6 py-4 border-b", textPrimary)}>
         <div className="flex items-center justify-between mb-4">
@@ -705,6 +720,21 @@ export default function CreateBusinessWizard({
         onNext={handleNext}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+      />
+
+      <ConfirmDialog
+        open={showClosePopup}
+        title={tt("unsaved_changes")}
+        message={tt("close_without_saving")}
+        confirmText={tt("close")}
+        variant="danger"
+        onCancel={() => {
+          setShowClosePopup(false);
+        }}
+        onConfirm={() => {
+          setShowClosePopup(false);
+          onClose();
+        }}
       />
     </ModalWrapper>
   );
