@@ -373,44 +373,60 @@ export default function NotificationsMgmtPage() {
                 </div>
 
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {notifications?.map((notification) => (
-                    <div
-                      onClick={() =>
+                  {notifications?.map((notification) => {
+                    const itemType = notification?.item?.itemType; // BUSINESS, EVENT, PRODUCT, etc.
+                    const detailsRouteKey =
+                      `${itemType.toLowerCase()}-details` as keyof typeof routes;
+                    const queryParam = `${itemType.toLowerCase()}Id`;
+
+                    const handleNavigate = () => {
+                      if (routes[detailsRouteKey]) {
                         navigate(
-                          `${routes.businessDetails}?businessId=${notification?.item?._id}`,
-                        )
+                          `${routes[detailsRouteKey]}?${queryParam}=${notification?.item?._id}`,
+                        );
+                      } else {
+                        console.warn(
+                          `No details route found for itemType: ${itemType}`,
+                        );
                       }
-                      className={`
-                      flex items-start gap-3 px-4 py-8 
-                      ${hoverBg} 
-                      transition-colors 
-                      ${isRTL ? "border-r-2" : "border-l-2"} 
-                      ${getBorderColor(notification?.item?.notifType, isRTL)} 
-                      ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
-                    `}
-                    >
-                      <div className="flex gap-3">
-                        <div className="shrink-0 mt-0.5">
-                          {" "}
-                          {getNotificationIcon(
-                            notification?.item?.notifType,
-                          )}{" "}
-                        </div>{" "}
-                        <div className="flex flex-col">
-                          <h4 className={`text-sm font-medium ${textPrimary}`}>
-                            {notification?.item?.title}{" "}
-                          </h4>{" "}
-                          <p className={`text-sm ${textSecondary} mb-1`}>
-                            {" "}
-                            {notification?.item?.message}{" "}
-                          </p>{" "}
-                          <p className={`text-xs font-medium ${textTertiary}`}>
-                            {timeAgo(notification.actionedAt)}
-                          </p>
+                    };
+
+                    return (
+                      <div
+                        key={notification?.item?._id}
+                        onClick={handleNavigate}
+                        className={`
+                          flex items-start gap-3 px-4 py-8 
+                          ${hoverBg} 
+                          transition-colors 
+                          ${isRTL ? "border-r-2" : "border-l-2"} 
+                          ${getBorderColor(notification?.item?.notifType, isRTL)} 
+                          ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
+                        `}
+                      >
+                        <div className="flex gap-3">
+                          <div className="shrink-0 mt-0.5">
+                            {getNotificationIcon(notification?.item?.notifType)}
+                          </div>
+                          <div className="flex flex-col">
+                            <h4
+                              className={`text-sm font-medium ${textPrimary}`}
+                            >
+                              {notification?.item?.title}
+                            </h4>
+                            <p className={`text-sm ${textSecondary} mb-1`}>
+                              {notification?.item?.message}
+                            </p>
+                            <p
+                              className={`text-xs font-medium ${textTertiary}`}
+                            >
+                              {timeAgo(notification.actionedAt)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
