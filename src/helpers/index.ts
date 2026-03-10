@@ -1,4 +1,6 @@
 import { formatDateRange } from "@/helpers/formatter";
+import type { Notification } from "@/types/notifications";
+import { Info, AlertCircle, AlertTriangle, XCircle } from "lucide-react";
 
 export function uploadWithProgress(
   file: File,
@@ -130,6 +132,44 @@ export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
     default:
       return "";
   }
+};
+
+//notification helpers
+
+export const getBorderColor = (
+  type: Notification["item"]["notifType"],
+  isRTL: boolean,
+) => {
+  switch (type) {
+    case "INFO":
+      return isRTL ? "border-r-blue-500" : "border-l-blue-500";
+    case "ACTION":
+      return isRTL ? "border-r-purple-500" : "border-l-purple-500";
+    case "WARNING":
+      return isRTL ? "border-r-yellow-500" : "border-l-yellow-500";
+    case "ERROR":
+      return isRTL ? "border-r-red-500" : "border-l-red-500";
+  }
+};
+
+export const timeAgo = (timestamp: string | number | Date) => {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diff = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diff < 60) return "Just now";
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
 };
 
 export function getLngWiseStr(

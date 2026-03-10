@@ -18,7 +18,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (!socketRef.current) {
-      const s = io("http://localhost:4000", {
+      const s = io("http://192.168.18.17:4000", {
         transports: ["websocket"],
         auth: { token: accessToken },
       });
