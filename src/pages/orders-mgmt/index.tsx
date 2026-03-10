@@ -74,6 +74,8 @@ type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
   const { t, i18n } = useTranslation("orders");
+  const { t: tb } = useTranslation("businesses");
+
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
 
@@ -170,24 +172,18 @@ export default function OrdersMgmtPage() {
     vendor: "all",
     campaign: "all",
     deliveryType: "all",
-    dateFrom: "",
-    dateTo: "",
+    startDate: "",
+    endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
   });
   //active filter chips
   const activeFilterChips = useMemo(() => {
     const chips: { key: string; value: string }[] = [];
 
-    if (filters.orderType !== "all")
-      chips.push({
-        key: "orderType",
-        value: filters.orderType,
-      });
-
     if (filters.deliveryType !== "all")
       chips.push({
         key: "deliveryType",
-        value: filters.deliveryType,
+        value: t(filters.deliveryType),
       });
 
     if (filters.paymentMethod !== "all")
@@ -200,13 +196,14 @@ export default function OrdersMgmtPage() {
       chips.push({ key: "month", value: filters.month });
 
     if (filters.month === "custom") {
-      if (filters.dateFrom)
+      if (filters.startDate)
         chips.push({
           key: "dateFrom",
-          value: filters.dateFrom,
+          value: filters.startDate,
         });
 
-      if (filters.dateTo) chips.push({ key: "dateTo", value: filters.dateTo });
+      if (filters.endDate)
+        chips.push({ key: "dateTo", value: filters.endDate });
     }
 
     return chips;
@@ -247,13 +244,13 @@ export default function OrdersMgmtPage() {
 
     // Month filter
     if (filters.month !== "all" && filters.month !== "custom") {
-      params.month = filters.month;
+      params.startDate = filters.month;
     }
 
     // Custom date range
     if (filters.month === "custom") {
-      if (filters.dateFrom) params.dateFrom = filters.dateFrom;
-      if (filters.dateTo) params.dateTo = filters.dateTo;
+      if (filters.startDate) params.dateFrom = filters.startDate;
+      if (filters.endDate) params.dateTo = filters.endDate;
     }
 
     return params;
@@ -339,8 +336,8 @@ export default function OrdersMgmtPage() {
     vendor: "all",
     campaign: "all",
     month: "all",
-    dateFrom: "",
-    dateTo: "",
+    startDate: "",
+    endDate: "",
   };
 
   // Column visibility
@@ -948,90 +945,93 @@ export default function OrdersMgmtPage() {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <FilterSelect
-              label={t("orderType")}
-              value={filters.orderType}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, orderType: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "online", label: t("online") },
-                { value: "offline", label: t("offline") },
-              ]}
-            />
+          <div className="flex flex-wrap items-start gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            {/* Delivery Type */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("deliveryType")}
+                value={filters.deliveryType}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, deliveryType: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pick_up", label: t("pickups") },
+                  { value: "deliver", label: t("delivery") },
+                ]}
+              />
+            </div>
 
-            <FilterSelect
-              label={t("deliveryType")}
-              value={filters.deliveryType}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, deliveryType: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "pickup", label: t("pickup") },
-                { value: "delivery", label: t("delivery") },
-                { value: "digital", label: t("digital") },
-              ]}
-            />
+            {/* Payment Method */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("paymentMethod")}
+                value={filters.paymentMethod}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, paymentMethod: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "voucher", label: t("voucher") },
+                  { value: "card", label: t("creditCard") },
+                ]}
+              />
+            </div>
 
-            <FilterSelect
-              label={t("paymentMethod")}
-              value={filters.paymentMethod}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, paymentMethod: value }))
-              }
-              options={[
-                { value: "all", label: t("all") },
-                { value: "voucher", label: t("voucher") },
-                { value: "credit_card", label: t("creditCard") },
-              ]}
-            />
+            {/* Month Filter */}
+            <div className="min-w-[220px]">
+              <MonthFilter
+                label={t("month")}
+                value={filters.month}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, month: value }))
+                }
+                dateFrom={filters.startDate}
+                dateTo={filters.endDate}
+                onDateFromChange={(value) =>
+                  setFilters((prev) => ({ ...prev, startDate: value }))
+                }
+                onDateToChange={(value) =>
+                  setFilters((prev) => ({ ...prev, endDate: value }))
+                }
+                theme={theme}
+                isRTL={isRTL}
+                t={t}
+              />
+            </div>
 
-            <MonthFilter
-              label={t("month")}
-              value={filters.month}
-              onChange={(value) =>
-                setFilters((prev) => ({ ...prev, month: value }))
-              }
-              dateFrom={filters.dateFrom}
-              dateTo={filters.dateTo}
-              onDateFromChange={(value) =>
-                setFilters((prev) => ({ ...prev, dateFrom: value }))
-              }
-              onDateToChange={(value) =>
-                setFilters((prev) => ({ ...prev, dateTo: value }))
-              }
-              theme={theme}
-              isRTL={isRTL}
-              t={t}
-            />
+            {/* Active Filters */}
+            <div className="">
+              {activeFilterChips.length > 0 && (
+                <div className="mb-3">{tb("active_filters")}</div>
+              )}
+              {activeFilterChips.length > 0 && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex flex-wrap gap-2">
+                    {activeFilterChips.map((chip) => (
+                      <FilterChips
+                        key={chip.key}
+                        label={t(chip.value)}
+                        onRemove={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            [chip.key]: chip.key.includes("date") ? "" : "all",
+                          }))
+                        }
+                      />
+                    ))}
+                  </div>
 
-            {activeFilterChips.length > 0 && (
-              <div className="flex gap-5 items-center mt-4">
-                <div className="flex items-center gap-3">
-                  {activeFilterChips.map((chip) => (
-                    <FilterChips
-                      key={chip.key}
-                      label={chip.value}
-                      onRemove={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          [chip.key]: chip.key.includes("date") ? "" : "all",
-                        }))
-                      }
-                    />
-                  ))}
+                  {/* Clear All */}
+                  <button
+                    onClick={() => setFilters(defaultFilters)}
+                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                  >
+                    {t("clear_all")}
+                  </button>
                 </div>
-                <button
-                  onClick={() => setFilters(defaultFilters)}
-                  className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                >
-                  {t("clear_all")}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>
