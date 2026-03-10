@@ -29,7 +29,7 @@ import { useAppDispatch } from "@/hooks/hooks";
 import { IdleLogout } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
-
+import { addNotification } from "./features/notificationSlice";
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
   if (typeof window === "undefined") return false;
@@ -79,17 +79,32 @@ function App() {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
+  // useEffect(() => {
+  //   if (!socket) return;
+
+  //   socket.on("notification", (data) => {
+  //     console.log("🔔", data);
+  //   });
+
+  //   return () => {
+  //     socket.off("notification");
+  //   };
+  // }, [socket]);
+
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("notification", (data) => {
+    const handleNotification = (data: any) => {
       console.log("🔔", data);
-    });
+      dispatch(addNotification(data));
+    };
+
+    socket.on("notification", handleNotification);
 
     return () => {
-      socket.off("notification");
+      socket.off("notification", handleNotification);
     };
-  }, [socket]);
+  }, [socket, dispatch]);
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {

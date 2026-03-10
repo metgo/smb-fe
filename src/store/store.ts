@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import uiReducer from "@/features/uiSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
+import notificationSlice from "@/features/notificationSlice";
 import filterReducer from "@/features/filterSlice";
 import themeSlice from "@/features/themeSlice";
 import { authApi } from "@/store/api/authApi";
@@ -29,7 +30,7 @@ export const store = configureStore({
     settings: settingsReducer,
     filters: filterReducer,
     theme: themeSlice,
-
+    notification: notificationSlice,
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,

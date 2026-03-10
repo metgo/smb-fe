@@ -248,7 +248,9 @@ export default function Header() {
                 )}
               </button>
             )}
-            <NotificationsBell />
+            <div>
+              <NotificationsBell />
+            </div>
           </div>
         </div>
       </div>
