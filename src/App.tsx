@@ -46,7 +46,10 @@ const handleGoogleOAuthCallback = (): boolean => {
         sessionStorage.setItem("access_token", data.accessToken);
       }
       if (data.user) {
-        sessionStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+        sessionStorage.setItem(
+          "user_info",
+          JSON.stringify({ user: data.user }),
+        );
       }
 
       // Clean up URL by removing userData param
