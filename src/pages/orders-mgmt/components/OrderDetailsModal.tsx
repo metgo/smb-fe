@@ -379,7 +379,7 @@ function OrderDetailsModal({
               } else if (cancelType === "item") {
                 // Cancel a specific product in the order
                 await updateProductOrderStatus({
-                  orderProductId: order?._id,
+                  orderProductId: itemToCancel?.orderedProductId ?? "",
                   body: {
                     status: "canceled",
                     canceled_reason: reason,

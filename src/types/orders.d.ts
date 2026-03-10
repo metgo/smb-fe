@@ -48,10 +48,11 @@ interface IOrderProduct {
   amount: number;
   vendor: string;
   deliveryType: "pickup" | "delivery";
-  image: {
+  images: {
     image: string;
   };
   description: string;
   category: string;
   cancelled?: boolean;
+  orderedProductId?: string;
 }

@@ -21,6 +21,9 @@ import {
   TrendingUp,
   Camera,
   ShoppingCart,
+  ShoppingBag,
+  Truck,
+  XCircle,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -43,6 +46,7 @@ import {
 import {
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
+  useGetOrderStatsQuery,
   // useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
@@ -255,8 +259,8 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters]);
 
-  //  const { data: orderStat, isLoading: isStatsLoading } =
-  //   useGetOrderStatsQuery(orderQueryParams);
+  const { data: orderStat, isLoading: isStatsLoading } =
+    useGetOrderStatsQuery(orderQueryParams);
 
   const {
     data: orders,
@@ -492,38 +496,6 @@ export default function OrdersMgmtPage() {
     },
   );
 
-  // Statistics
-  const statistics = useMemo(() => {
-    const totalOrders = orderss?.length;
-    const totalRevenue = orderss?.reduce(
-      (sum: number, o: any) => sum + o.totalAmount,
-      0,
-    );
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    // const pickups = orderss?.filter(
-    //   (o) => o.deliveryType === "pickup",
-    // ).length;
-    // const deliveries = orderss?.filter(
-    //   (o) => o.deliveryType === "delivery",
-    // ).length;
-    // const paidOrders = orderss?.filter(
-    //   (o) => o.paymentStatus === "success",
-    // ).length;
-    // const cancelledOrders = orderss?.filter(
-    //   (o) => o.orderStatus === "cancelled",
-    // ).length;
-
-    return {
-      totalOrders,
-      totalRevenue,
-      avgOrderValue,
-      // pickups,
-      // deliveries,
-      // paidOrders,
-      // cancelledOrders,
-    };
-  }, [orderss]);
-
   const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
@@ -701,45 +673,45 @@ export default function OrdersMgmtPage() {
     {
       id: 1,
       title: t("totalOrders"),
-      value: statistics?.totalOrders?.toLocaleString(),
+      value: orderStat?.totalOrders?.toLocaleString(),
       label: t("all"),
       icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
     },
     {
       id: 2,
       title: t("revenue"),
-      value: `₪${statistics?.totalRevenue?.toLocaleString()}`,
+      value: `₪${orderStat?.totalRevenue?.toLocaleString()}`,
       label: t("gross"),
       icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
     {
       id: 3,
       title: t("avgOrderValue"),
-      value: `₪${Math.round(statistics?.avgOrderValue).toLocaleString()}`,
+      value: `₪${Math.round(orderStat?.avgOrderValue).toLocaleString()}`,
       label: t("perOrder"),
       icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
     },
-    // {
-    //   id: 4,
-    //   title: t("pickups"),
-    //   value: statistics?.pickups?.toLocaleString(),
-    //   label: t("orders"),
-    //   icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
-    // },
-    // {
-    //   id: 5,
-    //   title: t("deliveries"),
-    //   value: statistics?.deliveries?.toLocaleString(),
-    //   label: t("orders"),
-    //   icon: <Truck className="w-5 h-5 text-teal-500" />,
-    // },
-    // {
-    //   id: 6,
-    //   title: t("cancelledOrders"),
-    //   value: statistics?.cancelledOrders?.toLocaleString(),
-    //   label: t("cancelled"),
-    //   icon: <XCircle className="w-5 h-5 text-red-500" />,
-    // },
+    {
+      id: 4,
+      title: t("pickups"),
+      value: orderStat?.totalPickups?.toLocaleString(),
+      label: t("orders"),
+      icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
+    },
+    {
+      id: 5,
+      title: t("deliveries"),
+      value: orderStat?.totalDeliveries?.toLocaleString(),
+      label: t("orders"),
+      icon: <Truck className="w-5 h-5 text-teal-500" />,
+    },
+    {
+      id: 6,
+      title: t("cancelledOrders"),
+      value: orderStat?.totalCanceledOrders?.toLocaleString(),
+      label: t("cancelled"),
+      icon: <XCircle className="w-5 h-5 text-red-500" />,
+    },
   ];
 
   const getOrderStatusBadge = (status: IOrder["status"]) => {
@@ -886,7 +858,8 @@ export default function OrdersMgmtPage() {
 
       <PageStats
         stats={orderStats}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
+        isLoading={isStatsLoading}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-3"
       />
 
       {/* Search and Filters */}
@@ -1126,7 +1099,7 @@ export default function OrdersMgmtPage() {
           isRTL={isRTL}
           theme={theme}
           refetch={refetch}
-          order={orderDetails?.datas[0]}
+          order={orderDetails}
           isLoading={isOrderDetailLoading}
           isFetching={isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
