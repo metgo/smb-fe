@@ -14,7 +14,7 @@ import {
   Mail,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { WizardFooter } from "@/components/shared";
+import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import {
@@ -76,7 +76,10 @@ export default function CreateEventWizard({
     useCreateWebsiteAccessItemMutation();
 
   const [currentStep, setCurrentStep] = useState(1);
+
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+  const [showClosePopup, setShowClosePopup] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>(
@@ -482,7 +485,14 @@ export default function CreateEventWizard({
     updateEvent,
     stepPayloadMap,
   });
+  const handleClose = () => {
+    if (!isPublishBtnClicked && !isDraftBtnClicked) {
+      setShowClosePopup(true);
+      return;
+    }
 
+    onClose();
+  };
   const handleNext = async () => {
     if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 6) await eventImageUploadAll();
@@ -490,6 +500,7 @@ export default function CreateEventWizard({
   };
 
   const handleSaveDraft = async () => {
+    setIsDraftBtnClicked(true);
     await eventImageUploadAll();
     await saveDraft(false);
     if (eventId) {
@@ -587,7 +598,7 @@ export default function CreateEventWizard({
 
   return (
     <ModalWrapper
-      onClose={onClose}
+      onClose={handleClose}
       showSpinner={
         isEventCreating || isEventCreating || isWebsiteAccessItemCreating
       }
@@ -852,6 +863,20 @@ export default function CreateEventWizard({
         onNext={handleNext}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
+      />
+      <ConfirmDialog
+        open={showClosePopup}
+        title={tc("unsaved_changes")}
+        message={tc("close_without_saving")}
+        confirmText={tc("close")}
+        variant="danger"
+        onCancel={() => {
+          setShowClosePopup(false);
+        }}
+        onConfirm={() => {
+          setShowClosePopup(false);
+          onClose();
+        }}
       />
     </ModalWrapper>
   );
