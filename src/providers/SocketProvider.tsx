@@ -7,9 +7,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  const userData = localStorage.getItem("userData");
-  const parsedUserData = userData && JSON.parse(userData);
-  const accessToken = parsedUserData?.accessToken;
+  const accessToken = sessionStorage.getItem("access_token");
 
   useEffect(() => {
     if (!accessToken) {

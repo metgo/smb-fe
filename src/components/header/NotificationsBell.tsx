@@ -121,42 +121,40 @@ const NotificationsBell = () => {
               </div>
               <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
                 {notifications?.map((notification) => (
-                  <div>
-                    <div
-                      key={notification.id}
-                      className={`flex items-start gap-3 px-4 py-4 ${hoverBg} transition-colors border-${isRTL ? "r" : "l"}-2 ${getBorderColor(notification.type)} ${!notification.read ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}`}
+                  <div
+                    key={notification.id}
+                    className={`flex items-start gap-3 px-4 py-4 ${hoverBg} transition-colors border-${isRTL ? "r" : "l"}-2 ${getBorderColor(notification.type)} ${!notification.read ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}`}
+                  >
+                    {" "}
+                    {/* Icon */}{" "}
+                    <div className="shrink-0 mt-0.5">
+                      {" "}
+                      {getNotificationIcon(notification.type)}{" "}
+                    </div>{" "}
+                    {/* Content */}{" "}
+                    <button
+                      className={`flex-1 min-w-0 text-${isRTL ? "right" : "left"}`}
                     >
                       {" "}
-                      {/* Icon */}{" "}
-                      <div className="shrink-0 mt-0.5">
+                      <div className="flex items-start justify-between gap-2 mb-1">
                         {" "}
-                        {getNotificationIcon(notification.type)}{" "}
+                        <h4 className={`text-sm font-medium ${textPrimary}`}>
+                          {" "}
+                          {notification.title}{" "}
+                        </h4>{" "}
+                        {!notification.read && (
+                          <span className="shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
+                        )}{" "}
                       </div>{" "}
-                      {/* Content */}{" "}
-                      <button
-                        className={`flex-1 min-w-0 text-${isRTL ? "right" : "left"}`}
-                      >
+                      <p className={`text-sm ${textSecondary} mb-1`}>
                         {" "}
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          {" "}
-                          <h4 className={`text-sm font-medium ${textPrimary}`}>
-                            {" "}
-                            {notification.title}{" "}
-                          </h4>{" "}
-                          {!notification.read && (
-                            <span className="shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
-                          )}{" "}
-                        </div>{" "}
-                        <p className={`text-sm ${textSecondary} mb-1`}>
-                          {" "}
-                          {notification.description}{" "}
-                        </p>{" "}
-                        <span className={`text-xs ${textTertiary}`}>
-                          {" "}
-                          {getRelativeTime(notification.timestamp)}{" "}
-                        </span>{" "}
-                      </button>{" "}
-                    </div>
+                        {notification.description}{" "}
+                      </p>{" "}
+                      <span className={`text-xs ${textTertiary}`}>
+                        {" "}
+                        {getRelativeTime(notification.timestamp)}{" "}
+                      </span>{" "}
+                    </button>{" "}
                   </div>
                 ))}
               </div>

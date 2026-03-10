@@ -70,7 +70,6 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
 }) => {
-  console.log("🚀 ~ BusinessReviewSubmit ~ formData:", formData);
   const { t: tc } = useTranslation("common");
   const { categories, socialMedia, accessibility, groupTypes } = useCommon();
   console.log("geo", formData?.tags);
@@ -218,30 +217,30 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
               label: t("primary_category"),
               value: formData?.primaryCategory
                 ? categories?.find(
-                    (cat: any) => cat._id === formData.primaryCategory,
-                  )?.name
+                  (cat: any) => cat._id === formData.primaryCategory,
+                )?.name
                 : "—",
             },
             {
               label: t("accessiblities"),
               value: selectedAccessiblitiesId
                 ? accessibility
-                    ?.filter((cat: any) =>
-                      selectedAccessiblitiesId.includes(cat._id),
-                    )
-                    ?.map((cat: any) => cat.name)
-                    ?.join(", ")
+                  ?.filter((cat: any) =>
+                    selectedAccessiblitiesId.includes(cat._id),
+                  )
+                  ?.map((cat: any) => cat.name)
+                  ?.join(", ")
                 : "—",
             },
             {
               label: t("group_types"),
               value: selectedGroupTypesId
                 ? groupTypes
-                    ?.filter((cat: any) =>
-                      selectedGroupTypesId.includes(cat._id),
-                    )
-                    ?.map((cat: any) => cat.name)
-                    ?.join(", ")
+                  ?.filter((cat: any) =>
+                    selectedGroupTypesId.includes(cat._id),
+                  )
+                  ?.map((cat: any) => cat.name)
+                  ?.join(", ")
                 : "—",
             },
           ]}
@@ -329,7 +328,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
         )}
         <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
           {formData.operatingHours && formData.operatingHours.length > 0 ? (
-            formData.operatingHours.map((hour: any) => {
+            formData.operatingHours.map((hour: any, index: number) => {
               const display = hour.isHoliday
                 ? t("closed")
                 : hour.open && hour.close
@@ -337,7 +336,10 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
                   : "—";
 
               return (
-                <div key={hour.day} className="flex flex-col">
+                <div
+                  key={index}
+                  className="flex flex-col"
+                >
                   <span className={clsx("font-medium text-sm", textTertiary)}>
                     {t(hour.day)}
                   </span>
@@ -365,7 +367,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 
         {formData.socialMedia?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 p-5">
-            {formData.socialMedia.map((sm: any) => {
+            {formData.socialMedia.map((sm: any, index: number) => {
               const platform = allSocialMedia.find(
                 (p) => p._id === sm.socialMediaId,
               );
@@ -374,7 +376,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
               const iconPath = platform?.icon?.iconPath || "";
 
               return (
-                <div key={sm.socialMediaId} className="flex items-center gap-2">
+                <div key={index} className="flex items-center gap-2">
                   {iconPath && (
                     <img
                       src={iconPath}

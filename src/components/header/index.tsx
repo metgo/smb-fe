@@ -15,6 +15,7 @@ import {
   setTimeFrame,
   setWebsite,
   setTimeFrameValue,
+  setFilteredWebsite,
 } from "@/features/authSlice";
 import { ReactSelect } from "@/components/form-fields";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -27,40 +28,32 @@ export default function Header() {
   const { t, i18n } = useTranslation("common");
 
   const { allWebsites, dateRanges: timeframes, dmosAuthorities } = useCommon();
-  const { language } = useAppSelector((state) => state.settings);
   const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
   );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
-
-  const { isDark, textPrimary, selectInputClasses } = useThemeClasses();
-
+  const { textPrimary, selectInputClasses, isDark, language } =
+    useThemeClasses();
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
 
   const filteredWebsites = useMemo(() => {
-    const result = [];
-
     if (!allWebsites?.length) return [];
 
-    // If nothing selected → return empty
-    if (!dmoId && !authorityId) {
-      return [];
-    }
+    if (!dmoId && !authorityId) return allWebsites;
 
-    for (const site of allWebsites) {
+    return allWebsites.filter((site) => {
       const matchDmo = dmoId && site.dmoIds?.includes(dmoId);
       const matchAuthority =
         authorityId && site.authorityIds?.includes(authorityId);
 
-      // OR logic
-      if (matchDmo || matchAuthority) {
-        result.push(site);
-      }
-    }
-
-    return result;
+      return matchDmo || matchAuthority;
+    });
   }, [allWebsites, dmoId, authorityId]);
+
+  useEffect(() => {
+    dispatch(setFilteredWebsite(filteredWebsites));
+  }, [filteredWebsites]);
 
   useEffect(() => {
     const today = new Date();

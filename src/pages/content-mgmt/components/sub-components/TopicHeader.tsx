@@ -22,15 +22,17 @@ interface TopicHeaderProps {
     isHidden: boolean | undefined;
   };
   onRename: (topicIdx: number, newName: string) => void;
-  onDelete: (topicIdx: number) => void;
   onToggleVisibility: (topicIdx: number) => void;
+  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
+  setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const TopicHeader = ({
   topic,
   onRename,
-  onDelete,
   onToggleVisibility,
+  setTopicToDelete,
+  setShowDeleteConfirm,
 }: TopicHeaderProps) => {
   const { isDark } = useThemeClasses();
 
@@ -207,7 +209,8 @@ const TopicHeader = ({
                   )}
                   onClick={() => {
                     setShowMenu(false);
-                    onDelete(topic.index);
+                    setTopicToDelete(topic.index);
+                    setShowDeleteConfirm(true);
                   }}
                 >
                   <Trash2 className="w-3.5 h-3.5 shrink-0" />

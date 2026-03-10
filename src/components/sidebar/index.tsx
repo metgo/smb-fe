@@ -35,6 +35,7 @@ import { toggleSidebar } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface MenuItem {
   id: string;
@@ -53,6 +54,7 @@ export default function Sidebar() {
   const dispatch = useAppDispatch();
 
   const { isDark, isRTL } = useThemeClasses();
+  const { isTraveller } = useUserRoles();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -155,7 +157,7 @@ export default function Sidebar() {
     },
     {
       id: "site-management",
-      path: routes.contentMgmt,
+      path: "#",
       label: t("site_management") || "Site Management",
       icon: Globe,
       isEnabled: true,
@@ -387,7 +389,14 @@ export default function Sidebar() {
 
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto py-4">
-          {menuItems.map((item) => renderMenuItem(item))}
+          {menuItems
+            ?.map((item) => ({
+              ...item,
+              subItems: item.subItems?.filter(
+                (sub) => !(isTraveller && sub.id === "content-mgmt"),
+              ),
+            }))
+            ?.map((item) => renderMenuItem(item))}
         </nav>
 
         {/* Footer */}

@@ -71,6 +71,7 @@ const ContentConfigHeader = ({
 
     setTemplateContent(updated);
     setNewCategoryName("");
+    setSelectedTopicForNewCategory("");
   };
 
   return (
@@ -78,7 +79,7 @@ const ContentConfigHeader = ({
       {/* Header */}
       <div
         className={clsx(
-          "font-semibold",
+          "font-semibold p-2",
           isDark ? "text-gray-300" : "text-gray-800",
         )}
       >

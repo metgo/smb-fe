@@ -43,10 +43,10 @@ const handleGoogleOAuthCallback = (): boolean => {
 
       // Store tokens and user info in localStorage
       if (data.accessToken) {
-        localStorage.setItem("access_token", data.accessToken);
+        sessionStorage.setItem("access_token", data.accessToken);
       }
       if (data.user) {
-        localStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+        sessionStorage.setItem("user_info", JSON.stringify({ user: data.user }));
       }
 
       // Clean up URL by removing userData param
@@ -91,7 +91,7 @@ function App() {
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {
     if (isGoogleOAuthCallback) {
-      const userInfo = localStorage.getItem("user_info");
+      const userInfo = sessionStorage.getItem("user_info");
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
@@ -112,7 +112,7 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
-    const isLoggedIn = !!localStorage.getItem("access_token");
+    const isLoggedIn = !!sessionStorage.getItem("access_token");
 
     if (isLoginPage) {
       if (isLoggedIn) {

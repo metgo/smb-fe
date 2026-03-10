@@ -27,6 +27,10 @@
   "drag_businesses_here_to_add_them_to_this_category": "גרור עסקים לכאן כדי להוסיף אותם לקטגוריה זו",
   "rename_category": "שנה שם קטגוריה",
   "delete_category": "מחק קטגוריה",
+  "delete_category_confirm": "כל העסקים בקטגוריה זו יימחקו אף הם",
+
+  "delete_topic_confirm": "כל הקטגוריות הקשורות לנושא זה יימחקו גם כן",
+  "topic_deleted": "הנושא נמחק בהצלחה",
   "select_website": "בחר אתר",
 
   "content_manager_title": "מנהל תוכן",

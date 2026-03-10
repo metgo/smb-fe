@@ -18,7 +18,7 @@ export const loadUserInfo = () => {
   if (typeof window === "undefined") return null;
 
   try {
-    const data = localStorage.getItem("user_info");
+    const data = sessionStorage.getItem("user_info");
     return data ? JSON.parse(data) : null;
   } catch {
     return null;
@@ -27,5 +27,5 @@ export const loadUserInfo = () => {
 
 export const saveUserInfo = (userInfo: any) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem("user_info", JSON.stringify(userInfo));
+  sessionStorage.setItem("user_info", JSON.stringify(userInfo));
 };
