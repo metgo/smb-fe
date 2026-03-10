@@ -35,7 +35,10 @@ export function Login({ setCurrentTab }: LoginProps) {
     try {
       const data = await login({ email: username, password }).unwrap();
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+        sessionStorage.setItem(
+          "user_info",
+          JSON.stringify({ user: data.user }),
+        );
         sessionStorage.setItem("access_token", data.accessToken);
       }
       dispatch(loginSuccess(data.user));

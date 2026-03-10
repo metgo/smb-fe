@@ -15,6 +15,8 @@ import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import type { Notification } from "@/types/notifications";
 import { getBorderColor, timeAgo } from "@/helpers";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 export default function NotificationsMgmtPage() {
   const { t } = useTranslation("notifications");
@@ -47,7 +49,7 @@ export default function NotificationsMgmtPage() {
     borderColor,
     hoverBg,
   } = useThemeClasses();
-
+  const navigate = useNavigate();
   const getNotificationIcon = (type: Notification["item"]["notifType"]) => {
     const iconClass = "w-5 h-5";
     switch (type) {
@@ -373,8 +375,19 @@ export default function NotificationsMgmtPage() {
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {notifications?.map((notification) => (
                     <div
-                      // key={notification?.item}
-                      className={`flex  items-start gap-3 px-4 py-8 ${hoverBg} transition-colors border-${isRTL ? "r" : "l"}-2 ${getBorderColor(notification?.item?.notifType, isRTL)} ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}`}
+                      onClick={() =>
+                        navigate(
+                          `${routes.businessDetails}?businessId=${notification?.item?._id}`,
+                        )
+                      }
+                      className={`
+                      flex items-start gap-3 px-4 py-8 
+                      ${hoverBg} 
+                      transition-colors 
+                      ${isRTL ? "border-r-2" : "border-l-2"} 
+                      ${getBorderColor(notification?.item?.notifType, isRTL)} 
+                      ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
+                    `}
                     >
                       <div className="flex gap-3">
                         <div className="shrink-0 mt-0.5">

@@ -12,13 +12,13 @@ import { toggleNotification } from "@/features/uiSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import type { Notification } from "@/types/notifications";
+import { useTranslation } from "react-i18next";
+import { useEffect, useRef } from "react";
 
 const NotificationsBell = () => {
   const dispatch = useAppDispatch();
-
+  const { t } = useTranslation("notifications");
   const { notifications } = useAppSelector((state) => state.notification);
-
-  console.log("🚀 ~ NotificationsBell ~ notifications:", notifications);
 
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, hoverBg } =
     useThemeClasses();
@@ -39,6 +39,24 @@ const NotificationsBell = () => {
         return <XCircle className={`${iconClass} text-red-500`} />;
     }
   };
+  const popupRef = useRef<HTMLDivElement>(null); // Ref for the popup
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isNotificationOpen &&
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
+        dispatch(toggleNotification());
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isNotificationOpen, dispatch]);
 
   return (
     <div className="relative">
@@ -58,19 +76,21 @@ const NotificationsBell = () => {
       {/*  Notification Popup */}
       {isNotificationOpen && (
         <div
+          ref={popupRef}
           className={clsx(
-            "absolute right-0 mt-2 w-96 max-h-100 overflow-y-auto rounded-xl shadow-xl border z-50 flex flex-col",
+            "absolute  mt-2 w-96 max-h-100 overflow-y-auto rounded-xl shadow-xl border z-50 flex flex-col",
             isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200",
+            isRTL ? "left-0" : "right-0 ",
           )}
         >
           {notifications?.length === 0 ? (
             <div className="p-6 text-center text-sm text-gray-500">
-              No notifications
+              {t("no_new_notifications")}
             </div>
           ) : (
             <>
               <div className="py-4 px-4 font-semibold bg-gray-50 border-b">
-                Notifications
+                {t("notifications")}
               </div>
               <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
                 {notifications?.map((notification: Notification) => (
@@ -106,7 +126,7 @@ const NotificationsBell = () => {
                 onClick={() => navigate("/notifications-management")}
                 className="w-full p-3 text-sm font-semibold text-center text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-b-xl"
               >
-                View All Notifications
+                {t("view_all_notifications")}
               </button>
             </>
           )}

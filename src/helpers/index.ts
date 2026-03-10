@@ -1,6 +1,5 @@
 import { formatDateRange } from "@/helpers/formatter";
 import type { Notification } from "@/types/notifications";
-import { Info, AlertCircle, AlertTriangle, XCircle } from "lucide-react";
 
 export function uploadWithProgress(
   file: File,

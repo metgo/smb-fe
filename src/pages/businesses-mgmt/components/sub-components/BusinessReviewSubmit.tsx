@@ -217,30 +217,30 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
               label: t("primary_category"),
               value: formData?.primaryCategory
                 ? categories?.find(
-                  (cat: any) => cat._id === formData.primaryCategory,
-                )?.name
+                    (cat: any) => cat._id === formData.primaryCategory,
+                  )?.name
                 : "—",
             },
             {
               label: t("accessiblities"),
               value: selectedAccessiblitiesId
                 ? accessibility
-                  ?.filter((cat: any) =>
-                    selectedAccessiblitiesId.includes(cat._id),
-                  )
-                  ?.map((cat: any) => cat.name)
-                  ?.join(", ")
+                    ?.filter((cat: any) =>
+                      selectedAccessiblitiesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
                 : "—",
             },
             {
               label: t("group_types"),
               value: selectedGroupTypesId
                 ? groupTypes
-                  ?.filter((cat: any) =>
-                    selectedGroupTypesId.includes(cat._id),
-                  )
-                  ?.map((cat: any) => cat.name)
-                  ?.join(", ")
+                    ?.filter((cat: any) =>
+                      selectedGroupTypesId.includes(cat._id),
+                    )
+                    ?.map((cat: any) => cat.name)
+                    ?.join(", ")
                 : "—",
             },
           ]}
@@ -336,10 +336,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
                   : "—";
 
               return (
-                <div
-                  key={index}
-                  className="flex flex-col"
-                >
+                <div key={index} className="flex flex-col">
                   <span className={clsx("font-medium text-sm", textTertiary)}>
                     {t(hour.day)}
                   </span>
