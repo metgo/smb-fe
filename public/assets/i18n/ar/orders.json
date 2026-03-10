@@ -57,6 +57,8 @@
   "creditCard": "بطاقة ائتمان",
   "month": "شهر",
   "processing": "قيد المعالجة",
+  "shipped": "تم الشحن",
+  "canceled": "تم الإلغاء",
   "paid": "مدفوع",
   "confirmed": "مؤكد",
   "delivered": "تم التسليم",

@@ -172,6 +172,7 @@ export default function OrdersMgmtPage() {
     vendor: "all",
     campaign: "all",
     deliveryType: "all",
+    status: "all",
     startDate: "",
     endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
@@ -184,6 +185,11 @@ export default function OrdersMgmtPage() {
       chips.push({
         key: "deliveryType",
         value: t(filters.deliveryType),
+      });
+    if (filters.status !== "all")
+      chips.push({
+        key: "status",
+        value: t(filters.status),
       });
 
     if (filters.paymentMethod !== "all")
@@ -233,7 +239,9 @@ export default function OrdersMgmtPage() {
     if (filters.paymentMethod !== "all") {
       params.paymentMethod = filters.paymentMethod;
     }
-
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
     if (filters.vendor !== "all") {
       params.vendor = filters.vendor;
     }
@@ -334,6 +342,7 @@ export default function OrdersMgmtPage() {
     deliveryType: "all",
     paymentMethod: "all",
     vendor: "all",
+    status: "all",
     campaign: "all",
     month: "all",
     startDate: "",
@@ -961,7 +970,25 @@ export default function OrdersMgmtPage() {
                 ]}
               />
             </div>
+            {/* Status */}
+            <div className="min-w-[180px]">
+              <FilterSelect
+                label={t("status")}
+                value={filters.status}
+                onChange={(value) =>
+                  setFilters((prev) => ({ ...prev, status: value }))
+                }
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "pending", label: t("pending") },
+                  { value: "processing", label: t("processing") },
+                  { value: "completed", label: t("completed") },
+                  { value: "shipped", label: t("shipped") },
 
+                  { value: "canceled", label: t("canceled") },
+                ]}
+              />
+            </div>
             {/* Payment Method */}
             <div className="min-w-[180px]">
               <FilterSelect
@@ -1003,7 +1030,9 @@ export default function OrdersMgmtPage() {
             {/* Active Filters */}
             <div className="">
               {activeFilterChips.length > 0 && (
-                <div className="mb-3">{tb("active_filters")}</div>
+                <div className="mb-3 text-sm text-gray-500">
+                  {tb("active_filters")}:
+                </div>
               )}
               {activeFilterChips.length > 0 && (
                 <div className="flex items-center gap-3 flex-wrap">

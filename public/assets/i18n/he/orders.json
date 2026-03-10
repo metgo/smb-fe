@@ -52,6 +52,8 @@
   "creditCard": "כרטיס אשראי",
   "month": "חודש",
   "processing": "בעיבוד",
+  "shipped": "נשלח",
+  "canceled": "בוטל",
   "paid": "שולם",
   "confirmed": "מאושר",
   "delivered": "נמסר",
