@@ -1,27 +1,26 @@
 import React, { useState, useMemo } from "react";
 import {
-  Plus,
-  Download,
-  Filter,
   X,
   ChevronDown,
   ChevronUp,
   Mail,
   Phone,
-  MoreVertical,
   Clock,
   Send,
   XCircle,
   Calendar,
   RefreshCw,
-  Search,
   MessageSquare,
 } from "lucide-react";
 import { MessageComposerModal } from "@/pages/content-mgmt/components";
 import { SendResultsModal } from "@/pages/content-mgmt/components";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
-import { PageHeader, SearchInput } from "@/components/shared";
+import {
+  PageHeader,
+  ReordableDataTable,
+  SearchInput,
+} from "@/components/shared";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
@@ -153,20 +152,158 @@ const generateMockVouchers = (): Voucher[] => {
     };
   });
 };
+const USER_ROLE = "admin";
 
 export function VouchersList({
   onVoucherClick,
   onAddVoucher,
-  refreshTrigger,
+  // refreshTrigger,
 }: VouchersListProps) {
   const { textPrimary } = useThemeClasses();
   const SEARCH_STORAGE_KEY = "voucherSearchTerm";
+  // Permission check
+  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
+    USER_ROLE,
+  );
+  const columns = [
+    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
+    {
+      key: "code",
+      label: "Code",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          {voucher.code}
+        </span>
+      ),
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          {voucher.amount}
+        </span>
+      ),
+    },
+    {
+      key: "assignee",
+      label: "Assignee",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          {voucher?.assigneeInfo?.name || "-"}
+        </span>
+      ),
+    },
+    {
+      key: "contact",
+      label: "Contact",
+      sortable: false,
+      render: (voucher: any) => (
+        <div className="flex items-center gap-2">
+          <a
+            href={`mailto:${voucher.email}`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+            title={voucher.email}
+          >
+            <Mail className="w-4 h-4" />
+          </a>
+          <a
+            href={`tel:${voucher.phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+            title={voucher.phone}
+          >
+            <Phone className="w-4 h-4" />
+          </a>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+      render: (voucher: any) => (
+        <span
+          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(voucher.status)}`}
+        >
+          {getStatusLabel(voucher.status)}
+        </span>
+      ),
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          ₪{voucher.amount}
+        </span>
+      ),
+    },
+    {
+      key: "remainingAmount",
+      label: "Remaining",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">
+          ₪{voucher.remainingAmount}
+        </span>
+      ),
+    },
+    {
+      key: "expireDate",
+      label: "Expiry",
+      sortable: true,
+      render: (voucher: any) => (
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-sm ${
+              isExpired(voucher.expireDate)
+                ? "text-red-600 dark:text-red-400"
+                : isExpiringSoon(voucher.expireDate)
+                  ? "text-orange-600 dark:text-orange-400"
+                  : "text-gray-900 dark:text-gray-100"
+            }`}
+          >
+            {voucher.expireDate}
+          </span>
+          {isExpiringSoon(voucher.expireDate) &&
+            !isExpired(voucher.expireDate) && (
+              <Clock
+                className="w-4 h-4 text-orange-500"
+                title="Expiring soon"
+              />
+            )}
+        </div>
+      ),
+    },
+    {
+      key: "campaign",
+      label: "Campaign",
+      sortable: true,
+      render: (voucher: any) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {voucher.campaign || "-"}
+        </span>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: any) => React.ReactNode;
+  }[];
   const {
     data: voucherData,
     isLoading,
-    isFetching,
-    refetch,
+    // isFetching,
+    // refetch,
   } = useGetAllVouchersQuery({});
   const allVouchers = voucherData?.datas?.data;
   console.log("🚀 ~ VouchersList ~ voucherData:", voucherData);
@@ -177,7 +314,7 @@ export function VouchersList({
   );
   const [showFilters, setShowFilters] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { theme } = useAppSelector((state) => state.settings);
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -290,30 +427,32 @@ export function VouchersList({
     };
   }, [filteredVouchers]);
 
-  const handleSelectAll = () => {
-    if (selectedVouchers.size === filteredVouchers.length) {
-      setSelectedVouchers(new Set());
-    } else {
-      setSelectedVouchers(new Set(filteredVouchers.map((v) => v.id)));
-    }
-  };
+  // const handleSelectAll = () => {
+  //   if (selectedVouchers.size === filteredVouchers.length) {
+  //     setSelectedVouchers(new Set());
+  //   } else {
+  //     setSelectedVouchers(new Set(filteredVouchers.map((v) => v.id)));
+  //   }
+  // };
 
-  const handleSelectVoucher = (voucherId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newSelected = new Set(selectedVouchers);
-    if (newSelected.has(voucherId)) {
-      newSelected.delete(voucherId);
-    } else {
-      newSelected.add(voucherId);
-    }
-    setSelectedVouchers(newSelected);
-  };
+  // const handleSelectVoucher = (voucherId: string, e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   const newSelected = new Set(selectedVouchers);
+  //   if (newSelected.has(voucherId)) {
+  //     newSelected.delete(voucherId);
+  //   } else {
+  //     newSelected.add(voucherId);
+  //   }
+  //   setSelectedVouchers(newSelected);
+  // };
 
   const getStatusColor = (status: Voucher["status"]) => {
     switch (status) {
       case "active":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
       case "assigned":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+      case "UNASSIGNED":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
       case "redeemed":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
@@ -333,6 +472,7 @@ export function VouchersList({
       redeemed: "Redeemed",
       expired: "Expired",
       cancelled: "Cancelled",
+      UNASSIGNED: "UNASSIGNED",
     };
     return labels[status];
   };
@@ -444,7 +584,7 @@ export function VouchersList({
         {/* Statistics Cards */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <div className="text-blue-600 dark:text-blue-400 text-sm mb-1">
                 Total Vouchers
               </div>
@@ -452,7 +592,7 @@ export function VouchersList({
                 {stats.total}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+            <div className="bg-linear-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
               <div className="text-purple-600 dark:text-purple-400 text-sm mb-1">
                 Assigned
               </div>
@@ -460,7 +600,7 @@ export function VouchersList({
                 {stats.assigned}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <div className="bg-linear-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
               <div className="text-green-600 dark:text-green-400 text-sm mb-1">
                 Redeemed
               </div>
@@ -468,7 +608,7 @@ export function VouchersList({
                 {stats.redeemed}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+            <div className="bg-linear-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
               <div className="text-orange-600 dark:text-orange-400 text-sm mb-1">
                 Remaining Balance
               </div>
@@ -476,7 +616,7 @@ export function VouchersList({
                 ₪{stats.totalBalance.toLocaleString()}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
+            <div className="bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
               <div className="text-gray-600 dark:text-gray-400 text-sm mb-1">
                 Expired
               </div>
@@ -484,7 +624,7 @@ export function VouchersList({
                 {stats.expired}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg p-4 border border-teal-200 dark:border-teal-800">
+            <div className="bg-linear-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg p-4 border border-teal-200 dark:border-teal-800">
               <div className="text-teal-600 dark:text-teal-400 text-sm mb-1">
                 Revenue
               </div>
@@ -499,7 +639,7 @@ export function VouchersList({
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             {/* Search */}
-            <div className="flex-1 min-w-[200px] max-w-md">
+            <div className="flex-1 min-w-50 max-w-md">
               <div className="flex-1 relative">
                 <SearchInput
                   placeholder={t("search_voucher_placeholder")}
@@ -754,169 +894,30 @@ export function VouchersList({
       </div>
 
       {/* Scrollable Table Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="px-6 py-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedVouchers.size === filteredVouchers.length &&
-                          filteredVouchers.length > 0
-                        }
-                        onChange={handleSelectAll}
-                        className="rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
-                      />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Voucher Code
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Assignee
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Contact
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Amount
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Remaining
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Expiration
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Campaign
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {allVouchers?.map((voucher: any) => (
-                    <tr
-                      key={voucher.id}
-                      onClick={() => onVoucherClick(voucher.id)}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedVouchers.has(voucher._id)}
-                          onChange={(e) => handleSelectVoucher(voucher._id, e)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                          {voucher.code}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                          {voucher?.assigneeInfo?.name}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={`mailto:${voucher.email}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                            title={voucher.email}
-                          >
-                            <Mail className="w-4 h-4" />
-                          </a>
-                          <a
-                            href={`tel:${voucher.phone}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                            title={voucher.phone}
-                          >
-                            <Phone className="w-4 h-4" />
-                          </a>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(voucher.status)}`}
-                        >
-                          {getStatusLabel(voucher.status)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                          ₪{voucher.amount}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-gray-100">
-                          ₪{voucher.remainingAmount}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-sm ${
-                              isExpired(voucher.expireDate)
-                                ? "text-red-600 dark:text-red-400"
-                                : isExpiringSoon(voucher.expireDate)
-                                  ? "text-orange-600 dark:text-orange-400"
-                                  : "text-gray-900 dark:text-gray-100"
-                            }`}
-                          >
-                            {voucher.expireDate}
-                          </span>
-                          {isExpiringSoon(voucher.expireDate) &&
-                            !isExpired(voucher.expireDate) && (
-                              <Clock
-                                className="w-4 h-4 text-orange-500"
-                                title="Expiring soon"
-                              />
-                            )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {voucher.campaign}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Show action menu
-                          }}
-                          className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredVouchers.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-gray-400">
-                  No vouchers found
-                </p>
-              </div>
-            )}
-          </div>
+      <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+        <div className="sticky">
+          <ReordableDataTable
+            rowKey="_id"
+            data={allVouchers}
+            isDataLoading={isLoading}
+            selectedItems={selectedVouchers}
+            onSelectionChange={setSelectedVouchers}
+            onRowClick={(voucher) => onVoucherClick(voucher)}
+            storageKey="businessesTableColumnOrder"
+            columns={columns}
+            // hasMore={hasMore}
+            // next={next}
+            t={t}
+          />
         </div>
+
+        {filteredVouchers.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400">
+              No vouchers found
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Message Composer Modal */}

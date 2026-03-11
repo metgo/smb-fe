@@ -58,6 +58,7 @@ export const endpoints = {
 
   //voucher
   vouchers: "/vouchers",
+  voucher: "/voucher-id",
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stat",
   bulkVouchersUpdate: "/bulk-vouchers-update",

@@ -33,7 +33,7 @@ export const voucherQueryApi = createApi({
 
     getVoucherById: builder.query<any, any>({
       query: ({ voucherId }) => ({
-        url: `${endpoints.vouchers}/${voucherId}`,
+        url: `${endpoints.voucher}/${voucherId}`,
         method: "GET",
       }),
     }),

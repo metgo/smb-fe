@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { VouchersList } from "./components/VouchersList";
-import { VoucherDetails } from "./components/VoucherDetails";
+import { VoucherDetailsPage } from "./components/VoucherDetailsPage";
 import { AddVoucherWizard } from "./components/AddVoucherWizard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
 
 export default function VouchersMgmtPage() {
@@ -11,20 +11,27 @@ export default function VouchersMgmtPage() {
   );
   const [showAddWizard, setShowAddWizard] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const navigate = useNavigate();
+
   const handleVoucherUpdated = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
-  // const handleVoucherClick = (voucherId: string) => {
-  //   setSelectedVoucherId(voucherId);
-  // };
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const voucherId = searchParams.get("voucherId");
+    if (voucherId) setSelectedVoucherId(voucherId);
+  }, [searchParams]);
+
   const handleVoucherClick = useCallback(
     (voucher: any) => {
-      navigate(`${routes.voucherDetails}?voucherId=${voucher?.id}`, {
+      navigate(`${routes.voucherDetails}?voucherId=${voucher?._id}`, {
         replace: true,
       });
     },
+
     [navigate],
   );
   const handleCloseDetails = () => {
@@ -64,8 +71,7 @@ export default function VouchersMgmtPage() {
 
         {/* Detail View - Conditional rendering for detail view */}
         {selectedVoucherId && (
-          <VoucherDetails
-            voucherId={selectedVoucherId}
+          <VoucherDetailsPage
             // language={language}
             // theme={theme}
             onClose={handleCloseDetails}

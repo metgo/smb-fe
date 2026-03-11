@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Mail,
@@ -16,9 +16,12 @@ import {
   Gift,
   TrendingUp,
 } from "lucide-react";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetVoucherByIdQuery } from "@/store/api/voucherQueryApi";
+import { useSearchParams } from "react-router-dom";
 
 interface VoucherDetailsProps {
-  voucherId: string;
+  // voucherId: string;
   // language: Language;
   // theme: Theme;
   onClose: () => void;
@@ -76,36 +79,49 @@ interface Transaction {
   status: "completed" | "pending" | "cancelled";
 }
 
-export function VoucherDetails({
-  voucherId,
+export function VoucherDetailsPage({
+  // voucherId,
 
   onClose,
-  onVoucherUpdated,
+  // onVoucherUpdated,
 }: VoucherDetailsProps) {
+  const [voucherId, setVoucherId] = useState("");
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const voucherId = searchParams.get("voucherId");
+    if (voucherId) setVoucherId(voucherId);
+  }, [searchParams]);
+  const {
+    data: voucher,
+    // refetch: voucherRefetch,
+    // isLoading,
+  } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
+  console.log("🚀 ~ VoucherDetailsPage ~ voucherDetail:", voucher);
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignee" | "timeline" | "transactions"
   >("overview");
 
   // Mock data
-  const voucher: VoucherDetail = {
-    id: voucherId,
-    code: "VCH-000042",
-    status: "assigned",
-    type: "monetary",
-    amount: 500,
-    remainingAmount: 350,
-    expirationDate: "2026-03-15",
-    campaign: "Summer Sale 2024",
-    websites: ["visitnegev.com", "explorenegev.il"],
-    paymentStatus: "completed",
-    assigneeName: "Sarah Cohen",
-    assigneeEmail: "sarah.cohen@example.com",
-    assigneePhone: "+972-54-1234567",
-    assignedAt: "2026-01-15T10:30:00Z",
-    createdAt: "2026-01-15T09:00:00Z",
-    creatorName: "Admin User",
-    creatorEmail: "admin@metgo.app",
-  };
+  // const voucher: VoucherDetail = {
+  //   id: voucherId,
+  //   code: "VCH-000042",
+  //   status: "assigned",
+  //   type: "monetary",
+  //   amount: 500,
+  //   remainingAmount: 350,
+  //   expirationDate: "2026-03-15",
+  //   campaign: "Summer Sale 2024",
+  //   websites: ["visitnegev.com", "explorenegev.il"],
+  //   paymentStatus: "completed",
+  //   assigneeName: "Sarah Cohen",
+  //   assigneeEmail: "sarah.cohen@example.com",
+  //   assigneePhone: "+972-54-1234567",
+  //   assignedAt: "2026-01-15T10:30:00Z",
+  //   createdAt: "2026-01-15T09:00:00Z",
+  //   creatorName: "Admin User",
+  //   creatorEmail: "admin@metgo.app",
+  // };
 
   const timeline: TimelineEvent[] = [
     {
@@ -260,18 +276,18 @@ export function VoucherDetails({
               </button>
               <div>
                 <h1 className="text-gray-900 dark:text-gray-100">
-                  {voucher.code}
+                  {voucher?.code}
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {voucher.campaign}
+                  {voucher?.campaign}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={`px-3 py-1 rounded-full text-sm ${getStatusColor(voucher.status)}`}
+                className={`px-3 py-1 rounded-full text-sm ${getStatusColor(voucher?.status)}`}
               >
-                {getStatusLabel(voucher.status)}
+                {getStatusLabel(voucher?.status)}
               </span>
             </div>
           </div>
@@ -339,7 +355,7 @@ export function VoucherDetails({
                         Voucher Code
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {voucher.code}
+                        {voucher?.code}
                       </div>
                     </div>
                     <div>
@@ -347,7 +363,7 @@ export function VoucherDetails({
                         Type
                       </label>
                       <div className="text-gray-900 dark:text-gray-100 capitalize">
-                        {voucher.type}
+                        {voucher?.type}
                       </div>
                     </div>
                     <div>
@@ -355,7 +371,7 @@ export function VoucherDetails({
                         Campaign
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {voucher.campaign}
+                        {voucher?.campaign}
                       </div>
                     </div>
                     <div>
@@ -364,15 +380,15 @@ export function VoucherDetails({
                       </label>
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                          voucher.paymentStatus === "completed"
+                          voucher?.paymentStatus === "completed"
                             ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                            : voucher.paymentStatus === "refunded"
+                            : voucher?.paymentStatus === "refunded"
                               ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
                               : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
                         }`}
                       >
-                        {voucher.paymentStatus.charAt(0).toUpperCase() +
-                          voucher.paymentStatus.slice(1)}
+                        {voucher?.paymentStatus?.charAt(0).toUpperCase() +
+                          voucher?.paymentStatus?.slice(1)}
                       </span>
                     </div>
                   </div>
@@ -388,7 +404,7 @@ export function VoucherDetails({
                         Original Amount
                       </label>
                       <div className="text-2xl text-gray-900 dark:text-gray-100">
-                        ₪{voucher.amount}
+                        ₪{voucher?.amount}
                       </div>
                     </div>
                     <div>
@@ -396,7 +412,7 @@ export function VoucherDetails({
                         Remaining Amount
                       </label>
                       <div className="text-2xl text-teal-600 dark:text-teal-400">
-                        ₪{voucher.remainingAmount}
+                        ₪{voucher?.remainingAmount}
                       </div>
                     </div>
                     <div>
@@ -404,7 +420,7 @@ export function VoucherDetails({
                         Used Amount
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        ₪{voucher.amount - voucher.remainingAmount}
+                        ₪{voucher?.amount - voucher?.remainingAmount}
                       </div>
                     </div>
                   </div>
@@ -421,24 +437,24 @@ export function VoucherDetails({
                       </label>
                       <div
                         className={`flex items-center gap-2 ${
-                          isExpired(voucher.expirationDate)
+                          isExpired(voucher?.expireDate)
                             ? "text-red-600 dark:text-red-400"
-                            : isExpiringSoon(voucher.expirationDate)
+                            : isExpiringSoon(voucher?.expireDate)
                               ? "text-orange-600 dark:text-orange-400"
                               : "text-gray-900 dark:text-gray-100"
                         }`}
                       >
                         <Calendar className="w-5 h-5" />
-                        <span>{voucher.expirationDate}</span>
+                        <span>{voucher?.expireDate}</span>
                       </div>
-                      {isExpiringSoon(voucher.expirationDate) &&
-                        !isExpired(voucher.expirationDate) && (
+                      {isExpiringSoon(voucher?.expireDate) &&
+                        !isExpired(voucher?.expireDate) && (
                           <div className="mt-2 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             Expiring soon (≤30 days)
                           </div>
                         )}
-                      {isExpired(voucher.expirationDate) && (
+                      {isExpired(voucher?.expireDate) && (
                         <div className="mt-2 text-xs text-red-600 dark:text-red-400">
                           This voucher has expired
                         </div>
@@ -456,7 +472,7 @@ export function VoucherDetails({
                     Applicable Websites
                   </h3>
                   <div className="space-y-2">
-                    {voucher.websites.map((website, index) => (
+                    {voucher?.websites?.map((website: any, index: any) => (
                       <div
                         key={index}
                         className="flex items-center gap-2 text-gray-900 dark:text-gray-100"
@@ -485,7 +501,7 @@ export function VoucherDetails({
                         Name
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {voucher.assigneeName}
+                        {voucher?.assigneeName}
                       </div>
                     </div>
                     <div>
@@ -493,11 +509,11 @@ export function VoucherDetails({
                         Email
                       </label>
                       <a
-                        href={`mailto:${voucher.assigneeEmail}`}
+                        href={`mailto:${voucher?.assigneeEmail}`}
                         className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-2"
                       >
                         <Mail className="w-4 h-4" />
-                        {voucher.assigneeEmail}
+                        {voucher?.assigneeEmail}
                       </a>
                     </div>
                     <div>
@@ -505,11 +521,11 @@ export function VoucherDetails({
                         Phone
                       </label>
                       <a
-                        href={`tel:${voucher.assigneePhone}`}
+                        href={`tel:${voucher?.assigneePhone}`}
                         className="text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-2"
                       >
                         <Phone className="w-4 h-4" />
-                        {voucher.assigneePhone}
+                        {voucher?.assigneePhone}
                       </a>
                     </div>
                     <div>
@@ -517,7 +533,7 @@ export function VoucherDetails({
                         Assigned At
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {formatDate(voucher.assignedAt)}
+                        {formatDate(voucher?.assignedAt)}
                       </div>
                     </div>
                   </div>
@@ -533,7 +549,7 @@ export function VoucherDetails({
                         Created By
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {voucher.creatorName}
+                        {voucher?.creatorName}
                       </div>
                     </div>
                     <div>
@@ -541,7 +557,7 @@ export function VoucherDetails({
                         Creator Email
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {voucher.creatorEmail}
+                        {voucher?.creatorEmail}
                       </div>
                     </div>
                     <div>
@@ -549,7 +565,7 @@ export function VoucherDetails({
                         Created At
                       </label>
                       <div className="text-gray-900 dark:text-gray-100">
-                        {formatDate(voucher.createdAt)}
+                        {formatDate(voucher?.createdAt)}
                       </div>
                     </div>
                     <div>
