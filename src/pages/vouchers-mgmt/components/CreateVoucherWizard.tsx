@@ -22,6 +22,7 @@ import { WizardFooter } from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { PublishButton } from "@/components/btns";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface AddVoucherWizardProps {
   // language: Language;
@@ -110,7 +111,7 @@ export function AddVoucherWizard({
 }: AddVoucherWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const { isDark } = useThemeClasses();
   const totalSteps = 5;
   const { t } = useTranslation("businesses");
   const [formData, setFormData] = useState<VoucherFormData>({
@@ -1330,15 +1331,15 @@ export function AddVoucherWizard({
               >
                 <div className="flex flex-col items-center">
                   <div
-                  // className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  //   currentStep > step.id
-                  //     ? 'bg-green-500 text-white'
-                  //     : currentStep === step.id
-                  //     ? 'bg-teal-500 text-white'
-                  //     // : theme === 'dark'
-                  //     // ? 'bg-gray-800 text-gray-500'
-                  //     // : 'bg-gray-200 text-gray-400'
-                  // }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      currentStep > step.id
+                        ? "bg-green-500 text-white"
+                        : currentStep === step.id
+                          ? "bg-teal-500 text-white"
+                          : isDark
+                            ? "bg-gray-800 text-gray-500"
+                            : "bg-gray-200 text-gray-400"
+                    }`}
                   >
                     {currentStep > step.id ? (
                       <Check className="w-5 h-5 bg-green-500" />
