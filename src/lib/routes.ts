@@ -17,6 +17,7 @@ export const routes = {
 
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
+  voucherDetails: "/voucher-details",
 
   pointOfInterest: "/point-of-interest",
   trips: "/trips",

@@ -21,16 +21,24 @@ import { MessageComposerModal } from "@/pages/content-mgmt/components";
 import { SendResultsModal } from "@/pages/content-mgmt/components";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
-import { PageHeader } from "@/components/shared";
+import { PageHeader, SearchInput } from "@/components/shared";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { FilterButton } from "@/components/btns";
+import { useGetAllVouchersQuery } from "@/store/api/voucherQueryApi";
 interface Voucher {
   id: string;
   code: string;
   assigneeName: string;
   email: string;
   phone: string;
-  status: "active" | "assigned" | "redeemed" | "expired" | "cancelled";
+  status:
+    | "active"
+    | "assigned"
+    | "redeemed"
+    | "expired"
+    | "cancelled"
+    | "UNASSIGNED";
   amount: number;
   remainingAmount: number;
   expirationDate: string;
@@ -57,6 +65,8 @@ const generateMockVouchers = (): Voucher[] => {
   const statuses: Voucher["status"][] = [
     "active",
     "assigned",
+    "UNASSIGNED",
+
     "redeemed",
     "expired",
     "cancelled",
@@ -149,8 +159,18 @@ export function VouchersList({
   onAddVoucher,
   refreshTrigger,
 }: VouchersListProps) {
-  const { textPrimary, textSecondary, inputClasses, textTertiary, isDark } =
-    useThemeClasses();
+  const { textPrimary } = useThemeClasses();
+  const SEARCH_STORAGE_KEY = "voucherSearchTerm";
+
+  const {
+    data: voucherData,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetAllVouchersQuery({});
+  const allVouchers = voucherData?.datas?.data;
+  console.log("🚀 ~ VouchersList ~ voucherData:", voucherData);
+
   const [vouchers] = useState<Voucher[]>(generateMockVouchers());
   const [selectedVouchers, setSelectedVouchers] = useState<Set<string>>(
     new Set(),
@@ -480,41 +500,19 @@ export function VouchersList({
           <div className="flex items-center justify-between gap-4 flex-wrap">
             {/* Search */}
             <div className="flex-1 min-w-[200px] max-w-md">
-              <div className="relative">
-                <Search
-                  className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500`}
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by code, assignee name, email..."
-                  className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-teal-500 outline-none`}
+              <div className="flex-1 relative">
+                <SearchInput
+                  placeholder={t("search_voucher_placeholder")}
+                  searchTerm={searchQuery}
+                  setSearchTerm={setSearchQuery}
+                  storageKey={SEARCH_STORAGE_KEY}
                 />
               </div>
             </div>
 
             {/* Right Section */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
-                  showFilters
-                    ? "bg-teal-50 dark:bg-teal-950 border-teal-500 text-teal-600 dark:text-teal-400"
-                    : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
-              >
-                <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Filters</span>
-              </button>
-
-              <button
-                onClick={onAddVoucher}
-                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Add Voucher</span>
-              </button>
+              <FilterButton value={showFilters} onChange={setShowFilters} />
             </div>
           </div>
         </div>
@@ -804,7 +802,7 @@ export function VouchersList({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {filteredVouchers.map((voucher) => (
+                  {allVouchers?.map((voucher: any) => (
                     <tr
                       key={voucher.id}
                       onClick={() => onVoucherClick(voucher.id)}
@@ -813,8 +811,8 @@ export function VouchersList({
                       <td className="px-4 py-3">
                         <input
                           type="checkbox"
-                          checked={selectedVouchers.has(voucher.id)}
-                          onChange={(e) => handleSelectVoucher(voucher.id, e)}
+                          checked={selectedVouchers.has(voucher._id)}
+                          onChange={(e) => handleSelectVoucher(voucher._id, e)}
                           onClick={(e) => e.stopPropagation()}
                           className="rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
                         />
@@ -826,7 +824,7 @@ export function VouchersList({
                       </td>
                       <td className="px-4 py-3">
                         <div className="text-sm text-gray-900 dark:text-gray-100">
-                          {voucher.assigneeName}
+                          {voucher?.assigneeInfo?.name}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -870,17 +868,17 @@ export function VouchersList({
                         <div className="flex items-center gap-2">
                           <span
                             className={`text-sm ${
-                              isExpired(voucher.expirationDate)
+                              isExpired(voucher.expireDate)
                                 ? "text-red-600 dark:text-red-400"
-                                : isExpiringSoon(voucher.expirationDate)
+                                : isExpiringSoon(voucher.expireDate)
                                   ? "text-orange-600 dark:text-orange-400"
                                   : "text-gray-900 dark:text-gray-100"
                             }`}
                           >
-                            {voucher.expirationDate}
+                            {voucher.expireDate}
                           </span>
-                          {isExpiringSoon(voucher.expirationDate) &&
-                            !isExpired(voucher.expirationDate) && (
+                          {isExpiringSoon(voucher.expireDate) &&
+                            !isExpired(voucher.expireDate) && (
                               <Clock
                                 className="w-4 h-4 text-orange-500"
                                 title="Expiring soon"

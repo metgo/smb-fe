@@ -56,6 +56,12 @@ export const endpoints = {
   events: "/events",
   eventsStats: "/events-stats",
 
+  //voucher
+  vouchers: "/vouchers",
+  searchVoucher: "/search-vouchers",
+  voucherStatDashboard: "/vouchers-stat",
+  bulkVouchersUpdate: "/bulk-vouchers-update",
+
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",

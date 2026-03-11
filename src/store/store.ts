@@ -11,6 +11,8 @@ import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
 import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
+import { voucherMutationApi } from "./api/voucherMutationApi";
+import { voucherQueryApi } from "./api/voucherQueryApi";
 import { eventQueryApi } from "./api/eventQueryApi";
 import { orderQueryApi } from "./api/orderQueryApi";
 import { orderMutationApi } from "./api/orderMutationApi";
@@ -55,6 +57,9 @@ export const store = configureStore({
 
     [contentQueryApi.reducerPath]: contentQueryApi.reducer,
     [contentMutationApi.reducerPath]: contentMutationApi.reducer,
+    [voucherMutationApi.reducerPath]: voucherMutationApi.reducer,
+
+    [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -73,9 +78,12 @@ export const store = configureStore({
       mediaMutationApi.middleware,
       productMutationApi.middleware,
       productQueryApi.middleware,
+
       commonMutationApi.middleware,
       contentMutationApi.middleware,
       contentQueryApi.middleware,
+      voucherMutationApi.middleware,
+      voucherQueryApi.middleware,
     ),
 });
 

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { VouchersList } from "./components/VouchersList";
 import { VoucherDetails } from "./components/VoucherDetails";
 import { AddVoucherWizard } from "./components/AddVoucherWizard";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/lib/routes";
 
 export default function VouchersMgmtPage() {
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
@@ -9,15 +11,22 @@ export default function VouchersMgmtPage() {
   );
   const [showAddWizard, setShowAddWizard] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
+  const navigate = useNavigate();
   const handleVoucherUpdated = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
 
-  const handleVoucherClick = (voucherId: string) => {
-    setSelectedVoucherId(voucherId);
-  };
-
+  // const handleVoucherClick = (voucherId: string) => {
+  //   setSelectedVoucherId(voucherId);
+  // };
+  const handleVoucherClick = useCallback(
+    (voucher: any) => {
+      navigate(`${routes.voucherDetails}?voucherId=${voucher?.id}`, {
+        replace: true,
+      });
+    },
+    [navigate],
+  );
   const handleCloseDetails = () => {
     setSelectedVoucherId(null);
   };
