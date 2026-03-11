@@ -7,7 +7,7 @@ import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
 import { ModalWrapper } from "@/components/wrapper";
 import {
-  useUpdateOrderConfirmationMutation,
+  useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
   useUpdateProductOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
@@ -51,8 +51,10 @@ function OrderDetailsModal({
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
   const [updateProductOrderStatus] = useUpdateProductOrderStatusMutation();
-  const [updateOrderConfirmation, { isLoading: isSendingEmail }] =
-    useUpdateOrderConfirmationMutation();
+
+  const [bulkOrdersUpdate, { isLoading: isSendingEmail }] =
+    useBulkOrdersUpdateMutation();
+
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
@@ -60,9 +62,8 @@ function OrderDetailsModal({
 
   const handleResendNotification = async () => {
     try {
-      await updateOrderConfirmation({
-        orderId: order?._id,
-        body: {},
+      await bulkOrdersUpdate({
+        ordersId: Array(order?._id),
       }).unwrap();
       toast.success(t("email_sent"));
     } catch (error) {

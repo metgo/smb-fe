@@ -273,9 +273,10 @@ export default function OrdersMgmtPage() {
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
-  const hasMore = orders?.datas?.meta?.hasNextPage;
-  const totalData = orders?.datas?.totalData;
-  const orderss = orders?.datas?.data ?? [];
+  const hasMore = orders?.meta?.hasNextPage;
+  const totalData = orders?.totalData;
+  const orderss = orders?.data ?? [];
+  console.log("🚀 ~ OrdersMgmtPage ~ orderss:", orderss);
   useEffect(() => {
     if (!orderss?.length) return;
 
@@ -292,51 +293,6 @@ export default function OrdersMgmtPage() {
     }
   }, [orderss, page]);
 
-  // const handleBulkDelete = async () => {
-  //   if (!selectedOrders.size) return;
-  //   const toastId = toast.loading("Please wait. Orders are deleting...");
-  //   try {
-  //     const results = await bulkOrdersUpdate({
-  //       ordersId: Array.from(selectedOrders),
-  //       isDeleted: true,
-  //     });
-
-  //     if (results?.data) {
-  //       const message = "Orders deleted successfully";
-  //       toast.success(message, { id: toastId });
-  //       setSelectedOrders(new Set());
-  //       refetch();
-  //     }
-  //   } catch (error: any) {
-  //     toast.error(error?.message || "Failed to delete Orders", {
-  //       id: toastId,
-  //     });
-  //   }
-  // };
-  // const handleBulkStatusChange = async (status: TStatus) => {
-  //   if (!selectedOrders.size) return;
-  //   const toastId = toast.loading(
-  //     "Please wait. Order's status are changing...",
-  //   );
-
-  //   try {
-  //     const results = await bulkOrdersUpdate({
-  //       ordersId: Array.from(selectedOrders),
-  //       status: status?.toLocaleUpperCase(),
-  //     });
-
-  //     if (results?.data) {
-  //       const message = "Orders status updated successfully";
-  //       toast.success(message, { id: toastId });
-  //       setSelectedOrders(new Set());
-  //       refetch();
-  //     }
-  //   } catch (error: any) {
-  //     toast.error(error?.message || "Failed to change Orders status", {
-  //       id: toastId,
-  //     });
-  //   }
-  // };
   const defaultFilters = {
     orderType: "all",
     deliveryType: "all",
@@ -645,7 +601,6 @@ export default function OrdersMgmtPage() {
     try {
       const results = await bulkOrdersUpdate({
         ordersId: Array.from(selectedOrders),
-        isResend: true,
       });
 
       if (results?.data) {
