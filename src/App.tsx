@@ -17,6 +17,7 @@ import {
   EventsMgmtPage,
   ProfilePage,
   OrdersMgmtPage,
+  VouchersMgmtPage,
   EventDetailsPage,
   BusinessDetailsPage,
   ProductDetailsPage,
@@ -144,6 +145,7 @@ function App() {
         { path: routes.eventDetails, element: <EventDetailsPage /> },
         { path: routes.productDetails, element: <ProductDetailsPage /> },
         { path: routes.contentMgmt, element: <ContentMgmtPage /> },
+        { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
 
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },

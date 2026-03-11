@@ -11,7 +11,7 @@ import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
 import ErrorUiPage from "./error-ui";
 import AnalyticsDashboardPage from "./analytics-dashboard";
-
+import VouchersMgmtPage from "./vouchers-mgmt";
 export {
   AuthPage,
   ErrorUiPage,
@@ -26,4 +26,5 @@ export {
   OrdersMgmtPage,
   AnalyticsDashboardPage,
   ContentMgmtPage,
+  VouchersMgmtPage,
 };
