@@ -12,8 +12,7 @@ import ContentMgmtPage from "./content-mgmt";
 import ErrorUiPage from "./error-ui";
 import AnalyticsDashboardPage from "./analytics-dashboard";
 import VouchersMgmtPage from "./vouchers-mgmt";
-
-import { VoucherDetailsPage } from "./vouchers-mgmt/components/VoucherDetailsPage";
+import { VoucherDetailsPage } from "./vouchers-mgmt/details/VoucherDetailsPage";
 export {
   AuthPage,
   ErrorUiPage,

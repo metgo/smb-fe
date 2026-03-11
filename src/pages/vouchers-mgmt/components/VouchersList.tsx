@@ -21,6 +21,7 @@ import {
   ReordableDataTable,
   SearchInput,
 } from "@/components/shared";
+import { getStatusColor, getStatusLabel } from "@/helpers";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
@@ -160,134 +161,165 @@ export function VouchersList({
   // refreshTrigger,
 }: VouchersListProps) {
   const { textPrimary } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
+
   const SEARCH_STORAGE_KEY = "voucherSearchTerm";
   // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
+  const { t } = useTranslation("events");
+
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
     {
       key: "code",
-      label: "Code",
+      label: t("code"),
       sortable: true,
       render: (voucher: any) => (
-        <span className="text-sm text-gray-900 dark:text-gray-100">
+        <span
+          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+        >
           {voucher.code}
         </span>
       ),
     },
-    {
-      key: "amount",
-      label: "Amount",
-      sortable: true,
-      render: (voucher: any) => (
-        <span className="text-sm text-gray-900 dark:text-gray-100">
-          {voucher.amount}
-        </span>
-      ),
-    },
+
     {
       key: "assignee",
-      label: "Assignee",
+      label: t("assignee"),
       sortable: true,
       render: (voucher: any) => (
-        <span className="text-sm text-gray-900 dark:text-gray-100">
+        <span
+          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+        >
           {voucher?.assigneeInfo?.name || "-"}
         </span>
       ),
     },
+
     {
       key: "contact",
-      label: "Contact",
+      label: t("contact"),
       sortable: false,
       render: (voucher: any) => (
         <div className="flex items-center gap-2">
-          <a
-            href={`mailto:${voucher.email}`}
-            onClick={(e) => e.stopPropagation()}
-            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-            title={voucher.email}
-          >
-            <Mail className="w-4 h-4" />
-          </a>
-          <a
-            href={`tel:${voucher.phone}`}
-            onClick={(e) => e.stopPropagation()}
-            className="p-1 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-            title={voucher.phone}
-          >
-            <Phone className="w-4 h-4" />
-          </a>
+          {voucher.email && (
+            <a
+              href={`mailto:${voucher.email}`}
+              onClick={(e) => e.stopPropagation()}
+              className={`p-1 transition-colors ${
+                isDark
+                  ? "text-gray-400 hover:text-teal-400"
+                  : "text-gray-600 hover:text-teal-600"
+              }`}
+              title={voucher.email}
+            >
+              <Mail className="w-4 h-4" />
+            </a>
+          )}
+          {voucher.phone && (
+            <a
+              href={`tel:${voucher.phone}`}
+              onClick={(e) => e.stopPropagation()}
+              className={`p-1 transition-colors ${
+                isDark
+                  ? "text-gray-400 hover:text-teal-400"
+                  : "text-gray-600 hover:text-teal-600"
+              }`}
+              title={voucher.phone}
+            >
+              <Phone className="w-4 h-4" />
+            </a>
+          )}
         </div>
       ),
     },
+
     {
       key: "status",
-      label: "Status",
+      label: t("status"),
       sortable: true,
       render: (voucher: any) => (
         <span
-          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(voucher.status)}`}
+          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
+            voucher.status,
+            isDark,
+          )}`}
         >
-          {getStatusLabel(voucher.status)}
+          {getStatusLabel(voucher.status, t)}
         </span>
       ),
     },
+
     {
       key: "amount",
-      label: "Amount",
+      label: t("amount"),
       sortable: true,
       render: (voucher: any) => (
-        <span className="text-sm text-gray-900 dark:text-gray-100">
+        <span
+          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+        >
           ₪{voucher.amount}
         </span>
       ),
     },
+
     {
       key: "remainingAmount",
-      label: "Remaining",
+      label: t("remaining"),
       sortable: true,
       render: (voucher: any) => (
-        <span className="text-sm text-gray-900 dark:text-gray-100">
+        <span
+          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+        >
           ₪{voucher.remainingAmount}
         </span>
       ),
     },
+
     {
       key: "expireDate",
-      label: "Expiry",
+      label: t("expiry"),
       sortable: true,
-      render: (voucher: any) => (
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-sm ${
-              isExpired(voucher.expireDate)
-                ? "text-red-600 dark:text-red-400"
-                : isExpiringSoon(voucher.expireDate)
-                  ? "text-orange-600 dark:text-orange-400"
-                  : "text-gray-900 dark:text-gray-100"
-            }`}
-          >
-            {voucher.expireDate}
-          </span>
-          {isExpiringSoon(voucher.expireDate) &&
-            !isExpired(voucher.expireDate) && (
+      render: (voucher: any) => {
+        const expired = isExpired(voucher.expireDate);
+        const expiringSoon = isExpiringSoon(voucher.expireDate);
+        const textColor = expired
+          ? isDark
+            ? "text-red-400"
+            : "text-red-600"
+          : expiringSoon
+            ? isDark
+              ? "text-orange-400"
+              : "text-orange-600"
+            : isDark
+              ? "text-gray-100"
+              : "text-gray-900";
+
+        return (
+          <div className="flex items-center gap-2">
+            <span className={`text-sm ${textColor}`}>{voucher.expireDate}</span>
+            {expiringSoon && !expired && (
               <Clock
-                className="w-4 h-4 text-orange-500"
-                title="Expiring soon"
+                className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
+                title={t("expiring_soon")}
               />
             )}
-        </div>
-      ),
+          </div>
+        );
+      },
     },
+
     {
       key: "campaign",
-      label: "Campaign",
+      label: t("campaign"),
       sortable: true,
       render: (voucher: any) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span
+          className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+        >
           {voucher.campaign || "-"}
         </span>
       ),
@@ -306,6 +338,7 @@ export function VouchersList({
     // refetch,
   } = useGetAllVouchersQuery({});
   const allVouchers = voucherData?.datas?.data;
+  const totalData = voucherData?.datas?.totalData;
   console.log("🚀 ~ VouchersList ~ voucherData:", voucherData);
 
   const [vouchers] = useState<Voucher[]>(generateMockVouchers());
@@ -446,37 +479,6 @@ export function VouchersList({
   //   setSelectedVouchers(newSelected);
   // };
 
-  const getStatusColor = (status: Voucher["status"]) => {
-    switch (status) {
-      case "active":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "assigned":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      case "UNASSIGNED":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      case "redeemed":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      case "expired":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-      case "cancelled":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  };
-
-  const getStatusLabel = (status: Voucher["status"]) => {
-    const labels = {
-      active: "Active",
-      assigned: "Assigned",
-      redeemed: "Redeemed",
-      expired: "Expired",
-      cancelled: "Cancelled",
-      UNASSIGNED: "UNASSIGNED",
-    };
-    return labels[status];
-  };
-
   const isExpiringSoon = (date: string) => {
     const daysUntilExpiry = Math.floor(
       (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
@@ -487,7 +489,6 @@ export function VouchersList({
   const isExpired = (date: string) => {
     return new Date(date) < new Date();
   };
-  const { t } = useTranslation("events");
   const [messageComposerOpen, setMessageComposerOpen] = useState(false);
   const [sendResultsOpen, setSendResultsOpen] = useState(false);
   const [sendResults, setSendResults] = useState([]);
@@ -564,93 +565,106 @@ export function VouchersList({
   };
 
   return (
-    <div className={`flex-1 flex flex-col transition-all duration-300 `}>
+    <div className={`flex-1 flex flex-col transition-all duration-300`}>
       {/* Fixed Header Section */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div className={`sticky top-0 z-10 border-b transition-colors `}>
         {/* Page Title and Actions */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+        <div
+          className={`px-6 py-4 border-b transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
+        >
           <PageHeader
-            title={t("Vouchers Management")}
-            description={t(
-              "                Create, track, and manage vouchers across all tourism websites",
-            )}
+            title={t("vouchers_management")}
+            description={t("create_track_manage_vouchers")}
             btnLabel={t("add_voucher")}
             h1Gradient={textPrimary}
             onClick={onAddVoucher}
-            // totalCount={events?.totalData || 0}
+            totalCount={totalData || 0}
           />
         </div>
 
         {/* Statistics Cards */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="px-6 py-4 border-b transition-colors dark:border-gray-800">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-              <div className="text-blue-600 dark:text-blue-400 text-sm mb-1">
-                Total Vouchers
+            {[
+              {
+                label: "total_vouchers",
+                value: stats.total,
+                from: "blue-50",
+                to: "blue-100",
+                text: "blue",
+                border: "blue",
+              },
+              {
+                label: "assigned",
+                value: stats.assigned,
+                from: "purple-50",
+                to: "purple-100",
+                text: "purple",
+                border: "purple",
+              },
+              {
+                label: "redeemed",
+                value: stats.redeemed,
+                from: "green-50",
+                to: "green-100",
+                text: "green",
+                border: "green",
+              },
+              {
+                label: "remaining_balance",
+                value: stats.totalBalance.toLocaleString(),
+                from: "orange-50",
+                to: "orange-100",
+                text: "orange",
+                border: "orange",
+              },
+              {
+                label: "expired",
+                value: stats.expired,
+                from: "gray-50",
+                to: "gray-100",
+                text: "gray",
+                border: "gray",
+              },
+              {
+                label: "revenue",
+                value: stats.revenue.toLocaleString(),
+                from: "teal-50",
+                to: "teal-100",
+                text: "teal",
+                border: "teal",
+              },
+            ].map((card, idx) => (
+              <div
+                key={idx}
+                className={`bg-linear-to-br from-${card.from} to-${card.to} dark:from-${card.text}-900/20 dark:to-${card.text}-800/20 rounded-lg p-4 border transition-colors ${isDark ? `border-${card.border}-800` : `border-${card.border}-200`}`}
+              >
+                <div
+                  className={`text-sm mb-1 ${isDark ? `text-${card.text}-400` : `text-${card.text}-600`}`}
+                >
+                  {t(card.label)}
+                </div>
+                <div
+                  className={`text-2xl ${isDark ? `text-${card.text}-100` : `text-${card.text}-900`}`}
+                >
+                  {card.value}
+                </div>
               </div>
-              <div className="text-blue-900 dark:text-blue-100 text-2xl">
-                {stats.total}
-              </div>
-            </div>
-            <div className="bg-linear-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-              <div className="text-purple-600 dark:text-purple-400 text-sm mb-1">
-                Assigned
-              </div>
-              <div className="text-purple-900 dark:text-purple-100 text-2xl">
-                {stats.assigned}
-              </div>
-            </div>
-            <div className="bg-linear-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-              <div className="text-green-600 dark:text-green-400 text-sm mb-1">
-                Redeemed
-              </div>
-              <div className="text-green-900 dark:text-green-100 text-2xl">
-                {stats.redeemed}
-              </div>
-            </div>
-            <div className="bg-linear-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
-              <div className="text-orange-600 dark:text-orange-400 text-sm mb-1">
-                Remaining Balance
-              </div>
-              <div className="text-orange-900 dark:text-orange-100 text-2xl">
-                ₪{stats.totalBalance.toLocaleString()}
-              </div>
-            </div>
-            <div className="bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
-              <div className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-                Expired
-              </div>
-              <div className="text-gray-900 dark:text-gray-100 text-2xl">
-                {stats.expired}
-              </div>
-            </div>
-            <div className="bg-linear-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg p-4 border border-teal-200 dark:border-teal-800">
-              <div className="text-teal-600 dark:text-teal-400 text-sm mb-1">
-                Revenue
-              </div>
-              <div className="text-teal-900 dark:text-teal-100 text-2xl">
-                ₪{stats.revenue.toLocaleString()}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Search and Filter Toolbar */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+        {/* Search and Filters */}
+        <div className="px-6 py-4 border-b transition-colors dark:border-gray-800">
           <div className="flex items-center justify-between gap-4 flex-wrap">
-            {/* Search */}
-            <div className="flex-1 min-w-50 max-w-md">
-              <div className="flex-1 relative">
-                <SearchInput
-                  placeholder={t("search_voucher_placeholder")}
-                  searchTerm={searchQuery}
-                  setSearchTerm={setSearchQuery}
-                  storageKey={SEARCH_STORAGE_KEY}
-                />
-              </div>
+            <div className="relative w-[50vh]">
+              <SearchInput
+                placeholder={t("search_voucher_placeholder")}
+                searchTerm={searchQuery}
+                setSearchTerm={setSearchQuery}
+                storageKey={SEARCH_STORAGE_KEY}
+              />
             </div>
-
-            {/* Right Section */}
             <div className="flex items-center gap-2">
               <FilterButton value={showFilters} onChange={setShowFilters} />
             </div>
@@ -659,62 +673,79 @@ export function VouchersList({
 
         {/* Filters Section */}
         {showFilters && (
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+          <div
+            className={`px-6 py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Status Filter */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Status
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("status")}
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="active">Active</option>
-                  <option value="assigned">Assigned</option>
-                  <option value="redeemed">Redeemed</option>
-                  <option value="expired">Expired</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="all">{t("all_statuses")}</option>
+                  <option value="active">{t("active")}</option>
+                  <option value="assigned">{t("assigned")}</option>
+                  <option value="redeemed">{t("redeemed")}</option>
+                  <option value="expired">{t("expired")}</option>
+                  <option value="cancelled">{t("cancelled")}</option>
                 </select>
               </div>
+
+              {/* Campaign Filter */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Campaign
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("campaign")}
                 </label>
                 <select
                   value={campaignFilter}
                   onChange={(e) => setCampaignFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 >
-                  <option value="all">All Campaigns</option>
-                  {campaigns.map((campaign) => (
-                    <option key={campaign} value={campaign}>
-                      {campaign}
+                  <option value="all">{t("all_campaigns")}</option>
+                  {campaigns.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* Website Filter */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Website
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("website")}
                 </label>
                 <select
                   value={websiteFilter}
                   onChange={(e) => setWebsiteFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 >
-                  <option value="all">All Websites</option>
-                  {websites.map((website) => (
-                    <option key={website} value={website}>
-                      {website}
+                  <option value="all">{t("all_websites")}</option>
+                  {websites.map((w) => (
+                    <option key={w} value={w}>
+                      {w}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* Amount Range */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Amount Range
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("amount_range")}
                 </label>
                 <div className="space-y-2">
                   <div className="relative pt-1">
@@ -724,15 +755,10 @@ export function VouchersList({
                       max={amountRange.max}
                       value={minAmount}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value <= maxAmount) {
-                          setMinAmount(value);
-                        }
+                        const val = parseInt(e.target.value);
+                        if (val <= maxAmount) setMinAmount(val);
                       }}
                       className="absolute w-full h-2 bg-transparent appearance-none z-20 cursor-pointer"
-                      style={{
-                        background: "transparent",
-                      }}
                     />
                     <input
                       type="range"
@@ -740,17 +766,14 @@ export function VouchersList({
                       max={amountRange.max}
                       value={maxAmount}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value >= minAmount) {
-                          setMaxAmount(value);
-                        }
+                        const val = parseInt(e.target.value);
+                        if (val >= minAmount) setMaxAmount(val);
                       }}
                       className="absolute w-full h-2 bg-transparent appearance-none z-10 cursor-pointer"
-                      style={{
-                        background: "transparent",
-                      }}
                     />
-                    <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                    <div
+                      className={`relative h-2 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`}
+                    >
                       <div
                         className="absolute h-2 bg-teal-500 rounded-full"
                         style={{
@@ -760,44 +783,56 @@ export function VouchersList({
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
+                  <div
+                    className={`flex items-center justify-between text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                  >
                     <span>₪{minAmount}</span>
                     <span>₪{maxAmount}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Date Range */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Date Range
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("date_range")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-1/2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                    className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                   />
                   <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-1/2 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                    className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                   />
                 </div>
               </div>
+
+              {/* Creator Search */}
               <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  Creator Search
+                <label
+                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                >
+                  {t("creator_search")}
                 </label>
                 <input
                   type="text"
                   value={creatorSearch}
                   onChange={(e) => setCreatorSearch(e.target.value)}
-                  placeholder="Name..."
-                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                  placeholder={t("creator_name_placeholder")}
+                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 />
               </div>
             </div>
+
+            {/* Clear All Filters Button */}
             {(statusFilter !== "all" ||
               campaignFilter !== "all" ||
               websiteFilter !== "all" ||
@@ -820,30 +855,34 @@ export function VouchersList({
                     setDateTo("");
                     setCreatorSearch("");
                   }}
-                  className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1"
+                  className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
                 >
                   <X className="w-4 h-4" />
-                  Clear all filters
+                  {t("clear_all_filters")}
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Bulk Actions Bar */}
+        {/* Bulk Actions */}
         {selectedVouchers.size > 0 && (
-          <div className="px-6 py-3 bg-teal-50 dark:bg-teal-900/20 border-b border-teal-200 dark:border-teal-800">
+          <div
+            className={`px-6 py-3 transition-colors border-b ${isDark ? "bg-teal-900/20 border-teal-800" : "bg-teal-50 border-teal-200"}`}
+          >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-teal-900 dark:text-teal-100">
-                {selectedVouchers.size} voucher
-                {selectedVouchers.size !== 1 ? "s" : ""} selected
+              <span
+                className={`text-sm ${isDark ? "text-teal-100" : "text-teal-900"}`}
+              >
+                {selectedVouchers.size} {t("voucher")}
+                {selectedVouchers.size !== 1 ? t("plural_s") : ""}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowBulkActions(!showBulkActions)}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
                 >
-                  <span>Actions</span>
+                  <span>{t("actions")}</span>
                   {showBulkActions ? (
                     <ChevronUp className="w-4 h-4" />
                   ) : (
@@ -852,40 +891,42 @@ export function VouchersList({
                 </button>
                 <button
                   onClick={() => setSelectedVouchers(new Set())}
-                  className="p-1.5 text-teal-600 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-900/30 rounded transition-colors"
-                  title="Clear selection"
+                  className={`p-1.5 rounded transition-colors ${isDark ? "text-teal-400 hover:bg-teal-900/30" : "text-teal-600 hover:bg-teal-100"}`}
+                  title={t("clear_selection")}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
+
             {showBulkActions && (
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
                   onClick={() => setMessageComposerOpen(true)}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 text-sm border border-gray-300 dark:border-gray-700"
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  Send Message
+                  <MessageSquare className="w-4 h-4" /> {t("send_message")}
                 </button>
                 <button
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
                   onClick={handleSendVouchers}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 text-sm border border-gray-300 dark:border-gray-700"
                 >
-                  <Send className="w-4 h-4" />
-                  Re-send Vouchers
+                  <Send className="w-4 h-4" /> {t("re_send_vouchers")}
                 </button>
-                <button className="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 text-sm border border-gray-300 dark:border-gray-700">
-                  <Calendar className="w-4 h-4" />
-                  Extend Expiration
+                <button
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                >
+                  <Calendar className="w-4 h-4" /> {t("extend_expiration")}
                 </button>
-                <button className="px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 text-sm border border-gray-300 dark:border-gray-700">
-                  <RefreshCw className="w-4 h-4" />
-                  Change Status
+                <button
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                >
+                  <RefreshCw className="w-4 h-4" /> {t("change_status")}
                 </button>
-                <button className="px-3 py-1.5 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2 text-sm border border-red-300 dark:border-red-700">
-                  <XCircle className="w-4 h-4" />
-                  Cancel Vouchers
+                <button
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "text-red-400 border-red-700 hover:bg-red-900/20" : "text-red-600 border-red-300 hover:bg-red-50"}`}
+                >
+                  <XCircle className="w-4 h-4" /> {t("cancel_vouchers")}
                 </button>
               </div>
             )}
@@ -894,7 +935,7 @@ export function VouchersList({
       </div>
 
       {/* Scrollable Table Content */}
-      <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+      <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)] mt-3">
         <div className="sticky">
           <ReordableDataTable
             rowKey="_id"
@@ -903,18 +944,18 @@ export function VouchersList({
             selectedItems={selectedVouchers}
             onSelectionChange={setSelectedVouchers}
             onRowClick={(voucher) => onVoucherClick(voucher)}
-            storageKey="businessesTableColumnOrder"
+            storageKey="vouchersTableColumnOrder"
             columns={columns}
-            // hasMore={hasMore}
-            // next={next}
             t={t}
           />
         </div>
 
         {filteredVouchers.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              No vouchers found
+            <p
+              className={`text-gray-500 ${isDark ? "dark:text-gray-400" : ""}`}
+            >
+              {t("no_vouchers_found")}
             </p>
           </div>
         )}

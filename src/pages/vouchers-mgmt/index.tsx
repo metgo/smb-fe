@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { VouchersList } from "./components/VouchersList";
-import { VoucherDetailsPage } from "./components/VoucherDetailsPage";
+import { VoucherDetailsPage } from "./details/VoucherDetailsPage";
 import { AddVoucherWizard } from "./components/AddVoucherWizard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export default function VouchersMgmtPage() {
+  const { t } = useTranslation();
+  const { isDark, isRTL } = useThemeClasses();
+
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
     null,
   );
@@ -31,9 +36,9 @@ export default function VouchersMgmtPage() {
         replace: true,
       });
     },
-
     [navigate],
   );
+
   const handleCloseDetails = () => {
     setSelectedVoucherId(null);
   };
@@ -52,9 +57,13 @@ export default function VouchersMgmtPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors flex flex-col">
+    <div
+      className={`min-h-screen transition-colors flex flex-col ${
+        isDark ? "bg-gray-950" : "bg-gray-50"
+      }`}
+    >
       <div className="flex flex-1 overflow-hidden">
-        {/* Main Content - Always mounted, visibility controlled */}
+        {/* Main Content */}
         <div
           className={selectedVoucherId ? "hidden" : "flex-1"}
           style={{
@@ -69,11 +78,9 @@ export default function VouchersMgmtPage() {
           />
         </div>
 
-        {/* Detail View - Conditional rendering for detail view */}
+        {/* Detail View */}
         {selectedVoucherId && (
           <VoucherDetailsPage
-            // language={language}
-            // theme={theme}
             onClose={handleCloseDetails}
             onVoucherUpdated={handleVoucherUpdated}
           />
@@ -83,8 +90,6 @@ export default function VouchersMgmtPage() {
       {/* Add Voucher Wizard Modal */}
       {showAddWizard && (
         <AddVoucherWizard
-          // language={language}
-          // theme={theme}
           onClose={handleCloseAddWizard}
           onVoucherCreated={handleVoucherCreated}
         />

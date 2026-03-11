@@ -1,4 +1,4 @@
-interface Order {
+interface Voucher {
   _id: string;
   campId: string;
   status: string;
