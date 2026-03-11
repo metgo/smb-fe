@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { AlertCircle, Image, Loader } from "lucide-react";
+import clsx from "clsx";
 
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -63,8 +64,8 @@ function OrderGridView<T>({
   };
   return (
     <div
-      className={`py-6 px-4 ${
-        isDark ? "border-gray-700 bg-gray-900" : "border-gray-300 bg-white"
+      className={`py-3 px-2 rounded-xl ${
+        isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"
       }`}
     >
       <div
@@ -72,14 +73,15 @@ function OrderGridView<T>({
         ref={scrollRef}
         className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-2">
           {data?.map((order: any) => (
             <div
               key={order._id}
               onClick={() => onRowClick?.(order)}
-              className={`relative rounded-xl shadow-md overflow-hidden cursor-pointer transition-shadow hover:shadow-xl ${
-                isDark ? "bg-gray-900" : "bg-white"
-              }`}
+              className={clsx(
+                `rounded-xl border-2 border-gray-300 overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`,
+                isDark ? "bg-gray-900 text-gray-300" : "bg-white text-gray-900",
+              )}
             >
               <div className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2">
                 <Checkbox
@@ -110,7 +112,7 @@ function OrderGridView<T>({
 
               {/* Body */}
               <div
-                className={`p-5 ${
+                className={`p-2 ${
                   isDark
                     ? "bg-gray-800 text-gray-400"
                     : "bg-white text-gray-600"
@@ -127,12 +129,18 @@ function OrderGridView<T>({
                   </p>
 
                   <p>
-                    <span className="font-medium">{t("total")}:</span>{" "}
-                    {order?.totalAmount || "--"}
+                    <span className="font-medium">{t("price")}:</span> ₪
+                    {order?.totalAmount?.toLocaleString()}
                   </p>
                   <p>
                     <span className="font-medium">{t("status")}:</span>{" "}
                     {order?.status || "--"}
+                  </p>
+                  <p>
+                    <span className="font-medium">{t("deliveryFee")}:</span>{" "}
+                    {order?.deliveryFee
+                      ? `₪${order.deliveryFee.toLocaleString()}`
+                      : "-"}{" "}
                   </p>
                   <span
                     className="text-xs font-semibold px-2.5 py-0.5 rounded-full

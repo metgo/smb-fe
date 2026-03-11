@@ -1,10 +1,10 @@
-import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
 import { getPlainTextFromRichText } from "@/helpers";
+import { ModalWrapper } from "@/components/wrapper";
 interface ProductDetailsModalProps {
   product: any;
   onClose: () => void;
@@ -14,17 +14,13 @@ export default function ProductDetailsModal({
   product,
   onClose,
 }: ProductDetailsModalProps) {
-  console.log("🚀 ~ ProductDetailsModal ~ product:", product);
   const { t } = useTranslation("orders");
   const { isRTL, theme } = useAppSelector((state) => state.settings);
 
   const { textPrimary, textTertiary } = useThemeClasses();
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <ModalWrapper onClose={onClose} height="h-[35vh]" maxWidth="max-w-2xl">
       <div
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-2xl rounded-lg ${
@@ -40,9 +36,6 @@ export default function ProductDetailsModal({
             className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
           >
             <h2 className={`text-2xl ${textPrimary}`}>{product.name}</h2>
-            <button onClick={onClose} className="p-2 rounded-lg  ">
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
         <div className="p-6">
@@ -77,6 +70,6 @@ export default function ProductDetailsModal({
           </p>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
 }

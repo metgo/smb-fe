@@ -47,7 +47,7 @@ const OrderListView: React.FC<OrderListViewProps> = ({
           <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
         </div>
       ) : (
-        <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+        <div className="flex flex-col overflow-hidden ">
           <div className="sticky">
             <ReordableDataTable
               rowKey="_id"

@@ -8,6 +8,7 @@ import CancellationDialog from "./sub-components/CancellationDialog";
 import { ModalWrapper } from "@/components/wrapper";
 import {
   useBulkOrdersUpdateMutation,
+  useUpdateOrderMutation,
   useUpdateOrderStatusMutation,
   useUpdateProductOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
@@ -16,6 +17,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import clsx from "clsx";
+import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 
 interface OrderDetailsModalProps {
   theme: Theme;
@@ -39,8 +41,6 @@ function OrderDetailsModal({
   refetch,
   isLoading,
   isFetching,
-  getOrderStatusBadge,
-  getPaymentStatusBadge,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -50,6 +50,8 @@ function OrderDetailsModal({
   const [showProductModal, setShowProductModal] = useState(false);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [updateOrder] = useUpdateOrderMutation();
+
   const [updateProductOrderStatus] = useUpdateProductOrderStatusMutation();
 
   const [bulkOrdersUpdate, { isLoading: isSendingEmail }] =
@@ -70,47 +72,53 @@ function OrderDetailsModal({
       toast.error("failed");
     }
   };
+
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      await updateOrder({
+        orderId: order?._id,
+        body: { status: status.toUpperCase() },
+      }).unwrap();
+
+      toast.success(t("order_status_update_success"));
+      refetch();
+    } catch (error) {
+      toast.error(t("order_status_update_failed"));
+      console.error(error);
+    }
+  };
   return (
     <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
       {/* Header */}
 
       <div
-        className={`flex items-center  justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+        className={`flex items-center justify-between 
+              ${isRTL ? "flex-row-reverse" : ""} 
+              p-4 md:p-6 
+              mb-4`}
       >
-        <div className="flex flex-col p-6">
-          <div className="flex">
-            <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
-            <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
-          </div>
-          <div className="flex gap-2 mt-2 items-center">
-            <span className={textTertiary}>{t("order_status")}</span>
-            {getOrderStatusBadge(order?.status)}
-            <span className={textTertiary}>{t("payment_status")}</span>
-            {getPaymentStatusBadge(order?.paymentStatus)}
-          </div>
-        </div>
+        <h2 className={`text-2xl font-semibold ${textPrimary}`}>
+          {t("order_details")}
+        </h2>
+        <OrderStatusChangeBtn
+          status={order?.status}
+          handleStatusChange={onStatusChangeHandler}
+        />
       </div>
 
       {/* Content */}
-      <div className="p-6 overflow-y-auto overflow-hidden space-y-6">
+      <div className="px-6 overflow-y-auto overflow-hidden space-y-6 ">
         {/* Purchaser Information */}
-        <div>
+        <div className="">
           <h3 className={`text-lg mb-3 ${textPrimary}`}>
             {t("purchaser_information") || "Purchaser Information"}
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 border  rounded-md px-4 py-4">
             <InfoRow
               label={t("name") || "Name"}
-              value={order?.buyerFirstName}
+              value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`}
               theme={theme}
             />
-            {order?.buyerLastName && (
-              <InfoRow
-                label={t("name") || "Name"}
-                value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`.trim()}
-                theme={theme}
-              />
-            )}
 
             {/* Email - Clickable */}
             <div>

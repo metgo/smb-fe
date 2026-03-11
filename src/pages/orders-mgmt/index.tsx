@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import UserStatsCards from "@/components/shared/UserStatsCards";
 import {
   useState,
   useEffect,
@@ -55,19 +56,19 @@ import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
+import { UserRole } from "@/enums/user.types";
 
 // Default columns configuration
 const defaultColumns = {
-  _id: true,
   firstName: true,
   email: true,
   phone: true,
   status: true,
   totalAmount: true,
   // paymentStatus: false,
-
-  createdAt: false,
-  paymentDate: false,
+  deliveryFee: true,
+  createdAt: true,
+  paymentDate: true,
 };
 
 type ColumnVisibility = typeof defaultColumns;
@@ -82,6 +83,9 @@ export default function OrdersMgmtPage() {
   const { textSecondary, textTertiary, isDark } = useThemeClasses();
   //view mode toggle
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  const { userRole } = useAppSelector((state) => state.auth);
+
   // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -177,6 +181,16 @@ export default function OrdersMgmtPage() {
     endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
   });
+  // utils/dateFormatter.ts
+  const formatOrderDate = (dateString: string, language: string) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString(language, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
   //active filter chips
   const activeFilterChips = useMemo(() => {
     const chips: { key: string; value: string }[] = [];
@@ -218,12 +232,21 @@ export default function OrdersMgmtPage() {
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
-
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const canViewOrders =
+    userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
   const orderQueryParams = useMemo(() => {
     const params: any = {
       page,
       limit,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+      websiteId,
     };
 
     if (searchTerm) params.search = searchTerm;
@@ -262,7 +285,17 @@ export default function OrdersMgmtPage() {
     }
 
     return params;
-  }, [page, limit, searchTerm, filters]);
+  }, [
+    page,
+    limit,
+    searchTerm,
+    filters,
+    authorityId,
+    dmoId,
+    startDate,
+    endDate,
+    websiteId,
+  ]);
 
   const { data: orderStat, isLoading: isStatsLoading } =
     useGetOrderStatsQuery(orderQueryParams);
@@ -311,12 +344,6 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
-    columnVisibility._id && {
-      key: "_id",
-      label: t("order_id"),
-      sortable: true,
-      render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
-    },
     columnVisibility.firstName && {
       key: "firstName",
       label: t("purchaser_name_field"),
@@ -364,7 +391,7 @@ export default function OrdersMgmtPage() {
 
     columnVisibility.totalAmount && {
       key: "totalAmount",
-      label: t("total_amount"),
+      label: t("price"),
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
@@ -372,50 +399,16 @@ export default function OrdersMgmtPage() {
         </div>
       ),
     },
-
-    // columnVisibility.paymentStatus && {
-    //   key: "paymentStatus",
-    //   label: t("payment_status"),
-    //   render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
-    // },
-
-    // columnVisibility.voucherAmount && {
-    //   key: "voucherAmount",
-    //   label: t("voucher_amount"),
-    //   sortable: true,
-    //   render: (order: IOrder) => (
-    //     <div className="text-sm text-gray-500">
-    //       ₪{order.voucherAmount.toLocaleString()}
-    //     </div>
-    //   ),
-    // },
-
-    // columnVisibility.creditCardAmount && {
-    //   key: "creditCardAmount",
-    //   label: t("credit_card_amount"),
-    //   sortable: true,
-    //   render: (order: IOrder) => (
-    //     <div className="text-sm text-gray-500">
-    //       ₪{order.creditCardAmount.toLocaleString()}
-    //     </div>
-    //   ),
-    // },
-
-    // columnVisibility.vendors && {
-    //   key: "vendors",
-    //   label: t("vendors"),
-    //   render: (order: IOrder) => (
-    //     <div className="text-sm text-gray-500">{order.vendors.join(", ")}</div>
-    //   ),
-    // },
-
-    // columnVisibility.campaign && {
-    //   key: "campaign",
-    //   label: t("campaign"),
-    //   render: (order: IOrder) => (
-    //     <div className="text-sm text-gray-500">{order.campaign}</div>
-    //   ),
-    // },
+    columnVisibility.deliveryFee && {
+      key: "deliveryFee",
+      label: t("deliveryFee"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          {order?.deliveryFee ? `₪${order.deliveryFee.toLocaleString()}` : "-"}
+        </div>
+      ),
+    },
 
     columnVisibility.createdAt && {
       key: "createdAt",
@@ -423,7 +416,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {new Date(order.createdAt).toLocaleDateString(language)}
+          {formatOrderDate(order.createdAt, language)}
         </div>
       ),
     },
@@ -434,7 +427,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {new Date(order.paymentDate).toLocaleDateString(language)}
+          {formatOrderDate(order.paymentDate, language)}
         </div>
       ),
     },
@@ -803,16 +796,19 @@ export default function OrdersMgmtPage() {
           />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
-          <button
-            onClick={getVideoStream}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              isDark
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
-          >
-            <Camera className="w-4 h-4" />
-          </button>
+          {canViewOrders && (
+            <button
+              onClick={getVideoStream}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                isDark
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+              }`}
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          )}
+
           {/* <button
             onClick={() => setShowAddOrderWizard(true)}
             className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
@@ -822,209 +818,219 @@ export default function OrdersMgmtPage() {
           </button> */}
         </div>
       </div>
-
-      <PageStats
-        stats={orderStats}
-        isLoading={isStatsLoading}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-3"
-      />
+      {canViewOrders ? (
+        <PageStats
+          stats={orderStats}
+          isLoading={isStatsLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-3"
+        />
+      ) : (
+        <UserStatsCards stats={orderStats} isLoading={isStatsLoading} />
+      )}
 
       {/* Search and Filters */}
-      <div className={` border rounded-lg p-4 mb-6`}>
-        <div
-          className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
-        >
-          <div className="flex-1 relative">
-            <SearchInput
-              placeholder={t("search_orders")}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              storageKey="orderSearchTerm"
+      {canViewOrders && (
+        <div className={` border rounded-lg p-4 mb-6`}>
+          <div
+            className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
+          >
+            <div className="flex-1 relative">
+              <SearchInput
+                placeholder={t("search_orders")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                storageKey="orderSearchTerm"
 
-              // isRTL={isRTL}
-              // isDark={isDark}
-            />
+                // isRTL={isRTL}
+                // isDark={isDark}
+              />
+            </div>
+
+            <button
+              onClick={handleExportCSV}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                isDark
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+              }`}
+              title={t("downloadCSV")}
+            >
+              <Download className="w-4 h-4" />
+              <span>{t("downloadCSV")}</span>
+            </button>
+
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+            {viewMode === "list" && (
+              <div className="relative" ref={columnSettingsRef}>
+                <button
+                  onClick={() => setShowColumnSettings(!showColumnSettings)}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  <Columns className="w-5 h-5" />
+                  {t("show_columns")}
+                  {showColumnSettings ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+
+                {showColumnSettings && (
+                  <div
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                  >
+                    <div className="p-3 max-h-96 overflow-y-auto">
+                      {Object.entries(columnVisibility).map(
+                        ([key, visible]) => (
+                          <label
+                            key={key}
+                            className={`flex items-center gap-2 p-2 rounded cursor-pointer ${isRTL ? "flex-row-reverse justify-end" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={visible}
+                              onChange={(e) =>
+                                setColumnVisibility((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.checked,
+                                }))
+                              }
+                              className="rounded"
+                            />
+                            <span className={`text-sm ${textSecondary}`}>
+                              {t(key as keyof typeof t)}
+                            </span>
+                          </label>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <ViewModeToggle onChange={setViewMode} value={viewMode} />
           </div>
 
-          <button
-            onClick={handleExportCSV}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              isDark
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
-            title={t("downloadCSV")}
-          >
-            <Download className="w-4 h-4" />
-            <span>{t("downloadCSV")}</span>
-          </button>
+          {showFilters && (
+            <div className="flex flex-wrap items-start gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              {/* Delivery Type */}
+              <div className="min-w-[180px]">
+                <FilterSelect
+                  label={t("deliveryType")}
+                  value={filters.deliveryType}
+                  onChange={(value) =>
+                    setFilters((prev) => ({ ...prev, deliveryType: value }))
+                  }
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "pick_up", label: t("pickups") },
+                    { value: "deliver", label: t("delivery") },
+                  ]}
+                />
+              </div>
+              {/* Status */}
+              <div className="min-w-[180px]">
+                <FilterSelect
+                  label={t("status")}
+                  value={filters.status}
+                  onChange={(value) =>
+                    setFilters((prev) => ({ ...prev, status: value }))
+                  }
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "pending", label: t("pending") },
+                    { value: "processing", label: t("processing") },
+                    { value: "completed", label: t("completed") },
+                    { value: "shipped", label: t("shipped") },
 
-          <FilterButton value={showFilters} onChange={setShowFilters} />
-          {viewMode === "list" && (
-            <div className="relative" ref={columnSettingsRef}>
-              <button
-                onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                  isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <Columns className="w-5 h-5" />
-                {t("show_columns")}
-                {showColumnSettings ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
+                    { value: "canceled", label: t("canceled") },
+                  ]}
+                />
+              </div>
+              {/* Payment Method */}
+              <div className="min-w-[180px]">
+                <FilterSelect
+                  label={t("paymentMethod")}
+                  value={filters.paymentMethod}
+                  onChange={(value) =>
+                    setFilters((prev) => ({ ...prev, paymentMethod: value }))
+                  }
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "voucher", label: t("voucher") },
+                    { value: "card", label: t("creditCard") },
+                  ]}
+                />
+              </div>
+
+              {/* Month Filter */}
+              <div className="min-w-[220px]">
+                <MonthFilter
+                  label={t("month")}
+                  value={filters.month}
+                  onChange={(value) =>
+                    setFilters((prev) => ({ ...prev, month: value }))
+                  }
+                  dateFrom={filters.startDate}
+                  dateTo={filters.endDate}
+                  onDateFromChange={(value) =>
+                    setFilters((prev) => ({ ...prev, startDate: value }))
+                  }
+                  onDateToChange={(value) =>
+                    setFilters((prev) => ({ ...prev, endDate: value }))
+                  }
+                  theme={theme}
+                  isRTL={isRTL}
+                  t={t}
+                />
+              </div>
+
+              {/* Active Filters */}
+              <div className="">
+                {activeFilterChips.length > 0 && (
+                  <div className="mb-3 text-sm text-gray-500">
+                    {tb("active_filters")}:
+                  </div>
                 )}
-              </button>
-
-              {showColumnSettings && (
-                <div
-                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-                >
-                  <div className="p-3 max-h-96 overflow-y-auto">
-                    {Object.entries(columnVisibility).map(([key, visible]) => (
-                      <label
-                        key={key}
-                        className={`flex items-center gap-2 p-2 rounded cursor-pointer ${isRTL ? "flex-row-reverse justify-end" : ""}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={visible}
-                          onChange={(e) =>
-                            setColumnVisibility((prev) => ({
+                {activeFilterChips.length > 0 && (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex flex-wrap gap-2">
+                      {activeFilterChips.map((chip) => (
+                        <FilterChips
+                          key={chip.key}
+                          label={t(chip.value)}
+                          onRemove={() =>
+                            setFilters((prev) => ({
                               ...prev,
-                              [key]: e.target.checked,
+                              [chip.key]: chip.key.includes("date")
+                                ? ""
+                                : "all",
                             }))
                           }
-                          className="rounded"
                         />
-                        <span className={`text-sm ${textSecondary}`}>
-                          {t(key as keyof typeof t)}
-                        </span>
-                      </label>
-                    ))}
+                      ))}
+                    </div>
+
+                    {/* Clear All */}
+                    <button
+                      onClick={() => setFilters(defaultFilters)}
+                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                    >
+                      {t("clear_all")}
+                    </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
-
-          <ViewModeToggle onChange={setViewMode} value={viewMode} />
         </div>
+      )}
 
-        {showFilters && (
-          <div className="flex flex-wrap items-start gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            {/* Delivery Type */}
-            <div className="min-w-[180px]">
-              <FilterSelect
-                label={t("deliveryType")}
-                value={filters.deliveryType}
-                onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, deliveryType: value }))
-                }
-                options={[
-                  { value: "all", label: t("all") },
-                  { value: "pick_up", label: t("pickups") },
-                  { value: "deliver", label: t("delivery") },
-                ]}
-              />
-            </div>
-            {/* Status */}
-            <div className="min-w-[180px]">
-              <FilterSelect
-                label={t("status")}
-                value={filters.status}
-                onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, status: value }))
-                }
-                options={[
-                  { value: "all", label: t("all") },
-                  { value: "pending", label: t("pending") },
-                  { value: "processing", label: t("processing") },
-                  { value: "completed", label: t("completed") },
-                  { value: "shipped", label: t("shipped") },
-
-                  { value: "canceled", label: t("canceled") },
-                ]}
-              />
-            </div>
-            {/* Payment Method */}
-            <div className="min-w-[180px]">
-              <FilterSelect
-                label={t("paymentMethod")}
-                value={filters.paymentMethod}
-                onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, paymentMethod: value }))
-                }
-                options={[
-                  { value: "all", label: t("all") },
-                  { value: "voucher", label: t("voucher") },
-                  { value: "card", label: t("creditCard") },
-                ]}
-              />
-            </div>
-
-            {/* Month Filter */}
-            <div className="min-w-[220px]">
-              <MonthFilter
-                label={t("month")}
-                value={filters.month}
-                onChange={(value) =>
-                  setFilters((prev) => ({ ...prev, month: value }))
-                }
-                dateFrom={filters.startDate}
-                dateTo={filters.endDate}
-                onDateFromChange={(value) =>
-                  setFilters((prev) => ({ ...prev, startDate: value }))
-                }
-                onDateToChange={(value) =>
-                  setFilters((prev) => ({ ...prev, endDate: value }))
-                }
-                theme={theme}
-                isRTL={isRTL}
-                t={t}
-              />
-            </div>
-
-            {/* Active Filters */}
-            <div className="">
-              {activeFilterChips.length > 0 && (
-                <div className="mb-3 text-sm text-gray-500">
-                  {tb("active_filters")}:
-                </div>
-              )}
-              {activeFilterChips.length > 0 && (
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex flex-wrap gap-2">
-                    {activeFilterChips.map((chip) => (
-                      <FilterChips
-                        key={chip.key}
-                        label={t(chip.value)}
-                        onRemove={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            [chip.key]: chip.key.includes("date") ? "" : "all",
-                          }))
-                        }
-                      />
-                    ))}
-                  </div>
-
-                  {/* Clear All */}
-                  <button
-                    onClick={() => setFilters(defaultFilters)}
-                    className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                  >
-                    {t("clear_all")}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
       {selectedOrders.size > 0 && (
         <BulkActionBar
           selectedItemCount={selectedOrders.size}
@@ -1035,54 +1041,56 @@ export default function OrdersMgmtPage() {
       )}
 
       {/* Orders Table */}
-      {viewMode === "list" ? (
-        <div
-          className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader className="w-8 h-8 animate-spin text-teal-500" />
-            </div>
-          ) : orders?.datas?.data?.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
-              <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
+      {(userRole === UserRole.SUPERADMIN ||
+        userRole === UserRole.TRAVELLER) && (
+        <>
+          {viewMode === "list" ? (
+            <div
+              className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
+                </div>
+              ) : orders?.datas?.data?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
+                  <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
+                </div>
+              ) : (
+                <OrderListView
+                  theme={theme}
+                  isLoading={isLoading || isFetching}
+                  hasMore={hasMore}
+                  orders={orders}
+                  combinedOrders={combinedOrders}
+                  fetchNextPage={fetchNextPage}
+                  selectedOrders={selectedOrders}
+                  setSelectedOrders={setSelectedOrders}
+                  handleRowClick={handleRowClick}
+                  columns={columns}
+                  textTertiary={textTertiary}
+                  textSecondary={textSecondary}
+                  t={t}
+                />
+              )}
             </div>
           ) : (
-            <OrderListView
-              theme={theme}
-              isLoading={isLoading || isFetching}
-              hasMore={hasMore}
-              orders={orders}
-              combinedOrders={combinedOrders}
-              fetchNextPage={fetchNextPage}
-              selectedOrders={selectedOrders}
-              setSelectedOrders={setSelectedOrders}
-              handleRowClick={handleRowClick}
-              columns={columns}
-              textTertiary={textTertiary}
-              textSecondary={textSecondary}
-              t={t}
-            />
+            <div className="overflow-y-auto">
+              <OrderGridView
+                selectedOrders={selectedOrders}
+                setSelectedOrders={setSelectedOrders}
+                data={combinedOrders || []}
+                next={fetchNextPage}
+                hasMore={hasMore}
+                isLoading={isLoading || isFetching}
+                onRowClick={handleRowClick}
+                t={t}
+              />
+            </div>
           )}
-        </div>
-      ) : (
-        viewMode === "grid" && (
-          <div className="overflow-y-auto ">
-            <OrderGridView
-              selectedOrders={selectedOrders}
-              setSelectedOrders={setSelectedOrders}
-              data={combinedOrders || []}
-              next={fetchNextPage}
-              hasMore={hasMore}
-              isLoading={isLoading || isFetching}
-              onRowClick={handleRowClick}
-              t={t}
-            />
-          </div>
-        )
+        </>
       )}
-
       <Activity mode={selectedOrder && showOrderDetails ? "visible" : "hidden"}>
         <OrderDetailsModal
           t={t}
