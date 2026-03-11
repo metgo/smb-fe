@@ -392,6 +392,7 @@ function OrderDetailsModal({
                     // productId: itemToCancel?._id,  specific product id
                   },
                 }).unwrap();
+                refetch();
               }
 
               toast.success(t("order_cancelled_successfully"));
