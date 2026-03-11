@@ -493,6 +493,7 @@ export default function OrdersMgmtPage() {
   //order details
   const {
     data: orderDetails,
+    refetch: orderIdrefetch,
     isLoading: isOrderDetailLoading,
     isFetching: isOrderDetailFetching,
   } = useGetOrderByIdQuery(
@@ -811,6 +812,11 @@ export default function OrdersMgmtPage() {
         text: "text-orange-800 dark:text-orange-400",
         label: t("partiallyRefunded"),
       },
+      REFUND_SUCCESS: {
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-800 dark:text-green-400",
+        label: t("refund_success"),
+      },
     };
     const badge = badges[status];
     return (
@@ -1127,7 +1133,7 @@ export default function OrdersMgmtPage() {
           t={t}
           isRTL={isRTL}
           theme={theme}
-          refetch={refetch}
+          refetch={orderIdrefetch}
           order={orderDetails}
           isLoading={isOrderDetailLoading}
           isFetching={isOrderDetailFetching}

@@ -55,6 +55,7 @@ function OrderDetailsModal({
     useUpdateOrderConfirmationMutation();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
 
   const handleResendNotification = async () => {
@@ -358,11 +359,14 @@ function OrderDetailsModal({
         <CancellationDialog
           type={cancelType}
           itemName={itemToCancel?.name}
+          loading={isCancelling}
           onCancel={() => {
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
           onConfirm={async (reason) => {
+            setIsCancelling(true);
+
             try {
               if (cancelType === "order") {
                 // Cancel the entire order
@@ -388,6 +392,7 @@ function OrderDetailsModal({
                     // productId: itemToCancel?._id,  specific product id
                   },
                 }).unwrap();
+                refetch();
               }
 
               toast.success(t("order_cancelled_successfully"));
@@ -396,6 +401,8 @@ function OrderDetailsModal({
               setItemToCancel(null);
             } catch (error) {
               toast.error(t("cancel_failed"));
+            } finally {
+              setIsCancelling(false);
             }
           }}
         />

@@ -171,5 +171,7 @@
   "done": "סיימתי",
   "resend_failed": "ההעברה מחדש נכשלה",
   "resend_loading": "מעביר מחדש...",
-  "resend_success": "הועבר מחדש בהצלחה!"
+  "resend_success": "הועבר מחדש בהצלחה!",
+  "submitting": "שולח...",
+  "refund_success": "החזר הצליח"
 }

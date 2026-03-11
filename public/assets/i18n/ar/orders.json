@@ -171,5 +171,7 @@
   "done": "تم",
   "resend_failed": "إعادة الإرسال فشلت",
   "resend_loading": "جاري إعادة الإرسال...",
-  "resend_success": "تم إعادة الإرسال بنجاح!"
+  "resend_success": "تم إعادة الإرسال بنجاح!",
+  "submitting": "جارٍ الإرسال...",
+  "refund_success": "نجاح الاسترداد"
 }
