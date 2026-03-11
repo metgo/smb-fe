@@ -173,5 +173,7 @@
   "done": "Done",
   "resend_failed": "Resend failed",
   "resend_loading": "Resending...",
-  "resend_success": "Resent successfully!"
+  "resend_success": "Resent successfully!",
+  "submitting": "Submitting...",
+  "refund_success": "Refund Success"
 }
