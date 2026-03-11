@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { VouchersList } from "./components/VouchersList";
 import { VoucherDetailsPage } from "./details/VoucherDetailsPage";
-import { AddVoucherWizard } from "./components/AddVoucherWizard";
+import { AddVoucherWizard } from "./components/CreateVoucherWizard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useTranslation } from "react-i18next";

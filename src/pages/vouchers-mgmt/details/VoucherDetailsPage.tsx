@@ -93,7 +93,6 @@ export function VoucherDetailsPage() {
     isLoading,
   } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
   const voucher = voucherdetailId?.datas;
-  console.log("🚀 ~ VoucherDetailsPage ~ voucherDetail:", voucher);
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignee" | "timeline" | "transactions"

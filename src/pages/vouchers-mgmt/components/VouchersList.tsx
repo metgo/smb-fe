@@ -21,7 +21,7 @@ import {
   ReordableDataTable,
   SearchInput,
 } from "@/components/shared";
-import { getStatusColor, getStatusLabel } from "@/helpers";
+import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
@@ -300,7 +300,9 @@ export function VouchersList({
 
         return (
           <div className="flex items-center gap-2">
-            <span className={`text-sm ${textColor}`}>{voucher.expireDate}</span>
+            <span className={`text-sm ${textColor}`}>
+              {formatDate(voucher.expireDate)}
+            </span>
             {expiringSoon && !expired && (
               <Clock
                 className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
@@ -339,7 +341,6 @@ export function VouchersList({
   } = useGetAllVouchersQuery({});
   const allVouchers = voucherData?.datas?.data;
   const totalData = voucherData?.datas?.totalData;
-  console.log("🚀 ~ VouchersList ~ voucherData:", voucherData);
 
   const [vouchers] = useState<Voucher[]>(generateMockVouchers());
   const [selectedVouchers, setSelectedVouchers] = useState<Set<string>>(

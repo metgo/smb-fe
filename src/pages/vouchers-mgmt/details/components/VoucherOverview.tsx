@@ -1,7 +1,6 @@
 import React from "react";
 import { Calendar, Clock, Globe } from "lucide-react";
 import { formatDate } from "@/helpers";
-import { useTranslation } from "react-i18next";
 
 interface Voucher {
   code: string;

@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   X,
-  ChevronRight,
-  ChevronLeft,
   Check,
   Upload,
   Download,
@@ -15,6 +13,15 @@ import {
   CheckCircle,
   User,
 } from "lucide-react";
+import { ModalWrapper } from "@/components/wrapper";
+import {
+  useInitVoucherCreateMutation,
+  useUpdateVoucherMutation,
+} from "@/store/api/voucherMutationApi";
+import { WizardFooter } from "@/components/shared";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { PublishButton } from "@/components/btns";
 
 interface AddVoucherWizardProps {
   // language: Language;
@@ -102,6 +109,10 @@ export function AddVoucherWizard({
   onVoucherCreated,
 }: AddVoucherWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const totalSteps = 5;
+  const { t } = useTranslation("businesses");
   const [formData, setFormData] = useState<VoucherFormData>({
     websites: [],
     campaign: "",
@@ -119,6 +130,161 @@ export function AddVoucherWizard({
     expirationDate: "",
     xlsFile: null,
   });
+  const stepPayloadMap = {
+    websites: formData.websites,
+    campaign: formData.campaign,
+
+    amount: formData.amount,
+    customAmount: formData.customAmount,
+
+    creationType: formData.creationType,
+    bulkCount: formData.bulkCount,
+    bulkCreateAssigned: formData.bulkCreateAssigned,
+
+    assigneeName: formData.assigneeName,
+    assigneeEmail: formData.assigneeEmail,
+    assigneePhone: formData.assigneePhone,
+
+    purchaserName: formData.purchaserName,
+    purchaserEmail: formData.purchaserEmail,
+    purchaserPhone: formData.purchaserPhone,
+
+    expirationDate: formData.expirationDate,
+
+    xlsFile: formData.xlsFile,
+  };
+  const [voucherId, setVoucherId] = useState("");
+  const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
+  const [initVoucherCreate, { isLoading: isCreating }] =
+    useInitVoucherCreateMutation();
+  const [isPublishing, setIsPublishing] = useState(false);
+  const handlePrevious = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+  const saveDraft = useCallback(async (isPublish = false) => {
+    try {
+      let internalvoucherId;
+
+      // 1️⃣ Initialize if not created yet
+      if (!voucherId) {
+        const res = await initVoucherCreate().unwrap();
+        internalvoucherId = res?.id;
+        setVoucherId(res?.id);
+      }
+      // 2️⃣ Build base payload
+      let payload = stepPayloadMap;
+
+      if (isPublish) {
+        payload = {
+          ...payload,
+        };
+      }
+
+      if (!Object.keys(payload).length) return;
+
+      // 4️⃣ Update event
+      await updateVoucher({
+        voucherId: internalvoucherId || voucherId!,
+        body: payload,
+      }).unwrap();
+
+      onClose();
+      toast.success(isPublish ? t("business_published") : t("draft_saved"));
+    } catch (err: any) {
+      toast.error(err?.data?.message || t("draft_failed"));
+    }
+  });
+  const handleSaveDraft = async () => {
+    setIsDraftBtnClicked(true);
+
+    await saveDraft(false);
+  };
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    switch (step) {
+      case 1:
+        if (!formData.websites || formData.websites.length === 0) {
+          newErrors.websites = t("field_required");
+        }
+
+        if (!formData.campaign) {
+          newErrors.campaign = t("field_required");
+        }
+        break;
+
+      case 2:
+        if (
+          !formData.customAmount &&
+          (!formData.amount || formData.amount <= 0)
+        ) {
+          newErrors.amount = t("invalid_amount");
+        }
+
+        if (
+          formData.creationType === "bulk" &&
+          (!formData.bulkCount || formData.bulkCount <= 0)
+        ) {
+          newErrors.bulkCount = t("invalid_bulk_count");
+        }
+        break;
+
+      case 3:
+        if (formData.bulkCreateAssigned) {
+          if (!formData.assigneeName) {
+            newErrors.assigneeName = t("field_required");
+          }
+          if (!formData.assigneeEmail) {
+            newErrors.assigneeEmail = t("field_required");
+          }
+        }
+
+        if (!formData.purchaserName) {
+          newErrors.purchaserName = t("field_required");
+        }
+
+        if (!formData.purchaserEmail) {
+          newErrors.purchaserEmail = t("field_required");
+        }
+        break;
+
+      case 4:
+        if (!formData.expirationDate) {
+          newErrors.expirationDate = t("field_required");
+        }
+
+        if (formData.creationType === "bulk" && !formData.xlsFile) {
+          newErrors.xlsFile = t("file_required");
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const handlePublish = async () => {
+    setIsPublishBtnClicked(true);
+    // Validate all steps
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
+
+    setIsPublishing(true);
+
+    await saveDraft(true);
+    setIsPublishing(false);
+  };
   const [createdVouchers, setCreatedVouchers] = useState<CreatedVoucher[]>([]);
   const [xlsValidation, setXlsValidation] = useState<{
     valid: number;
@@ -1136,110 +1302,96 @@ export function AddVoucherWizard({
   );
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl text-gray-900 dark:text-gray-100">
-              {currentStep === 5 ? "Success" : "Add Voucher"}
-            </h2>
-            {currentStep < 5 && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Step {currentStep} of 4
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl text-gray-900 dark:text-gray-100">
+            {currentStep === 5 ? "Success" : "Add Voucher"}
+          </h2>
+          {currentStep < 5 && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Step {currentStep} of 4
+            </p>
+          )}
         </div>
-
-        {/* Progress Bar */}
-        {currentStep < 5 && (
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center">
-                    <div
-                    // className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    //   currentStep > step.id
-                    //     ? 'bg-green-500 text-white'
-                    //     : currentStep === step.id
-                    //     ? 'bg-teal-500 text-white'
-                    //     // : theme === 'dark'
-                    //     // ? 'bg-gray-800 text-gray-500'
-                    //     // : 'bg-gray-200 text-gray-400'
-                    // }`}
-                    >
-                      {currentStep > step.id ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <step.icon className="w-5 h-5" />
-                      )}
-                    </div>
-                    <span
-                      className={`text-xs mt-1 ${
-                        currentStep >= step.id
-                          ? "text-gray-900 dark:text-gray-100"
-                          : "text-gray-500 dark:text-gray-500"
-                      }`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-2 ${
-                        currentStep > step.id
-                          ? "bg-green-500"
-                          : // : theme === 'dark'
-                            // ? 'bg-gray-800'
-                            "bg-gray-200"
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-          {currentStep === 4 && renderStep4()}
-          {currentStep === 5 && renderStep5()}
-        </div>
-
-        {/* Footer */}
-        {currentStep < 5 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              disabled={currentStep === 1}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {currentStep === 4 ? "Create Vouchers" : "Next"}
-              {currentStep < 4 && <ChevronRight className="w-4 h-4" />}
-            </button>
-          </div>
-        )}
+        <PublishButton onClick={handlePublish} isLoading={isPublishing} />
       </div>
-    </div>
+
+      {/* Progress Bar */}
+      {currentStep < 5 && (
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className="flex items-center flex-1 cursor-pointer"
+                onClick={() => setCurrentStep(step.id)}
+              >
+                <div className="flex flex-col items-center">
+                  <div
+                  // className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  //   currentStep > step.id
+                  //     ? 'bg-green-500 text-white'
+                  //     : currentStep === step.id
+                  //     ? 'bg-teal-500 text-white'
+                  //     // : theme === 'dark'
+                  //     // ? 'bg-gray-800 text-gray-500'
+                  //     // : 'bg-gray-200 text-gray-400'
+                  // }`}
+                  >
+                    {currentStep > step.id ? (
+                      <Check className="w-5 h-5 bg-green-500" />
+                    ) : (
+                      <step.icon className="w-5 h-5" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs mt-1 ${
+                      currentStep >= step.id
+                        ? "text-gray-900 dark:text-gray-100"
+                        : "text-gray-500 dark:text-gray-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-0.5 mx-2 ${
+                      currentStep > step.id
+                        ? "bg-green-500"
+                        : // : theme === 'dark'
+                          // ? 'bg-gray-800'
+                          "bg-gray-200"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        {currentStep === 1 && renderStep1()}
+        {currentStep === 2 && renderStep2()}
+        {currentStep === 3 && renderStep3()}
+        {currentStep === 4 && renderStep4()}
+        {currentStep === 5 && renderStep5()}
+      </div>
+
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isSaving={isSaving || isCreating}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }
