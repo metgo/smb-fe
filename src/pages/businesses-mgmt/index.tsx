@@ -327,6 +327,11 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedBusinesses.size) return;
+    console.log(
+      "🚀 ~ BusinessesMgmtPage ~ selectedBusinesses:",
+      selectedBusinesses,
+    );
+
     const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({

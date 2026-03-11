@@ -7,11 +7,13 @@ export default function CancellationDialog({
   itemName,
   onCancel,
   onConfirm,
+  loading,
 }: {
   type: "order" | "item";
   itemName?: string;
   onCancel: () => void;
   onConfirm: (reason: string, notes: string) => void;
+  loading?: boolean;
 }) {
   const { t } = useTranslation("orders");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
@@ -37,7 +39,7 @@ export default function CancellationDialog({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-60 flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div
@@ -51,7 +53,7 @@ export default function CancellationDialog({
         <h3
           className={`text-xl font-semibold mb-4 ${isRTL ? "text-right" : "text-left"}`}
         >
-          {type === "order" ? t("cancelOrder") : t("cancelItem")}
+          {type === "order" ? t("cancel_order") : t("cancel_item")}
         </h3>
 
         {itemName && (
@@ -116,14 +118,17 @@ export default function CancellationDialog({
         >
           <button
             onClick={handleSubmit}
-            disabled={!selectedReason || !notes.trim()}
-            className={`flex-1 px-5 py-2.5 rounded-lg font-medium transition-colors ${
-              !selectedReason || !notes.trim()
+            disabled={!selectedReason || !notes.trim() || loading}
+            className={`flex items-center justify-center gap-2 flex-1 px-5 py-2.5 rounded-lg font-medium transition-colors ${
+              !selectedReason || !notes.trim() || loading
                 ? "bg-red-500/50 cursor-not-allowed text-white"
                 : "bg-red-500 hover:bg-red-600 text-white"
             }`}
           >
-            {t("submit")}
+            {loading && (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? t("submitting") : t("submit")}
           </button>
 
           <button

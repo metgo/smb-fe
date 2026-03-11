@@ -41,5 +41,9 @@
   "product_status_update_failed": "Failed to change products status",
 
   "website_select_info": "Please select the website first to specify where this content should be displayed.",
-  "empty_content_info": "Please add at least one category with businesses."
+  "empty_content_info": "Please add at least one category with businesses.",
+
+  "unsaved_changes": "Unsaved Changes",
+  "close_without_saving": "You have unsaved changes. Are you sure you want to close without saving?",
+  "close": "Close"
 }

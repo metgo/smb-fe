@@ -64,6 +64,8 @@
   "publishing": "جاري النشر...",
   "cancle": "إلغاء",
   "delete": "حذف",
+  "resend": "إعادة الإرسال",
+  "csvExport": "تصدير CSV",
   "confirm": "تأكيد",
   "details": "التفاصيل",
   "edit": "تعديل",
