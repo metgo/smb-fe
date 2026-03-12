@@ -50,7 +50,7 @@ const OrderListView: React.FC<OrderListViewProps> = ({
         <div className="flex flex-col overflow-hidden ">
           <div className="sticky">
             <ReordableDataTable
-              rowKey="_id"
+              rowKey="orderId"
               hasMore={hasMore}
               data={combinedOrders || []}
               next={fetchNextPage}

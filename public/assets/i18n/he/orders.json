@@ -8,6 +8,7 @@
   "purchaser_name": "רוכש",
   "purchaser_information": "פרטי הרוכש",
   "order_type": "סוג הזמנה",
+  "product_name": "שם מוצר",
   "online": "אונליין",
   "offline": "אופליין",
   "_id": "מזהה הזמנה",

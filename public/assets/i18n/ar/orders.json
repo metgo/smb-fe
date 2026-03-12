@@ -9,6 +9,7 @@
   "firstName": "الاسم الأول",
   "email": "البريد الإلكتروني",
   "phone": "الهاتف",
+  "product_name": "اسم المنتج",
   "totalAmount": "المبلغ الإجمالي",
   "createdAt": "تاريخ الإنشاء",
   "paymentDate": "تاريخ الدفع",

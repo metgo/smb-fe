@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, XCircle } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -42,6 +42,7 @@ function OrderDetailsModal({
   isLoading,
   isFetching,
 }: OrderDetailsModalProps) {
+  console.log("🚀 ~ OrderDetailsModal ~ order:", order);
   const { textTertiary, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
@@ -65,7 +66,7 @@ function OrderDetailsModal({
   const handleResendNotification = async () => {
     try {
       await bulkOrdersUpdate({
-        ordersId: Array(order?._id),
+        ordersId: Array(order?.orderId),
       }).unwrap();
       toast.success(t("email_sent"));
     } catch (error) {
@@ -77,7 +78,7 @@ function OrderDetailsModal({
     try {
       await updateOrder({
         orderId: order?._id,
-        body: { status: status.toUpperCase() },
+        body: { status: status.toLowerCase() },
       }).unwrap();
 
       toast.success(t("order_status_update_success"));
@@ -107,7 +108,7 @@ function OrderDetailsModal({
       </div>
 
       {/* Content */}
-      <div className="px-6 overflow-y-auto overflow-hidden space-y-6 ">
+      <div className="px-6 overflow-y-auto overflow-hidden  space-y-6 ">
         {/* Purchaser Information */}
         <div className="">
           <h3 className={`text-lg mb-3 ${textPrimary}`}>
@@ -180,100 +181,75 @@ function OrderDetailsModal({
           <div
             className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
           >
-            {order?.products?.map((product: any, idx: number) => (
-              <div
-                key={product?._id}
-                className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Product Image */}
-                  <div
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setShowProductModal(true);
-                    }}
-                    className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    <ImageWithFallback
-                      src={product?.images?.image}
-                      alt={product?.name}
-                      className={clsx(
-                        "w-24 h-22 rounded-xl object-cover border-2",
-                        theme === "dark"
-                          ? "border-gray-600"
-                          : "border-gray-300",
-                      )}
-                    />
-                  </div>
+            <div
+              key={order?.products?._id}
+              className={`p-4 ${order?.idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${order?.status === "canceled" ? "opacity-50" : ""}`}
+            >
+              <div className="flex items-start gap-4">
+                {/* Product Image */}
+                <div
+                  onClick={() => {
+                    setSelectedProduct(order?.products);
+                    setShowProductModal(true);
+                  }}
+                  className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <ImageWithFallback
+                    src={order?.products?.images?.image}
+                    alt={order?.products?.name}
+                    className={clsx(
+                      "w-24 h-22 rounded-xl object-cover border-2",
+                      theme === "dark" ? "border-gray-600" : "border-gray-300",
+                    )}
+                  />
+                </div>
 
-                  {/* Product Info */}
-                  <div
-                    className="flex-1 cursor-pointer"
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setShowProductModal(true);
-                    }}
+                {/* Product Info */}
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => {
+                    setSelectedProduct(order?.products);
+                    setShowProductModal(true);
+                  }}
+                >
+                  <p
+                    className={`${textPrimary} ${order?.products?.cancelled ? "line-through" : ""}`}
                   >
+                    {order?.products?.name}
+                  </p>
+                  <p className={`text-sm ${textTertiary}`}>
+                    {order?.products?.vendor ? order?.products.vendor : "-"}
+                  </p>
+                </div>
+
+                {/* Price & Actions */}
+                <div
+                  className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                >
+                  <div className={`text-right ${isRTL ? "text-left" : ""}`}>
                     <p
-                      className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
+                      className={`${textPrimary} ${order?.products?.cancelled ? "line-through" : ""}`}
                     >
-                      {product?.name}
+                      ₪
+                      {(
+                        order?.products?.quantity * order?.products?.amount
+                      ).toLocaleString()}
                     </p>
                     <p className={`text-sm ${textTertiary}`}>
-                      {product?.vendor ? product.vendor : "-"}
-                    </p>
-                    <p className={`text-xs ${textTertiary} mt-1`}>
-                      {product?.category ? product.category : "-"}
+                      {order?.products?.quantity} x ₪{order?.products?.amount}
                     </p>
                   </div>
 
-                  {/* Price & Actions */}
-                  <div
-                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                  >
-                    <div className={`text-right ${isRTL ? "text-left" : ""}`}>
-                      <p
-                        className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
-                      >
-                        ₪
-                        {(product?.quantity * product?.amount).toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${textTertiary}`}>
-                        {product?.quantity} x ₪{product?.amount}
-                      </p>
-                    </div>
-
-                    {/* Cancel Button */}
-                    {!product?.cancelled && userRole !== UserRole.AUTHORITY && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCancelType("item");
-                          setItemToCancel(product);
-                          setShowCancelDialog(true);
-                        }}
-                        className={`p-2 rounded-lg transition-colors ${
-                          theme === "dark"
-                            ? "hover:bg-red-900/30 text-red-400"
-                            : "hover:bg-red-50 text-red-500"
-                        }`}
-                        title={t("cancel_product") || "Cancel Product"}
-                      >
-                        <XCircle className="w-5 h-5" />
-                      </button>
-                    )}
-
-                    {product?.cancelled && (
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
-                      >
-                        {t("cancelled") || "Cancelled"}
-                      </span>
-                    )}
-                  </div>
+                  {order?.status === "canceled" && (
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
+                    >
+                      {t("cancelled") || "Cancelled"}
+                    </span>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -290,8 +266,14 @@ function OrderDetailsModal({
                 {t("voucher_amount") || "Voucher"}
               </span>
               <span className={textPrimary}>
-                {order?.voucherAmount
-                  ? `₪${order.voucherAmount.toLocaleString()}`
+                {order?.voucher && order.voucher.length > 0
+                  ? `₪${order.voucher
+                      .reduce(
+                        (total: number, voucher: any) =>
+                          total + (voucher?.redeemedAmount || 0),
+                        0,
+                      )
+                      .toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -330,7 +312,7 @@ function OrderDetailsModal({
         {userRole === UserRole.AUTHORITY ||
           (userRole === UserRole.SUPERADMIN && (
             <div
-              className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+              className={`flex  gap-3 pt-4  border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
               {order?.status !== "canceled" &&
                 order?.status !== "completed" && (

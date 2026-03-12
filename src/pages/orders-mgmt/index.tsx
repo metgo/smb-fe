@@ -65,6 +65,7 @@ const defaultColumns = {
   phone: true,
   status: true,
   totalAmount: true,
+  product_name: true,
   // paymentStatus: false,
   deliveryFee: true,
   createdAt: true,
@@ -350,6 +351,14 @@ export default function OrdersMgmtPage() {
         <div className="text-sm">{order.firstName}</div>
       ),
     },
+    columnVisibility.product_name && {
+      key: "products",
+      label: t("product_name"),
+      sortable: true,
+      render: (order: any) => (
+        <div className="text-sm">{order?.product?.name}</div>
+      ),
+    },
 
     columnVisibility.email && {
       key: "email",
@@ -583,6 +592,7 @@ export default function OrdersMgmtPage() {
     setIsBulkDelete(true);
     setIsConfirmOpen(true);
   }, [selectedOrders.size]);
+  console.log("🚀 ~ OrdersMgmtPage ~ selectedOrders:", selectedOrders);
 
   const handleBulkResend = useCallback(async () => {
     if (!selectedOrders.size) return;
@@ -669,32 +679,23 @@ export default function OrdersMgmtPage() {
 
   const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
-      draft: {
-        bg: "bg-gray-100 dark:bg-gray-800",
-        text: "text-gray-800 dark:text-gray-300",
-        label: t("draft"),
+      pending: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("partially_cancelled"),
       },
       processing: {
         bg: "bg-blue-100 dark:bg-blue-900/30",
         text: "text-blue-800 dark:text-blue-400",
         label: t("processing"),
       },
-      paid: {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-800 dark:text-green-400",
-        label: t("paid"),
-      },
-      confirmed: {
-        bg: "bg-teal-100 dark:bg-teal-900/30",
-        text: "text-teal-800 dark:text-teal-400",
-        label: t("confirmed"),
-      },
-      delivered: {
-        bg: "bg-purple-100 dark:bg-purple-900/30",
-        text: "text-purple-800 dark:text-purple-400",
-        label: t("delivered"),
-      },
+
       completed: {
+        bg: "bg-emerald-100 dark:bg-emerald-900/30",
+        text: "text-emerald-800 dark:text-emerald-400",
+        label: t("completed"),
+      },
+      shipped: {
         bg: "bg-emerald-100 dark:bg-emerald-900/30",
         text: "text-emerald-800 dark:text-emerald-400",
         label: t("completed"),
@@ -703,17 +704,6 @@ export default function OrdersMgmtPage() {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
-      },
-      partially_cancelled: {
-        bg: "bg-orange-100 dark:bg-orange-900/30",
-        text: "text-orange-800 dark:text-orange-400",
-        label: t("partially_cancelled"),
-      },
-
-      failed: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-800 dark:text-red-400",
-        label: t("failed"),
       },
     };
     const badge = badges[status];
@@ -780,7 +770,7 @@ export default function OrdersMgmtPage() {
     >
       {/* Page Header */}
       <div
-        className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 ${isRTL ? "md:flex-row-reverse" : ""}`}
+        className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4  ${isRTL ? "md:flex-row-reverse" : ""}`}
       >
         <div
           className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}

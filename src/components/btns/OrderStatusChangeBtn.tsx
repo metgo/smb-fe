@@ -39,36 +39,13 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
   /* -------------------- Status Config -------------------- */
   const allStatuses: Record<TOrderStatus, StatusOption> = {
-    draft: {
-      color: "bg-gray-400",
-      textColor: "text-gray-400",
-      borderColor: "border-gray-400",
-      label: t("draft"),
-    },
     processing: {
       color: "bg-yellow-500",
       textColor: "text-yellow-500",
       borderColor: "border-yellow-500",
       label: t("processing"),
     },
-    paid: {
-      color: "bg-blue-500",
-      textColor: "text-blue-500",
-      borderColor: "border-blue-500",
-      label: t("paid"),
-    },
-    confirmed: {
-      color: "bg-indigo-500",
-      textColor: "text-indigo-500",
-      borderColor: "border-indigo-500",
-      label: t("confirmed"),
-    },
-    delivered: {
-      color: "bg-teal-500",
-      textColor: "text-teal-500",
-      borderColor: "border-teal-500",
-      label: t("delivered"),
-    },
+
     completed: {
       color: "bg-green-500",
       textColor: "text-green-500",
@@ -81,17 +58,17 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
       borderColor: "border-red-500",
       label: t("canceled"),
     },
-    partially_cancelled: {
+    pending: {
       color: "bg-orange-400",
       textColor: "text-orange-400",
       borderColor: "border-orange-400",
-      label: t("partially_cancelled"),
+      label: t("pending"),
     },
-    failed: {
-      color: "bg-pink-500",
-      textColor: "text-pink-500",
-      borderColor: "border-pink-500",
-      label: t("failed"),
+    shipped: {
+      color: "bg-green-500",
+      textColor: "text-green-200",
+      borderColor: "border-green-200",
+      label: t("shipped"),
     },
   };
 

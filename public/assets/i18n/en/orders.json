@@ -9,6 +9,8 @@
   "_id": "Order ID",
   "firstName": "First name",
   "email": "Email",
+  "product_name": "Product Name",
+
   "phone": "Phone",
   "totalAmount": "Total amount",
   "order_details": "Order Details",

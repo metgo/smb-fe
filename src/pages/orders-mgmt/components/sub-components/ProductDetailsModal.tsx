@@ -52,12 +52,6 @@ export default function ProductDetailsModal({
               <p className={`text-sm ${textPrimary}`}>
                 {product?.vendor ? product.vendor : "-"}
               </p>
-              <p className={`text-sm ${textTertiary} mb-1`}>
-                {t("category") || "Category"}
-              </p>
-              <p className={`text-sm ${textPrimary}`}>
-                {product?.category ? product.category : "-"}
-              </p>
             </div>
           </div>
           <p className={`text-sm ${textTertiary} mt-4`}>

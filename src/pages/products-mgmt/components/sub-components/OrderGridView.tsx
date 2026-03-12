@@ -55,9 +55,9 @@ function OrderGridView<T>({
       </div>
     );
   }
-  const toggleRow = (product: any) => {
+  const toggleRow = (order: any) => {
     const newSelected = new Set(selectedOrders);
-    const key = product._id;
+    const key = order?.orderId;
     if (newSelected.has(key)) newSelected.delete(key);
     else newSelected.add(key);
     setSelectedOrders(newSelected);
@@ -76,7 +76,7 @@ function OrderGridView<T>({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-2">
           {data?.map((order: any) => (
             <div
-              key={order._id}
+              key={order.orderId}
               onClick={() => onRowClick?.(order)}
               className={clsx(
                 `rounded-xl border-2 border-gray-300 overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`,
@@ -86,7 +86,7 @@ function OrderGridView<T>({
               <div className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2">
                 <Checkbox
                   onClick={(e) => e.stopPropagation()}
-                  checked={selectedOrders?.has(order._id) ?? false}
+                  checked={selectedOrders?.has(order.orderId) ?? false}
                   onCheckedChange={() => toggleRow(order)}
                   className={`cursor-pointer border transition-colors ${
                     isDark
@@ -97,9 +97,9 @@ function OrderGridView<T>({
               </div>
               {/* Thumbnail */}
               <div className="relative h-36">
-                {order?.orderProducts?.[0]?.image?.image ? (
+                {order?.product?.image?.image ? (
                   <ImageWithFallback
-                    src={order.orderProducts[0].image.image}
+                    src={order?.product?.image?.image}
                     alt={order?.orderId || "order"}
                     className="w-full h-full object-cover"
                   />
@@ -119,6 +119,12 @@ function OrderGridView<T>({
                 }`}
               >
                 <div className="space-y-1 text-sm">
+                  <p className="w-fit">
+                    <span>
+                      <span className="font-medium">{t("product_name")}:</span>{" "}
+                      {order?.product?.name || "N/A"}
+                    </span>
+                  </p>
                   <p className="">
                     <span>
                       <span className="font-medium">
@@ -139,15 +145,9 @@ function OrderGridView<T>({
                   <p>
                     <span className="font-medium">{t("deliveryFee")}:</span>{" "}
                     {order?.deliveryFee
-                      ? `₪${order.deliveryFee.toLocaleString()}`
+                      ? `₪${order?.deliveryFee?.toLocaleString()}`
                       : "-"}{" "}
                   </p>
-                  <span
-                    className="text-xs font-semibold px-2.5 py-0.5 rounded-full
-                     bg-linear-to-r from-teal-500 to-cyan-500 text-white shadow-sm whitespace-nowrap"
-                  >
-                    #{order?.orderId || order?._id}
-                  </span>
                 </div>
               </div>
             </div>
