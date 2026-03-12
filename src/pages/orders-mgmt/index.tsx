@@ -239,7 +239,6 @@ export default function OrdersMgmtPage() {
   const canViewOrders =
     userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
-  console.log("🚀 ~ OrdersMgmtPage ~ combinedOrders:", combinedOrders);
 
   const orderQueryParams = useMemo(() => {
     const params: any = {
@@ -287,7 +286,6 @@ export default function OrdersMgmtPage() {
 
     return params;
   }, [page, limit, searchTerm, filters, authorityId, dmoId, websiteId]);
-  console.log("🚀 ~ OrdersMgmtPage ~ filters:", filters);
 
   const { data: orderStat, isLoading: isStatsLoading } =
     useGetOrderStatsQuery(orderQueryParams);
@@ -348,7 +346,7 @@ export default function OrdersMgmtPage() {
       label: t("purchaser_name_field"),
       sortable: true,
       render: (order: IOrder) => (
-        <div className="text-sm">{order.firstName}</div>
+        <div className="text-sm">{order?.firstName}</div>
       ),
     },
     columnVisibility.product_name && {
@@ -365,12 +363,12 @@ export default function OrdersMgmtPage() {
       label: t("purchaser_email"),
       render: (order: IOrder) => (
         <a
-          href={`mailto:${order.email}`}
+          href={`mailto:${order?.email}`}
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
         >
           <Mail className="w-3 h-3" />
-          {order.email}
+          {order?.email}
         </a>
       ),
     },
@@ -380,12 +378,12 @@ export default function OrdersMgmtPage() {
       label: t("purchaser_phone"),
       render: (order: IOrder) => (
         <a
-          href={`tel:${order.phone}`}
+          href={`tel:${order?.phone}`}
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
         >
           <Phone className="w-3 h-3" />
-          {order.phone}
+          {order?.phone ? order.phone : "-"}
         </a>
       ),
     },
@@ -402,7 +400,9 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          ₪{order?.totalAmount?.toLocaleString()}
+          {order?.totalAmount
+            ? `₪${order?.totalAmount?.toLocaleString()}`
+            : "-"}{" "}
         </div>
       ),
     },
@@ -412,7 +412,9 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          {order?.deliveryFee ? `₪${order.deliveryFee.toLocaleString()}` : "-"}
+          {order?.deliveryFee
+            ? `₪${order?.deliveryFee?.toLocaleString()}`
+            : "-"}
         </div>
       ),
     },
@@ -423,7 +425,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {formatOrderDate(order.createdAt, language)}
+          {formatOrderDate(order?.createdAt, language)}
         </div>
       ),
     },
@@ -434,7 +436,7 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm text-gray-500">
-          {formatOrderDate(order.paymentDate, language)}
+          {formatOrderDate(order?.paymentDate, language)}
         </div>
       ),
     },
@@ -592,7 +594,6 @@ export default function OrdersMgmtPage() {
     setIsBulkDelete(true);
     setIsConfirmOpen(true);
   }, [selectedOrders.size]);
-  console.log("🚀 ~ OrdersMgmtPage ~ selectedOrders:", selectedOrders);
 
   const handleBulkResend = useCallback(async () => {
     if (!selectedOrders.size) return;
@@ -704,54 +705,6 @@ export default function OrdersMgmtPage() {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
-      },
-    };
-    const badge = badges[status];
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}
-      >
-        {badge?.label}
-      </span>
-    );
-  };
-
-  const getPaymentStatusBadge = (status: IOrder["paymentStatus"]) => {
-    const badges = {
-      PENDING: {
-        bg: "bg-yellow-100 dark:bg-yellow-900/30",
-        text: "text-yellow-800 dark:text-yellow-400",
-        label: t("pending"),
-      },
-      SUCCESS: {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-800 dark:text-green-400",
-        label: t("success"),
-      },
-      FAILED: {
-        bg: "bg-red-100 dark:bg-red-900/30",
-        text: "text-red-800 dark:text-red-400",
-        label: t("failed"),
-      },
-      REFUNDED: {
-        bg: "bg-purple-100 dark:bg-purple-900/30",
-        text: "text-purple-800 dark:text-purple-400",
-        label: t("refunded"),
-      },
-      REFUND_IN_PROCESS: {
-        bg: "bg-orange-100 dark:bg-orange-900/30",
-        text: "text-orange-800 dark:text-orange-400",
-        label: t("refund_in_process"),
-      },
-      PARTIALLY_REFUNDED: {
-        bg: "bg-orange-100 dark:bg-orange-900/30",
-        text: "text-orange-800 dark:text-orange-400",
-        label: t("partiallyRefunded"),
-      },
-      REFUND_SUCCESS: {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-800 dark:text-green-400",
-        label: t("refund_success"),
       },
     };
     const badge = badges[status];
@@ -1097,7 +1050,6 @@ export default function OrdersMgmtPage() {
           isFetching={isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
-          getPaymentStatusBadge={getPaymentStatusBadge}
         />
       </Activity>
 

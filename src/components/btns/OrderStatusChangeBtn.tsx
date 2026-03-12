@@ -66,8 +66,8 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
     },
     shipped: {
       color: "bg-green-500",
-      textColor: "text-green-200",
-      borderColor: "border-green-200",
+      textColor: "text-green-500",
+      borderColor: "border-green-400",
       label: t("shipped"),
     },
   };

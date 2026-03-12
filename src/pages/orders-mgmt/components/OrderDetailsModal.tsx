@@ -26,7 +26,6 @@ interface OrderDetailsModalProps {
   onClose: () => void;
   t: (key: string) => string;
   getOrderStatusBadge: any;
-  getPaymentStatusBadge: any;
   isLoading: any;
   isFetching: any;
   refetch: any;
@@ -42,7 +41,6 @@ function OrderDetailsModal({
   isLoading,
   isFetching,
 }: OrderDetailsModalProps) {
-  console.log("🚀 ~ OrderDetailsModal ~ order:", order);
   const { textTertiary, textPrimary } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
@@ -213,12 +211,12 @@ function OrderDetailsModal({
                   }}
                 >
                   <p
-                    className={`${textPrimary} ${order?.products?.cancelled ? "line-through" : ""}`}
+                    className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
                   >
                     {order?.products?.name}
                   </p>
                   <p className={`text-sm ${textTertiary}`}>
-                    {order?.products?.vendor ? order?.products.vendor : "-"}
+                    {order?.products?.vendor ? order?.products?.vendor : "-"}
                   </p>
                 </div>
 
@@ -228,7 +226,7 @@ function OrderDetailsModal({
                 >
                   <div className={`text-right ${isRTL ? "text-left" : ""}`}>
                     <p
-                      className={`${textPrimary} ${order?.products?.cancelled ? "line-through" : ""}`}
+                      className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
                     >
                       ₪
                       {(
@@ -266,14 +264,14 @@ function OrderDetailsModal({
                 {t("voucher_amount") || "Voucher"}
               </span>
               <span className={textPrimary}>
-                {order?.voucher && order.voucher.length > 0
-                  ? `₪${order.voucher
-                      .reduce(
+                {order?.voucher && order?.voucher?.length > 0
+                  ? `₪${order?.voucher
+                      ?.reduce(
                         (total: number, voucher: any) =>
                           total + (voucher?.redeemedAmount || 0),
                         0,
                       )
-                      .toLocaleString()}`
+                      ?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -283,7 +281,7 @@ function OrderDetailsModal({
               </span>
               <span className={textPrimary}>
                 {order?.creditCardPayment
-                  ? `₪${order.creditCardPayment.toLocaleString()}`
+                  ? `₪${order?.creditCardPayment?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -293,7 +291,7 @@ function OrderDetailsModal({
               </span>
               <span className={textPrimary}>
                 {order?.deliveryFee
-                  ? `₪${order.deliveryFee.toLocaleString()}`
+                  ? `₪${order?.deliveryFee?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -302,7 +300,9 @@ function OrderDetailsModal({
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
               <span className={`${textPrimary}`}>
-                ₪{order?.totalAmount?.toLocaleString()}
+                {order?.totalAmount
+                  ? `₪${order?.totalAmount?.toLocaleString()}`
+                  : "-"}
               </span>
             </div>
           </div>
@@ -380,7 +380,6 @@ function OrderDetailsModal({
                     canceled_reason: reason,
                     isQrScan: true,
                     externalApiId: order?.externalApiId || "",
-                    // productId: itemToCancel?._id,  specific product id
                   },
                 }).unwrap();
                 refetch();
