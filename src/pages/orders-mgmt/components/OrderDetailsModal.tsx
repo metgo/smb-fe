@@ -8,9 +8,7 @@ import CancellationDialog from "./sub-components/CancellationDialog";
 import { ModalWrapper } from "@/components/wrapper";
 import {
   useBulkOrdersUpdateMutation,
-  useUpdateOrderMutation,
   useUpdateOrderStatusMutation,
-  useUpdateProductOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
@@ -49,9 +47,6 @@ function OrderDetailsModal({
   const [showProductModal, setShowProductModal] = useState(false);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
-  const [updateOrder] = useUpdateOrderMutation();
-
-  const [updateProductOrderStatus] = useUpdateProductOrderStatusMutation();
 
   const [bulkOrdersUpdate, { isLoading: isSendingEmail }] =
     useBulkOrdersUpdateMutation();
@@ -71,10 +66,9 @@ function OrderDetailsModal({
       toast.error("failed");
     }
   };
-
   const onStatusChangeHandler = async (status: string) => {
     try {
-      await updateOrder({
+      await updateOrderStatus({
         orderId: order?._id,
         body: { status: status.toLowerCase() },
       }).unwrap();
@@ -363,18 +357,6 @@ function OrderDetailsModal({
                 // Cancel the entire order
                 await updateOrderStatus({
                   orderId: order?._id,
-                  body: {
-                    status: "canceled",
-                    canceled_reason: reason,
-                    isQrScan: true,
-                    externalApiId: order?.externalApiId || "",
-                  },
-                }).unwrap();
-                refetch();
-              } else if (cancelType === "item") {
-                // Cancel a specific product in the order
-                await updateProductOrderStatus({
-                  orderProductId: itemToCancel?.orderedProductId ?? "",
                   body: {
                     status: "canceled",
                     canceled_reason: reason,
