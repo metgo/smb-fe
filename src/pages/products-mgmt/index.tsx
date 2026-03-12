@@ -360,7 +360,7 @@ export default function ProductsMgmtPage() {
     localStorage.removeItem(SEARCH_STORAGE_KEY);
     setSearchTerm("");
     setPage(1);
-    setCombinedProducts([]);
+    setCombinedProducts(productData?.data);
   }, [language]);
 
   const resetToDefault = useCallback(() => {
@@ -676,7 +676,9 @@ export default function ProductsMgmtPage() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          {!isLoadingProduct && !isFetching && combinedProducts.length === 0 ? (
+          {!isLoadingProduct &&
+          !isFetching &&
+          combinedProducts?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >

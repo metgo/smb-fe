@@ -22,6 +22,7 @@ import {
   ProductDetailsPage,
   ContentMgmtPage,
   ErrorUiPage,
+  AnalyticsDashboardPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
@@ -126,6 +127,10 @@ function App() {
       // errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
+        {
+          path: routes.analyticsDashboard,
+          element: <AnalyticsDashboardPage />,
+        },
 
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
         { path: routes.businessDetails, element: <BusinessDetailsPage /> },

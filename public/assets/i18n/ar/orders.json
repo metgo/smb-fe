@@ -23,6 +23,7 @@
   "order_status_update_failed": "فشل تحديث حالة الطلب",
   "deliveryFee": "رسوم التوصيل",
   "price": "السعر",
+
   "purchaser_name": "اسم المشتري",
   "purchaser_information": "معلومات المشتري",
   "order_type": "نوع الطلب",

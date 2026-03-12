@@ -11,10 +11,10 @@
   "email": "Email",
   "product_name": "Product Name",
 
-  "phone": "Phone",
-  "totalAmount": "Total amount",
   "order_details": "Order Details",
   "change_status": "Change Status",
+  "phone": "Phone",
+  "totalAmount": "Total amount",
   "createdAt": "Created date",
   "paymentDate": "Payment date",
   "purchaser_information": "Purchaser Information",
@@ -30,6 +30,7 @@
   "order_status_update_failed": "Failed to update order status",
   "deliveryFee": "Delivery Fee",
   "price": "Price",
+
   "pick_up": "Pickup",
   "deliver": "Delivery",
   "card": "Credit Card",

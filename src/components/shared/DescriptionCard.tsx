@@ -41,8 +41,8 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
           <div className="flex-1">
             <h3
               className={clsx(
-                "text-sm font-semibold uppercase tracking-wide mb-1",
-                isDark ? "text-gray-400" : "text-gray-600",
+                "text-md font-semibold  tracking-wide mb-1",
+                isDark ? "text-gray-400" : "text-gray-900",
               )}
             >
               {title}

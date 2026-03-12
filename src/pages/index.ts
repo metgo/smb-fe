@@ -10,6 +10,8 @@ import BusinessDetailsPage from "./businesses-mgmt/details";
 import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
 import ErrorUiPage from "./error-ui";
+import AnalyticsDashboardPage from "./analytics-dashboard";
+
 export {
   AuthPage,
   ErrorUiPage,
@@ -22,5 +24,6 @@ export {
   EventDetailsPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
+  AnalyticsDashboardPage,
   ContentMgmtPage,
 };
