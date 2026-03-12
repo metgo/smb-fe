@@ -232,20 +232,21 @@ export default function OrdersMgmtPage() {
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
-  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
   const canViewOrders =
     userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
+  console.log("🚀 ~ OrdersMgmtPage ~ combinedOrders:", combinedOrders);
+
   const orderQueryParams = useMemo(() => {
     const params: any = {
       page,
       limit,
       dmoId,
       authorityId,
-      startDate,
-      endDate,
+
       websiteId,
     };
 
@@ -265,37 +266,27 @@ export default function OrdersMgmtPage() {
     if (filters.status !== "all") {
       params.status = filters.status;
     }
-    if (filters.vendor !== "all") {
-      params.vendor = filters.vendor;
-    }
-
-    if (filters.campaign !== "all") {
-      params.campaign = filters.campaign;
-    }
 
     // Month filter
     if (filters.month !== "all" && filters.month !== "custom") {
-      params.startDate = filters.month;
+      const [month, year] = filters.month.split("-");
+
+      const firstDay = new Date(Number(year), Number(month) - 1, 1);
+      const lastDay = new Date(Number(year), Number(month), 0);
+
+      params.startDate = firstDay.toISOString().split("T")[0];
+      params.endDate = lastDay.toISOString().split("T")[0];
     }
 
     // Custom date range
     if (filters.month === "custom") {
-      if (filters.startDate) params.dateFrom = filters.startDate;
-      if (filters.endDate) params.dateTo = filters.endDate;
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
     }
 
     return params;
-  }, [
-    page,
-    limit,
-    searchTerm,
-    filters,
-    authorityId,
-    dmoId,
-    startDate,
-    endDate,
-    websiteId,
-  ]);
+  }, [page, limit, searchTerm, filters, authorityId, dmoId, websiteId]);
+  console.log("🚀 ~ OrdersMgmtPage ~ filters:", filters);
 
   const { data: orderStat, isLoading: isStatsLoading } =
     useGetOrderStatsQuery(orderQueryParams);
@@ -303,13 +294,20 @@ export default function OrdersMgmtPage() {
   const {
     data: orders,
     isLoading,
+
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
   const hasMore = orders?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
-  console.log("🚀 ~ OrdersMgmtPage ~ orderss:", orderss);
+
+  //update combined order when filters change so combined orders doesnt show stale value
+  useEffect(() => {
+    setCombinedOrders([]);
+    setPage(1);
+  }, [searchTerm, filters, authorityId, dmoId, websiteId]);
+
   useEffect(() => {
     if (!orderss?.length) return;
 
@@ -1030,15 +1028,16 @@ export default function OrdersMgmtPage() {
           )}
         </div>
       )}
-
-      {selectedOrders.size > 0 && (
-        <BulkActionBar
-          selectedItemCount={selectedOrders.size}
-          handleResendOrderDetails={promptBulkResend}
-          handleExportCSV={handleExportCSV}
-          hancleClearSelection={() => setSelectedOrders(new Set())}
-        />
-      )}
+      <div>
+        {selectedOrders.size > 0 && (
+          <BulkActionBar
+            selectedItemCount={selectedOrders.size}
+            handleResendOrderDetails={promptBulkResend}
+            handleExportCSV={handleExportCSV}
+            hancleClearSelection={() => setSelectedOrders(new Set())}
+          />
+        )}
+      </div>
 
       {/* Orders Table */}
       {(userRole === UserRole.SUPERADMIN ||
@@ -1052,7 +1051,7 @@ export default function OrdersMgmtPage() {
                 <div className="flex items-center justify-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-teal-500" />
                 </div>
-              ) : orders?.datas?.data?.length === 0 ? (
+              ) : orderss.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
@@ -1077,16 +1076,22 @@ export default function OrdersMgmtPage() {
             </div>
           ) : (
             <div className="overflow-y-auto">
-              <OrderGridView
-                selectedOrders={selectedOrders}
-                setSelectedOrders={setSelectedOrders}
-                data={combinedOrders || []}
-                next={fetchNextPage}
-                hasMore={hasMore}
-                isLoading={isLoading || isFetching}
-                onRowClick={handleRowClick}
-                t={t}
-              />
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
+                </div>
+              ) : (
+                <OrderGridView
+                  selectedOrders={selectedOrders}
+                  setSelectedOrders={setSelectedOrders}
+                  data={combinedOrders || []}
+                  next={fetchNextPage}
+                  hasMore={hasMore}
+                  isLoading={isLoading || isFetching}
+                  onRowClick={handleRowClick}
+                  t={t}
+                />
+              )}
             </div>
           )}
         </>

@@ -39,10 +39,10 @@ const OrderListView: React.FC<OrderListViewProps> = ({
         theme === "dark"
           ? "bg-gray-900/50 border-gray-800"
           : "bg-white border-gray-200"
-      } border rounded-lg overflow-hidden`}
+      } border rounded-lg overflow-hidden overflow-y-auto`}
     >
       {orders?.datas?.data?.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
+        <div className="flex flex-col items-center justify-center py-20 ">
           <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
           <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
         </div>
