@@ -1,6 +1,5 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface PersonInfo {
   name: string;

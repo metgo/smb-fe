@@ -1,4 +1,4 @@
-import { ChevronDown, Check, User, CheckCircle } from "lucide-react";
+import { ChevronDown, Check, User } from "lucide-react";
 
 interface VoucherInformationProps {
   formData: any;
@@ -6,7 +6,7 @@ interface VoucherInformationProps {
   errors: Record<string, string>;
   websites: any[];
   campaigns: any[];
-  handleWebsiteToggle: (id: number) => void;
+  handleWebsiteToggle: (id: string) => void;
   handleCampaignChange: (id: string) => void;
   isWebsiteDropdownOpen: boolean;
   setIsWebsiteDropdownOpen: any;

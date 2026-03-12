@@ -163,11 +163,11 @@ export const getStatusColor = (status: Voucher["status"]) => {
 };
 export const getStatusLabel = (status: Voucher["status"]) => {
   const labels = {
-    active: "Active",
-    assigned: "Assigned",
-    redeemed: "Redeemed",
-    expired: "Expired",
-    cancelled: "Cancelled",
+    ACTIVE: "Active",
+    ASSIGNED: "Assigned",
+    REDEEMED: "Redeemed",
+    EXPIRED: "Expired",
+    CANCELED: "Cancelled",
     UNASSIGNED: "UNASSIGNED",
   };
   return labels[status];

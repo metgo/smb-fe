@@ -15,8 +15,8 @@ interface Voucher {
 
 interface VoucherOverviewProps {
   voucher: Voucher;
-  isExpired: (date?: string) => boolean;
-  isExpiringSoon: (date?: string) => boolean;
+  isExpired: (date: string) => boolean;
+  isExpiringSoon: (date: string) => boolean;
   isDark: boolean;
   t: any;
 }

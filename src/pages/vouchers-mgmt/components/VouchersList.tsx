@@ -161,14 +161,14 @@ export function VouchersList({
   // refreshTrigger,
 }: VouchersListProps) {
   const { textPrimary } = useThemeClasses();
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   const SEARCH_STORAGE_KEY = "voucherSearchTerm";
   // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
-  const { t } = useTranslation("events");
+  const { t } = useTranslation("vouchers");
 
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
@@ -245,10 +245,9 @@ export function VouchersList({
         <span
           className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
             voucher.status,
-            isDark,
           )}`}
         >
-          {getStatusLabel(voucher.status, t)}
+          {getStatusLabel(voucher.status)}
         </span>
       ),
     },
@@ -304,10 +303,11 @@ export function VouchersList({
               {formatDate(voucher.expireDate)}
             </span>
             {expiringSoon && !expired && (
-              <Clock
-                className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
-                title={t("expiring_soon")}
-              />
+              <span title={t("expiring_soon")}>
+                <Clock
+                  className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
+                />
+              </span>
             )}
           </div>
         );
@@ -492,7 +492,7 @@ export function VouchersList({
   };
   const [messageComposerOpen, setMessageComposerOpen] = useState(false);
   const [sendResultsOpen, setSendResultsOpen] = useState(false);
-  const [sendResults, setSendResults] = useState([]);
+  const [sendResults, _setSendResults] = useState([]);
 
   const handleSendMessage = (data: any) => {
     const selectedVoucherData = filteredVouchers.filter((v) =>
@@ -539,7 +539,7 @@ export function VouchersList({
     );
 
     // Show results
-    setSendResults(results);
+    // setSendResults(results);
     setMessageComposerOpen(false);
     setSendResultsOpen(true);
 
@@ -588,7 +588,7 @@ export function VouchersList({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
               {
-                label: "total_vouchers",
+                label: t("total_vouchers"),
                 value: stats.total,
                 from: "blue-50",
                 to: "blue-100",
@@ -596,7 +596,7 @@ export function VouchersList({
                 border: "blue",
               },
               {
-                label: "assigned",
+                label: t("assigned"),
                 value: stats.assigned,
                 from: "purple-50",
                 to: "purple-100",
@@ -604,7 +604,7 @@ export function VouchersList({
                 border: "purple",
               },
               {
-                label: "redeemed",
+                label: t("redeemed"),
                 value: stats.redeemed,
                 from: "green-50",
                 to: "green-100",
@@ -612,7 +612,7 @@ export function VouchersList({
                 border: "green",
               },
               {
-                label: "remaining_balance",
+                label: t("remaining_balance"),
                 value: stats.totalBalance.toLocaleString(),
                 from: "orange-50",
                 to: "orange-100",
@@ -620,7 +620,7 @@ export function VouchersList({
                 border: "orange",
               },
               {
-                label: "expired",
+                label: t("expired"),
                 value: stats.expired,
                 from: "gray-50",
                 to: "gray-100",
@@ -628,7 +628,7 @@ export function VouchersList({
                 border: "gray",
               },
               {
-                label: "revenue",
+                label: t("revenue"),
                 value: stats.revenue.toLocaleString(),
                 from: "teal-50",
                 to: "teal-100",

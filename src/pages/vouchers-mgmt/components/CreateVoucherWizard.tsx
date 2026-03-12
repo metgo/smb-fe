@@ -1,18 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  X,
-  Check,
-  Upload,
-  Download,
-  AlertCircle,
-  ChevronDown,
-  FileText,
-  Users,
-  ClipboardList,
-  Eye,
-  CheckCircle,
-  User,
-} from "lucide-react";
+import { Check, FileText, Users, ClipboardList, Eye } from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
 import {
   useInitVoucherCreateMutation,
@@ -27,7 +14,6 @@ import VoucherInformation from "./sub-components/VoucherInformation";
 import VoucherType from "./sub-components/VoucherType";
 import VoucherConfigure from "./sub-components/VoucherConfigure";
 import VoucherReview from "./sub-components/VoucherReview";
-import VoucherSuccess from "./sub-components/VoucherSuccess";
 
 interface AddVoucherWizardProps {
   // language: Language;
@@ -56,13 +42,13 @@ interface VoucherFormData {
   xlsFile: File | null;
 }
 
-interface CreatedVoucher {
-  code: string;
-  assigneeName: string;
-  email: string;
-  amount: number;
-  status: string;
-}
+// interface CreatedVoucher {
+//   code: string;
+//   assigneeName: string;
+//   email: string;
+//   amount: number;
+//   status: string;
+// }
 
 // Mock database of existing users for autocomplete
 const existingUsers = [
@@ -112,13 +98,13 @@ export function AddVoucherWizard({
   // language,
   // theme,
   onClose,
-  onVoucherCreated,
+  // onVoucherCreated,
 }: AddVoucherWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { isDark } = useThemeClasses();
   const totalSteps = 4;
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("vouchers");
   const [formData, setFormData] = useState<VoucherFormData>({
     websites: [],
     campaign: "",
@@ -168,41 +154,45 @@ export function AddVoucherWizard({
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
-  const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
-  const saveDraft = useCallback(async (isPublish = false) => {
-    try {
-      let internalvoucherId;
+  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [_isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+  const saveDraft = useCallback(
+    async (isPublish = false) => {
+      try {
+        let internalVoucherId;
 
-      // 1️⃣ Initialize if not created yet
-      if (!voucherId) {
-        const res = await initVoucherCreate().unwrap();
-        internalvoucherId = res?.id;
-        setVoucherId(res?.id);
+        //  Initialize if not created yet
+        if (!voucherId) {
+          const res = await initVoucherCreate().unwrap();
+          internalVoucherId = res?.id;
+          setVoucherId(res?.id);
+        }
+
+        //  Build base payload
+        let payload = stepPayloadMap;
+
+        if (isPublish) {
+          payload = {
+            ...payload,
+          };
+        }
+
+        if (!Object.keys(payload).length) return;
+
+        // Update voucher
+        await updateVoucher({
+          voucherId: internalVoucherId || voucherId!,
+          body: payload,
+        }).unwrap();
+
+        onClose();
+        toast.success(isPublish ? t("business_published") : t("draft_saved"));
+      } catch (err: any) {
+        toast.error(err?.data?.message || t("draft_failed"));
       }
-      // 2️⃣ Build base payload
-      let payload = stepPayloadMap;
-
-      if (isPublish) {
-        payload = {
-          ...payload,
-        };
-      }
-
-      if (!Object.keys(payload).length) return;
-
-      // 4️⃣ Update event
-      await updateVoucher({
-        voucherId: internalvoucherId || voucherId!,
-        body: payload,
-      }).unwrap();
-
-      onClose();
-      toast.success(isPublish ? t("business_published") : t("draft_saved"));
-    } catch (err: any) {
-      toast.error(err?.data?.message || t("draft_failed"));
-    }
-  });
+    },
+    [voucherId, stepPayloadMap, initVoucherCreate, updateVoucher, onClose, t],
+  );
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
 
@@ -300,7 +290,7 @@ export function AddVoucherWizard({
     await saveDraft(true);
     setIsPublishing(false);
   };
-  const [createdVouchers, setCreatedVouchers] = useState<CreatedVoucher[]>([]);
+  // const [createdVouchers, setCreatedVouchers] = useState<CreatedVoucher[]>([]);
   const [xlsValidation, setXlsValidation] = useState<{
     valid: number;
     invalid: number;

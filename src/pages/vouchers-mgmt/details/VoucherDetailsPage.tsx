@@ -80,7 +80,7 @@ interface Transaction {
 
 export function VoucherDetailsPage() {
   const { isDark, borderColor } = useThemeClasses();
-  const { t } = useTranslation("businesses");
+  const { t } = useTranslation("vouchers");
   const [voucherId, setVoucherId] = useState("");
   const [searchParams] = useSearchParams();
   useEffect(() => {

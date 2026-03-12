@@ -4,12 +4,10 @@ import { VoucherDetailsPage } from "./details/VoucherDetailsPage";
 import { AddVoucherWizard } from "./components/CreateVoucherWizard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
-import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export default function VouchersMgmtPage() {
-  const { t } = useTranslation();
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
     null,
@@ -38,10 +36,6 @@ export default function VouchersMgmtPage() {
     },
     [navigate],
   );
-
-  const handleCloseDetails = () => {
-    setSelectedVoucherId(null);
-  };
 
   const handleAddVoucher = () => {
     setShowAddWizard(true);
@@ -79,12 +73,7 @@ export default function VouchersMgmtPage() {
         </div>
 
         {/* Detail View */}
-        {selectedVoucherId && (
-          <VoucherDetailsPage
-            onClose={handleCloseDetails}
-            onVoucherUpdated={handleVoucherUpdated}
-          />
-        )}
+        {selectedVoucherId && <VoucherDetailsPage />}
       </div>
 
       {/* Add Voucher Wizard Modal */}
