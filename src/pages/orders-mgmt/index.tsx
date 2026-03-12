@@ -682,7 +682,7 @@ export default function OrdersMgmtPage() {
       pending: {
         bg: "bg-orange-100 dark:bg-orange-900/30",
         text: "text-orange-800 dark:text-orange-400",
-        label: t("partially_cancelled"),
+        label: t("pending"),
       },
       processing: {
         bg: "bg-blue-100 dark:bg-blue-900/30",
@@ -698,7 +698,7 @@ export default function OrdersMgmtPage() {
       shipped: {
         bg: "bg-emerald-100 dark:bg-emerald-900/30",
         text: "text-emerald-800 dark:text-emerald-400",
-        label: t("completed"),
+        label: t("shipped"),
       },
       canceled: {
         bg: "bg-red-100 dark:bg-red-900/30",
