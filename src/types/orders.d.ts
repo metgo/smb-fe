@@ -5,15 +5,11 @@ type TPaymentStatus =
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
 type TOrderStatus =
-  | "draft"
   | "processing"
-  | "paid"
-  | "confirmed"
-  | "delivered"
   | "completed"
   | "canceled"
-  | "partially_cancelled"
-  | "failed";
+  | "shipped"
+  | "pending";
 type TOrderType = "online" | "offline";
 type TDeliveryType = "pickup" | "delivery" | "digital";
 
@@ -34,7 +30,7 @@ interface IOrder {
   deliveryType: TDeliveryType;
   createdAt: string;
   paymentDate: string;
-  products: OrderProduct[];
+  products: OrderProduct;
   address?: string;
   campaignCode?: string;
   qrScanned: boolean;

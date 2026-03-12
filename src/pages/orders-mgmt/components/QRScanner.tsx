@@ -53,7 +53,6 @@ export default function QRScanner({ onClose }: QRScannerProps) {
         });
 
         if (code) {
-          // console.log("QR detected!", code.data);
           setQrData(code.data);
           // stop scanning here
           video.pause();
