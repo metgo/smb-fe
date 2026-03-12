@@ -828,7 +828,7 @@ export default function OrdersMgmtPage() {
 
       {/* Search and Filters */}
       {canViewOrders && (
-        <div className={` border rounded-lg p-4 mb-6`}>
+        <div className={` border rounded-lg p-4 mb-2`}>
           <div
             className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
           >
@@ -915,7 +915,7 @@ export default function OrdersMgmtPage() {
           </div>
 
           {showFilters && (
-            <div className="flex flex-wrap items-start gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               {/* Delivery Type */}
               <div className="min-w-[180px]">
                 <FilterSelect
@@ -1052,7 +1052,7 @@ export default function OrdersMgmtPage() {
                   <Loader className="w-8 h-8 animate-spin text-teal-500" />
                 </div>
               ) : orderss.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20">
+                <div className="flex flex-col items-center justify-center py-12">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
                 </div>
