@@ -57,6 +57,7 @@ import OrderListView from "../products-mgmt/components/sub-components/OrderListV
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { UserRole } from "@/enums/user.types";
+import { formatOrderDate } from "@/helpers";
 
 // Default columns configuration
 const defaultColumns = {
@@ -182,16 +183,7 @@ export default function OrdersMgmtPage() {
     endDate: "",
     month: "all", // 'all', 'MM-YYYY', or 'custom'
   });
-  // utils/dateFormatter.ts
-  const formatOrderDate = (dateString: string, language: string) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleDateString(language, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+
   //active filter chips
   const activeFilterChips = useMemo(() => {
     const chips: { key: string; value: string }[] = [];
@@ -771,7 +763,7 @@ export default function OrdersMgmtPage() {
 
       {/* Search and Filters */}
       {canViewOrders && (
-        <div className={` border rounded-lg p-4 mb-2`}>
+        <div className=" mb-5 mt-1">
           <div
             className={`flex flex-col md:flex-row gap-4 ${isRTL ? "md:flex-row-reverse" : ""}`}
           >
