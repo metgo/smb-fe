@@ -63,10 +63,17 @@ export default function EventsMgmtPage() {
       registrationFilter,
       statusFilter,
       dateRangeFilter,
+      searchQuery,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [registrationFilter, statusFilter, dateRangeFilter, eventTypeFilter]);
+  }, [
+    registrationFilter,
+    statusFilter,
+    dateRangeFilter,
+    eventTypeFilter,
+    searchQuery,
+  ]);
 
   const eventQueryParams = useMemo(() => {
     const params: any = {

@@ -182,7 +182,12 @@ export default function ProductsMgmtPage() {
   // ─── Persist state to localStorage ─────────
   useEffect(() => {
     const { status, locale, businessId } = filters;
-    if (status !== "all" || locale !== language || businessId !== "") {
+    if (
+      status !== "all" ||
+      locale !== language ||
+      businessId !== "" ||
+      searchTerm !== ""
+    ) {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ filters, searchTerm, page, viewMode }),
@@ -194,13 +199,13 @@ export default function ProductsMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  useEffect(() => {
-    if (searchTerm) {
-      localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-    } else {
-      localStorage.removeItem(SEARCH_STORAGE_KEY);
-    }
-  }, [searchTerm]);
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
+  //   } else {
+  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
+  //   }
+  // }, [searchTerm]);
 
   // ─── Close column dropdown on outside click ─────────
   useEffect(() => {
