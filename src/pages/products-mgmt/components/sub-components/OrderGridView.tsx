@@ -163,13 +163,11 @@ function OrderGridView<T>({
 
               {/* Body */}
               <div
-                className={`p-3 min-h-[16vh] ${
-                  isDark
-                    ? "bg-gray-800 text-gray-400"
-                    : "bg-white text-gray-600"
+                className={`p-3 min-h-[15vh] ${
+                  isDark ? "bg-gray-800 text-white" : "bg-white text-gray-600"
                 }`}
               >
-                <div className="text-sm space-y-3">
+                <div className="text-sm space-y-1.5">
                   {/* Product name */}
                   <p className="font-semibold">{order?.product?.name || "-"}</p>
 
