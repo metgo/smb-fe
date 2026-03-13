@@ -456,7 +456,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                         ) : column.render ? (
                           column.render(item)
                         ) : (
-                          String(item[colKey as keyof T] ?? "-")
+                          String(item[colKey as keyof T] || "-")
                         )}
                       </td>
                     );
