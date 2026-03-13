@@ -11,7 +11,6 @@ import {
 import {
   Download,
   // Plus,
-  Menu,
   Eye,
   ChevronDown,
   ChevronUp,
@@ -80,7 +79,6 @@ type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
   const { t, i18n } = useTranslation("orders");
-  const { t: tb } = useTranslation("businesses");
 
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
@@ -93,6 +91,8 @@ export default function OrdersMgmtPage() {
 
   // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermSummary, setSearchTermSummary] = useState("");
+
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -108,21 +108,70 @@ export default function OrdersMgmtPage() {
   const [pageSummary, setPageSummary] = useState(1);
 
   const limit = 20;
+  const [summaryFilters, setSummaryFilters] = useState({
+    status: "all",
+    startDate: "",
+    endDate: "",
+    month: "all",
+  });
   const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(false);
+  const orderSummaryQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit,
+      // dmoId,
+      // authorityId,
+
+      // websiteId,
+    };
+
+    if (searchTermSummary) params.search = searchTermSummary;
+
+    if (summaryFilters.status !== "all") {
+      params.status = summaryFilters.status;
+    }
+
+    // Month filter
+    if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
+      const [month, year] = summaryFilters.month.split("-");
+
+      const firstDay = new Date(Number(year), Number(month) - 1, 1);
+      const lastDay = new Date(Number(year), Number(month), 0);
+
+      params.startDate = firstDay.toISOString().split("T")[0];
+      params.endDate = lastDay.toISOString().split("T")[0];
+    }
+
+    // Custom date range
+    if (summaryFilters.month === "custom") {
+      if (summaryFilters.startDate) params.startDate = summaryFilters.startDate;
+      if (summaryFilters.endDate) params.endDate = summaryFilters.endDate;
+    }
+
+    return params;
+  }, [
+    page,
+    limit,
+    searchTermSummary,
+    summaryFilters,
+    // filters,
+    // authorityId,
+    // dmoId,
+    // websiteId,
+  ]);
+
   const {
     data: orderSummaries,
     isLoading: isLoadingOrderSummary,
-
-    refetch: refetchOrderSummary,
     isFetching: isFetchingOrderSummary,
-  } = useGetAllOrderSummaryQuery({});
+  } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
+    skip: !orderSummaryClick, // skip when summary is NOT clicked
+  });
+  console.log("🚀 ~ OrdersMgmtPage ~ orderSummaryClick:", orderSummaryClick);
 
-  const ordersSummariess = orderSummaries?.datas ?? [];
+  const ordersSummariess = orderSummaries?.datas?.data ?? [];
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
-  if (orderSummaryClick) {
-    console.log("ordersumary", ordersSummariess);
-  }
   //camera persmissions
   const [stream, setStream] = useState<MediaStream | null>(null);
 
@@ -197,10 +246,8 @@ export default function OrdersMgmtPage() {
   };
   // Filters
   const [filters, setFilters] = useState({
-    orderType: "all",
     paymentMethod: "all",
-    vendor: "all",
-    campaign: "all",
+
     deliveryType: "all",
     status: "all",
     startDate: "",
@@ -268,10 +315,6 @@ export default function OrdersMgmtPage() {
 
     if (searchTerm) params.search = searchTerm;
 
-    if (filters.orderType !== "all") {
-      params.orderType = filters.orderType;
-    }
-
     if (filters.deliveryType !== "all") {
       params.deliveryType = filters.deliveryType;
     }
@@ -305,14 +348,14 @@ export default function OrdersMgmtPage() {
 
   const { data: orderStat, isLoading: isStatsLoading } =
     useGetOrderStatsQuery(orderQueryParams);
-
   const {
     data: orders,
     isLoading,
-
     refetch,
     isFetching,
-  } = useGetAllOrdersQuery(orderQueryParams);
+  } = useGetAllOrdersQuery(orderQueryParams, {
+    skip: orderSummaryClick, // skip when summary is clicked
+  });
 
   const hasMore = orders?.meta?.hasNextPage;
   const totalData = orders?.totalData;
@@ -934,10 +977,22 @@ export default function OrdersMgmtPage() {
         >
           {" "}
           <PageHeader
-            title={t("online_orders_management")}
-            description={t("online_orders_subtitle")}
+            title={
+              orderSummaryClick
+                ? t("online_orders_summary_management")
+                : t("online_orders_management")
+            }
+            description={
+              orderSummaryClick
+                ? t("businesses_list")
+                : t("online_orders_subtitle")
+            }
             h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            totalCount={totalData ?? 0}
+            totalCount={
+              orderSummaryClick
+                ? orderSummaries?.datas?.length
+                : (totalData ?? 0)
+            }
           />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
@@ -991,9 +1046,15 @@ export default function OrdersMgmtPage() {
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_orders")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                storageKey="orderSearchTerm"
+                searchTerm={orderSummaryClick ? searchTermSummary : searchTerm}
+                setSearchTerm={
+                  orderSummaryClick ? setSearchTermSummary : setSearchTerm
+                }
+                storageKey={
+                  orderSummaryClick
+                    ? "orderSummarySearchTerm"
+                    : "orderSearchTerm"
+                }
 
                 // isRTL={isRTL}
                 // isDark={isDark}
@@ -1016,22 +1077,25 @@ export default function OrdersMgmtPage() {
             <FilterButton value={showFilters} onChange={setShowFilters} />
             {viewMode === "list" && (
               <div className="relative" ref={columnSettingsRef}>
-                <button
-                  onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Columns className="w-5 h-5" />
-                  {t("show_columns")}
-                  {showColumnSettings ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
+                {!orderSummaryClick && (
+                  <button
+                    onClick={() => setShowColumnSettings(!showColumnSettings)}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    <Columns className="w-5 h-5" />
+
+                    {t("show_columns")}
+                    {showColumnSettings ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
 
                 {showColumnSettings && (
                   <div
@@ -1066,120 +1130,168 @@ export default function OrdersMgmtPage() {
                 )}
               </div>
             )}
-
-            <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            {!orderSummaryClick && (
+              <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            )}
           </div>
 
           {showFilters && (
             <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              {/* Delivery Type */}
-              <div className="min-w-[180px]">
-                <FilterSelect
-                  label={t("deliveryType")}
-                  value={filters.deliveryType}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, deliveryType: value }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "pick_up", label: t("pickups") },
-                    { value: "deliver", label: t("delivery") },
-                  ]}
-                />
-              </div>
-              {/* Status */}
-              <div className="min-w-[180px]">
-                <FilterSelect
-                  label={t("status")}
-                  value={filters.status}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, status: value }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "pending", label: t("pending") },
-                    { value: "processing", label: t("processing") },
-                    { value: "completed", label: t("completed") },
-                    { value: "shipped", label: t("shipped") },
-
-                    { value: "canceled", label: t("canceled") },
-                  ]}
-                />
-              </div>
-              {/* Payment Method */}
-              <div className="min-w-[180px]">
-                <FilterSelect
-                  label={t("paymentMethod")}
-                  value={filters.paymentMethod}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, paymentMethod: value }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "voucher", label: t("voucher") },
-                    { value: "card", label: t("creditCard") },
-                  ]}
-                />
-              </div>
-
-              {/* Month Filter */}
-              <div className="min-w-[220px]">
-                <MonthFilter
-                  label={t("month")}
-                  value={filters.month}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, month: value }))
-                  }
-                  dateFrom={filters.startDate}
-                  dateTo={filters.endDate}
-                  onDateFromChange={(value) =>
-                    setFilters((prev) => ({ ...prev, startDate: value }))
-                  }
-                  onDateToChange={(value) =>
-                    setFilters((prev) => ({ ...prev, endDate: value }))
-                  }
-                  theme={theme}
-                  isRTL={isRTL}
-                  t={t}
-                />
-              </div>
-
-              {/* Active Filters */}
-              <div className="">
-                {activeFilterChips.length > 0 && (
-                  <div className="mb-3 text-sm text-gray-500">
-                    {tb("active_filters")}:
+              {!orderSummaryClick ? (
+                <>
+                  {/* Regular Filters */}
+                  <div className="min-w-[180px]">
+                    <FilterSelect
+                      label={t("deliveryType")}
+                      value={filters.deliveryType}
+                      onChange={(value) =>
+                        setFilters((prev) => ({ ...prev, deliveryType: value }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "pick_up", label: t("pickups") },
+                        { value: "deliver", label: t("delivery") },
+                      ]}
+                    />
                   </div>
-                )}
-                {activeFilterChips.length > 0 && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex flex-wrap gap-2">
-                      {activeFilterChips.map((chip) => (
-                        <FilterChips
-                          key={chip.key}
-                          label={t(chip.value)}
-                          onRemove={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              [chip.key]: chip.key.includes("date")
-                                ? ""
-                                : "all",
-                            }))
-                          }
-                        />
-                      ))}
+
+                  <div className="min-w-[180px]">
+                    <FilterSelect
+                      label={t("paymentMethod")}
+                      value={filters.paymentMethod}
+                      onChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          paymentMethod: value,
+                        }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "voucher", label: t("voucher") },
+                        { value: "card", label: t("creditCard") },
+                      ]}
+                    />
+                  </div>
+
+                  <div className="min-w-[180px]">
+                    <FilterSelect
+                      label={t("status")}
+                      value={filters.status}
+                      onChange={(value) =>
+                        setFilters((prev) => ({ ...prev, status: value }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "pending", label: t("pending") },
+                        { value: "processing", label: t("processing") },
+                        { value: "completed", label: t("completed") },
+                        { value: "shipped", label: t("shipped") },
+                        { value: "canceled", label: t("canceled") },
+                      ]}
+                    />
+                  </div>
+
+                  <div className="min-w-[220px]">
+                    <MonthFilter
+                      label={t("month")}
+                      value={filters.month}
+                      onChange={(value) =>
+                        setFilters((prev) => ({ ...prev, month: value }))
+                      }
+                      dateFrom={filters.startDate}
+                      dateTo={filters.endDate}
+                      onDateFromChange={(value) =>
+                        setFilters((prev) => ({ ...prev, startDate: value }))
+                      }
+                      onDateToChange={(value) =>
+                        setFilters((prev) => ({ ...prev, endDate: value }))
+                      }
+                      theme={theme}
+                      isRTL={isRTL}
+                      t={t}
+                    />
+                  </div>
+
+                  {/* Active Filters */}
+                  {activeFilterChips.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-3 mt-3">
+                      <div className="flex flex-wrap gap-2">
+                        {activeFilterChips.map((chip) => (
+                          <FilterChips
+                            key={chip.key}
+                            label={t(chip.value)}
+                            onRemove={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                [chip.key]: chip.key.includes("date")
+                                  ? ""
+                                  : "all",
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setFilters(defaultFilters)}
+                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                      >
+                        {t("clear_all")}
+                      </button>
                     </div>
-
-                    {/* Clear All */}
-                    <button
-                      onClick={() => setFilters(defaultFilters)}
-                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                    >
-                      {t("clear_all")}
-                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Summary Filters */}
+                  <div className="min-w-[180px]">
+                    <FilterSelect
+                      label={t("status")}
+                      value={summaryFilters.status}
+                      onChange={(value) =>
+                        setSummaryFilters((prev) => ({
+                          ...prev,
+                          status: value,
+                        }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "pending", label: t("pending") },
+                        { value: "processing", label: t("processing") },
+                        { value: "completed", label: t("completed") },
+                        { value: "shipped", label: t("shipped") },
+                        { value: "canceled", label: t("canceled") },
+                      ]}
+                    />
                   </div>
-                )}
-              </div>
+
+                  <div className="min-w-[220px]">
+                    <MonthFilter
+                      label={t("month")}
+                      value={summaryFilters.month}
+                      onChange={(value) =>
+                        setSummaryFilters((prev) => ({ ...prev, month: value }))
+                      }
+                      dateFrom={summaryFilters.startDate}
+                      dateTo={summaryFilters.endDate}
+                      onDateFromChange={(value) =>
+                        setSummaryFilters((prev) => ({
+                          ...prev,
+                          startDate: value,
+                        }))
+                      }
+                      onDateToChange={(value) =>
+                        setSummaryFilters((prev) => ({
+                          ...prev,
+                          endDate: value,
+                        }))
+                      }
+                      theme={theme}
+                      isRTL={isRTL}
+                      t={t}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
