@@ -60,6 +60,8 @@ import OrderGridView from "../products-mgmt/components/sub-components/OrderGridV
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { UserRole } from "@/enums/user.types";
 import { formatOrderDate } from "@/helpers";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 // Default columns configuration
 const defaultColumns = {
@@ -526,11 +528,13 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
+  const navigate = useNavigate();
+
   //order summary
   const summaryColumns = [
     {
       key: "actions",
-      label: "Actions",
+      label: t("actions"),
       width: "100px",
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
@@ -547,6 +551,9 @@ export default function OrdersMgmtPage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
+              navigate(`${routes.businessDetails}?businessId=${row?._id}`, {
+                replace: true,
+              });
               console.log("View clicked", row);
             }}
             className="p-1 hover:bg-gray-200 rounded"
@@ -569,21 +576,21 @@ export default function OrdersMgmtPage() {
 
     // {
     //   key: "authorityId",
-    //   label: "Authority ID",
+    //   label: t("authority_id"),
     //   sortable: true,
     //   render: (row: any) => <div className="text-sm">{row.authorityId}</div>,
     // },
 
     {
       key: "authorityName",
-      label: "Authority Name",
+      label: t("authority_name"),
       sortable: true,
       render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
     },
 
     {
       key: "businessAddressCity",
-      label: "City",
+      label: t("business_address_city"),
       sortable: true,
       render: (row: any) => (
         <div className="text-sm">{row.businessAddressCity}</div>
@@ -592,7 +599,7 @@ export default function OrdersMgmtPage() {
 
     // {
     //   key: "businessAddressCountry",
-    //   label: "Country",
+    //   label: t("business_address_country"),
     //   sortable: true,
     //   render: (row: any) => (
     //     <div className="text-sm">{row.businessAddressCountry}</div>
@@ -601,7 +608,7 @@ export default function OrdersMgmtPage() {
 
     {
       key: "businessAddressLocation",
-      label: "Location",
+      label: t("business_address_location"),
       sortable: true,
       render: (row: any) => (
         <div className="text-sm">{row.businessAddressLocation}</div>
@@ -610,7 +617,7 @@ export default function OrdersMgmtPage() {
 
     // {
     //   key: "businessEmail",
-    //   label: "Email",
+    //   label: t("business_email"),
     //   render: (row: any) => (
     //     <a
     //       href={`mailto:${row.businessEmail}`}
@@ -624,28 +631,28 @@ export default function OrdersMgmtPage() {
 
     {
       key: "businessName",
-      label: "Business Name",
+      label: t("business_name"),
       sortable: true,
       render: (row: any) => <div className="text-sm">{row.businessName}</div>,
     },
 
     // {
     //   key: "dmoId",
-    //   label: "DMO ID",
+    //   label:t("dmo_id"),
     //   sortable: true,
     //   render: (row: any) => <div className="text-sm">{row.dmoId}</div>,
     // },
 
     {
       key: "dmoName",
-      label: "DMO Name",
+      label: t("dmo_name"),
       sortable: true,
       render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
     },
 
     {
       key: "totalAmount",
-      label: "Total Amount",
+      label: t("total_amount"),
       sortable: true,
       render: (row: any) => (
         <div className="text-sm font-medium">
@@ -656,7 +663,7 @@ export default function OrdersMgmtPage() {
 
     {
       key: "totalAmountPaidByCreditCard",
-      label: "Paid by Card",
+      label: t("total_amount_paid_by_credit_card"),
       sortable: true,
       render: (row: any) => (
         <div className="text-sm font-medium">
@@ -669,7 +676,7 @@ export default function OrdersMgmtPage() {
 
     // {
     //   key: "totalDeliveryFee",
-    //   label: "Delivery Fee",
+    //   label: t("total_delivery_fee"),
     //   sortable: true,
     //   render: (row: any) => (
     //     <div className="text-sm font-medium">
@@ -682,7 +689,7 @@ export default function OrdersMgmtPage() {
 
     {
       key: "totalNoOfOrders",
-      label: "No. of Orders",
+      label: t("total_no_of_orders"),
       sortable: true,
       render: (row: any) => (
         <div className="text-sm">{row.totalNoOfOrders}</div>
@@ -1002,7 +1009,9 @@ export default function OrdersMgmtPage() {
               className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
               ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
             >
-              {orderSummaryClick ? "View Orders" : "View Order Summary"}
+              {orderSummaryClick
+                ? t("view_orders")
+                : t("view_order_summary")}{" "}
             </button>
           )}
           {canViewOrders && (
