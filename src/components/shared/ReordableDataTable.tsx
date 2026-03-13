@@ -324,7 +324,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   });
 
   return (
-    <div className={`rounded-xl border ${borderColor}`}>
+    <div className={`rounded-xl border ${borderColor} `}>
       {/* Scrollable container */}
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
