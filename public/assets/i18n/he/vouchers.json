@@ -1,0 +1,143 @@
+{
+  "select_websites_multi_select": "בחר אתרים (בחירה מרובה)",
+  "select_websites_placeholder": "בחר אתרים...",
+  "websites_selected": "אתרים נבחרו",
+  "error_select_website": "יש לבחור לפחות אתר אחד",
+
+  "select_campaign_optional": "בחר קמפיין (אופציונלי)",
+  "no_campaign": "ללא קמפיין",
+
+  "voucher_amount": "סכום השובר",
+  "error_invalid_amount": "הסכום חייב להיות גדול מ-0",
+
+  "expiration_date": "תאריך תפוגה",
+
+  "purchaser_details_optional": "פרטי הרוכש (אופציונלי)",
+  "email": "אימייל",
+  "name": "שם",
+  "phone": "טלפון",
+
+  "choose_creation_type": "בחר סוג יצירה",
+
+  "single_voucher": "שובר יחיד",
+  "single_voucher_description": "צור שובר אחד לאדם מסוים",
+
+  "bulk_creation": "יצירה בכמות גדולה",
+  "bulk_creation_description": "צור מספר שוברים לא משויכים בבת אחת",
+
+  "upload_xls": "העלאת XLS",
+  "upload_xls_description": "העלה גיליון נתונים עם פרטי השוברים",
+
+  "error_select_creation_type": "אנא בחר סוג יצירה",
+  "review_voucher_details": "סקירת פרטי השובר",
+  "websites": "אתרים",
+  "campaign": "קמפיין",
+
+  "creation_type": "סוג יצירה",
+
+  "creation_type_single": "שובר יחיד",
+  "creation_type_bulk": "יצירה בכמות גדולה",
+  "creation_type_upload": "העלאת XLS",
+
+  "assignee_details": "פרטי המקבל",
+  "number_of_vouchers": "מספר השוברים",
+
+  "uploaded_file": "קובץ שהועלה",
+  "valid_rows": "שורות תקינות",
+  "invalid_rows": "שורות לא תקינות",
+
+  "no_expiration": "ללא תפוגה",
+  "assignee_name": "שם",
+  "assignee_email": "אימייל",
+  "assignee_phone": "טלפון",
+  "enter_assignee_name": "הזן את שם המקבל",
+
+  "bulk_creation_settings": "הגדרות יצירה בכמות גדולה",
+
+  "create_assigned_voucher": "צור שובר משויך",
+  "assign_all_vouchers_to_person": "שייך את כל השוברים לאדם מסוים",
+
+  "upload_xls_file": "העלה קובץ XLS",
+  "download_sample_xls_template": "הורד תבנית XLS לדוגמה",
+  "use_template_for_correct_format": "השתמש בתבנית כדי לוודא שלקובץ יש את הפורמט הנכון",
+
+  "click_to_upload": "לחץ להעלאה",
+  "file": "קובץ",
+  "review_and_confirm": "סקירה ואישור",
+
+  "amount_per_voucher": "סכום לכל שובר",
+  "purchaser_details": "פרטי הרוכש",
+
+  "assignee": "מקבל",
+  "quantity": "כמות",
+  "vouchers": "שוברים",
+
+  "upload_results": "תוצאות ההעלאה",
+  "valid_vouchers_will_be_created": "שוברים תקינים ייווצרו",
+
+  "click_create_vouchers_to_proceed": "לחץ על 'צור שוברים' כדי להמשיך ביצירת השוברים.",
+  "vouchers_created_successfully": "השוברים נוצרו בהצלחה!",
+  "voucher": "שובר",
+  "voucher_code": "קוד שובר",
+  "code": "קוד",
+  "contact": "איש קשר",
+  "status": "סטטוס",
+  "amount": "סכום",
+  "remaining_amount": "נותר",
+  "expiry": "תפוגה",
+  "expiring_soon": "פג תוקף בקרוב",
+  "details": "פרטים",
+  "type": "סוג",
+  "configure": "הגדרה",
+  "review": "סקירה",
+  "click_create_vouchers": "לחץ על \"צור שוברים\" כדי להמשיך ביצירת השוברים.",
+
+  "validation_errors": "שגיאות אימות",
+  "download_results": "הורדת תוצאות",
+  "done": "סיום",
+  "remaining": "נותר",
+  "search_voucher_placeholder": "חפש לפי קוד, שם מקבל, אימייל...",
+  "vouchers_management": "ניהול שוברים",
+  "create_track_manage_vouchers": "צור, עקוב ונהל את השוברים שלך",
+  "add_voucher": "הוסף שובר",
+  "assignee_information": "מידע על המקבל",
+  "step_of_total": "שלב {{current}} מתוך {{total}}:",
+  "assigned_at": "שויך בתאריך",
+  "creator_information": "מידע על היוצר",
+  "created_by": "נוצר על ידי",
+  "creator_email": "אימייל היוצר",
+  "created_at": "נוצר בתאריך",
+  "system_generated": "נוצר על ידי המערכת",
+  "via_admin_console": "דרך קונסולת הניהול",
+  "voucher_information": "מידע על השובר",
+
+  "payment_status": "סטטוס תשלום",
+  "financial_details": "פרטים פיננסיים",
+  "original_amount": "סכום מקורי",
+  "used_amount": "סכום שנוצל",
+
+  "voucher_expired": "השובר פג תוקף",
+  "applicable_websites": "אתרים רלוונטיים",
+  "edit": "עריכה",
+  "overview": "סקירה כללית",
+  "assignee_and_creator": "מקבל ויוצר",
+  "usage_timeline": "ציר זמן שימוש",
+  "transactions_and_usage": "עסקאות ושימוש",
+  "activity_timeline": "ציר זמן פעילות",
+  "transaction_history": "היסטוריית עסקאות",
+  "reference_id": "מזהה ייחוס",
+  "description": "תיאור",
+  "amount_used": "סכום שנוצל",
+  "date": "תאריך",
+  "no_transactions_found": "לא נמצאו עסקאות",
+  "extend_expiration": "הארכת תפוגה",
+  "change_status": "שינוי סטטוס",
+  "re_send_voucher": "שלח שוב את השובר",
+  "cancel_voucher": "בטל שובר",
+  "total_vouchers": "סה״כ שוברים",
+  "assigned": "שויך",
+  "redeemed": "נוצל",
+  "remaining_balance": "יתרה",
+  "expired": "פג תוקף",
+  "revenue": "הכנסות"
+}

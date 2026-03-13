@@ -13,6 +13,8 @@
   "products": "מוצרים",
   "businesses": "עסקים",
   "users": "משתמשים",
+  "vouchers": "שוברים",
+
   "delete_business": "מחיקת עסק",
   "delete_business_confirm": "לאשר מחיקת העסק?",
   "edit_location": "עריכת מיקום",

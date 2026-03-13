@@ -16,6 +16,7 @@
   "email": "Email",
   "name": "Name",
   "phone": "Phone",
+  "step_of_total": "Step {{current}} of {{total}}:",
 
   "choose_creation_type": "Choose creation type",
 
@@ -70,7 +71,7 @@
 
   "assignee": "Assignee",
   "quantity": "Quantity",
-  "vouchers": "vouchers",
+  "vouchers": "Vouchers",
 
   "upload_results": "Upload Results",
   "valid_vouchers_will_be_created": "valid vouchers will be created",

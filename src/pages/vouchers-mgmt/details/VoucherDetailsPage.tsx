@@ -26,26 +26,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/shared";
 import clsx from "clsx";
-
-// interface VoucherDetail {
-//   id: string;
-//   code: string;
-//   status: "active" | "assigned" | "redeemed" | "expired" | "cancelled";
-//   type: "monetary" | "percentage";
-//   amount: number;
-//   remainingAmount: number;
-//   expirationDate: string;
-//   campaign: string;
-//   websites: string[];
-//   paymentStatus: "pending" | "completed" | "refunded";
-//   assigneeName: string;
-//   assigneeEmail: string;
-//   assigneePhone: string;
-//   assignedAt: string;
-//   createdAt: string;
-//   creatorName: string;
-//   creatorEmail: string;
-// }
+import { AddVoucherWizard } from "../components/CreateVoucherWizard";
 
 interface TimelineEvent {
   id: string;
@@ -77,12 +58,16 @@ interface Transaction {
   date: string;
   status: "completed" | "pending" | "cancelled";
 }
-
-export function VoucherDetailsPage() {
+interface VoucherDetailsProps {
+  onAddVoucher: () => void;
+}
+export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
   const { isDark, borderColor } = useThemeClasses();
   const { t } = useTranslation("vouchers");
   const [voucherId, setVoucherId] = useState("");
   const [searchParams] = useSearchParams();
+  const [isEditClicked, setIsEditClicked] = useState(false);
+
   useEffect(() => {
     const voucherId = searchParams.get("voucherId");
     if (voucherId) setVoucherId(voucherId);
@@ -94,30 +79,12 @@ export function VoucherDetailsPage() {
   } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
   const voucher = voucherdetailId?.datas;
 
+  const handleEditClick = () => {
+    setIsEditClicked(true);
+  };
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignee" | "timeline" | "transactions"
   >("overview");
-
-  // Mock data
-  // const voucher: VoucherDetail = {
-  //   id: voucherId,
-  //   code: "VCH-000042",
-  //   status: "assigned",
-  //   type: "monetary",
-  //   amount: 500,
-  //   remainingAmount: 350,
-  //   expirationDate: "2026-03-15",
-  //   campaign: "Summer Sale 2024",
-  //   websites: ["visitnegev.com", "explorenegev.il"],
-  //   paymentStatus: "completed",
-  //   assigneeName: "Sarah Cohen",
-  //   assigneeEmail: "sarah.cohen@example.com",
-  //   assigneePhone: "+972-54-1234567",
-  //   assignedAt: "2026-01-15T10:30:00Z",
-  //   createdAt: "2026-01-15T09:00:00Z",
-  //   creatorName: "Admin User",
-  //   creatorEmail: "admin@metgo.app",
-  // };
 
   const timeline: TimelineEvent[] = [
     {
@@ -235,7 +202,10 @@ export function VoucherDetailsPage() {
               status={voucher?.status}
             /> */}
 
-            <button className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer">
+            <button
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+              onClick={handleEditClick}
+            >
               <Edit className="w-4 h-4" />
               {t("edit")}
             </button>
@@ -541,6 +511,9 @@ export function VoucherDetailsPage() {
           {t("cancel_voucher")}
         </button>
       </div>
+      {isEditClicked && (
+        <AddVoucherWizard onClose={() => setIsEditClicked(false)} />
+      )}
     </div>
   );
 }

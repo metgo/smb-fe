@@ -73,7 +73,9 @@ export default function VouchersMgmtPage() {
         </div>
 
         {/* Detail View */}
-        {selectedVoucherId && <VoucherDetailsPage />}
+        {selectedVoucherId && (
+          <VoucherDetailsPage onAddVoucher={handleAddVoucher} />
+        )}
       </div>
 
       {/* Add Voucher Wizard Modal */}

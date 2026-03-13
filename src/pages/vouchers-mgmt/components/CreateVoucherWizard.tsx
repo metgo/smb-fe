@@ -19,7 +19,7 @@ interface AddVoucherWizardProps {
   // language: Language;
   // theme: Theme;
   onClose: () => void;
-  onVoucherCreated: () => void;
+  onVoucherCreated?: () => void;
 }
 
 type CreationType = "single" | "bulk" | "upload";
@@ -464,10 +464,10 @@ export function AddVoucherWizard({
 
   // Step configuration
   const steps = [
-    { id: 1, icon: FileText, label: "Details" },
-    { id: 2, icon: Users, label: "Type" },
-    { id: 3, icon: ClipboardList, label: "Configure" },
-    { id: 4, icon: Eye, label: "Review" },
+    { id: 1, icon: FileText, label: t("details") },
+    { id: 2, icon: Users, label: t("type") },
+    { id: 3, icon: ClipboardList, label: t("configure") },
+    { id: 4, icon: Eye, label: t("review") },
   ];
 
   return (
@@ -476,11 +476,11 @@ export function AddVoucherWizard({
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div>
           <h2 className="text-xl text-gray-900 dark:text-gray-100">
-            {currentStep === 5 ? "Success" : "Add Voucher"}
+            {voucherId ? t("edit_voucher") : t("add_voucher")}
           </h2>
           {currentStep < 5 && (
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
-              Step {currentStep} of 4 :{" "}
+              {t("step_of_total", { current: currentStep, total: 4 })}
               <span className="flex items-center">
                 {t(steps[currentStep - 1].label)}
               </span>

@@ -1,0 +1,144 @@
+{
+  "select_websites_multi_select": "اختر المواقع (اختيار متعدد)",
+  "select_websites_placeholder": "اختر المواقع...",
+  "websites_selected": "تم اختيار مواقع",
+  "error_select_website": "يرجى اختيار موقع واحد على الأقل",
+
+  "select_campaign_optional": "اختر حملة (اختياري)",
+  "no_campaign": "بدون حملة",
+
+  "voucher_amount": "قيمة القسيمة",
+  "error_invalid_amount": "يجب أن تكون القيمة أكبر من 0",
+
+  "expiration_date": "تاريخ الانتهاء",
+
+  "purchaser_details_optional": "تفاصيل المشتري (اختياري)",
+  "email": "البريد الإلكتروني",
+  "name": "الاسم",
+  "phone": "رقم الهاتف",
+
+  "choose_creation_type": "اختر نوع الإنشاء",
+
+  "single_voucher": "قسيمة واحدة",
+  "single_voucher_description": "إنشاء قسيمة واحدة لشخص محدد",
+
+  "bulk_creation": "إنشاء جماعي",
+  "bulk_creation_description": "إنشاء عدة قسائم غير مخصصة دفعة واحدة",
+
+  "upload_xls": "رفع ملف XLS",
+  "upload_xls_description": "ارفع جدول بيانات يحتوي على تفاصيل القسائم",
+
+  "error_select_creation_type": "يرجى اختيار نوع الإنشاء",
+  "review_voucher_details": "مراجعة تفاصيل القسيمة",
+  "websites": "المواقع",
+  "campaign": "الحملة",
+
+  "creation_type": "نوع الإنشاء",
+
+  "creation_type_single": "قسيمة واحدة",
+  "creation_type_bulk": "إنشاء جماعي",
+  "creation_type_upload": "رفع XLS",
+
+  "assignee_details": "تفاصيل المستلم",
+  "number_of_vouchers": "عدد القسائم",
+
+  "uploaded_file": "الملف المرفوع",
+  "valid_rows": "صفوف صالحة",
+  "invalid_rows": "صفوف غير صالحة",
+
+  "no_expiration": "بدون تاريخ انتهاء",
+  "assignee_name": "الاسم",
+  "assignee_email": "البريد الإلكتروني",
+  "assignee_phone": "رقم الهاتف",
+  "enter_assignee_name": "أدخل اسم المستلم",
+
+  "bulk_creation_settings": "إعدادات الإنشاء الجماعي",
+
+  "create_assigned_voucher": "إنشاء قسيمة مخصصة",
+  "assign_all_vouchers_to_person": "تخصيص جميع القسائم لشخص محدد",
+
+  "upload_xls_file": "رفع ملف XLS",
+  "download_sample_xls_template": "تنزيل نموذج XLS",
+  "use_template_for_correct_format": "استخدم هذا النموذج لضمان أن الملف بالصيغة الصحيحة",
+
+  "click_to_upload": "انقر للرفع",
+  "file": "ملف",
+  "review_and_confirm": "مراجعة وتأكيد",
+
+  "amount_per_voucher": "القيمة لكل قسيمة",
+  "purchaser_details": "تفاصيل المشتري",
+
+  "assignee": "المستلم",
+  "quantity": "الكمية",
+  "vouchers": "القسائم",
+  "step_of_total": "الخطوة :{{current}} من {{total}}:",
+  "upload_results": "نتائج الرفع",
+  "valid_vouchers_will_be_created": "سيتم إنشاء قسائم صالحة",
+
+  "click_create_vouchers_to_proceed": "انقر على 'إنشاء القسائم' للمتابعة.",
+  "vouchers_created_successfully": "تم إنشاء القسائم بنجاح!",
+  "voucher": "قسيمة",
+  "voucher_code": "رمز القسيمة",
+  "code": "الرمز",
+  "contact": "جهة الاتصال",
+  "status": "الحالة",
+  "amount": "القيمة",
+  "remaining_amount": "المتبقي",
+  "expiry": "تاريخ الانتهاء",
+  "expiring_soon": "ستنتهي قريباً",
+  "details": "التفاصيل",
+  "type": "النوع",
+  "configure": "إعداد",
+  "review": "مراجعة",
+  "click_create_vouchers": "انقر على \"إنشاء القسائم\" للمتابعة.",
+
+  "validation_errors": "أخطاء التحقق",
+  "download_results": "تنزيل النتائج",
+  "done": "تم",
+  "remaining": "المتبقي",
+  "search_voucher_placeholder": "ابحث بالرمز أو اسم المستلم أو البريد الإلكتروني...",
+  "vouchers_management": "إدارة القسائم",
+  "create_track_manage_vouchers": "إنشاء وتتبع وإدارة القسائم",
+  "add_voucher": "إضافة قسيمة",
+
+  "assignee_information": "معلومات المستلم",
+
+  "assigned_at": "تم التخصيص في",
+  "creator_information": "معلومات المُنشئ",
+  "created_by": "تم الإنشاء بواسطة",
+  "creator_email": "بريد المُنشئ الإلكتروني",
+  "created_at": "تاريخ الإنشاء",
+  "system_generated": "تم إنشاؤه بواسطة النظام",
+  "via_admin_console": "عبر لوحة تحكم الإدارة",
+  "voucher_information": "معلومات القسيمة",
+
+  "payment_status": "حالة الدفع",
+  "financial_details": "التفاصيل المالية",
+  "original_amount": "القيمة الأصلية",
+  "used_amount": "القيمة المستخدمة",
+
+  "voucher_expired": "انتهت صلاحية القسيمة",
+  "applicable_websites": "المواقع المطبقة",
+  "edit": "تعديل",
+  "overview": "نظرة عامة",
+  "assignee_and_creator": "المستلم والمنشئ",
+  "usage_timeline": "الجدول الزمني للاستخدام",
+  "transactions_and_usage": "المعاملات والاستخدام",
+  "activity_timeline": "الجدول الزمني للنشاط",
+  "transaction_history": "سجل المعاملات",
+  "reference_id": "معرف المرجع",
+  "description": "الوصف",
+  "amount_used": "القيمة المستخدمة",
+  "date": "التاريخ",
+  "no_transactions_found": "لم يتم العثور على معاملات",
+  "extend_expiration": "تمديد تاريخ الانتهاء",
+  "change_status": "تغيير الحالة",
+  "re_send_voucher": "إعادة إرسال القسيمة",
+  "cancel_voucher": "إلغاء القسيمة",
+  "total_vouchers": "إجمالي القسائم",
+  "assigned": "تم التخصيص",
+  "redeemed": "تم الاسترداد",
+  "remaining_balance": "الرصيد المتبقي",
+  "expired": "منتهية الصلاحية",
+  "revenue": "الإيرادات"
+}
