@@ -2,45 +2,68 @@ import clsx from "clsx";
 import {
   AlertCircle,
   AlertTriangle,
-  BellIcon,
+  Bell,
   Info,
   XCircle,
+  CheckCheck,
+  ArrowRight,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getBorderColor, timeAgo } from "@/helpers";
 import { toggleNotification } from "@/features/uiSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import type { Notification } from "@/types/notifications";
-import { useTranslation } from "react-i18next";
-import { useEffect, useRef } from "react";
 import { routes } from "@/lib/routes";
+
+
 
 const NotificationsBell = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("notifications");
   const { notifications } = useAppSelector((state) => state.notification);
 
-  const { isRTL, isDark, textPrimary, textSecondary, textTertiary, hoverBg } =
+  const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
   const navigate = useNavigate();
-
   const { isNotificationOpen } = useAppSelector((state) => state.ui);
 
-  const getNotificationIcon = (type: Notification["item"]["notifType"]) => {
-    const iconClass = "w-5 h-5";
+  // Count unread notifications (isRead === false)
+  const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
+
+  const getNotificationIcon = (type: TNotifType) => {
+    const base =
+      "w-8 h-8 rounded-full flex items-center justify-center shrink-0";
     switch (type) {
       case "INFO":
-        return <Info className={`${iconClass} text-blue-500`} />;
+        return (
+          <span className={`${base} bg-blue-100 dark:bg-blue-900/40`}>
+            <Info className="w-4 h-4 text-blue-500" />
+          </span>
+        );
       case "ACTION":
-        return <AlertCircle className={`${iconClass} text-purple-500`} />;
+        return (
+          <span className={`${base} bg-purple-100 dark:bg-purple-900/40`}>
+            <AlertCircle className="w-4 h-4 text-purple-500" />
+          </span>
+        );
       case "WARNING":
-        return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
+        return (
+          <span className={`${base} bg-amber-100 dark:bg-amber-900/40`}>
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+          </span>
+        );
       case "ERROR":
-        return <XCircle className={`${iconClass} text-red-500`} />;
+        return (
+          <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
+            <XCircle className="w-4 h-4 text-red-500" />
+          </span>
+        );
     }
   };
-  const popupRef = useRef<HTMLDivElement>(null); // Ref for the popup
+
+  const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,107 +75,212 @@ const NotificationsBell = () => {
         dispatch(toggleNotification());
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isNotificationOpen, dispatch]);
 
   return (
     <div className="relative">
+      {/* Bell Button */}
       <button
         onClick={() => dispatch(toggleNotification())}
-        className={clsx(
-          "p-2 rounded-lg border transition-colors cursor-pointer",
-          isDark
-            ? "border-gray-700 hover:bg-gray-800"
-            : "border-gray-300 hover:bg-gray-100 bg-gray-50",
-        )}
         aria-label="Notifications"
+        className={clsx(
+          "relative p-2 rounded-xl border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+          isDark
+            ? "border-gray-700 hover:bg-gray-800 bg-gray-900"
+            : "border-gray-200 hover:bg-gray-100 bg-white shadow-sm",
+        )}
       >
-        <BellIcon className={clsx("w-5 h-5", textPrimary)} />
+        <Bell className={clsx("w-5 h-5", textPrimary)} />
+
+        {/* Unread Badge */}
+        {unreadCount > 0 && (
+          <span
+            className={clsx(
+              "absolute -top-1.5 -right-1.5 min-w-4.5 h-4.5 px-1",
+              "rounded-full bg-red-500 text-white text-[10px] font-bold",
+              "flex items-center justify-center leading-none",
+              "ring-2",
+              isDark ? "ring-gray-900" : "ring-white",
+              "animate-pulse-once",
+            )}
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
       </button>
 
-      {/*  Notification Popup */}
+      {/* Notification Dropdown */}
       {isNotificationOpen && (
         <div
           ref={popupRef}
           className={clsx(
-            "absolute  mt-2 w-96 max-h-100 overflow-y-auto rounded-xl shadow-xl border z-50 flex flex-col",
-            isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200",
-            isRTL ? "left-0" : "right-0 ",
+            "absolute mt-2.5 w-95 rounded-2xl shadow-2xl border z-50 flex flex-col overflow-hidden",
+            "animate-fade-in",
+            isDark
+              ? "bg-gray-900 border-gray-700/80 shadow-black/40"
+              : "bg-white border-gray-200 shadow-gray-200/80",
+            isRTL ? "left-0" : "right-0",
           )}
+          style={{ maxHeight: "520px" }}
         >
+          {/* Header */}
+          <div
+            className={clsx(
+              "flex items-center justify-between px-5 py-4 border-b",
+              isDark
+                ? "border-gray-700/80 bg-gray-900"
+                : "border-gray-100 bg-gray-50/80",
+            )}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className={clsx("text-sm font-semibold", textPrimary)}>
+                {t("notifications")}
+              </span>
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  {unreadCount} {t("new")}
+                </span>
+              )}
+            </div>
+            {unreadCount > 0 && (
+              <button
+                className={clsx(
+                  "flex items-center gap-1 text-xs font-medium transition-colors",
+                  "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
+                )}
+              >
+                <CheckCheck className="w-3.5 h-3.5" />
+                {t("mark_all_read")}
+              </button>
+            )}
+          </div>
+
+          {/* Notification List */}
           {notifications?.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-500">
-              {t("no_new_notifications")}
+            <div className="flex flex-col items-center justify-center py-14 gap-3">
+              <span
+                className={clsx(
+                  "w-12 h-12 rounded-full flex items-center justify-center",
+                  isDark ? "bg-gray-800" : "bg-gray-100",
+                )}
+              >
+                <Bell
+                  className={clsx(
+                    "w-5 h-5",
+                    isDark ? "text-gray-600" : "text-gray-400",
+                  )}
+                />
+              </span>
+              <p className="text-sm text-gray-400 font-medium">
+                {t("no_new_notifications")}
+              </p>
             </div>
           ) : (
-            <>
-              <div className="py-4 px-4 font-semibold bg-gray-50 border-b">
-                {t("notifications")}
-              </div>
-              <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
-                {notifications?.map((notification) => {
-                  const itemType = notification?.item?.itemType; // BUSINESS, EVENT, PRODUCT, etc.
-                  const detailsRouteKey =
-                    `${itemType.toLowerCase()}-details` as keyof typeof routes;
-                  const queryParam = `${itemType.toLowerCase()}Id`;
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+              {notifications?.map((notification) => {
+                const isUnread = !notification.isRead;
+                const itemType = notification?.itemType;
+                const detailsRouteKey =
+                  `${itemType.toLowerCase()}-details` as keyof typeof routes;
+                const queryParam = `${itemType.toLowerCase()}Id`;
 
-                  const handleNavigate = () => {
-                    if (routes[detailsRouteKey]) {
-                      navigate(
-                        `${routes[detailsRouteKey]}?${queryParam}=${notification?.item?._id}`,
-                      );
-                    } else {
-                      console.warn(
-                        `No details route found for itemType: ${itemType}`,
-                      );
-                    }
-                  };
+                const handleNavigate = () => {
+                  if (routes[detailsRouteKey]) {
+                    navigate(
+                      `${routes[detailsRouteKey]}?${queryParam}=${notification?._id}`,
+                    );
+                  } else {
+                    console.warn(
+                      `No details route found for itemType: ${itemType}`,
+                    );
+                  }
+                };
 
-                  return (
-                    <div
-                      key={notification?.item?._id}
-                      onClick={handleNavigate}
-                      className={`
-                                         flex items-start gap-3 px-4 py-8 
-                                         ${hoverBg} 
-                                         transition-colors 
-                                         ${isRTL ? "border-r-2" : "border-l-2"} 
-                                         ${getBorderColor(notification?.item?.notifType, isRTL)} 
-                                         ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
-                                       `}
-                    >
-                      <div className="flex gap-3">
-                        <div className="shrink-0 mt-0.5">
-                          {getNotificationIcon(notification?.item?.notifType)}
-                        </div>
-                        <div className="flex flex-col">
-                          <h4 className={`text-sm font-medium ${textPrimary}`}>
-                            {notification?.item?.title}
-                          </h4>
-                          <p className={`text-sm ${textSecondary} mb-1`}>
-                            {notification?.item?.message}
-                          </p>
-                          <p className={`text-xs font-medium ${textTertiary}`}>
-                            {timeAgo(notification.actionedAt)}
-                          </p>
-                        </div>
+                return (
+                  <div
+                    key={notification?._id}
+                    onClick={handleNavigate}
+                    className={clsx(
+                      "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
+                      isRTL ? "border-r-[3px]" : "border-l-[3px]",
+                      getBorderColor(notification?.notifType, isRTL),
+                      isUnread
+                        ? isDark
+                          ? "bg-blue-500/5 hover:bg-blue-500/10"
+                          : "bg-blue-50/60 hover:bg-blue-50"
+                        : isDark
+                          ? "hover:bg-gray-800/60"
+                          : "hover:bg-gray-50",
+                    )}
+                  >
+                    {/* Icon */}
+                    {getNotificationIcon(notification?.notifType)}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4
+                          className={clsx(
+                            "text-sm leading-snug",
+                            isUnread
+                              ? `font-semibold ${textPrimary}`
+                              : `font-medium ${textSecondary}`,
+                          )}
+                        >
+                          {notification?.content?.[language]?.title}
+                        </h4>
+                        {/* Unread dot */}
+                        {isUnread && (
+                          <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+                        )}
                       </div>
+                      <p
+                        className={clsx(
+                          "text-xs mt-0.5 leading-relaxed line-clamp-2",
+                          textSecondary,
+                        )}
+                      >
+                        {notification?.content?.[language]?.message}
+                      </p>
+                      <p
+                        className={clsx(
+                          "text-[11px] mt-1.5 font-medium",
+                          textTertiary,
+                        )}
+                      >
+                        {timeAgo(notification.createdAt)}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
+          {/* Footer */}
+          {notifications?.length > 0 && (
+            <div
+              className={clsx(
+                "px-5 py-3 border-t",
+                isDark
+                  ? "border-gray-700/80 bg-gray-900"
+                  : "border-gray-100 bg-gray-50/80",
+              )}
+            >
               <button
                 onClick={() => navigate("/notifications-management")}
-                className="w-full p-3 text-sm font-semibold text-center text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-b-xl"
+                className={clsx(
+                  "w-full flex items-center justify-center gap-2",
+                  "text-sm font-semibold text-blue-600 dark:text-blue-400",
+                  "hover:text-blue-700 dark:hover:text-blue-300 transition-colors",
+                )}
               >
                 {t("view_all_notifications")}
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </>
+            </div>
           )}
         </div>
       )}

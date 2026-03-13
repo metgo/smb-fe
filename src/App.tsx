@@ -25,11 +25,12 @@ import {
   NotificationsMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
-import { useAppDispatch } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
-import { addNotification } from "./features/notificationSlice";
+import { addNotification, setNotifications } from "./features/notificationSlice";
+import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
   if (typeof window === "undefined") return false;
@@ -79,24 +80,47 @@ function App() {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  // useEffect(() => {
-  //   if (!socket) return;
+  const { notifications } = useAppSelector((state) => state.notification);
+  const latestCreatedAt = notifications?.[0]?.createdAt;
 
-  //   socket.on("notification", (data) => {
-  //     console.log("🔔", data);
-  //   });
-
-  //   return () => {
-  //     socket.off("notification");
-  //   };
-  // }, [socket]);
+  const [getLatestNotification] = useLazyGetAllNotificationsQuery();
 
   useEffect(() => {
     if (!socket) return;
 
-    const handleNotification = (data: any) => {
+    // Initial load
+    const fetchInitialNotifications = async () => {
+      try {
+        const response = await getLatestNotification({}).unwrap();
+
+        if (response?.data) {
+          dispatch(setNotifications(response.data));
+        }
+      } catch (error) {
+        console.error("Initial notification fetch failed", error);
+      }
+    };
+
+    fetchInitialNotifications();
+
+    const handleNotification = async (data: any) => {
       console.log("🔔", data);
-      dispatch(addNotification(data));
+
+      if (!data?.type) return;
+
+      try {
+        const response = await getLatestNotification({
+          createdAfter: latestCreatedAt,
+        }).unwrap();
+
+        if (response?.data?.length) {
+          response.data.reverse().forEach((notif: INotification) => {
+            dispatch(addNotification(notif));
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch new notifications", error);
+      }
     };
 
     socket.on("notification", handleNotification);
@@ -104,7 +128,8 @@ function App() {
     return () => {
       socket.off("notification", handleNotification);
     };
-  }, [socket, dispatch]);
+  }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
+
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {
@@ -156,7 +181,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      // errorElement: <ErrorUiPage />,
+      errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
 

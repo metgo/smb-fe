@@ -13,17 +13,15 @@ import { useTranslation } from "react-i18next";
 import { FilterButton } from "@/components/btns";
 import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import type { Notification } from "@/types/notifications";
 import { getBorderColor, timeAgo } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 
+
 export default function NotificationsMgmtPage() {
   const { t } = useTranslation("notifications");
   const SEARCH_STORAGE_KEY = "notificationSearchTerm";
-  const { isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
-  // const language = i18n.language;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [readFilter, setReadFilter] = useState<"all" | "read" | "unread">(
@@ -40,6 +38,9 @@ export default function NotificationsMgmtPage() {
   const { notifications } = useAppSelector((state) => state.notification);
 
   const {
+    isDark,
+    isRTL,
+    language,
     textTertiary,
     bgPrimary,
     bgSecondary,
@@ -50,7 +51,8 @@ export default function NotificationsMgmtPage() {
     hoverBg,
   } = useThemeClasses();
   const navigate = useNavigate();
-  const getNotificationIcon = (type: Notification["item"]["notifType"]) => {
+
+  const getNotificationIcon = (type: TNotifType) => {
     const iconClass = "w-5 h-5";
     switch (type) {
       case "INFO":
@@ -110,7 +112,7 @@ export default function NotificationsMgmtPage() {
     <div
       className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"}  dark:bg-gray-950 transition-colors flex flex-col`}
     >
-      <main className="h-[calc(100vh-64px)] flex flex-col">
+      <div className="h-[calc(100vh-64px)] flex flex-col">
         {/* Fixed Header */}
         <div className="shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="max-w-400 mx-auto">
@@ -374,7 +376,7 @@ export default function NotificationsMgmtPage() {
 
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {notifications?.map((notification) => {
-                    const itemType = notification?.item?.itemType; // BUSINESS, EVENT, PRODUCT, etc.
+                    const itemType = notification?.itemType; // BUSINESS, EVENT, PRODUCT, etc.
                     const detailsRouteKey =
                       `${itemType.toLowerCase()}-details` as keyof typeof routes;
                     const queryParam = `${itemType.toLowerCase()}Id`;
@@ -382,7 +384,7 @@ export default function NotificationsMgmtPage() {
                     const handleNavigate = () => {
                       if (routes[detailsRouteKey]) {
                         navigate(
-                          `${routes[detailsRouteKey]}?${queryParam}=${notification?.item?._id}`,
+                          `${routes[detailsRouteKey]}?${queryParam}=${notification?._id}`,
                         );
                       } else {
                         console.warn(
@@ -393,34 +395,34 @@ export default function NotificationsMgmtPage() {
 
                     return (
                       <div
-                        key={notification?.item?._id}
+                        key={notification?._id}
                         onClick={handleNavigate}
                         className={`
                           flex items-start gap-3 px-4 py-8 
                           ${hoverBg} 
                           transition-colors 
                           ${isRTL ? "border-r-2" : "border-l-2"} 
-                          ${getBorderColor(notification?.item?.notifType, isRTL)} 
+                          ${getBorderColor(notification?.notifType, isRTL)} 
                           ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
                         `}
                       >
                         <div className="flex gap-3">
                           <div className="shrink-0 mt-0.5">
-                            {getNotificationIcon(notification?.item?.notifType)}
+                            {getNotificationIcon(notification?.notifType)}
                           </div>
                           <div className="flex flex-col">
                             <h4
                               className={`text-sm font-medium ${textPrimary}`}
                             >
-                              {notification?.item?.title}
+                              {notification?.content?.[language].title}
                             </h4>
                             <p className={`text-sm ${textSecondary} mb-1`}>
-                              {notification?.item?.message}
+                              {notification?.content?.[language]?.message}
                             </p>
                             <p
                               className={`text-xs font-medium ${textTertiary}`}
                             >
-                              {timeAgo(notification.actionedAt)}
+                              {timeAgo(notification.createdAt)}
                             </p>
                           </div>
                         </div>
@@ -432,7 +434,7 @@ export default function NotificationsMgmtPage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

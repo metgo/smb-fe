@@ -22,6 +22,7 @@ import { commonMutationApi } from "./api/commonMutationApi";
 import { saveSettings, saveUserInfo } from "@/lib/storage";
 import { contentMutationApi } from "./api/contentMutationApi";
 import { contentQueryApi } from "./api/contentQueryApi";
+import { notificationApi } from "./api/notificationApi";
 
 export const store = configureStore({
   reducer: {
@@ -52,6 +53,8 @@ export const store = configureStore({
 
     [contentQueryApi.reducerPath]: contentQueryApi.reducer,
     [contentMutationApi.reducerPath]: contentMutationApi.reducer,
+
+    [notificationApi.reducerPath]:notificationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -71,6 +74,7 @@ export const store = configureStore({
       commonMutationApi.middleware,
       contentMutationApi.middleware,
       contentQueryApi.middleware,
+      notificationApi.middleware,
     ),
 });
 
