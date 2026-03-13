@@ -11,6 +11,8 @@ import {
 import {
   Download,
   // Plus,
+  Menu,
+  Eye,
   ChevronDown,
   ChevronUp,
   Loader,
@@ -46,6 +48,7 @@ import {
 } from "./components";
 import {
   useGetAllOrdersQuery,
+  useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
   // useGetOrderStatsQuery,
@@ -102,8 +105,24 @@ export default function OrdersMgmtPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const [pageSummary, setPageSummary] = useState(1);
 
+  const limit = 20;
+  const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(false);
+  const {
+    data: orderSummaries,
+    isLoading: isLoadingOrderSummary,
+
+    refetch: refetchOrderSummary,
+    isFetching: isFetchingOrderSummary,
+  } = useGetAllOrderSummaryQuery({});
+
+  const ordersSummariess = orderSummaries?.datas ?? [];
+  const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
+
+  if (orderSummaryClick) {
+    console.log("ordersumary", ordersSummariess);
+  }
   //camera persmissions
   const [stream, setStream] = useState<MediaStream | null>(null);
 
@@ -170,7 +189,12 @@ export default function OrdersMgmtPage() {
       return prev + 1;
     });
   };
-
+  const fetchNextPageSummary = () => {
+    if (!hasMore || isFetchingOrderSummary) return;
+    setPageSummary((prev) => {
+      return prev + 1;
+    });
+  };
   // Filters
   const [filters, setFilters] = useState({
     orderType: "all",
@@ -289,6 +313,7 @@ export default function OrdersMgmtPage() {
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams);
+
   const hasMore = orders?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
@@ -314,6 +339,25 @@ export default function OrdersMgmtPage() {
       });
     }
   }, [orderss, page]);
+
+  //order summry
+  useEffect(() => {
+    if (!ordersSummariess?.length) return;
+
+    if (page === 1) {
+      setCombinedOrdersSummary(ordersSummariess);
+    } else {
+      setCombinedOrdersSummary((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = ordersSummariess.filter(
+          (b: any) => !existingIds.has(b._id),
+        );
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [ordersSummariess, pageSummary]);
 
   const defaultFilters = {
     orderType: "all",
@@ -439,7 +483,175 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
+  //order summary
+  const summaryColumns = [
+    {
+      key: "actions",
+      label: "Actions",
+      width: "100px",
+      render: (row: any) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Menu clicked", row);
+            }}
+            className="p-1 hover:bg-gray-200 rounded"
+          >
+            <ShoppingBag className="w-4 h-4 text-green-600" />
+          </button>
 
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("View clicked", row);
+            }}
+            className="p-1 hover:bg-gray-200 rounded"
+          >
+            <Eye className="w-4.5 h-4.5 text-yellow-500" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log("Download clicked", row);
+            }}
+            className="p-1 hover:bg-gray-200 rounded"
+          >
+            <Download className="w-4 h-4 text-blue-500" />
+          </button>
+        </div>
+      ),
+    },
+
+    // {
+    //   key: "authorityId",
+    //   label: "Authority ID",
+    //   sortable: true,
+    //   render: (row: any) => <div className="text-sm">{row.authorityId}</div>,
+    // },
+
+    {
+      key: "authorityName",
+      label: "Authority Name",
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
+    },
+
+    {
+      key: "businessAddressCity",
+      label: "City",
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressCity}</div>
+      ),
+    },
+
+    // {
+    //   key: "businessAddressCountry",
+    //   label: "Country",
+    //   sortable: true,
+    //   render: (row: any) => (
+    //     <div className="text-sm">{row.businessAddressCountry}</div>
+    //   ),
+    // },
+
+    {
+      key: "businessAddressLocation",
+      label: "Location",
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressLocation}</div>
+      ),
+    },
+
+    // {
+    //   key: "businessEmail",
+    //   label: "Email",
+    //   render: (row: any) => (
+    //     <a
+    //       href={`mailto:${row.businessEmail}`}
+    //       className="text-sm text-teal-500 hover:text-teal-600"
+    //       onClick={(e) => e.stopPropagation()}
+    //     >
+    //       {row.businessEmail}
+    //     </a>
+    //   ),
+    // },
+
+    {
+      key: "businessName",
+      label: "Business Name",
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+    },
+
+    // {
+    //   key: "dmoId",
+    //   label: "DMO ID",
+    //   sortable: true,
+    //   render: (row: any) => <div className="text-sm">{row.dmoId}</div>,
+    // },
+
+    {
+      key: "dmoName",
+      label: "DMO Name",
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
+    },
+
+    {
+      key: "totalAmount",
+      label: "Total Amount",
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmount ? `₪${row.totalAmount.toLocaleString()}` : "-"}
+        </div>
+      ),
+    },
+
+    {
+      key: "totalAmountPaidByCreditCard",
+      label: "Paid by Card",
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmountPaidByCreditCard
+            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
+            : "-"}
+        </div>
+      ),
+    },
+
+    // {
+    //   key: "totalDeliveryFee",
+    //   label: "Delivery Fee",
+    //   sortable: true,
+    //   render: (row: any) => (
+    //     <div className="text-sm font-medium">
+    //       {row.totalDeliveryFee
+    //         ? `₪${row.totalDeliveryFee.toLocaleString()}`
+    //         : "-"}
+    //     </div>
+    //   ),
+    // },
+
+    {
+      key: "totalNoOfOrders",
+      label: "No. of Orders",
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.totalNoOfOrders}</div>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: any) => React.ReactNode;
+  }[];
   //order details
   const {
     data: orderDetails,
@@ -729,6 +941,15 @@ export default function OrdersMgmtPage() {
           />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+          {userRole === UserRole.SUPERADMIN && (
+            <button
+              onClick={() => setOrderSummaryClick(!orderSummaryClick)}
+              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
+              ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+            >
+              {orderSummaryClick ? "View Orders" : "View Order Summary"}
+            </button>
+          )}
           {canViewOrders && (
             <button
               onClick={getVideoStream}
@@ -994,15 +1215,23 @@ export default function OrdersMgmtPage() {
               ) : (
                 <OrderListView
                   theme={theme}
-                  isLoading={isLoading || isFetching}
+                  isLoading={
+                    orderSummaryClick
+                      ? isFetchingOrderSummary || isLoadingOrderSummary
+                      : isLoading || isFetching
+                  }
                   hasMore={hasMore}
-                  orders={orders}
-                  combinedOrders={combinedOrders}
-                  fetchNextPage={fetchNextPage}
+                  orders={orderSummaryClick ? orderSummaries : orders}
+                  combinedOrders={
+                    orderSummaryClick ? combinedOrdersSummary : combinedOrders
+                  }
+                  fetchNextPage={
+                    orderSummaryClick ? fetchNextPageSummary : fetchNextPage
+                  }
                   selectedOrders={selectedOrders}
                   setSelectedOrders={setSelectedOrders}
                   handleRowClick={handleRowClick}
-                  columns={columns}
+                  columns={orderSummaryClick ? summaryColumns : columns}
                   textTertiary={textTertiary}
                   textSecondary={textSecondary}
                   t={t}

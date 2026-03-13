@@ -14,7 +14,13 @@ export const orderQueryApi = createApi({
         params,
       }),
     }),
-
+    getAllOrderSummary: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.orderSummary,
+        method: "GET",
+        params,
+      }),
+    }),
     getOrderById: builder.query<any, { orderId: string | null }>({
       query: ({ orderId }) => ({
         url: `${endpoints.orders}/${orderId}`,
@@ -33,6 +39,7 @@ export const orderQueryApi = createApi({
 
 export const {
   useGetAllOrdersQuery,
+  useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
 } = orderQueryApi;
