@@ -213,7 +213,9 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
+    if (finalSearchTerm) params.search = searchTerm;
     if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
