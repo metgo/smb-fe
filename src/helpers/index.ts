@@ -66,6 +66,15 @@ export function extractCenterAddressText(address: string): string | null {
 
   return null;
 }
+export const formatOrderDate = (dateString: string, language?: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString(language, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 export function extractEventDates(
   dayDescription?: { date: string | Date }[],

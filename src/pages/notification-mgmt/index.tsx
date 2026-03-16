@@ -184,18 +184,19 @@ export default function NotificationsMgmtPage() {
                   {/* Type */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t("notification_type")}
+                      {t("action_type")}
                     </label>
                     <select
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="ALL">{t("all_types")}</option>
+                      <option value="ALL">{t("all")}</option>
                       <option value="INFO">{t("info")}</option>
                       <option value="ACTION">{t("action_required")}</option>
                       <option value="WARNING">{t("warning")}</option>
                       <option value="ERROR">{t("error")}</option>
+                      <option value="URGENT">{t("urgent")}</option>
                     </select>
                   </div>
 
@@ -209,12 +210,13 @@ export default function NotificationsMgmtPage() {
                       onChange={(e) => setItemTypeFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="ALL">{t("all_types")}</option>
+                      <option value="ALL">{t("all")}</option>
                       <option value="BUSINESS">{t("business")}</option>
                       <option value="PRODUCT">{t("product")}</option>
                       <option value="EVENT">{t("event")}</option>
                       <option value="TRIP">{t("trip")}</option>
                       <option value="FUNDAY">{t("funday")}</option>
+                      <option value="USER">{t("user")}</option>
                     </select>
                   </div>
                 </div>

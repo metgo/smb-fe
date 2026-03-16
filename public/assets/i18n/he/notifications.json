@@ -15,9 +15,6 @@
   "read": "נקרא",
   "notification_type": "סוג",
   "all_types": "כל הסוגים",
-  "info": "מידע",
-  "warning": "אזהרה",
-  "error": "שגיאה",
   "date_range": "טווח תאריכים",
   "today": "היום",
   "this_week": "השבוע",
@@ -30,5 +27,20 @@
   "all_caught_up": "אין התראות חדשות",
   "try_adjusting_filters": "נסה לשנות את הפילטרים",
   "no_new_notifications": "אין התראות חדשות",
-  "total_notifications": "סך כל ההתראות"
+  "total_notifications": "סך כל ההתראות",
+
+  "action_type": "סוג פעולה",
+  "info": "מידע",
+  "error": "שגיאה",
+  "warning": "אזהרה",
+  "urgent": "דחוף",
+  "action": "פעולה",
+
+  "item_type": "סוג פריט",
+  "business": "עסק",
+  "product": "מוצר",
+  "event": "אירוע",
+  "user": "משתמש",
+  "trip": "טיול",
+  "funday": "יום כיף"
 }

@@ -16,9 +16,6 @@
   "read": "Read",
   "notification_type": "Type",
   "all_types": "All Types",
-  "info": "Info",
-  "warning": "Warning",
-  "error": "Error",
   "date_range": "Date Range",
   "today": "Today",
   "this_week": "This week",
@@ -31,5 +28,20 @@
   "all_caught_up": "You're all caught up",
   "try_adjusting_filters": "Try adjusting your filters",
   "no_new_notifications": "No new notifications",
-  "view_all_notifications": "View All Notifications"
+  "view_all_notifications": "View All Notifications",
+
+  "action_type": "Action Type",
+  "info": "Info",
+  "error": "Error",
+  "warning": "Warning",
+  "urgent": "Urgent",
+  "action": "action",
+
+  "item_type": "Item Type",
+  "business": "Business",
+  "product": "Product",
+  "event": "Event",
+  "user": "User",
+  "trip": "Trip",
+  "funday": "Funday"
 }

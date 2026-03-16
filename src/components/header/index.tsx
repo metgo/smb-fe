@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
-import { Moon, Sun, ChevronDown, Settings, Check } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Moon, Sun, ChevronDown, Settings, Check, Monitor } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
@@ -219,15 +219,15 @@ export default function Header() {
             </button>
 
             {/* View Toggle */}
-            {/* <button
+            <Link
+              to={routes.analyticsDashboard}
               className={clsx(
                 "p-2 rounded-lg transition-colors cursor-pointer",
-                hoverBg,
               )}
               aria-label="Toggle view"
             >
               <Monitor className={clsx("w-5 h-5", textPrimary)} />
-            </button> */}
+            </Link>
 
             {/* Edit Mode Toggle */}
             {toggleEditMode() && location.pathname === routes.dashboard && (

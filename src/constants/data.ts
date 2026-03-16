@@ -40,7 +40,7 @@ export const mockProducts = [
 ];
 
 export const generateMockOrders = (count: number): any[] => {
-  const statuses: IOrder["status"][] = [
+  const statuses: any["status"][] = [
     "draft",
     "processing",
     "paid",

@@ -72,7 +72,6 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 }) => {
   const { t: tc } = useTranslation("common");
   const { categories, socialMedia, accessibility, groupTypes } = useCommon();
-  console.log("geo", formData?.tags);
   const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];

@@ -15,9 +15,6 @@
   "read": "مقروء",
   "notification_type": "النوع",
   "all_types": "جميع الأنواع",
-  "info": "معلومات",
-  "warning": "تحذير",
-  "error": "خطأ",
   "date_range": "نطاق التاريخ",
   "today": "اليوم",
   "this_week": "هذا الأسبوع",
@@ -30,5 +27,20 @@
   "all_caught_up": "لقد حصلت على كل شيء",
   "try_adjusting_filters": "حاول تعديل الفلاتر",
   "no_new_notifications": "لا توجد إشعارات جديدة",
-  "total_notifications": "إجمالي الإشعارات"
+  "total_notifications": "إجمالي الإشعارات",
+
+  "action_type": "نوع الإجراء",
+  "info": "معلومات",
+  "error": "خطأ",
+  "warning": "تحذير",
+  "urgent": "عاجل",
+  "action": "إجراء",
+
+  "item_type": "نوع العنصر",
+  "business": "عمل",
+  "product": "منتج",
+  "event": "حدث",
+  "user": "مستخدم",
+  "trip": "رحلة",
+  "funday": "يوم ممتع"
 }

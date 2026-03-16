@@ -23,6 +23,7 @@ import {
   ContentMgmtPage,
   ErrorUiPage,
   NotificationsMgmtPage,
+  AnalyticsDashboardPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -194,6 +195,10 @@ function App() {
       errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
+        {
+          path: routes.analyticsDashboard,
+          element: <AnalyticsDashboardPage />,
+        },
 
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
         { path: routes.businessDetails, element: <BusinessDetailsPage /> },

@@ -33,6 +33,8 @@
   "address": "Address",
 
   "logo": "Logo",
+  "upload_logo": "Upload Logo",
+  "logo_required": "Logo (Required)",
   "add": "Add",
   "cancel": "Cancel",
   "city": "City",
@@ -205,6 +207,7 @@
   "image_gallery_desc": "{uploaded_count} images uploaded. {remaining_count} more allowed",
   "no_images_uploaded": "No Images Uploaded",
   "upload_image_info": "Upload images to create your event gallery",
+  "upload_up_to_10_images": "Upload up to 10 images",
 
   "attributes_desc": "Categories, accessibility features, and suitable audience",
   "subcategories": "Subcategories",

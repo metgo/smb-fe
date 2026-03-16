@@ -24,7 +24,7 @@ import {
 import {
   EventBasicInformation,
   EventDateTimeFormat,
-  EventMedia,
+  // EventMedia,
   EventRegistrationCapacity,
   EventReviewPublish,
   EventTickets,
@@ -39,6 +39,7 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/hooks/hooks";
+import Media from "@/components/details-sections/Media";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -91,8 +92,17 @@ export default function CreateEventWizard({
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [eventName, setEventName] = useState("");
+  const [eventNameHe, setEventNameHe] = useState("");
+  const [eventNameAr, setEventNameAr] = useState("");
+
   const [shortDescription, setShortDescription] = useState("");
+  const [shortDescriptionHe, setShortDescriptionHe] = useState("");
+  const [shortDescriptionAr, setShortDescriptionAr] = useState("");
+
   const [fullDescription, setFullDescription] = useState("<p></p>");
+  const [fullDescriptionHe, setFullDescriptionHe] = useState("<p></p>");
+  const [fullDescriptionAr, setFullDescriptionAr] = useState("<p></p>");
+
   const [eventLanguage, setEventLanguage] = useState<Language>("en");
   const [eventStatus, setEventStatus] = useState<EventStatus>("draft");
   const [internalNotes, setInternalNotes] = useState("");
@@ -202,9 +212,15 @@ export default function CreateEventWizard({
       setEventId("");
       setCurrentStep(1);
       setEventName("");
+      setEventNameHe("");
+      setEventNameAr("");
       setIsPublishBtnClicked(false);
       setShortDescription("");
+      setShortDescriptionHe("");
+      setShortDescriptionAr("");
       setFullDescription("");
+      setFullDescriptionHe("");
+      setFullDescriptionAr("");
       setEventLanguage("en");
       setEventStatus("draft");
       setInternalNotes("");
@@ -244,8 +260,17 @@ export default function CreateEventWizard({
     if (editData && editId) {
       // Basic information
       setEventName(editData?.name);
+      setEventNameHe(editData?.nameHe);
+      setEventNameAr(editData?.nameAr);
+
       setShortDescription(editData?.shortDescription);
+      setShortDescriptionHe(editData?.shortDescriptionHe);
+      setShortDescriptionAr(editData?.shortDescriptionAr);
+
       setFullDescription(editData?.description);
+      setFullDescriptionHe(editData?.descriptionHe);
+      setFullDescriptionAr(editData?.descriptionAr);
+
       setEventStatus(editData?.status.toLowerCase());
       setAccessiblitiesId(editData?.accessibilitiesId);
       setGroupTypesId(editData?.groupTypesId);
@@ -381,8 +406,18 @@ export default function CreateEventWizard({
 
   const eventBasicInfoPayload = {
     name: eventName,
-    description: fullDescription,
+    // nameHe: eventNameHe,
+    // nameAr: eventNameAr,
+
+    // Short Description
     shortDescription: shortDescription,
+    // shortDescriptionHe: shortDescriptionHe,
+    // shortDescriptionAr: shortDescriptionAr,
+
+    // Full Description
+    description: fullDescription,
+    // descriptionHe: fullDescriptionHe,
+    // descriptionAr: fullDescriptionAr,
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
     status: eventStatus?.toUpperCase(),
@@ -472,7 +507,7 @@ export default function CreateEventWizard({
     5: () => eventMsgSchedulePayload,
     6: () => eventMediaPayload,
   };
-
+  console.log(eventBasicInfoPayload);
   const {
     markDirty,
     saveDraft,
@@ -698,10 +733,24 @@ export default function CreateEventWizard({
             markDirty={markDirty}
             eventName={eventName}
             setEventName={setEventName}
+            eventNameHe={eventNameHe}
+            setEventNameHe={setEventNameHe}
+            eventNameAr={eventNameAr}
+            setEventNameAr={setEventNameAr}
+            // Short Description
             shortDescription={shortDescription}
             setShortDescription={setShortDescription}
+            shortDescriptionHe={shortDescriptionHe}
+            setShortDescriptionHe={setShortDescriptionHe}
+            shortDescriptionAr={shortDescriptionAr}
+            setShortDescriptionAr={setShortDescriptionAr}
+            // Full Description
             fullDescription={fullDescription}
             setFullDescription={setFullDescription}
+            fullDescriptionHe={fullDescriptionHe}
+            setFullDescriptionHe={setFullDescriptionHe}
+            fullDescriptionAr={fullDescriptionAr}
+            setFullDescriptionAr={setFullDescriptionAr}
             eventStatus={eventStatus}
             setEventStatus={setEventStatus}
             internalNotes={internalNotes}
@@ -817,8 +866,7 @@ export default function CreateEventWizard({
           />
         )}
         {currentStep === 6 && (
-          <EventMedia
-            t={t}
+          <Media
             markDirty={markDirty}
             images={images}
             imagesRef={imagesRef}
@@ -835,6 +883,7 @@ export default function CreateEventWizard({
 
         {currentStep === 7 && (
           <EventReviewPublish
+            images={images}
             setCurrentStep={setCurrentStep}
             eventName={eventName}
             shortDescription={shortDescription}

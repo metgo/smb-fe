@@ -11,6 +11,7 @@ import BusinessDetailsPage from "./businesses-mgmt/details";
 import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
 import NotificationsMgmtPage from "./notification-mgmt";
+import AnalyticsDashboardPage from "./analytics-dashboard";
 
 export {
   AuthPage,
@@ -25,5 +26,6 @@ export {
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
   NotificationsMgmtPage,
+  AnalyticsDashboardPage,
   ContentMgmtPage,
 };

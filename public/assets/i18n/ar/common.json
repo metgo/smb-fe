@@ -22,6 +22,8 @@
 
   "users": "المستخدمون",
   "points_of_interest": "نقاط الاهتمام",
+  "upload_up_to_10_images": "رفع حتى 10 صور",
+
   "delete_business": "حذف العمل التجاري",
   "delete_business_confirm": "تأكيد حذف العمل التجاري؟",
   "edit_location": "تعديل الموقع",
@@ -117,6 +119,9 @@
   "unsaved_changes_confirm": "لديك تغييرات غير محفوظة. هل أنت متأكد من المغادرة؟",
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
+
+  "logo_required": "الشعار (مطلوب)",
+  "upload_logo": "رفع الشعار",
 
   "images": "الصور",
   "image_upload_info": "بدأ رفع الصورة. يرجى الانتظار…",
