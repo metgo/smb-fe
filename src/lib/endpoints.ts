@@ -76,6 +76,7 @@ export const endpoints = {
 
   // Notifications
   notifications: "/notifications",
+  notificationStats: "/notifications/stats",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

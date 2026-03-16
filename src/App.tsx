@@ -29,8 +29,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
-import { addNotification, setNotifications } from "./features/notificationSlice";
+import {
+  addNotification,
+  setNotifications,
+} from "./features/notificationSlice";
 import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
+
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
   if (typeof window === "undefined") return false;
@@ -87,8 +91,7 @@ function App() {
 
   useEffect(() => {
     if (!socket) return;
-
-    // Initial load
+    const notificationSound = new Audio("/assets/audio/bell-ring.mp3");
     const fetchInitialNotifications = async () => {
       try {
         const response = await getLatestNotification({}).unwrap();
@@ -101,12 +104,13 @@ function App() {
       }
     };
 
-    fetchInitialNotifications();
-
     const handleNotification = async (data: any) => {
       console.log("🔔", data);
 
       if (!data?.type) return;
+      notificationSound.play().catch((err) => {
+        console.log("Sound blocked by browser:", err);
+      });
 
       try {
         const response = await getLatestNotification({
@@ -123,13 +127,19 @@ function App() {
       }
     };
 
+    const handleConnect = () => {
+      console.log("✅ Socket connected");
+      fetchInitialNotifications();
+    };
+
+    socket.on("connect", handleConnect);
     socket.on("notification", handleNotification);
 
     return () => {
+      socket.off("connect", handleConnect);
       socket.off("notification", handleNotification);
     };
   }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
-
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {

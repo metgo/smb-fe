@@ -1,6 +1,8 @@
-import { useState } from "react";
+import clsx from "clsx";
+import { useEffect, useMemo, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
+
 import {
-  Bell,
   Info,
   AlertCircle,
   AlertTriangle,
@@ -8,34 +10,63 @@ import {
   CheckCheck,
   X,
 } from "lucide-react";
-import { useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
-import { FilterButton } from "@/components/btns";
-import SearchInput from "@/components/shared/SearchInput";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getBorderColor, timeAgo } from "@/helpers";
-import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 
+import { itemEndpoint } from "@/lib/utils";
+import { FilterButton } from "@/components/btns";
+import { getBorderColor, timeAgo } from "@/helpers";
+import { NotificationStatsCards } from "./components";
+import SearchInput from "@/components/shared/SearchInput";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  useGetAllNotificationsQuery,
+  useGetNotificatonStatsQuery,
+  useMarkNotificationsAsReadMutation,
+} from "@/store/api/notificationApi";
+
+const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
 export default function NotificationsMgmtPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation("notifications");
-  const SEARCH_STORAGE_KEY = "notificationSearchTerm";
+  const { t: tc } = useTranslation("common");
 
+  const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [readFilter, setReadFilter] = useState<"all" | "read" | "unread">(
-    "all",
-  );
-  const [typeFilter, setTypeFilter] = useState<
-    "all" | "info" | "action" | "warning" | "error"
-  >("all");
-  const [dateFilter, setDateFilter] = useState("all");
+  const [allNotifications, setAllNotifications] = useState<INotification[]>([]);
+
+  const [readFilter, setReadFilter] = useState<TNotifStatus>("ALL");
+  const [typeFilter, setTypeFilter] = useState<TNotifType>("ALL");
+  const [itemTypeFilter, setItemTypeFilter] = useState<TItemType>("ALL");
+
   const [selectedNotifications, setSelectedNotifications] = useState<
     Set<string>
   >(new Set());
 
-  const { notifications } = useAppSelector((state) => state.notification);
+  const QueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit: 20,
+      notifType: typeFilter,
+      readType: readFilter,
+      itemType: itemTypeFilter,
+    };
+    return params;
+  }, [page, readFilter, typeFilter, itemTypeFilter]);
+
+  const {
+    data: notifications,
+    refetch: refetchNotifList,
+    isFetching,
+  } = useGetAllNotificationsQuery(QueryParams);
+  const { data: notifStats, refetch: refetchNotifStats } =
+    useGetNotificatonStatsQuery();
+
+  const hasMore = notifications?.meta?.hasNextPage || false;
 
   const {
     isDark,
@@ -50,7 +81,26 @@ export default function NotificationsMgmtPage() {
     borderColor,
     hoverBg,
   } = useThemeClasses();
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!notifications?.data) return;
+    if (page === 1) {
+      setAllNotifications(notifications.data);
+    } else {
+      setAllNotifications((prev) => {
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = notifications.data.filter(
+          (b: any) => !existingIds.has(b._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [notifications?.data, page]);
+
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => prev + 1);
+  };
 
   const getNotificationIcon = (type: TNotifType) => {
     const iconClass = "w-5 h-5";
@@ -65,48 +115,6 @@ export default function NotificationsMgmtPage() {
         return <XCircle className={`${iconClass} text-red-500`} />;
     }
   };
-
-  // const handleNotificationClick = (notification: Notification) => {
-  //   // Mark as read
-  //   if (!notification.read) {
-  //     setNotifications((prev) =>
-  //       prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
-  //     );
-  //   }
-
-  //   // Navigate to related screen
-  //   if (notification.relatedTo) {
-  //     onNavigate?.(notification.relatedTo.module);
-  //   }
-  // };
-
-  // const handleMarkAllAsRead = () => {
-  //   setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  // };
-
-  // const handleSelectAll = () => {
-  //   if (selectedNotifications.size === filteredNotifications.length) {
-  //     setSelectedNotifications(new Set());
-  //   } else {
-  //     setSelectedNotifications(new Set(filteredNotifications.map((n) => n.id)));
-  //   }
-  // };
-
-  // const handleBulkMarkAsRead = () => {
-  //   setNotifications((prev) =>
-  //     prev.map((n) =>
-  //       selectedNotifications.has(n.id) ? { ...n, read: true } : n,
-  //     ),
-  //   );
-  //   setSelectedNotifications(new Set());
-  // };
-
-  // const handleBulkDelete = () => {
-  //   setNotifications((prev) =>
-  //     prev.filter((n) => !selectedNotifications.has(n.id)),
-  //   );
-  //   setSelectedNotifications(new Set());
-  // };
 
   return (
     <div
@@ -123,16 +131,6 @@ export default function NotificationsMgmtPage() {
                 </h1>
                 <p className={textSecondary}>{t("manage_notifications")}</p>
               </div>
-
-              {/* {unreadNotifications > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  className="px-4 py-2 bg-linear-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
-                >
-                  <CheckCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("mark_all_read")}</span>
-                </button>
-              )} */}
             </div>
           </div>
         </div>
@@ -141,51 +139,7 @@ export default function NotificationsMgmtPage() {
         <div className="shrink-0 p-6 pb-0">
           <div className="max-w-400 mx-auto">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              {/* Total */}
-              <div
-                className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Bell className="w-5 h-5 text-blue-600" />
-                  <span className={`text-sm ${textPrimary}`}>
-                    {t("total_notifications")}
-                  </span>
-                </div>
-                <p className={`text-2xl ${textPrimary} mb-1`}>{1}</p>
-                <p className={`text-xs ${textTertiary}`}>{t("all_time")}</p>
-              </div>
-
-              {/* Unread */}
-              <div
-                className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Info className="w-5 h-5 text-teal-600" />
-                  <span className={`text-sm ${textPrimary}`}>
-                    {t("unread")}
-                  </span>
-                </div>
-                <p className={`text-2xl ${textPrimary} mb-1`}>{2}</p>
-                <p className={`text-xs ${textTertiary}`}>{t("new_messages")}</p>
-              </div>
-
-              {/* Action Required */}
-              <div
-                className={`${bgSecondary} rounded-xl p-4 border ${borderColor} shadow-sm`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle className="w-5 h-5 text-purple-600" />
-                  <span className={`text-sm ${textPrimary}`}>
-                    {t("action_required")}
-                  </span>
-                </div>
-                <p className={`text-2xl ${textPrimary} mb-1`}>{4}</p>
-                <p className={`text-xs ${textTertiary}`}>
-                  {t("needs_attention")}
-                </p>
-              </div>
-            </div>
+            {notifStats && <NotificationStatsCards stats={notifStats} />}
 
             {/* Toolbar */}
             <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -210,7 +164,7 @@ export default function NotificationsMgmtPage() {
               <div
                 className={`mb-6 p-4 rounded-xl border ${borderColor} ${bgSecondary}`}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {/* Read Status */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
@@ -221,9 +175,9 @@ export default function NotificationsMgmtPage() {
                       onChange={(e) => setReadFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t("all")}</option>
-                      <option value="unread">{t("unread")}</option>
-                      <option value="read">{t("read")}</option>
+                      <option value="ALL">{t("all")}</option>
+                      <option value="UNREAD">{t("unread")}</option>
+                      <option value="READ">{t("read")}</option>
                     </select>
                   </div>
 
@@ -237,28 +191,30 @@ export default function NotificationsMgmtPage() {
                       onChange={(e) => setTypeFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t("all_types")}</option>
-                      <option value="info">{t("info")}</option>
-                      <option value="action">{t("action_required")}</option>
-                      <option value="warning">{t("warning")}</option>
-                      <option value="error">{t("error")}</option>
+                      <option value="ALL">{t("all_types")}</option>
+                      <option value="INFO">{t("info")}</option>
+                      <option value="ACTION">{t("action_required")}</option>
+                      <option value="WARNING">{t("warning")}</option>
+                      <option value="ERROR">{t("error")}</option>
                     </select>
                   </div>
 
-                  {/* Date Range */}
+                  {/*Item Type */}
                   <div>
                     <label className={`block text-sm ${textSecondary} mb-2`}>
-                      {t("date_range")}
+                      {t("item_type")}
                     </label>
                     <select
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
+                      value={itemTypeFilter}
+                      onChange={(e) => setItemTypeFilter(e.target.value as any)}
                       className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary}`}
                     >
-                      <option value="all">{t("all_time")}</option>
-                      <option value="today">{t("today")}</option>
-                      <option value="week">{t("this_week")}</option>
-                      <option value="month">{t("this_month")}</option>
+                      <option value="ALL">{t("all_types")}</option>
+                      <option value="BUSINESS">{t("business")}</option>
+                      <option value="PRODUCT">{t("product")}</option>
+                      <option value="EVENT">{t("event")}</option>
+                      <option value="TRIP">{t("trip")}</option>
+                      <option value="FUNDAY">{t("funday")}</option>
                     </select>
                   </div>
                 </div>
@@ -270,7 +226,7 @@ export default function NotificationsMgmtPage() {
         {/* Scrollable Notifications List */}
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <div className="max-w-400 mx-auto">
-            {notifications?.length === 0 ? (
+            {allNotifications?.length === 0 ? (
               <div
                 className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
               >
@@ -358,78 +314,98 @@ export default function NotificationsMgmtPage() {
                     </div>
                   </div>
                 )}
-                <div
-                  className={`${bgTertiary} border-b ${borderColor} px-4 py-3 flex items-center gap-3`}
+
+                <InfiniteScroll
+                  dataLength={allNotifications?.length}
+                  next={fetchNextPage}
+                  hasMore={hasMore}
+                  scrollableTarget="scrollableDiv"
+                  loader={
+                    <p className={clsx("text-center mt-4", textTertiary)}>
+                      {tc("loading_text")}
+                    </p>
+                  }
+                  endMessage={
+                    !hasMore && (
+                      <p className={clsx("text-center mt-4", textTertiary)}>
+                        {tc("loading_end_text")}
+                      </p>
+                    )
+                  }
                 >
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedNotifications.size === notifications?.length
-                    }
-                    // onChange={handleSelectAll}
-                    className="rounded"
-                  />
-                  <span className={`text-sm ${textSecondary}`}>
-                    {t("select_all")}
-                  </span>
-                </div>
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {allNotifications?.map((notification) => {
+                      const itemType = notification?.itemType;
+                      const queryParam = `${itemType.toLowerCase()}Id`;
 
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {notifications?.map((notification) => {
-                    const itemType = notification?.itemType; // BUSINESS, EVENT, PRODUCT, etc.
-                    const detailsRouteKey =
-                      `${itemType.toLowerCase()}-details` as keyof typeof routes;
-                    const queryParam = `${itemType.toLowerCase()}Id`;
-
-                    const handleNavigate = () => {
-                      if (routes[detailsRouteKey]) {
+                      const handleNavigate = async () => {
+                        await markNotificationsAsRead(notification._id);
+                        refetchNotifStats();
+                        refetchNotifList();
                         navigate(
-                          `${routes[detailsRouteKey]}?${queryParam}=${notification?._id}`,
+                          `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
                         );
-                      } else {
-                        console.warn(
-                          `No details route found for itemType: ${itemType}`,
-                        );
-                      }
-                    };
+                      };
 
-                    return (
-                      <div
-                        key={notification?._id}
-                        onClick={handleNavigate}
-                        className={`
-                          flex items-start gap-3 px-4 py-8 
-                          ${hoverBg} 
-                          transition-colors 
-                          ${isRTL ? "border-r-2" : "border-l-2"} 
-                          ${getBorderColor(notification?.notifType, isRTL)} 
-                          ${notification.isRead ? (isDark ? "bg-gray-800/50" : "bg-blue-50/50") : ""}
-                        `}
-                      >
-                        <div className="flex gap-3">
-                          <div className="shrink-0 mt-0.5">
-                            {getNotificationIcon(notification?.notifType)}
-                          </div>
-                          <div className="flex flex-col">
-                            <h4
-                              className={`text-sm font-medium ${textPrimary}`}
-                            >
-                              {notification?.content?.[language].title}
-                            </h4>
-                            <p className={`text-sm ${textSecondary} mb-1`}>
-                              {notification?.content?.[language]?.message}
-                            </p>
-                            <p
-                              className={`text-xs font-medium ${textTertiary}`}
-                            >
-                              {timeAgo(notification.createdAt)}
-                            </p>
+                      return (
+                        <div
+                          key={notification?._id}
+                          onClick={handleNavigate}
+                          className={`
+    relative flex items-start gap-3 px-4 py-8 cursor-pointer
+    ${hoverBg}
+    transition-colors
+    ${isRTL ? "border-r-2" : "border-l-2"}
+    ${getBorderColor(notification?.notifType, isRTL)}
+    
+    ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
+  `}
+                        >
+                          {/* Unread dot indicator */}
+                          {!notification.isRead && (
+                            <span className="absolute top-6 right-4 w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                          )}
+
+                          <div className="flex gap-3">
+                            <div className="shrink-0 mt-0.5">
+                              {getNotificationIcon(notification?.notifType)}
+                            </div>
+
+                            <div className="flex flex-col">
+                              <h4
+                                className={clsx(
+                                  "text-sm",
+                                  notification.isRead
+                                    ? textPrimary
+                                    : `font-semibold ${textPrimary}`,
+                                )}
+                              >
+                                {notification?.content?.[language].title}
+                              </h4>
+
+                              <p
+                                className={clsx(
+                                  "text-sm mb-1",
+                                  notification.isRead
+                                    ? textSecondary
+                                    : "text-gray-700 dark:text-gray-300",
+                                )}
+                              >
+                                {notification?.content?.[language]?.message}
+                              </p>
+
+                              <p
+                                className={`text-xs font-medium ${textTertiary}`}
+                              >
+                                {timeAgo(notification.createdAt)}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                </InfiniteScroll>
               </div>
             )}
           </div>

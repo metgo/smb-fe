@@ -135,24 +135,16 @@ interface ISearchBusiness {
   slug: string;
 }
 
+type TNotifStatus = "ALL" | "READ" | "UNREAD";
 
-type TItemType =
-  | 'BUSINESS'
-  | 'PRODUCT'
-  | 'EVENT'
-  | 'FUNDAY'
-  | 'TRIP';
+type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "FUNDAY" | "TRIP";
 
-type TNotifType =
-  | 'INFO'
-  | 'WARNING'
-  | 'ACTION'
-  | 'ERROR';
+type TNotifType = "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR";
 
 type TItemStatus =
-  | 'PENDING'
-  | 'APPROVED'
-  | 'CLOSED'
-  | 'REJECTED'
-  | 'DRAFT'
-  | 'ARCHIVED';
+  | "PENDING"
+  | "APPROVED"
+  | "CLOSED"
+  | "REJECTED"
+  | "DRAFT"
+  | "ARCHIVED";

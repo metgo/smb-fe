@@ -1,24 +1,27 @@
-
 interface INotifListRes {
   data: INotification[];
-  pagination: {
+  totalData: number;
+  meta: {
     total: number;
     page: number;
     limit: number;
-    totalPages: number;
+    data: number;
+    pageCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
   };
 }
 
 interface INotification {
   _id: string;
   content: {
-    en: IContent,
-    he: IContent,
-    ar: IContent,
+    en: IContent;
+    he: IContent;
+    ar: IContent;
   };
   status: TItemStatus;
   itemId: string;
-  notifType: TNotifType
+  notifType: TNotifType;
   itemType: TItemType;
   isRead: boolean;
   isUrgent: boolean;
@@ -33,4 +36,14 @@ interface INotification {
 interface IContent {
   title: string;
   message: string;
+}
+
+interface INotificationStats {
+  total: number;
+  unread: number;
+  info: number;
+  action: number;
+  warning: number;
+  error: number;
+  urgent: number;
 }

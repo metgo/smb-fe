@@ -15,21 +15,24 @@ import { getBorderColor, timeAgo } from "@/helpers";
 import { toggleNotification } from "@/features/uiSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
-
-
+import { useMarkNotificationsAsReadMutation } from "@/store/api/notificationApi";
 
 const NotificationsBell = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation("notifications");
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  const { isNotificationOpen } = useAppSelector((state) => state.ui);
   const { notifications } = useAppSelector((state) => state.notification);
+
+  const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
 
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
-  const navigate = useNavigate();
-  const { isNotificationOpen } = useAppSelector((state) => state.ui);
 
-  // Count unread notifications (isRead === false)
   const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
 
   const getNotificationIcon = (type: TNotifType) => {
@@ -63,7 +66,10 @@ const NotificationsBell = () => {
     }
   };
 
-  const popupRef = useRef<HTMLDivElement>(null);
+  const handleViewAllNotification = () => {
+    dispatch(toggleNotification());
+    navigate(routes.notificationMgmt);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -182,20 +188,15 @@ const NotificationsBell = () => {
               {notifications?.map((notification) => {
                 const isUnread = !notification.isRead;
                 const itemType = notification?.itemType;
-                const detailsRouteKey =
-                  `${itemType.toLowerCase()}-details` as keyof typeof routes;
+
                 const queryParam = `${itemType.toLowerCase()}Id`;
 
-                const handleNavigate = () => {
-                  if (routes[detailsRouteKey]) {
-                    navigate(
-                      `${routes[detailsRouteKey]}?${queryParam}=${notification?._id}`,
-                    );
-                  } else {
-                    console.warn(
-                      `No details route found for itemType: ${itemType}`,
-                    );
-                  }
+                const handleNavigate = async () => {
+                  dispatch(toggleNotification());
+                  await markNotificationsAsRead(notification._id);
+                  navigate(
+                    `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                  );
                 };
 
                 return (
@@ -259,7 +260,6 @@ const NotificationsBell = () => {
             </div>
           )}
 
-          {/* Footer */}
           {notifications?.length > 0 && (
             <div
               className={clsx(
@@ -270,7 +270,7 @@ const NotificationsBell = () => {
               )}
             >
               <button
-                onClick={() => navigate("/notifications-management")}
+                onClick={handleViewAllNotification}
                 className={clsx(
                   "w-full flex items-center justify-center gap-2",
                   "text-sm font-semibold text-blue-600 dark:text-blue-400",

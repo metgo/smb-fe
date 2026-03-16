@@ -49,6 +49,8 @@ const Contents = ({
   totalData,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
+  const { t: tc } = useTranslation("common");
+
   const { isDark, textTertiary } = useThemeClasses();
   const { categories: categoryFilter } = useCommon();
 
@@ -279,13 +281,13 @@ const Contents = ({
           scrollableTarget="scrollableDiv"
           loader={
             <p className={clsx("text-center mt-4", textTertiary)}>
-              {t("loading_text")}
+              {tc("loading_text")}
             </p>
           }
           endMessage={
             !hasMore && (
               <p className={clsx("text-center mt-4", textTertiary)}>
-                {t("loading_end_text")}
+                {tc("loading_end_text")}
               </p>
             )
           }

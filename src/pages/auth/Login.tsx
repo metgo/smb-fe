@@ -40,6 +40,7 @@ export function Login({ setCurrentTab }: LoginProps) {
           JSON.stringify({ user: data.user }),
         );
         sessionStorage.setItem("access_token", data.accessToken);
+        window.dispatchEvent(new Event("session:updated"));
       }
       dispatch(loginSuccess(data.user));
 

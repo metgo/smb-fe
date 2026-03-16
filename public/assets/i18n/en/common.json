@@ -1,4 +1,7 @@
 {
+  "loading_text": "Loading more items...",
+  "loading_end_text": "No more items",
+
   "all_websites": "All Websites",
   "all_authorities": "All Authorities",
   "app_title": "Western Negev Tourism Analytics",

@@ -2,8 +2,12 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
-
 interface QueryParams {
+  page?: number;
+  limit?: number;
+  notifType?: TNotifType;
+  readType?: TNotifStatus;
+  itemType?: TItemType;
   createdAfter?: string;
 }
 
@@ -16,7 +20,14 @@ export const notificationApi = createApi({
       query: (params) => ({
         url: endpoints.notifications,
         method: "GET",
-        params
+        params,
+      }),
+    }),
+
+    getNotificatonStats: builder.query<INotificationStats, void>({
+      query: () => ({
+        url: endpoints.notificationStats,
+        method: "GET",
       }),
     }),
 
@@ -26,7 +37,6 @@ export const notificationApi = createApi({
         method: "PATCH",
       }),
     }),
-
   }),
 });
 
@@ -34,4 +44,5 @@ export const {
   useGetAllNotificationsQuery,
   useLazyGetAllNotificationsQuery,
   useMarkNotificationsAsReadMutation,
+  useGetNotificatonStatsQuery,
 } = notificationApi;
