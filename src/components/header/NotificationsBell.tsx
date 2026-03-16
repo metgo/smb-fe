@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
 import { useMarkNotificationsAsReadMutation } from "@/store/api/notificationApi";
+import { markNotificationAsRead } from "@/features/notificationSlice";
 
 const NotificationsBell = () => {
   const navigate = useNavigate();
@@ -194,6 +195,7 @@ const NotificationsBell = () => {
                 const handleNavigate = async () => {
                   dispatch(toggleNotification());
                   await markNotificationsAsRead(notification._id);
+                  dispatch(markNotificationAsRead(notification._id));
                   navigate(
                     `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
                   );
