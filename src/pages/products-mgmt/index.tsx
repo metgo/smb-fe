@@ -711,7 +711,7 @@ export default function ProductsMgmtPage() {
               hasMore={!!hasMore}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
-              isLoading={isLoadingProduct || isFetching}
+              isLoading={isLoadingProduct}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}

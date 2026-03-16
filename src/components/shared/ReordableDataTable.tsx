@@ -337,9 +337,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 colSpan={columnOrder?.length || 1}
                 className="h-80 text-center"
               >
-                <div className="flex flex-col items-center justify-center h-full gap-3">
-                  {" "}
-                  <Loader className="w-6 h-6 animate-spin text-teal-600" />
+                <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+                  <Loader className="w-10 h-10 animate-spin text-teal-600" />
                 </div>
               </td>
             </tr>
@@ -488,7 +487,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     colSpan={columnOrder?.length || 1}
                     className="h-80 text-center"
                   >
-                    <div className="flex flex-col items-center justify-center h-full gap-3">
+                    <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
                       <Loader className="w-10 h-10 animate-spin text-teal-600" />
                     </div>
                   </td>

@@ -132,6 +132,10 @@ export default function OrdersMgmtPage() {
       return !prev;
     });
   };
+  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
+    null,
+  );
+
   const orderSummaryQueryParams = useMemo(() => {
     const params: any = {
       page: pageSummary,
@@ -198,6 +202,7 @@ export default function OrdersMgmtPage() {
   } = useGetAllOrderSummaryQuery(businessOrderParams!, {
     skip: !businessOrderParams, // skip until businessOrderParams is populated
   });
+
   const ordersSummariess = orderSummaries?.data ?? [];
 
   const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
@@ -391,6 +396,7 @@ export default function OrdersMgmtPage() {
   const hasMoreSummary = orders?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
+  const totalDataSummary = orderSummaries?.totalData;
 
   //update combined order when filters change so combined orders doesnt show stale value
   useEffect(() => {
@@ -564,11 +570,13 @@ export default function OrdersMgmtPage() {
   }[];
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
-    // Business summary rows
+    console.log("ROW", row?.businessName);
+
     const businessRows = [
-      { Field: "Business Name", Value: row.businessName },
+      { Field: "Business Name", Value: row?.businessName },
       { Field: "Business Email", Value: row.businessEmail },
       { Field: "Country", Value: row.businessAddressCountry },
       { Field: "City", Value: row.businessAddressCity },
@@ -579,11 +587,11 @@ export default function OrdersMgmtPage() {
       { Field: "Total Amount", Value: row.totalAmount },
       { Field: "Total Credit Card", Value: row.totalAmountPaidByCreditCard },
       { Field: "Total Delivery Fee", Value: row.totalDeliveryFee },
-      {}, // blank row separator
+      {},
     ];
 
-    // Orders rows
-    const orderRows = row?.orders?.map((order: any) => ({
+    const orderRows = (row?.orders ?? []).map((order: any) => ({
+      //  fallback to []
       "Order ID": order.id,
       "Customer Name": `${order.firstName} ${order.lastName}`.trim(),
       Email: order.email,
@@ -600,18 +608,34 @@ export default function OrdersMgmtPage() {
         order.products?.map((p: any) => p.name || p._id).join(", ") || "",
     }));
 
-    // Build sheet from business info first
     const sheet = XLSX?.utils?.json_to_sheet(businessRows);
 
-    // Append orders starting after business rows + blank row
-    XLSX?.utils?.sheet_add_json(sheet, orderRows, {
-      origin: businessRows?.length + 1, // +1 for the header row of businessRows
-      skipHeader: false,
-    });
+    if (orderRows.length > 0) {
+      // ✅ only call sheet_add_json when there's data
+      XLSX?.utils?.sheet_add_json(sheet, orderRows, {
+        origin: businessRows.length + 1,
+        skipHeader: false,
+      });
+    }
 
     XLSX?.utils?.book_append_sheet(workbook, sheet, "Business & Orders");
     XLSX?.writeFile(workbook, `${row.businessName}_orders.xlsx`);
   };
+
+  useEffect(() => {
+    if (businessOrderSummaries && pendingDownloadId) {
+      // Find the specific business row by ID
+      const targetRow = businessOrdersSummariess.find(
+        (item: any) => item._id === pendingDownloadId,
+      );
+
+      if (targetRow) {
+        downloadAsXLS(targetRow);
+      }
+
+      setPendingDownloadId(null);
+    }
+  }, [businessOrderSummaries]);
   //order summary
   const summaryColumns = [
     {
@@ -634,7 +658,7 @@ export default function OrdersMgmtPage() {
 
               setIsOpen(true); // open modal
             }}
-            className="p-1 hover:bg-gray-200 rounded"
+            className="p-1 rounded"
           >
             <ShoppingBag className="w-4 h-4 text-green-600" />
           </button>
@@ -646,7 +670,7 @@ export default function OrdersMgmtPage() {
                 replace: true,
               });
             }}
-            className="p-1 hover:bg-gray-200 rounded"
+            className="p-1 rounded"
           >
             <Eye className="w-4.5 h-4.5 text-yellow-500" />
           </button>
@@ -654,11 +678,26 @@ export default function OrdersMgmtPage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              downloadAsXLS(row);
+
+              setBusinessOrderParams({
+                page: 1,
+                limit: 10,
+                businessId: row._id,
+                detailedView: true,
+              });
+              // downloadAsXLS(row);
+              setPendingDownloadId(row._id);
             }}
-            className="p-1 hover:bg-gray-200 rounded"
+            className="p-1 rounded"
+            disabled={
+              pendingDownloadId === row._id && isFetchingBusinessOrderSummary
+            }
           >
-            <Download className="w-4 h-4 text-blue-500" />
+            {pendingDownloadId === row._id && isFetchingBusinessOrderSummary ? (
+              <Loader className="w-4 h-4 animate-spin text-blue-500" />
+            ) : (
+              <Download className="w-4 h-4 text-blue-500" />
+            )}
           </button>
         </div>
       ),
@@ -1084,13 +1123,13 @@ export default function OrdersMgmtPage() {
             }
             description={
               orderSummaryClick
-                ? t("businesses_list")
+                ? `${t("businesses_list")} ${totalDataSummary ? totalDataSummary : ""}`
                 : t("online_orders_subtitle")
             }
             h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
             totalCount={
               orderSummaryClick
-                ? orderSummaries?.datas?.length
+                ? orderSummaries?.data?.length
                 : (totalData ?? 0)
             }
           />
@@ -1486,6 +1525,7 @@ export default function OrdersMgmtPage() {
         isLoading={
           isLoadingBusinessOrderSummary || isFetchingBusinessOrderSummary
         }
+        isDark={isDark}
         businessOrdersSummaries={businessOrdersSummariess ?? []}
       />
       <ConfirmDialog
