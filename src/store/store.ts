@@ -58,7 +58,7 @@ export const store = configureStore({
     [contentQueryApi.reducerPath]: contentQueryApi.reducer,
     [contentMutationApi.reducerPath]: contentMutationApi.reducer,
 
-    [notificationApi.reducerPath]:notificationApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
