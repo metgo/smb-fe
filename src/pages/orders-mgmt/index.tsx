@@ -8,6 +8,8 @@ import {
   Activity,
   useCallback,
 } from "react";
+import * as XLSX from "xlsx";
+
 import {
   Download,
   // Plus,
@@ -62,7 +64,7 @@ import { UserRole } from "@/enums/user.types";
 import { formatOrderDate } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
-import { ModalWrapper } from "@/components/wrapper";
+import { OrdersModal } from "./components/OrdersModal";
 
 // Default columns configuration
 const defaultColumns = {
@@ -120,7 +122,16 @@ export default function OrdersMgmtPage() {
     endDate: "",
     month: "all",
   });
-  const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(false);
+  const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(() => {
+    const stored = localStorage.getItem("orderSummaryClick");
+    return stored !== null ? JSON.parse(stored) : false;
+  });
+  const handleOrderSummaryClick = () => {
+    setOrderSummaryClick((prev) => {
+      localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
+      return !prev;
+    });
+  };
   const orderSummaryQueryParams = useMemo(() => {
     const params: any = {
       page: pageSummary,
@@ -130,7 +141,7 @@ export default function OrdersMgmtPage() {
 
       // websiteId,
     };
-    params.detailedView = true;
+    // params.detailedView = true;
     if (searchTermSummary) params.search = searchTermSummary;
 
     if (summaryFilters.status !== "all") {
@@ -165,16 +176,31 @@ export default function OrdersMgmtPage() {
     dmoId,
     // websiteId,
   ]);
+  const [businessOrderParams, setBusinessOrderParams] = useState<{
+    page: number;
+    limit: number;
+    businessId?: string;
+    detailedView: boolean;
+  } | null>(null);
 
   const {
     data: orderSummaries,
     isLoading: isLoadingOrderSummary,
     isFetching: isFetchingOrderSummary,
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-    skip: !orderSummaryClick, // skip when summary is NOT clicked
+    skip: !orderSummaryClick, // skip when user clicked to view business-specific orders
   });
+  // Business-specific order summary query (runs only when businessOrderParams is set)
+  const {
+    data: businessOrderSummaries,
+    isLoading: isLoadingBusinessOrderSummary,
+    isFetching: isFetchingBusinessOrderSummary,
+  } = useGetAllOrderSummaryQuery(businessOrderParams!, {
+    skip: !businessOrderParams, // skip until businessOrderParams is populated
+  });
+  const ordersSummariess = orderSummaries?.data ?? [];
 
-  const ordersSummariess = orderSummaries?.datas?.data ?? [];
+  const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
 
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
@@ -358,12 +384,11 @@ export default function OrdersMgmtPage() {
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams, {
-    skip: orderSummaryClick, // skip when summary is clicked
+    skip: orderSummaryClick,
   });
 
   const hasMore = orders?.meta?.hasNextPage;
   const hasMoreSummary = orders?.meta?.hasNextPage;
-  console.log("🚀 ~ OrdersMgmtPage ~ hasMoreSummary:", hasMoreSummary);
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
 
@@ -539,7 +564,54 @@ export default function OrdersMgmtPage() {
   }[];
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const downloadAsXLS = (row: any) => {
+    const workbook = XLSX?.utils?.book_new();
+    // Business summary rows
+    const businessRows = [
+      { Field: "Business Name", Value: row.businessName },
+      { Field: "Business Email", Value: row.businessEmail },
+      { Field: "Country", Value: row.businessAddressCountry },
+      { Field: "City", Value: row.businessAddressCity },
+      { Field: "Location", Value: row.businessAddressLocation },
+      { Field: "Authority", Value: row.authorityName },
+      { Field: "DMO", Value: row.dmoName },
+      { Field: "Total Orders", Value: row.totalNoOfOrders },
+      { Field: "Total Amount", Value: row.totalAmount },
+      { Field: "Total Credit Card", Value: row.totalAmountPaidByCreditCard },
+      { Field: "Total Delivery Fee", Value: row.totalDeliveryFee },
+      {}, // blank row separator
+    ];
 
+    // Orders rows
+    const orderRows = row?.orders?.map((order: any) => ({
+      "Order ID": order.id,
+      "Customer Name": `${order.firstName} ${order.lastName}`.trim(),
+      Email: order.email,
+      Phone: `+${order.countryCode}${order.phone}`,
+      Address: order.address,
+      Status: order.status,
+      "Payment Status": order.paymentStatus,
+      "Total Amount": order.totalAmount,
+      "Delivery Fee": order.deliveryFee,
+      "Credit Card Amount": order.amountPaidByCreditCard,
+      "Order Date": new Date(order.orderInitiatedDate).toLocaleDateString(),
+      "Success Date": new Date(order.orderSuccessDate).toLocaleDateString(),
+      Products:
+        order.products?.map((p: any) => p.name || p._id).join(", ") || "",
+    }));
+
+    // Build sheet from business info first
+    const sheet = XLSX?.utils?.json_to_sheet(businessRows);
+
+    // Append orders starting after business rows + blank row
+    XLSX?.utils?.sheet_add_json(sheet, orderRows, {
+      origin: businessRows?.length + 1, // +1 for the header row of businessRows
+      skipHeader: false,
+    });
+
+    XLSX?.utils?.book_append_sheet(workbook, sheet, "Business & Orders");
+    XLSX?.writeFile(workbook, `${row.businessName}_orders.xlsx`);
+  };
   //order summary
   const summaryColumns = [
     {
@@ -551,69 +623,28 @@ export default function OrdersMgmtPage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              console.log("Menu clicked", row);
+
+              // Set businessId query params when button is clicked
+              setBusinessOrderParams({
+                page: 1,
+                limit: 10,
+                businessId: row._id,
+                detailedView: true,
+              });
+
               setIsOpen(true); // open modal
             }}
             className="p-1 hover:bg-gray-200 rounded"
           >
             <ShoppingBag className="w-4 h-4 text-green-600" />
           </button>
-          {/* Modal */}
-          {isOpen && (
-            <div className="fixed top-12 inset-0  flex justify-center items-center z-50">
-              <div className="bg-white rounded-lg shadow-sm h-[80vh] overflow-y-auto w-full max-w-6xl p-4 relative">
-                <h2 className="text-lg font-bold mb-4">Orders</h2>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-                >
-                  ✖
-                </button>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-200">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-2 border">Product Name</th>
-                        <th className="p-2 border">Order Date</th>
-                        <th className="p-2 border">Status</th>
-                        <th className="p-2 border">Payment Status</th>
-                        <th className="p-2 border">Customer Name</th>
-                        <th className="p-2 border">Customer Email</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {row.orders.map((order: any) => (
-                        <tr key={order.id} className="text-center">
-                          <td className="p-2 border">
-                            {order.products.map((p) => p.name).join(", ")}
-                          </td>
-                          <td className="p-2 border">
-                            {new Date(
-                              order.orderInitiatedDate,
-                            ).toLocaleString()}
-                          </td>
-                          <td className="p-2 border">{order.status}</td>
-                          <td className="p-2 border">{order.paymentStatus}</td>
-                          <td className="p-2 border">
-                            {order.firstName} {order.lastName}
-                          </td>
-                          <td className="p-2 border">{order.email}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
               navigate(`${routes.businessDetails}?businessId=${row?._id}`, {
                 replace: true,
               });
-              console.log("View clicked", row);
             }}
             className="p-1 hover:bg-gray-200 rounded"
           >
@@ -623,7 +654,7 @@ export default function OrdersMgmtPage() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              console.log("Download clicked", row);
+              downloadAsXLS(row);
             }}
             className="p-1 hover:bg-gray-200 rounded"
           >
@@ -1067,13 +1098,11 @@ export default function OrdersMgmtPage() {
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
           {userRole === UserRole.SUPERADMIN && (
             <button
-              onClick={() => setOrderSummaryClick(!orderSummaryClick)}
+              onClick={handleOrderSummaryClick}
               className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
-              ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+    ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
             >
-              {orderSummaryClick
-                ? t("view_orders")
-                : t("view_order_summary")}{" "}
+              {orderSummaryClick ? t("view_orders") : t("view_order_summary")}
             </button>
           )}
           {canViewOrders && (
@@ -1312,7 +1341,7 @@ export default function OrdersMgmtPage() {
                   </div>
 
                   {/* Active Filter Chips */}
-                  {activeFilterChips.length > 0 && (
+                  {activeFilterChips?.length > 0 && (
                     <div className="flex flex-wrap items-center gap-3 mt-3">
                       <div className="flex flex-wrap gap-2">
                         {activeFilterChips.map((chip) => (
@@ -1363,22 +1392,27 @@ export default function OrdersMgmtPage() {
             <div
               className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
             >
-              {isLoading ? (
+              {/* Loading state */}
+              {(orderSummaryClick ? isLoadingOrderSummary : isLoading) ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-teal-500" />
                 </div>
-              ) : orderss.length === 0 ? (
+              ) : /* Empty state */
+              (
+                  orderSummaryClick
+                    ? orderSummaries?.length === 0
+                    : orderss?.length === 0
+                ) ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
                 </div>
               ) : (
+                /* Data */
                 <OrderListView
                   theme={theme}
                   isLoading={
-                    orderSummaryClick
-                      ? isFetchingOrderSummary || isLoadingOrderSummary
-                      : isLoading || isFetching
+                    orderSummaryClick ? isFetchingOrderSummary : isLoading
                   }
                   hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
                   orders={orderSummaryClick ? orderSummaries : orders}
@@ -1444,6 +1478,16 @@ export default function OrdersMgmtPage() {
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
+      {/* Modal for showing orders from order summary */}
+      <OrdersModal
+        t={t}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        isLoading={
+          isLoadingBusinessOrderSummary || isFetchingBusinessOrderSummary
+        }
+        businessOrdersSummaries={businessOrdersSummariess ?? []}
+      />
       <ConfirmDialog
         open={isConfirmOpen}
         title={t("resend_notification")}
