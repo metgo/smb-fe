@@ -1,5 +1,4 @@
 import { formatDateRange } from "@/helpers/formatter";
-import type { Notification } from "@/types/notifications";
 
 export function uploadWithProgress(
   file: File,
@@ -144,10 +143,7 @@ export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
 
 //notification helpers
 
-export const getBorderColor = (
-  type: Notification["item"]["notifType"],
-  isRTL: boolean,
-) => {
+export const getBorderColor = (type: TNotifType, isRTL: boolean) => {
   switch (type) {
     case "INFO":
       return isRTL ? "border-r-blue-500" : "border-l-blue-500";
