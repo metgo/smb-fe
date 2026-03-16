@@ -62,6 +62,7 @@ import { UserRole } from "@/enums/user.types";
 import { formatOrderDate } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import { ModalWrapper } from "@/components/wrapper";
 
 // Default columns configuration
 const defaultColumns = {
@@ -110,6 +111,9 @@ export default function OrdersMgmtPage() {
   const [pageSummary, setPageSummary] = useState(1);
 
   const limit = 20;
+  const { dmoId, authorityId, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
   const [summaryFilters, setSummaryFilters] = useState({
     status: "all",
     startDate: "",
@@ -119,14 +123,14 @@ export default function OrdersMgmtPage() {
   const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(false);
   const orderSummaryQueryParams = useMemo(() => {
     const params: any = {
-      page,
+      page: pageSummary,
       limit,
-      // dmoId,
-      // authorityId,
+      dmoId,
+      authorityId,
 
       // websiteId,
     };
-
+    params.detailedView = true;
     if (searchTermSummary) params.search = searchTermSummary;
 
     if (summaryFilters.status !== "all") {
@@ -152,13 +156,13 @@ export default function OrdersMgmtPage() {
 
     return params;
   }, [
-    page,
+    pageSummary,
     limit,
     searchTermSummary,
     summaryFilters,
     // filters,
-    // authorityId,
-    // dmoId,
+    authorityId,
+    dmoId,
     // websiteId,
   ]);
 
@@ -169,9 +173,9 @@ export default function OrdersMgmtPage() {
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
     skip: !orderSummaryClick, // skip when summary is NOT clicked
   });
-  console.log("🚀 ~ OrdersMgmtPage ~ orderSummaryClick:", orderSummaryClick);
 
   const ordersSummariess = orderSummaries?.datas?.data ?? [];
+
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
   //camera persmissions
@@ -241,7 +245,7 @@ export default function OrdersMgmtPage() {
     });
   };
   const fetchNextPageSummary = () => {
-    if (!hasMore || isFetchingOrderSummary) return;
+    if (!hasMoreSummary || isFetchingOrderSummary) return;
     setPageSummary((prev) => {
       return prev + 1;
     });
@@ -298,9 +302,7 @@ export default function OrdersMgmtPage() {
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
-  const { dmoId, authorityId, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
+
   const canViewOrders =
     userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
@@ -360,6 +362,8 @@ export default function OrdersMgmtPage() {
   });
 
   const hasMore = orders?.meta?.hasNextPage;
+  const hasMoreSummary = orders?.meta?.hasNextPage;
+  console.log("🚀 ~ OrdersMgmtPage ~ hasMoreSummary:", hasMoreSummary);
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
 
@@ -368,6 +372,11 @@ export default function OrdersMgmtPage() {
     setCombinedOrders([]);
     setPage(1);
   }, [searchTerm, filters, authorityId, dmoId, websiteId]);
+
+  useEffect(() => {
+    setCombinedOrdersSummary([]);
+    setPageSummary(1);
+  }, [searchTermSummary, summaryFilters]);
 
   useEffect(() => {
     if (!orderss?.length) return;
@@ -529,6 +538,7 @@ export default function OrdersMgmtPage() {
     render?: (row: IOrder) => React.ReactNode;
   }[];
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   //order summary
   const summaryColumns = [
@@ -542,12 +552,61 @@ export default function OrdersMgmtPage() {
             onClick={(e) => {
               e.stopPropagation();
               console.log("Menu clicked", row);
+              setIsOpen(true); // open modal
             }}
             className="p-1 hover:bg-gray-200 rounded"
           >
             <ShoppingBag className="w-4 h-4 text-green-600" />
           </button>
+          {/* Modal */}
+          {isOpen && (
+            <div className="fixed top-12 inset-0  flex justify-center items-center z-50">
+              <div className="bg-white rounded-lg shadow-sm h-[80vh] overflow-y-auto w-full max-w-6xl p-4 relative">
+                <h2 className="text-lg font-bold mb-4">Orders</h2>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                >
+                  ✖
+                </button>
 
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="p-2 border">Product Name</th>
+                        <th className="p-2 border">Order Date</th>
+                        <th className="p-2 border">Status</th>
+                        <th className="p-2 border">Payment Status</th>
+                        <th className="p-2 border">Customer Name</th>
+                        <th className="p-2 border">Customer Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {row.orders.map((order: any) => (
+                        <tr key={order.id} className="text-center">
+                          <td className="p-2 border">
+                            {order.products.map((p) => p.name).join(", ")}
+                          </td>
+                          <td className="p-2 border">
+                            {new Date(
+                              order.orderInitiatedDate,
+                            ).toLocaleString()}
+                          </td>
+                          <td className="p-2 border">{order.status}</td>
+                          <td className="p-2 border">{order.paymentStatus}</td>
+                          <td className="p-2 border">
+                            {order.firstName} {order.lastName}
+                          </td>
+                          <td className="p-2 border">{order.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -716,6 +775,9 @@ export default function OrdersMgmtPage() {
   );
 
   const handleRowClick = (order: IOrder) => {
+    if (orderSummaryClick) {
+      return;
+    }
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
@@ -980,7 +1042,7 @@ export default function OrdersMgmtPage() {
         className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4  ${isRTL ? "md:flex-row-reverse" : ""}`}
       >
         <div
-          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
+          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-5`}
         >
           {" "}
           <PageHeader
@@ -1146,9 +1208,76 @@ export default function OrdersMgmtPage() {
 
           {showFilters && (
             <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              {!orderSummaryClick ? (
+              {/* Shared Filters — always shown */}
+              <div className="min-w-[180px]">
+                <FilterSelect
+                  label={t("status")}
+                  value={
+                    orderSummaryClick ? summaryFilters.status : filters.status
+                  }
+                  onChange={(value) =>
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          status: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, status: value }))
+                  }
+                  options={[
+                    { value: "all", label: t("all") },
+                    { value: "pending", label: t("pending") },
+                    { value: "processing", label: t("processing") },
+                    { value: "completed", label: t("completed") },
+                    { value: "shipped", label: t("shipped") },
+                    { value: "canceled", label: t("canceled") },
+                  ]}
+                />
+              </div>
+
+              <div className="min-w-[220px]">
+                <MonthFilter
+                  label={t("month")}
+                  value={
+                    orderSummaryClick ? summaryFilters.month : filters.month
+                  }
+                  onChange={(value) =>
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({ ...prev, month: value }))
+                      : setFilters((prev) => ({ ...prev, month: value }))
+                  }
+                  dateFrom={
+                    orderSummaryClick
+                      ? summaryFilters.startDate
+                      : filters.startDate
+                  }
+                  dateTo={
+                    orderSummaryClick ? summaryFilters.endDate : filters.endDate
+                  }
+                  onDateFromChange={(value) =>
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          startDate: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, startDate: value }))
+                  }
+                  onDateToChange={(value) =>
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          endDate: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, endDate: value }))
+                  }
+                  theme={theme}
+                  isRTL={isRTL}
+                  t={t}
+                />
+              </div>
+
+              {/* Regular-only Filters */}
+              {!orderSummaryClick && (
                 <>
-                  {/* Regular Filters */}
                   <div className="min-w-[180px]">
                     <FilterSelect
                       label={t("deliveryType")}
@@ -1182,46 +1311,7 @@ export default function OrdersMgmtPage() {
                     />
                   </div>
 
-                  <div className="min-w-[180px]">
-                    <FilterSelect
-                      label={t("status")}
-                      value={filters.status}
-                      onChange={(value) =>
-                        setFilters((prev) => ({ ...prev, status: value }))
-                      }
-                      options={[
-                        { value: "all", label: t("all") },
-                        { value: "pending", label: t("pending") },
-                        { value: "processing", label: t("processing") },
-                        { value: "completed", label: t("completed") },
-                        { value: "shipped", label: t("shipped") },
-                        { value: "canceled", label: t("canceled") },
-                      ]}
-                    />
-                  </div>
-
-                  <div className="min-w-[220px]">
-                    <MonthFilter
-                      label={t("month")}
-                      value={filters.month}
-                      onChange={(value) =>
-                        setFilters((prev) => ({ ...prev, month: value }))
-                      }
-                      dateFrom={filters.startDate}
-                      dateTo={filters.endDate}
-                      onDateFromChange={(value) =>
-                        setFilters((prev) => ({ ...prev, startDate: value }))
-                      }
-                      onDateToChange={(value) =>
-                        setFilters((prev) => ({ ...prev, endDate: value }))
-                      }
-                      theme={theme}
-                      isRTL={isRTL}
-                      t={t}
-                    />
-                  </div>
-
-                  {/* Active Filters */}
+                  {/* Active Filter Chips */}
                   {activeFilterChips.length > 0 && (
                     <div className="flex flex-wrap items-center gap-3 mt-3">
                       <div className="flex flex-wrap gap-2">
@@ -1248,57 +1338,6 @@ export default function OrdersMgmtPage() {
                       </button>
                     </div>
                   )}
-                </>
-              ) : (
-                <>
-                  {/* Summary Filters */}
-                  <div className="min-w-[180px]">
-                    <FilterSelect
-                      label={t("status")}
-                      value={summaryFilters.status}
-                      onChange={(value) =>
-                        setSummaryFilters((prev) => ({
-                          ...prev,
-                          status: value,
-                        }))
-                      }
-                      options={[
-                        { value: "all", label: t("all") },
-                        { value: "pending", label: t("pending") },
-                        { value: "processing", label: t("processing") },
-                        { value: "completed", label: t("completed") },
-                        { value: "shipped", label: t("shipped") },
-                        { value: "canceled", label: t("canceled") },
-                      ]}
-                    />
-                  </div>
-
-                  <div className="min-w-[220px]">
-                    <MonthFilter
-                      label={t("month")}
-                      value={summaryFilters.month}
-                      onChange={(value) =>
-                        setSummaryFilters((prev) => ({ ...prev, month: value }))
-                      }
-                      dateFrom={summaryFilters.startDate}
-                      dateTo={summaryFilters.endDate}
-                      onDateFromChange={(value) =>
-                        setSummaryFilters((prev) => ({
-                          ...prev,
-                          startDate: value,
-                        }))
-                      }
-                      onDateToChange={(value) =>
-                        setSummaryFilters((prev) => ({
-                          ...prev,
-                          endDate: value,
-                        }))
-                      }
-                      theme={theme}
-                      isRTL={isRTL}
-                      t={t}
-                    />
-                  </div>
                 </>
               )}
             </div>
@@ -1341,7 +1380,7 @@ export default function OrdersMgmtPage() {
                       ? isFetchingOrderSummary || isLoadingOrderSummary
                       : isLoading || isFetching
                   }
-                  hasMore={hasMore}
+                  hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
                   orders={orderSummaryClick ? orderSummaries : orders}
                   combinedOrders={
                     orderSummaryClick ? combinedOrdersSummary : combinedOrders
