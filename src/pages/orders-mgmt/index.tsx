@@ -72,7 +72,7 @@ const defaultColumns = {
   email: true,
   phone: true,
   status: true,
-  totalAmount: true,
+  totalOrderAmount: true,
   product_name: true,
   deliveryFee: true,
   createdAt: true,
@@ -130,6 +130,7 @@ export default function OrdersMgmtPage() {
       localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
       return !prev;
     });
+    setViewMode("list");
   };
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -455,20 +456,71 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
-    columnVisibility.firstName && {
-      key: "firstName",
-      label: t("purchaser_name_field"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm">{order?.firstName}</div>
-      ),
-    },
     columnVisibility.product_name && {
       key: "products",
       label: t("product_name"),
       sortable: true,
       render: (order: any) => (
         <div className="text-sm">{order?.product?.name}</div>
+      ),
+    },
+    columnVisibility.totalOrderAmount && {
+      key: "totalOrderAmount",
+      label: t("price"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          {order?.totalAmount
+            ? `₪${order?.totalAmount?.toLocaleString()}`
+            : "-"}{" "}
+        </div>
+      ),
+    },
+    columnVisibility.deliveryFee && {
+      key: "deliveryFee",
+      label: t("deliveryFee"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          {order?.deliveryFee
+            ? `₪${order?.deliveryFee?.toLocaleString()}`
+            : "-"}
+        </div>
+      ),
+    },
+    columnVisibility.status && {
+      key: "status",
+      label: t("order_status"),
+      render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
+    columnVisibility.createdAt && {
+      key: "createdAt",
+      label: t("created_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {formatOrderDate(order?.createdAt, language)}
+        </div>
+      ),
+    },
+
+    columnVisibility.paymentDate && {
+      key: "paymentDate",
+      label: t("payment_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {formatOrderDate(order?.paymentDate, language)}
+        </div>
+      ),
+    },
+
+    columnVisibility.firstName && {
+      key: "firstName",
+      label: t("purchaser_name_field"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm">{order?.firstName}</div>
       ),
     },
 
@@ -499,59 +551,6 @@ export default function OrdersMgmtPage() {
           <Phone className="w-3 h-3" />
           {order?.phone ? order.phone : "-"}
         </a>
-      ),
-    },
-
-    columnVisibility.status && {
-      key: "status",
-      label: t("order_status"),
-      render: (order: IOrder) => getOrderStatusBadge(order.status),
-    },
-
-    columnVisibility.totalAmount && {
-      key: "totalAmount",
-      label: t("price"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm font-medium">
-          {order?.totalAmount
-            ? `₪${order?.totalAmount?.toLocaleString()}`
-            : "-"}{" "}
-        </div>
-      ),
-    },
-    columnVisibility.deliveryFee && {
-      key: "deliveryFee",
-      label: t("deliveryFee"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm font-medium">
-          {order?.deliveryFee
-            ? `₪${order?.deliveryFee?.toLocaleString()}`
-            : "-"}
-        </div>
-      ),
-    },
-
-    columnVisibility.createdAt && {
-      key: "createdAt",
-      label: t("created_date"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.createdAt, language)}
-        </div>
-      ),
-    },
-
-    columnVisibility.paymentDate && {
-      key: "paymentDate",
-      label: t("payment_date"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.paymentDate, language)}
-        </div>
       ),
     },
   ].filter(Boolean) as {
@@ -630,12 +629,11 @@ export default function OrdersMgmtPage() {
   //order summary
   const summaryColumns = [
     {
-      key: "authorityName",
-      label: t("authority_name"),
+      key: "businessName",
+      label: t("business_name"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
+      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
     },
-
     {
       key: "businessAddressCity",
       label: t("business_address_city"),
@@ -653,18 +651,13 @@ export default function OrdersMgmtPage() {
       ),
     },
     {
-      key: "businessName",
-      label: t("business_name"),
+      key: "totalNoOfOrders",
+      label: t("total_no_of_orders"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+      render: (row: any) => (
+        <div className="text-sm">{row.totalNoOfOrders}</div>
+      ),
     },
-    {
-      key: "dmoName",
-      label: t("dmo_name"),
-      sortable: true,
-      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
-    },
-
     {
       key: "totalAmount",
       label: t("total_amount"),
@@ -689,14 +682,6 @@ export default function OrdersMgmtPage() {
       ),
     },
 
-    {
-      key: "totalNoOfOrders",
-      label: t("total_no_of_orders"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">{row.totalNoOfOrders}</div>
-      ),
-    },
     {
       key: "actions",
       label: t("actions"),
@@ -878,7 +863,7 @@ export default function OrdersMgmtPage() {
           let value: any = order[key as keyof IOrder];
 
           // ✅ custom transformations
-          if (key === "totalAmount") {
+          if (key === "totalOrderAmount") {
             value = `₪${order.totalAmount}`;
           } else if (key === "deliveryFee") {
             value = `₪${order.deliveryFee}`;
@@ -1360,7 +1345,7 @@ export default function OrdersMgmtPage() {
         </div>
       )}
       <div>
-        {selectedOrders.size > 0 && (
+        {!orderSummaryClick && selectedOrders.size > 0 && (
           <BulkActionBar
             selectedItemCount={selectedOrders.size}
             handleResendOrderDetails={promptBulkResend}
@@ -1390,6 +1375,11 @@ export default function OrdersMgmtPage() {
                 <OrderListView
                   isLoading={
                     orderSummaryClick ? isFetchingOrderSummary : isLoading
+                  }
+                  storageKey={
+                    orderSummaryClick
+                      ? "orderSummaryTableColumnOrder"
+                      : "ordersTableColumnOrder"
                   }
                   hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
                   orders={orderSummaryClick ? orderSummaries : orders}

@@ -16,6 +16,7 @@ interface OrderListViewProps {
   textTertiary: string;
   textSecondary: string;
   t: (key: string) => string;
+  storageKey?: string;
 }
 
 const OrderListView: React.FC<OrderListViewProps> = ({
@@ -31,6 +32,7 @@ const OrderListView: React.FC<OrderListViewProps> = ({
   textSecondary,
   t,
   hasMore,
+  storageKey,
 }) => {
   const { isDark } = useThemeClasses();
 
@@ -56,7 +58,7 @@ const OrderListView: React.FC<OrderListViewProps> = ({
               selectedItems={selectedOrders}
               onSelectionChange={setSelectedOrders}
               onRowClick={handleRowClick}
-              storageKey="ordersTableColumnOrder"
+              storageKey={storageKey}
               columns={columns}
               isDataLoading={isLoading}
             />
