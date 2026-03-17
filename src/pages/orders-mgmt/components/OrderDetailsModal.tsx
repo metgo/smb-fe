@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useState } from "react";
-import { Mail, Phone } from "lucide-react";
+import { Loader, Mail, Phone } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -41,25 +41,32 @@ function OrderDetailsModal({
     null,
   );
   const [showProductModal, setShowProductModal] = useState(false);
+  const [sendingTarget, setSendingTarget] = useState<
+    "VENDOR" | "CUSTOMER" | null
+  >(null);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
-  const [bulkOrdersUpdate, { isLoading: isSendingEmail }] =
-    useBulkOrdersUpdateMutation();
+  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
 
-  const handleResendNotification = async () => {
+  const handleResendNotification = async (recipient: "VENDOR" | "CUSTOMER") => {
+    setSendingTarget(recipient);
+
     try {
       await bulkOrdersUpdate({
         ordersId: Array(order?.orderId),
+        emailRecipient: recipient,
       }).unwrap();
       toast.success(t("email_sent"));
+      setSendingTarget(null);
     } catch (error) {
       toast.error("failed");
+      setSendingTarget(null);
     }
   };
   const onStatusChangeHandler = async (status: string) => {
@@ -316,17 +323,37 @@ function OrderDetailsModal({
                 )}
 
               <button
-                onClick={handleResendNotification}
-                disabled={isSendingEmail}
+                onClick={() => handleResendNotification("VENDOR")}
+                disabled={sendingTarget !== null}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   isDark
                     ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
                     : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {isSendingEmail
+                {sendingTarget === "VENDOR" ? (
+                  <Loader className="w-4 h-4 animate-spin inline mr-2" />
+                ) : null}
+                {sendingTarget === "VENDOR"
                   ? t("sending") || "Sending..."
-                  : t("resend_notification") || "Resend Notification"}
+                  : t("resend_order_vendor") || "Resend Notification"}
+              </button>
+
+              <button
+                onClick={() => handleResendNotification("CUSTOMER")}
+                disabled={sendingTarget !== null}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isDark
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {sendingTarget === "CUSTOMER" ? (
+                  <Loader className="w-4 h-4 animate-spin inline mr-2" />
+                ) : null}
+                {sendingTarget === "CUSTOMER"
+                  ? t("sending") || "Sending..."
+                  : t("resend_order_customer") || "Resend Notification"}
               </button>
             </div>
           ))}

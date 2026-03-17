@@ -121,6 +121,9 @@ export default function OrdersMgmtPage() {
     const stored = localStorage.getItem("orderSummaryClick");
     return stored !== null ? JSON.parse(stored) : false;
   });
+  const [pendingRecipient, setPendingRecipient] = useState<
+    "VENDOR" | "CUSTOMER" | null
+  >(null);
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
     null,
   );
@@ -909,36 +912,44 @@ export default function OrdersMgmtPage() {
     URL.revokeObjectURL(url);
   }, [selectedOrders, orders, columnVisibility, t]);
 
-  const promptBulkResend = useCallback(() => {
-    if (!selectedOrders.size) return;
-    setIsBulkDelete(true);
-    setIsConfirmOpen(true);
-  }, [selectedOrders.size]);
+  const promptBulkResend = useCallback(
+    (recipient: "VENDOR" | "CUSTOMER") => {
+      if (!selectedOrders.size) return;
+      setIsBulkDelete(true);
+      setPendingRecipient(recipient);
+      setIsConfirmOpen(true);
+    },
+    [selectedOrders.size],
+  );
 
-  const handleBulkResend = useCallback(async () => {
-    if (!selectedOrders.size) return;
+  const handleBulkResend = useCallback(
+    async (recipient: "VENDOR" | "CUSTOMER") => {
+      if (!selectedOrders.size) return;
 
-    const toastId = toast.loading(t("resend_loading"));
+      const toastId = toast.loading(t("resend_loading"));
 
-    try {
-      const results = await bulkOrdersUpdate({
-        ordersId: Array.from(selectedOrders),
-      });
+      try {
+        const results = await bulkOrdersUpdate({
+          ordersId: Array.from(selectedOrders),
+          emailRecipient: recipient,
+        });
 
-      if (results?.data) {
-        toast.success(t("resend_success"), { id: toastId });
-        setSelectedOrders(new Set());
-        refetch();
+        if (results?.data) {
+          toast.success(t("resend_success"), { id: toastId });
+          setSelectedOrders(new Set());
+          refetch();
+        }
+      } catch (error: any) {
+        toast.error(error?.message || t("resend_failed"), {
+          id: toastId,
+        });
+      } finally {
+        setIsConfirmOpen(false);
+        setIsBulkDelete(false);
       }
-    } catch (error: any) {
-      toast.error(error?.message || t("resend_failed"), {
-        id: toastId,
-      });
-    } finally {
-      setIsConfirmOpen(false);
-      setIsBulkDelete(false);
-    }
-  }, [selectedOrders, bulkOrdersUpdate, refetch]);
+    },
+    [selectedOrders, bulkOrdersUpdate, refetch],
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1351,7 +1362,8 @@ export default function OrdersMgmtPage() {
         {!orderSummaryClick && selectedOrders.size > 0 && (
           <BulkActionBar
             selectedItemCount={selectedOrders.size}
-            handleResendOrderDetails={promptBulkResend}
+            handleResendToVendor={() => promptBulkResend("VENDOR")}
+            handleResendToCustomer={() => promptBulkResend("CUSTOMER")}
             hancleClearSelection={() => setSelectedOrders(new Set())}
           />
         )}
@@ -1460,10 +1472,11 @@ export default function OrdersMgmtPage() {
           setIsBulkDelete(false);
         }}
         onConfirm={() => {
-          if (isBulkDelete) {
-            handleBulkResend();
+          if (pendingRecipient && isBulkDelete) {
+            handleBulkResend(pendingRecipient);
           }
           setIsConfirmOpen(false);
+          setPendingRecipient(null);
         }}
       />
     </div>

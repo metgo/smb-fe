@@ -10,7 +10,8 @@ interface BulkActionBarProps {
   handleBulkStatusChange?: (v: TStatus) => void;
   handleBulkDelete?: () => void;
   hancleClearSelection?: () => void;
-  handleResendOrderDetails?: () => void;
+  handleResendToVendor?: (v: string) => void;
+  handleResendToCustomer?: (v: string) => void;
   handleExportCSV?: () => void;
 }
 
@@ -19,8 +20,9 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   selectedItemCount,
   handleBulkDelete,
   hancleClearSelection,
-  handleResendOrderDetails,
+  handleResendToVendor,
   handleExportCSV,
+  handleResendToCustomer,
 }) => {
   const { t } = useTranslation("common");
   const { t: to } = useTranslation("orders");
@@ -57,10 +59,10 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
         >
           {t("clear_selection")}
         </button>
-        {handleResendOrderDetails && (
+        {handleResendToVendor && (
           <button
             type="button"
-            onClick={handleResendOrderDetails}
+            onClick={() => handleResendToVendor("VENDOR")}
             className={clsx(
               "px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 border",
               `border-blue-500 text-white bg-blue-500`,
@@ -69,7 +71,22 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           >
             {" "}
             <Mail className="w-4 h-4" />
-            <span>{to("resend_order_details")}</span>
+            <span>{to("resend_order_vendor")}</span>
+          </button>
+        )}
+        {handleResendToCustomer && (
+          <button
+            type="button"
+            onClick={() => handleResendToCustomer("CUSTOMER")}
+            className={clsx(
+              "px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1 border",
+              `border-blue-500 text-white bg-blue-500`,
+              `hover:bg-blue-500 hover:text-white`,
+            )}
+          >
+            {" "}
+            <Mail className="w-4 h-4" />
+            <span>{to("resend_order_customer")}</span>
           </button>
         )}
         {handleExportCSV && (

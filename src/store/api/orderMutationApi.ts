@@ -6,6 +6,7 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 interface IBulkUpdateParams {
   ordersId: string[];
   status?: string;
+  emailRecipient?: string;
 }
 
 /* ---------------- API ---------------- */

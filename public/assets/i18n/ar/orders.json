@@ -12,6 +12,8 @@
   "customer_name": "اسم العميل",
   "email": "البريد الإلكتروني",
   "phone": "الهاتف",
+  "resend_order_vendor": "إعادة إرسال الطلب إلى المورد",
+  "resend_order_customer": "إعادة إرسال الطلب إلى العميل",
   "product_name": "اسم المنتج",
   "totalAmount": "المبلغ الإجمالي",
   "createdAt": "تاريخ الإنشاء",

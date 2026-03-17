@@ -12,6 +12,8 @@
   "_id": "Order ID",
   "firstName": "First name",
   "email": "Email",
+  "resend_order_vendor": "Resend Order to Vendor",
+  "resend_order_customer": "Resend Order to Customer",
   "product_name": "Product Name",
   "actions": "Actions",
   "authority_id": "Authority ID",
