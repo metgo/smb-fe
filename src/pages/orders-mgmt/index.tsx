@@ -763,7 +763,65 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
+  const handleExportCSVSummary = useCallback(() => {
+    const dataToExport = orderSummaries?.data ?? []; // adjust if your data source is different
 
+    if (!dataToExport.length) {
+      toast.message(t("noDataToExport") || "No data to export");
+      return;
+    }
+
+    const escapeCSV = (value: any): string => {
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    // ✅ remove actions column
+    const columns = summaryColumns
+      .filter((col) => col.key !== "actions")
+      .map((col) => col.key);
+
+    const headers = summaryColumns
+      .filter((col) => col.key !== "actions")
+      .map((col) => col.label);
+
+    const csvRows = dataToExport.map((row: any) =>
+      columns
+        .map((key) => {
+          let value = row[key];
+
+          // ✅ match your UI formatting
+          if (key === "totalAmount") {
+            value = value ? `₪${value.toLocaleString()}` : "-";
+          } else if (key === "totalAmountPaidByCreditCard") {
+            value = value ? `₪${value.toLocaleString()}` : "-";
+          }
+
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
+    );
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `summary_export_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [orderSummaries, summaryColumns, t]);
   //order details
   const {
     data: orderDetails,
@@ -785,127 +843,78 @@ export default function OrdersMgmtPage() {
     setShowOrderDetails(true);
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = useCallback(() => {
     const ordersToExport =
-      selectedOrders.size > 1
-        ? orders?.data?.filter((order: any) => selectedOrders.has(order._id))
-        : orders?.data;
-    console.log("export cvs", ordersToExport);
-    console.log("export cvs", selectedOrders);
+      selectedOrders.size > 0
+        ? (orders?.data?.filter((o: any) => selectedOrders.has(o._id)) ?? [])
+        : (orders?.data ?? []);
 
-    if (ordersToExport?.length === 0) {
+    if (!ordersToExport.length) {
       toast.message(t("noOrdersToExport") || "No orders to export");
       return;
     }
 
     const escapeCSV = (value: any): string => {
-      if (value === null || value === undefined) return "";
-      const stringValue = String(value);
-      if (
-        stringValue.includes(",") ||
-        stringValue.includes('"') ||
-        stringValue.includes("\n")
-      ) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    const headers: string[] = [];
-    const columnKeys: string[] = [];
+    // ✅ dynamic columns (same as business)
+    const columns = Object.entries(columnVisibility)
+      .filter(([_, visible]) => visible)
+      .map(([key]) => key as keyof ColumnVisibility);
 
-    if (columnVisibility.firstName) {
-      headers.push(t("firstName"));
-      columnKeys.push("firstName");
-    }
-    if (columnVisibility.email) {
-      headers.push(t("email"));
-      columnKeys.push("email");
-    }
-    if (columnVisibility.phone) {
-      headers.push(t("phone"));
-      columnKeys.push("phone");
-    }
-    if (columnVisibility.status) {
-      headers.push(t("status"));
-      columnKeys.push("status");
-    }
-    if (columnVisibility.totalAmount) {
-      headers.push(t("totalAmount"));
-      columnKeys.push("totalAmount");
-    }
-    // if (columnVisibility.paymentStatus) {
-    //   headers.push(t("paymentStatus"));
-    //   columnKeys.push("paymentStatus");
-    // }
-    // if (columnVisibility.voucherAmount) {
-    //   headers.push(t("voucherAmount"));
-    //   columnKeys.push("voucherAmount");
-    // }
-    // if (columnVisibility.creditCardAmount) {
-    //   headers.push(t("creditCardAmount"));
-    //   columnKeys.push("creditCardAmount");
-    // }
-    // if (columnVisibility.vendors) {
-    //   headers.push(t("vendors"));
-    //   columnKeys.push("vendors");
-    // }
-    // if (columnVisibility.campaign) {
-    //   headers.push(t("campaign"));
-    //   columnKeys.push("campaign");
-    // }
-    if (columnVisibility.createdAt) {
-      headers.push(t("createdAt"));
-      columnKeys.push("createdAt");
-    }
-    if (columnVisibility.paymentDate) {
-      headers.push(t("paymentDate"));
-      columnKeys.push("paymentDate");
-    }
+    const headers = columns.map((key) => t(key));
 
-    let csvContent = headers.map(escapeCSV).join(",") + "\n";
+    const csvRows = ordersToExport.map((order: IOrder) =>
+      columns
+        .map((key) => {
+          let value: any = order[key as keyof IOrder];
 
-    ordersToExport?.forEach((order: IOrder) => {
-      const row: string[] = [];
+          // ✅ custom transformations
+          if (key === "totalAmount") {
+            value = `₪${order.totalAmount}`;
+          } else if (key === "deliveryFee") {
+            value = `₪${order.deliveryFee}`;
+          } else if (key === "product_name") {
+            // adjust based on your actual structure
+            value =
+              order.products?.map((p: any) => p.product_name).join(", ") || "-";
+          } else if (key === "createdAt") {
+            value = order.createdAt
+              ? new Date(order.createdAt).toLocaleDateString()
+              : "-";
+          } else if (key === "paymentDate") {
+            value = order.paymentDate
+              ? new Date(order.paymentDate).toLocaleDateString()
+              : "-";
+          }
 
-      columnKeys.forEach((key) => {
-        if (key === "orderId") row.push(escapeCSV(order._id));
-        else if (key === "firstName") row.push(escapeCSV(order.firstName));
-        else if (key === "email") row.push(escapeCSV(order.email));
-        else if (key === "phone") row.push(escapeCSV(order.phone));
-        else if (key === "orderStatus") row.push(escapeCSV(order.status));
-        else if (key === "totalAmount")
-          row.push(escapeCSV(`₪${order.totalAmount}`));
-        else if (key === "paymentStatus")
-          row.push(escapeCSV(order.paymentStatus));
-        else if (key === "voucherAmount")
-          row.push(escapeCSV(`₪${order.voucherAmount}`));
-        else if (key === "creditCardAmount")
-          row.push(escapeCSV(`₪${order.creditCardAmount}`));
-        else if (key === "vendors")
-          row.push(escapeCSV(order.vendors.join(", ")));
-        else if (key === "campaign") row.push(escapeCSV(order.campaign));
-        else if (key === "createdAt")
-          row.push(escapeCSV(new Date(order.createdAt).toLocaleDateString()));
-        else if (key === "paymentDate")
-          row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
-      });
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
+    );
 
-      csvContent += row.join(",") + "\n";
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
     });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 10);
+    const link = document.createElement("a");
 
-    link.setAttribute("href", url);
-    link.setAttribute("download", `orders_export_${timestamp}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `orders_export_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+
     link.click();
-    document.body.removeChild(link);
-  };
+    URL.revokeObjectURL(url);
+  }, [selectedOrders, orders, columnVisibility, t]);
 
   const promptBulkResend = useCallback(() => {
     if (!selectedOrders.size) return;
@@ -1122,7 +1131,9 @@ export default function OrdersMgmtPage() {
             </div>
 
             <button
-              onClick={handleExportCSV}
+              onClick={
+                orderSummaryClick ? handleExportCSVSummary : handleExportCSV
+              }
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                 isDark
                   ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
