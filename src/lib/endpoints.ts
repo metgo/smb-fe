@@ -76,6 +76,10 @@ export const endpoints = {
   // Content
   contentConfig: "/site-filter-config",
 
+  // Notifications
+  notifications: "/notifications",
+  notificationStats: "/notifications/stats",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
 };

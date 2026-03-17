@@ -54,9 +54,10 @@ export default function ProfilePage() {
 
   const handleLogout = (e: any) => {
     e.preventDefault();
-    localStorage.removeItem("user_info");
-    localStorage.removeItem("access_token");
+    sessionStorage.removeItem("user_info");
+    sessionStorage.removeItem("access_token");
     navigate(routes.auth, { replace: true });
+    window.dispatchEvent(new Event("session:updated"));
     window.location.reload();
   };
 

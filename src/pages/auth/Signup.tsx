@@ -63,8 +63,8 @@ export function Signup({ setCurrentTab }: SignupProps) {
     }).unwrap();
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("user_info", JSON.stringify({ user: res.user }));
-      localStorage.setItem("access_token", res.accessToken);
+      sessionStorage.setItem("user_info", JSON.stringify({ user: res.user }));
+      sessionStorage.setItem("access_token", res.accessToken);
       dispatch(loginSuccess(res.user));
     }
     navigate(routes.dashboard, { replace: true });
