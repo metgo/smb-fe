@@ -139,7 +139,14 @@ type TNotifStatus = "ALL" | "READ" | "UNREAD";
 
 type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "FUNDAY" | "TRIP";
 
-type TNotifType = "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR";
+type TNotifType =
+  | "ALL"
+  | "INFO"
+  | "WARNING"
+  | "ACTION"
+  | "URGENT"
+  | "ERROR"
+  | "UNREAD";
 
 type TItemStatus =
   | "PENDING"

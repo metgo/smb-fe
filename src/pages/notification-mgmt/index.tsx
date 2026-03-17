@@ -108,7 +108,7 @@ export default function NotificationsMgmtPage() {
       case "INFO":
         return <Info className={`${iconClass} text-blue-500`} />;
       case "ACTION":
-        return <AlertCircle className={`${iconClass} text-purple-500`} />;
+        return <AlertCircle className={`${iconClass} text-amber-500`} />;
       case "WARNING":
         return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
       case "ERROR":
@@ -354,23 +354,40 @@ export default function NotificationsMgmtPage() {
                           key={notification?._id}
                           onClick={handleNavigate}
                           className={`
-    relative flex items-start gap-3 px-4 py-8 cursor-pointer
-    ${hoverBg}
-    transition-colors
-    ${isRTL ? "border-r-2" : "border-l-2"}
-    ${getBorderColor(notification?.notifType, isRTL)}
-    
-    ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
-  `}
+                          relative flex items-start gap-3 px-4 py-8 cursor-pointer
+                          ${hoverBg}
+                          transition-colors
+                          ${isRTL ? "border-r-2" : "border-l-2"}
+                        ${
+                          !notification.isRead
+                            ? isRTL
+                              ? "border-r-purple-500" // unread + RTL
+                              : "border-l-purple-500" // unread + LTR
+                            : getBorderColor(notification?.notifType, isRTL) // read notifications
+                        }
+                          ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
+                        `}
                         >
                           {/* Unread dot indicator */}
                           {!notification.isRead && (
-                            <span className="absolute top-6 right-4 w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                            <span
+                              className={`absolute top-6 ${
+                                isRTL ? "left-4" : "right-4"
+                              } w-2.5 h-2.5 bg-blue-500 rounded-full`}
+                            ></span>
                           )}
 
                           <div className="flex gap-3">
                             <div className="shrink-0 mt-0.5">
-                              {getNotificationIcon(notification?.notifType)}
+                              {!notification.isRead ? (
+                                // Unread notification - maybe show a colored icon or badge
+                                <div className="text-purple-500">
+                                  <Info />
+                                </div>
+                              ) : (
+                                // Read notification - normal icon
+                                getNotificationIcon(notification?.notifType)
+                              )}
                             </div>
 
                             <div className="flex flex-col">

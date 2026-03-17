@@ -46,10 +46,16 @@ const NotificationsBell = () => {
             <Info className="w-4 h-4 text-blue-500" />
           </span>
         );
-      case "ACTION":
+      case "UNREAD":
         return (
           <span className={`${base} bg-purple-100 dark:bg-purple-900/40`}>
-            <AlertCircle className="w-4 h-4 text-purple-500" />
+            <Info className="w-4 h-4 text-purple-500" />
+          </span>
+        );
+      case "ACTION":
+        return (
+          <span className={`${base} bg-yellow-50 dark:bg-amber-900/40`}>
+            <AlertCircle className="w-4 h-4 text-amber-500" />
           </span>
         );
       case "WARNING":
@@ -208,8 +214,12 @@ const NotificationsBell = () => {
                     className={clsx(
                       "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
                       isRTL ? "border-r-[3px]" : "border-l-[3px]",
-                      getBorderColor(notification?.notifType, isRTL),
-                      isUnread
+                      !notification?.isRead
+                        ? isRTL
+                          ? "border-r-purple-500" // unread + RTL
+                          : "border-l-purple-500" // unread + LTR
+                        : getBorderColor(notification?.notifType, isRTL), // read notifications
+                      !notification?.isRead
                         ? isDark
                           ? "bg-blue-500/5 hover:bg-blue-500/10"
                           : "bg-blue-50/60 hover:bg-blue-50"
@@ -219,7 +229,9 @@ const NotificationsBell = () => {
                     )}
                   >
                     {/* Icon */}
-                    {getNotificationIcon(notification?.notifType)}
+                    {!notification?.isRead
+                      ? getNotificationIcon("UNREAD")
+                      : getNotificationIcon(notification?.notifType)}
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
