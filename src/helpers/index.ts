@@ -148,7 +148,7 @@ export const getBorderColor = (type: TNotifType, isRTL: boolean) => {
     case "INFO":
       return isRTL ? "border-r-blue-500" : "border-l-blue-500";
     case "ACTION":
-      return isRTL ? "border-r-purple-500" : "border-l-purple-500";
+      return isRTL ? "border-r-amber-500" : "border-l-amber-500";
     case "WARNING":
       return isRTL ? "border-r-yellow-500" : "border-l-yellow-500";
     case "ERROR":

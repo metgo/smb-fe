@@ -320,28 +320,26 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
         id="scrollableDiv"
-        // ref={scrollRef}
       >
-        {/* <div
-        id="scrollableDiv"
-        className="overflow-y-scroll overflow-x-auto max-h-[56vh] px-2 py-4"
-      > */}
         <InfiniteScroll
           dataLength={data?.length}
           next={next ?? (() => {})}
           hasMore={hasMore ?? false}
           scrollableTarget="scrollableDiv"
           loader={
-            <tr className="h-40" aria-rowspan={40}>
-              <td
-                colSpan={columnOrder?.length || 1}
-                className="h-80 text-center"
-              >
-                <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
-                  <Loader className="w-10 h-10 animate-spin text-teal-600" />
-                </div>
-              </td>
-            </tr>
+            // Only show loader when we actually have some data already
+            data?.length > 0 && hasMore ? (
+              <tr className="h-40">
+                <td
+                  colSpan={columnOrder?.length || 1}
+                  className="h-80 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+                    <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                  </div>
+                </td>
+              </tr>
+            ) : null
           }
         >
           <table className="w-full h-full">

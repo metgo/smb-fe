@@ -12,7 +12,6 @@ import * as XLSX from "xlsx";
 
 import {
   Download,
-  // Plus,
   Eye,
   ChevronDown,
   ChevronUp,
@@ -41,7 +40,6 @@ import {
   ViewModeToggle,
 } from "@/components/shared";
 import {
-  // CreateOrderWizard,
   FilterSelect,
   MonthFilter,
   OrderDetailsModal,
@@ -52,7 +50,6 @@ import {
   useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
-  // useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
@@ -65,6 +62,9 @@ import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { formatILS } from "@/helpers/formatter";
+
+const limit = 20;
 
 // Default columns configuration
 const defaultColumns = {
@@ -72,9 +72,8 @@ const defaultColumns = {
   email: true,
   phone: true,
   status: true,
-  totalAmount: true,
+  totalOrderAmount: true,
   product_name: true,
-  // paymentStatus: false,
   deliveryFee: true,
   createdAt: true,
   paymentDate: true,
@@ -83,25 +82,27 @@ const defaultColumns = {
 type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation("orders");
-
+  const { dmoId, authorityId, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const { isSuperadmin, isTraveller } = useUserRoles();
   const { textSecondary, textTertiary, isDark, isRTL, language } =
     useThemeClasses();
+
   //view mode toggle
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-
-  const { isSuperadmin, isTraveller } = useUserRoles();
-
-  // const [orders, setOrders] = useState<IOrder[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTermSummary, setSearchTermSummary] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
+
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
@@ -110,10 +111,6 @@ export default function OrdersMgmtPage() {
   const [page, setPage] = useState(1);
   const [pageSummary, setPageSummary] = useState(1);
 
-  const limit = 20;
-  const { dmoId, authorityId, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
   const [summaryFilters, setSummaryFilters] = useState({
     status: "all",
     startDate: "",
@@ -133,6 +130,7 @@ export default function OrdersMgmtPage() {
       localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
       return !prev;
     });
+    setViewMode("list");
   };
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -141,8 +139,6 @@ export default function OrdersMgmtPage() {
       limit,
       dmoId,
       authorityId,
-
-      // websiteId,
     };
     // params.detailedView = true;
     if (searchTermSummary) params.search = searchTermSummary;
@@ -188,8 +184,8 @@ export default function OrdersMgmtPage() {
 
   const {
     data: orderSummaries,
-    isLoading: isLoadingOrderSummary,
     isFetching: isFetchingOrderSummary,
+    isLoading: isLoadingOrderSummary,
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
     skip: !orderSummaryClick,
   });
@@ -204,9 +200,7 @@ export default function OrdersMgmtPage() {
   });
 
   const ordersSummariess = orderSummaries?.data ?? [];
-
   const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
-
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
   //camera persmissions
@@ -269,6 +263,7 @@ export default function OrdersMgmtPage() {
       stopCamera();
     };
   }, [stopCamera]);
+
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
     setPage((prev) => {
@@ -343,7 +338,6 @@ export default function OrdersMgmtPage() {
       limit,
       dmoId,
       authorityId,
-
       websiteId,
     };
 
@@ -392,7 +386,7 @@ export default function OrdersMgmtPage() {
   });
 
   const hasMore = orders?.meta?.hasNextPage;
-  const hasMoreSummary = orders?.meta?.hasNextPage;
+  const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
   const totalDataSummary = orderSummaries?.totalData;
@@ -432,7 +426,6 @@ export default function OrdersMgmtPage() {
       setCombinedOrdersSummary(ordersSummariess);
     } else {
       setCombinedOrdersSummary((prev) => {
-        // Prevent duplicates (important!)
         const existingIds = new Set(prev.map((b) => b._id));
         const newItems = ordersSummariess.filter(
           (b: any) => !existingIds.has(b._id),
@@ -454,12 +447,76 @@ export default function OrdersMgmtPage() {
     startDate: "",
     endDate: "",
   };
-
+  const defaultSummaryFilters = {
+    status: "all",
+    startDate: "",
+    endDate: "",
+    month: "all",
+  };
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
+
+    columnVisibility.product_name && {
+      key: "products",
+      label: t("product_name"),
+      sortable: true,
+      render: (order: any) => (
+        <div className="text-sm">{order?.product?.name}</div>
+      ),
+    },
+    columnVisibility.totalOrderAmount && {
+      key: "totalOrderAmount",
+      label: t("price"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          {order?.totalAmount
+            ? `₪${order?.totalAmount?.toLocaleString()}`
+            : "-"}{" "}
+        </div>
+      ),
+    },
+    columnVisibility.deliveryFee && {
+      key: "deliveryFee",
+      label: t("deliveryFee"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm font-medium">
+          {order?.deliveryFee
+            ? `₪${order?.deliveryFee?.toLocaleString()}`
+            : "-"}
+        </div>
+      ),
+    },
+    columnVisibility.status && {
+      key: "status",
+      label: t("order_status"),
+      render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
+    columnVisibility.createdAt && {
+      key: "createdAt",
+      label: t("created_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {formatOrderDate(order?.createdAt, language)}
+        </div>
+      ),
+    },
+
+    columnVisibility.paymentDate && {
+      key: "paymentDate",
+      label: t("payment_date"),
+      sortable: true,
+      render: (order: IOrder) => (
+        <div className="text-sm text-gray-500">
+          {formatOrderDate(order?.paymentDate, language)}
+        </div>
+      ),
+    },
 
     columnVisibility.firstName && {
       key: "firstName",
@@ -467,14 +524,6 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm">{order?.firstName}</div>
-      ),
-    },
-    columnVisibility.product_name && {
-      key: "products",
-      label: t("product_name"),
-      sortable: true,
-      render: (order: any) => (
-        <div className="text-sm">{order?.product?.name}</div>
       ),
     },
 
@@ -507,59 +556,6 @@ export default function OrdersMgmtPage() {
         </a>
       ),
     },
-
-    columnVisibility.status && {
-      key: "status",
-      label: t("order_status"),
-      render: (order: IOrder) => getOrderStatusBadge(order.status),
-    },
-
-    columnVisibility.totalAmount && {
-      key: "totalAmount",
-      label: t("price"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm font-medium">
-          {order?.totalAmount
-            ? `₪${order?.totalAmount?.toLocaleString()}`
-            : "-"}{" "}
-        </div>
-      ),
-    },
-    columnVisibility.deliveryFee && {
-      key: "deliveryFee",
-      label: t("deliveryFee"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm font-medium">
-          {order?.deliveryFee
-            ? `₪${order?.deliveryFee?.toLocaleString()}`
-            : "-"}
-        </div>
-      ),
-    },
-
-    columnVisibility.createdAt && {
-      key: "createdAt",
-      label: t("created_date"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.createdAt, language)}
-        </div>
-      ),
-    },
-
-    columnVisibility.paymentDate && {
-      key: "paymentDate",
-      label: t("payment_date"),
-      sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.paymentDate, language)}
-        </div>
-      ),
-    },
   ].filter(Boolean) as {
     key: string;
     label: string;
@@ -567,8 +563,6 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
-  const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
 
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
@@ -590,7 +584,6 @@ export default function OrdersMgmtPage() {
     ];
 
     const orderRows = (row?.orders ?? []).map((order: any) => ({
-      //  fallback to []
       "Order ID": order.id,
       "Customer Name": `${order.firstName} ${order.lastName}`.trim(),
       Email: order.email,
@@ -639,12 +632,11 @@ export default function OrdersMgmtPage() {
   //order summary
   const summaryColumns = [
     {
-      key: "authorityName",
-      label: t("authority_name"),
+      key: "businessName",
+      label: t("business_name"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
+      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
     },
-
     {
       key: "businessAddressCity",
       label: t("business_address_city"),
@@ -662,18 +654,13 @@ export default function OrdersMgmtPage() {
       ),
     },
     {
-      key: "businessName",
-      label: t("business_name"),
+      key: "totalNoOfOrders",
+      label: t("total_no_of_orders"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+      render: (row: any) => (
+        <div className="text-sm">{row.totalNoOfOrders}</div>
+      ),
     },
-    {
-      key: "dmoName",
-      label: t("dmo_name"),
-      sortable: true,
-      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
-    },
-
     {
       key: "totalAmount",
       label: t("total_amount"),
@@ -698,14 +685,6 @@ export default function OrdersMgmtPage() {
       ),
     },
 
-    {
-      key: "totalNoOfOrders",
-      label: t("total_no_of_orders"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">{row.totalNoOfOrders}</div>
-      ),
-    },
     {
       key: "actions",
       label: t("actions"),
@@ -777,7 +756,65 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
+  const handleExportCSVSummary = useCallback(() => {
+    const dataToExport = orderSummaries?.data ?? []; // adjust if your data source is different
 
+    if (!dataToExport.length) {
+      toast.message(t("noDataToExport") || "No data to export");
+      return;
+    }
+
+    const escapeCSV = (value: any): string => {
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    // ✅ remove actions column
+    const columns = summaryColumns
+      .filter((col) => col.key !== "actions")
+      .map((col) => col.key);
+
+    const headers = summaryColumns
+      .filter((col) => col.key !== "actions")
+      .map((col) => col.label);
+
+    const csvRows = dataToExport.map((row: any) =>
+      columns
+        .map((key) => {
+          let value = row[key];
+
+          // ✅ match your UI formatting
+          if (key === "totalAmount") {
+            value = value ? `₪${value.toLocaleString()}` : "-";
+          } else if (key === "totalAmountPaidByCreditCard") {
+            value = value ? `₪${value.toLocaleString()}` : "-";
+          }
+
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
+    );
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `summary_export_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [orderSummaries, summaryColumns, t]);
   //order details
   const {
     data: orderDetails,
@@ -799,129 +836,79 @@ export default function OrdersMgmtPage() {
     setShowOrderDetails(true);
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = useCallback(() => {
     const ordersToExport =
-      selectedOrders.size > 1
-        ? orders?.datas?.data?.filter((order: any) =>
-            selectedOrders.has(order._id),
-          )
-        : orders?.datas?.data;
-    console.log("export cvs", ordersToExport);
-    console.log("export cvs", selectedOrders);
+      selectedOrders.size > 0
+        ? (orders?.data?.filter((o: any) => selectedOrders.has(o._id)) ?? [])
+        : (orders?.data ?? []);
 
-    if (ordersToExport?.length === 0) {
+    if (!ordersToExport.length) {
       toast.message(t("noOrdersToExport") || "No orders to export");
       return;
     }
 
     const escapeCSV = (value: any): string => {
-      if (value === null || value === undefined) return "";
-      const stringValue = String(value);
-      if (
-        stringValue.includes(",") ||
-        stringValue.includes('"') ||
-        stringValue.includes("\n")
-      ) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    const headers: string[] = [];
-    const columnKeys: string[] = [];
+    // ✅ dynamic columns (same as business)
+    const columns = Object.entries(columnVisibility)
+      .filter(([_, visible]) => visible)
+      .map(([key]) => key as keyof ColumnVisibility);
 
-    if (columnVisibility.firstName) {
-      headers.push(t("firstName"));
-      columnKeys.push("firstName");
-    }
-    if (columnVisibility.email) {
-      headers.push(t("email"));
-      columnKeys.push("email");
-    }
-    if (columnVisibility.phone) {
-      headers.push(t("phone"));
-      columnKeys.push("phone");
-    }
-    if (columnVisibility.status) {
-      headers.push(t("status"));
-      columnKeys.push("status");
-    }
-    if (columnVisibility.totalAmount) {
-      headers.push(t("totalAmount"));
-      columnKeys.push("totalAmount");
-    }
-    // if (columnVisibility.paymentStatus) {
-    //   headers.push(t("paymentStatus"));
-    //   columnKeys.push("paymentStatus");
-    // }
-    // if (columnVisibility.voucherAmount) {
-    //   headers.push(t("voucherAmount"));
-    //   columnKeys.push("voucherAmount");
-    // }
-    // if (columnVisibility.creditCardAmount) {
-    //   headers.push(t("creditCardAmount"));
-    //   columnKeys.push("creditCardAmount");
-    // }
-    // if (columnVisibility.vendors) {
-    //   headers.push(t("vendors"));
-    //   columnKeys.push("vendors");
-    // }
-    // if (columnVisibility.campaign) {
-    //   headers.push(t("campaign"));
-    //   columnKeys.push("campaign");
-    // }
-    if (columnVisibility.createdAt) {
-      headers.push(t("createdAt"));
-      columnKeys.push("createdAt");
-    }
-    if (columnVisibility.paymentDate) {
-      headers.push(t("paymentDate"));
-      columnKeys.push("paymentDate");
-    }
+    const headers = columns.map((key) => t(key));
 
-    let csvContent = headers.map(escapeCSV).join(",") + "\n";
+    const csvRows = ordersToExport.map((order: IOrder) =>
+      columns
+        .map((key) => {
+          let value: any = order[key as keyof IOrder];
 
-    ordersToExport.forEach((order: IOrder) => {
-      const row: string[] = [];
+          // ✅ custom transformations
+          if (key === "totalOrderAmount") {
+            value = `₪${order.totalAmount}`;
+          } else if (key === "deliveryFee") {
+            value = `₪${order.deliveryFee}`;
+          } else if (key === "product_name") {
+            // adjust based on your actual structure
+            value =
+              order.products?.map((p: any) => p.product_name).join(", ") || "-";
+          } else if (key === "createdAt") {
+            value = order.createdAt
+              ? new Date(order.createdAt).toLocaleDateString()
+              : "-";
+          } else if (key === "paymentDate") {
+            value = order.paymentDate
+              ? new Date(order.paymentDate).toLocaleDateString()
+              : "-";
+          }
 
-      columnKeys.forEach((key) => {
-        if (key === "orderId") row.push(escapeCSV(order._id));
-        else if (key === "firstName") row.push(escapeCSV(order.firstName));
-        else if (key === "email") row.push(escapeCSV(order.email));
-        else if (key === "phone") row.push(escapeCSV(order.phone));
-        else if (key === "orderStatus") row.push(escapeCSV(order.status));
-        else if (key === "totalAmount")
-          row.push(escapeCSV(`₪${order.totalAmount}`));
-        else if (key === "paymentStatus")
-          row.push(escapeCSV(order.paymentStatus));
-        else if (key === "voucherAmount")
-          row.push(escapeCSV(`₪${order.voucherAmount}`));
-        else if (key === "creditCardAmount")
-          row.push(escapeCSV(`₪${order.creditCardAmount}`));
-        else if (key === "vendors")
-          row.push(escapeCSV(order.vendors.join(", ")));
-        else if (key === "campaign") row.push(escapeCSV(order.campaign));
-        else if (key === "createdAt")
-          row.push(escapeCSV(new Date(order.createdAt).toLocaleDateString()));
-        else if (key === "paymentDate")
-          row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
-      });
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
+    );
 
-      csvContent += row.join(",") + "\n";
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
     });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 10);
+    const link = document.createElement("a");
 
-    link.setAttribute("href", url);
-    link.setAttribute("download", `orders_export_${timestamp}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `orders_export_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+
     link.click();
-    document.body.removeChild(link);
-  };
+    URL.revokeObjectURL(url);
+  }, [selectedOrders, orders, columnVisibility, t]);
+
   const promptBulkResend = useCallback(() => {
     if (!selectedOrders.size) return;
     setIsBulkDelete(true);
@@ -977,7 +964,7 @@ export default function OrdersMgmtPage() {
     {
       id: 2,
       title: t("revenue"),
-      value: `₪${orderStat?.totalRevenue?.toLocaleString()}`,
+      value: formatILS(orderStat?.totalRevenue),
       label: t("gross"),
       icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
@@ -1084,8 +1071,8 @@ export default function OrdersMgmtPage() {
           {isSuperadmin && (
             <button
               onClick={handleOrderSummaryClick}
-              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
-    ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 border 
+                ${orderSummaryClick ? "border-green-500 hover:border-green-600 text-green-500" : "border-blue-500 hover:border-blue-600 text-blue-500"}`}
             >
               {orderSummaryClick ? t("view_orders") : t("view_order_summary")}
             </button>
@@ -1102,16 +1089,9 @@ export default function OrdersMgmtPage() {
               <Camera className="w-4 h-4" />
             </button>
           )}
-
-          {/* <button
-            onClick={() => setShowAddOrderWizard(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t("addOrder")}</span>
-          </button> */}
         </div>
       </div>
+
       {canViewOrders ? (
         <PageStats
           stats={orderStats}
@@ -1140,14 +1120,13 @@ export default function OrdersMgmtPage() {
                     ? "orderSummarySearchTerm"
                     : "orderSearchTerm"
                 }
-
-                // isRTL={isRTL}
-                // isDark={isDark}
               />
             </div>
 
             <button
-              onClick={handleExportCSV}
+              onClick={
+                orderSummaryClick ? handleExportCSVSummary : handleExportCSV
+              }
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                 isDark
                   ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -1286,6 +1265,18 @@ export default function OrdersMgmtPage() {
                   t={t}
                 />
               </div>
+              {orderSummaryClick &&
+                (summaryFilters.status !== "all" ||
+                  summaryFilters.month !== "all") && (
+                  <div className="min-w-55 mt-10">
+                    <button
+                      onClick={() => setSummaryFilters(defaultSummaryFilters)}
+                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                    >
+                      {t("clear_all")}
+                    </button>
+                  </div>
+                )}
 
               {/* Regular-only Filters */}
               {!orderSummaryClick && (
@@ -1357,11 +1348,10 @@ export default function OrdersMgmtPage() {
         </div>
       )}
       <div>
-        {selectedOrders.size > 0 && (
+        {!orderSummaryClick && selectedOrders.size > 0 && (
           <BulkActionBar
             selectedItemCount={selectedOrders.size}
             handleResendOrderDetails={promptBulkResend}
-            handleExportCSV={handleExportCSV}
             hancleClearSelection={() => setSelectedOrders(new Set())}
           />
         )}
@@ -1375,16 +1365,11 @@ export default function OrdersMgmtPage() {
               className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
             >
               {/* Loading state */}
-              {(orderSummaryClick ? isLoadingOrderSummary : isLoading) ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
-                </div>
-              ) : /* Empty state */
-              (
-                  orderSummaryClick
-                    ? orderSummaries?.length === 0
-                    : orderss?.length === 0
-                ) ? (
+              {(
+                orderSummaryClick
+                  ? orderSummaries?.length === 0
+                  : orderss?.length === 0
+              ) ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
@@ -1392,7 +1377,12 @@ export default function OrdersMgmtPage() {
               ) : (
                 <OrderListView
                   isLoading={
-                    orderSummaryClick ? isFetchingOrderSummary : isLoading
+                    orderSummaryClick ? isLoadingOrderSummary : isLoading
+                  }
+                  storageKey={
+                    orderSummaryClick
+                      ? "orderSummaryTableColumnOrder"
+                      : "ordersTableColumnOrder"
                   }
                   hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
                   orders={orderSummaryClick ? orderSummaries : orders}
@@ -1450,8 +1440,8 @@ export default function OrdersMgmtPage() {
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
-      {/* Modal for showing orders from order summary */}
 
+      {/* Modal for showing orders from order summary */}
       <OrdersModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
