@@ -182,10 +182,13 @@ export default function OrdersMgmtPage() {
     detailedView: boolean;
   } | null>(null);
 
-  const { data: orderSummaries, isFetching: isFetchingOrderSummary } =
-    useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-      skip: !orderSummaryClick,
-    });
+  const {
+    data: orderSummaries,
+    isFetching: isFetchingOrderSummary,
+    isLoading: isLoadingOrderSummary,
+  } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
+    skip: !orderSummaryClick,
+  });
 
   // Business-specific order summary query (runs only when businessOrderParams is set)
   const {
@@ -383,7 +386,7 @@ export default function OrdersMgmtPage() {
   });
 
   const hasMore = orders?.meta?.hasNextPage;
-  const hasMoreSummary = orders?.meta?.hasNextPage;
+  const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
   const totalDataSummary = orderSummaries?.totalData;
@@ -1374,7 +1377,7 @@ export default function OrdersMgmtPage() {
               ) : (
                 <OrderListView
                   isLoading={
-                    orderSummaryClick ? isFetchingOrderSummary : isLoading
+                    orderSummaryClick ? isLoadingOrderSummary : isLoading
                   }
                   storageKey={
                     orderSummaryClick
