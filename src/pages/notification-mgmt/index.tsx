@@ -24,6 +24,7 @@ import {
   useGetNotificatonStatsQuery,
   useMarkNotificationsAsReadMutation,
 } from "@/store/api/notificationApi";
+import { useSocket } from "@/providers/SocketProvider";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
@@ -57,6 +58,7 @@ export default function NotificationsMgmtPage() {
     };
     return params;
   }, [page, readFilter, typeFilter, itemTypeFilter]);
+  const socket = useSocket();
 
   const {
     data: notifications,
@@ -65,6 +67,22 @@ export default function NotificationsMgmtPage() {
   } = useGetAllNotificationsQuery(QueryParams);
   const { data: notifStats, refetch: refetchNotifStats } =
     useGetNotificatonStatsQuery();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = (data: any) => {
+      console.log("New notification", data);
+    };
+
+    // Register event
+    socket.on("notification", handleNotification);
+
+    // Cleanup function: remove the listener
+    return () => {
+      socket.off("notification", handleNotification);
+    };
+  }, [socket]);
 
   const hasMore = notifications?.meta?.hasNextPage || false;
 
