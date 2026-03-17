@@ -70,10 +70,12 @@ const TopicCategoryCard = ({
 
         category.contents.push({
           _id: draggedItem._id,
-          name: draggedItem.name,
-          desc: draggedItem.description,
-          imageUrl: draggedItem.image,
+          name: draggedItem.name || "",
+          desc: draggedItem.description || "",
+          imageUrl: draggedItem.image || "",
           primaryCategory: "",
+          title: draggedItem.title || draggedItem.name || "",
+          message: draggedItem.message || "",
         });
 
         existingIds.add(draggedItem._id); // prevent double-add within the same drop

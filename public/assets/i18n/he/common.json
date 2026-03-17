@@ -1,4 +1,7 @@
 {
+  "loading_text": "טוען פריטים נוספים...",
+  "loading_end_text": "אין עוד פריטים",
+
   "all_websites": "כל האתרים",
   "all_authorities": "כל הרשויות",
   "app_title": "ניתוח תיירות הנגב המערבי",
@@ -285,6 +288,8 @@
   "create_new_user_description": "לא נמצא במערכת. אנא מלא את הפרטים הבאים כדי ליצור משתמש חדש עבור",
   "first_name": "שם פרטי",
   "first_name_required": "שם פרטי",
+  "notifications": "התראות",
+
   "last_name": "שם משפחה",
   "last_name_required": "שם משפחה",
   "email": "אימייל",

@@ -70,8 +70,8 @@ const authSlice = createSlice({
       state.user = null;
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem("user_info");
-        localStorage.removeItem("access_token");
+        sessionStorage.removeItem("user_info");
+        sessionStorage.removeItem("access_token");
       }
     },
     setDmo: (state, action: PayloadAction<string>) => {

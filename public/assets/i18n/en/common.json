@@ -1,4 +1,7 @@
 {
+  "loading_text": "Loading more items...",
+  "loading_end_text": "No more items",
+
   "all_websites": "All Websites",
   "all_authorities": "All Authorities",
   "app_title": "Western Negev Tourism Analytics",
@@ -110,6 +113,7 @@
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
   "deletd_notification": "Delete Notification",
   "delete_notification_cofirm": "Are you sure you want to delete this notification?",
+  "notifications": "Notifications",
   "unsaved_changes": "Unsaved Changes",
   "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
   "delete_event": "Delete Event",

@@ -134,3 +134,17 @@ interface ISearchBusiness {
   name: string;
   slug: string;
 }
+
+type TNotifStatus = "ALL" | "READ" | "UNREAD";
+
+type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "FUNDAY" | "TRIP";
+
+type TNotifType = "ALL" | "INFO" | "WARNING" | "ACTION" | "URGENT" | "ERROR";
+
+type TItemStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "CLOSED"
+  | "REJECTED"
+  | "DRAFT"
+  | "ARCHIVED";

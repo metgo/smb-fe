@@ -1,4 +1,5 @@
 import AuthPage from "./auth";
+import ErrorUiPage from "./error-ui";
 import ProfilePage from "./profile";
 import EventsMgmtPage from "./events-mgmt";
 import ProductsMgmtPage from "./products-mgmt";
@@ -9,7 +10,7 @@ import EventDetailsPage from "./events-mgmt/details";
 import BusinessDetailsPage from "./businesses-mgmt/details";
 import ProductDetailsPage from "./products-mgmt/details";
 import ContentMgmtPage from "./content-mgmt";
-import ErrorUiPage from "./error-ui";
+import NotificationsMgmtPage from "./notification-mgmt";
 import AnalyticsDashboardPage from "./analytics-dashboard";
 
 export {
@@ -24,6 +25,7 @@ export {
   EventDetailsPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
+  NotificationsMgmtPage,
   AnalyticsDashboardPage,
   ContentMgmtPage,
 };
