@@ -443,7 +443,12 @@ export default function OrdersMgmtPage() {
     startDate: "",
     endDate: "",
   };
-
+  const defaultSummaryFilters = {
+    status: "all",
+    startDate: "",
+    endDate: "",
+    month: "all",
+  };
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
@@ -1272,6 +1277,18 @@ export default function OrdersMgmtPage() {
                   t={t}
                 />
               </div>
+              {orderSummaryClick &&
+                (summaryFilters.status !== "all" ||
+                  summaryFilters.month !== "all") && (
+                  <div className="min-w-55 mt-10">
+                    <button
+                      onClick={() => setSummaryFilters(defaultSummaryFilters)}
+                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                    >
+                      {t("clear_all")}
+                    </button>
+                  </div>
+                )}
 
               {/* Regular-only Filters */}
               {!orderSummaryClick && (
