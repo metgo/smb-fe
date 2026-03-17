@@ -7,6 +7,8 @@
   "order_id": "מזהה הזמנה",
   "purchaser_name": "רוכש",
   "purchaser_information": "פרטי הרוכש",
+  "resend_order_vendor": "שלח מחדש הזמנה לספק",
+  "resend_order_customer": "שלח מחדש הזמנה ללקוח",
   "order_type": "סוג הזמנה",
   "product_name": "שם מוצר",
   "online": "אונליין",
