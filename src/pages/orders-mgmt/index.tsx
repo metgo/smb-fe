@@ -60,11 +60,11 @@ import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { UserRole } from "@/enums/user.types";
 import { formatOrderDate } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 // Default columns configuration
 const defaultColumns = {
@@ -83,16 +83,14 @@ const defaultColumns = {
 type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
-  const { t, i18n } = useTranslation("orders");
+  const { t } = useTranslation("orders");
 
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const language = i18n.language;
-
-  const { textSecondary, textTertiary, isDark } = useThemeClasses();
+  const { textSecondary, textTertiary, isDark, isRTL, language } =
+    useThemeClasses();
   //view mode toggle
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isSuperadmin, isTraveller } = useUserRoles();
 
   // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -126,15 +124,16 @@ export default function OrdersMgmtPage() {
     const stored = localStorage.getItem("orderSummaryClick");
     return stored !== null ? JSON.parse(stored) : false;
   });
+  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
+    null,
+  );
+
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
       localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
       return !prev;
     });
   };
-  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
-    null,
-  );
 
   const orderSummaryQueryParams = useMemo(() => {
     const params: any = {
@@ -192,8 +191,9 @@ export default function OrdersMgmtPage() {
     isLoading: isLoadingOrderSummary,
     isFetching: isFetchingOrderSummary,
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-    skip: !orderSummaryClick, // skip when user clicked to view business-specific orders
+    skip: !orderSummaryClick,
   });
+
   // Business-specific order summary query (runs only when businessOrderParams is set)
   const {
     data: businessOrderSummaries,
@@ -334,8 +334,7 @@ export default function OrdersMgmtPage() {
     setPage(1);
   }, [searchTerm, filters]);
 
-  const canViewOrders =
-    userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
+  const canViewOrders = isSuperadmin || isTraveller;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
 
   const orderQueryParams = useMemo(() => {
@@ -636,8 +635,77 @@ export default function OrdersMgmtPage() {
       setPendingDownloadId(null);
     }
   }, [businessOrderSummaries]);
+
   //order summary
   const summaryColumns = [
+    {
+      key: "authorityName",
+      label: t("authority_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
+    },
+
+    {
+      key: "businessAddressCity",
+      label: t("business_address_city"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressCity}</div>
+      ),
+    },
+    {
+      key: "businessAddressLocation",
+      label: t("business_address_location"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressLocation}</div>
+      ),
+    },
+    {
+      key: "businessName",
+      label: t("business_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+    },
+    {
+      key: "dmoName",
+      label: t("dmo_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
+    },
+
+    {
+      key: "totalAmount",
+      label: t("total_amount"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmount ? `₪${row.totalAmount.toLocaleString()}` : "-"}
+        </div>
+      ),
+    },
+
+    {
+      key: "totalAmountPaidByCreditCard",
+      label: t("total_amount_paid_by_credit_card"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmountPaidByCreditCard
+            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
+            : "-"}
+        </div>
+      ),
+    },
+
+    {
+      key: "totalNoOfOrders",
+      label: t("total_no_of_orders"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.totalNoOfOrders}</div>
+      ),
+    },
     {
       key: "actions",
       label: t("actions"),
@@ -702,128 +770,6 @@ export default function OrdersMgmtPage() {
         </div>
       ),
     },
-
-    // {
-    //   key: "authorityId",
-    //   label: t("authority_id"),
-    //   sortable: true,
-    //   render: (row: any) => <div className="text-sm">{row.authorityId}</div>,
-    // },
-
-    {
-      key: "authorityName",
-      label: t("authority_name"),
-      sortable: true,
-      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
-    },
-
-    {
-      key: "businessAddressCity",
-      label: t("business_address_city"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">{row.businessAddressCity}</div>
-      ),
-    },
-
-    // {
-    //   key: "businessAddressCountry",
-    //   label: t("business_address_country"),
-    //   sortable: true,
-    //   render: (row: any) => (
-    //     <div className="text-sm">{row.businessAddressCountry}</div>
-    //   ),
-    // },
-
-    {
-      key: "businessAddressLocation",
-      label: t("business_address_location"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">{row.businessAddressLocation}</div>
-      ),
-    },
-
-    // {
-    //   key: "businessEmail",
-    //   label: t("business_email"),
-    //   render: (row: any) => (
-    //     <a
-    //       href={`mailto:${row.businessEmail}`}
-    //       className="text-sm text-teal-500 hover:text-teal-600"
-    //       onClick={(e) => e.stopPropagation()}
-    //     >
-    //       {row.businessEmail}
-    //     </a>
-    //   ),
-    // },
-
-    {
-      key: "businessName",
-      label: t("business_name"),
-      sortable: true,
-      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
-    },
-
-    // {
-    //   key: "dmoId",
-    //   label:t("dmo_id"),
-    //   sortable: true,
-    //   render: (row: any) => <div className="text-sm">{row.dmoId}</div>,
-    // },
-
-    {
-      key: "dmoName",
-      label: t("dmo_name"),
-      sortable: true,
-      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
-    },
-
-    {
-      key: "totalAmount",
-      label: t("total_amount"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm font-medium">
-          {row.totalAmount ? `₪${row.totalAmount.toLocaleString()}` : "-"}
-        </div>
-      ),
-    },
-
-    {
-      key: "totalAmountPaidByCreditCard",
-      label: t("total_amount_paid_by_credit_card"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm font-medium">
-          {row.totalAmountPaidByCreditCard
-            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
-            : "-"}
-        </div>
-      ),
-    },
-
-    // {
-    //   key: "totalDeliveryFee",
-    //   label: t("total_delivery_fee"),
-    //   sortable: true,
-    //   render: (row: any) => (
-    //     <div className="text-sm font-medium">
-    //       {row.totalDeliveryFee
-    //         ? `₪${row.totalDeliveryFee.toLocaleString()}`
-    //         : "-"}
-    //     </div>
-    //   ),
-    // },
-
-    {
-      key: "totalNoOfOrders",
-      label: t("total_no_of_orders"),
-      sortable: true,
-      render: (row: any) => (
-        <div className="text-sm">{row.totalNoOfOrders}</div>
-      ),
-    },
   ].filter(Boolean) as {
     key: string;
     label: string;
@@ -831,6 +777,7 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
+
   //order details
   const {
     data: orderDetails,
@@ -1114,7 +1061,6 @@ export default function OrdersMgmtPage() {
         <div
           className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-5`}
         >
-          {" "}
           <PageHeader
             title={
               orderSummaryClick
@@ -1135,7 +1081,7 @@ export default function OrdersMgmtPage() {
           />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
-          {userRole === UserRole.SUPERADMIN && (
+          {isSuperadmin && (
             <button
               onClick={handleOrderSummaryClick}
               className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
@@ -1238,7 +1184,7 @@ export default function OrdersMgmtPage() {
 
                 {showColumnSettings && (
                   <div
-                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                   >
                     <div className="p-3 max-h-96 overflow-y-auto">
                       {Object.entries(columnVisibility).map(
@@ -1277,7 +1223,7 @@ export default function OrdersMgmtPage() {
           {showFilters && (
             <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               {/* Shared Filters — always shown */}
-              <div className="min-w-[180px]">
+              <div className="min-w-45">
                 <FilterSelect
                   label={t("status")}
                   value={
@@ -1302,7 +1248,7 @@ export default function OrdersMgmtPage() {
                 />
               </div>
 
-              <div className="min-w-[220px]">
+              <div className="min-w-55">
                 <MonthFilter
                   label={t("month")}
                   value={
@@ -1337,8 +1283,6 @@ export default function OrdersMgmtPage() {
                         }))
                       : setFilters((prev) => ({ ...prev, endDate: value }))
                   }
-                  theme={theme}
-                  isRTL={isRTL}
                   t={t}
                 />
               </div>
@@ -1346,7 +1290,7 @@ export default function OrdersMgmtPage() {
               {/* Regular-only Filters */}
               {!orderSummaryClick && (
                 <>
-                  <div className="min-w-[180px]">
+                  <div className="min-w-45">
                     <FilterSelect
                       label={t("deliveryType")}
                       value={filters.deliveryType}
@@ -1361,7 +1305,7 @@ export default function OrdersMgmtPage() {
                     />
                   </div>
 
-                  <div className="min-w-[180px]">
+                  <div className="min-w-45">
                     <FilterSelect
                       label={t("paymentMethod")}
                       value={filters.paymentMethod}
@@ -1424,8 +1368,7 @@ export default function OrdersMgmtPage() {
       </div>
 
       {/* Orders Table */}
-      {(userRole === UserRole.SUPERADMIN ||
-        userRole === UserRole.TRAVELLER) && (
+      {canViewOrders && (
         <>
           {viewMode === "list" ? (
             <div
@@ -1447,9 +1390,7 @@ export default function OrdersMgmtPage() {
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
                 </div>
               ) : (
-                /* Data */
                 <OrderListView
-                  theme={theme}
                   isLoading={
                     orderSummaryClick ? isFetchingOrderSummary : isLoading
                   }
@@ -1493,11 +1434,10 @@ export default function OrdersMgmtPage() {
           )}
         </>
       )}
+
       <Activity mode={selectedOrder && showOrderDetails ? "visible" : "hidden"}>
         <OrderDetailsModal
           t={t}
-          isRTL={isRTL}
-          theme={theme}
           refetch={orderIdrefetch}
           order={orderDetails}
           isLoading={isOrderDetailLoading}
@@ -1507,25 +1447,17 @@ export default function OrdersMgmtPage() {
         />
       </Activity>
 
-      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
-        <CreateOrderWizard
-          onClose={() => setShowAddOrderWizard(false)}
-          onOpen={() => setShowAddOrderWizard(true)}
-        />
-      </Activity> */}
-
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
       {/* Modal for showing orders from order summary */}
+
       <OrdersModal
-        t={t}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         isLoading={
           isLoadingBusinessOrderSummary || isFetchingBusinessOrderSummary
         }
-        isDark={isDark}
         businessOrdersSummaries={businessOrdersSummariess ?? []}
       />
       <ConfirmDialog

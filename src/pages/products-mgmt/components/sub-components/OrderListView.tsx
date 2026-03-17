@@ -1,9 +1,9 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface OrderListViewProps {
-  theme: "dark" | "light";
   isLoading: boolean;
   orders: any;
   hasMore: boolean;
@@ -19,7 +19,6 @@ interface OrderListViewProps {
 }
 
 const OrderListView: React.FC<OrderListViewProps> = ({
-  theme,
   isLoading,
   orders,
   combinedOrders,
@@ -33,12 +32,12 @@ const OrderListView: React.FC<OrderListViewProps> = ({
   t,
   hasMore,
 }) => {
+  const { isDark } = useThemeClasses();
+
   return (
     <div
       className={`${
-        theme === "dark"
-          ? "bg-gray-900/50 border-gray-800"
-          : "bg-white border-gray-200"
+        isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"
       } border rounded-lg overflow-hidden overflow-y-auto`}
     >
       {orders?.datas?.data?.length === 0 ? (

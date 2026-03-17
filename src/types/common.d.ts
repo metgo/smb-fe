@@ -148,3 +148,11 @@ type TItemStatus =
   | "REJECTED"
   | "DRAFT"
   | "ARCHIVED";
+
+type TOrderStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "shipped"
+  | "canceled";
+type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";

@@ -1,17 +1,14 @@
 import { ModalWrapper } from "@/components/wrapper";
-type OrderStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "shipped"
-  | "canceled";
-type PaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+
 interface Order {
   id: string;
   products: { name: string; quantity: string }[];
   orderInitiatedDate: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
+  status: TOrderStatus;
+  paymentStatus: TPaymentStatus;
   firstName: string;
   lastName: string;
 }
@@ -26,8 +23,6 @@ interface OrdersModalProps {
   onClose: () => void;
   isLoading: boolean;
   businessOrdersSummaries: BusinessOrderSummary[];
-  t?: any;
-  isDark?: boolean;
 }
 
 export const OrdersModal = ({
@@ -35,14 +30,14 @@ export const OrdersModal = ({
   onClose,
   isLoading,
   businessOrdersSummaries,
-  isDark,
-  t,
 }: OrdersModalProps) => {
-  console.log("🚀 ~ OrdersModal ~ isLoading:", isLoading);
+  const { t } = useTranslation("orders");
+  const { isDark, textPrimary, textSecondary } = useThemeClasses();
+
   if (!isOpen) return null;
 
-  const getOrderStatusBadge = (status: OrderStatus) => {
-    const styles: Record<OrderStatus, string> = {
+  const getOrderStatusBadge = (status: TOrderStatus) => {
+    const styles: Record<TOrderStatus, string> = {
       pending: "bg-yellow-100 text-yellow-700",
       processing: "bg-blue-100 text-blue-700",
       completed: "bg-green-100 text-green-700",
@@ -59,8 +54,8 @@ export const OrdersModal = ({
     );
   };
 
-  const getPaymentStatusBadge = (status: PaymentStatus) => {
-    const styles: Record<PaymentStatus, string> = {
+  const getPaymentStatusBadge = (status: TPaymentStatus) => {
+    const styles: Record<TPaymentStatus, string> = {
       PAID: "bg-green-100 text-green-700",
       UNPAID: "bg-red-100 text-red-700",
       PARTIAL: "bg-yellow-100 text-yellow-700",
@@ -84,8 +79,7 @@ export const OrdersModal = ({
       showSpinner={isLoading}
     >
       <div className={`p-4 flex flex-col z-100 overflow-hidden `}>
-        {" "}
-        <h2 className="text-2xl font-semibold mb-2 ">
+        <h2 className={clsx("text-2xl font-semibold mb-2 ", textPrimary)}>
           {t("orders")} -{" "}
           {businessOrdersSummaries?.map((business) => business?.businessName)}
         </h2>
@@ -97,9 +91,11 @@ export const OrdersModal = ({
           >
             {" "}
             <thead
-              className={`sticky -top-1 text-left z-10 ${
-                isDark ? "bg-gray-800" : "bg-gray-100"
-              }`}
+              className={clsx(
+                "sticky -top-1 text-left z-10",
+                isDark ? "bg-gray-800" : "bg-gray-100",
+                textSecondary,
+              )}
             >
               {" "}
               <tr className="">
@@ -111,7 +107,7 @@ export const OrdersModal = ({
                 <th className="p-2 border w-24">{t("quantity")}</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={clsx(textPrimary)}>
               {businessOrdersSummaries?.map((business) =>
                 business?.orders?.map((order) => (
                   <tr key={order.id} className="text-left">
