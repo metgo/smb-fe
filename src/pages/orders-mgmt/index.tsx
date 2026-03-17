@@ -12,7 +12,6 @@ import * as XLSX from "xlsx";
 
 import {
   Download,
-  // Plus,
   Eye,
   ChevronDown,
   ChevronUp,
@@ -41,7 +40,6 @@ import {
   ViewModeToggle,
 } from "@/components/shared";
 import {
-  // CreateOrderWizard,
   FilterSelect,
   MonthFilter,
   OrderDetailsModal,
@@ -52,7 +50,6 @@ import {
   useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
-  // useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
@@ -65,6 +62,9 @@ import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { formatILS } from "@/helpers/formatter";
+
+const limit = 20;
 
 // Default columns configuration
 const defaultColumns = {
@@ -74,7 +74,6 @@ const defaultColumns = {
   status: true,
   totalAmount: true,
   product_name: true,
-  // paymentStatus: false,
   deliveryFee: true,
   createdAt: true,
   paymentDate: true,
@@ -83,25 +82,27 @@ const defaultColumns = {
 type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation("orders");
-
+  const { dmoId, authorityId, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const { isSuperadmin, isTraveller } = useUserRoles();
   const { textSecondary, textTertiary, isDark, isRTL, language } =
     useThemeClasses();
+
   //view mode toggle
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-
-  const { isSuperadmin, isTraveller } = useUserRoles();
-
-  // const [orders, setOrders] = useState<IOrder[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTermSummary, setSearchTermSummary] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  // const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
+
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
@@ -110,10 +111,6 @@ export default function OrdersMgmtPage() {
   const [page, setPage] = useState(1);
   const [pageSummary, setPageSummary] = useState(1);
 
-  const limit = 20;
-  const { dmoId, authorityId, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
   const [summaryFilters, setSummaryFilters] = useState({
     status: "all",
     startDate: "",
@@ -141,8 +138,6 @@ export default function OrdersMgmtPage() {
       limit,
       dmoId,
       authorityId,
-
-      // websiteId,
     };
     // params.detailedView = true;
     if (searchTermSummary) params.search = searchTermSummary;
@@ -186,13 +181,10 @@ export default function OrdersMgmtPage() {
     detailedView: boolean;
   } | null>(null);
 
-  const {
-    data: orderSummaries,
-    isLoading: isLoadingOrderSummary,
-    isFetching: isFetchingOrderSummary,
-  } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-    skip: !orderSummaryClick,
-  });
+  const { data: orderSummaries, isFetching: isFetchingOrderSummary } =
+    useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
+      skip: !orderSummaryClick,
+    });
 
   // Business-specific order summary query (runs only when businessOrderParams is set)
   const {
@@ -204,9 +196,7 @@ export default function OrdersMgmtPage() {
   });
 
   const ordersSummariess = orderSummaries?.data ?? [];
-
   const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
-
   const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
   //camera persmissions
@@ -269,6 +259,7 @@ export default function OrdersMgmtPage() {
       stopCamera();
     };
   }, [stopCamera]);
+
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
     setPage((prev) => {
@@ -343,7 +334,6 @@ export default function OrdersMgmtPage() {
       limit,
       dmoId,
       authorityId,
-
       websiteId,
     };
 
@@ -432,7 +422,6 @@ export default function OrdersMgmtPage() {
       setCombinedOrdersSummary(ordersSummariess);
     } else {
       setCombinedOrdersSummary((prev) => {
-        // Prevent duplicates (important!)
         const existingIds = new Set(prev.map((b) => b._id));
         const newItems = ordersSummariess.filter(
           (b: any) => !existingIds.has(b._id),
@@ -567,8 +556,6 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
-  const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
 
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
@@ -590,7 +577,6 @@ export default function OrdersMgmtPage() {
     ];
 
     const orderRows = (row?.orders ?? []).map((order: any) => ({
-      //  fallback to []
       "Order ID": order.id,
       "Customer Name": `${order.firstName} ${order.lastName}`.trim(),
       Email: order.email,
@@ -802,10 +788,8 @@ export default function OrdersMgmtPage() {
   const handleExportCSV = () => {
     const ordersToExport =
       selectedOrders.size > 1
-        ? orders?.datas?.data?.filter((order: any) =>
-            selectedOrders.has(order._id),
-          )
-        : orders?.datas?.data;
+        ? orders?.data?.filter((order: any) => selectedOrders.has(order._id))
+        : orders?.data;
     console.log("export cvs", ordersToExport);
     console.log("export cvs", selectedOrders);
 
@@ -881,7 +865,7 @@ export default function OrdersMgmtPage() {
 
     let csvContent = headers.map(escapeCSV).join(",") + "\n";
 
-    ordersToExport.forEach((order: IOrder) => {
+    ordersToExport?.forEach((order: IOrder) => {
       const row: string[] = [];
 
       columnKeys.forEach((key) => {
@@ -922,6 +906,7 @@ export default function OrdersMgmtPage() {
     link.click();
     document.body.removeChild(link);
   };
+
   const promptBulkResend = useCallback(() => {
     if (!selectedOrders.size) return;
     setIsBulkDelete(true);
@@ -977,7 +962,7 @@ export default function OrdersMgmtPage() {
     {
       id: 2,
       title: t("revenue"),
-      value: `₪${orderStat?.totalRevenue?.toLocaleString()}`,
+      value: formatILS(orderStat?.totalRevenue),
       label: t("gross"),
       icon: <DollarSign className="w-5 h-5 text-green-500" />,
     },
@@ -1084,8 +1069,8 @@ export default function OrdersMgmtPage() {
           {isSuperadmin && (
             <button
               onClick={handleOrderSummaryClick}
-              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
-    ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 border 
+                ${orderSummaryClick ? "border-green-500 hover:border-green-600 text-green-500" : "border-blue-500 hover:border-blue-600 text-blue-500"}`}
             >
               {orderSummaryClick ? t("view_orders") : t("view_order_summary")}
             </button>
@@ -1102,16 +1087,9 @@ export default function OrdersMgmtPage() {
               <Camera className="w-4 h-4" />
             </button>
           )}
-
-          {/* <button
-            onClick={() => setShowAddOrderWizard(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t("addOrder")}</span>
-          </button> */}
         </div>
       </div>
+
       {canViewOrders ? (
         <PageStats
           stats={orderStats}
@@ -1140,9 +1118,6 @@ export default function OrdersMgmtPage() {
                     ? "orderSummarySearchTerm"
                     : "orderSearchTerm"
                 }
-
-                // isRTL={isRTL}
-                // isDark={isDark}
               />
             </div>
 
@@ -1361,7 +1336,6 @@ export default function OrdersMgmtPage() {
           <BulkActionBar
             selectedItemCount={selectedOrders.size}
             handleResendOrderDetails={promptBulkResend}
-            handleExportCSV={handleExportCSV}
             hancleClearSelection={() => setSelectedOrders(new Set())}
           />
         )}
@@ -1375,16 +1349,11 @@ export default function OrdersMgmtPage() {
               className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
             >
               {/* Loading state */}
-              {(orderSummaryClick ? isLoadingOrderSummary : isLoading) ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
-                </div>
-              ) : /* Empty state */
-              (
-                  orderSummaryClick
-                    ? orderSummaries?.length === 0
-                    : orderss?.length === 0
-                ) ? (
+              {(
+                orderSummaryClick
+                  ? orderSummaries?.length === 0
+                  : orderss?.length === 0
+              ) ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
@@ -1450,8 +1419,8 @@ export default function OrdersMgmtPage() {
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
-      {/* Modal for showing orders from order summary */}
 
+      {/* Modal for showing orders from order summary */}
       <OrdersModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
