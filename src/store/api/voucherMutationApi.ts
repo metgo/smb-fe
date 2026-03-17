@@ -15,11 +15,13 @@ export const voucherMutationApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Voucher"],
   endpoints: (builder) => ({
-    initVoucherCreate: builder.mutation<any, void>({
-      query: () => ({
+    // In your RTK Query api slice
+    createVoucher: builder.mutation<any, any>({
+      query: (payload) => ({
         url: endpoints.vouchers,
         method: "POST",
-        data: { name: "" },
+        // Send real data right away — backend should accept partial payload
+        body: payload, // ← changed from fixed { name: "" }
       }),
       invalidatesTags: ["Voucher"],
     }),
@@ -51,7 +53,7 @@ export const voucherMutationApi = createApi({
 });
 
 export const {
-  useInitVoucherCreateMutation,
+  useCreateVoucherMutation,
   useUpdateVoucherMutation,
   useDeleteVoucherMutation,
   useBulkVouchersUpdateMutation,

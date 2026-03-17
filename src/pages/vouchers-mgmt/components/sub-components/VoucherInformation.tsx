@@ -40,7 +40,7 @@ const VoucherInformation = ({
   return (
     <div className="space-y-6">
       {/* Websites */}
-      <div>
+      {/* <div>
         <label className="block text-sm text-gray-700 dark:text-gray-300 mb-3">
           {t("select_websites_multi_select")}
         </label>
@@ -93,7 +93,7 @@ const VoucherInformation = ({
             {t("error_select_website")}
           </p>
         )}
-      </div>
+      </div> */}
 
       {/* Campaign */}
       <div>
@@ -108,8 +108,8 @@ const VoucherInformation = ({
         >
           <option value="">{t("no_campaign")}</option>
 
-          {campaigns.map((campaign) => (
-            <option key={campaign.id} value={campaign.id}>
+          {campaigns?.datas?.data?.map((campaign) => (
+            <option key={campaign._id} value={campaign._id}>
               {campaign.name} (₪{campaign.defaultAmount})
             </option>
           ))}

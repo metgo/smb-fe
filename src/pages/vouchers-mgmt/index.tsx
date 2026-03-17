@@ -5,9 +5,13 @@ import { AddVoucherWizard } from "./components/CreateVoucherWizard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
 
 export default function VouchersMgmtPage() {
   const { isDark } = useThemeClasses();
+  const { data: campaigns } = useGetAllCampaignsQuery({
+    type: "CASH_IN",
+  });
 
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
     null,
@@ -83,6 +87,7 @@ export default function VouchersMgmtPage() {
         <AddVoucherWizard
           onClose={handleCloseAddWizard}
           onVoucherCreated={handleVoucherCreated}
+          campaigns={campaigns}
         />
       )}
     </div>

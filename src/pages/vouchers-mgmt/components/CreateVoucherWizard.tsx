@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Check, FileText, Users, ClipboardList, Eye } from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
 import {
-  useInitVoucherCreateMutation,
+  useCreateVoucherMutation,
   useUpdateVoucherMutation,
 } from "@/store/api/voucherMutationApi";
 import { WizardFooter } from "@/components/shared";
@@ -20,6 +20,7 @@ interface AddVoucherWizardProps {
   // theme: Theme;
   onClose: () => void;
   onVoucherCreated?: () => void;
+  campaigns?: [];
 }
 
 type CreationType = "single" | "bulk" | "upload";
@@ -98,6 +99,7 @@ export function AddVoucherWizard({
   // language,
   // theme,
   onClose,
+  campaigns,
   // onVoucherCreated,
 }: AddVoucherWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -124,8 +126,8 @@ export function AddVoucherWizard({
   });
   console.log("🚀 ~ AddVoucherWizard ~ formData:", formData);
   const stepPayloadMap = {
-    websites: formData.websites,
-    campaign: formData.campaign,
+    // websites: formData.websites,
+    campaignId: formData.campaign,
 
     amount: formData.amount,
     customAmount: formData.customAmount,
@@ -148,8 +150,8 @@ export function AddVoucherWizard({
   };
   const [voucherId, setVoucherId] = useState("");
   const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
-  const [initVoucherCreate, { isLoading: isCreating }] =
-    useInitVoucherCreateMutation();
+  const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
+
   const [isPublishing, setIsPublishing] = useState(false);
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
@@ -159,31 +161,24 @@ export function AddVoucherWizard({
   const saveDraft = useCallback(
     async (isPublish = false) => {
       try {
-        let internalVoucherId;
+        if (!Object.keys(stepPayloadMap).length) return;
 
-        //  Initialize if not created yet
-        if (!voucherId) {
-          const res = await initVoucherCreate().unwrap();
-          internalVoucherId = res?.id;
-          setVoucherId(res?.id);
-        }
-
-        //  Build base payload
         let payload = stepPayloadMap;
 
         if (isPublish) {
           payload = {
             ...payload,
+            // status: "published",   // ← add whatever publish flag your backend expects
+            // publishedAt: new Date().toISOString(),
+            // etc.
           };
         }
 
-        if (!Object.keys(payload).length) return;
+        // Single request — create + set initial data
+        const res = await createVoucher(payload).unwrap();
 
-        // Update voucher
-        await updateVoucher({
-          voucherId: internalVoucherId || voucherId!,
-          body: payload,
-        }).unwrap();
+        // Now you have the real ID
+        setVoucherId(res.id);
 
         onClose();
         toast.success(isPublish ? t("business_published") : t("draft_saved"));
@@ -191,7 +186,7 @@ export function AddVoucherWizard({
         toast.error(err?.data?.message || t("draft_failed"));
       }
     },
-    [voucherId, stepPayloadMap, initVoucherCreate, updateVoucher, onClose, t],
+    [stepPayloadMap, createVoucher, onClose, t],
   );
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
@@ -272,18 +267,18 @@ export function AddVoucherWizard({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     // Validate all steps
-    let allValid = true;
-    for (let i = 1; i <= 4; i++) {
-      if (!validateStep(i)) {
-        allValid = false;
-        setCurrentStep(i);
-        break;
-      }
-    }
-    if (!allValid) {
-      toast.error(t("fill_all_fields"));
-      return;
-    }
+    // let allValid = true;
+    // for (let i = 1; i <= 4; i++) {
+    //   if (!validateStep(i)) {
+    //     allValid = false;
+    //     setCurrentStep(i);
+    //     break;
+    //   }
+    // }
+    // if (!allValid) {
+    //   toast.error(t("fill_all_fields"));
+    //   return;
+    // }
 
     setIsPublishing(true);
 
@@ -345,14 +340,14 @@ export function AddVoucherWizard({
     };
   }, [showPurchaserSuggestions]);
 
-  const campaigns = [
-    { id: "summer-2024", name: "Summer Sale 2024", defaultAmount: 200 },
-    { id: "newyear-2026", name: "New Year Promo", defaultAmount: 300 },
-    { id: "spring-fest", name: "Spring Festival", defaultAmount: 150 },
-    { id: "holiday-special", name: "Holiday Special", defaultAmount: 500 },
-    { id: "vip-members", name: "VIP Members", defaultAmount: 1000 },
-    { id: "welcome-bonus", name: "Welcome Bonus", defaultAmount: 100 },
-  ];
+  // const campaigns = [
+  //   { id: "summer-2024", name: "Summer Sale 2024", defaultAmount: 200 },
+  //   { id: "newyear-2026", name: "New Year Promo", defaultAmount: 300 },
+  //   { id: "spring-fest", name: "Spring Festival", defaultAmount: 150 },
+  //   { id: "holiday-special", name: "Holiday Special", defaultAmount: 500 },
+  //   { id: "vip-members", name: "VIP Members", defaultAmount: 1000 },
+  //   { id: "welcome-bonus", name: "Welcome Bonus", defaultAmount: 100 },
+  // ];
 
   const websites = [
     { id: "visitnegev", name: "visitnegev.com" },
@@ -371,12 +366,12 @@ export function AddVoucherWizard({
   };
 
   const handleCampaignChange = (campaignId: string) => {
-    const campaign = campaigns.find((c) => c.id === campaignId);
+    console.log("🚀 ~ handleCampaignChange ~ campaignId:", campaignId);
     setFormData((prev) => ({
       ...prev,
       campaign: campaignId,
-      amount: campaign?.defaultAmount || prev.amount,
-      customAmount: false,
+      // amount: campaign?.defaultAmount || prev.amount,
+      // customAmount: false,
     }));
   };
 

@@ -31,7 +31,7 @@ export const endpoints = {
   groupType: "/admin/group-type",
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
-
+  campaign: "/admin/campaign",
   // business
   business: "/businesses",
   businesses: "/businesses",
