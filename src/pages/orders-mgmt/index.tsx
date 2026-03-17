@@ -8,9 +8,12 @@ import {
   Activity,
   useCallback,
 } from "react";
+import * as XLSX from "xlsx";
+
 import {
   Download,
   // Plus,
+  Eye,
   ChevronDown,
   ChevronUp,
   Loader,
@@ -46,6 +49,7 @@ import {
 } from "./components";
 import {
   useGetAllOrdersQuery,
+  useGetAllOrderSummaryQuery,
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
   // useGetOrderStatsQuery,
@@ -56,8 +60,11 @@ import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { UserRole } from "@/enums/user.types";
 import { formatOrderDate } from "@/helpers";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
+import { OrdersModal } from "./components/OrdersModal";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 // Default columns configuration
 const defaultColumns = {
@@ -76,20 +83,19 @@ const defaultColumns = {
 type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
-  const { t, i18n } = useTranslation("orders");
-  const { t: tb } = useTranslation("businesses");
+  const { t } = useTranslation("orders");
 
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const language = i18n.language;
-
-  const { textSecondary, textTertiary, isDark } = useThemeClasses();
+  const { textSecondary, textTertiary, isDark, isRTL, language } =
+    useThemeClasses();
   //view mode toggle
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isSuperadmin, isTraveller } = useUserRoles();
 
   // const [orders, setOrders] = useState<IOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermSummary, setSearchTermSummary] = useState("");
+
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -102,7 +108,106 @@ export default function OrdersMgmtPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageSummary, setPageSummary] = useState(1);
+
   const limit = 20;
+  const { dmoId, authorityId, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+  const [summaryFilters, setSummaryFilters] = useState({
+    status: "all",
+    startDate: "",
+    endDate: "",
+    month: "all",
+  });
+  const [orderSummaryClick, setOrderSummaryClick] = useState<boolean>(() => {
+    const stored = localStorage.getItem("orderSummaryClick");
+    return stored !== null ? JSON.parse(stored) : false;
+  });
+  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
+    null,
+  );
+
+  const handleOrderSummaryClick = () => {
+    setOrderSummaryClick((prev) => {
+      localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
+      return !prev;
+    });
+  };
+
+  const orderSummaryQueryParams = useMemo(() => {
+    const params: any = {
+      page: pageSummary,
+      limit,
+      dmoId,
+      authorityId,
+
+      // websiteId,
+    };
+    // params.detailedView = true;
+    if (searchTermSummary) params.search = searchTermSummary;
+
+    if (summaryFilters.status !== "all") {
+      params.status = summaryFilters.status;
+    }
+
+    // Month filter
+    if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
+      const [month, year] = summaryFilters.month.split("-");
+
+      const firstDay = new Date(Number(year), Number(month) - 1, 1);
+      const lastDay = new Date(Number(year), Number(month), 0);
+
+      params.startDate = firstDay.toISOString().split("T")[0];
+      params.endDate = lastDay.toISOString().split("T")[0];
+    }
+
+    // Custom date range
+    if (summaryFilters.month === "custom") {
+      if (summaryFilters.startDate) params.startDate = summaryFilters.startDate;
+      if (summaryFilters.endDate) params.endDate = summaryFilters.endDate;
+    }
+
+    return params;
+  }, [
+    pageSummary,
+    limit,
+    searchTermSummary,
+    summaryFilters,
+    // filters,
+    authorityId,
+    dmoId,
+    // websiteId,
+  ]);
+  const [businessOrderParams, setBusinessOrderParams] = useState<{
+    page: number;
+    limit: number;
+    businessId?: string;
+    detailedView: boolean;
+  } | null>(null);
+
+  const {
+    data: orderSummaries,
+    isLoading: isLoadingOrderSummary,
+    isFetching: isFetchingOrderSummary,
+  } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
+    skip: !orderSummaryClick,
+  });
+
+  // Business-specific order summary query (runs only when businessOrderParams is set)
+  const {
+    data: businessOrderSummaries,
+    isLoading: isLoadingBusinessOrderSummary,
+    isFetching: isFetchingBusinessOrderSummary,
+  } = useGetAllOrderSummaryQuery(businessOrderParams!, {
+    skip: !businessOrderParams, // skip until businessOrderParams is populated
+  });
+
+  const ordersSummariess = orderSummaries?.data ?? [];
+
+  const businessOrdersSummariess = businessOrderSummaries?.data ?? [];
+
+  const [combinedOrdersSummary, setCombinedOrdersSummary] = useState<any[]>([]);
 
   //camera persmissions
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -170,13 +275,16 @@ export default function OrdersMgmtPage() {
       return prev + 1;
     });
   };
-
+  const fetchNextPageSummary = () => {
+    if (!hasMoreSummary || isFetchingOrderSummary) return;
+    setPageSummary((prev) => {
+      return prev + 1;
+    });
+  };
   // Filters
   const [filters, setFilters] = useState({
-    orderType: "all",
     paymentMethod: "all",
-    vendor: "all",
-    campaign: "all",
+
     deliveryType: "all",
     status: "all",
     startDate: "",
@@ -225,11 +333,8 @@ export default function OrdersMgmtPage() {
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
-  const { dmoId, authorityId, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
-  const canViewOrders =
-    userRole === UserRole.SUPERADMIN || userRole === UserRole.TRAVELLER;
+
+  const canViewOrders = isSuperadmin || isTraveller;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
 
   const orderQueryParams = useMemo(() => {
@@ -243,10 +348,6 @@ export default function OrdersMgmtPage() {
     };
 
     if (searchTerm) params.search = searchTerm;
-
-    if (filters.orderType !== "all") {
-      params.orderType = filters.orderType;
-    }
 
     if (filters.deliveryType !== "all") {
       params.deliveryType = filters.deliveryType;
@@ -281,23 +382,31 @@ export default function OrdersMgmtPage() {
 
   const { data: orderStat, isLoading: isStatsLoading } =
     useGetOrderStatsQuery(orderQueryParams);
-
   const {
     data: orders,
     isLoading,
-
     refetch,
     isFetching,
-  } = useGetAllOrdersQuery(orderQueryParams);
+  } = useGetAllOrdersQuery(orderQueryParams, {
+    skip: orderSummaryClick,
+  });
+
   const hasMore = orders?.meta?.hasNextPage;
+  const hasMoreSummary = orders?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
+  const totalDataSummary = orderSummaries?.totalData;
 
   //update combined order when filters change so combined orders doesnt show stale value
   useEffect(() => {
     setCombinedOrders([]);
     setPage(1);
   }, [searchTerm, filters, authorityId, dmoId, websiteId]);
+
+  useEffect(() => {
+    setCombinedOrdersSummary([]);
+    setPageSummary(1);
+  }, [searchTermSummary, summaryFilters]);
 
   useEffect(() => {
     if (!orderss?.length) return;
@@ -314,6 +423,25 @@ export default function OrdersMgmtPage() {
       });
     }
   }, [orderss, page]);
+
+  //order summry
+  useEffect(() => {
+    if (!ordersSummariess?.length) return;
+
+    if (page === 1) {
+      setCombinedOrdersSummary(ordersSummariess);
+    } else {
+      setCombinedOrdersSummary((prev) => {
+        // Prevent duplicates (important!)
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = ordersSummariess.filter(
+          (b: any) => !existingIds.has(b._id),
+        );
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [ordersSummariess, pageSummary]);
 
   const defaultFilters = {
     orderType: "all",
@@ -439,6 +567,216 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
+  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const downloadAsXLS = (row: any) => {
+    const workbook = XLSX?.utils?.book_new();
+    console.log("ROW", row?.businessName);
+
+    const businessRows = [
+      { Field: "Business Name", Value: row?.businessName },
+      { Field: "Business Email", Value: row.businessEmail },
+      { Field: "Country", Value: row.businessAddressCountry },
+      { Field: "City", Value: row.businessAddressCity },
+      { Field: "Location", Value: row.businessAddressLocation },
+      { Field: "Authority", Value: row.authorityName },
+      { Field: "DMO", Value: row.dmoName },
+      { Field: "Total Orders", Value: row.totalNoOfOrders },
+      { Field: "Total Amount", Value: row.totalAmount },
+      { Field: "Total Credit Card", Value: row.totalAmountPaidByCreditCard },
+      { Field: "Total Delivery Fee", Value: row.totalDeliveryFee },
+      {},
+    ];
+
+    const orderRows = (row?.orders ?? []).map((order: any) => ({
+      //  fallback to []
+      "Order ID": order.id,
+      "Customer Name": `${order.firstName} ${order.lastName}`.trim(),
+      Email: order.email,
+      Phone: `+${order.countryCode}${order.phone}`,
+      Address: order.address,
+      Status: order.status,
+      "Payment Status": order.paymentStatus,
+      "Total Amount": order.totalAmount,
+      "Delivery Fee": order.deliveryFee,
+      "Credit Card Amount": order.amountPaidByCreditCard,
+      "Order Date": new Date(order.orderInitiatedDate).toLocaleDateString(),
+      "Success Date": new Date(order.orderSuccessDate).toLocaleDateString(),
+      Products:
+        order.products?.map((p: any) => p.name || p._id).join(", ") || "",
+    }));
+
+    const sheet = XLSX?.utils?.json_to_sheet(businessRows);
+
+    if (orderRows.length > 0) {
+      // ✅ only call sheet_add_json when there's data
+      XLSX?.utils?.sheet_add_json(sheet, orderRows, {
+        origin: businessRows.length + 1,
+        skipHeader: false,
+      });
+    }
+
+    XLSX?.utils?.book_append_sheet(workbook, sheet, "Business & Orders");
+    XLSX?.writeFile(workbook, `${row.businessName}_orders.xlsx`);
+  };
+
+  useEffect(() => {
+    if (businessOrderSummaries && pendingDownloadId) {
+      // Find the specific business row by ID
+      const targetRow = businessOrdersSummariess.find(
+        (item: any) => item._id === pendingDownloadId,
+      );
+
+      if (targetRow) {
+        downloadAsXLS(targetRow);
+      }
+
+      setPendingDownloadId(null);
+    }
+  }, [businessOrderSummaries]);
+
+  //order summary
+  const summaryColumns = [
+    {
+      key: "authorityName",
+      label: t("authority_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.authorityName}</div>,
+    },
+
+    {
+      key: "businessAddressCity",
+      label: t("business_address_city"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressCity}</div>
+      ),
+    },
+    {
+      key: "businessAddressLocation",
+      label: t("business_address_location"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.businessAddressLocation}</div>
+      ),
+    },
+    {
+      key: "businessName",
+      label: t("business_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+    },
+    {
+      key: "dmoName",
+      label: t("dmo_name"),
+      sortable: true,
+      render: (row: any) => <div className="text-sm">{row.dmoName}</div>,
+    },
+
+    {
+      key: "totalAmount",
+      label: t("total_amount"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmount ? `₪${row.totalAmount.toLocaleString()}` : "-"}
+        </div>
+      ),
+    },
+
+    {
+      key: "totalAmountPaidByCreditCard",
+      label: t("total_amount_paid_by_credit_card"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm font-medium">
+          {row.totalAmountPaidByCreditCard
+            ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
+            : "-"}
+        </div>
+      ),
+    },
+
+    {
+      key: "totalNoOfOrders",
+      label: t("total_no_of_orders"),
+      sortable: true,
+      render: (row: any) => (
+        <div className="text-sm">{row.totalNoOfOrders}</div>
+      ),
+    },
+    {
+      key: "actions",
+      label: t("actions"),
+      width: "100px",
+      render: (row: any) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              // Set businessId query params when button is clicked
+              setBusinessOrderParams({
+                page: 1,
+                limit: 10,
+                businessId: row._id,
+                detailedView: true,
+              });
+
+              setIsOpen(true); // open modal
+            }}
+            className="p-1 rounded"
+          >
+            <ShoppingBag className="w-4 h-4 text-green-600" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`${routes.businessDetails}?businessId=${row?._id}`, {
+                replace: true,
+              });
+            }}
+            className="p-1 rounded"
+          >
+            <Eye className="w-4.5 h-4.5 text-yellow-500" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              setBusinessOrderParams({
+                page: 1,
+                limit: 10,
+                businessId: row._id,
+                detailedView: true,
+              });
+              // downloadAsXLS(row);
+              setPendingDownloadId(row._id);
+            }}
+            className="p-1 rounded"
+            disabled={
+              pendingDownloadId === row._id && isFetchingBusinessOrderSummary
+            }
+          >
+            {pendingDownloadId === row._id && isFetchingBusinessOrderSummary ? (
+              <Loader className="w-4 h-4 animate-spin text-blue-500" />
+            ) : (
+              <Download className="w-4 h-4 text-blue-500" />
+            )}
+          </button>
+        </div>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: any) => React.ReactNode;
+  }[];
 
   //order details
   const {
@@ -454,6 +792,9 @@ export default function OrdersMgmtPage() {
   );
 
   const handleRowClick = (order: IOrder) => {
+    if (orderSummaryClick) {
+      return;
+    }
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
@@ -718,17 +1059,37 @@ export default function OrdersMgmtPage() {
         className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4  ${isRTL ? "md:flex-row-reverse" : ""}`}
       >
         <div
-          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
+          className={`${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-5`}
         >
-          {" "}
           <PageHeader
-            title={t("online_orders_management")}
-            description={t("online_orders_subtitle")}
+            title={
+              orderSummaryClick
+                ? t("online_orders_summary_management")
+                : t("online_orders_management")
+            }
+            description={
+              orderSummaryClick
+                ? `${t("businesses_list")} ${totalDataSummary ? totalDataSummary : ""}`
+                : t("online_orders_subtitle")
+            }
             h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            totalCount={totalData ?? 0}
+            totalCount={
+              orderSummaryClick
+                ? orderSummaries?.data?.length
+                : (totalData ?? 0)
+            }
           />
         </div>
         <div className={`flex gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+          {isSuperadmin && (
+            <button
+              onClick={handleOrderSummaryClick}
+              className={`px-6 py-2 font-semibold rounded-lg transition-colors duration-300 
+    ${orderSummaryClick ? "bg-green-500 hover:bg-green-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+            >
+              {orderSummaryClick ? t("view_orders") : t("view_order_summary")}
+            </button>
+          )}
           {canViewOrders && (
             <button
               onClick={getVideoStream}
@@ -770,9 +1131,15 @@ export default function OrdersMgmtPage() {
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_orders")}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                storageKey="orderSearchTerm"
+                searchTerm={orderSummaryClick ? searchTermSummary : searchTerm}
+                setSearchTerm={
+                  orderSummaryClick ? setSearchTermSummary : setSearchTerm
+                }
+                storageKey={
+                  orderSummaryClick
+                    ? "orderSummarySearchTerm"
+                    : "orderSearchTerm"
+                }
 
                 // isRTL={isRTL}
                 // isDark={isDark}
@@ -795,26 +1162,29 @@ export default function OrdersMgmtPage() {
             <FilterButton value={showFilters} onChange={setShowFilters} />
             {viewMode === "list" && (
               <div className="relative" ref={columnSettingsRef}>
-                <button
-                  onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Columns className="w-5 h-5" />
-                  {t("show_columns")}
-                  {showColumnSettings ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
+                {!orderSummaryClick && (
+                  <button
+                    onClick={() => setShowColumnSettings(!showColumnSettings)}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    <Columns className="w-5 h-5" />
+
+                    {t("show_columns")}
+                    {showColumnSettings ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
 
                 {showColumnSettings && (
                   <div
-                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-10 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                   >
                     <div className="p-3 max-h-96 overflow-y-auto">
                       {Object.entries(columnVisibility).map(
@@ -845,34 +1215,27 @@ export default function OrdersMgmtPage() {
                 )}
               </div>
             )}
-
-            <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            {!orderSummaryClick && (
+              <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            )}
           </div>
 
           {showFilters && (
             <div className="flex flex-wrap items-start gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              {/* Delivery Type */}
-              <div className="min-w-[180px]">
-                <FilterSelect
-                  label={t("deliveryType")}
-                  value={filters.deliveryType}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, deliveryType: value }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "pick_up", label: t("pickups") },
-                    { value: "deliver", label: t("delivery") },
-                  ]}
-                />
-              </div>
-              {/* Status */}
-              <div className="min-w-[180px]">
+              {/* Shared Filters — always shown */}
+              <div className="min-w-45">
                 <FilterSelect
                   label={t("status")}
-                  value={filters.status}
+                  value={
+                    orderSummaryClick ? summaryFilters.status : filters.status
+                  }
                   onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, status: value }))
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          status: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, status: value }))
                   }
                   options={[
                     { value: "all", label: t("all") },
@@ -880,85 +1243,115 @@ export default function OrdersMgmtPage() {
                     { value: "processing", label: t("processing") },
                     { value: "completed", label: t("completed") },
                     { value: "shipped", label: t("shipped") },
-
                     { value: "canceled", label: t("canceled") },
                   ]}
                 />
               </div>
-              {/* Payment Method */}
-              <div className="min-w-[180px]">
-                <FilterSelect
-                  label={t("paymentMethod")}
-                  value={filters.paymentMethod}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, paymentMethod: value }))
-                  }
-                  options={[
-                    { value: "all", label: t("all") },
-                    { value: "voucher", label: t("voucher") },
-                    { value: "card", label: t("creditCard") },
-                  ]}
-                />
-              </div>
 
-              {/* Month Filter */}
-              <div className="min-w-[220px]">
+              <div className="min-w-55">
                 <MonthFilter
                   label={t("month")}
-                  value={filters.month}
-                  onChange={(value) =>
-                    setFilters((prev) => ({ ...prev, month: value }))
+                  value={
+                    orderSummaryClick ? summaryFilters.month : filters.month
                   }
-                  dateFrom={filters.startDate}
-                  dateTo={filters.endDate}
+                  onChange={(value) =>
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({ ...prev, month: value }))
+                      : setFilters((prev) => ({ ...prev, month: value }))
+                  }
+                  dateFrom={
+                    orderSummaryClick
+                      ? summaryFilters.startDate
+                      : filters.startDate
+                  }
+                  dateTo={
+                    orderSummaryClick ? summaryFilters.endDate : filters.endDate
+                  }
                   onDateFromChange={(value) =>
-                    setFilters((prev) => ({ ...prev, startDate: value }))
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          startDate: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, startDate: value }))
                   }
                   onDateToChange={(value) =>
-                    setFilters((prev) => ({ ...prev, endDate: value }))
+                    orderSummaryClick
+                      ? setSummaryFilters((prev) => ({
+                          ...prev,
+                          endDate: value,
+                        }))
+                      : setFilters((prev) => ({ ...prev, endDate: value }))
                   }
-                  theme={theme}
-                  isRTL={isRTL}
                   t={t}
                 />
               </div>
 
-              {/* Active Filters */}
-              <div className="">
-                {activeFilterChips.length > 0 && (
-                  <div className="mb-3 text-sm text-gray-500">
-                    {tb("active_filters")}:
+              {/* Regular-only Filters */}
+              {!orderSummaryClick && (
+                <>
+                  <div className="min-w-45">
+                    <FilterSelect
+                      label={t("deliveryType")}
+                      value={filters.deliveryType}
+                      onChange={(value) =>
+                        setFilters((prev) => ({ ...prev, deliveryType: value }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "pick_up", label: t("pickups") },
+                        { value: "deliver", label: t("delivery") },
+                      ]}
+                    />
                   </div>
-                )}
-                {activeFilterChips.length > 0 && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex flex-wrap gap-2">
-                      {activeFilterChips.map((chip) => (
-                        <FilterChips
-                          key={chip.key}
-                          label={t(chip.value)}
-                          onRemove={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              [chip.key]: chip.key.includes("date")
-                                ? ""
-                                : "all",
-                            }))
-                          }
-                        />
-                      ))}
-                    </div>
 
-                    {/* Clear All */}
-                    <button
-                      onClick={() => setFilters(defaultFilters)}
-                      className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                    >
-                      {t("clear_all")}
-                    </button>
+                  <div className="min-w-45">
+                    <FilterSelect
+                      label={t("paymentMethod")}
+                      value={filters.paymentMethod}
+                      onChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          paymentMethod: value,
+                        }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "voucher", label: t("voucher") },
+                        { value: "card", label: t("creditCard") },
+                      ]}
+                    />
                   </div>
-                )}
-              </div>
+
+                  {/* Active Filter Chips */}
+                  {activeFilterChips?.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-3 mt-3">
+                      <div className="flex flex-wrap gap-2">
+                        {activeFilterChips.map((chip) => (
+                          <FilterChips
+                            key={chip.key}
+                            label={t(chip.value)}
+                            onRemove={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                [chip.key]: chip.key.includes("date")
+                                  ? ""
+                                  : "all",
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setFilters(defaultFilters)}
+                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -975,34 +1368,44 @@ export default function OrdersMgmtPage() {
       </div>
 
       {/* Orders Table */}
-      {(userRole === UserRole.SUPERADMIN ||
-        userRole === UserRole.TRAVELLER) && (
+      {canViewOrders && (
         <>
           {viewMode === "list" ? (
             <div
               className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
             >
-              {isLoading ? (
+              {/* Loading state */}
+              {(orderSummaryClick ? isLoadingOrderSummary : isLoading) ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-teal-500" />
                 </div>
-              ) : orderss.length === 0 ? (
+              ) : /* Empty state */
+              (
+                  orderSummaryClick
+                    ? orderSummaries?.length === 0
+                    : orderss?.length === 0
+                ) ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
                   <p className={`${textSecondary}`}>{t("noOrdersFound")}</p>
                 </div>
               ) : (
                 <OrderListView
-                  theme={theme}
-                  isLoading={isLoading || isFetching}
-                  hasMore={hasMore}
-                  orders={orders}
-                  combinedOrders={combinedOrders}
-                  fetchNextPage={fetchNextPage}
+                  isLoading={
+                    orderSummaryClick ? isFetchingOrderSummary : isLoading
+                  }
+                  hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
+                  orders={orderSummaryClick ? orderSummaries : orders}
+                  combinedOrders={
+                    orderSummaryClick ? combinedOrdersSummary : combinedOrders
+                  }
+                  fetchNextPage={
+                    orderSummaryClick ? fetchNextPageSummary : fetchNextPage
+                  }
                   selectedOrders={selectedOrders}
                   setSelectedOrders={setSelectedOrders}
                   handleRowClick={handleRowClick}
-                  columns={columns}
+                  columns={orderSummaryClick ? summaryColumns : columns}
                   textTertiary={textTertiary}
                   textSecondary={textSecondary}
                   t={t}
@@ -1031,11 +1434,10 @@ export default function OrdersMgmtPage() {
           )}
         </>
       )}
+
       <Activity mode={selectedOrder && showOrderDetails ? "visible" : "hidden"}>
         <OrderDetailsModal
           t={t}
-          isRTL={isRTL}
-          theme={theme}
           refetch={orderIdrefetch}
           order={orderDetails}
           isLoading={isOrderDetailLoading}
@@ -1045,16 +1447,19 @@ export default function OrdersMgmtPage() {
         />
       </Activity>
 
-      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
-        <CreateOrderWizard
-          onClose={() => setShowAddOrderWizard(false)}
-          onOpen={() => setShowAddOrderWizard(true)}
-        />
-      </Activity> */}
-
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
       </Activity>
+      {/* Modal for showing orders from order summary */}
+
+      <OrdersModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        isLoading={
+          isLoadingBusinessOrderSummary || isFetchingBusinessOrderSummary
+        }
+        businessOrdersSummaries={businessOrdersSummariess ?? []}
+      />
       <ConfirmDialog
         open={isConfirmOpen}
         title={t("resend_notification")}

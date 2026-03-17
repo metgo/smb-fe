@@ -238,14 +238,15 @@ export default function PurchasesReport() {
                   borderRadius: "8px",
                   color: isDark ? "#fff" : "#111827",
                 }}
-                formatter={(
-                  value: number | undefined,
-                  name: string | undefined,
-                ) => {
-                  const safeValue = value ?? 0;
+                formatter={(value, name) => {
+                  const numericValue =
+                    typeof value === "number" ? value : Number(value) || 0;
                   const label =
                     name === "Vouchers" ? t("vouchers") : t("credit_card");
-                  return [`${safeValue / 1000}K ₪`, label];
+                  return [`${numericValue / 1000}K ₪`, label] as [
+                    string,
+                    string,
+                  ];
                 }}
               />
 

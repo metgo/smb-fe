@@ -11,8 +11,8 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Loader } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { Checkbox } from "@/components/ui/checkbox";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -61,7 +61,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     isDark,
   } = useThemeClasses();
 
-  const scrollRef = useRef<HTMLDivElement | null>(null);
   const initialLoadRef = useRef(true);
 
   // Load saved column order - only once on mount
@@ -315,169 +314,188 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     [sortConfig.field, sortConfig.direction],
   );
 
-  // Infinite scroll hook
-  useInfiniteScroll({
-    ref: scrollRef,
-    hasMore,
-    isLoading: isDataLoading,
-    onLoadMore: next,
-  });
-
   return (
     <div className={`rounded-xl border ${borderColor} `}>
       {/* Scrollable container */}
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
-        id="business-table-scroll"
-        ref={scrollRef}
+        id="scrollableDiv"
+        // ref={scrollRef}
       >
-        <table className="w-full h-full">
-          <thead
-            className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
-          >
-            <tr>
-              {columnOrder?.map((colKey) => {
-                const column = columns.find((c) => c.key === colKey);
-                if (!column) return null;
+        {/* <div
+        id="scrollableDiv"
+        className="overflow-y-scroll overflow-x-auto max-h-[56vh] px-2 py-4"
+      > */}
+        <InfiniteScroll
+          dataLength={data?.length}
+          next={next ?? (() => {})}
+          hasMore={hasMore ?? false}
+          scrollableTarget="scrollableDiv"
+          loader={
+            <tr className="h-40" aria-rowspan={40}>
+              <td
+                colSpan={columnOrder?.length || 1}
+                className="h-80 text-center"
+              >
+                <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+                  <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                </div>
+              </td>
+            </tr>
+          }
+        >
+          <table className="w-full h-full">
+            <thead
+              className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
+            >
+              <tr>
+                {columnOrder?.map((colKey) => {
+                  const column = columns.find((c) => c.key === colKey);
+                  if (!column) return null;
 
-                const isSortable =
-                  column.sortable && typeof column.key === "string";
-                const field = column.key as keyof T;
+                  const isSortable =
+                    column.sortable && typeof column.key === "string";
+                  const field = column.key as keyof T;
 
-                return (
-                  <th
-                    key={colKey}
-                    className={`p-3 text-${isRTL ? "right" : "left"} text-sm ${textSecondary} tracking-wider select-none
+                  return (
+                    <th
+                      key={colKey}
+                      className={`p-3 text-${isRTL ? "right" : "left"} text-sm ${textSecondary} tracking-wider select-none
                       ${isSortable ? `cursor-pointer ${bgTertiary} ` : ""}
                       transition-colors group`}
-                    style={{
-                      width: column.width,
-                      backgroundColor:
-                        dragOverColumn === colKey
-                          ? isDark
-                            ? "rgba(255, 255, 255, 0.08)"
-                            : "rgba(0, 0, 0, 0.05)"
-                          : undefined,
-                    }}
-                    draggable={colKey !== "checkbox" && colKey !== "actions"}
-                    onDragStart={() => handleDragStart(colKey as string)}
-                    onDragOver={(e) => handleDragOver(e, colKey as string)}
-                    onDrop={(e) => handleDrop(e, colKey as string)}
-                    onDragEnd={handleDragEnd}
-                    onClick={() => isSortable && handleSort(field)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {colKey === "checkbox" ? (
-                        <Checkbox
-                          checked={someSelected ? "indeterminate" : allSelected}
-                          onCheckedChange={(checked) => {
-                            if (checked !== "indeterminate") {
-                              toggleAll();
-                            }
-                          }}
-                          className={clsx(
-                            "cursor-pointer transition-colors",
-                            isDark
-                              ? [
-                                  "border-gray-600",
-                                  "data-[state=checked]:bg-teal-500",
-                                  "data-[state=checked]:border-teal-500",
-                                  "data-[state=indeterminate]:bg-teal-500",
-                                  "data-[state=indeterminate]:border-teal-500",
-                                  "text-white",
-                                ]
-                              : [
-                                  "border-gray-300",
-                                  "data-[state=checked]:bg-teal-600",
-                                  "data-[state=checked]:border-teal-600",
-                                  "data-[state=indeterminate]:bg-teal-600",
-                                  "data-[state=indeterminate]:border-teal-600",
-                                ],
-                          )}
-                        />
-                      ) : (
-                        <>
-                          <span>{column.label}</span>
-                          {isSortable && getSortIcon(field)}
-                        </>
-                      )}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {(!sortedData || sortedData?.length === 0) && !isDataLoading ? (
-              <tr>
-                <td
-                  colSpan={columnOrder?.length || 1}
-                  className={clsx("h-32 text-center ", textPrimary)}
-                >
-                  <div className="flex flex-col items-center justify-center h-full gap-2">
-                    {t ? t("no_data") : "No data available"}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              // Normal data rows
-              sortedData?.map((item, idx) => (
-                <tr
-                  key={item[rowKey] ?? idx}
-                  onClick={() => onRowClick?.(item)}
-                  className={`${isDark ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
-                >
-                  {columnOrder?.map((colKey) => {
-                    const column = columns.find((c) => c.key === colKey);
-                    if (!column) return <td key={colKey} />;
-
-                    return (
-                      <td
-                        key={colKey}
-                        className={clsx(
-                          "p-3 z-10 text-sm cursor-pointer",
-                          textSecondary,
-                        )}
-                        onClick={(e) =>
-                          colKey === "checkbox" && e.stopPropagation()
-                        }
-                      >
+                      style={{
+                        width: column.width,
+                        backgroundColor:
+                          dragOverColumn === colKey
+                            ? isDark
+                              ? "rgba(255, 255, 255, 0.08)"
+                              : "rgba(0, 0, 0, 0.05)"
+                            : undefined,
+                      }}
+                      draggable={colKey !== "checkbox" && colKey !== "actions"}
+                      onDragStart={() => handleDragStart(colKey as string)}
+                      onDragOver={(e) => handleDragOver(e, colKey as string)}
+                      onDrop={(e) => handleDrop(e, colKey as string)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => isSortable && handleSort(field)}
+                    >
+                      <div className="flex items-center gap-2">
                         {colKey === "checkbox" ? (
                           <Checkbox
-                            checked={selectedItems?.has(item[rowKey]) ?? false}
-                            onCheckedChange={() => toggleRow(item)}
+                            checked={
+                              someSelected ? "indeterminate" : allSelected
+                            }
+                            onCheckedChange={(checked) => {
+                              if (checked !== "indeterminate") {
+                                toggleAll();
+                              }
+                            }}
                             className={clsx(
-                              "cursor-pointer border transition-colors",
+                              "cursor-pointer transition-colors",
                               isDark
-                                ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                                : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
+                                ? [
+                                    "border-gray-600",
+                                    "data-[state=checked]:bg-teal-500",
+                                    "data-[state=checked]:border-teal-500",
+                                    "data-[state=indeterminate]:bg-teal-500",
+                                    "data-[state=indeterminate]:border-teal-500",
+                                    "text-white",
+                                  ]
+                                : [
+                                    "border-gray-300",
+                                    "data-[state=checked]:bg-teal-600",
+                                    "data-[state=checked]:border-teal-600",
+                                    "data-[state=indeterminate]:bg-teal-600",
+                                    "data-[state=indeterminate]:border-teal-600",
+                                  ],
                             )}
                           />
-                        ) : column.render ? (
-                          column.render(item)
                         ) : (
-                          String(item[colKey as keyof T] || "-")
+                          <>
+                            <span>{column.label}</span>
+                            {isSortable && getSortIcon(field)}
+                          </>
                         )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
-            )}
-            {isDataLoading && (
-              <tr className="h-80" aria-rowspan={80}>
-                <td
-                  colSpan={columnOrder?.length || 1}
-                  className="h-80 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center h-full gap-3">
-                    <Loader className="w-10 h-10 animate-spin text-teal-600" />
-                  </div>
-                </td>
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(!sortedData || sortedData?.length === 0) && !isDataLoading ? (
+                <tr>
+                  <td
+                    colSpan={columnOrder?.length || 1}
+                    className={clsx("h-32 text-center ", textPrimary)}
+                  >
+                    <div className="flex flex-col items-center justify-center h-full gap-2">
+                      {t ? t("no_data") : "No data available"}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                // Normal data rows
+                sortedData?.map((item, idx) => (
+                  <tr
+                    key={item[rowKey] ?? idx}
+                    onClick={() => onRowClick?.(item)}
+                    className={`${isDark ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
+                  >
+                    {columnOrder?.map((colKey) => {
+                      const column = columns.find((c) => c.key === colKey);
+                      if (!column) return <td key={colKey} />;
+
+                      return (
+                        <td
+                          key={colKey}
+                          className={clsx(
+                            "p-3 z-10 text-sm cursor-pointer",
+                            textSecondary,
+                          )}
+                          onClick={(e) =>
+                            colKey === "checkbox" && e.stopPropagation()
+                          }
+                        >
+                          {colKey === "checkbox" ? (
+                            <Checkbox
+                              checked={
+                                selectedItems?.has(item[rowKey]) ?? false
+                              }
+                              onCheckedChange={() => toggleRow(item)}
+                              className={clsx(
+                                "cursor-pointer border transition-colors",
+                                isDark
+                                  ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                                  : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
+                              )}
+                            />
+                          ) : column.render ? (
+                            column.render(item)
+                          ) : (
+                            String(item[colKey as keyof T] || "-")
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
+              )}
+              {isDataLoading && (
+                <tr className="h-80" aria-rowspan={80}>
+                  <td
+                    colSpan={columnOrder?.length || 1}
+                    className="h-80 text-center"
+                  >
+                    <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+                      <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </InfiniteScroll>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { envKeys } from "@/lib/envKeys";
 
 const SocketContext = createContext<Socket | null>(null);
 
@@ -39,7 +40,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     // ✅ Token exists and no socket yet → create new
     if (!socketRef.current) {
-      const s = io("http://localhost:4000", {
+      const s = io(envKeys.baseUrl, {
         transports: ["websocket"],
         auth: { token: accessToken },
       });

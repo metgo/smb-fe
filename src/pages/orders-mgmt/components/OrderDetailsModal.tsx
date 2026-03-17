@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useState } from "react";
 import { Mail, Phone } from "lucide-react";
 
@@ -14,13 +15,10 @@ import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
-import clsx from "clsx";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 
 interface OrderDetailsModalProps {
-  theme: Theme;
   order: any;
-  isRTL: boolean;
   onClose: () => void;
   t: (key: string) => string;
   getOrderStatusBadge: any;
@@ -32,14 +30,12 @@ interface OrderDetailsModalProps {
 function OrderDetailsModal({
   order,
   onClose,
-  theme,
-  isRTL,
   t,
   refetch,
   isLoading,
   isFetching,
 }: OrderDetailsModalProps) {
-  const { textTertiary, textPrimary } = useThemeClasses();
+  const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
     null,
@@ -110,13 +106,12 @@ function OrderDetailsModal({
             <InfoRow
               label={t("name") || "Name"}
               value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`}
-              theme={theme}
             />
 
             {/* Email - Clickable */}
             <div>
               <p
-                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} `}
+                className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} `}
               >
                 {t("purchaser_email") || "Email"}
               </p>
@@ -134,7 +129,7 @@ function OrderDetailsModal({
             {/* Phone - Clickable */}
             <div>
               <p
-                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
+                className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}
               >
                 {t("purchaser_phone") || "Phone"}
               </p>
@@ -154,13 +149,11 @@ function OrderDetailsModal({
                   ? `${order.campaign}${order?.campaignCode ? ` (${order.campaignCode})` : ""}`
                   : "-"
               }
-              theme={theme}
             />
 
             <InfoRow
               label={t("purchaser_address") || "Address"}
               value={order?.buyerAddress ? order.buyerAddress : "-"}
-              theme={theme}
             />
           </div>
         </div>
@@ -171,11 +164,11 @@ function OrderDetailsModal({
             {t("products") || "Products"}
           </h3>
           <div
-            className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+            className={`border rounded-lg overflow-hidden ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
             <div
               key={order?.products?._id}
-              className={`p-4 ${order?.idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${order?.status === "canceled" ? "opacity-50" : ""}`}
+              className={`p-4 ${order?.idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${order?.status === "canceled" ? "opacity-50" : ""}`}
             >
               <div className="flex items-start gap-4">
                 {/* Product Image */}
@@ -191,7 +184,7 @@ function OrderDetailsModal({
                     alt={order?.products?.name}
                     className={clsx(
                       "w-24 h-22 rounded-xl object-cover border-2",
-                      theme === "dark" ? "border-gray-600" : "border-gray-300",
+                      isDark ? "border-gray-600" : "border-gray-300",
                     )}
                   />
                 </div>
@@ -251,7 +244,7 @@ function OrderDetailsModal({
             {t("payment_breakdown") || "Payment Breakdown"}
           </h3>
           <div
-            className={`border rounded-lg p-4 space-y-2 ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+            className={`border rounded-lg p-4 space-y-2 ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
             <div className="flex justify-between">
               <span className={textTertiary}>
@@ -290,7 +283,7 @@ function OrderDetailsModal({
               </span>
             </div>
             <div
-              className={`flex justify-between pt-2 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
+              className={`flex justify-between pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-300"}`}
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
               <span className={`${textPrimary}`}>
@@ -306,7 +299,7 @@ function OrderDetailsModal({
         {userRole === UserRole.AUTHORITY ||
           (userRole === UserRole.SUPERADMIN && (
             <div
-              className={`flex  gap-3 pt-4  border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+              className={`flex  gap-3 pt-4  border-t ${isDark ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
               {order?.status !== "canceled" &&
                 order?.status !== "completed" && (
@@ -326,7 +319,7 @@ function OrderDetailsModal({
                 onClick={handleResendNotification}
                 disabled={isSendingEmail}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
                     : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                 } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
