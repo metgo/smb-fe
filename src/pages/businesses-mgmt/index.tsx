@@ -695,7 +695,7 @@ export default function BusinessesMgmtPage() {
               t={t}
               hasMore={!!hasMore}
               next={fetchNextPage}
-              isLoading={isLoading || isFetching}
+              isLoading={isLoading}
               columnVisibility={columnVisibility}
               businesses={combinedBusinesses}
               onBusinessClick={handleBusinessClick}

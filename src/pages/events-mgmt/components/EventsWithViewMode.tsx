@@ -575,18 +575,6 @@ export default function EventsWithViewMode({
 
   // List View
   const ListView = () => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-center">
-          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
-        </div>
-      );
-    }
-
-    // If no events match the search query, show "not found" message
-    if (!displayedEvents || displayedEvents.length === 0) {
-      return <EmptyState searchQuery={searchQuery} />;
-    }
     return (
       <ReordableDataTable
         rowKey="_id"
@@ -839,7 +827,7 @@ export default function EventsWithViewMode({
         className={clsx(
           bgSecondary,
           borderColor,
-          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)] rounded-2xl",
+          "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
         )}
       >
         {calendarViewMode === "calendar-month" && viewMode === "calendar" && (

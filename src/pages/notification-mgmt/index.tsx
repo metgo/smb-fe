@@ -24,10 +24,12 @@ import {
   useGetNotificatonStatsQuery,
   useMarkNotificationsAsReadMutation,
 } from "@/store/api/notificationApi";
+import { useSocket } from "@/providers/SocketProvider";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
 export default function NotificationsMgmtPage() {
+  const socket = useSocket();
   const navigate = useNavigate();
   const { t } = useTranslation("notifications");
   const { t: tc } = useTranslation("common");
@@ -66,6 +68,22 @@ export default function NotificationsMgmtPage() {
   const { data: notifStats, refetch: refetchNotifStats } =
     useGetNotificatonStatsQuery();
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = (data: any) => {
+      console.log("New notification", data);
+    };
+
+    // Register event
+    socket.on("notification", handleNotification);
+
+    // Cleanup function: remove the listener
+    return () => {
+      socket.off("notification", handleNotification);
+    };
+  }, [socket]);
+
   const hasMore = notifications?.meta?.hasNextPage || false;
 
   const {
@@ -97,6 +115,10 @@ export default function NotificationsMgmtPage() {
     }
   }, [notifications?.data, page]);
 
+  useEffect(() => {
+    setPage(1)
+  }, [readFilter, typeFilter, itemTypeFilter]);
+
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
     setPage((prev) => prev + 1);
@@ -108,7 +130,7 @@ export default function NotificationsMgmtPage() {
       case "INFO":
         return <Info className={`${iconClass} text-blue-500`} />;
       case "ACTION":
-        return <AlertCircle className={`${iconClass} text-purple-500`} />;
+        return <AlertCircle className={`${iconClass} text-amber-500`} />;
       case "WARNING":
         return <AlertTriangle className={`${iconClass} text-yellow-500`} />;
       case "ERROR":
@@ -354,18 +376,20 @@ export default function NotificationsMgmtPage() {
                           key={notification?._id}
                           onClick={handleNavigate}
                           className={`
-    relative flex items-start gap-3 px-4 py-8 cursor-pointer
-    ${hoverBg}
-    transition-colors
-    ${isRTL ? "border-r-2" : "border-l-2"}
-    ${getBorderColor(notification?.notifType, isRTL)}
-    
-    ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
-  `}
+                          relative flex items-start gap-3 px-4 py-8 cursor-pointer
+                          ${hoverBg}
+                          transition-colors
+                          ${isRTL ? "border-r-2" : "border-l-2"}
+                        ${getBorderColor(notification?.notifType, isRTL)}
+                          ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
+                        `}
                         >
                           {/* Unread dot indicator */}
                           {!notification.isRead && (
-                            <span className="absolute top-6 right-4 w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+                            <span
+                              className={`absolute top-6 ${isRTL ? "left-4" : "right-4"
+                                } w-2.5 h-2.5 bg-blue-500 rounded-full`}
+                            ></span>
                           )}
 
                           <div className="flex gap-3">
@@ -390,7 +414,7 @@ export default function NotificationsMgmtPage() {
                                   "text-sm mb-1",
                                   notification.isRead
                                     ? textSecondary
-                                    : "text-gray-700 dark:text-gray-300",
+                                    : "text-gray-400",
                                 )}
                               >
                                 {notification?.content?.[language]?.message}

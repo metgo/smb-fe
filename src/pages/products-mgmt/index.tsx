@@ -462,7 +462,7 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="h-[calc(104vh-204px)] flex flex-col">
+      <div className="h-[calc(104vh-150px)] flex flex-col">
         <PageHeader
           title={t("products_management")}
           description={t("products_management_desc")}
@@ -711,7 +711,7 @@ export default function ProductsMgmtPage() {
               hasMore={!!hasMore}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
-              isLoading={isLoadingProduct || isFetching}
+              isLoading={isLoadingProduct}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}

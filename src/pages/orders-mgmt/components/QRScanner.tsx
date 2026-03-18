@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
 interface QRScannerProps {
   onClose: () => void;
 }
 type QrState = string | null | undefined;
+
 export default function QRScanner({ onClose }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
