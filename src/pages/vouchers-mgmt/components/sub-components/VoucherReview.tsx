@@ -17,7 +17,9 @@ const VoucherReview = ({
     formData.websites.includes(w.id),
   );
 
-  const selectedCampaign = campaigns.find((c) => c.id === formData.campaign);
+  const selectedCampaign = campaigns?.datas?.data?.find(
+    (c) => c.id === formData.campaign,
+  );
 
   return (
     <div className="space-y-6">

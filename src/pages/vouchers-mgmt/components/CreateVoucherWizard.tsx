@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Check, FileText, Users, ClipboardList, Eye } from "lucide-react";
+import {
+  Check,
+  FileText,
+  Users,
+  ClipboardList,
+  Eye,
+  CupSoda,
+} from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
 import {
   useCreateVoucherMutation,
@@ -14,6 +21,7 @@ import VoucherInformation from "./sub-components/VoucherInformation";
 import VoucherType from "./sub-components/VoucherType";
 import VoucherConfigure from "./sub-components/VoucherConfigure";
 import VoucherReview from "./sub-components/VoucherReview";
+import VoucherSuccess from "./sub-components/VoucherSuccess";
 
 interface AddVoucherWizardProps {
   // language: Language;
@@ -27,18 +35,30 @@ type CreationType = "single" | "bulk" | "upload";
 
 interface VoucherFormData {
   websites: string[];
+
   campaign: string;
+
   amount: number;
   customAmount: boolean;
-  creationType: CreationType;
+
+  creationType: string;
   bulkCount: number;
   bulkCreateAssigned: boolean;
-  assigneeName: string;
-  assigneeEmail: string;
-  assigneePhone: string;
+
   purchaserName: string;
   purchaserEmail: string;
   purchaserPhone: string;
+  purchaserCountryCode: string;
+
+  assigneeName: string;
+  assigneeEmail: string;
+  assigneePhone: string;
+  assigneeCountryCode: string;
+
+  message: string;
+  smsMessage: string;
+  sendEmail: boolean;
+
   expirationDate: string;
   xlsFile: File | null;
 }
@@ -105,49 +125,78 @@ export function AddVoucherWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { isDark } = useThemeClasses();
-  const totalSteps = 4;
+  const totalSteps = 5;
   const { t } = useTranslation("vouchers");
   const [formData, setFormData] = useState<VoucherFormData>({
     websites: [],
+
     campaign: "",
-    amount: 100,
+
+    amount: 1000,
     customAmount: false,
+
     creationType: "single",
     bulkCount: 10,
     bulkCreateAssigned: false,
-    assigneeName: "",
-    assigneeEmail: "",
-    assigneePhone: "",
+
+    // Purchaser fields
     purchaserName: "",
     purchaserEmail: "",
     purchaserPhone: "",
+    purchaserCountryCode: "",
+
+    // Assignee fields
+    assigneeName: "",
+    assigneeEmail: "",
+    assigneePhone: "",
+    assigneeCountryCode: "",
+
+    // Message / notification fields
+    message: "",
+    smsMessage: "",
+    sendEmail: true,
+
+    // Expiration & bulk file
     expirationDate: "",
     xlsFile: null,
   });
-  console.log("🚀 ~ AddVoucherWizard ~ formData:", formData);
+
   const stepPayloadMap = {
-    // websites: formData.websites,
     campaignId: formData.campaign,
 
     amount: formData.amount,
     customAmount: formData.customAmount,
 
     creationType: formData.creationType,
-    bulkCount: formData.bulkCount,
+    noOfVoucher: formData.bulkCount,
     bulkCreateAssigned: formData.bulkCreateAssigned,
 
-    assigneeName: formData.assigneeName,
-    assigneeEmail: formData.assigneeEmail,
-    assigneePhone: formData.assigneePhone,
-
+    // Purchaser (person paying / ordering)
     purchaserName: formData.purchaserName,
     purchaserEmail: formData.purchaserEmail,
     purchaserPhone: formData.purchaserPhone,
+    purchaserCountryCode: formData.purchaserCountryCode,
 
-    expirationDate: formData.expirationDate,
+    // Assignee (person who will receive / be responsible)
+    assigneeName: formData.assigneeName,
+    assigneeEmail: formData.assigneeEmail,
+    assigneePhone: formData.assigneePhone,
+    assigneeCountryCode: formData.assigneeCountryCode,
 
+    // Message / communication
+    message: formData.message || "",
+    smsMessage: formData.smsMessage || "",
+    sendEmail: formData.sendEmail ?? true,
+
+    // Campaign / gift / voucher expiration
+    expireDate: formData.expirationDate,
+
+    // Bulk creation via file
     xlsFile: formData.xlsFile,
+
+    // websites:             formData.websites,
   };
+  console.log("🚀 ~ AddVoucherWizard ~ stepPayloadMap:", stepPayloadMap);
   const [voucherId, setVoucherId] = useState("");
   const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
@@ -168,7 +217,7 @@ export function AddVoucherWizard({
         if (isPublish) {
           payload = {
             ...payload,
-            // status: "published",   // ← add whatever publish flag your backend expects
+            // status: "published",
             // publishedAt: new Date().toISOString(),
             // etc.
           };
@@ -285,7 +334,8 @@ export function AddVoucherWizard({
     await saveDraft(true);
     setIsPublishing(false);
   };
-  // const [createdVouchers, setCreatedVouchers] = useState<CreatedVoucher[]>([]);
+  const [createdVouchers, setCreatedVouchers] = useState<any[]>([]);
+  console.log("🚀 ~ AddVoucherWizard ~ createdVouchers:", createdVouchers);
   const [xlsValidation, setXlsValidation] = useState<{
     valid: number;
     invalid: number;
@@ -425,37 +475,40 @@ export function AddVoucherWizard({
   };
 
   const handleNext = () => {
+    if (currentStep === 4) {
+      handleSubmit();
+    }
     setCurrentStep((prev) => prev + 1);
   };
 
-  // const handleSubmit = () => {
-  //   // Simulate voucher creation
-  //   const mockVouchers: CreatedVoucher[] = [];
-  //   const count =
-  //     formData.creationType === "single"
-  //       ? 1
-  //       : formData.creationType === "bulk"
-  //         ? formData.bulkCount
-  //         : xlsValidation?.valid || 0;
+  const handleSubmit = () => {
+    // Simulate voucher creation
+    const Vouchers: any[] = [];
+    const count =
+      formData.creationType === "single"
+        ? 1
+        : formData.creationType === "bulk"
+          ? formData.bulkCount
+          : xlsValidation?.valid || 0;
 
-  //   for (let i = 0; i < count; i++) {
-  //     mockVouchers.push({
-  //       code: `VCH-${String(Math.floor(Math.random() * 1000000)).padStart(6, "0")}`,
-  //       assigneeName:
-  //         formData.creationType === "single"
-  //           ? formData.assigneeName
-  //           : `Customer ${i + 1}`,
-  //       email:
-  //         formData.creationType === "single"
-  //           ? formData.assigneeEmail
-  //           : `customer${i + 1}@example.com`,
-  //       amount: formData.amount,
-  //       status: "Created",
-  //     });
-  //   }
+    for (let i = 0; i < count; i++) {
+      Vouchers.push({
+        code: `VCH-${String(Math.floor(Math.random() * 1000000)).padStart(6, "0")}`,
+        assigneeName:
+          formData.creationType === "single"
+            ? formData.assigneeName
+            : `Customer ${i + 1}`,
+        email:
+          formData.creationType === "single"
+            ? formData.assigneeEmail
+            : `customer${i + 1}@example.com`,
+        amount: formData.amount,
+        status: "Created",
+      });
+    }
 
-  //   setCreatedVouchers(mockVouchers);
-  // };
+    setCreatedVouchers(Vouchers);
+  };
 
   // Step configuration
   const steps = [
@@ -463,6 +516,7 @@ export function AddVoucherWizard({
     { id: 2, icon: Users, label: t("type") },
     { id: 3, icon: ClipboardList, label: t("configure") },
     { id: 4, icon: Eye, label: t("review") },
+    { id: 5, icon: CupSoda, label: t("success") },
   ];
 
   return (
@@ -589,13 +643,13 @@ export function AddVoucherWizard({
             t={t}
           />
         )}{" "}
-        {/* {currentStep === 5 && (
+        {currentStep === 5 && (
           <VoucherSuccess
             createdVouchers={createdVouchers}
             onVoucherCreated={handlePublish}
             t={t}
           />
-        )}{" "} */}
+        )}{" "}
       </div>
 
       <WizardFooter

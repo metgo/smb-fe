@@ -7,6 +7,39 @@ interface Props {
 }
 
 const VoucherSuccess = ({ createdVouchers, onVoucherCreated, t }: Props) => {
+  const handleDownload = () => {
+    if (createdVouchers.length === 0) return;
+
+    const headers = [
+      "Voucher Code",
+      "Assignee Name",
+      "Email",
+      "Amount (रु)",
+      "Status",
+    ];
+    const rows = createdVouchers.map((v) => [
+      v.code,
+      v.assigneeName,
+      v.email,
+      v.amount,
+      v.status,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `vouchers_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
   const voucherCount = createdVouchers.length;
 
   return (
@@ -79,7 +112,10 @@ const VoucherSuccess = ({ createdVouchers, onVoucherCreated, t }: Props) => {
 
       {/* Buttons */}
       <div className="flex gap-3">
-        <button className="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+        <button
+          onClick={() => handleDownload()}
+          className="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+        >
           <Download className="w-4 h-4" />
           {t("download_results")}
         </button>

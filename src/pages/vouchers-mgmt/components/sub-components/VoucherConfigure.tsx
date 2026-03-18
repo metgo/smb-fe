@@ -23,7 +23,22 @@ const VoucherConfigure = ({
         <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
           {t("assignee_details")}
         </h3>
+        <div>
+          <label className="block text-sm mb-1">
+            {t("number_of_vouchers")}
+          </label>
 
+          <input
+            type="number"
+            value={1}
+            disabled
+            className="w-full border rounded px-3 py-2"
+          />
+
+          {errors.bulkCount && (
+            <p className="text-red-500 text-xs mt-1">{errors.bulkCount}</p>
+          )}
+        </div>
         {/* Name */}
         <div>
           <label className="block text-sm mb-1">{t("assignee_name")} *</label>
@@ -45,7 +60,6 @@ const VoucherConfigure = ({
             <p className="text-red-500 text-xs mt-1">{errors.assigneeName}</p>
           )}
         </div>
-
         {/* Email */}
         <div>
           <label className="block text-sm mb-1">{t("assignee_email")} *</label>
@@ -67,7 +81,6 @@ const VoucherConfigure = ({
             <p className="text-red-500 text-xs mt-1">{errors.assigneeEmail}</p>
           )}
         </div>
-
         {/* Phone */}
         <div>
           <label className="block text-sm mb-1">{t("assignee_phone")} *</label>
