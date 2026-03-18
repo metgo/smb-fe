@@ -6,7 +6,7 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 interface IBulkUpdateParams {
   ordersId: string[];
   status?: string;
-  isResend?: boolean;
+  emailRecipient?: string;
 }
 
 /* ---------------- API ---------------- */
@@ -40,7 +40,7 @@ export const orderMutationApi = createApi({
     bulkOrdersUpdate: builder.mutation<any, IBulkUpdateParams>({
       query: (body) => ({
         url: endpoints.bulkOrdersUpdate,
-        method: "PATCH",
+        method: "POST",
         data: body,
       }),
     }),

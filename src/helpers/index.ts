@@ -65,6 +65,15 @@ export function extractCenterAddressText(address: string): string | null {
 
   return null;
 }
+export const formatOrderDate = (dateString: string, language?: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString(language, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 export function extractEventDates(
   dayDescription?: { date: string | Date }[],
@@ -145,17 +154,17 @@ export const formatDate = (dateString: string) => {
 
 export const getStatusColor = (status: Voucher["status"]) => {
   switch (status) {
-    case "active":
+    case "ACTIVE":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-    case "assigned":
+    case "ASSIGNED":
       return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
     case "UNASSIGNED":
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-    case "redeemed":
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-    case "expired":
       return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-    case "cancelled":
+    case "REDEEMED":
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    case "EXPIRED":
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+    case "CANCELED":
       return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
     default:
       return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
@@ -168,10 +177,46 @@ export const getStatusLabel = (status: Voucher["status"]) => {
     REDEEMED: "Redeemed",
     EXPIRED: "Expired",
     CANCELED: "Cancelled",
-    UNASSIGNED: "UNASSIGNED",
+    UNASSIGNED: "Unassigned",
   };
   return labels[status];
 };
+
+//notification helpers
+
+export const getBorderColor = (type: TNotifType, isRTL: boolean) => {
+  switch (type) {
+    case "INFO":
+      return isRTL ? "border-r-blue-500" : "border-l-blue-500";
+    case "ACTION":
+      return isRTL ? "border-r-amber-500" : "border-l-amber-500";
+    case "WARNING":
+      return isRTL ? "border-r-yellow-500" : "border-l-yellow-500";
+    case "ERROR":
+      return isRTL ? "border-r-red-500" : "border-l-red-500";
+  }
+};
+
+export const timeAgo = (timestamp: string | number | Date) => {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diff = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diff < 60) return "Just now";
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+};
+
 export function getLngWiseStr(
   lng: Language,
   en?: string,
@@ -189,4 +234,47 @@ export function getLngWiseStr(
     default:
       return en || he || ar || "-";
   }
+}
+
+export function compareValues(
+  a: any,
+  b: any,
+  direction: "asc" | "desc",
+): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return direction === "asc" ? 1 : -1;
+  if (b == null) return direction === "asc" ? -1 : 1;
+
+  const aDate =
+    typeof a === "string" || typeof a === "number" ? new Date(a) : null;
+  const bDate =
+    typeof b === "string" || typeof b === "number" ? new Date(b) : null;
+
+  if (aDate && bDate && !isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+    return direction === "asc"
+      ? aDate.getTime() - bDate.getTime()
+      : bDate.getTime() - aDate.getTime();
+  }
+  if (typeof a === "string" && typeof b === "string") {
+    return direction === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+  }
+  if (typeof a === "number" && typeof b === "number") {
+    return direction === "asc" ? a - b : b - a;
+  }
+  if (typeof a === "boolean" && typeof b === "boolean") {
+    return direction === "asc"
+      ? a === b
+        ? 0
+        : a
+          ? 1
+          : -1
+      : a === b
+        ? 0
+        : a
+          ? -1
+          : 1;
+  }
+  if (a < b) return direction === "asc" ? -1 : 1;
+  if (a > b) return direction === "asc" ? 1 : -1;
+  return 0;
 }

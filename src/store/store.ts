@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import uiReducer from "@/features/uiSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
+import notificationSlice from "@/features/notificationSlice";
 import filterReducer from "@/features/filterSlice";
 import themeSlice from "@/features/themeSlice";
 import { authApi } from "@/store/api/authApi";
@@ -25,6 +26,7 @@ import { commonMutationApi } from "./api/commonMutationApi";
 import { saveSettings, saveUserInfo } from "@/lib/storage";
 import { contentMutationApi } from "./api/contentMutationApi";
 import { contentQueryApi } from "./api/contentQueryApi";
+import { notificationApi } from "./api/notificationApi";
 
 export const store = configureStore({
   reducer: {
@@ -33,7 +35,7 @@ export const store = configureStore({
     settings: settingsReducer,
     filters: filterReducer,
     theme: themeSlice,
-
+    notification: notificationSlice,
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
@@ -60,6 +62,8 @@ export const store = configureStore({
     [voucherMutationApi.reducerPath]: voucherMutationApi.reducer,
 
     [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
+
+    [notificationApi.reducerPath]: notificationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -84,6 +88,7 @@ export const store = configureStore({
       contentQueryApi.middleware,
       voucherMutationApi.middleware,
       voucherQueryApi.middleware,
+      notificationApi.middleware,
     ),
 });
 

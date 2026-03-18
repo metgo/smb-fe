@@ -182,7 +182,12 @@ export default function ProductsMgmtPage() {
   // ─── Persist state to localStorage ─────────
   useEffect(() => {
     const { status, locale, businessId } = filters;
-    if (status !== "all" || locale !== language || businessId !== "") {
+    if (
+      status !== "all" ||
+      locale !== language ||
+      businessId !== "" ||
+      searchTerm !== ""
+    ) {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ filters, searchTerm, page, viewMode }),
@@ -194,13 +199,13 @@ export default function ProductsMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  useEffect(() => {
-    if (searchTerm) {
-      localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-    } else {
-      localStorage.removeItem(SEARCH_STORAGE_KEY);
-    }
-  }, [searchTerm]);
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
+  //   } else {
+  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
+  //   }
+  // }, [searchTerm]);
 
   // ─── Close column dropdown on outside click ─────────
   useEffect(() => {
@@ -457,7 +462,7 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="h-[calc(104vh-204px)] flex flex-col">
+      <div className="h-[calc(104vh-150px)] flex flex-col">
         <PageHeader
           title={t("products_management")}
           description={t("products_management_desc")}
@@ -706,7 +711,7 @@ export default function ProductsMgmtPage() {
               hasMore={!!hasMore}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
-              isLoading={isLoadingProduct || isFetching}
+              isLoading={isLoadingProduct}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}

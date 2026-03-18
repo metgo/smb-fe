@@ -20,8 +20,7 @@ export const voucherMutationApi = createApi({
       query: (payload) => ({
         url: endpoints.vouchers,
         method: "POST",
-        // Send real data right away — backend should accept partial payload
-        body: payload, // ← changed from fixed { name: "" }
+        body: payload,
       }),
       invalidatesTags: ["Voucher"],
     }),

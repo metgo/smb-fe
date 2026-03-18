@@ -212,6 +212,8 @@ export default function ContentMgmtPage() {
                 desc: content.description,
                 imageUrl: content?.images[0]?.image,
                 primaryCategory: content?.primaryCategoryId?.name,
+                title: content.name || "", // Provide a fallback if needed
+                message: content.description || "", // Provide a fallback if needed
               })),
             })),
           }),

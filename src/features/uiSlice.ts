@@ -5,6 +5,7 @@ interface UIState {
   showSettings: boolean;
   isSidebarCollapsed: boolean;
   preSelectedBusiness: string | null;
+  isNotificationOpen: boolean;
 }
 
 const initialState: UIState = {
@@ -12,6 +13,7 @@ const initialState: UIState = {
   showSettings: false,
   isSidebarCollapsed: false,
   preSelectedBusiness: null,
+  isNotificationOpen: false,
 };
 
 const uiSlice = createSlice({
@@ -27,6 +29,9 @@ const uiSlice = createSlice({
     toggleSidebar: (state) => {
       state.isSidebarCollapsed = !state.isSidebarCollapsed;
     },
+    toggleNotification: (state) => {
+      state.isNotificationOpen = !state.isNotificationOpen;
+    },
     setPreSelectedBusiness: (state, action: PayloadAction<string | null>) => {
       state.preSelectedBusiness = action.payload;
     },
@@ -38,6 +43,7 @@ export const {
   toggleSettings,
   toggleSidebar,
   setPreSelectedBusiness,
+  toggleNotification,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

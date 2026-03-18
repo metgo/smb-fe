@@ -1,7 +1,14 @@
+type VoucherStatus =
+  | "ACTIVE"
+  | "ASSIGNED"
+  | "REDEEMED"
+  | "EXPIRED"
+  | "CANCELED"
+  | "UNASSIGNED";
 interface Voucher {
   _id: string;
   campId: string;
-  status: string;
+  status: VoucherStatus;
   amount: number;
   remainingAmount: number;
   paymentStatus: string;

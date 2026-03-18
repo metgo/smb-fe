@@ -24,12 +24,19 @@ import {
   VoucherDetailsPage,
   ContentMgmtPage,
   ErrorUiPage,
+  NotificationsMgmtPage,
   AnalyticsDashboardPage,
 } from "@/pages";
-import { IdleLogout } from "./components/shared";
 import TestLabPage from "./pages/test-lab";
-import { useAppDispatch } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { IdleLogout } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
+import { useSocket } from "./providers/SocketProvider";
+import {
+  addNotification,
+  setNotifications,
+} from "./features/notificationSlice";
+import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -44,10 +51,13 @@ const handleGoogleOAuthCallback = (): boolean => {
 
       // Store tokens and user info in localStorage
       if (data.accessToken) {
-        localStorage.setItem("access_token", data.accessToken);
+        sessionStorage.setItem("access_token", data.accessToken);
       }
       if (data.user) {
-        localStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+        sessionStorage.setItem(
+          "user_info",
+          JSON.stringify({ user: data.user }),
+        );
       }
 
       // Clean up URL by removing userData param
@@ -74,12 +84,70 @@ interface ProtectedRouteProps {
 }
 
 function App() {
+  const socket = useSocket();
   const dispatch = useAppDispatch();
+
+  const { notifications } = useAppSelector((state) => state.notification);
+  const latestCreatedAt = notifications?.[0]?.createdAt;
+
+  const [getLatestNotification] = useLazyGetAllNotificationsQuery();
+
+  useEffect(() => {
+    if (!socket) return;
+    const notificationSound = new Audio("/assets/audio/bell-ring.mp3");
+    const fetchInitialNotifications = async () => {
+      try {
+        const response = await getLatestNotification({}).unwrap();
+
+        if (response?.data) {
+          dispatch(setNotifications(response.data));
+        }
+      } catch (error) {
+        console.error("Initial notification fetch failed", error);
+      }
+    };
+
+    const handleNotification = async (data: any) => {
+      console.log("🔔", data);
+
+      if (!data?.type) return;
+      notificationSound.play().catch((err) => {
+        console.log("Sound blocked by browser:", err);
+      });
+
+      try {
+        const response = await getLatestNotification({
+          createdAfter: latestCreatedAt,
+        }).unwrap();
+
+        if (response?.data?.length) {
+          response.data.reverse().forEach((notif: INotification) => {
+            dispatch(addNotification(notif));
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch new notifications", error);
+      }
+    };
+
+    const handleConnect = () => {
+      console.log("✅ Socket connected");
+      fetchInitialNotifications();
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("notification", handleNotification);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("notification", handleNotification);
+    };
+  }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {
     if (isGoogleOAuthCallback) {
-      const userInfo = localStorage.getItem("user_info");
+      const userInfo = sessionStorage.getItem("user_info");
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
@@ -100,7 +168,7 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
-    const isLoggedIn = !!localStorage.getItem("access_token");
+    const isLoggedIn = !!sessionStorage.getItem("access_token");
 
     if (isLoginPage) {
       if (isLoggedIn) {
@@ -126,7 +194,7 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      // errorElement: <ErrorUiPage />,
+      errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
         {
@@ -150,6 +218,8 @@ function App() {
         { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+        { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
+
         { path: "/*", element: <DashboardPage /> },
       ],
     },

@@ -63,10 +63,17 @@ export default function EventsMgmtPage() {
       registrationFilter,
       statusFilter,
       dateRangeFilter,
+      searchQuery,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [registrationFilter, statusFilter, dateRangeFilter, eventTypeFilter]);
+  }, [
+    registrationFilter,
+    statusFilter,
+    dateRangeFilter,
+    eventTypeFilter,
+    searchQuery,
+  ]);
 
   const eventQueryParams = useMemo(() => {
     const params: any = {
@@ -192,7 +199,7 @@ export default function EventsMgmtPage() {
 
   return (
     <>
-      <div className="h-[calc(108vh-210px)] flex flex-col">
+      <div className="h-[calc(108vh-180px)] flex flex-col">
         <PageHeader
           title={t("events_management_dashboard")}
           description={t("events_management_desc")}

@@ -9,7 +9,15 @@
 
   "voucher_amount": "Voucher Amount",
   "error_invalid_amount": "Amount must be greater than 0",
-
+  "all_time": "All Time",
+  "total_voucher_value": "Total Voucher Value",
+  "generated_revenue": "Generated Revenue",
+  "total_amount_to_redeem": "Total Amount to Redeem",
+  "pending_redemption": "Pending Redemption",
+  "redeemed_vouchers": "Redeemed Vouchers",
+  "redemption_rate": "Redemption Rate",
+  "unassigned_vouchers": "Unassigned Vouchers",
+  "available": "Available",
   "expiration_date": "Expiration Date",
 
   "purchaser_details_optional": "Purchaser Details (optional)",

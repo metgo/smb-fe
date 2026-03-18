@@ -1,4 +1,7 @@
 {
+  "loading_text": "جاري تحميل المزيد من العناصر...",
+  "loading_end_text": "لا توجد عناصر أخرى",
+
   "all_websites": "جميع المواقع",
   "all_authorities": "جميع الجهات المسؤولة",
   "app_title": "تحليلات السياحة في النقب الغربي",
@@ -17,6 +20,8 @@
 
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
+  "notifications": "الإشعارات",
+
   "users": "المستخدمون",
   "points_of_interest": "نقاط الاهتمام",
   "upload_up_to_10_images": "رفع حتى 10 صور",

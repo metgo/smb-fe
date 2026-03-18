@@ -26,6 +26,7 @@ import {
   Users,
   File,
   UserCircle,
+  BellIcon,
   Layers2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -94,6 +95,13 @@ export default function Sidebar() {
       path: routes.eventsMgmt,
       label: t("events") || "Events",
       icon: Calendar,
+      isEnabled: true,
+    },
+    {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
       isEnabled: true,
     },
     {

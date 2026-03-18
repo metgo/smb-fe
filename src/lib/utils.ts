@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { routes } from "./routes";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,6 +38,12 @@ export const categories: Record<string, string> = {
   [categoryIds.culture]: "culture",
   [categoryIds.attraction]: "attraction",
   [categoryIds.tour]: "travel",
+};
+
+export const itemEndpoint: Record<string, string> = {
+  BUSINESS: routes.businessDetails,
+  PRODUCT: routes.productDetails,
+  EVENT: routes.eventDetails,
 };
 
 export const googlePointOfInterest = [

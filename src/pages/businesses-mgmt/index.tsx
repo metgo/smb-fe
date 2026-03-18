@@ -173,13 +173,13 @@ export default function BusinessesMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  useEffect(() => {
-    if (searchTerm) {
-      localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-    } else {
-      localStorage.removeItem(SEARCH_STORAGE_KEY);
-    }
-  }, [searchTerm]);
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
+  //   } else {
+  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
+  //   }
+  // }, [searchTerm]);
 
   // ─── Close column dropdown on outside click ─────────
   useEffect(() => {
@@ -213,7 +213,9 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-    if (searchTerm) params.search = searchTerm;
+    const finalSearchTerm =
+      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
     if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
@@ -229,28 +231,6 @@ export default function BusinessesMgmtPage() {
     startDate,
     endDate,
     websiteId,
-  ]);
-
-  // ─── URL Sync: Only navigate if params actually changed ─────────
-  useEffect(() => {
-    const currentParams = new URLSearchParams(window.location.search);
-    const newParams = new URLSearchParams();
-
-    if (queryParams.search) newParams.set("search", queryParams.search);
-    if (queryParams.status) newParams.set("status", queryParams.status);
-    if (queryParams.hasProductFilter !== undefined) {
-      newParams.set("hasProductFilter", String(queryParams.hasProductFilter));
-    }
-
-    // Only navigate if the stringified params differ
-    if (currentParams.toString() !== newParams.toString()) {
-      navigate(`?${newParams.toString()}`, { replace: true });
-    }
-  }, [
-    queryParams.search,
-    queryParams.status,
-    queryParams.hasProductFilter,
-    navigate,
   ]);
 
   // ─── API Queries ─────────
@@ -715,7 +695,7 @@ export default function BusinessesMgmtPage() {
               t={t}
               hasMore={!!hasMore}
               next={fetchNextPage}
-              isLoading={isLoading || isFetching}
+              isLoading={isLoading}
               columnVisibility={columnVisibility}
               businesses={combinedBusinesses}
               onBusinessClick={handleBusinessClick}

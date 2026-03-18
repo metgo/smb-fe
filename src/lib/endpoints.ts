@@ -45,9 +45,11 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderSummary: "/orders-summary",
+
   ordersStats: "/orders-stats",
-  bulkOrdersUpdate: "/bulk-orders-update",
-  orderStatus: "/admin/cancel-orders",
+  bulkOrdersUpdate: "/resend-order-emails",
+  orderStatus: "/orders",
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
@@ -60,7 +62,7 @@ export const endpoints = {
   vouchers: "/vouchers",
   voucher: "/voucher-id",
   searchVoucher: "/search-vouchers",
-  voucherStatDashboard: "/vouchers-stat",
+  voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
 
   users: "/users",
@@ -80,6 +82,10 @@ export const endpoints = {
 
   // Content
   contentConfig: "/site-filter-config",
+
+  // Notifications
+  notifications: "/notifications",
+  notificationStats: "/notifications/stats",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

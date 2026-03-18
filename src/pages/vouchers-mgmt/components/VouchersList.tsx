@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   X,
   ChevronDown,
@@ -11,6 +11,10 @@ import {
   Calendar,
   RefreshCw,
   MessageSquare,
+  Ticket,
+  DollarSign,
+  CheckCircle,
+  Package,
 } from "lucide-react";
 import { MessageComposerModal } from "@/pages/content-mgmt/components";
 import { SendResultsModal } from "@/pages/content-mgmt/components";
@@ -18,6 +22,7 @@ import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import {
   PageHeader,
+  PageStats,
   ReordableDataTable,
   SearchInput,
 } from "@/components/shared";
@@ -25,7 +30,10 @@ import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
-import { useGetAllVouchersQuery } from "@/store/api/voucherQueryApi";
+import {
+  useGetAllVouchersQuery,
+  useGetVoucherStatsQuery,
+} from "@/store/api/voucherQueryApi";
 interface Voucher {
   id: string;
   code: string;
@@ -50,6 +58,7 @@ interface Voucher {
   creatorEmail: string;
   creatorPhone: string;
 }
+const LIMIT = 20;
 
 interface VouchersListProps {
   // language: Language;
@@ -169,6 +178,67 @@ export function VouchersList({
     USER_ROLE,
   );
   const { t } = useTranslation("vouchers");
+  const { data: voucherStatsResponse, isLoading: isStatsLoading } =
+    useGetVoucherStatsQuery({});
+
+  const voucherStats = useMemo(
+    () => [
+      {
+        id: 1,
+        title: t("total_vouchers"),
+        value: voucherStatsResponse?.totalVouchers?.toLocaleString() ?? "0",
+        label: t("all_time"),
+        icon: <Ticket className="w-5 h-5 text-purple-600" />,
+      },
+      {
+        id: 2,
+        title: t("total_voucher_value"),
+        value:
+          voucherStatsResponse?.totalRevenue != null
+            ? voucherStatsResponse.totalRevenue.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            : "0.00",
+        label: t("generated_revenue"),
+        icon: <DollarSign className="w-5 h-5 text-green-600" />,
+      },
+      {
+        id: 3,
+        title: t("total_amount_to_redeem"),
+        value:
+          voucherStatsResponse?.totalRemainingBalance != null
+            ? voucherStatsResponse.totalRemainingBalance.toLocaleString(
+                "en-US",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              )
+            : "0.00",
+        label: t("pending_redemption"),
+        icon: <Clock className="w-5 h-5 text-orange-600" />,
+      },
+      {
+        id: 4,
+        title: t("redeemed_vouchers"),
+        value: voucherStatsResponse?.redeemedVouchers?.toLocaleString() ?? "0",
+        label: `${voucherStatsResponse?.redemptionRate?.toFixed(1) ?? 0}% ${t("redemption_rate")}`,
+        icon: <CheckCircle className="w-5 h-5 text-blue-600" />,
+      },
+      {
+        id: 5,
+        title: t("unassigned_vouchers"),
+        value:
+          voucherStatsResponse?.unassignedVouchers?.toLocaleString() ?? "0",
+        label: t("available"),
+        icon: <Package className="w-5 h-5 text-gray-600" />,
+      },
+    ],
+    [voucherStatsResponse, t],
+  );
+
+  console.log("🚀 ~ VouchersList ~ voucherStats:", voucherStats);
 
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
@@ -205,7 +275,7 @@ export function VouchersList({
       sortable: false,
       render: (voucher: any) => (
         <div className="flex items-center gap-2">
-          {voucher.email && (
+          {voucher.email ? (
             <a
               href={`mailto:${voucher.email}`}
               onClick={(e) => e.stopPropagation()}
@@ -218,8 +288,10 @@ export function VouchersList({
             >
               <Mail className="w-4 h-4" />
             </a>
+          ) : (
+            <div>-</div>
           )}
-          {voucher.phone && (
+          {voucher.phone ? (
             <a
               href={`tel:${voucher.phone}`}
               onClick={(e) => e.stopPropagation()}
@@ -232,6 +304,8 @@ export function VouchersList({
             >
               <Phone className="w-4 h-4" />
             </a>
+          ) : (
+            <div>-</div>
           )}
         </div>
       ),
@@ -322,7 +396,7 @@ export function VouchersList({
         <span
           className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
-          {voucher.campaign || "-"}
+          {voucher.campId || "-"}
         </span>
       ),
     },
@@ -333,13 +407,53 @@ export function VouchersList({
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
+
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const voucherQueryParams = useMemo(() => {
+    const params: Record<string, any> = {
+      page,
+      limit: LIMIT,
+    };
+
+    if (searchQuery) params.search = searchQuery;
+
+    return params;
+  }, [page, searchQuery]);
   const {
     data: voucherData,
     isLoading,
-    // isFetching,
+    isFetching,
     // refetch,
-  } = useGetAllVouchersQuery({});
+  } = useGetAllVouchersQuery(voucherQueryParams);
+
   const allVouchers = voucherData?.datas?.data;
+  const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
+  const hasMore = voucherData?.datas?.meta?.hasNextPage;
+
+  const fetchNextPage = useCallback(() => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => prev + 1);
+  }, [hasMore, isFetching]);
+
+  useEffect(() => {
+    if (!allVouchers?.length) {
+      setCombinedVouchers([]);
+      return;
+    }
+    setCombinedVouchers((prev) => {
+      if (page === 1) return allVouchers;
+      const existingIds = new Set(prev.map((p) => p._id));
+      const newItems = allVouchers?.filter((p: any) => !existingIds.has(p._id));
+      return newItems.length ? [...prev, ...newItems] : prev;
+    });
+  }, [allVouchers, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
+
   const totalData = voucherData?.datas?.totalData;
 
   const [vouchers] = useState<Voucher[]>(generateMockVouchers());
@@ -354,7 +468,6 @@ export function VouchersList({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [campaignFilter, setCampaignFilter] = useState<string>("all");
   const [websiteFilter, setWebsiteFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(1000);
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -567,380 +680,310 @@ export function VouchersList({
 
   return (
     <div className={`flex-1 flex flex-col transition-all duration-300`}>
-      {/* Fixed Header Section */}
-      <div className={`sticky top-0 z-10 border-b transition-colors `}>
-        {/* Page Title and Actions */}
-        <div
-          className={`px-6 py-4 border-b transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
-        >
-          <PageHeader
-            title={t("vouchers_management")}
-            description={t("create_track_manage_vouchers")}
-            btnLabel={t("add_voucher")}
-            h1Gradient={textPrimary}
-            onClick={onAddVoucher}
-            totalCount={totalData || 0}
+      {/* Page Title and Actions */}
+      <div
+        className={`border-b transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
+      >
+        <PageHeader
+          title={t("vouchers_management")}
+          description={t("create_track_manage_vouchers")}
+          btnLabel={t("add_voucher")}
+          h1Gradient={textPrimary}
+          onClick={onAddVoucher}
+          totalCount={totalData || 0}
+        />
+        <PageStats
+          stats={voucherStats}
+          isLoading={isStatsLoading}
+          className="grid grid-cols-1  lg:grid-cols-5 gap-4"
+        />
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
+        <div className="relative w-[50vh]">
+          <SearchInput
+            placeholder={t("search_voucher_placeholder")}
+            searchTerm={searchQuery}
+            setSearchTerm={setSearchQuery}
+            storageKey={SEARCH_STORAGE_KEY}
           />
         </div>
+        <div className="flex items-center gap-2">
+          <FilterButton value={showFilters} onChange={setShowFilters} />
+        </div>
+      </div>
 
-        {/* Statistics Cards */}
-        <div className="px-6 py-4 border-b transition-colors dark:border-gray-800">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              {
-                label: t("total_vouchers"),
-                value: stats.total,
-                from: "blue-50",
-                to: "blue-100",
-                text: "blue",
-                border: "blue",
-              },
-              {
-                label: t("assigned"),
-                value: stats.assigned,
-                from: "purple-50",
-                to: "purple-100",
-                text: "purple",
-                border: "purple",
-              },
-              {
-                label: t("redeemed"),
-                value: stats.redeemed,
-                from: "green-50",
-                to: "green-100",
-                text: "green",
-                border: "green",
-              },
-              {
-                label: t("remaining_balance"),
-                value: stats.totalBalance.toLocaleString(),
-                from: "orange-50",
-                to: "orange-100",
-                text: "orange",
-                border: "orange",
-              },
-              {
-                label: t("expired"),
-                value: stats.expired,
-                from: "gray-50",
-                to: "gray-100",
-                text: "gray",
-                border: "gray",
-              },
-              {
-                label: t("revenue"),
-                value: stats.revenue.toLocaleString(),
-                from: "teal-50",
-                to: "teal-100",
-                text: "teal",
-                border: "teal",
-              },
-            ].map((card, idx) => (
-              <div
-                key={idx}
-                className={`bg-linear-to-br from-${card.from} to-${card.to} dark:from-${card.text}-900/20 dark:to-${card.text}-800/20 rounded-lg p-4 border transition-colors ${isDark ? `border-${card.border}-800` : `border-${card.border}-200`}`}
+      {/* Filters Section */}
+      {showFilters && (
+        <div
+          className={`px-6 py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Status Filter */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
-                <div
-                  className={`text-sm mb-1 ${isDark ? `text-${card.text}-400` : `text-${card.text}-600`}`}
-                >
-                  {t(card.label)}
-                </div>
-                <div
-                  className={`text-2xl ${isDark ? `text-${card.text}-100` : `text-${card.text}-900`}`}
-                >
-                  {card.value}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="px-6 py-4 border-b transition-colors dark:border-gray-800">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="relative w-[50vh]">
-              <SearchInput
-                placeholder={t("search_voucher_placeholder")}
-                searchTerm={searchQuery}
-                setSearchTerm={setSearchQuery}
-                storageKey={SEARCH_STORAGE_KEY}
-              />
+                {t("status")}
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+              >
+                <option value="all">{t("all_statuses")}</option>
+                <option value="active">{t("active")}</option>
+                <option value="assigned">{t("assigned")}</option>
+                <option value="redeemed">{t("redeemed")}</option>
+                <option value="expired">{t("expired")}</option>
+                <option value="cancelled">{t("cancelled")}</option>
+              </select>
             </div>
-            <div className="flex items-center gap-2">
-              <FilterButton value={showFilters} onChange={setShowFilters} />
+
+            {/* Campaign Filter */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("campaign")}
+              </label>
+              <select
+                value={campaignFilter}
+                onChange={(e) => setCampaignFilter(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+              >
+                <option value="all">{t("all_campaigns")}</option>
+                {campaigns.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div>
-        </div>
 
-        {/* Filters Section */}
-        {showFilters && (
-          <div
-            className={`px-6 py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Status Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {t("status")}
-                </label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                >
-                  <option value="all">{t("all_statuses")}</option>
-                  <option value="active">{t("active")}</option>
-                  <option value="assigned">{t("assigned")}</option>
-                  <option value="redeemed">{t("redeemed")}</option>
-                  <option value="expired">{t("expired")}</option>
-                  <option value="cancelled">{t("cancelled")}</option>
-                </select>
-              </div>
+            {/* Website Filter */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("website")}
+              </label>
+              <select
+                value={websiteFilter}
+                onChange={(e) => setWebsiteFilter(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+              >
+                <option value="all">{t("all_websites")}</option>
+                {websites.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {/* Campaign Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {t("campaign")}
-                </label>
-                <select
-                  value={campaignFilter}
-                  onChange={(e) => setCampaignFilter(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                >
-                  <option value="all">{t("all_campaigns")}</option>
-                  {campaigns.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Website Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {t("website")}
-                </label>
-                <select
-                  value={websiteFilter}
-                  onChange={(e) => setWebsiteFilter(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                >
-                  <option value="all">{t("all_websites")}</option>
-                  {websites.map((w) => (
-                    <option key={w} value={w}>
-                      {w}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Amount Range */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {t("amount_range")}
-                </label>
-                <div className="space-y-2">
-                  <div className="relative pt-1">
-                    <input
-                      type="range"
-                      min={amountRange.min}
-                      max={amountRange.max}
-                      value={minAmount}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        if (val <= maxAmount) setMinAmount(val);
-                      }}
-                      className="absolute w-full h-2 bg-transparent appearance-none z-20 cursor-pointer"
-                    />
-                    <input
-                      type="range"
-                      min={amountRange.min}
-                      max={amountRange.max}
-                      value={maxAmount}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        if (val >= minAmount) setMaxAmount(val);
-                      }}
-                      className="absolute w-full h-2 bg-transparent appearance-none z-10 cursor-pointer"
-                    />
-                    <div
-                      className={`relative h-2 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`}
-                    >
-                      <div
-                        className="absolute h-2 bg-teal-500 rounded-full"
-                        style={{
-                          left: `${((minAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
-                          right: `${100 - ((maxAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+            {/* Amount Range */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("amount_range")}
+              </label>
+              <div className="space-y-2">
+                <div className="relative pt-1">
+                  <input
+                    type="range"
+                    min={amountRange.min}
+                    max={amountRange.max}
+                    value={minAmount}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (val <= maxAmount) setMinAmount(val);
+                    }}
+                    className="absolute w-full h-2 bg-transparent appearance-none z-20 cursor-pointer"
+                  />
+                  <input
+                    type="range"
+                    min={amountRange.min}
+                    max={amountRange.max}
+                    value={maxAmount}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (val >= minAmount) setMaxAmount(val);
+                    }}
+                    className="absolute w-full h-2 bg-transparent appearance-none z-10 cursor-pointer"
+                  />
                   <div
-                    className={`flex items-center justify-between text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                    className={`relative h-2 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-200"}`}
                   >
-                    <span>₪{minAmount}</span>
-                    <span>₪{maxAmount}</span>
+                    <div
+                      className="absolute h-2 bg-teal-500 rounded-full"
+                      style={{
+                        left: `${((minAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
+                        right: `${100 - ((maxAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
+                      }}
+                    />
                   </div>
                 </div>
-              </div>
-
-              {/* Date Range */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                <div
+                  className={`flex items-center justify-between text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
                 >
-                  {t("date_range")}
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                  />
-                  <input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                  />
+                  <span>₪{minAmount}</span>
+                  <span>₪{maxAmount}</span>
                 </div>
               </div>
+            </div>
 
-              {/* Creator Search */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {t("creator_search")}
-                </label>
+            {/* Date Range */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("date_range")}
+              </label>
+              <div className="flex items-center gap-2">
                 <input
-                  type="text"
-                  value={creatorSearch}
-                  onChange={(e) => setCreatorSearch(e.target.value)}
-                  placeholder={t("creator_name_placeholder")}
-                  className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                />
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 />
               </div>
             </div>
 
-            {/* Clear All Filters Button */}
-            {(statusFilter !== "all" ||
-              campaignFilter !== "all" ||
-              websiteFilter !== "all" ||
-              searchQuery ||
-              minAmount !== amountRange.min ||
-              maxAmount !== amountRange.max ||
-              dateFrom ||
-              dateTo ||
-              creatorSearch) && (
-              <div className="mt-3">
-                <button
-                  onClick={() => {
-                    setStatusFilter("all");
-                    setCampaignFilter("all");
-                    setWebsiteFilter("all");
-                    setSearchQuery("");
-                    setMinAmount(amountRange.min);
-                    setMaxAmount(amountRange.max);
-                    setDateFrom("");
-                    setDateTo("");
-                    setCreatorSearch("");
-                  }}
-                  className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
-                >
-                  <X className="w-4 h-4" />
-                  {t("clear_all_filters")}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Bulk Actions */}
-        {selectedVouchers.size > 0 && (
-          <div
-            className={`px-6 py-3 transition-colors border-b ${isDark ? "bg-teal-900/20 border-teal-800" : "bg-teal-50 border-teal-200"}`}
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className={`text-sm ${isDark ? "text-teal-100" : "text-teal-900"}`}
+            {/* Creator Search */}
+            <div>
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
-                {selectedVouchers.size} {t("voucher")}
-                {selectedVouchers.size !== 1 ? t("plural_s") : ""}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
-                >
-                  <span>{t("actions")}</span>
-                  {showBulkActions ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-                <button
-                  onClick={() => setSelectedVouchers(new Set())}
-                  className={`p-1.5 rounded transition-colors ${isDark ? "text-teal-400 hover:bg-teal-900/30" : "text-teal-600 hover:bg-teal-100"}`}
-                  title={t("clear_selection")}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+                {t("creator_search")}
+              </label>
+              <input
+                type="text"
+                value={creatorSearch}
+                onChange={(e) => setCreatorSearch(e.target.value)}
+                placeholder={t("creator_name_placeholder")}
+                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+              />
             </div>
-
-            {showBulkActions && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                  onClick={() => setMessageComposerOpen(true)}
-                >
-                  <MessageSquare className="w-4 h-4" /> {t("send_message")}
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                  onClick={handleSendVouchers}
-                >
-                  <Send className="w-4 h-4" /> {t("re_send_vouchers")}
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                >
-                  <Calendar className="w-4 h-4" /> {t("extend_expiration")}
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                >
-                  <RefreshCw className="w-4 h-4" /> {t("change_status")}
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "text-red-400 border-red-700 hover:bg-red-900/20" : "text-red-600 border-red-300 hover:bg-red-50"}`}
-                >
-                  <XCircle className="w-4 h-4" /> {t("cancel_vouchers")}
-                </button>
-              </div>
-            )}
           </div>
-        )}
-      </div>
+
+          {/* Clear All Filters Button */}
+          {(statusFilter !== "all" ||
+            campaignFilter !== "all" ||
+            websiteFilter !== "all" ||
+            searchQuery ||
+            minAmount !== amountRange.min ||
+            maxAmount !== amountRange.max ||
+            dateFrom ||
+            dateTo ||
+            creatorSearch) && (
+            <div className="mt-3">
+              <button
+                onClick={() => {
+                  setStatusFilter("all");
+                  setCampaignFilter("all");
+                  setWebsiteFilter("all");
+                  setSearchQuery("");
+                  setMinAmount(amountRange.min);
+                  setMaxAmount(amountRange.max);
+                  setDateFrom("");
+                  setDateTo("");
+                  setCreatorSearch("");
+                }}
+                className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
+              >
+                <X className="w-4 h-4" />
+                {t("clear_all_filters")}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Bulk Actions */}
+      {selectedVouchers.size > 0 && (
+        <div
+          className={`px-6 py-3 transition-colors border-b ${isDark ? "bg-teal-900/20 border-teal-800" : "bg-teal-50 border-teal-200"}`}
+        >
+          <div className="flex items-center justify-between">
+            <span
+              className={`text-sm ${isDark ? "text-teal-100" : "text-teal-900"}`}
+            >
+              {selectedVouchers.size} {t("voucher")}
+              {selectedVouchers.size !== 1 ? t("plural_s") : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBulkActions(!showBulkActions)}
+                className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
+              >
+                <span>{t("actions")}</span>
+                {showBulkActions ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+              <button
+                onClick={() => setSelectedVouchers(new Set())}
+                className={`p-1.5 rounded transition-colors ${isDark ? "text-teal-400 hover:bg-teal-900/30" : "text-teal-600 hover:bg-teal-100"}`}
+                title={t("clear_selection")}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {showBulkActions && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                onClick={() => setMessageComposerOpen(true)}
+              >
+                <MessageSquare className="w-4 h-4" /> {t("send_message")}
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                onClick={handleSendVouchers}
+              >
+                <Send className="w-4 h-4" /> {t("re_send_vouchers")}
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+              >
+                <Calendar className="w-4 h-4" /> {t("extend_expiration")}
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+              >
+                <RefreshCw className="w-4 h-4" /> {t("change_status")}
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "text-red-400 border-red-700 hover:bg-red-900/20" : "text-red-600 border-red-300 hover:bg-red-50"}`}
+              >
+                <XCircle className="w-4 h-4" /> {t("cancel_vouchers")}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Scrollable Table Content */}
       <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)] mt-3">
         <div className="sticky">
           <ReordableDataTable
             rowKey="_id"
-            data={allVouchers}
+            next={fetchNextPage}
+            hasMore={hasMore}
+            data={combinedVouchers}
             isDataLoading={isLoading}
             selectedItems={selectedVouchers}
             onSelectionChange={setSelectedVouchers}

@@ -1,5 +1,6 @@
+import clsx from "clsx";
 import { useState } from "react";
-import { Mail, Phone, XCircle } from "lucide-react";
+import { Loader, Mail, Phone } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -7,24 +8,20 @@ import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
 import { ModalWrapper } from "@/components/wrapper";
 import {
-  useUpdateOrderConfirmationMutation,
+  useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
-  useUpdateProductOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
-import clsx from "clsx";
+import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 
 interface OrderDetailsModalProps {
-  theme: Theme;
   order: any;
-  isRTL: boolean;
   onClose: () => void;
   t: (key: string) => string;
   getOrderStatusBadge: any;
-  getPaymentStatusBadge: any;
   isLoading: any;
   isFetching: any;
   refetch: any;
@@ -33,39 +30,57 @@ interface OrderDetailsModalProps {
 function OrderDetailsModal({
   order,
   onClose,
-  theme,
-  isRTL,
   t,
   refetch,
   isLoading,
   isFetching,
-  getOrderStatusBadge,
-  getPaymentStatusBadge,
 }: OrderDetailsModalProps) {
-  const { textTertiary, textPrimary } = useThemeClasses();
+  const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
     null,
   );
   const [showProductModal, setShowProductModal] = useState(false);
+  const [sendingTarget, setSendingTarget] = useState<
+    "VENDOR" | "CUSTOMER" | null
+  >(null);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
-  const [updateProductOrderStatus] = useUpdateProductOrderStatusMutation();
-  const [updateOrderConfirmation, { isLoading: isSendingEmail }] =
-    useUpdateOrderConfirmationMutation();
+
+  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
 
-  const handleResendNotification = async () => {
+  const handleResendNotification = async (recipient: "VENDOR" | "CUSTOMER") => {
+    setSendingTarget(recipient);
+
     try {
-      await updateOrderConfirmation({
-        orderId: order?._id,
-        body: {},
+      await bulkOrdersUpdate({
+        ordersId: Array(order?.orderId),
+        emailRecipient: recipient,
       }).unwrap();
       toast.success(t("email_sent"));
+      setSendingTarget(null);
     } catch (error) {
       toast.error("failed");
+      setSendingTarget(null);
+    }
+  };
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      await updateOrderStatus({
+        orderId: order?._id,
+        body: { status: status.toLowerCase() },
+      }).unwrap();
+
+      toast.success(t("order_status_update_success"));
+      refetch();
+    } catch (error) {
+      toast.error(t("order_status_update_failed"));
+      console.error(error);
     }
   };
   return (
@@ -73,47 +88,37 @@ function OrderDetailsModal({
       {/* Header */}
 
       <div
-        className={`flex items-center  justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+        className={`flex items-center justify-between 
+              ${isRTL ? "flex-row-reverse" : ""} 
+              p-4 md:p-6 
+              mb-4`}
       >
-        <div className="flex flex-col p-6">
-          <div className="flex">
-            <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
-            <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
-          </div>
-          <div className="flex gap-2 mt-2 items-center">
-            <span className={textTertiary}>{t("order_status")}</span>
-            {getOrderStatusBadge(order?.status)}
-            <span className={textTertiary}>{t("payment_status")}</span>
-            {getPaymentStatusBadge(order?.paymentStatus)}
-          </div>
-        </div>
+        <h2 className={`text-2xl font-semibold ${textPrimary}`}>
+          {t("order_details")}
+        </h2>
+        <OrderStatusChangeBtn
+          status={order?.status}
+          handleStatusChange={onStatusChangeHandler}
+        />
       </div>
 
       {/* Content */}
-      <div className="p-6 overflow-y-auto overflow-hidden space-y-6">
+      <div className="px-6 overflow-y-auto overflow-hidden  space-y-6 ">
         {/* Purchaser Information */}
-        <div>
+        <div className="">
           <h3 className={`text-lg mb-3 ${textPrimary}`}>
             {t("purchaser_information") || "Purchaser Information"}
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 border  rounded-md px-4 py-4">
             <InfoRow
               label={t("name") || "Name"}
-              value={order?.buyerFirstName}
-              theme={theme}
+              value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`}
             />
-            {order?.buyerLastName && (
-              <InfoRow
-                label={t("name") || "Name"}
-                value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`.trim()}
-                theme={theme}
-              />
-            )}
 
             {/* Email - Clickable */}
             <div>
               <p
-                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} `}
+                className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} `}
               >
                 {t("purchaser_email") || "Email"}
               </p>
@@ -131,7 +136,7 @@ function OrderDetailsModal({
             {/* Phone - Clickable */}
             <div>
               <p
-                className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"} mb-1`}
+                className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"} mb-1`}
               >
                 {t("purchaser_phone") || "Phone"}
               </p>
@@ -151,13 +156,11 @@ function OrderDetailsModal({
                   ? `${order.campaign}${order?.campaignCode ? ` (${order.campaignCode})` : ""}`
                   : "-"
               }
-              theme={theme}
             />
 
             <InfoRow
               label={t("purchaser_address") || "Address"}
               value={order?.buyerAddress ? order.buyerAddress : "-"}
-              theme={theme}
             />
           </div>
         </div>
@@ -168,102 +171,77 @@ function OrderDetailsModal({
             {t("products") || "Products"}
           </h3>
           <div
-            className={`border rounded-lg overflow-hidden ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+            className={`border rounded-lg overflow-hidden ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
-            {order?.products?.map((product: any, idx: number) => (
-              <div
-                key={product?._id}
-                className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Product Image */}
-                  <div
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setShowProductModal(true);
-                    }}
-                    className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    <ImageWithFallback
-                      src={product?.images?.image}
-                      alt={product?.name}
-                      className={clsx(
-                        "w-24 h-22 rounded-xl object-cover border-2",
-                        theme === "dark"
-                          ? "border-gray-600"
-                          : "border-gray-300",
-                      )}
-                    />
-                  </div>
+            <div
+              key={order?.products?._id}
+              className={`p-4 ${order?.idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${order?.status === "canceled" ? "opacity-50" : ""}`}
+            >
+              <div className="flex items-start gap-4">
+                {/* Product Image */}
+                <div
+                  onClick={() => {
+                    setSelectedProduct(order?.products);
+                    setShowProductModal(true);
+                  }}
+                  className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <ImageWithFallback
+                    src={order?.products?.images?.image}
+                    alt={order?.products?.name}
+                    className={clsx(
+                      "w-24 h-22 rounded-xl object-cover border-2",
+                      isDark ? "border-gray-600" : "border-gray-300",
+                    )}
+                  />
+                </div>
 
-                  {/* Product Info */}
-                  <div
-                    className="flex-1 cursor-pointer"
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setShowProductModal(true);
-                    }}
+                {/* Product Info */}
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => {
+                    setSelectedProduct(order?.products);
+                    setShowProductModal(true);
+                  }}
+                >
+                  <p
+                    className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
                   >
+                    {order?.products?.name}
+                  </p>
+                  <p className={`text-sm ${textTertiary}`}>
+                    {order?.products?.vendor ? order?.products?.vendor : "-"}
+                  </p>
+                </div>
+
+                {/* Price & Actions */}
+                <div
+                  className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                >
+                  <div className={`text-right ${isRTL ? "text-left" : ""}`}>
                     <p
-                      className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
+                      className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
                     >
-                      {product?.name}
+                      ₪
+                      {(
+                        order?.products?.quantity * order?.products?.amount
+                      ).toLocaleString()}
                     </p>
                     <p className={`text-sm ${textTertiary}`}>
-                      {product?.vendor ? product.vendor : "-"}
-                    </p>
-                    <p className={`text-xs ${textTertiary} mt-1`}>
-                      {product?.category ? product.category : "-"}
+                      {order?.products?.quantity} x ₪{order?.products?.amount}
                     </p>
                   </div>
 
-                  {/* Price & Actions */}
-                  <div
-                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                  >
-                    <div className={`text-right ${isRTL ? "text-left" : ""}`}>
-                      <p
-                        className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
-                      >
-                        ₪
-                        {(product?.quantity * product?.amount).toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${textTertiary}`}>
-                        {product?.quantity} x ₪{product?.amount}
-                      </p>
-                    </div>
-
-                    {/* Cancel Button */}
-                    {!product?.cancelled && userRole !== UserRole.AUTHORITY && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCancelType("item");
-                          setItemToCancel(product);
-                          setShowCancelDialog(true);
-                        }}
-                        className={`p-2 rounded-lg transition-colors ${
-                          theme === "dark"
-                            ? "hover:bg-red-900/30 text-red-400"
-                            : "hover:bg-red-50 text-red-500"
-                        }`}
-                        title={t("cancel_product") || "Cancel Product"}
-                      >
-                        <XCircle className="w-5 h-5" />
-                      </button>
-                    )}
-
-                    {product?.cancelled && (
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
-                      >
-                        {t("cancelled") || "Cancelled"}
-                      </span>
-                    )}
-                  </div>
+                  {order?.status === "canceled" && (
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
+                    >
+                      {t("cancelled") || "Cancelled"}
+                    </span>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -273,15 +251,21 @@ function OrderDetailsModal({
             {t("payment_breakdown") || "Payment Breakdown"}
           </h3>
           <div
-            className={`border rounded-lg p-4 space-y-2 ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
+            className={`border rounded-lg p-4 space-y-2 ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
             <div className="flex justify-between">
               <span className={textTertiary}>
                 {t("voucher_amount") || "Voucher"}
               </span>
               <span className={textPrimary}>
-                {order?.voucherAmount
-                  ? `₪${order.voucherAmount.toLocaleString()}`
+                {order?.voucher && order?.voucher?.length > 0
+                  ? `₪${order?.voucher
+                      ?.reduce(
+                        (total: number, voucher: any) =>
+                          total + (voucher?.redeemedAmount || 0),
+                        0,
+                      )
+                      ?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -291,7 +275,7 @@ function OrderDetailsModal({
               </span>
               <span className={textPrimary}>
                 {order?.creditCardPayment
-                  ? `₪${order.creditCardPayment.toLocaleString()}`
+                  ? `₪${order?.creditCardPayment?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -301,16 +285,18 @@ function OrderDetailsModal({
               </span>
               <span className={textPrimary}>
                 {order?.deliveryFee
-                  ? `₪${order.deliveryFee.toLocaleString()}`
+                  ? `₪${order?.deliveryFee?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
             <div
-              className={`flex justify-between pt-2 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
+              className={`flex justify-between pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-300"}`}
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
               <span className={`${textPrimary}`}>
-                ₪{order?.totalAmount?.toLocaleString()}
+                {order?.totalAmount
+                  ? `₪${order?.totalAmount?.toLocaleString()}`
+                  : "-"}
               </span>
             </div>
           </div>
@@ -320,7 +306,7 @@ function OrderDetailsModal({
         {userRole === UserRole.AUTHORITY ||
           (userRole === UserRole.SUPERADMIN && (
             <div
-              className={`flex gap-3 pt-4 border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+              className={`flex  gap-3 pt-4  border-t ${isDark ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
               {order?.status !== "canceled" &&
                 order?.status !== "completed" && (
@@ -337,17 +323,37 @@ function OrderDetailsModal({
                 )}
 
               <button
-                onClick={handleResendNotification}
-                disabled={isSendingEmail}
+                onClick={() => handleResendNotification("VENDOR")}
+                disabled={sendingTarget !== null}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
                     : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                } ${isSendingEmail ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {isSendingEmail
+                {sendingTarget === "VENDOR" ? (
+                  <Loader className="w-4 h-4 animate-spin inline mr-2" />
+                ) : null}
+                {sendingTarget === "VENDOR"
                   ? t("sending") || "Sending..."
-                  : t("resend_notification") || "Resend Notification"}
+                  : t("resend_order_vendor") || "Resend Notification"}
+              </button>
+
+              <button
+                onClick={() => handleResendNotification("CUSTOMER")}
+                disabled={sendingTarget !== null}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isDark
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {sendingTarget === "CUSTOMER" ? (
+                  <Loader className="w-4 h-4 animate-spin inline mr-2" />
+                ) : null}
+                {sendingTarget === "CUSTOMER"
+                  ? t("sending") || "Sending..."
+                  : t("resend_order_customer") || "Resend Notification"}
               </button>
             </div>
           ))}
@@ -358,11 +364,14 @@ function OrderDetailsModal({
         <CancellationDialog
           type={cancelType}
           itemName={itemToCancel?.name}
+          loading={isCancelling}
           onCancel={() => {
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
           onConfirm={async (reason) => {
+            setIsCancelling(true);
+
             try {
               if (cancelType === "order") {
                 // Cancel the entire order
@@ -376,18 +385,6 @@ function OrderDetailsModal({
                   },
                 }).unwrap();
                 refetch();
-              } else if (cancelType === "item") {
-                // Cancel a specific product in the order
-                await updateProductOrderStatus({
-                  orderProductId: itemToCancel?.orderedProductId ?? "",
-                  body: {
-                    status: "canceled",
-                    canceled_reason: reason,
-                    isQrScan: true,
-                    externalApiId: order?.externalApiId || "",
-                    // productId: itemToCancel?._id,  specific product id
-                  },
-                }).unwrap();
               }
 
               toast.success(t("order_cancelled_successfully"));
@@ -396,6 +393,8 @@ function OrderDetailsModal({
               setItemToCancel(null);
             } catch (error) {
               toast.error(t("cancel_failed"));
+            } finally {
+              setIsCancelling(false);
             }
           }}
         />

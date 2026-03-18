@@ -507,7 +507,6 @@ export default function CreateEventWizard({
     5: () => eventMsgSchedulePayload,
     6: () => eventMediaPayload,
   };
-  console.log(eventBasicInfoPayload);
   const {
     markDirty,
     saveDraft,
