@@ -63,14 +63,13 @@ export default function MonthFilter({
           }`}
         >
           <option value="all">{t("all")}</option>
-          {(last12Months ).map((month) => (
+          {last12Months.map((month) => (
             <option key={month.value} value={month.value}>
               {month.label}
             </option>
           ))}
           <option value="custom">{t("customRange")}</option>
         </select>
-
       </div>
 
       {value === "custom" && (

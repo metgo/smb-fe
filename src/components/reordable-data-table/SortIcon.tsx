@@ -9,7 +9,7 @@ const SortIcon = ({
 }) => {
   if (sortConfig.field !== field) {
     return (
-      <ArrowUpDown 
+      <ArrowUpDown
         className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 transition-opacity duration-150"
         aria-hidden
       />

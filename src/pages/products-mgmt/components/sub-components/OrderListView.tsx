@@ -34,22 +34,22 @@ const OrderListView: React.FC<OrderListViewProps> = ({
         isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"
       } border rounded-lg overflow-hidden overflow-y-auto`}
     >
-        <div className="flex flex-col overflow-hidden ">
-          <div className="sticky">
-            <ReordableDataTable
-              rowKey="orderId"
-              hasMore={hasMore}
-              data={combinedOrders || []}
-              next={fetchNextPage}
-              selectedItems={selectedOrders}
-              onSelectionChange={setSelectedOrders}
-              onRowClick={handleRowClick}
-              storageKey={storageKey}
-              columns={columns}
-              isDataLoading={isLoading}
-            />
-          </div>
+      <div className="flex flex-col overflow-hidden ">
+        <div className="sticky">
+          <ReordableDataTable
+            rowKey="orderId"
+            hasMore={hasMore}
+            data={combinedOrders || []}
+            next={fetchNextPage}
+            selectedItems={selectedOrders}
+            onSelectionChange={setSelectedOrders}
+            onRowClick={handleRowClick}
+            storageKey={storageKey}
+            columns={columns}
+            isDataLoading={isLoading}
+          />
         </div>
+      </div>
     </div>
   );
 };
