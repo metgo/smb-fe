@@ -1,5 +1,4 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useState } from "react";
 
 function getLastNMonths(n: number): { value: string; label: string }[] {
   const months = [];
@@ -37,8 +36,6 @@ export default function MonthFilter({
   t: any;
 }) {
   const { isDark, isRTL } = useThemeClasses();
-  const [showAllMonths, setShowAllMonths] = useState(false);
-  const last5Months = getLastNMonths(5);
   const last12Months = getLastNMonths(12);
 
   return (
@@ -66,7 +63,7 @@ export default function MonthFilter({
           }`}
         >
           <option value="all">{t("all")}</option>
-          {(showAllMonths ? last12Months : last5Months).map((month) => (
+          {(last12Months ).map((month) => (
             <option key={month.value} value={month.value}>
               {month.label}
             </option>
@@ -74,15 +71,6 @@ export default function MonthFilter({
           <option value="custom">{t("customRange")}</option>
         </select>
 
-        {!showAllMonths && (
-          <button
-            type="button"
-            onClick={() => setShowAllMonths(true)}
-            className={`text-xs mt-1 ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"} ${isRTL ? "text-right w-full" : "text-left"}`}
-          >
-            {t("showMore")}
-          </button>
-        )}
       </div>
 
       {value === "custom" && (

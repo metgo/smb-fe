@@ -29,6 +29,7 @@ import { useSocket } from "@/providers/SocketProvider";
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
 export default function NotificationsMgmtPage() {
+  const socket = useSocket();
   const navigate = useNavigate();
   const { t } = useTranslation("notifications");
   const { t: tc } = useTranslation("common");
@@ -58,7 +59,6 @@ export default function NotificationsMgmtPage() {
     };
     return params;
   }, [page, readFilter, typeFilter, itemTypeFilter]);
-  const socket = useSocket();
 
   const {
     data: notifications,
@@ -114,6 +114,10 @@ export default function NotificationsMgmtPage() {
       });
     }
   }, [notifications?.data, page]);
+
+  useEffect(() => {
+    setPage(1)
+  }, [readFilter, typeFilter, itemTypeFilter]);
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;
@@ -376,36 +380,21 @@ export default function NotificationsMgmtPage() {
                           ${hoverBg}
                           transition-colors
                           ${isRTL ? "border-r-2" : "border-l-2"}
-                        ${
-                          !notification.isRead
-                            ? isRTL
-                              ? "border-r-purple-500" // unread + RTL
-                              : "border-l-purple-500" // unread + LTR
-                            : getBorderColor(notification?.notifType, isRTL) // read notifications
-                        }
+                        ${getBorderColor(notification?.notifType, isRTL)}
                           ${!notification.isRead ? (isDark ? "bg-blue-900/20" : "bg-blue-50") : ""}
                         `}
                         >
                           {/* Unread dot indicator */}
                           {!notification.isRead && (
                             <span
-                              className={`absolute top-6 ${
-                                isRTL ? "left-4" : "right-4"
-                              } w-2.5 h-2.5 bg-blue-500 rounded-full`}
+                              className={`absolute top-6 ${isRTL ? "left-4" : "right-4"
+                                } w-2.5 h-2.5 bg-blue-500 rounded-full`}
                             ></span>
                           )}
 
                           <div className="flex gap-3">
                             <div className="shrink-0 mt-0.5">
-                              {!notification.isRead ? (
-                                // Unread notification - maybe show a colored icon or badge
-                                <div className="text-purple-500">
-                                  <Info />
-                                </div>
-                              ) : (
-                                // Read notification - normal icon
-                                getNotificationIcon(notification?.notifType)
-                              )}
+                              {getNotificationIcon(notification?.notifType)}
                             </div>
 
                             <div className="flex flex-col">
@@ -425,7 +414,7 @@ export default function NotificationsMgmtPage() {
                                   "text-sm mb-1",
                                   notification.isRead
                                     ? textSecondary
-                                    : "text-gray-700 dark:text-gray-300",
+                                    : "text-gray-400",
                                 )}
                               >
                                 {notification?.content?.[language]?.message}

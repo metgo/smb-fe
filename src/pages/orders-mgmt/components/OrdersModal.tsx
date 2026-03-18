@@ -97,7 +97,6 @@ export const OrdersModal = ({
                 textSecondary,
               )}
             >
-              {" "}
               <tr className="">
                 <th className="p-2 border w-56">{t("product_name")}</th>
                 <th className="p-2 border w-48">{t("order_date")}</th>
