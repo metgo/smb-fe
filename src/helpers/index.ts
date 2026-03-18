@@ -194,3 +194,33 @@ export function getLngWiseStr(
       return en || he || ar || "-";
   }
 }
+
+
+export function compareValues(a: any, b: any, direction: "asc" | "desc"): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return direction === "asc" ? 1 : -1;
+  if (b == null) return direction === "asc" ? -1 : 1;
+
+  const aDate = typeof a === "string" || typeof a === "number" ? new Date(a) : null;
+  const bDate = typeof b === "string" || typeof b === "number" ? new Date(b) : null;
+
+  if (aDate && bDate && !isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+    return direction === "asc"
+      ? aDate.getTime() - bDate.getTime()
+      : bDate.getTime() - aDate.getTime();
+  }
+  if (typeof a === "string" && typeof b === "string") {
+    return direction === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+  }
+  if (typeof a === "number" && typeof b === "number") {
+    return direction === "asc" ? a - b : b - a;
+  }
+  if (typeof a === "boolean" && typeof b === "boolean") {
+    return direction === "asc"
+      ? a === b ? 0 : a ? 1 : -1
+      : a === b ? 0 : a ? -1 : 1;
+  }
+  if (a < b) return direction === "asc" ? -1 : 1;
+  if (a > b) return direction === "asc" ? 1 : -1;
+  return 0;
+}

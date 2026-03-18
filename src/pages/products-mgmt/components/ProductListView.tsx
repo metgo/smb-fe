@@ -221,7 +221,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
 
   return (
     <div
-      className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden max-h-[calc(100vh-400px)] overflow-y-auto`}
+      className={`rounded-xl border ${borderColor} ${bgSecondary}`}
     >
       <ReordableDataTable
         rowKey="_id"

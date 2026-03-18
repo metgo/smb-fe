@@ -1,3 +1,4 @@
+import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
@@ -8,7 +9,6 @@ import InfoTooltip from "./InfoTooltip";
 import ItemStatusBadge from "./ItemStatusBadge";
 import PageHeader from "./PageHeader";
 import PageStats from "./PageStats";
-import ReordableDataTable from "./ReordableDataTable";
 import SearchInput from "./SearchInput";
 import SelectableChips from "./SelectableChips";
 import Spinner from "./Spinner";

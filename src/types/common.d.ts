@@ -163,3 +163,5 @@ type TOrderStatus =
   | "shipped"
   | "canceled";
 type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
+
+type TSortDirection = "asc" | "desc" | null;

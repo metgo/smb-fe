@@ -214,11 +214,7 @@ const NotificationsBell = () => {
                     className={clsx(
                       "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
                       isRTL ? "border-r-[3px]" : "border-l-[3px]",
-                      !notification?.isRead
-                        ? isRTL
-                          ? "border-r-purple-500" // unread + RTL
-                          : "border-l-purple-500" // unread + LTR
-                        : getBorderColor(notification?.notifType, isRTL), // read notifications
+                      getBorderColor(notification?.notifType, isRTL), // read notifications
                       !notification?.isRead
                         ? isDark
                           ? "bg-blue-500/5 hover:bg-blue-500/10"
@@ -229,9 +225,7 @@ const NotificationsBell = () => {
                     )}
                   >
                     {/* Icon */}
-                    {!notification?.isRead
-                      ? getNotificationIcon("UNREAD")
-                      : getNotificationIcon(notification?.notifType)}
+                    {getNotificationIcon(notification?.notifType)}
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
