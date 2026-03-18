@@ -232,3 +232,192 @@ button {
   display: none !important;
   height: 0 !important;
 }
+
+/* Rich Text Editor */
+/* ─── Rich Text Editor Content Styles ────────────────────────────────────────
+   Add this to your global CSS file (e.g. globals.css / index.css).
+   The `.rte-content` class is scoped to the contentEditable div so these
+   styles don't leak out into the rest of your app.
+   Tailwind's preflight/base resets ALL heading, list, and blockquote styles,
+   which is why h1/h2/h3 look identical to plain text inside contentEditable.
+   These rules restore the browser defaults that CKEditor / Quill rely on.
+──────────────────────────────────────────────────────────────────────────────*/
+
+/* Headings */
+.rte-content h1 {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+}
+.rte-content h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+}
+.rte-content h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.rte-content h4 {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+}
+.rte-content h5 {
+  font-size: 0.875em;
+  font-weight: 600;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+}
+.rte-content h6 {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+}
+
+/* Paragraph spacing */
+.rte-content p {
+  margin-top: 0;
+  margin-bottom: 0.75em;
+}
+
+/* Lists */
+.rte-content ul {
+  list-style-type: disc;
+  padding-left: 1.75em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.rte-content ol {
+  list-style-type: decimal;
+  padding-left: 1.75em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.rte-content li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  display: list-item;
+}
+/* Nested lists */
+.rte-content ul ul,
+.rte-content ol ul {
+  list-style-type: circle;
+}
+.rte-content ul ul ul,
+.rte-content ol ul ul {
+  list-style-type: square;
+}
+
+/* Blockquote */
+.rte-content blockquote {
+  border-left: 4px solid #d1d5db;
+  padding: 0.25em 0 0.25em 1em;
+  margin: 0.75em 0;
+  color: #6b7280;
+  font-style: italic;
+}
+.dark .rte-content blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+/* Inline code & code blocks */
+.rte-content pre {
+  background: #f3f4f6;
+  border-radius: 0.375em;
+  padding: 0.75em 1em;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.dark .rte-content pre {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+.rte-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  background: #f3f4f6;
+  padding: 0.125em 0.3em;
+  border-radius: 0.25em;
+}
+.dark .rte-content code {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Links */
+.rte-content a {
+  color: #0d9488;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.rte-content a:hover {
+  color: #0f766e;
+}
+
+/* Bold / italic / underline / strikethrough — these are fine as-is since
+   browsers still render them; just listed here for documentation. */
+.rte-content b,
+.rte-content strong {
+  font-weight: 700;
+}
+.rte-content i,
+.rte-content em {
+  font-style: italic;
+}
+.rte-content u {
+  text-decoration: underline;
+}
+.rte-content s,
+.rte-content strike {
+  text-decoration: line-through;
+}
+
+/* Tables (if ever added) */
+.rte-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75em 0;
+}
+.rte-content th,
+.rte-content td {
+  border: 1px solid #d1d5db;
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.rte-content th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+.dark .rte-content th {
+  background: #1f2937;
+}
+.dark .rte-content th,
+.dark .rte-content td {
+  border-color: #374151;
+}
+
+/* Horizontal rule */
+.rte-content hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1em 0;
+}
+.dark .rte-content hr {
+  border-top-color: #374151;
+}

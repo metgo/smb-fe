@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CKEditorWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { RichTextEditor } from "@/components/shared";
 
 interface ContentConfigHeaderProps {
   header: string;
@@ -88,7 +88,7 @@ const ContentConfigHeader = ({
       <div
         className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
       >
-        <CKEditorWrapper value={header} onChange={setHeader} height={150} />
+        <RichTextEditor value={header} onChange={setHeader} />
         <div className="space-y-2">
           {/* Create Topic */}
           <div

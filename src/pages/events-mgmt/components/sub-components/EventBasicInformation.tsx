@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   DmoAuthorityWebsiteSelector,
+  RichTextEditor,
   SelectableChips,
 } from "@/components/shared";
 import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
@@ -15,7 +16,6 @@ import {
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
-import { CKEditorWrapper } from "@/components/wrapper";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Globe } from "lucide-react";
 
@@ -354,7 +354,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           label={t("full_description")}
           inputHintText={`${getFieldValue("full")?.length ?? 0}/50 ${t("max_characters")}`}
         >
-          <CKEditorWrapper
+          <RichTextEditor
             value={getFieldValue("full")}
             onChange={(val) => handleFieldChange("full", val)}
             placeholder={getPlaceholder("full")}
