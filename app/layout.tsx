@@ -11,6 +11,7 @@ import {
   GOOGLE_SITE_VERIFICATION_CODE,
   GOOGLE_TAG_MANAGER_ID,
   IdentifierId,
+  CODE,
 } from "@/constant/envConstants";
 import { urls } from "@/lib/endpoints";
 import Providers from "@/components/wrappers/Providers";
@@ -99,7 +100,11 @@ export default function RootLayout({ children }: ReactChildNode) {
             </SiteInfoClientProvider>
           </Providers>
         </Suspense>
-        <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js"></script>
+        {CODE === "KEFBA" ? (
+          <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-80734/init.js" />
+        ) : (
+          <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js" />
+        )}
       </body>
     </html>
   );
