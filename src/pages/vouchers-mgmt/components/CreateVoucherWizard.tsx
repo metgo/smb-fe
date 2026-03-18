@@ -12,6 +12,7 @@ import {
   useCreateVoucherMutation,
   useUpdateVoucherMutation,
 } from "@/store/api/voucherMutationApi";
+
 import { WizardFooter } from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -30,8 +31,6 @@ interface AddVoucherWizardProps {
   onVoucherCreated?: () => void;
   campaigns?: [];
 }
-
-type CreationType = "single" | "bulk" | "upload";
 
 interface VoucherFormData {
   websites: string[];
@@ -192,16 +191,13 @@ export function AddVoucherWizard({
       // Campaign / gift / voucher expiration
       expireDate: formData.expirationDate,
 
-      // Bulk creation via file
-      // xlsFile: formData.xlsFile,
-
       // websites: formData.websites,
     },
   ];
 
   console.log("🚀 ~ AddVoucherWizard ~ stepPayloadMap:", stepPayloadMap);
-  const [voucherId, setVoucherId] = useState("");
-  const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
+  // const [voucherId, setVoucherId] = useState("");
+  const [_updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -220,15 +216,12 @@ export function AddVoucherWizard({
         if (isPublish) {
           payload = {
             ...payload,
-            // status: "published",
-            // publishedAt: new Date().toISOString(),
-            // etc.
           };
         }
 
-        const res = await createVoucher(payload).unwrap();
+        await createVoucher(payload).unwrap();
 
-        setVoucherId(res.id);
+        // setVoucherId(res.id);
 
         onClose();
 
@@ -250,9 +243,6 @@ export function AddVoucherWizard({
 
     switch (step) {
       case 1:
-        if (formData.websites.length === 0) {
-          newErrors.websites = "Please select at least one website";
-        }
         if (formData.amount <= 0) {
           newErrors.amount = "Amount must be greater than 0";
         }
@@ -295,15 +285,15 @@ export function AddVoucherWizard({
           }
         }
 
-        if (formData.creationType === "upload") {
-          if (!formData.xlsFile) {
-            newErrors.xlsFile = "Please upload an Excel file";
-          }
+        // if (formData.creationType === "upload") {
+        //   if (!formData.xlsFile) {
+        //     newErrors.xlsFile = "Please upload an Excel file";
+        //   }
 
-          if (!xlsValidation || xlsValidation.valid === 0) {
-            newErrors.xlsValidation = "Uploaded file has no valid rows";
-          }
-        }
+        //   if (!xlsValidation || xlsValidation.valid === 0) {
+        //     newErrors.xlsValidation = "Uploaded file has no valid rows";
+        //   }
+        // }
         break;
 
       case 4:
@@ -319,18 +309,18 @@ export function AddVoucherWizard({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     // Validate all steps
-    // let allValid = true;
-    // for (let i = 1; i <= 4; i++) {
-    //   if (!validateStep(i)) {
-    //     allValid = false;
-    //     setCurrentStep(i);
-    //     break;
-    //   }
-    // }
-    // if (!allValid) {
-    //   toast.error(t("fill_all_fields"));
-    //   return;
-    // }
+    let allValid = true;
+    for (let i = 1; i <= 4; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
 
     setIsPublishing(true);
 
@@ -454,27 +444,59 @@ export function AddVoucherWizard({
     setShowPurchaserSuggestions(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, xlsFile: file }));
-      // Simulate validation
-      setTimeout(() => {
-        setXlsValidation({
-          valid: 45,
-          invalid: 5,
-          errors: [
-            "Row 12: Invalid email format",
-            "Row 23: Missing phone number",
-            "Row 34: Duplicate email address",
-            "Row 41: Invalid amount",
-            "Row 48: Missing assignee name",
-          ],
-        });
-      }, 1000);
-    }
-  };
+  // const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
 
+  //   if (file) {
+  //     setFormData((prev) => ({ ...prev, xlsFile: file }));
+
+  //     const reader = new FileReader();
+
+  //     reader.onload = (evt) => {
+  //       const data = evt.target?.result;
+  //       const workbook = XLSX.read(data, { type: "binary" });
+
+  //       const sheetName = workbook.SheetNames[0];
+  //       const sheet = workbook.Sheets[sheetName];
+
+  //       const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+  //       console.log("Parsed Excel:", jsonData);
+
+  //       // 👇 transform into your required format
+  //       const formattedData = jsonData.map((row: any) => ({
+  //         campaignId: row.campaignId,
+  //         amount: Number(row.amount),
+  //         expireDate: new Date(row.expireDate),
+  //         purchaserName: row.purchaserName || "",
+  //         purchaserCountryCode: row.purchaserCountryCode || "",
+  //         purchaserPhone: row.purchaserPhone || "",
+  //         noOfVoucher: Number(row.noOfVoucher),
+  //         assigneeName: row.assigneeName || "",
+  //         assigneeCountryCode: row.assigneeCountryCode || "",
+  //         assigneePhone: row.assigneePhone || "",
+  //         languagePreference: row.languagePreference || "en",
+  //         message: row.message || "",
+  //         smsMessage: row.smsMessage || "",
+  //         sendEmail: row.sendEmail === true || row.sendEmail === "true",
+  //       }));
+
+  //       console.log("Final Payload:", formattedData);
+
+  //       // store for submit
+  //       setXlsValidation({
+  //         valid: formattedData.length,
+  //         invalid: 0,
+  //         errors: [],
+  //       });
+
+  //       // 👇 store this separately
+  //       setParsedData(formattedData);
+  //     };
+
+  //     reader.readAsBinaryString(file);
+  //   }
+  // };
   const handleNext = () => {
     if (currentStep === 4) {
       handleSubmit();
@@ -526,7 +548,7 @@ export function AddVoucherWizard({
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div>
           <h2 className="text-xl text-gray-900 dark:text-gray-100">
-            {voucherId ? t("edit_voucher") : t("add_voucher")}
+            {t("add_voucher")}
           </h2>
           {currentStep < 5 && (
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
@@ -631,8 +653,6 @@ export function AddVoucherWizard({
             formData={formData}
             setFormData={setFormData}
             errors={errors}
-            handleFileUpload={handleFileUpload}
-            xlsValidation={xlsValidation}
           />
         )}{" "}
         {currentStep === 4 && (

@@ -12,7 +12,6 @@ import {
   MapPin,
   Gift,
   TrendingUp,
-  Edit,
 } from "lucide-react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetVoucherByIdQuery } from "@/store/api/voucherQueryApi";
@@ -26,7 +25,9 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/shared";
 import clsx from "clsx";
-import { AddVoucherWizard } from "../components/CreateVoucherWizard";
+
+import VoucherTimeline from "./components/VoucherTimeline";
+import VoucherTransactionTable from "./components/VoucherTransactionTable";
 
 interface TimelineEvent {
   id: string;
@@ -77,11 +78,8 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
     // refetch: voucherRefetch,
     isLoading,
   } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
-  const voucher = voucherdetailId?.datas;
+  const voucher = voucherdetailId;
 
-  const handleEditClick = () => {
-    setIsEditClicked(true);
-  };
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignee" | "timeline" | "transactions"
   >("overview");
@@ -90,26 +88,27 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
     {
       id: "1",
       type: "created",
-      date: "2026-01-15T09:00:00Z",
-      description: "Voucher created by Admin User",
+      date: voucher?.createdAt,
+      description:
+        `Created by ${voucher?.creatorInfo?.id?.firstName ?? "-"} ${voucher?.creatorInfo?.id?.lastName ?? ""}`.trim(),
     },
     {
       id: "2",
       type: "assigned",
-      date: "2026-01-15T10:30:00Z",
-      description: "Assigned to Sarah Cohen",
+      date: voucher?.assigneeInfo?.assignedAt,
+      description: `Assigned to ${voucher?.assigneeInfo?.name ? voucher?.assigneeInfo?.name : "-"}`,
     },
     {
       id: "3",
       type: "sent_email",
-      date: "2026-01-15T10:31:00Z",
-      description: "Voucher sent via email to sarah.cohen@example.com",
+      date: "",
+      description: `Voucher sent via email to ${voucher?.assigneeInfo?.email ? voucher?.assigneeInfo?.email : "-"}`,
     },
     {
       id: "4",
       type: "product_purchased",
-      date: "2026-01-20T14:22:00Z",
-      description: "Used for product purchase",
+      date: voucher?.purchaserInfo?.id?.createdAt,
+      description: "Purchaser Info",
       amount: 150,
       linkedId: "PRD-123",
       linkedType: "product",
@@ -202,13 +201,13 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
               status={voucher?.status}
             /> */}
 
-            <button
+            {/* <button
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
               onClick={handleEditClick}
             >
               <Edit className="w-4 h-4" />
               {t("edit")}
-            </button>
+            </button> */}
           </div>
         </div>
         <div>
@@ -322,150 +321,24 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
 
           {/* Timeline Tab */}
           {activeTab === "timeline" && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                Activity Timeline
-              </h3>
-              <div className="space-y-4">
-                {timeline.map((event, index) => (
-                  <div key={event.id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
-                        {getTimelineIcon(event.type)}
-                      </div>
-                      {index < timeline.length - 1 && (
-                        <div
-                          className="w-0.5 flex-1 bg-gray-200 dark:bg-gray-800 mt-2 mb-2"
-                          style={{ minHeight: "20px" }}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-gray-900 dark:text-gray-100">
-                            {event.description}
-                          </p>
-                          {event.amount && (
-                            <p className="text-sm text-teal-600 dark:text-teal-400 mt-1">
-                              Amount: ₪{event.amount}
-                            </p>
-                          )}
-                          {event.linkedName && (
-                            <a
-                              href="#"
-                              className="text-sm text-teal-600 dark:text-teal-400 hover:underline mt-1 inline-block"
-                            >
-                              → {event.linkedName}
-                            </a>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap ml-4">
-                          {formatDate(event.date)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <VoucherTimeline
+              timeline={timeline}
+              getTimelineIcon={getTimelineIcon}
+              formatDate={formatDate}
+              t={t}
+              isDark={isDark}
+            />
           )}
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                <h3 className="text-sm text-gray-600 dark:text-gray-400">
-                  Transaction History
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Reference ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Description
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Amount Used
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs text-gray-600 dark:text-gray-400">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {transactions.map((transaction) => (
-                      <tr
-                        key={transaction.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                      >
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getTransactionTypeColor(transaction.type)}`}
-                          >
-                            {getTransactionTypeLabel(transaction.type)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <a
-                            href="#"
-                            className="text-sm text-teal-600 dark:text-teal-400 hover:underline"
-                          >
-                            {transaction.referenceId}
-                          </a>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 dark:text-gray-100">
-                            {transaction.referenceName}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 dark:text-gray-100">
-                            ₪{transaction.amountUsed}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {formatDate(transaction.date)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                              transaction.status === "completed"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                : transaction.status === "cancelled"
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                            }`}
-                          >
-                            {transaction.status.charAt(0).toUpperCase() +
-                              transaction.status.slice(1)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {transactions.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No transactions found
-                  </p>
-                </div>
-              )}
-            </div>
+            <VoucherTransactionTable
+              transactions={transactions}
+              isDark={isDark}
+              voucher={voucher}
+              formatDate={formatDate}
+              t={t}
+            />
           )}
         </div>
       </div>
@@ -511,9 +384,9 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
           {t("cancel_voucher")}
         </button>
       </div>
-      {isEditClicked && (
+      {/* {isEditClicked && (
         <AddVoucherWizard onClose={() => setIsEditClicked(false)} />
-      )}
+      )} */}
     </div>
   );
 }

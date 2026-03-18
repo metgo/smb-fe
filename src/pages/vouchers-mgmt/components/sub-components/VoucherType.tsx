@@ -64,7 +64,7 @@ const VoucherType = ({
       </label>
 
       {/* Upload XLS */}
-      <label className="flex items-start gap-4 p-4 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-teal-500 cursor-pointer transition-colors">
+      {/* <label className="flex items-start gap-4 p-4 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-teal-500 cursor-pointer transition-colors">
         <input
           type="radio"
           name="creationType"
@@ -84,7 +84,7 @@ const VoucherType = ({
             {t("upload_xls_description")}
           </p>
         </div>
-      </label>
+      </label> */}
 
       {errors.creationType && (
         <p className="text-red-500 text-xs">

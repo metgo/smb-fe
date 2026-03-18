@@ -1,16 +1,12 @@
-import { ChevronDown, Check, User } from "lucide-react";
+import { User } from "lucide-react";
 
 interface VoucherInformationProps {
   formData: any;
   setFormData: any;
   errors: Record<string, string>;
-  websites: any[];
   campaigns: any[];
-  handleWebsiteToggle: (id: string) => void;
   handleCampaignChange: (id: string) => void;
-  isWebsiteDropdownOpen: boolean;
-  setIsWebsiteDropdownOpen: any;
-  websiteDropdownRef: any;
+
   t?: any;
   purchaserDropdownRef: any;
   purchaserSuggestions: any[];
@@ -24,13 +20,9 @@ const VoucherInformation = ({
   t,
   setFormData,
   errors,
-  websites,
   campaigns,
-  handleWebsiteToggle,
   handleCampaignChange,
-  isWebsiteDropdownOpen,
-  setIsWebsiteDropdownOpen,
-  websiteDropdownRef,
+
   purchaserDropdownRef,
   purchaserSuggestions,
   showPurchaserSuggestions,
@@ -108,7 +100,7 @@ const VoucherInformation = ({
         >
           <option value="">{t("no_campaign")}</option>
 
-          {campaigns?.datas?.data?.map((campaign) => (
+          {campaigns?.datas?.data?.map((campaign: any) => (
             <option key={campaign._id} value={campaign._id}>
               {campaign.name} (₪{campaign.defaultAmount})
             </option>

@@ -5,7 +5,10 @@ import { formatDate } from "@/helpers";
 interface Voucher {
   code: string;
   type?: string;
-  campaign?: string;
+  campId?: {
+    name: string;
+    _id: string;
+  };
   paymentStatus?: "completed" | "refunded" | string;
   amount: number;
   remainingAmount: number;
@@ -48,7 +51,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
         {/* Voucher Information */}
         <div
           className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
           }`}
         >
           <h3
@@ -86,7 +89,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
                 {t("campaign")}
               </label>
               <div className={isDark ? "text-gray-100" : "text-gray-900"}>
-                {voucher?.campaign || "-"}
+                {voucher?.campId?.name || "-"}
               </div>
             </div>
             <div>
@@ -112,7 +115,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
         {/* Financial Details */}
         <div
           className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
           }`}
         >
           <h3
@@ -159,7 +162,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
         {/* Expiration */}
         <div
           className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
           }`}
         >
           <div className="space-y-4">
@@ -212,7 +215,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
         </div>
 
         {/* Applicable Websites */}
-        <div
+        {/* <div
           className={`rounded-lg border p-6 ${
             isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
           }`}
@@ -233,7 +236,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

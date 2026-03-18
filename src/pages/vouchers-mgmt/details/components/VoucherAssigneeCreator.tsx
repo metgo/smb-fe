@@ -37,7 +37,7 @@ const VoucherAssigneeCreator: React.FC<VoucherAssigneeCreatorProps> = ({
         {/* Assignee Information */}
         <div
           className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
           }`}
         >
           <h3
@@ -98,7 +98,7 @@ const VoucherAssigneeCreator: React.FC<VoucherAssigneeCreatorProps> = ({
         {/* Creator Information */}
         <div
           className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
           }`}
         >
           <h3

@@ -15,12 +15,16 @@ import {
   DollarSign,
   CheckCircle,
   Package,
+  Download,
+  Notebook,
+  NotebookPen,
 } from "lucide-react";
 import { MessageComposerModal } from "@/pages/content-mgmt/components";
 import { SendResultsModal } from "@/pages/content-mgmt/components";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import {
+  BulkActionBar,
   PageHeader,
   PageStats,
   ReordableDataTable,
@@ -34,6 +38,8 @@ import {
   useGetAllVouchersQuery,
   useGetVoucherStatsQuery,
 } from "@/store/api/voucherQueryApi";
+import { FilterSelect } from "@/pages/orders-mgmt/components";
+import { BulkUploadButton } from "@/components/shared/BulkUploadButton";
 interface Voucher {
   id: string;
   code: string;
@@ -59,12 +65,21 @@ interface Voucher {
   creatorPhone: string;
 }
 const LIMIT = 20;
+interface Campaign {
+  _id: string;
+  name: string;
+}
 
+interface CampaignsResponse {
+  datas?: {
+    data: Campaign[];
+  };
+}
 interface VouchersListProps {
   // language: Language;
   // theme: Theme;
   // isSidebarCollapsed: boolean;
-  campaigns?: string;
+  campaigns?: CampaignsResponse;
   onVoucherClick: (voucherId: string) => void;
   onAddVoucher: () => void;
   refreshTrigger: number;
@@ -368,7 +383,7 @@ export function VouchersList({
           : expiringSoon
             ? isDark
               ? "text-orange-400"
-              : "text-orange-600"
+              : "text-orange-400"
             : isDark
               ? "text-gray-100"
               : "text-gray-900";
@@ -410,17 +425,20 @@ export function VouchersList({
     render?: (row: any) => React.ReactNode;
   }[];
 
+  const [isOpen, setIsOpen] = useState(false);
+
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [campaignFilter, setCampaignFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+
   const [websiteFilter, setWebsiteFilter] = useState<string>("all");
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(1000);
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
-  const [creatorSearch, setCreatorSearch] = useState("");
   const voucherQueryParams = useMemo(() => {
     const params: Record<string, any> = {
       page,
@@ -430,8 +448,11 @@ export function VouchersList({
     if (searchQuery) params.search = searchQuery;
     if (statusFilter !== "all") params.status = statusFilter.toUpperCase();
     if (campaignFilter !== "all") params.campId = campaignFilter;
-    // if (minAmount) params.amountMin = minAmount;
-    // if (maxAmount) params.amountMax = maxAmount;
+    if (paymentFilter !== "all")
+      params.paymentStatus = paymentFilter.toUpperCase();
+
+    if (minAmount) params.amountMin = minAmount;
+    if (maxAmount) params.amountMax = maxAmount;
     if (dateFrom !== "") params.startDate = dateFrom;
     if (dateTo !== "") params.endDate = dateTo;
 
@@ -445,6 +466,7 @@ export function VouchersList({
     minAmount,
     dateFrom,
     dateTo,
+    paymentFilter,
   ]);
   const {
     data: voucherData,
@@ -453,9 +475,9 @@ export function VouchersList({
     // refetch,
   } = useGetAllVouchersQuery(voucherQueryParams);
 
-  const allVouchers = voucherData?.datas?.data;
+  const allVouchers = voucherData?.data;
   const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
-  const hasMore = voucherData?.datas?.meta?.hasNextPage;
+  const hasMore = voucherData?.meta?.hasNextPage;
 
   const fetchNextPage = useCallback(() => {
     if (!hasMore || isFetching) return;
@@ -477,7 +499,15 @@ export function VouchersList({
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery]);
+  }, [
+    searchQuery,
+    statusFilter,
+    campaignFilter,
+    dateFrom,
+    dateTo,
+    minAmount,
+    maxAmount,
+  ]);
 
   const totalData = voucherData?.datas?.totalData;
 
@@ -490,29 +520,35 @@ export function VouchersList({
   const { theme } = useAppSelector((state) => state.settings);
 
   // Calculate min/max amounts from data
-  // const amountRange = useMemo(() => {
-  //   const amounts = vouchers.map((v) => v.amount);
-  //   return {
-  //     min: Math.min(...amounts),
-  //     max: Math.max(...amounts),
-  //   };
-  // }, [vouchers]);
+  const amountRange = useMemo(() => {
+    const amounts = vouchers.map((v) => v.amount);
+    return {
+      min: Math.min(...amounts),
+      max: Math.max(...amounts),
+    };
+  }, [vouchers]);
 
+  const isExpiringSoon = (date: string) => {
+    const daysUntilExpiry = Math.floor(
+      (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+  };
+
+  const isExpired = (date: string) => {
+    return new Date(date) < new Date();
+  };
   // Initialize slider values based on data
-  // const [isInitialized, setIsInitialized] = useState(false);
-  // if (!isInitialized && amountRange.min && amountRange.max) {
-  //   setMinAmount(amountRange.min);
-  //   setMaxAmount(amountRange.max);
-  //   setIsInitialized(true);
-  // }
+  const [isInitialized, setIsInitialized] = useState(false);
+  if (!isInitialized && amountRange.min && amountRange.max) {
+    setMinAmount(amountRange.min);
+    setMaxAmount(amountRange.max);
+    setIsInitialized(true);
+  }
 
   // Get unique values for filters
   // const campaigns = useMemo(() => {
   //   return Array.from(new Set(vouchers.map((v) => v.campaign))).sort();
-  // }, [vouchers]);
-
-  // const websites = useMemo(() => {
-  //   return Array.from(new Set(vouchers.map((v) => v.website))).sort();
   // }, [vouchers]);
 
   // Apply filters
@@ -539,11 +575,7 @@ export function VouchersList({
         return false;
       if (dateTo && new Date(voucher.createdAt) > new Date(dateTo))
         return false;
-      if (
-        creatorSearch &&
-        !voucher.creatorName.toLowerCase().includes(creatorSearch.toLowerCase())
-      )
-        return false;
+
       return true;
     });
   }, [
@@ -556,9 +588,92 @@ export function VouchersList({
     maxAmount,
     dateFrom,
     dateTo,
-    creatorSearch,
   ]);
 
+  const handleExportCSVVouchers = useCallback(() => {
+    const vouchersList = combinedVouchers ?? [];
+    if (!vouchersList.length) {
+      toast.message(t("noDataToExport") || "No vouchers to export");
+      return;
+    }
+
+    const escape = (v: any) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const columns = [
+      { key: "code", header: t("code"), get: (v: any) => v.code ?? "-" },
+      {
+        key: "assignee",
+        header: t("assignee"),
+        get: (v: any) => v?.assigneeInfo?.name ?? "-",
+      },
+      {
+        key: "contact",
+        header: t("contact"),
+        get: (v: any) => [v.email, v.phone].filter(Boolean).join(" | ") || "-",
+      },
+      {
+        key: "status",
+        header: t("status"),
+        get: (v: any) => getStatusLabel(v.status) ?? v.status ?? "-",
+      },
+      {
+        key: "amount",
+        header: t("amount"),
+        get: (v: any) =>
+          v.amount != null ? `₪${Number(v.amount).toLocaleString()}` : "-",
+      },
+      {
+        key: "remaining",
+        header: t("remaining"),
+        get: (v: any) =>
+          v.remainingAmount != null
+            ? `₪${Number(v.remainingAmount).toLocaleString()}`
+            : "-",
+      },
+      {
+        key: "expiry",
+        header: t("expiry"),
+        get: (v: any) => {
+          if (!v.expireDate) return "-";
+          let txt = formatDate(v.expireDate);
+          if (isExpired(v.expireDate)) txt += " (expired)";
+          else if (isExpiringSoon(v.expireDate)) txt += " (expiring soon)";
+          return txt;
+        },
+      },
+      {
+        key: "campaign",
+        header: t("campaign"),
+        get: (v: any) => v.campId ?? v.campaign?.name ?? "-",
+      },
+    ];
+
+    const csv = [
+      columns.map((c) => escape(c.header)).join(","),
+      ...vouchersList.map((v: any) =>
+        columns.map((c) => escape(c.get(v))).join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `vouchers_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [
+    vouchers,
+    t,
+    getStatusLabel,
+    formatDate,
+    isExpired,
+    isExpiringSoon,
+    combinedVouchers,
+  ]);
   // const handleSelectAll = () => {
   //   if (selectedVouchers.size === filteredVouchers.length) {
   //     setSelectedVouchers(new Set());
@@ -578,16 +693,6 @@ export function VouchersList({
   //   setSelectedVouchers(newSelected);
   // };
 
-  const isExpiringSoon = (date: string) => {
-    const daysUntilExpiry = Math.floor(
-      (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
-    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
-  };
-
-  const isExpired = (date: string) => {
-    return new Date(date) < new Date();
-  };
   const [messageComposerOpen, setMessageComposerOpen] = useState(false);
   const [sendResultsOpen, setSendResultsOpen] = useState(false);
   const [sendResults, _setSendResults] = useState([]);
@@ -685,8 +790,9 @@ export function VouchersList({
       </div>
 
       {/* Search and Filters */}
-      <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
-        <div className="relative w-[50vh]">
+      <div className="flex items-center justify-between flex-wrap mt-4 gap-4">
+        {/* Left: Search */}
+        <div className="flex-1 relative min-w-62.5">
           <SearchInput
             placeholder={t("search_voucher_placeholder")}
             searchTerm={searchQuery}
@@ -694,7 +800,35 @@ export function VouchersList({
             storageKey={SEARCH_STORAGE_KEY}
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Right: Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              isDark
+                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+            }`}
+          >
+            <NotebookPen className="w-4 h-4" />
+
+            {t("bulk_upload")}
+          </button>
+
+          <button
+            onClick={handleExportCSVVouchers}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              isDark
+                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+            }`}
+            title={t("downloadCSV")}
+          >
+            <Download className="w-4 h-4" />
+            <span>{t("downloadCSV")}</span>
+          </button>
+
           <FilterButton value={showFilters} onChange={setShowFilters} />
         </div>
       </div>
@@ -704,47 +838,77 @@ export function VouchersList({
         <div
           className={`px-6 py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Status Filter */}
             <div>
-              <label
-                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("status")}
-              </label>
-              <select
+              <FilterSelect
+                label={t("status")}
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-              >
-                <option value="all">{t("all_statuses")}</option>
-                <option value="active">{t("active")}</option>
-                <option value="assigned">{t("assigned")}</option>
-                <option value="redeemed">{t("redeemed")}</option>
-                <option value="expired">{t("expired")}</option>
-                <option value="cancelled">{t("cancelled")}</option>
-              </select>
+                onChange={(value) => setStatusFilter(value)}
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "assigned", label: t("assigned") },
+                  { value: "unassigned", label: t("unassigned") },
+                  { value: "waiting", label: t("waiting") },
+
+                  { value: "expired", label: t("expired") },
+                  { value: "redeemed", label: t("redeemed") },
+                ]}
+              />
             </div>
 
             {/* Campaign Filter */}
             <div>
+              <FilterSelect
+                label={t("campaign")}
+                value={campaignFilter}
+                onChange={(value) => setCampaignFilter(value)}
+                options={[
+                  { value: "all", label: t("all") },
+                  ...(campaigns?.datas?.data || []).map((campaign) => ({
+                    value: campaign._id,
+                    label: `${campaign.name}`,
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Payment status filter */}
+            <div>
+              <FilterSelect
+                label={t("payment_status")}
+                value={paymentFilter}
+                onChange={(value) => setPaymentFilter(value)}
+                options={[
+                  { value: "all", label: t("all") },
+                  { value: "unpaid", label: t("unpaid") },
+                  { value: "paid", label: t("paid") },
+                  { value: "failed", label: t("failed") },
+                ]}
+              />
+            </div>
+
+            {/* Date Range */}
+            <div>
               <label
                 className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
-                {t("campaign")}
+                {t("date_range")}
               </label>
-              <select
-                value={campaignFilter}
-                onChange={(e) => setCampaignFilter(e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-              >
-                <option value="all">{t("all_campaigns")}</option>
-                {campaigns?.datas?.data?.map((campaign) => (
-                  <option key={campaign._id} value={campaign._id}>
-                    {campaign.name} (₪{campaign.defaultAmount})
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                />
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                />
+              </div>
             </div>
 
             {/* Amount Range */}
@@ -755,7 +919,7 @@ export function VouchersList({
                 {t("amount_range")}
               </label>
               <div className="space-y-2">
-                <div className="relative pt-1">
+                <div className="relative pt-3">
                   <input
                     type="range"
                     min={amountRange.min}
@@ -798,58 +962,35 @@ export function VouchersList({
                 </div>
               </div>
             </div>
-
-            {/* Date Range */}
-            <div>
-              <label
-                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("date_range")}
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                />
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Clear All Filters Button */}
           {(statusFilter !== "all" ||
             campaignFilter !== "all" ||
             websiteFilter !== "all" ||
+            paymentFilter !== "all" ||
             searchQuery ||
             minAmount !== amountRange.min ||
             maxAmount !== amountRange.max ||
             dateFrom ||
-            dateTo ||
-            creatorSearch) && (
+            dateTo) && (
             <div className="mt-3">
               <button
                 onClick={() => {
                   setStatusFilter("all");
                   setCampaignFilter("all");
                   setWebsiteFilter("all");
-                  setSearchQuery("");
+                  setPaymentFilter("");
+                  setSearchQuery("all");
                   setMinAmount(amountRange.min);
                   setMaxAmount(amountRange.max);
                   setDateFrom("");
                   setDateTo("");
-                  setCreatorSearch("");
                 }}
                 className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
               >
                 <X className="w-4 h-4" />
-                {t("clear_all_filters")}
+                {t("clear_all")}
               </button>
             </div>
           )}
@@ -858,70 +999,28 @@ export function VouchersList({
 
       {/* Bulk Actions */}
       {selectedVouchers.size > 0 && (
-        <div
-          className={`px-6 py-3 transition-colors border-b ${isDark ? "bg-teal-900/20 border-teal-800" : "bg-teal-50 border-teal-200"}`}
-        >
-          <div className="flex items-center justify-between">
-            <span
-              className={`text-sm ${isDark ? "text-teal-100" : "text-teal-900"}`}
-            >
-              {selectedVouchers.size} {t("voucher")}
-              {selectedVouchers.size !== 1 ? t("plural_s") : ""}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowBulkActions(!showBulkActions)}
-                className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
-              >
-                <span>{t("actions")}</span>
-                {showBulkActions ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-              <button
-                onClick={() => setSelectedVouchers(new Set())}
-                className={`p-1.5 rounded transition-colors ${isDark ? "text-teal-400 hover:bg-teal-900/30" : "text-teal-600 hover:bg-teal-100"}`}
-                title={t("clear_selection")}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {showBulkActions && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                onClick={() => setMessageComposerOpen(true)}
-              >
-                <MessageSquare className="w-4 h-4" /> {t("send_message")}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-                onClick={handleSendVouchers}
-              >
-                <Send className="w-4 h-4" /> {t("re_send_vouchers")}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-              >
-                <Calendar className="w-4 h-4" /> {t("extend_expiration")}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
-              >
-                <RefreshCw className="w-4 h-4" /> {t("change_status")}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${isDark ? "text-red-400 border-red-700 hover:bg-red-900/20" : "text-red-600 border-red-300 hover:bg-red-50"}`}
-              >
-                <XCircle className="w-4 h-4" /> {t("cancel_vouchers")}
-              </button>
-            </div>
-          )}
-        </div>
+        <BulkActionBar
+          selectedItemCount={selectedVouchers.size}
+          hancleClearSelection={() => setSelectedVouchers(new Set())}
+          handleSendMessage={() => {
+            setMessageComposerOpen(true);
+          }}
+          handleSendVouchers={() => {
+            console.log("Resending vouchers...");
+          }}
+          handleExtendExpiration={() => {
+            console.log("Extending expiration...");
+          }}
+          handleCancelVouchers={() => {
+            console.log("Cancelling vouchers...");
+          }}
+          // handleBulkDelete={() => {
+          //   console.log("Deleting selected...");
+          // }}
+          handleBulkStatusChange={(status) => {
+            console.log("Status changed to:", status);
+          }}
+        />
       )}
 
       {/* Scrollable Table Content */}
@@ -969,6 +1068,16 @@ export function VouchersList({
         results={sendResults}
         theme={theme}
       />
+      <div>
+        {isOpen && (
+          <div>
+            <BulkUploadButton
+              isOpen={isOpen}
+              onClose={() => setIsOpen(false)}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
