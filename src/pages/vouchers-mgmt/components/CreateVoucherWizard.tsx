@@ -161,41 +161,44 @@ export function AddVoucherWizard({
     xlsFile: null,
   });
 
-  const stepPayloadMap = {
-    campaignId: formData.campaign,
+  const stepPayloadMap = [
+    {
+      campaignId: formData.campaign,
 
-    amount: formData.amount,
-    customAmount: formData.customAmount,
+      amount: formData.amount,
+      // customAmount: formData.customAmount,
 
-    creationType: formData.creationType,
-    noOfVoucher: formData.bulkCount,
-    bulkCreateAssigned: formData.bulkCreateAssigned,
+      // creationType: formData.creationType,
+      noOfVoucher: formData.bulkCount,
+      // bulkCreateAssigned: formData.bulkCreateAssigned,
 
-    // Purchaser (person paying / ordering)
-    purchaserName: formData.purchaserName,
-    purchaserEmail: formData.purchaserEmail,
-    purchaserPhone: formData.purchaserPhone,
-    purchaserCountryCode: formData.purchaserCountryCode,
+      //  (person paying / ordering)
+      purchaserName: formData.purchaserName,
+      // purchaserEmail: formData.purchaserEmail,
+      purchaserPhone: formData.purchaserPhone,
+      purchaserCountryCode: formData.purchaserCountryCode,
 
-    // Assignee (person who will receive / be responsible)
-    assigneeName: formData.assigneeName,
-    assigneeEmail: formData.assigneeEmail,
-    assigneePhone: formData.assigneePhone,
-    assigneeCountryCode: formData.assigneeCountryCode,
+      //  (person who will receive / be responsible)
+      assigneeName: formData.assigneeName,
+      // assigneeEmail: formData.assigneeEmail,
+      assigneePhone: formData.assigneePhone,
+      assigneeCountryCode: formData.assigneeCountryCode,
 
-    // Message / communication
-    message: formData.message || "",
-    smsMessage: formData.smsMessage || "",
-    sendEmail: formData.sendEmail ?? true,
+      // Message / communication
+      message: formData.message || "",
+      smsMessage: formData.smsMessage || "",
+      sendEmail: formData.sendEmail ?? true,
 
-    // Campaign / gift / voucher expiration
-    expireDate: formData.expirationDate,
+      // Campaign / gift / voucher expiration
+      expireDate: formData.expirationDate,
 
-    // Bulk creation via file
-    xlsFile: formData.xlsFile,
+      // Bulk creation via file
+      // xlsFile: formData.xlsFile,
 
-    // websites:             formData.websites,
-  };
+      // websites: formData.websites,
+    },
+  ];
+
   console.log("🚀 ~ AddVoucherWizard ~ stepPayloadMap:", stepPayloadMap);
   const [voucherId, setVoucherId] = useState("");
   const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
@@ -223,13 +226,12 @@ export function AddVoucherWizard({
           };
         }
 
-        // Single request — create + set initial data
         const res = await createVoucher(payload).unwrap();
 
-        // Now you have the real ID
         setVoucherId(res.id);
 
         onClose();
+
         toast.success(isPublish ? t("business_published") : t("draft_saved"));
       } catch (err: any) {
         toast.error(err?.data?.message || t("draft_failed"));
@@ -242,6 +244,7 @@ export function AddVoucherWizard({
 
     await saveDraft(false);
   };
+
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
 
@@ -335,7 +338,6 @@ export function AddVoucherWizard({
     setIsPublishing(false);
   };
   const [createdVouchers, setCreatedVouchers] = useState<any[]>([]);
-  console.log("🚀 ~ AddVoucherWizard ~ createdVouchers:", createdVouchers);
   const [xlsValidation, setXlsValidation] = useState<{
     valid: number;
     invalid: number;
@@ -416,7 +418,6 @@ export function AddVoucherWizard({
   };
 
   const handleCampaignChange = (campaignId: string) => {
-    console.log("🚀 ~ handleCampaignChange ~ campaignId:", campaignId);
     setFormData((prev) => ({
       ...prev,
       campaign: campaignId,

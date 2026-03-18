@@ -64,6 +64,7 @@ interface VouchersListProps {
   // language: Language;
   // theme: Theme;
   // isSidebarCollapsed: boolean;
+  campaigns?: string;
   onVoucherClick: (voucherId: string) => void;
   onAddVoucher: () => void;
   refreshTrigger: number;
@@ -167,6 +168,7 @@ const USER_ROLE = "admin";
 export function VouchersList({
   onVoucherClick,
   onAddVoucher,
+  campaigns,
   // refreshTrigger,
 }: VouchersListProps) {
   const { textPrimary } = useThemeClasses();
@@ -410,7 +412,15 @@ export function VouchersList({
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [campaignFilter, setCampaignFilter] = useState<string>("all");
+  const [websiteFilter, setWebsiteFilter] = useState<string>("all");
+  const [minAmount, setMinAmount] = useState<number>(0);
+  const [maxAmount, setMaxAmount] = useState<number>(1000);
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
+  const [creatorSearch, setCreatorSearch] = useState("");
   const voucherQueryParams = useMemo(() => {
     const params: Record<string, any> = {
       page,
@@ -418,9 +428,24 @@ export function VouchersList({
     };
 
     if (searchQuery) params.search = searchQuery;
+    if (statusFilter !== "all") params.status = statusFilter.toUpperCase();
+    if (campaignFilter !== "all") params.campId = campaignFilter;
+    // if (minAmount) params.amountMin = minAmount;
+    // if (maxAmount) params.amountMax = maxAmount;
+    if (dateFrom !== "") params.startDate = dateFrom;
+    if (dateTo !== "") params.endDate = dateTo;
 
     return params;
-  }, [page, searchQuery]);
+  }, [
+    page,
+    searchQuery,
+    statusFilter,
+    campaignFilter,
+    maxAmount,
+    minAmount,
+    dateFrom,
+    dateTo,
+  ]);
   const {
     data: voucherData,
     isLoading,
@@ -464,41 +489,31 @@ export function VouchersList({
   const [showBulkActions, setShowBulkActions] = useState(false);
   const { theme } = useAppSelector((state) => state.settings);
 
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [campaignFilter, setCampaignFilter] = useState<string>("all");
-  const [websiteFilter, setWebsiteFilter] = useState<string>("all");
-  const [minAmount, setMinAmount] = useState<number>(0);
-  const [maxAmount, setMaxAmount] = useState<number>(1000);
-  const [dateFrom, setDateFrom] = useState<string>("");
-  const [dateTo, setDateTo] = useState<string>("");
-  const [creatorSearch, setCreatorSearch] = useState("");
-
   // Calculate min/max amounts from data
-  const amountRange = useMemo(() => {
-    const amounts = vouchers.map((v) => v.amount);
-    return {
-      min: Math.min(...amounts),
-      max: Math.max(...amounts),
-    };
-  }, [vouchers]);
+  // const amountRange = useMemo(() => {
+  //   const amounts = vouchers.map((v) => v.amount);
+  //   return {
+  //     min: Math.min(...amounts),
+  //     max: Math.max(...amounts),
+  //   };
+  // }, [vouchers]);
 
   // Initialize slider values based on data
-  const [isInitialized, setIsInitialized] = useState(false);
-  if (!isInitialized && amountRange.min && amountRange.max) {
-    setMinAmount(amountRange.min);
-    setMaxAmount(amountRange.max);
-    setIsInitialized(true);
-  }
+  // const [isInitialized, setIsInitialized] = useState(false);
+  // if (!isInitialized && amountRange.min && amountRange.max) {
+  //   setMinAmount(amountRange.min);
+  //   setMaxAmount(amountRange.max);
+  //   setIsInitialized(true);
+  // }
 
   // Get unique values for filters
-  const campaigns = useMemo(() => {
-    return Array.from(new Set(vouchers.map((v) => v.campaign))).sort();
-  }, [vouchers]);
+  // const campaigns = useMemo(() => {
+  //   return Array.from(new Set(vouchers.map((v) => v.campaign))).sort();
+  // }, [vouchers]);
 
-  const websites = useMemo(() => {
-    return Array.from(new Set(vouchers.map((v) => v.website))).sort();
-  }, [vouchers]);
+  // const websites = useMemo(() => {
+  //   return Array.from(new Set(vouchers.map((v) => v.website))).sort();
+  // }, [vouchers]);
 
   // Apply filters
   const filteredVouchers = useMemo(() => {
@@ -543,36 +558,6 @@ export function VouchersList({
     dateTo,
     creatorSearch,
   ]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const total = filteredVouchers.length;
-    const assigned = filteredVouchers.filter(
-      (v) => v.status === "assigned" || v.status === "redeemed",
-    ).length;
-    const redeemed = filteredVouchers.filter(
-      (v) => v.status === "redeemed",
-    ).length;
-    const expired = filteredVouchers.filter(
-      (v) => v.status === "expired",
-    ).length;
-    const totalBalance = filteredVouchers.reduce(
-      (sum, v) => sum + v.remainingAmount,
-      0,
-    );
-    const revenue = filteredVouchers
-      .filter((v) => v.status === "redeemed")
-      .reduce((sum, v) => sum + v.amount, 0);
-
-    return {
-      total,
-      assigned,
-      redeemed,
-      expired,
-      totalBalance,
-      revenue,
-    };
-  }, [filteredVouchers]);
 
   // const handleSelectAll = () => {
   //   if (selectedVouchers.size === filteredVouchers.length) {
@@ -682,7 +667,7 @@ export function VouchersList({
     <div className={`flex-1 flex flex-col transition-all duration-300`}>
       {/* Page Title and Actions */}
       <div
-        className={`border-b transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
+        className={`transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
       >
         <PageHeader
           title={t("vouchers_management")}
@@ -754,30 +739,9 @@ export function VouchersList({
                 className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
               >
                 <option value="all">{t("all_campaigns")}</option>
-                {campaigns.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Website Filter */}
-            <div>
-              <label
-                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("website")}
-              </label>
-              <select
-                value={websiteFilter}
-                onChange={(e) => setWebsiteFilter(e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-              >
-                <option value="all">{t("all_websites")}</option>
-                {websites.map((w) => (
-                  <option key={w} value={w}>
-                    {w}
+                {campaigns?.datas?.data?.map((campaign) => (
+                  <option key={campaign._id} value={campaign._id}>
+                    {campaign.name} (₪{campaign.defaultAmount})
                   </option>
                 ))}
               </select>
@@ -856,22 +820,6 @@ export function VouchersList({
                   className={`w-1/2 px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 />
               </div>
-            </div>
-
-            {/* Creator Search */}
-            <div>
-              <label
-                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("creator_search")}
-              </label>
-              <input
-                type="text"
-                value={creatorSearch}
-                onChange={(e) => setCreatorSearch(e.target.value)}
-                placeholder={t("creator_name_placeholder")}
-                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
-              />
             </div>
           </div>
 

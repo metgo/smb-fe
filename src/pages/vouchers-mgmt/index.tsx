@@ -73,6 +73,7 @@ export default function VouchersMgmtPage() {
             onVoucherClick={handleVoucherClick}
             onAddVoucher={handleAddVoucher}
             refreshTrigger={refreshTrigger}
+            campaigns={campaigns}
           />
         </div>
 
