@@ -116,7 +116,7 @@ export default function NotificationsMgmtPage() {
   }, [notifications?.data, page]);
 
   useEffect(() => {
-    setPage(1)
+    setPage(1);
   }, [readFilter, typeFilter, itemTypeFilter]);
 
   const fetchNextPage = () => {
@@ -387,8 +387,9 @@ export default function NotificationsMgmtPage() {
                           {/* Unread dot indicator */}
                           {!notification.isRead && (
                             <span
-                              className={`absolute top-6 ${isRTL ? "left-4" : "right-4"
-                                } w-2.5 h-2.5 bg-blue-500 rounded-full`}
+                              className={`absolute top-6 ${
+                                isRTL ? "left-4" : "right-4"
+                              } w-2.5 h-2.5 bg-blue-500 rounded-full`}
                             ></span>
                           )}
 

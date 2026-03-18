@@ -18,8 +18,6 @@ import SortIcon from "./SortIcon";
 import EmptyState from "./EmptyState";
 import SkeletonRow from "./SkeletonRow";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface Column<T> {
   key: keyof T | "checkbox" | "actions" | string;
   label: string;
@@ -63,7 +61,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   isDataLoading = false,
   storageKey = "dataTableColumnOrder",
 }: DataTableProps<T>) {
-  const { t: tc } = useTranslation('common')
+  const { t: tc } = useTranslation("common");
   const { isDark, isRTL, textSecondary } = useThemeClasses();
   const initialLoadRef = useRef(true);
 
@@ -118,7 +116,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   const columnKeys = useMemo(
     () => columns.map((c) => c.key as string).join("|"),
-    [columns]
+    [columns],
   );
 
   useEffect(() => {
@@ -156,7 +154,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     if (!sortConfig.field || !sortConfig.direction || !data) return data ?? [];
     const field = sortConfig.field;
     return [...data].sort((a, b) =>
-      compareValues(a[field], b[field], sortConfig.direction as "asc" | "desc")
+      compareValues(a[field], b[field], sortConfig.direction as "asc" | "desc"),
     );
   }, [data, sortConfig.field, sortConfig.direction]);
 
@@ -171,11 +169,15 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   const handleDragOver = useCallback(
     (e: React.DragEvent, colKey: string) => {
       e.preventDefault();
-      if (!PINNED_ALL.has(colKey) && draggedColumn && !PINNED_ALL.has(draggedColumn)) {
+      if (
+        !PINNED_ALL.has(colKey) &&
+        draggedColumn &&
+        !PINNED_ALL.has(draggedColumn)
+      ) {
         setDragOverColumn(colKey);
       }
     },
-    [draggedColumn]
+    [draggedColumn],
   );
 
   const handleDrop = useCallback(
@@ -201,7 +203,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       setDraggedColumn(null);
       setDragOverColumn(null);
     },
-    [draggedColumn]
+    [draggedColumn],
   );
 
   const handleDragEnd = useCallback(() => {
@@ -211,12 +213,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   // Selection
   const allSelected = useMemo(
-    () => data?.length > 0 && data.every((item) => selectedItems?.has(item[rowKey])),
-    [data, selectedItems, rowKey]
+    () =>
+      data?.length > 0 &&
+      data.every((item) => selectedItems?.has(item[rowKey])),
+    [data, selectedItems, rowKey],
   );
   const someSelected = useMemo(
     () => !!(selectedItems && selectedItems.size > 0 && !allSelected),
-    [selectedItems, allSelected]
+    [selectedItems, allSelected],
   );
 
   const toggleAll = useCallback(() => {
@@ -238,7 +242,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       next.has(key) ? next.delete(key) : next.add(key);
       onSelectionChange(next);
     },
-    [selectedItems, rowKey, onSelectionChange]
+    [selectedItems, rowKey, onSelectionChange],
   );
 
   // Sticky styles
@@ -262,7 +266,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       }
       return {};
     },
-    [colWidths]
+    [colWidths],
   );
 
   const getStickyBgClass = useCallback(
@@ -290,7 +294,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
       return clsx(bgBase, shadowClass);
     },
-    [isDark, isScrolledX]
+    [isDark, isScrolledX],
   );
 
   const getStickyHeaderBgClass = useCallback(
@@ -309,7 +313,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
         : "";
       return clsx(bg, shadow);
     },
-    [isDark, isScrolledX]
+    [isDark, isScrolledX],
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -318,13 +322,13 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       className={clsx(
         "rounded-xl border overflow-hidden shadow-sm",
         "transition-shadow duration-200 hover:shadow-md",
-        isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white"
+        isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white",
       )}
     >
       {/* InfiniteScroll Loader - placed after table so it appears at bottom */}
       <InfiniteScroll
         dataLength={data?.length || 0}
-        next={next || (() => { })}
+        next={next || (() => {})}
         hasMore={hasMore || false}
         scrollableTarget="scrollableDiv"
         loader={null}
@@ -339,13 +343,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             scrollbarWidth: "none",
           }}
         >
-
           <table className="w-full border-collapse min-w-full">
             {/* Sticky Header */}
             <thead
               className={clsx(
-                "sticky top-0 z-40 border-b",   // ← This makes header sticky
-                isDark ? "bg-gray-900 border-gray-800" : "bg-gray-50 border-gray-200"
+                "sticky top-0 z-40 border-b", // ← This makes header sticky
+                isDark
+                  ? "bg-gray-900 border-gray-800"
+                  : "bg-gray-50 border-gray-200",
               )}
             >
               <tr>
@@ -358,7 +363,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   const isDraggable = !isPinned;
                   const field = column.key as keyof T;
                   const isDragging = draggedColumn === colKey;
-                  const isOver = dragOverColumn === colKey && draggedColumn !== colKey;
+                  const isOver =
+                    dragOverColumn === colKey && draggedColumn !== colKey;
 
                   const stickyStyle: React.CSSProperties = isPinned
                     ? { ...getStickyStyle(colKey), zIndex: 30 }
@@ -367,7 +373,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   return (
                     <th
                       key={colKey}
-                      ref={(el) => { thRefs.current[colKey] = el; }}
+                      ref={(el) => {
+                        thRefs.current[colKey] = el;
+                      }}
                       style={{ width: column.width, ...stickyStyle }}
                       draggable={isDraggable}
                       onDragStart={() => handleDragStart(colKey)}
@@ -386,10 +394,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                         isDragging && "opacity-40",
                         isOver && (isDark ? "bg-teal-900/30" : "bg-teal-50"),
                         isSortable &&
-                        (isDark
-                          ? "hover:bg-gray-800 hover:text-gray-200"
-                          : "hover:bg-gray-100 hover:text-gray-700"),
-                        getStickyHeaderBgClass(colKey)
+                          (isDark
+                            ? "hover:bg-gray-800 hover:text-gray-200"
+                            : "hover:bg-gray-100 hover:text-gray-700"),
+                        getStickyHeaderBgClass(colKey),
                       )}
                     >
                       {isOver && (
@@ -406,16 +414,26 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                             "cursor-pointer transition-colors",
                             isDark
                               ? "border-gray-600 data-[state=checked]:bg-teal-500 ... "
-                              : "border-gray-300 data-[state=checked]:bg-teal-600 ..."
+                              : "border-gray-300 data-[state=checked]:bg-teal-600 ...",
                           )}
                         />
                       ) : (
-                        <div className={clsx("flex items-center gap-1.5", isRTL && "flex-row-reverse")}>
+                        <div
+                          className={clsx(
+                            "flex items-center gap-1.5",
+                            isRTL && "flex-row-reverse",
+                          )}
+                        >
                           {isDraggable && (
                             <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-30 transition-opacity duration-150" />
                           )}
                           <span>{column.label}</span>
-                          {isSortable && <SortIcon field={colKey} sortConfig={sortConfig as any} />}
+                          {isSortable && (
+                            <SortIcon
+                              field={colKey}
+                              sortConfig={sortConfig as any}
+                            />
+                          )}
                         </div>
                       )}
                     </th>
@@ -425,18 +443,24 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </thead>
 
             {/* Body - scrolls naturally inside the same table */}
-            <tbody className={clsx(
-              "divide-y",
-              isDark ? "divide-gray-800" : "divide-gray-100"
-            )}>
-              {(hasMore || isDataLoading) && (!sortedData || sortedData.length === 0) ? (
+            <tbody
+              className={clsx(
+                "divide-y",
+                isDark ? "divide-gray-800" : "divide-gray-100",
+              )}
+            >
+              {(hasMore || isDataLoading) &&
+              (!sortedData || sortedData.length === 0) ? (
                 Array.from({ length: 12 }).map((_, i) => (
                   <SkeletonRow key={i} cols={columnOrder.length} />
                 ))
-              ) : ((!sortedData || sortedData.length === 0) && !(hasMore || isDataLoading)) ? (
+              ) : (!sortedData || sortedData.length === 0) &&
+                !(hasMore || isDataLoading) ? (
                 <tr>
                   <td colSpan={columnOrder.length} className="h-full">
-                    <EmptyState message={t ? t("no_data") : "No data available"} />
+                    <EmptyState
+                      message={t ? t("no_data") : "No data available"}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -456,7 +480,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                             : "bg-teal-50/60"
                           : isDark
                             ? "bg-gray-900 hover:bg-gray-800/60"
-                            : "bg-white hover:bg-gray-50"
+                            : "bg-white hover:bg-gray-50",
                       )}
                     >
                       {columnOrder.map((colKey) => {
@@ -469,7 +493,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                           <td
                             key={colKey}
                             style={getStickyStyle(colKey)}
-                            onClick={(e) => colKey === "checkbox" && e.stopPropagation()}
+                            onClick={(e) =>
+                              colKey === "checkbox" && e.stopPropagation()
+                            }
                             className={clsx(
                               "px-4 py-3 text-sm align-middle",
                               isDark ? "text-gray-300" : "text-gray-700",
@@ -478,7 +504,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                                 ? isDark
                                   ? "group-hover:bg-gray-800/60"
                                   : "group-hover:bg-gray-50"
-                                : undefined
+                                : undefined,
                             )}
                           >
                             {colKey === "checkbox" ? (
@@ -489,7 +515,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                                   "cursor-pointer border transition-colors",
                                   isDark
                                     ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                                    : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                                    : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
                                 )}
                               />
                             ) : column.render ? (
@@ -502,10 +528,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                           </td>
                         );
                       })}
-
                     </tr>
                   );
-
                 })
               )}
               <tr>
@@ -513,24 +537,24 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   colSpan={columnOrder.length}
                   className=" pt-2 text-center h-80"
                 >
-                  {(hasMore || isDataLoading) ? (
+                  {hasMore || isDataLoading ? (
                     <div className="flex items-center flex-col justify-center gap-3 pb-40">
                       <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
                       <div className="text-sm text-gray-400 dark:text-gray-500 font-medium tracking-wide">
-                        {tc('loading_text')}
+                        {tc("loading_text")}
                       </div>
                     </div>
-                  ) :
+                  ) : (
                     <div className={clsx(textSecondary, "pb-40")}>
-                      {tc('loading_end_text')}
+                      {tc("loading_end_text")}
                     </div>
-                  }
+                  )}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </InfiniteScroll>
-    </div >
+    </div>
   );
 }

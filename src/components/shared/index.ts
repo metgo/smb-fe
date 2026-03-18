@@ -9,6 +9,7 @@ import InfoTooltip from "./InfoTooltip";
 import ItemStatusBadge from "./ItemStatusBadge";
 import PageHeader from "./PageHeader";
 import PageStats from "./PageStats";
+import RichTextEditor from "./RichTextEditor";
 import SearchInput from "./SearchInput";
 import SelectableChips from "./SelectableChips";
 import Spinner from "./Spinner";
@@ -33,6 +34,7 @@ export {
   ViewModeToggle,
   SelectableChips,
   ItemStatusBadge,
+  RichTextEditor,
   ImageWithFallback,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,
