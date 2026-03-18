@@ -195,14 +195,19 @@ export function getLngWiseStr(
   }
 }
 
-
-export function compareValues(a: any, b: any, direction: "asc" | "desc"): number {
+export function compareValues(
+  a: any,
+  b: any,
+  direction: "asc" | "desc",
+): number {
   if (a == null && b == null) return 0;
   if (a == null) return direction === "asc" ? 1 : -1;
   if (b == null) return direction === "asc" ? -1 : 1;
 
-  const aDate = typeof a === "string" || typeof a === "number" ? new Date(a) : null;
-  const bDate = typeof b === "string" || typeof b === "number" ? new Date(b) : null;
+  const aDate =
+    typeof a === "string" || typeof a === "number" ? new Date(a) : null;
+  const bDate =
+    typeof b === "string" || typeof b === "number" ? new Date(b) : null;
 
   if (aDate && bDate && !isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
     return direction === "asc"
@@ -217,8 +222,16 @@ export function compareValues(a: any, b: any, direction: "asc" | "desc"): number
   }
   if (typeof a === "boolean" && typeof b === "boolean") {
     return direction === "asc"
-      ? a === b ? 0 : a ? 1 : -1
-      : a === b ? 0 : a ? -1 : 1;
+      ? a === b
+        ? 0
+        : a
+          ? 1
+          : -1
+      : a === b
+        ? 0
+        : a
+          ? -1
+          : 1;
   }
   if (a < b) return direction === "asc" ? -1 : 1;
   if (a > b) return direction === "asc" ? 1 : -1;

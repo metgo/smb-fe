@@ -1,8 +1,9 @@
-import { EmailEditorWrapper, ModalWrapper } from "@/components/wrapper";
-import { formatFromBackendTemplate } from "@/helpers/formatter";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { formatFromBackendTemplate } from "@/helpers/formatter";
 import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
+import { ModalWrapper } from "@/components/wrapper";
+import { RichTextEditor } from "@/components/shared";
 
 interface CreateNotificationWizardProps {
   t: (key: string) => string;
@@ -232,7 +233,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   {t("message_content")}
                 </label>
 
-                <EmailEditorWrapper
+                <RichTextEditor
                   value={formatFromBackendTemplate(editingNotification.message)}
                   onChange={(v) =>
                     setEditingNotification({
@@ -240,15 +241,17 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                       message: v,
                     })
                   }
-                  isRTL={editingNotification.language === "he"}
-                  previewData={{
-                    "Event Name": eventName || "Sample Event",
-                    "Event Date": startDate || "2026-01-15",
-                    "Event Time": eventDays?.[0]?.startTime || "10:00",
-                    Venue: address || "Event Location",
-                    "First Name": "John",
-                    "Ticket QR": "[QR]",
-                  }}
+                  variables={[
+                    { label: "Event Name", value: eventName || "Sample Event" },
+                    { label: "Event Date", value: startDate || "2026-01-15" },
+                    {
+                      label: "Event Time",
+                      value: eventDays?.[0]?.startTime || "10:00",
+                    },
+                    { label: "Venue", value: address || "Event Location" },
+                    { label: "First Name", value: "John" },
+                    { label: "Ticket QR", value: "[QR]" },
+                  ]}
                 />
               </div>
 

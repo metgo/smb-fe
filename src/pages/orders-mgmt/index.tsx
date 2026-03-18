@@ -87,8 +87,7 @@ export default function OrdersMgmtPage() {
     (state) => state.auth,
   );
   const { isSuperadmin, isTraveller } = useUserRoles();
-  const { textSecondary, isDark, isRTL, language } =
-    useThemeClasses();
+  const { textSecondary, isDark, isRTL, language } = useThemeClasses();
 
   //view mode toggle
   const [isOpen, setIsOpen] = useState(false);
@@ -1091,10 +1090,11 @@ export default function OrdersMgmtPage() {
           {canViewOrders && (
             <button
               onClick={getVideoStream}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                isDark
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+              }`}
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -1137,10 +1137,11 @@ export default function OrdersMgmtPage() {
               onClick={
                 orderSummaryClick ? handleExportCSVSummary : handleExportCSV
               }
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                isDark
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+              }`}
               title={t("downloadCSV")}
             >
               <Download className="w-4 h-4" />
@@ -1153,10 +1154,11 @@ export default function OrdersMgmtPage() {
                 {!orderSummaryClick && (
                   <button
                     onClick={() => setShowColumnSettings(!showColumnSettings)}
-                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                      }`}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                    }`}
                   >
                     <Columns className="w-5 h-5" />
 
@@ -1219,9 +1221,9 @@ export default function OrdersMgmtPage() {
                   onChange={(value) =>
                     orderSummaryClick
                       ? setSummaryFilters((prev) => ({
-                        ...prev,
-                        status: value,
-                      }))
+                          ...prev,
+                          status: value,
+                        }))
                       : setFilters((prev) => ({ ...prev, status: value }))
                   }
                   options={[
@@ -1257,17 +1259,17 @@ export default function OrdersMgmtPage() {
                   onDateFromChange={(value) =>
                     orderSummaryClick
                       ? setSummaryFilters((prev) => ({
-                        ...prev,
-                        startDate: value,
-                      }))
+                          ...prev,
+                          startDate: value,
+                        }))
                       : setFilters((prev) => ({ ...prev, startDate: value }))
                   }
                   onDateToChange={(value) =>
                     orderSummaryClick
                       ? setSummaryFilters((prev) => ({
-                        ...prev,
-                        endDate: value,
-                      }))
+                          ...prev,
+                          endDate: value,
+                        }))
                       : setFilters((prev) => ({ ...prev, endDate: value }))
                   }
                   t={t}
@@ -1374,29 +1376,30 @@ export default function OrdersMgmtPage() {
               className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
             >
               {/* Loading state */}
-              {(<OrderListView
-                isLoading={
-                  orderSummaryClick ? isLoadingOrderSummary : isLoading
-                }
-                storageKey={
-                  orderSummaryClick
-                    ? "orderSummaryTableColumnOrder"
-                    : "ordersTableColumnOrder"
-                }
-                hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
-                orders={orderSummaryClick ? orderSummaries : orders}
-                combinedOrders={
-                  orderSummaryClick ? combinedOrdersSummary : combinedOrders
-                }
-                fetchNextPage={
-                  orderSummaryClick ? fetchNextPageSummary : fetchNextPage
-                }
-                selectedOrders={selectedOrders}
-                setSelectedOrders={setSelectedOrders}
-                handleRowClick={handleRowClick}
-                columns={orderSummaryClick ? summaryColumns : columns}
-              />
-              )}
+              {
+                <OrderListView
+                  isLoading={
+                    orderSummaryClick ? isLoadingOrderSummary : isLoading
+                  }
+                  storageKey={
+                    orderSummaryClick
+                      ? "orderSummaryTableColumnOrder"
+                      : "ordersTableColumnOrder"
+                  }
+                  hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
+                  orders={orderSummaryClick ? orderSummaries : orders}
+                  combinedOrders={
+                    orderSummaryClick ? combinedOrdersSummary : combinedOrders
+                  }
+                  fetchNextPage={
+                    orderSummaryClick ? fetchNextPageSummary : fetchNextPage
+                  }
+                  selectedOrders={selectedOrders}
+                  setSelectedOrders={setSelectedOrders}
+                  handleRowClick={handleRowClick}
+                  columns={orderSummaryClick ? summaryColumns : columns}
+                />
+              }
             </div>
           ) : (
             <div className="overflow-y-auto">
@@ -1421,7 +1424,7 @@ export default function OrdersMgmtPage() {
         </>
       )}
 
-      {(selectedOrder && showOrderDetails) &&
+      {selectedOrder && showOrderDetails && (
         <OrderDetailsModal
           t={t}
           refetch={orderIdrefetch}
@@ -1430,7 +1433,8 @@ export default function OrdersMgmtPage() {
           isFetching={isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
-        />}
+        />
+      )}
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal stream={stream} onClose={stopCamera} />
