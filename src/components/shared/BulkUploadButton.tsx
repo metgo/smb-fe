@@ -43,12 +43,11 @@ export const BulkUploadButton = ({ isOpen, onClose }: OrdersModalProps) => {
         const jsonData = XLSX.utils.sheet_to_json(sheet);
 
         const formattedData = jsonData.map((row: any) => ({
-          assigneeName: row.Name || "",
-          campaignId: row.CampCode,
+          assigneeName: row.AssigneeName || "",
           noOfVoucher: Number(row.NoOfVoucher),
           assigneeEmail: row.AssigneeEmail || "",
-          assigneeCountryCode: row.CountryCode || "",
-          assigneePhone: row.Phone || "",
+          assigneeCountryCode: row.AssigneeCountryCode || "",
+          assigneePhone: row.AssigneePhone || "",
         }));
 
         setXlsValidation({

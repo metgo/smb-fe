@@ -25,13 +25,20 @@ export const voucherMutationApi = createApi({
       invalidatesTags: ["Voucher"],
     }),
 
-    deleteVoucher: builder.mutation<any, { voucherId: string }>({
-      query: ({ voucherId }) => ({
-        url: `${endpoints.vouchers}/${voucherId}`,
-        method: "DELETE",
+    sendEmail: builder.mutation<any, any>({
+      query: (body) => ({
+        url: endpoints.sendemail,
+        method: "POST",
+        data: body,
       }),
     }),
-
+    sendSMS: builder.mutation<any, any>({
+      query: (body) => ({
+        url: endpoints.sendsms,
+        method: "POST",
+        data: body,
+      }),
+    }),
     updateVoucher: builder.mutation<any, { body: any; voucherId: string }>({
       query: ({ body, voucherId }) => ({
         url: `${endpoints.vouchers}/${voucherId}`,
@@ -54,6 +61,7 @@ export const voucherMutationApi = createApi({
 export const {
   useCreateVoucherMutation,
   useUpdateVoucherMutation,
-  useDeleteVoucherMutation,
   useBulkVouchersUpdateMutation,
+  useSendEmailMutation,
+  useSendSMSMutation,
 } = voucherMutationApi;

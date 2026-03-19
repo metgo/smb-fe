@@ -1,14 +1,5 @@
 import clsx from "clsx";
-import {
-  Download,
-  Mail,
-  Trash,
-  MessageSquare,
-  Send,
-  Calendar,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
+import { Download, Mail, Trash, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { StatusChangeBtn } from "../btns";
@@ -22,11 +13,9 @@ interface BulkActionBarProps {
   handleResendToVendor?: (v: string) => void;
   handleResendToCustomer?: (v: string) => void;
   handleExportCSV?: () => void;
-  handleSendMessage?: () => void;
-  handleSendVouchers?: () => void;
-  handleExtendExpiration?: () => void;
-  handleChangeStatus?: () => void;
-  handleCancelVouchers?: () => void;
+  handleSendSMS?: () => void;
+  handleSendEmail?: () => void;
+  // handleExtendExpiration?: () => void;
 }
 
 const BulkActionBar: React.FC<BulkActionBarProps> = ({
@@ -37,12 +26,9 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   handleResendToVendor,
   handleExportCSV,
   handleResendToCustomer,
-
-  handleSendMessage,
-  handleSendVouchers,
-  handleExtendExpiration,
-  handleChangeStatus,
-  handleCancelVouchers,
+  handleSendEmail,
+  handleSendSMS,
+  // handleExtendExpiration,
 }) => {
   const { t } = useTranslation("common");
   const { t: to } = useTranslation("orders");
@@ -146,33 +132,33 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           </button>
         )}
         {/* New Bulk Actions */}
-        {handleSendMessage && (
+
+        {handleSendEmail && (
           <button
             className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
               isDark
                 ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             }`}
-            onClick={handleSendMessage}
+            onClick={handleSendEmail}
           >
-            <MessageSquare className="w-4 h-4" /> {tv("send_message")}
+            <Mail className="w-4 h-4" /> {tv("send_email")}
           </button>
         )}
-
-        {handleSendVouchers && (
+        {handleSendSMS && (
           <button
             className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
               isDark
                 ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             }`}
-            onClick={handleSendVouchers}
+            onClick={handleSendSMS}
           >
-            <Send className="w-4 h-4" /> {tv("re_send_vouchers")}
+            <Send className="w-4 h-4" /> {tv("send_sms")}
           </button>
         )}
 
-        {handleExtendExpiration && (
+        {/* {handleExtendExpiration && (
           <button
             className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
               isDark
@@ -183,33 +169,8 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
           >
             <Calendar className="w-4 h-4" /> {tv("extend_expiration")}
           </button>
-        )}
+        )} */}
 
-        {handleChangeStatus && (
-          <button
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
-              isDark
-                ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-            }`}
-            onClick={handleChangeStatus}
-          >
-            <RefreshCw className="w-4 h-4" /> {tv("change_status")}
-          </button>
-        )}
-
-        {handleCancelVouchers && (
-          <button
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
-              isDark
-                ? "text-red-400 border-red-700 hover:bg-red-900/20"
-                : "text-red-600 border-red-300 hover:bg-red-50"
-            }`}
-            onClick={handleCancelVouchers}
-          >
-            <XCircle className="w-4 h-4" /> {tv("cancel_vouchers")}
-          </button>
-        )}
         {/* Exports */}
         {/* <div className="flex items-center gap-2">
           <span>{t("export")}: </span>

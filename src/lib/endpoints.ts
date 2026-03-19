@@ -65,6 +65,8 @@ export const endpoints = {
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
+  sendemail: "/vouchers/send-email",
+  sendsms: "/vouchers/send-sms",
 
   users: "/users",
   userInfo: "/users/me",

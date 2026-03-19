@@ -14,6 +14,8 @@ type WizardFooterProps = {
   onNext: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
+  onDone?: () => void;
+  isPublishButton?: boolean;
 };
 
 export default function WizardFooter({
@@ -25,6 +27,8 @@ export default function WizardFooter({
   onNext,
   onSaveDraft,
   onPublish,
+  onDone,
+  isPublishButton = true,
 }: WizardFooterProps) {
   const { t } = useTranslation("common");
   const { isRTL } = useAppSelector((state) => state.settings);
@@ -105,23 +109,38 @@ export default function WizardFooter({
             )}
           </button>
         ) : (
-          <button
-            onClick={onPublish}
-            disabled={isPublishing}
-            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            {isPublishing ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                {t("publishing")}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                {t("publish")}
-              </>
+          <>
+            {isPublishButton && (
+              <button
+                onClick={onPublish}
+                disabled={isPublishing}
+                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    {t("publishing")}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    {t("publish")}
+                  </>
+                )}
+              </button>
             )}
-          </button>
+
+            {onDone && (
+              <button
+                onClick={onDone}
+                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                <CheckCircle className="w-4 h-4" />
+
+                {t("done")}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

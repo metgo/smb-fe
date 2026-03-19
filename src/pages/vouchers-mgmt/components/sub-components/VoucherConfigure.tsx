@@ -1,18 +1,101 @@
+import { Download, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { useEffect, useState } from "react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface Props {
-  formData: any;
+  formData: IVoucherFormData;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   t: any;
   errors?: any;
-  isDark?: boolean;
+  parsedData?: ParsedData | undefined;
+  setParsedData?: (v: ParsedData | undefined) => void;
 }
 
 const VoucherConfigure = ({
   formData,
   setFormData,
-  isDark,
   t,
+  setParsedData,
   errors = {},
 }: Props) => {
+  const { isDark } = useThemeClasses();
+  const [formatData, setFormatData] = useState<ParsedData>();
+  const [_xlsValidation, setXlsValidation] = useState<{
+    valid: number;
+    invalid: number;
+    errors?: any[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (setParsedData) {
+      setParsedData(formatData);
+    }
+  }, [formatData]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      setFormData((prev: any) => ({ ...prev, xlsFile: file }));
+
+      const reader = new FileReader();
+
+      reader.onload = (evt) => {
+        const data = evt.target?.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+        const formattedData = (jsonData as ParsedData[]).map(
+          (row: ParsedData) => ({
+            assigneeName: row.AssigneeName || "",
+            noOfVoucher: Number(row.NoOfVoucher),
+            assigneeEmail: row.AssigneeEmail || "",
+            assigneeCountryCode: row.AssigneeCountryCode || "",
+            assigneePhone: row.AssigneePhone || "",
+          }),
+        );
+        console.log("🚀 ~ handleFileUpload ~ formattedData:", formattedData);
+
+        setXlsValidation({
+          valid: formattedData.length,
+          invalid: 0,
+          errors: [],
+        });
+        setFormatData(formattedData);
+        if (setParsedData) {
+          setParsedData(formattedData);
+        }
+      };
+
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  const handleDownload = () => {
+    const data = [
+      [
+        "AssigneeName",
+        "AssigneeEmail",
+        "AssigneeCountryCode",
+        "AssigneePhone",
+        "NoOfVoucher",
+      ],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sample");
+
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "sample_template.xlsx");
+  };
+
   if (formData.creationType === "single") {
     return (
       <div className="space-y-4">
@@ -285,7 +368,62 @@ const VoucherConfigure = ({
       </div>
     );
   }
+  if (formData.creationType === "upload") {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+          {t("upload_xls_file")}
+        </h3>
 
+        <div className="p-4 border rounded">
+          <button
+            className="flex items-center gap-2 text-teal-600 text-sm"
+            onClick={handleDownload}
+          >
+            <Download className="w-4 h-4" />
+            {t("download_sample_xls_template")}
+          </button>
+          <p className="text-xs text-gray-500 mt-1">
+            {t("use_template_for_correct_format")}
+          </p>
+        </div>
+
+        <div className="border-2 border-dashed rounded p-6 text-center">
+          <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+          <label className="cursor-pointer">
+            <span className="text-teal-600">{t("click_to_upload")}</span>
+            <input
+              type="file"
+              accept=".xls,.xlsx"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
+          {errors.xlsFile && (
+            <p className="text-red-500 text-xs mt-2">{errors.xlsFile}</p>
+          )}
+        </div>
+
+        {formData.xlsFile && (
+          <div className="p-4 border rounded">
+            <p className="text-sm mb-2">
+              {t("file")}: {formData.xlsFile.name}
+            </p>
+            {/* {xlsValidation && (
+              <div className="space-y-2 text-sm">
+                <span className="text-green-600">
+                  ✓ {t("valid_rows")}: {xlsValidation.valid}
+                </span>
+                <span className="text-red-600 block">
+                  ✗ {t("invalid_rows")}: {xlsValidation.invalid}
+                </span>
+              </div>
+            )} */}
+          </div>
+        )}
+      </div>
+    );
+  }
   return null;
 };
 

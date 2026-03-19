@@ -20,7 +20,8 @@
   "unassigned_vouchers": "Unassigned Vouchers",
   "available": "Available",
   "expiration_date": "Expiration Date",
-
+  "send_email": "Send Email",
+  "send_sms": "Send SMS",
   "purchaser_details_optional": "Purchaser Details (optional)",
   "email": "Email",
   "name": "Name",

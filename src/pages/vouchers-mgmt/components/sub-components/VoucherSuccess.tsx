@@ -1,21 +1,29 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Download } from "lucide-react";
-
+interface IVoucherResponse {
+  name: string;
+  campCode: string;
+  amount: number;
+  email: string;
+  countryCode: string | null;
+  phone: string;
+  emailSent: string;
+  paymentStatus: string;
+  smsSent: string;
+}
 interface Props {
-  createdVouchers: any[];
-  // onVoucherCreated: () => void;
-  t: any;
-  isDark?: boolean;
+  t: (key: string) => string;
+  response: IVoucherResponse[];
 }
 
 const VoucherSuccess = ({
-  createdVouchers,
-  // onVoucherCreated,
   t,
-  isDark,
-}: Props) => {
-  const handleDownload = () => {
-    if (createdVouchers.length === 0) return;
 
+  response,
+}: Props) => {
+  const { isDark } = useThemeClasses();
+
+  const handleDownload = () => {
     const headers = [
       "Voucher Code",
       "Assignee Name",
@@ -23,12 +31,12 @@ const VoucherSuccess = ({
       "Amount",
       "Status",
     ];
-    const rows = createdVouchers.map((v) => [
-      v.code,
-      v.assigneeName,
-      v.email,
-      v.amount,
-      v.status,
+    const rows = response.map((v) => [
+      v.campCode || "-",
+      v.name || "-",
+      v.email || "-",
+      v.amount ?? "-",
+      v.paymentStatus || "-",
     ]);
 
     const csvContent = [
@@ -47,14 +55,13 @@ const VoucherSuccess = ({
     URL.revokeObjectURL(url);
   };
 
-  const voucherCount = createdVouchers.length;
-
   return (
     <div className="space-y-6">
       {/* Success Message */}
       <div className="text-center py-6">
         <p className={`${isDark ? "text-gray-400" : "text-gray-600"}`}>
-          {voucherCount} {t("voucher", { count: voucherCount })}
+          {response?.length}{" "}
+          {response?.length === 1 ? t("voucher") : t("vouchers")}
         </p>
       </div>
 
@@ -74,7 +81,7 @@ const VoucherSuccess = ({
               }`}
             >
               <tr>
-                {["voucher_code", "assignee", "email", "amount", "status"].map(
+                {["voucher_code", "name", "email", "amount", "status"].map(
                   (key) => (
                     <th
                       key={key}
@@ -92,59 +99,39 @@ const VoucherSuccess = ({
             <tbody
               className={`${isDark ? "divide-gray-800" : "divide-gray-200"} divide-y`}
             >
-              {createdVouchers?.length === 0 ? (
+              {!response?.length ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className={`px-4 py-6 text-center text-sm ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
+                    className={`px-4 py-6 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
                     {t("no_vouchers")}
                   </td>
                 </tr>
               ) : (
-                createdVouchers.map((voucher, index) => (
+                response.map((item, index) => (
                   <tr key={index}>
                     <td
                       className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
                     >
-                      {voucher.code || "-"}
+                      {item.campCode || "-"}
                     </td>
                     <td
                       className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
                     >
-                      {voucher.assigneeName || "-"}
+                      {item.name || "-"}
                     </td>
                     <td
                       className={`${isDark ? "text-gray-400" : "text-gray-600"} px-4 py-3 text-sm`}
                     >
-                      {voucher.email || "-"}
+                      {item.email || "-"}
                     </td>
                     <td
                       className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
                     >
-                      {voucher.amount ? `₪${voucher.amount}` : "-"}
+                      {item.amount ? `₪${item.amount}` : "-"}
                     </td>
-                    <td className="px-4 py-3">
-                      {voucher.status ? (
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                            isDark
-                              ? "bg-green-900/30 text-green-300"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {voucher.status}
-                        </span>
-                      ) : (
-                        <span
-                          className={`${isDark ? "text-gray-100" : "text-gray-900"} text-sm`}
-                        >
-                          -
-                        </span>
-                      )}
-                    </td>
+                    <td>{item?.paymentStatus || "-"}</td>
                   </tr>
                 ))
               )}

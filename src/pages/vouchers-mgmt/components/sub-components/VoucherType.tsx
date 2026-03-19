@@ -1,9 +1,10 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
 interface VoucherTypeProps {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: IVoucherFormData;
+  setFormData: React.Dispatch<React.SetStateAction<IVoucherFormData>>;
   errors: Record<string, string>;
-  t?: any;
-  isDark?: boolean;
+  t: (key: string) => string;
 }
 
 const VoucherType = ({
@@ -11,8 +12,9 @@ const VoucherType = ({
   setFormData,
   errors,
   t,
-  isDark,
 }: VoucherTypeProps) => {
+  const { isDark } = useThemeClasses();
+
   return (
     <div className="space-y-4">
       <h3
@@ -80,7 +82,7 @@ const VoucherType = ({
       </label>
 
       {/* Upload XLS (commented out) */}
-      {/*
+
       <label
         className={`flex items-start gap-4 p-4 border-2 rounded-lg hover:border-teal-500 cursor-pointer transition-colors ${
           isDark ? "border-gray-700" : "border-gray-300"
@@ -101,12 +103,13 @@ const VoucherType = ({
             {t("upload_xls")}
           </div>
 
-          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+          <p
+            className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
             {t("upload_xls_description")}
           </p>
         </div>
       </label>
-      */}
 
       {errors.creationType && (
         <p className="text-red-500 text-xs">

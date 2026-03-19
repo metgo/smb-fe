@@ -9,12 +9,9 @@ import {
   CheckCircle,
   Package,
   Download,
-  NotebookPen,
 } from "lucide-react";
-import { MessageComposerModal } from "@/pages/content-mgmt/components";
-import { SendResultsModal } from "@/pages/content-mgmt/components";
+
 import { toast } from "sonner";
-import { useAppSelector } from "@/hooks/hooks";
 import {
   BulkActionBar,
   PageHeader,
@@ -32,30 +29,11 @@ import {
 } from "@/store/api/voucherQueryApi";
 import { FilterSelect } from "@/pages/orders-mgmt/components";
 import { BulkUploadButton } from "@/components/shared/BulkUploadButton";
-interface Voucher {
-  id: string;
-  code: string;
-  assigneeName: string;
-  email: string;
-  phone: string;
-  status:
-  | "active"
-  | "assigned"
-  | "redeemed"
-  | "expired"
-  | "cancelled"
-  | "UNASSIGNED";
-  amount: number;
-  remainingAmount: number;
-  expirationDate: string;
-  campaign: string;
-  website: string;
-  createdAt: string;
-  assignedAt?: string;
-  creatorName: string;
-  creatorEmail: string;
-  creatorPhone: string;
-}
+import {
+  useSendEmailMutation,
+  useSendSMSMutation,
+} from "@/store/api/voucherMutationApi";
+
 const LIMIT = 20;
 interface Campaign {
   _id: string;
@@ -68,118 +46,23 @@ interface CampaignsResponse {
   };
 }
 interface VouchersListProps {
-  // language: Language;
-  // theme: Theme;
-  // isSidebarCollapsed: boolean;
   campaigns?: CampaignsResponse;
   onVoucherClick: (voucherId: string) => void;
   onAddVoucher: () => void;
   refreshTrigger: number;
 }
 
-// Mock data generator
-const generateMockVouchers = (): Voucher[] => {
-  const statuses: Voucher["status"][] = [
-    "active",
-    "assigned",
-    "UNASSIGNED",
-
-    "redeemed",
-    "expired",
-    "cancelled",
-  ];
-  const campaigns = [
-    "Summer Sale 2024",
-    "New Year Promo",
-    "Spring Festival",
-    "Holiday Special",
-    "VIP Members",
-    "Welcome Bonus",
-  ];
-  const websites = [
-    "visitnegev.com",
-    "negevtourism.org",
-    "explorenegev.il",
-    "negev-adventures.com",
-  ];
-  const firstNames = [
-    "Yael",
-    "David",
-    "Sarah",
-    "Michael",
-    "Rachel",
-    "Daniel",
-    "Leah",
-    "Joshua",
-    "Miriam",
-    "Benjamin",
-  ];
-  const lastNames = [
-    "Cohen",
-    "Levi",
-    "Mizrahi",
-    "Peretz",
-    "Biton",
-    "Dahan",
-    "Avraham",
-    "Friedman",
-    "Katz",
-    "Ben-David",
-  ];
-
-  return Array.from({ length: 150 }, (_, i) => {
-    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const amount = [100, 200, 300, 500, 1000][Math.floor(Math.random() * 5)];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const remainingAmount =
-      status === "redeemed"
-        ? 0
-        : status === "expired" || status === "cancelled"
-          ? amount
-          : Math.floor(amount * Math.random());
-
-    return {
-      id: `voucher-${i + 1}`,
-      code: `VCH-${String(i + 1).padStart(6, "0")}`,
-      assigneeName: `${firstName} ${lastName}`,
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
-      phone: `+972-5${Math.floor(Math.random() * 9)}-${Math.floor(1000000 + Math.random() * 9000000)}`,
-      status,
-      amount,
-      remainingAmount,
-      expirationDate: new Date(
-        Date.now() + (Math.random() * 365 - 180) * 24 * 60 * 60 * 1000,
-      )
-        .toISOString()
-        .split("T")[0],
-      campaign: campaigns[Math.floor(Math.random() * campaigns.length)],
-      website: websites[Math.floor(Math.random() * websites.length)],
-      createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      assignedAt:
-        status !== "active"
-          ? new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0]
-          : undefined,
-      creatorName: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
-      creatorEmail: `${firstNames[Math.floor(Math.random() * firstNames.length)].toLowerCase()}.${lastNames[Math.floor(Math.random() * lastNames.length)].toLowerCase()}@example.com`,
-      creatorPhone: `+972-5${Math.floor(Math.random() * 9)}-${Math.floor(1000000 + Math.random() * 9000000)}`,
-    };
-  });
-};
 const USER_ROLE = "admin";
 
 const VouchersList = ({
   onVoucherClick,
   onAddVoucher,
   campaigns,
-  // refreshTrigger,
 }: VouchersListProps) => {
   const { textPrimary } = useThemeClasses();
   const { isDark } = useThemeClasses();
+  const [sendEmail] = useSendEmailMutation();
+  const [sendSMS] = useSendSMSMutation();
 
   const SEARCH_STORAGE_KEY = "voucherSearchTerm";
   // Permission check
@@ -205,9 +88,9 @@ const VouchersList = ({
         value:
           voucherStatsResponse?.totalRevenue != null
             ? voucherStatsResponse.totalRevenue.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
             : "0.00",
         label: t("generated_revenue"),
         icon: <DollarSign className="w-5 h-5 text-green-600" />,
@@ -218,12 +101,12 @@ const VouchersList = ({
         value:
           voucherStatsResponse?.totalRemainingBalance != null
             ? voucherStatsResponse.totalRemainingBalance.toLocaleString(
-              "en-US",
-              {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              },
-            )
+                "en-US",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              )
             : "0.00",
         label: t("pending_redemption"),
         icon: <Clock className="w-5 h-5 text-orange-600" />,
@@ -286,10 +169,11 @@ const VouchersList = ({
             <a
               href={`mailto:${voucher.email}`}
               onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${isDark
+              className={`p-1 transition-colors ${
+                isDark
                   ? "text-gray-400 hover:text-teal-400"
                   : "text-gray-600 hover:text-teal-600"
-                }`}
+              }`}
               title={voucher.email}
             >
               <Mail className="w-4 h-4" />
@@ -301,10 +185,11 @@ const VouchersList = ({
             <a
               href={`tel:${voucher.phone}`}
               onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${isDark
+              className={`p-1 transition-colors ${
+                isDark
                   ? "text-gray-400 hover:text-teal-400"
                   : "text-gray-600 hover:text-teal-600"
-                }`}
+              }`}
               title={voucher.phone}
             >
               <Phone className="w-4 h-4" />
@@ -464,8 +349,10 @@ const VouchersList = ({
   } = useGetAllVouchersQuery(voucherQueryParams);
 
   const allVouchers = voucherData?.data;
+  const maxVoucherAmount = voucherData?.highestAmount;
   const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
   const hasMore = voucherData?.meta?.hasNextPage;
+  // const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
 
   const fetchNextPage = useCallback(() => {
     if (!hasMore || isFetching) return;
@@ -499,21 +386,60 @@ const VouchersList = ({
 
   const totalData = voucherData?.datas?.totalData;
 
-  const [vouchers] = useState<Voucher[]>(generateMockVouchers());
   const [selectedVouchers, setSelectedVouchers] = useState<Set<string>>(
     new Set(),
   );
+
+  const handleSendVoucherEmails = async (): Promise<void> => {
+    try {
+      await sendEmail({
+        voucherIds: Array.from(selectedVouchers),
+      }).unwrap();
+    } catch (error) {
+      console.error("Failed to send voucher emails:", error);
+      throw error;
+    }
+  };
+  const handleSendVoucherSMS = async (): Promise<void> => {
+    try {
+      await sendSMS({
+        voucherIds: Array.from(selectedVouchers),
+      }).unwrap();
+    } catch (error) {
+      console.error("Failed to send voucher SMS:", error);
+      throw error;
+    }
+  };
+
+  // // Expiration
+  // const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
+  // const [newExpireDate, setNewExpireDate] = useState<string>("");
+  // // status change
+  // const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  // const [newStatus, setNewStatus] = useState<string>("");
+
+  // const handleExtendExpiration = async () => {
+  //   try {
+  //     await updateVoucher({
+  //       voucherId: Array.from(selectedVouchers),
+  //       body: { expireDate: new Date(newExpireDate) },
+  //     }).unwrap();
+  //     setIsExtendModalOpen(false);
+  //     setNewExpireDate("");
+  //   } catch (error) {
+  //     console.error("Failed to extend expiration:", error);
+  //   }
+  // };
+
   const [showFilters, setShowFilters] = useState(false);
-  const { theme } = useAppSelector((state) => state.settings);
 
   // Calculate min/max amounts from data
   const amountRange = useMemo(() => {
-    const amounts = vouchers.map((v) => v.amount);
     return {
-      min: Math.min(...amounts),
-      max: Math.max(...amounts),
+      min: 0, // assuming the minimum is 0, adjust if needed
+      max: maxVoucherAmount,
     };
-  }, [vouchers]);
+  }, [maxVoucherAmount]);
 
   const isExpiringSoon = (date: string) => {
     const daysUntilExpiry = Math.floor(
@@ -532,50 +458,6 @@ const VouchersList = ({
     setMaxAmount(amountRange.max);
     setIsInitialized(true);
   }
-
-  // Get unique values for filters
-  // const campaigns = useMemo(() => {
-  //   return Array.from(new Set(vouchers.map((v) => v.campaign))).sort();
-  // }, [vouchers]);
-
-  // Apply filters
-  const filteredVouchers = useMemo(() => {
-    return vouchers.filter((voucher) => {
-      if (statusFilter !== "all" && voucher.status !== statusFilter)
-        return false;
-      if (campaignFilter !== "all" && voucher.campaign !== campaignFilter)
-        return false;
-      if (websiteFilter !== "all" && voucher.website !== websiteFilter)
-        return false;
-      if (
-        searchQuery &&
-        !voucher.code.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !voucher.assigneeName
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) &&
-        !voucher.email.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-        return false;
-      if (minAmount && voucher.amount < minAmount) return false;
-      if (maxAmount && voucher.amount > maxAmount) return false;
-      if (dateFrom && new Date(voucher.createdAt) < new Date(dateFrom))
-        return false;
-      if (dateTo && new Date(voucher.createdAt) > new Date(dateTo))
-        return false;
-
-      return true;
-    });
-  }, [
-    vouchers,
-    statusFilter,
-    campaignFilter,
-    websiteFilter,
-    searchQuery,
-    minAmount,
-    maxAmount,
-    dateFrom,
-    dateTo,
-  ]);
 
   const handleExportCSVVouchers = useCallback(() => {
     const vouchersList = combinedVouchers ?? [];
@@ -653,7 +535,7 @@ const VouchersList = ({
     link.click();
     URL.revokeObjectURL(url);
   }, [
-    vouchers,
+    allVouchers,
     t,
     getStatusLabel,
     formatDate,
@@ -661,81 +543,6 @@ const VouchersList = ({
     isExpiringSoon,
     combinedVouchers,
   ]);
-
-  const [messageComposerOpen, setMessageComposerOpen] = useState(false);
-  const [sendResultsOpen, setSendResultsOpen] = useState(false);
-  const [sendResults, _setSendResults] = useState([]);
-
-  const handleSendMessage = (data: any) => {
-    const selectedVoucherData = filteredVouchers.filter((v) =>
-      selectedVouchers.has(v.id),
-    );
-
-    // Simulate sending messages
-    const results = selectedVoucherData.map((voucher) => {
-      // Simulate success/failure
-      const emailSuccess = Math.random() > 0.1; // 90% success rate
-      const smsSuccess = Math.random() > 0.15; // 85% success rate
-
-      return {
-        customerId: voucher.id,
-        customerName: voucher.assigneeName,
-        email: voucher.email,
-        phone: voucher.phone,
-        emailStatus: emailSuccess ? "success" : "failed",
-        smsStatus: smsSuccess ? "success" : "failed",
-        errorMessage:
-          !emailSuccess || !smsSuccess ? "Network timeout" : undefined,
-      };
-    });
-
-    // Log the message
-    const messageLog = {
-      id: `msg-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      recipientCount: results.length,
-      subject: data.subject,
-      emailMessage: data.emailMessage,
-      smsMessage: data.smsMessage,
-      template: data.template,
-      results,
-    };
-
-    // Save to localStorage
-    const existingLogs = JSON.parse(
-      localStorage.getItem("message-logs") || "[]",
-    );
-    localStorage.setItem(
-      "message-logs",
-      JSON.stringify([messageLog, ...existingLogs]),
-    );
-
-    // Show results
-    // setSendResults(results);
-    setMessageComposerOpen(false);
-    setSendResultsOpen(true);
-
-    // Clear selection
-    setSelectedVouchers(new Set());
-
-    toast.success(
-      `Messages sent to ${results.length} customer${results.length !== 1 ? "s" : ""}`,
-    );
-  };
-
-  // const handleSendVouchers = () => {
-  //   const selectedVoucherData = filteredVouchers.filter((v) =>
-  //     selectedVouchers.has(v.id),
-  //   );
-
-  //   // Simulate re-sending vouchers via email
-  //   toast.success(
-  //     `Re-sent ${selectedVoucherData.length} voucher${selectedVoucherData.length !== 1 ? "s" : ""} via email`,
-  //   );
-
-  //   // Clear selection
-  //   setSelectedVouchers(new Set());
-  // };
 
   return (
     <div className={`flex-1 flex flex-col transition-all duration-300`}>
@@ -772,24 +579,26 @@ const VouchersList = ({
 
         {/* Right: Buttons */}
         <div className="flex items-center gap-3">
-          <button
+          {/* <button
             onClick={() => setIsOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-              }`}
+            }`}
           >
             <NotebookPen className="w-4 h-4" />
 
             {t("bulk_upload")}
-          </button>
+          </button> */}
 
           <button
             onClick={handleExportCSVVouchers}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-              }`}
+            }`}
             title={t("downloadCSV")}
           >
             <Download className="w-4 h-4" />
@@ -941,26 +750,26 @@ const VouchersList = ({
             maxAmount !== amountRange.max ||
             dateFrom ||
             dateTo) && (
-              <div className="mt-3">
-                <button
-                  onClick={() => {
-                    setStatusFilter("all");
-                    setCampaignFilter("all");
-                    setWebsiteFilter("all");
-                    setPaymentFilter("");
-                    setSearchQuery("all");
-                    setMinAmount(amountRange.min);
-                    setMaxAmount(amountRange.max);
-                    setDateFrom("");
-                    setDateTo("");
-                  }}
-                  className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
-                >
-                  <X className="w-4 h-4" />
-                  {t("clear_all")}
-                </button>
-              </div>
-            )}
+            <div className="mt-3">
+              <button
+                onClick={() => {
+                  setStatusFilter("all");
+                  setCampaignFilter("all");
+                  setWebsiteFilter("all");
+                  setPaymentFilter("");
+                  setSearchQuery("all");
+                  setMinAmount(amountRange.min);
+                  setMaxAmount(amountRange.max);
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
+              >
+                <X className="w-4 h-4" />
+                {t("clear_all")}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -969,24 +778,13 @@ const VouchersList = ({
         <BulkActionBar
           selectedItemCount={selectedVouchers.size}
           hancleClearSelection={() => setSelectedVouchers(new Set())}
-          handleSendMessage={() => {
-            setMessageComposerOpen(true);
+          handleSendEmail={() => {
+            handleSendVoucherEmails();
           }}
-          handleSendVouchers={() => {
-            console.log("Resending vouchers...");
+          handleSendSMS={() => {
+            handleSendVoucherSMS();
           }}
-          handleExtendExpiration={() => {
-            console.log("Extending expiration...");
-          }}
-          handleCancelVouchers={() => {
-            console.log("Cancelling vouchers...");
-          }}
-          // handleBulkDelete={() => {
-          //   console.log("Deleting selected...");
-          // }}
-          handleBulkStatusChange={(status) => {
-            console.log("Status changed to:", status);
-          }}
+          // handleExtendExpiration={() => setIsExtendModalOpen(true)}
         />
       )}
 
@@ -1007,34 +805,8 @@ const VouchersList = ({
             t={t}
           />
         </div>
-
-        {filteredVouchers.length === 0 && (
-          <div className="text-center py-12">
-            <p
-              className={`text-gray-500 ${isDark ? "dark:text-gray-400" : ""}`}
-            >
-              {t("no_vouchers_found")}
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* Message Composer Modal */}
-      <MessageComposerModal
-        isOpen={messageComposerOpen}
-        onClose={() => setMessageComposerOpen(false)}
-        recipientCount={selectedVouchers.size}
-        onSend={handleSendMessage}
-        theme={theme}
-      />
-
-      {/* Send Results Modal */}
-      <SendResultsModal
-        isOpen={sendResultsOpen}
-        onClose={() => setSendResultsOpen(false)}
-        results={sendResults}
-        theme={theme}
-      />
       <div>
         {isOpen && (
           <div>
@@ -1045,8 +817,43 @@ const VouchersList = ({
           </div>
         )}
       </div>
+
+      {/* Extend expiration date */}
+      {/* {isExtendModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
+            <h3 className="text-lg font-semibold mb-4">
+              Extend Expiration Date
+            </h3>
+            <input
+              type="datetime-local"
+              value={newExpireDate}
+              onChange={(e) => setNewExpireDate(e.target.value)}
+              className="w-full border rounded-md px-3 py-2 mb-4 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsExtendModalOpen(false);
+                  setNewExpireDate("");
+                }}
+                className="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExtendExpiration}
+                disabled={!newExpireDate || isSaving}
+                className="px-4 py-2 text-sm rounded-md bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )} */}
     </div>
   );
-}
+};
 
 export default VouchersList;
