@@ -3,6 +3,7 @@ interface VoucherTypeProps {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   errors: Record<string, string>;
   t?: any;
+  isDark?: boolean;
 }
 
 const VoucherType = ({
@@ -10,15 +11,22 @@ const VoucherType = ({
   setFormData,
   errors,
   t,
+  isDark,
 }: VoucherTypeProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+      <h3
+        className={`text-sm mb-4 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+      >
         {t("choose_creation_type")}
       </h3>
 
       {/* Single Voucher */}
-      <label className="flex items-start gap-4 p-4 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-teal-500 cursor-pointer transition-colors">
+      <label
+        className={`flex items-start gap-4 p-4 border-2 rounded-lg hover:border-teal-500 cursor-pointer transition-colors ${
+          isDark ? "border-gray-700" : "border-gray-300"
+        }`}
+      >
         <input
           type="radio"
           name="creationType"
@@ -30,18 +38,24 @@ const VoucherType = ({
         />
 
         <div className="flex-1">
-          <div className="text-gray-900 dark:text-gray-100 mb-1">
+          <div className={`mb-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
             {t("single_voucher")}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p
+            className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
             {t("single_voucher_description")}
           </p>
         </div>
       </label>
 
       {/* Bulk Voucher */}
-      <label className="flex items-start gap-4 p-4 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-teal-500 cursor-pointer transition-colors">
+      <label
+        className={`flex items-start gap-4 p-4 border-2 rounded-lg hover:border-teal-500 cursor-pointer transition-colors ${
+          isDark ? "border-gray-700" : "border-gray-300"
+        }`}
+      >
         <input
           type="radio"
           name="creationType"
@@ -53,18 +67,25 @@ const VoucherType = ({
         />
 
         <div className="flex-1">
-          <div className="text-gray-900 dark:text-gray-100 mb-1">
+          <div className={`mb-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
             {t("bulk_creation")}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p
+            className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+          >
             {t("bulk_creation_description")}
           </p>
         </div>
       </label>
 
-      {/* Upload XLS */}
-      {/* <label className="flex items-start gap-4 p-4 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-teal-500 cursor-pointer transition-colors">
+      {/* Upload XLS (commented out) */}
+      {/*
+      <label
+        className={`flex items-start gap-4 p-4 border-2 rounded-lg hover:border-teal-500 cursor-pointer transition-colors ${
+          isDark ? "border-gray-700" : "border-gray-300"
+        }`}
+      >
         <input
           type="radio"
           name="creationType"
@@ -76,15 +97,16 @@ const VoucherType = ({
         />
 
         <div className="flex-1">
-          <div className="text-gray-900 dark:text-gray-100 mb-1">
+          <div className={`mb-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
             {t("upload_xls")}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
             {t("upload_xls_description")}
           </p>
         </div>
-      </label> */}
+      </label>
+      */}
 
       {errors.creationType && (
         <p className="text-red-500 text-xs">

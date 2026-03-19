@@ -13,7 +13,7 @@ interface VoucherInformationProps {
 
   t?: any;
   purchaserDropdownRef: any;
-
+  isDark?: boolean;
   handlePurchaserEmailChange: (email: string) => void;
 }
 
@@ -26,24 +26,29 @@ const VoucherInformation = ({
   handleCampaignChange,
 
   purchaserDropdownRef,
-
+  isDark,
   handlePurchaserEmailChange,
 }: VoucherInformationProps) => {
   return (
     <div className="space-y-6">
       {/* Campaign */}
       <div>
-        <label className="block text-sm mb-2">
+        <label
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("select_campaign_optional")}
         </label>
 
         <select
           value={formData.campaign}
           onChange={(e) => handleCampaignChange(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg"
+          className={`w-full px-3 py-2 border rounded-lg ${
+            isDark
+              ? "bg-gray-800 text-white border-gray-600"
+              : "bg-white text-black border-gray-300"
+          }`}
         >
           <option value="">{t("no_campaign")}</option>
-
           {campaigns?.datas?.data?.map((campaign: any) => (
             <option key={campaign._id} value={campaign._id}>
               {campaign.name} (₪{campaign.defaultAmount})
@@ -54,7 +59,11 @@ const VoucherInformation = ({
 
       {/* Amount */}
       <div>
-        <label className="block text-sm mb-2">{t("voucher_amount")}</label>
+        <label
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("voucher_amount")}
+        </label>
 
         <input
           type="number"
@@ -66,7 +75,11 @@ const VoucherInformation = ({
               customAmount: true,
             }))
           }
-          className="w-full px-3 py-2 border rounded-lg"
+          className={`w-full px-3 py-2 border rounded-lg ${
+            isDark
+              ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+              : "bg-white text-black border-gray-300"
+          }`}
         />
 
         {errors.amount && (
@@ -78,7 +91,11 @@ const VoucherInformation = ({
 
       {/* Expiration */}
       <div>
-        <label className="block text-sm mb-2">{t("expiration_date")}</label>
+        <label
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("expiration_date")}
+        </label>
 
         <input
           type="date"
@@ -89,34 +106,56 @@ const VoucherInformation = ({
               expirationDate: e.target.value,
             }))
           }
-          className="w-full px-3 py-2 border rounded-lg"
+          className={`w-full px-3 py-2 border rounded-lg ${
+            isDark
+              ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+              : "bg-white text-black border-gray-300"
+          }`}
         />
       </div>
 
       {/* Purchaser */}
-      <div className="border-t pt-6">
-        <h3 className="text-sm mb-4 flex items-center gap-2">
+      <div
+        className={`border-t pt-6 ${isDark ? "border-gray-700" : "border-gray-200"}`}
+      >
+        <h3
+          className={`text-sm mb-4 flex items-center gap-2 ${
+            isDark ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
           <User className="w-4 h-4" />
           {t("purchaser_details_optional")}
         </h3>
 
         {/* Email */}
         <div>
-          <label className="block text-sm mb-2">{t("email")}</label>
+          <label
+            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("email")}
+          </label>
 
           <div className="relative" ref={purchaserDropdownRef}>
             <input
               type="email"
               value={formData.purchaserEmail}
               onChange={(e) => handlePurchaserEmailChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
+              className={`w-full px-3 py-2 border rounded-lg ${
+                isDark
+                  ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                  : "bg-white text-black border-gray-300"
+              }`}
             />
           </div>
         </div>
 
         {/* Name */}
         <div className="mt-4">
-          <label className="block text-sm mb-2">{t("name")}</label>
+          <label
+            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("name")}
+          </label>
 
           <input
             type="text"
@@ -127,13 +166,21 @@ const VoucherInformation = ({
                 purchaserName: e.target.value,
               }))
             }
-            className="w-full px-3 py-2 border rounded-lg"
+            className={`w-full px-3 py-2 border rounded-lg ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
         </div>
 
         {/* Phone */}
         <div className="mt-4">
-          <label className="block text-sm mb-2">{t("phone")}</label>
+          <label
+            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("phone")}
+          </label>
 
           <input
             type="tel"
@@ -144,7 +191,11 @@ const VoucherInformation = ({
                 purchaserPhone: e.target.value,
               }))
             }
-            className="w-full px-3 py-2 border rounded-lg"
+            className={`w-full px-3 py-2 border rounded-lg ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
         </div>
       </div>

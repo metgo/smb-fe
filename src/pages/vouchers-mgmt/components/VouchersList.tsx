@@ -807,7 +807,7 @@ export function VouchersList({
       {/* Filters Section */}
       {showFilters && (
         <div
-          className={`px-6 py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
+          className={` py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Status Filter */}

@@ -3,19 +3,32 @@ interface Props {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   t: any;
   errors?: any;
+  isDark?: boolean;
 }
 
-const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
+const VoucherConfigure = ({
+  formData,
+  setFormData,
+  isDark,
+  t,
+  errors = {},
+}: Props) => {
   if (formData.creationType === "single") {
     return (
       <div className="space-y-4">
-        <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+        <h3
+          className={`text-sm mb-4 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("assignee_details")}
         </h3>
 
         {/* Name */}
         <div>
-          <label className="block text-sm mb-1">{t("assignee_name")} *</label>
+          <label
+            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("assignee_name")} *
+          </label>
 
           <input
             type="text"
@@ -27,16 +40,25 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                 assigneeName: e.target.value,
               }))
             }
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
 
           {errors.assigneeName && (
             <p className="text-red-500 text-xs mt-1">{errors.assigneeName}</p>
           )}
         </div>
+
         {/* Email */}
         <div>
-          <label className="block text-sm mb-1">{t("assignee_email")} *</label>
+          <label
+            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("assignee_email")} *
+          </label>
 
           <input
             type="email"
@@ -48,16 +70,25 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                 assigneeEmail: e.target.value,
               }))
             }
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
 
           {errors.assigneeEmail && (
             <p className="text-red-500 text-xs mt-1">{errors.assigneeEmail}</p>
           )}
         </div>
+
         {/* Phone */}
         <div>
-          <label className="block text-sm mb-1">{t("assignee_phone")} *</label>
+          <label
+            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("assignee_phone")} *
+          </label>
 
           <input
             type="tel"
@@ -69,7 +100,11 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                 assigneePhone: e.target.value,
               }))
             }
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
 
           {errors.assigneePhone && (
@@ -83,13 +118,17 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
   if (formData.creationType === "bulk") {
     return (
       <div className="space-y-4">
-        <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+        <h3
+          className={`text-sm mb-4 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("bulk_creation_settings")}
         </h3>
 
         {/* Bulk Count */}
         <div>
-          <label className="block text-sm mb-1">
+          <label
+            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
             {t("number_of_vouchers")}
           </label>
 
@@ -104,7 +143,11 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                 bulkCount: Number(e.target.value),
               }))
             }
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isDark
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-black border-gray-300"
+            }`}
           />
 
           {errors.bulkCount && (
@@ -113,8 +156,12 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
         </div>
 
         {/* Assigned Checkbox */}
-        <div className="pt-3 border-t">
-          <label className="flex items-center gap-2">
+        <div
+          className={`pt-3 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
+        >
+          <label
+            className={`flex text-sm mb-1 gap-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
             <input
               type="checkbox"
               checked={formData.bulkCreateAssigned}
@@ -125,11 +172,12 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                 }))
               }
             />
-
             {t("create_assigned_voucher")}
           </label>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p
+            className={`text-xs mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+          >
             {t("assign_all_vouchers_to_person")}
           </p>
         </div>
@@ -139,7 +187,9 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
           <div className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-sm mb-1">
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
                 {t("assignee_name")} *
               </label>
 
@@ -153,7 +203,11 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                     assigneeName: e.target.value,
                   }))
                 }
-                className="w-full border rounded px-3 py-2"
+                className={`w-full border rounded px-3 py-2 ${
+                  isDark
+                    ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                    : "bg-white text-black border-gray-300"
+                }`}
               />
 
               {errors.assigneeName && (
@@ -165,7 +219,9 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm mb-1">
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
                 {t("assignee_email")} *
               </label>
 
@@ -179,7 +235,11 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                     assigneeEmail: e.target.value,
                   }))
                 }
-                className="w-full border rounded px-3 py-2"
+                className={`w-full border rounded px-3 py-2 ${
+                  isDark
+                    ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                    : "bg-white text-black border-gray-300"
+                }`}
               />
 
               {errors.assigneeEmail && (
@@ -191,7 +251,9 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm mb-1">
+              <label
+                className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
                 {t("assignee_phone")} *
               </label>
 
@@ -205,7 +267,11 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
                     assigneePhone: e.target.value,
                   }))
                 }
-                className="w-full border rounded px-3 py-2"
+                className={`w-full border rounded px-3 py-2 ${
+                  isDark
+                    ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                    : "bg-white text-black border-gray-300"
+                }`}
               />
 
               {errors.assigneePhone && (
@@ -219,68 +285,6 @@ const VoucherConfigure = ({ formData, setFormData, t, errors = {} }: Props) => {
       </div>
     );
   }
-
-  // if (formData.creationType === "upload") {
-  //   return (
-  //     <div className="space-y-4">
-  //       <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-  //         {t("upload_xls_file")}
-  //       </h3>
-
-  //       <div className="p-4 border rounded">
-  //         <button className="flex items-center gap-2 text-teal-600 text-sm">
-  //           <Download className="w-4 h-4" />
-  //           {t("download_sample_xls_template")}
-  //         </button>
-
-  //         <p className="text-xs text-gray-500 mt-1">
-  //           {t("use_template_for_correct_format")}
-  //         </p>
-  //       </div>
-
-  //       {/* Upload */}
-  //       <div className="border-2 border-dashed rounded p-6 text-center">
-  //         <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-
-  //         <label className="cursor-pointer">
-  //           <span className="text-teal-600">{t("click_to_upload")}</span>
-
-  //           <input
-  //             type="file"
-  //             accept=".xls,.xlsx"
-  //             onChange={handleFileUpload}
-  //             className="hidden"
-  //           />
-  //         </label>
-
-  //         {errors.xlsFile && (
-  //           <p className="text-red-500 text-xs mt-2">{errors.xlsFile}</p>
-  //         )}
-  //       </div>
-
-  //       {/* File preview */}
-  //       {formData.xlsFile && (
-  //         <div className="p-4 border rounded">
-  //           <p className="text-sm mb-2">
-  //             {t("file")}: {formData.xlsFile.name}
-  //           </p>
-
-  //           {xlsValidation && (
-  //             <div className="space-y-2 text-sm">
-  //               <span className="text-green-600">
-  //                 ✓ {t("valid_rows")}: {xlsValidation.valid}
-  //               </span>
-
-  //               <span className="text-red-600 block">
-  //                 ✗ {t("invalid_rows")}: {xlsValidation.invalid}
-  //               </span>
-  //             </div>
-  //           )}
-  //         </div>
-  //       )}
-  //     </div>
-  //   );
-  // }
 
   return null;
 };

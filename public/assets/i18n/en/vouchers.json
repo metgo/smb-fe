@@ -6,7 +6,8 @@
 
   "select_campaign_optional": "Select Campaign (optional)",
   "no_campaign": "No campaign",
-
+  "success": "Success",
+  "no_vouchers": "No Vouchers",
   "voucher_amount": "Voucher Amount",
   "error_invalid_amount": "Amount must be greater than 0",
   "all_time": "All Time",
@@ -83,14 +84,14 @@
 
   "upload_results": "Upload Results",
   "valid_vouchers_will_be_created": "valid vouchers will be created",
-
-  "click_create_vouchers_to_proceed": "Click 'Create Vouchers' to proceed with voucher creation.",
+  "fill_all_fields": "Please fill all fields",
+  "click_create_vouchers_to_proceed": "Click 'Next' to proceed with voucher creation.",
   "vouchers_created_successfully": "Vouchers Created Successfully!",
   "voucher": "voucher",
   "voucher_code": "Voucher Code",
   "send_message": "Send Message",
   "re_send_vouchers": "Re-send Vouchers",
-
+  "clear_all": "Clear All",
   "cancel_vouchers": "Cancel Vouchers",
   "code": "Code",
   "all": "All",
@@ -156,6 +157,12 @@
   "total_vouchers": "Total Vouchers",
   "assigned": "Assigned",
   "redeemed": "Redeemed",
+  "unassigned": "Unassigned",
+  "waiting": "Waiting",
+  "paid": "Paid",
+  "unpaid": "Unpaid",
+  "failed": "Failed",
+  "noDataToExport": "No data to export",
   "remaining_balance": "Remaining Balance",
   "expired": "Expired",
   "revenue": "Revenue"

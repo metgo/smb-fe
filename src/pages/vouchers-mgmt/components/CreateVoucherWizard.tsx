@@ -5,7 +5,7 @@ import {
   Users,
   ClipboardList,
   Eye,
-  CupSoda,
+  Table,
 } from "lucide-react";
 import { ModalWrapper } from "@/components/wrapper";
 import {
@@ -110,7 +110,7 @@ export function AddVoucherWizard({
       amount: formData.amount,
 
       noOfVoucher: formData?.creationType === "single" ? 1 : formData.bulkCount,
-
+      languagePreference: "en",
       //  (person paying / ordering)
       purchaserName: formData.purchaserName,
       purchaserEmail: formData.purchaserEmail,
@@ -145,7 +145,7 @@ export function AddVoucherWizard({
   const saveDraft = useCallback(
     async (isPublish = false) => {
       try {
-        if (!Object.keys(stepPayloadMap).length) return;
+        // if (!Object.keys(stepPayloadMap).length) return;
 
         let payload = stepPayloadMap;
         console.log("🚀 ~ AddVoucherWizard ~ payload:", payload);
@@ -360,20 +360,30 @@ export function AddVoucherWizard({
     { id: 2, icon: Users, label: t("type") },
     { id: 3, icon: ClipboardList, label: t("configure") },
     { id: 4, icon: Eye, label: t("review") },
-    { id: 5, icon: CupSoda, label: t("success") },
+    { id: 5, icon: Table, label: t("success") },
   ];
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+      <div
+        className={`px-6 py-4 flex items-center justify-between border-b ${
+          isDark ? "border-gray-800" : "border-gray-200"
+        }`}
+      >
         <div>
-          <h2 className="text-xl text-gray-900 dark:text-gray-100">
+          <h2
+            className={`${isDark ? "text-gray-100" : "text-gray-900"} text-xl`}
+          >
             {t("add_voucher")}
           </h2>
-          {currentStep < 5 && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
-              {t("step_of_total", { current: currentStep, total: 4 })}
+          {currentStep < 6 && (
+            <p
+              className={`mt-1 flex items-center gap-1 text-sm ${
+                isDark ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {t("step_of_total", { current: currentStep, total: 5 })}
               <span className="flex items-center">
                 {t(steps[currentStep - 1].label)}
               </span>
@@ -384,8 +394,12 @@ export function AddVoucherWizard({
       </div>
 
       {/* Progress Bar */}
-      {currentStep < 5 && (
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+      {currentStep < 6 && (
+        <div
+          className={`px-6 py-4 border-b ${
+            isDark ? "border-gray-800" : "border-gray-200"
+          }`}
+        >
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div
@@ -414,8 +428,12 @@ export function AddVoucherWizard({
                   <span
                     className={`text-xs mt-1 ${
                       currentStep >= step.id
-                        ? "text-gray-900 dark:text-gray-100"
-                        : "text-gray-500 dark:text-gray-500"
+                        ? isDark
+                          ? "text-gray-100"
+                          : "text-gray-900"
+                        : isDark
+                          ? "text-gray-500"
+                          : "text-gray-500"
                     }`}
                   >
                     {step.label}
@@ -426,9 +444,9 @@ export function AddVoucherWizard({
                     className={`flex-1 h-0.5 mx-2 ${
                       currentStep > step.id
                         ? "bg-green-500"
-                        : // : theme === 'dark'
-                          // ? 'bg-gray-800'
-                          "bg-gray-200"
+                        : isDark
+                          ? "bg-gray-800"
+                          : "bg-gray-200"
                     }`}
                   />
                 )}
@@ -450,6 +468,7 @@ export function AddVoucherWizard({
             handleCampaignChange={handleCampaignChange}
             purchaserDropdownRef={purchaserDropdownRef}
             handlePurchaserEmailChange={handlePurchaserEmailChange}
+            isDark={isDark}
           />
         )}
         {currentStep === 2 && (
@@ -458,6 +477,7 @@ export function AddVoucherWizard({
             formData={formData}
             setFormData={setFormData}
             errors={errors}
+            isDark={isDark}
           />
         )}
         {currentStep === 3 && (
@@ -466,23 +486,26 @@ export function AddVoucherWizard({
             formData={formData}
             setFormData={setFormData}
             errors={errors}
+            isDark={isDark}
           />
-        )}{" "}
+        )}
         {currentStep === 4 && (
           <VoucherReview
             formData={formData}
             campaigns={campaigns}
             xlsValidation={xlsValidation}
             t={t}
+            isDark={isDark}
           />
-        )}{" "}
+        )}
         {currentStep === 5 && (
           <VoucherSuccess
             createdVouchers={createdVouchers}
-            onVoucherCreated={handlePublish}
+            // onVoucherCreated={handlePublish}
             t={t}
+            isDark={isDark}
           />
-        )}{" "}
+        )}
       </div>
 
       <WizardFooter
