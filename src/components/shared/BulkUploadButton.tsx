@@ -9,14 +9,9 @@ import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 interface OrdersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isLoading: boolean;
 }
 
-export const BulkUploadButton = ({
-  isOpen,
-  onClose,
-  isLoading,
-}: OrdersModalProps) => {
+export const BulkUploadButton = ({ isOpen, onClose }: OrdersModalProps) => {
   const { t } = useTranslation("vouchers");
 
   const [formData, setFormData] = useState<{ xlsFile?: File }>({});
@@ -114,7 +109,7 @@ export const BulkUploadButton = ({
       height=""
       onClose={onClose}
       maxWidth="max-w-4xl"
-      showSpinner={isLoading || isCreating}
+      showSpinner={isCreating}
     >
       <div className="space-y-4 p-4">
         <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">

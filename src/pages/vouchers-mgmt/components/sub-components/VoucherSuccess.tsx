@@ -14,7 +14,7 @@ const VoucherSuccess = ({ createdVouchers, onVoucherCreated, t }: Props) => {
       "Voucher Code",
       "Assignee Name",
       "Email",
-      "Amount (रु)",
+      "Amount ",
       "Status",
     ];
     const rows = createdVouchers.map((v) => [

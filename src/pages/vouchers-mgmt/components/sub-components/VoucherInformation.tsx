@@ -4,15 +4,17 @@ interface VoucherInformationProps {
   formData: any;
   setFormData: any;
   errors: Record<string, string>;
-  campaigns: any[];
+  campaigns: {
+    datas?: {
+      data?: any[];
+    };
+  };
   handleCampaignChange: (id: string) => void;
 
   t?: any;
   purchaserDropdownRef: any;
-  purchaserSuggestions: any[];
-  showPurchaserSuggestions: boolean;
+
   handlePurchaserEmailChange: (email: string) => void;
-  handlePurchaserSelect: (user: any) => void;
 }
 
 const VoucherInformation = ({
@@ -24,69 +26,11 @@ const VoucherInformation = ({
   handleCampaignChange,
 
   purchaserDropdownRef,
-  purchaserSuggestions,
-  showPurchaserSuggestions,
+
   handlePurchaserEmailChange,
-  handlePurchaserSelect,
 }: VoucherInformationProps) => {
   return (
     <div className="space-y-6">
-      {/* Websites */}
-      {/* <div>
-        <label className="block text-sm text-gray-700 dark:text-gray-300 mb-3">
-          {t("select_websites_multi_select")}
-        </label>
-
-        <div className="relative" ref={websiteDropdownRef}>
-          <button
-            type="button"
-            onClick={() => setIsWebsiteDropdownOpen(!isWebsiteDropdownOpen)}
-            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg flex justify-between"
-          >
-            <span className="text-sm">
-              {formData.websites.length === 0
-                ? t("select_websites_placeholder")
-                : `${formData.websites.length} ${t("websites_selected")}`}
-            </span>
-
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${
-                isWebsiteDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {isWebsiteDropdownOpen && (
-            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              {websites.map((website) => (
-                <label
-                  key={website.id}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.websites.includes(website.id)}
-                    onChange={() => handleWebsiteToggle(website.id)}
-                  />
-
-                  <span className="text-sm">{website.name}</span>
-
-                  {formData.websites.includes(website.id) && (
-                    <Check className="w-4 h-4 ml-auto text-teal-600" />
-                  )}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {errors.websites && (
-          <p className="text-red-500 text-xs mt-1">
-            {t("error_select_website")}
-          </p>
-        )}
-      </div> */}
-
       {/* Campaign */}
       <div>
         <label className="block text-sm mb-2">
@@ -167,21 +111,6 @@ const VoucherInformation = ({
               onChange={(e) => handlePurchaserEmailChange(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg"
             />
-
-            {showPurchaserSuggestions && purchaserSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
-                {purchaserSuggestions.map((user, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handlePurchaserSelect(user)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50"
-                  >
-                    {user.name} ({user.email})
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

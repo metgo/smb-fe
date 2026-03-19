@@ -1,22 +1,14 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   X,
-  ChevronDown,
-  ChevronUp,
   Mail,
   Phone,
   Clock,
-  Send,
-  XCircle,
-  Calendar,
-  RefreshCw,
-  MessageSquare,
   Ticket,
   DollarSign,
   CheckCircle,
   Package,
   Download,
-  Notebook,
   NotebookPen,
 } from "lucide-react";
 import { MessageComposerModal } from "@/pages/content-mgmt/components";
@@ -254,8 +246,6 @@ export function VouchersList({
     ],
     [voucherStatsResponse, t],
   );
-
-  console.log("🚀 ~ VouchersList ~ voucherStats:", voucherStats);
 
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
@@ -516,7 +506,6 @@ export function VouchersList({
     new Set(),
   );
   const [showFilters, setShowFilters] = useState(false);
-  const [showBulkActions, setShowBulkActions] = useState(false);
   const { theme } = useAppSelector((state) => state.settings);
 
   // Calculate min/max amounts from data
@@ -674,24 +663,6 @@ export function VouchersList({
     isExpiringSoon,
     combinedVouchers,
   ]);
-  // const handleSelectAll = () => {
-  //   if (selectedVouchers.size === filteredVouchers.length) {
-  //     setSelectedVouchers(new Set());
-  //   } else {
-  //     setSelectedVouchers(new Set(filteredVouchers.map((v) => v.id)));
-  //   }
-  // };
-
-  // const handleSelectVoucher = (voucherId: string, e: React.MouseEvent) => {
-  //   e.stopPropagation();
-  //   const newSelected = new Set(selectedVouchers);
-  //   if (newSelected.has(voucherId)) {
-  //     newSelected.delete(voucherId);
-  //   } else {
-  //     newSelected.add(voucherId);
-  //   }
-  //   setSelectedVouchers(newSelected);
-  // };
 
   const [messageComposerOpen, setMessageComposerOpen] = useState(false);
   const [sendResultsOpen, setSendResultsOpen] = useState(false);
@@ -754,19 +725,19 @@ export function VouchersList({
     );
   };
 
-  const handleSendVouchers = () => {
-    const selectedVoucherData = filteredVouchers.filter((v) =>
-      selectedVouchers.has(v.id),
-    );
+  // const handleSendVouchers = () => {
+  //   const selectedVoucherData = filteredVouchers.filter((v) =>
+  //     selectedVouchers.has(v.id),
+  //   );
 
-    // Simulate re-sending vouchers via email
-    toast.success(
-      `Re-sent ${selectedVoucherData.length} voucher${selectedVoucherData.length !== 1 ? "s" : ""} via email`,
-    );
+  //   // Simulate re-sending vouchers via email
+  //   toast.success(
+  //     `Re-sent ${selectedVoucherData.length} voucher${selectedVoucherData.length !== 1 ? "s" : ""} via email`,
+  //   );
 
-    // Clear selection
-    setSelectedVouchers(new Set());
-  };
+  //   // Clear selection
+  //   setSelectedVouchers(new Set());
+  // };
 
   return (
     <div className={`flex-1 flex flex-col transition-all duration-300`}>

@@ -25,16 +25,16 @@ import VoucherReview from "./sub-components/VoucherReview";
 import VoucherSuccess from "./sub-components/VoucherSuccess";
 
 interface AddVoucherWizardProps {
-  // language: Language;
-  // theme: Theme;
   onClose: () => void;
   onVoucherCreated?: () => void;
-  campaigns?: [];
+  campaigns: {
+    datas?: {
+      data?: any[];
+    };
+  };
 }
 
 interface VoucherFormData {
-  websites: string[];
-
   campaign: string;
 
   amount: number;
@@ -62,64 +62,9 @@ interface VoucherFormData {
   xlsFile: File | null;
 }
 
-// interface CreatedVoucher {
-//   code: string;
-//   assigneeName: string;
-//   email: string;
-//   amount: number;
-//   status: string;
-// }
-
-// Mock database of existing users for autocomplete
-const existingUsers = [
-  {
-    name: "Sarah Cohen",
-    email: "sarah.cohen@example.com",
-    phone: "+972-50-1234567",
-  },
-  {
-    name: "David Levi",
-    email: "david.levi@example.com",
-    phone: "+972-52-2345678",
-  },
-  {
-    name: "Rachel Mizrahi",
-    email: "rachel.m@example.com",
-    phone: "+972-54-3456789",
-  },
-  {
-    name: "Yosef Katz",
-    email: "yosef.katz@example.com",
-    phone: "+972-53-4567890",
-  },
-  {
-    name: "Miriam Stein",
-    email: "miriam.stein@example.com",
-    phone: "+972-50-5678901",
-  },
-  {
-    name: "Daniel Shapiro",
-    email: "d.shapiro@example.com",
-    phone: "+972-52-6789012",
-  },
-  {
-    name: "Tamar Ben-David",
-    email: "tamar.bd@example.com",
-    phone: "+972-54-7890123",
-  },
-  {
-    name: "Michael Rosenberg",
-    email: "michael.r@example.com",
-    phone: "+972-53-8901234",
-  },
-];
-
 export function AddVoucherWizard({
-  // language,
-  // theme,
   onClose,
   campaigns,
-  // onVoucherCreated,
 }: AddVoucherWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -127,8 +72,6 @@ export function AddVoucherWizard({
   const totalSteps = 5;
   const { t } = useTranslation("vouchers");
   const [formData, setFormData] = useState<VoucherFormData>({
-    websites: [],
-
     campaign: "",
 
     amount: 1000,
@@ -165,21 +108,18 @@ export function AddVoucherWizard({
       campaignId: formData.campaign,
 
       amount: formData.amount,
-      // customAmount: formData.customAmount,
 
-      // creationType: formData.creationType,
-      noOfVoucher: formData.bulkCount,
-      // bulkCreateAssigned: formData.bulkCreateAssigned,
+      noOfVoucher: formData?.creationType === "single" ? 1 : formData.bulkCount,
 
       //  (person paying / ordering)
       purchaserName: formData.purchaserName,
-      // purchaserEmail: formData.purchaserEmail,
+      purchaserEmail: formData.purchaserEmail,
       purchaserPhone: formData.purchaserPhone,
       purchaserCountryCode: formData.purchaserCountryCode,
 
       //  (person who will receive / be responsible)
       assigneeName: formData.assigneeName,
-      // assigneeEmail: formData.assigneeEmail,
+      assigneeEmail: formData.assigneeEmail,
       assigneePhone: formData.assigneePhone,
       assigneeCountryCode: formData.assigneeCountryCode,
 
@@ -190,13 +130,9 @@ export function AddVoucherWizard({
 
       // Campaign / gift / voucher expiration
       expireDate: formData.expirationDate,
-
-      // websites: formData.websites,
     },
   ];
 
-  console.log("🚀 ~ AddVoucherWizard ~ stepPayloadMap:", stepPayloadMap);
-  // const [voucherId, setVoucherId] = useState("");
   const [_updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
 
@@ -212,6 +148,7 @@ export function AddVoucherWizard({
         if (!Object.keys(stepPayloadMap).length) return;
 
         let payload = stepPayloadMap;
+        console.log("🚀 ~ AddVoucherWizard ~ payload:", payload);
 
         if (isPublish) {
           payload = {
@@ -220,8 +157,6 @@ export function AddVoucherWizard({
         }
 
         await createVoucher(payload).unwrap();
-
-        // setVoucherId(res.id);
 
         onClose();
 
@@ -232,6 +167,7 @@ export function AddVoucherWizard({
     },
     [stepPayloadMap, createVoucher, onClose, t],
   );
+
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
 
@@ -285,15 +221,6 @@ export function AddVoucherWizard({
           }
         }
 
-        // if (formData.creationType === "upload") {
-        //   if (!formData.xlsFile) {
-        //     newErrors.xlsFile = "Please upload an Excel file";
-        //   }
-
-        //   if (!xlsValidation || xlsValidation.valid === 0) {
-        //     newErrors.xlsValidation = "Uploaded file has no valid rows";
-        //   }
-        // }
         break;
 
       case 4:
@@ -328,7 +255,7 @@ export function AddVoucherWizard({
     setIsPublishing(false);
   };
   const [createdVouchers, setCreatedVouchers] = useState<any[]>([]);
-  const [xlsValidation, setXlsValidation] = useState<{
+  const [xlsValidation] = useState<{
     valid: number;
     invalid: number;
     errors: string[];
@@ -336,9 +263,7 @@ export function AddVoucherWizard({
   const [isWebsiteDropdownOpen, setIsWebsiteDropdownOpen] = useState(false);
   const [showPurchaserSuggestions, setShowPurchaserSuggestions] =
     useState(false);
-  const [purchaserSuggestions, setPurchaserSuggestions] = useState<
-    typeof existingUsers
-  >([]);
+
   const websiteDropdownRef = useRef<HTMLDivElement>(null);
   const purchaserDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -382,121 +307,17 @@ export function AddVoucherWizard({
     };
   }, [showPurchaserSuggestions]);
 
-  // const campaigns = [
-  //   { id: "summer-2024", name: "Summer Sale 2024", defaultAmount: 200 },
-  //   { id: "newyear-2026", name: "New Year Promo", defaultAmount: 300 },
-  //   { id: "spring-fest", name: "Spring Festival", defaultAmount: 150 },
-  //   { id: "holiday-special", name: "Holiday Special", defaultAmount: 500 },
-  //   { id: "vip-members", name: "VIP Members", defaultAmount: 1000 },
-  //   { id: "welcome-bonus", name: "Welcome Bonus", defaultAmount: 100 },
-  // ];
-
-  const websites = [
-    { id: "visitnegev", name: "visitnegev.com" },
-    { id: "negevtourism", name: "negevtourism.org" },
-    { id: "explorenegev", name: "explorenegev.il" },
-    { id: "negev-adventures", name: "negev-adventures.com" },
-  ];
-
-  const handleWebsiteToggle = (websiteId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      websites: prev.websites.includes(websiteId)
-        ? prev.websites.filter((id) => id !== websiteId)
-        : [...prev.websites, websiteId],
-    }));
-  };
-
   const handleCampaignChange = (campaignId: string) => {
     setFormData((prev) => ({
       ...prev,
       campaign: campaignId,
-      // amount: campaign?.defaultAmount || prev.amount,
-      // customAmount: false,
     }));
   };
 
   const handlePurchaserEmailChange = (email: string) => {
     setFormData((prev) => ({ ...prev, purchaserEmail: email }));
-
-    // Filter suggestions based on email input
-    if (email.length > 0) {
-      const filtered = existingUsers.filter(
-        (user) =>
-          user.email.toLowerCase().includes(email.toLowerCase()) ||
-          user.name.toLowerCase().includes(email.toLowerCase()),
-      );
-      setPurchaserSuggestions(filtered);
-      setShowPurchaserSuggestions(filtered.length > 0);
-    } else {
-      setPurchaserSuggestions([]);
-      setShowPurchaserSuggestions(false);
-    }
   };
 
-  const handlePurchaserSelect = (user: (typeof existingUsers)[0]) => {
-    setFormData((prev) => ({
-      ...prev,
-      purchaserName: user.name,
-      purchaserEmail: user.email,
-      purchaserPhone: user.phone,
-    }));
-    setShowPurchaserSuggestions(false);
-  };
-
-  // const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-
-  //   if (file) {
-  //     setFormData((prev) => ({ ...prev, xlsFile: file }));
-
-  //     const reader = new FileReader();
-
-  //     reader.onload = (evt) => {
-  //       const data = evt.target?.result;
-  //       const workbook = XLSX.read(data, { type: "binary" });
-
-  //       const sheetName = workbook.SheetNames[0];
-  //       const sheet = workbook.Sheets[sheetName];
-
-  //       const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-  //       console.log("Parsed Excel:", jsonData);
-
-  //       // 👇 transform into your required format
-  //       const formattedData = jsonData.map((row: any) => ({
-  //         campaignId: row.campaignId,
-  //         amount: Number(row.amount),
-  //         expireDate: new Date(row.expireDate),
-  //         purchaserName: row.purchaserName || "",
-  //         purchaserCountryCode: row.purchaserCountryCode || "",
-  //         purchaserPhone: row.purchaserPhone || "",
-  //         noOfVoucher: Number(row.noOfVoucher),
-  //         assigneeName: row.assigneeName || "",
-  //         assigneeCountryCode: row.assigneeCountryCode || "",
-  //         assigneePhone: row.assigneePhone || "",
-  //         languagePreference: row.languagePreference || "en",
-  //         message: row.message || "",
-  //         smsMessage: row.smsMessage || "",
-  //         sendEmail: row.sendEmail === true || row.sendEmail === "true",
-  //       }));
-
-  //       console.log("Final Payload:", formattedData);
-
-  //       // store for submit
-  //       setXlsValidation({
-  //         valid: formattedData.length,
-  //         invalid: 0,
-  //         errors: [],
-  //       });
-
-  //       // 👇 store this separately
-  //       setParsedData(formattedData);
-  //     };
-
-  //     reader.readAsBinaryString(file);
-  //   }
-  // };
   const handleNext = () => {
     if (currentStep === 4) {
       handleSubmit();
@@ -520,11 +341,11 @@ export function AddVoucherWizard({
         assigneeName:
           formData.creationType === "single"
             ? formData.assigneeName
-            : `Customer ${i + 1}`,
+            : formData.assigneeName,
         email:
           formData.creationType === "single"
             ? formData.assigneeEmail
-            : `customer${i + 1}@example.com`,
+            : formData.assigneeEmail,
         amount: formData.amount,
         status: "Created",
       });
@@ -625,18 +446,10 @@ export function AddVoucherWizard({
             formData={formData}
             setFormData={setFormData}
             errors={errors}
-            websites={websites}
             campaigns={campaigns}
-            handleWebsiteToggle={handleWebsiteToggle}
             handleCampaignChange={handleCampaignChange}
-            isWebsiteDropdownOpen={isWebsiteDropdownOpen}
-            setIsWebsiteDropdownOpen={setIsWebsiteDropdownOpen}
-            websiteDropdownRef={websiteDropdownRef}
             purchaserDropdownRef={purchaserDropdownRef}
-            purchaserSuggestions={purchaserSuggestions}
-            showPurchaserSuggestions={showPurchaserSuggestions}
             handlePurchaserEmailChange={handlePurchaserEmailChange}
-            handlePurchaserSelect={handlePurchaserSelect}
           />
         )}
         {currentStep === 2 && (
@@ -658,7 +471,6 @@ export function AddVoucherWizard({
         {currentStep === 4 && (
           <VoucherReview
             formData={formData}
-            websites={websites}
             campaigns={campaigns}
             xlsValidation={xlsValidation}
             t={t}

@@ -59,15 +59,12 @@ interface Transaction {
   date: string;
   status: "completed" | "pending" | "cancelled";
 }
-interface VoucherDetailsProps {
-  onAddVoucher: () => void;
-}
-export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
+
+export function VoucherDetailsPage() {
   const { isDark, borderColor } = useThemeClasses();
   const { t } = useTranslation("vouchers");
   const [voucherId, setVoucherId] = useState("");
   const [searchParams] = useSearchParams();
-  const [isEditClicked, setIsEditClicked] = useState(false);
 
   useEffect(() => {
     const voucherId = searchParams.get("voucherId");
@@ -139,7 +136,7 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
     return new Date(date) < new Date();
   };
 
-  const getTimelineIcon = (type: TimelineEvent["type"]) => {
+  const getTimelineIcon = (type: string) => {
     switch (type) {
       case "created":
         return <Tag className="w-4 h-4" />;
@@ -164,28 +161,28 @@ export function VoucherDetailsPage({ onAddVoucher }: VoucherDetailsProps) {
     }
   };
 
-  const getTransactionTypeLabel = (type: Transaction["type"]) => {
-    const labels = {
-      product: "Product",
-      trip: "Trip",
-      funday: "Fun Day",
-      refund: "Refund",
-    };
-    return labels[type];
-  };
+  // const getTransactionTypeLabel = (type: Transaction["type"]) => {
+  //   const labels = {
+  //     product: "Product",
+  //     trip: "Trip",
+  //     funday: "Fun Day",
+  //     refund: "Refund",
+  //   };
+  //   return labels[type];
+  // };
 
-  const getTransactionTypeColor = (type: Transaction["type"]) => {
-    switch (type) {
-      case "product":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "trip":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      case "funday":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300";
-      case "refund":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
-    }
-  };
+  // const getTransactionTypeColor = (type: Transaction["type"]) => {
+  //   switch (type) {
+  //     case "product":
+  //       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+  //     case "trip":
+  //       return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+  //     case "funday":
+  //       return "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300";
+  //     case "refund":
+  //       return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+  //   }
+  // };
 
   return (
     <div className=" flex flex-col overflow-hidden relative h-[88vh] ">

@@ -1,9 +1,8 @@
-// VoucherTransactionTable.tsx
 import React from "react";
 
 export interface Voucher {
-  amount: number;
-  remainingAmount: number;
+  amount: any;
+  remainingAmount: any;
 }
 
 export interface Transaction {
@@ -20,6 +19,7 @@ interface VoucherTransactionTableProps {
   isDark?: boolean;
   voucher?: Voucher;
   formatDate: (date: string | Date) => string;
+  t?: any;
 }
 
 const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({

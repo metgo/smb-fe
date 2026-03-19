@@ -1,24 +1,17 @@
 interface Props {
   formData: any;
-  websites: any[];
-  campaigns: any[];
+  campaigns: {
+    datas?: {
+      data?: any[];
+    };
+  };
   xlsValidation: any;
   t: any;
 }
 
-const VoucherReview = ({
-  formData,
-  websites,
-  campaigns,
-  xlsValidation,
-  t,
-}: Props) => {
-  const selectedWebsites = websites.filter((w) =>
-    formData.websites.includes(w.id),
-  );
-
+const VoucherReview = ({ formData, campaigns, xlsValidation, t }: Props) => {
   const selectedCampaign = campaigns?.datas?.data?.find(
-    (c) => c.id === formData.campaign,
+    (c: any) => c.id === formData.campaign,
   );
 
   return (
@@ -33,10 +26,6 @@ const VoucherReview = ({
           <label className="block text-xs text-gray-500 mb-1">
             {t("websites")}
           </label>
-
-          <div className="text-gray-900 dark:text-gray-100">
-            {selectedWebsites.map((w) => w.name).join(", ")}
-          </div>
         </div>
 
         {/* Campaign */}

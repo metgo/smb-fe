@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, Clock, Globe } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { formatDate } from "@/helpers";
 
 interface Voucher {

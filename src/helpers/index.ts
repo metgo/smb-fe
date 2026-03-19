@@ -142,7 +142,7 @@ export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
 };
 
 //vouchers
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string | Date) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
