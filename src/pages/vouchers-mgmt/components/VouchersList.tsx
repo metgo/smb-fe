@@ -775,21 +775,23 @@ const VouchersList = ({
 
       {/* Bulk Actions */}
       {selectedVouchers.size > 0 && (
-        <BulkActionBar
-          selectedItemCount={selectedVouchers.size}
-          hancleClearSelection={() => setSelectedVouchers(new Set())}
-          handleSendEmail={() => {
-            handleSendVoucherEmails();
-          }}
-          handleSendSMS={() => {
-            handleSendVoucherSMS();
-          }}
-          // handleExtendExpiration={() => setIsExtendModalOpen(true)}
-        />
+        <div className="mt-3">
+          <BulkActionBar
+            selectedItemCount={selectedVouchers.size}
+            hancleClearSelection={() => setSelectedVouchers(new Set())}
+            handleSendEmail={() => {
+              handleSendVoucherEmails();
+            }}
+            handleSendSMS={() => {
+              handleSendVoucherSMS();
+            }}
+            // handleExtendExpiration={() => setIsExtendModalOpen(true)}
+          />
+        </div>
       )}
 
       {/* Scrollable Table Content */}
-      <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)] mt-3">
+      <div className="flex flex-col overflow-hidden h-[calc(100vh-390px)] mt-3">
         <div className="sticky">
           <ReordableDataTable
             rowKey="_id"

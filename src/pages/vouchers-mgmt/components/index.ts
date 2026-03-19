@@ -1,6 +1,3 @@
 import VouchersList from "./VouchersList";
 
-export{
-  VouchersList
-
-}
+export { VouchersList };

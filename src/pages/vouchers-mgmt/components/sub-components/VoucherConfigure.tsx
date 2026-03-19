@@ -371,27 +371,54 @@ const VoucherConfigure = ({
   if (formData.creationType === "upload") {
     return (
       <div className="space-y-4">
-        <h3 className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+        <h3
+          className={`text-sm mb-4 ${
+            isDark ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
           {t("upload_xls_file")}
         </h3>
 
-        <div className="p-4 border rounded">
+        {/* Download Template */}
+        <div
+          className={`p-4 border rounded ${
+            isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
+          }`}
+        >
           <button
-            className="flex items-center gap-2 text-teal-600 text-sm"
+            className="flex items-center gap-2 text-teal-500 text-sm"
             onClick={handleDownload}
           >
             <Download className="w-4 h-4" />
             {t("download_sample_xls_template")}
           </button>
-          <p className="text-xs text-gray-500 mt-1">
+
+          <p
+            className={`text-xs mt-1 ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}
+          >
             {t("use_template_for_correct_format")}
           </p>
         </div>
 
-        <div className="border-2 border-dashed rounded p-6 text-center">
-          <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        {/* Upload Box */}
+        <div
+          className={`border-2 border-dashed rounded p-6 text-center ${
+            isDark
+              ? "border-gray-600 bg-gray-800"
+              : "border-gray-300 bg-gray-50"
+          }`}
+        >
+          <Upload
+            className={`w-8 h-8 mx-auto mb-2 ${
+              isDark ? "text-gray-500" : "text-gray-400"
+            }`}
+          />
+
           <label className="cursor-pointer">
-            <span className="text-teal-600">{t("click_to_upload")}</span>
+            <span className="text-teal-500">{t("click_to_upload")}</span>
+
             <input
               type="file"
               accept=".xls,.xlsx"
@@ -399,26 +426,24 @@ const VoucherConfigure = ({
               className="hidden"
             />
           </label>
+
           {errors.xlsFile && (
             <p className="text-red-500 text-xs mt-2">{errors.xlsFile}</p>
           )}
         </div>
 
+        {/* File Info */}
         {formData.xlsFile && (
-          <div className="p-4 border rounded">
+          <div
+            className={`p-4 border rounded ${
+              isDark
+                ? "border-gray-700 bg-gray-800 text-gray-400"
+                : "border-gray-200 bg-white"
+            }`}
+          >
             <p className="text-sm mb-2">
               {t("file")}: {formData.xlsFile.name}
             </p>
-            {/* {xlsValidation && (
-              <div className="space-y-2 text-sm">
-                <span className="text-green-600">
-                  ✓ {t("valid_rows")}: {xlsValidation.valid}
-                </span>
-                <span className="text-red-600 block">
-                  ✗ {t("invalid_rows")}: {xlsValidation.invalid}
-                </span>
-              </div>
-            )} */}
           </div>
         )}
       </div>

@@ -158,85 +158,60 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Expiration */}
-        <div
-          className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="space-y-4">
-            <div>
-              <label
-                className={`block text-xs mb-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}
-              >
-                {t("expiration_date")}
-              </label>
-              <div
-                className={`flex items-center gap-2 ${
-                  isExpired(voucher?.expireDate)
-                    ? "text-red-600"
-                    : isExpiringSoon(voucher?.expireDate)
-                      ? "text-orange-600"
-                      : isDark
-                        ? "text-gray-100"
-                        : "text-gray-900"
-                }`}
-              >
-                <Calendar className="w-5 h-5" />
-                <span>{formatDate(voucher?.expireDate)}</span>
-              </div>
-              {isExpiringSoon(voucher?.expireDate) &&
-                !isExpired(voucher?.expireDate) && (
-                  <div
-                    className={`mt-2 text-xs flex items-center gap-1 ${
-                      isDark ? "text-orange-400" : "text-orange-600"
-                    }`}
-                  >
-                    <Clock className="w-3 h-3" />
-                    {t("expiring_soon")}
-                  </div>
-                )}
-              {isExpired(voucher?.expireDate) && (
+      </div>
+      {/* Expiration */}
+      <div
+        className={`rounded-lg border p-6 ${
+          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
+        }`}
+      >
+        <div className="space-y-4">
+          <div>
+            <label
+              className={`block text-xs mb-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}
+            >
+              {t("expiration_date")}
+            </label>
+            <div
+              className={`flex items-center gap-2 ${
+                isExpired(voucher?.expireDate)
+                  ? "text-red-600"
+                  : isExpiringSoon(voucher?.expireDate)
+                    ? "text-orange-600"
+                    : isDark
+                      ? "text-gray-100"
+                      : "text-gray-900"
+              }`}
+            >
+              <Calendar className="w-5 h-5" />
+              <span>{formatDate(voucher?.expireDate)}</span>
+            </div>
+            {isExpiringSoon(voucher?.expireDate) &&
+              !isExpired(voucher?.expireDate) && (
                 <div
-                  className={`mt-2 text-xs ${
-                    isDark ? "text-red-400" : "text-red-600"
+                  className={`mt-2 text-xs flex items-center gap-1 ${
+                    isDark ? "text-orange-400" : "text-orange-600"
                   }`}
                 >
-                  {t("voucher_expired")}
+                  <Clock className="w-3 h-3" />
+                  {t("expiring_soon")}
                 </div>
               )}
-            </div>
-            <button className="w-full px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2">
+            {isExpired(voucher?.expireDate) && (
+              <div
+                className={`mt-2 text-xs ${
+                  isDark ? "text-red-400" : "text-red-600"
+                }`}
+              >
+                {t("voucher_expired")}
+              </div>
+            )}
+          </div>
+          {/* <button className="w-full px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2">
               <Calendar className="w-4 h-4" />
               {t("extend_expiration")}
-            </button>
-          </div>
+            </button> */}
         </div>
-
-        {/* Applicable Websites */}
-        {/* <div
-          className={`rounded-lg border p-6 ${
-            isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
-          }`}
-        >
-          <h3
-            className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("applicable_websites")}
-          </h3>
-          <div className="space-y-2">
-            {voucher?.websites?.map((website, index) => (
-              <div
-                key={index}
-                className={`${isDark ? "text-gray-100" : "text-gray-900"} flex items-center gap-2`}
-              >
-                <Globe className="w-4 h-4 text-gray-400" />
-                {website}
-              </div>
-            ))}
-          </div>
-        </div> */}
       </div>
     </div>
   );

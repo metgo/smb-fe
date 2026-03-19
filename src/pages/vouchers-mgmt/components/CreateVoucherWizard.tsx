@@ -289,7 +289,7 @@ export function AddVoucherWizard({
   ];
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating} height="">
+    <ModalWrapper onClose={onClose} showSpinner={isCreating}>
       {/* Header */}
       <div
         className={`px-6 py-4 flex items-center justify-between border-b ${

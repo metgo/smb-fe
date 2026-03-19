@@ -27,7 +27,10 @@ import { Spinner } from "@/components/shared";
 import clsx from "clsx";
 
 import VoucherTimeline from "./components/VoucherTimeline";
-import VoucherTransactionTable from "./components/VoucherTransactionTable";
+import VoucherTransactionTable, {
+  type Order,
+} from "./components/VoucherTransactionTable";
+import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 
 interface TimelineEvent {
   id: string;
@@ -49,17 +52,15 @@ interface TimelineEvent {
   linkedType?: "order" | "product" | "trip" | "funday" | "campaign";
   linkedName?: string;
 }
-
-interface Transaction {
-  id: string;
-  type: "product" | "trip" | "funday" | "refund";
-  referenceId: string;
-  referenceName: string;
-  amountUsed: number;
-  date: string;
-  status: "completed" | "pending" | "cancelled";
+interface IOrder {
+  _id: string;
+  createdAt: string;
+  amount: number;
+  itemType: "order" | "product" | "trip" | "funday" | "campaign";
+  product?: {
+    name: string;
+  };
 }
-
 export function VoucherDetailsPage() {
   const { isDark, borderColor } = useThemeClasses();
   const { t } = useTranslation("vouchers");
@@ -77,52 +78,61 @@ export function VoucherDetailsPage() {
   } = useGetVoucherByIdQuery(voucherId ? { voucherId } : skipToken);
   const voucher = voucherdetailId;
 
+  const { data: orders, isLoading: isOrderLoading } = useGetAllOrdersQuery(
+    { voucherId: voucher?._id },
+
+    { skip: !voucher?._id },
+  );
+  const [ordersFromVoucher, setOrdersfromVoucher] = useState<IOrder[]>([]);
+
+  useEffect(() => {
+    setOrdersfromVoucher(orders?.data);
+  }, [orders]);
+
   const [activeTab, setActiveTab] = useState<
     "overview" | "assignee" | "timeline" | "transactions"
   >("overview");
 
-  const timeline: TimelineEvent[] = [
-    {
-      id: "1",
-      type: "created",
-      date: voucher?.createdAt,
-      description:
-        `Created by ${voucher?.creatorInfo?.id?.firstName ?? "-"} ${voucher?.creatorInfo?.id?.lastName ?? ""}`.trim(),
-    },
-    {
-      id: "2",
-      type: "assigned",
-      date: voucher?.assigneeInfo?.assignedAt,
-      description: `Assigned to ${voucher?.assigneeInfo?.name ? voucher?.assigneeInfo?.name : "-"}`,
-    },
-    {
-      id: "3",
-      type: "sent_email",
-      date: "",
-      description: `Voucher sent via email to ${voucher?.assigneeInfo?.email ? voucher?.assigneeInfo?.email : "-"}`,
-    },
-    {
-      id: "4",
-      type: "product_purchased",
-      date: voucher?.purchaserInfo?.id?.createdAt,
-      description: "Purchaser Info",
-      amount: 150,
-      linkedId: "PRD-123",
-      linkedType: "product",
-      linkedName: "Desert Tour Premium Package",
-    },
-  ];
+  const createdEvent: TimelineEvent = {
+    id: "1",
+    type: "created",
+    date: voucher?.createdAt,
+    description:
+      `Created by ${voucher?.creatorInfo?.id?.firstName ?? "-"} ${voucher?.creatorInfo?.id?.lastName ?? ""}`.trim(),
+  };
 
-  const transactions: Transaction[] = [
-    {
-      id: "1",
-      type: "product",
-      referenceId: "PRD-123",
-      referenceName: "Desert Tour Premium Package",
-      amountUsed: 150,
-      date: "2026-01-20T14:22:00Z",
-      status: "completed",
-    },
+  const assignedEvent: TimelineEvent = {
+    id: "2",
+    type: "assigned",
+    date: voucher?.assigneeInfo?.assignedAt,
+    description: `Assigned to ${voucher?.assigneeInfo?.name ? voucher?.assigneeInfo?.name : "-"}`,
+  };
+
+  const sentEmailEvent: TimelineEvent = {
+    id: "3",
+    type: "sent_email",
+    date: "",
+    description: `Voucher sent via email to ${voucher?.assigneeInfo?.email ? voucher?.assigneeInfo?.email : "-"}`,
+  };
+
+  const productPurchasedEvent: TimelineEvent[] = (ordersFromVoucher ?? []).map(
+    (order) => ({
+      id: order?._id,
+      type: "product_purchased",
+      date: order.createdAt,
+      description: "Purchaser Info",
+      amount: order.amount,
+      linkedId: order._id,
+      linkedType: order?.itemType,
+      linkedName: order.product?.name,
+    }),
+  );
+
+  const timeline: TimelineEvent[] = [
+    createdEvent,
+    assignedEvent,
+    sentEmailEvent,
+    ...productPurchasedEvent,
   ];
 
   const isExpiringSoon = (date: string) => {
@@ -330,60 +340,16 @@ export function VoucherDetailsPage() {
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
             <VoucherTransactionTable
-              transactions={transactions}
               isDark={isDark}
               voucher={voucher}
               formatDate={formatDate}
               t={t}
+              ordersFromVoucher={ordersFromVoucher}
+              isOrderLoading={isOrderLoading}
             />
           )}
         </div>
       </div>
-      {/* Footer Actions */}
-      <div
-        className={`px-6 py-4 border-t rounded-sm flex items-center justify-end gap-3 `}
-      >
-        <button
-          className={`px-4 py-2 rounded-lg flex items-center gap-2 border transition-colors ${
-            isDark
-              ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          {t("extend_expiration")}
-        </button>
-
-        <button
-          className={`px-4 py-2 rounded-lg flex items-center gap-2 border transition-colors ${
-            isDark
-              ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          <RefreshCw className="w-4 h-4" />
-          {t("change_status")}
-        </button>
-
-        <button
-          className={`px-4 py-2 rounded-lg flex items-center gap-2 border transition-colors ${
-            isDark
-              ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          <Send className="w-4 h-4" />
-          {t("re_send_voucher")}
-        </button>
-
-        <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2">
-          <XCircle className="w-4 h-4" />
-          {t("cancel_voucher")}
-        </button>
-      </div>
-      {/* {isEditClicked && (
-        <AddVoucherWizard onClose={() => setIsEditClicked(false)} />
-      )} */}
     </div>
   );
 }

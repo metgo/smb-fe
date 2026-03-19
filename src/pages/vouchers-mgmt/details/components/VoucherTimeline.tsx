@@ -25,6 +25,7 @@ const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
   t,
   isDark,
 }) => {
+  console.log("🚀 ~ VoucherTimeline ~ timeline:", timeline);
   return (
     <div
       className={`${isDark ? "bg-gray-900" : "bg-white"} rounded-lg border p-6`}
@@ -37,10 +38,11 @@ const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
       <div className="space-y-4">
         {timeline.map((event, index) => (
           <div key={event.id} className="flex gap-4">
+            {/* Icon + connector line */}
             <div className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center 
-            ${isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-100 text-teal-600"}`}
+                  ${isDark ? "bg-teal-900/30 text-teal-400" : "bg-teal-100 text-teal-600"}`}
               >
                 {getTimelineIcon(event.type)}
               </div>
@@ -51,8 +53,11 @@ const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
                 />
               )}
             </div>
+
+            {/* Event content */}
             <div className="flex-1 pb-4">
               <div className="flex items-start justify-between">
+                {/* Left: description, amount, linked name */}
                 <div className="flex-1">
                   <p
                     className={`${isDark ? "text-gray-100" : "text-gray-900"}`}
@@ -77,10 +82,10 @@ const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
                     </a>
                   )}
                 </div>
+
+                {/* Right: date */}
                 <span
-                  className={`text-xs whitespace-nowrap ml-4 ${
-                    isDark ? "text-gray-500" : "text-gray-500"
-                  }`}
+                  className={`text-xs whitespace-nowrap ml-4 ${isDark ? "text-gray-500" : "text-gray-500"}`}
                 >
                   {formatDate(event.date)}
                 </span>
