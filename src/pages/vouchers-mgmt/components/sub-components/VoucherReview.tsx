@@ -1,3 +1,5 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
 interface Props {
   formData: any;
   campaigns: {
@@ -6,17 +8,17 @@ interface Props {
     };
   };
   xlsValidation: any;
-  t: any;
-  isDark?: boolean;
+  t: (key: string) => string;
 }
 
 const VoucherReview = ({
   formData,
   campaigns,
-  isDark,
   xlsValidation,
   t,
 }: Props) => {
+  const {isDark}=useThemeClasses()
+
   const selectedCampaign = campaigns?.datas?.data?.find(
     (c: any) => c.id === formData.campaign,
   );
@@ -30,9 +32,8 @@ const VoucherReview = ({
       </h3>
 
       <div
-        className={`rounded-lg p-4 space-y-4 border ${
-          isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
-        }`}
+        className={`rounded-lg p-4 space-y-4 border ${isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+          }`}
       >
         {/* Websites */}
         <div>
@@ -87,31 +88,31 @@ const VoucherReview = ({
         {(formData.purchaserEmail ||
           formData.purchaserName ||
           formData.purchaserPhone) && (
-          <div
-            className={`pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
-          >
-            <label
-              className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            <div
+              className={`pt-4 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}
             >
-              {t("purchaser_details")}
-            </label>
-            <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
-              {formData.purchaserName && (
-                <>
-                  {formData.purchaserName}
-                  <br />
-                </>
-              )}
-              {formData.purchaserEmail && (
-                <>
-                  {formData.purchaserEmail}
-                  <br />
-                </>
-              )}
-              {formData.purchaserPhone && <>{formData.purchaserPhone}</>}
+              <label
+                className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+              >
+                {t("purchaser_details")}
+              </label>
+              <div className={`${isDark ? "text-gray-100" : "text-gray-900"}`}>
+                {formData.purchaserName && (
+                  <>
+                    {formData.purchaserName}
+                    <br />
+                  </>
+                )}
+                {formData.purchaserEmail && (
+                  <>
+                    {formData.purchaserEmail}
+                    <br />
+                  </>
+                )}
+                {formData.purchaserPhone && <>{formData.purchaserPhone}</>}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Creation Type */}
         <div>
@@ -198,11 +199,10 @@ const VoucherReview = ({
       </div>
 
       <div
-        className={`p-4 rounded-lg border ${
-          isDark
+        className={`p-4 rounded-lg border ${isDark
             ? "bg-teal-900/20 border-teal-800"
             : "bg-teal-50 border-teal-200"
-        }`}
+          }`}
       >
         <p className={`${isDark ? "text-teal-100" : "text-teal-900"} text-sm`}>
           {t("click_create_vouchers_to_proceed")}

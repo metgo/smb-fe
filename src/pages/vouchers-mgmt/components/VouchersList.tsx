@@ -39,12 +39,12 @@ interface Voucher {
   email: string;
   phone: string;
   status:
-    | "active"
-    | "assigned"
-    | "redeemed"
-    | "expired"
-    | "cancelled"
-    | "UNASSIGNED";
+  | "active"
+  | "assigned"
+  | "redeemed"
+  | "expired"
+  | "cancelled"
+  | "UNASSIGNED";
   amount: number;
   remainingAmount: number;
   expirationDate: string;
@@ -161,8 +161,8 @@ const generateMockVouchers = (): Voucher[] => {
       assignedAt:
         status !== "active"
           ? new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : undefined,
       creatorName: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
       creatorEmail: `${firstNames[Math.floor(Math.random() * firstNames.length)].toLowerCase()}.${lastNames[Math.floor(Math.random() * lastNames.length)].toLowerCase()}@example.com`,
@@ -172,12 +172,12 @@ const generateMockVouchers = (): Voucher[] => {
 };
 const USER_ROLE = "admin";
 
-export function VouchersList({
+const VouchersList = ({
   onVoucherClick,
   onAddVoucher,
   campaigns,
   // refreshTrigger,
-}: VouchersListProps) {
+}: VouchersListProps) => {
   const { textPrimary } = useThemeClasses();
   const { isDark } = useThemeClasses();
 
@@ -205,9 +205,9 @@ export function VouchersList({
         value:
           voucherStatsResponse?.totalRevenue != null
             ? voucherStatsResponse.totalRevenue.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
             : "0.00",
         label: t("generated_revenue"),
         icon: <DollarSign className="w-5 h-5 text-green-600" />,
@@ -218,12 +218,12 @@ export function VouchersList({
         value:
           voucherStatsResponse?.totalRemainingBalance != null
             ? voucherStatsResponse.totalRemainingBalance.toLocaleString(
-                "en-US",
-                {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                },
-              )
+              "en-US",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )
             : "0.00",
         label: t("pending_redemption"),
         icon: <Clock className="w-5 h-5 text-orange-600" />,
@@ -286,11 +286,10 @@ export function VouchersList({
             <a
               href={`mailto:${voucher.email}`}
               onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${
-                isDark
+              className={`p-1 transition-colors ${isDark
                   ? "text-gray-400 hover:text-teal-400"
                   : "text-gray-600 hover:text-teal-600"
-              }`}
+                }`}
               title={voucher.email}
             >
               <Mail className="w-4 h-4" />
@@ -302,11 +301,10 @@ export function VouchersList({
             <a
               href={`tel:${voucher.phone}`}
               onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${
-                isDark
+              className={`p-1 transition-colors ${isDark
                   ? "text-gray-400 hover:text-teal-400"
                   : "text-gray-600 hover:text-teal-600"
-              }`}
+                }`}
               title={voucher.phone}
             >
               <Phone className="w-4 h-4" />
@@ -776,11 +774,10 @@ export function VouchersList({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsOpen(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              isDark
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
+              }`}
           >
             <NotebookPen className="w-4 h-4" />
 
@@ -789,11 +786,10 @@ export function VouchersList({
 
           <button
             onClick={handleExportCSVVouchers}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              isDark
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${isDark
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
+              }`}
             title={t("downloadCSV")}
           >
             <Download className="w-4 h-4" />
@@ -945,26 +941,26 @@ export function VouchersList({
             maxAmount !== amountRange.max ||
             dateFrom ||
             dateTo) && (
-            <div className="mt-3">
-              <button
-                onClick={() => {
-                  setStatusFilter("all");
-                  setCampaignFilter("all");
-                  setWebsiteFilter("all");
-                  setPaymentFilter("");
-                  setSearchQuery("all");
-                  setMinAmount(amountRange.min);
-                  setMaxAmount(amountRange.max);
-                  setDateFrom("");
-                  setDateTo("");
-                }}
-                className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
-              >
-                <X className="w-4 h-4" />
-                {t("clear_all")}
-              </button>
-            </div>
-          )}
+              <div className="mt-3">
+                <button
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setCampaignFilter("all");
+                    setWebsiteFilter("all");
+                    setPaymentFilter("");
+                    setSearchQuery("all");
+                    setMinAmount(amountRange.min);
+                    setMaxAmount(amountRange.max);
+                    setDateFrom("");
+                    setDateTo("");
+                  }}
+                  className={`text-sm flex items-center gap-1 transition-colors ${isDark ? "text-teal-400 hover:text-teal-300" : "text-teal-600 hover:text-teal-700"}`}
+                >
+                  <X className="w-4 h-4" />
+                  {t("clear_all")}
+                </button>
+              </div>
+            )}
         </div>
       )}
 
@@ -1052,3 +1048,5 @@ export function VouchersList({
     </div>
   );
 }
+
+export default VouchersList;

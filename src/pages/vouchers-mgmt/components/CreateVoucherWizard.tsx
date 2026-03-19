@@ -142,6 +142,9 @@ export function AddVoucherWizard({
   };
   const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [_isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
+
+
+  
   const saveDraft = useCallback(
     async (isPublish = false) => {
       try {
@@ -150,11 +153,11 @@ export function AddVoucherWizard({
         let payload = stepPayloadMap;
         console.log("🚀 ~ AddVoucherWizard ~ payload:", payload);
 
-        if (isPublish) {
-          payload = {
-            ...payload,
-          };
-        }
+        // if (isPublish) {
+        //   payload = {
+        //     ...payload,
+        //   };
+        // }
 
         await createVoucher(payload).unwrap();
 

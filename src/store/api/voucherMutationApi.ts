@@ -20,7 +20,7 @@ export const voucherMutationApi = createApi({
       query: (payload) => ({
         url: endpoints.postVoucher,
         method: "POST",
-        body: payload,
+        data: payload,
       }),
       invalidatesTags: ["Voucher"],
     }),
