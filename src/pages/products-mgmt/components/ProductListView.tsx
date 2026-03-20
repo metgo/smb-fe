@@ -7,7 +7,7 @@ import { routes } from "@/lib/routes";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getPlainTextFromRichText } from "@/helpers";
-import StatusBadge from "@/components/shared/StatusBadge";
+import { StatusPill } from "@/components/pills";
 interface ProductListViewProps {
   products: any[];
   isLoading: boolean;
@@ -115,27 +115,7 @@ const ProductListView: React.FC<ProductListViewProps> = ({
     columnVisibility.status && {
       key: "status",
       label: t("product_status"),
-      render: (product: any) => {
-        const st = (product?.status || "").toLowerCase();
-        return <>{st ? <StatusBadge status={st} /> : "-"}</>;
-
-        // <span
-        //   className={clsx(
-        //     "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-        //     st === "active"
-        //       ? "bg-green-400 text-white"
-        //       : st === "inactive"
-        //         ? "bg-yellow-500/20 text-yellow-600"
-        //         : st === "draft"
-        //           ? "bg-gray-500/20 text-gray-600"
-        //           : isDark
-        //             ? "bg-gray-700 text-gray-400"
-        //             : "bg-gray-100 text-gray-600",
-        //   )}
-        // >
-        //   {t(st) || st || t("unknown")}
-        // </span>
-      },
+      render: (product: any) => <StatusPill status={product?.status || ""} />,
     },
 
     columnVisibility.price && {

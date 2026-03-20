@@ -57,6 +57,7 @@ export default function ProfilePage() {
     sessionStorage.removeItem("user_info");
     sessionStorage.removeItem("access_token");
     navigate(routes.auth, { replace: true });
+    localStorage.clear();
     window.dispatchEvent(new Event("session:updated"));
     window.location.reload();
   };

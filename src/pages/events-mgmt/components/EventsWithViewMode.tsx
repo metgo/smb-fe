@@ -39,6 +39,7 @@ import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
 import { DeleteIconBtn } from "@/components/btns";
 import { Checkbox } from "@/components/ui/checkbox";
+import { StatusPill } from "@/components/pills";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -671,23 +672,7 @@ export default function EventsWithViewMode({
             key: "status",
             label: t("status"),
             sortable: true,
-            render: (event) => (
-              <span
-                className={`px-2 py-1 rounded-full text-xs ${
-                  event.status === "APPROVED"
-                    ? "bg-blue-500/20 text-blue-500"
-                    : event.status === "PENDING"
-                      ? "bg-gray-500/20 text-gray-500"
-                      : "bg-red-500/20 text-red-500"
-                }`}
-              >
-                {event.status === "APPROVED"
-                  ? t("approved")
-                  : event.status === "PENDING"
-                    ? t("pending")
-                    : t("draft")}
-              </span>
-            ),
+            render: (event) => <StatusPill status={event.status} />,
           },
           {
             key: "registrations",

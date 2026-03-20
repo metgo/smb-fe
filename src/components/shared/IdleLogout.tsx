@@ -15,6 +15,7 @@ export default function IdleLogout() {
       navigate(routes.auth, { replace: true });
       sessionStorage.removeItem("user_info");
       sessionStorage.removeItem("access_token");
+      localStorage.clear();
     }, IDLE_LIMIT);
   };
 

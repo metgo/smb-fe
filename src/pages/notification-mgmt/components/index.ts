@@ -1,3 +1,4 @@
 import NotificationStatsCards from "./NotificationStatsCards";
+import NotificationsMgmtSkeleton from "./NotificationsMgmtSkeleton";
 
-export { NotificationStatsCards };
+export { NotificationStatsCards, NotificationsMgmtSkeleton };
