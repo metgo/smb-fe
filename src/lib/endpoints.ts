@@ -31,7 +31,7 @@ export const endpoints = {
   groupType: "/admin/group-type",
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
-
+  campaign: "/admin/campaign",
   // business
   business: "/businesses",
   businesses: "/businesses",
@@ -57,6 +57,16 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+
+  //voucher
+  vouchers: "/vouchers",
+  voucher: "/voucher-id",
+  postVoucher: "/vouchers",
+  searchVoucher: "/search-vouchers",
+  voucherStatDashboard: "/vouchers-stats",
+  bulkVouchersUpdate: "/bulk-vouchers-update",
+  sendemail: "/vouchers/send-email",
+  sendsms: "/vouchers/send-sms",
 
   users: "/users",
   userInfo: "/users/me",

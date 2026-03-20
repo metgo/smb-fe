@@ -16,6 +16,8 @@
   "products": "מוצרים",
   "businesses": "עסקים",
   "users": "משתמשים",
+  "vouchers": "שוברים",
+  "done": "בוצע",
   "delete_business": "מחיקת עסק",
   "delete_business_confirm": "לאשר מחיקת העסק?",
   "edit_location": "עריכת מיקום",
@@ -195,6 +197,9 @@
   "contact_ownership": "איש קשר ובעלות",
   "not_provided": "לא סופק",
   "images_branding": "תמונות ומיתוג",
+  "assignee_and_creator": "מקבל ויוצר",
+  "usage_timeline": "ציר זמן שימוש",
+  "transactions_and_usage": "עסקאות ושימוש",
 
   "impact_score": "ציון השפעה",
   "location": "מיקום",

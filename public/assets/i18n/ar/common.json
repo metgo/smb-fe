@@ -16,6 +16,8 @@
   "tag_input_hint": "اكتب وسمًا واضغط فاصلة (,) للإضافة",
   "add_tag_placeholder": "إضافة وسم...",
   "events": "الفعاليات",
+  "vouchers": "القسائم",
+  "done": "تم",
   "products": "المنتجات",
   "businesses": "الأعمال التجارية",
   "notifications": "الإشعارات",
@@ -198,6 +200,9 @@
   "contact_ownership": "جهة الاتصال والملكية",
   "not_provided": "غير متوفر",
   "images_branding": "الصور والعلامة التجارية",
+  "assignee_and_creator": "المستلم والمنشئ",
+  "usage_timeline": "الجدول الزمني للاستخدام",
+  "transactions_and_usage": "المعاملات والاستخدام",
 
   "impact_score": "درجة التأثير",
   "location": "الموقع",
