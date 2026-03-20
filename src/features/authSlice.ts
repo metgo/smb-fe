@@ -70,6 +70,7 @@ const authSlice = createSlice({
       state.user = null;
 
       if (typeof window !== "undefined") {
+        localStorage.clear();
         sessionStorage.removeItem("user_info");
         sessionStorage.removeItem("access_token");
       }

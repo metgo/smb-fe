@@ -16,7 +16,10 @@ import { useNavigate } from "react-router-dom";
 import { itemEndpoint } from "@/lib/utils";
 import { FilterButton } from "@/components/btns";
 import { getBorderColor, timeAgo } from "@/helpers";
-import { NotificationStatsCards } from "./components";
+import {
+  NotificationStatsCards,
+  NotificationsMgmtSkeleton,
+} from "./components";
 import SearchInput from "@/components/shared/SearchInput";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -137,6 +140,16 @@ export default function NotificationsMgmtPage() {
         return <XCircle className={`${iconClass} text-red-500`} />;
     }
   };
+
+  if (isFetching && page === 1 && allNotifications.length === 0) {
+    return (
+      <div
+        className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-950 transition-colors flex flex-col`}
+      >
+        <NotificationsMgmtSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div
