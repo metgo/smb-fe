@@ -41,6 +41,8 @@ import {
   useSendSMSMutation,
 } from "@/store/api/voucherMutationApi";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 const LIMIT = 20;
 
@@ -57,7 +59,6 @@ interface CampaignsResponse {
 
 interface VouchersListProps {
   campaigns?: CampaignsResponse;
-  onVoucherClick: (voucherId: string) => void;
   onAddVoucher: () => void;
   showAddWizard: boolean;
 }
@@ -65,11 +66,11 @@ interface VouchersListProps {
 const SEARCH_STORAGE_KEY = "voucherSearchTerm";
 
 const VouchersList = ({
-  onVoucherClick,
   onAddVoucher,
   campaigns,
   showAddWizard,
 }: VouchersListProps) => {
+  const navigate = useNavigate();
   const { t } = useTranslation("vouchers");
   const { textPrimary, isDark } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
@@ -243,7 +244,7 @@ const VouchersList = ({
 
     {
       key: "createdAt",
-      label: t("created"),
+      label: t("created_at"),
       sortable: true,
       render: (voucher: any) => {
         const textColor = isDark ? "text-gray-100" : "text-gray-900";
@@ -309,6 +310,12 @@ const VouchersList = ({
     render?: (row: any) => React.ReactNode;
   }[];
 
+  const handleVoucherClick = (voucherId: string) => {
+    navigate(`${routes.voucherDetails}?voucherId=${voucherId}`, {
+      replace: true,
+    });
+  };
+
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -321,14 +328,10 @@ const VouchersList = ({
 
   // ── Amount range with debounce & interaction tracking ──
   const [minAmountLocal, setMinAmountLocal] = useState<number>(0);
-  const [maxAmountLocal, setMaxAmountLocal] = useState<number | null>(null);
+  const [maxAmountLocal, setMaxAmountLocal] = useState<number | null>(0);
 
-  const [minAmountDebounced, setMinAmountDebounced] = useState<
-    number | undefined
-  >(undefined);
-  const [maxAmountDebounced, setMaxAmountDebounced] = useState<
-    number | undefined
-  >(undefined);
+  const [minAmountDebounced, setMinAmountDebounced] = useState<number>(0);
+  const [maxAmountDebounced, setMaxAmountDebounced] = useState<number>(0);
 
   const [hasInteractedWithAmount, setHasInteractedWithAmount] = useState(false);
 
@@ -760,8 +763,8 @@ const VouchersList = ({
                   setHasInteractedWithAmount(false);
                   setMinAmountLocal(0);
                   setMaxAmountLocal(null);
-                  setMinAmountDebounced(undefined);
-                  setMaxAmountDebounced(undefined);
+                  setMinAmountDebounced(0);
+                  setMaxAmountDebounced(0);
                 }}
                 className={`text-sm flex items-center gap-1 transition-colors ${
                   isDark
@@ -801,7 +804,7 @@ const VouchersList = ({
           isDataLoading={isLoading}
           selectedItems={selectedVouchers}
           onSelectionChange={setSelectedVouchers}
-          onRowClick={(voucher) => onVoucherClick(voucher._id)}
+          onRowClick={(voucher) => handleVoucherClick(voucher._id)}
           storageKey="vouchersTableColumnOrder"
         />
       </div>

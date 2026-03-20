@@ -5,6 +5,7 @@ interface PersonInfo {
   name: string;
   email?: string;
   phone?: string;
+  assignedAt?: string;
 }
 
 interface VoucherAssigneeCreatorProps {
@@ -16,7 +17,7 @@ interface VoucherAssigneeCreatorProps {
   };
   formatDate: any;
   isDark: boolean;
-  t: any;
+  t: (key: string) => string;
 }
 
 const VoucherAssigneeCreator: React.FC<VoucherAssigneeCreatorProps> = ({
@@ -90,7 +91,9 @@ const VoucherAssigneeCreator: React.FC<VoucherAssigneeCreatorProps> = ({
               <label className={`block text-xs mb-1 ${labelColor}`}>
                 {t("assigned_at")}
               </label>
-              <div className={textColor}>{formatDate(voucher?.assignedAt)}</div>
+              <div className={textColor}>
+                {formatDate(voucher?.assigneeInfo?.assignedAt)}
+              </div>
             </div>
           </div>
         </div>

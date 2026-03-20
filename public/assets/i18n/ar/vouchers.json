@@ -146,9 +146,7 @@
   "applicable_websites": "المواقع المطبقة",
   "edit": "تعديل",
   "overview": "نظرة عامة",
-  "assignee_and_creator": "المستلم والمنشئ",
-  "usage_timeline": "الجدول الزمني للاستخدام",
-  "transactions_and_usage": "المعاملات والاستخدام",
+
   "activity_timeline": "الجدول الزمني للنشاط",
   "transaction_history": "سجل المعاملات",
   "created_byy": "تم الإنشاء بواسطة {{firstName}} {{lastName}}",
