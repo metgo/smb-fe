@@ -72,7 +72,7 @@ export default function ReactSelect({
         }
       }}
       styles={{
-        container: (base) => ({ ...base, minWidth, zIndex: 50 }),
+        container: (base) => ({ ...base, minWidth, zIndex: 40 }),
         control: (base, state) => ({
           ...base,
           borderRadius: 12,

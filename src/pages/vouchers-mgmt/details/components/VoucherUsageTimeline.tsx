@@ -1,6 +1,3 @@
-// VoucherTimeline.tsx
-import React from "react";
-
 export interface TimelineEvent {
   id: string | number;
   type: string;
@@ -10,7 +7,7 @@ export interface TimelineEvent {
   date: string | Date;
 }
 
-interface VoucherTimelineProps {
+interface VoucherUsageTimelineProps {
   timeline: TimelineEvent[];
   getTimelineIcon: (type: string) => React.ReactNode;
   formatDate: (date: string | Date) => string;
@@ -18,14 +15,13 @@ interface VoucherTimelineProps {
   isDark?: boolean;
 }
 
-const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
+const VoucherUsageTimeline: React.FC<VoucherUsageTimelineProps> = ({
   timeline,
   getTimelineIcon,
   formatDate,
   t,
   isDark,
 }) => {
-  console.log("🚀 ~ VoucherTimeline ~ timeline:", timeline);
   return (
     <div
       className={`${isDark ? "bg-gray-900" : "bg-white"} rounded-lg border p-6`}
@@ -98,4 +94,4 @@ const VoucherTimeline: React.FC<VoucherTimelineProps> = ({
   );
 };
 
-export default VoucherTimeline;
+export default VoucherUsageTimeline;

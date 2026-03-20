@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { VouchersList, CreateVoucherWizard } from "./components";
 import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
 
 export default function VouchersMgmtPage() {
   const { isDark } = useThemeClasses();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: campaigns } = useGetAllCampaignsQuery({
     type: "CASH_IN",
@@ -23,15 +21,6 @@ export default function VouchersMgmtPage() {
     const voucherId = searchParams.get("voucherId");
     if (voucherId) setSelectedVoucherId(voucherId);
   }, [searchParams]);
-
-  const handleVoucherClick = useCallback(
-    (voucher: any) => {
-      navigate(`${routes.voucherDetails}?voucherId=${voucher?._id}`, {
-        replace: true,
-      });
-    },
-    [navigate],
-  );
 
   const handleAddVoucher = () => {
     setShowAddWizard(true);
@@ -48,7 +37,6 @@ export default function VouchersMgmtPage() {
       }`}
     >
       <div className="flex flex-1 overflow-hidden">
-        {/* Main Content */}
         <div
           className={selectedVoucherId ? "hidden" : "flex-1"}
           style={{
@@ -57,9 +45,8 @@ export default function VouchersMgmtPage() {
           }}
         >
           <VouchersList
-            onVoucherClick={handleVoucherClick}
-            onAddVoucher={handleAddVoucher}
             campaigns={campaigns}
+            onAddVoucher={handleAddVoucher}
             showAddWizard={showAddWizard}
           />
         </div>

@@ -1,4 +1,8 @@
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import {
   Mail,
   Phone,
@@ -11,22 +15,22 @@ import {
   Gift,
   TrendingUp,
 } from "lucide-react";
+import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetVoucherByIdQuery } from "@/store/api/voucherQueryApi";
-import { useSearchParams } from "react-router-dom";
 import { BackToListBtn } from "@/components/btns";
-import { routes } from "@/lib/routes";
 import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
-import VoucherOverview from "./components/VoucherOverview";
-import VoucherAssigneeCreator from "./components/VoucherAssigneeCreator";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useTranslation } from "react-i18next";
-import { Spinner } from "@/components/shared";
-import clsx from "clsx";
+import { Spinner, TabsSection } from "@/components/shared";
 
-import VoucherTimeline from "./components/VoucherTimeline";
-import VoucherTransactionTable from "./components/VoucherTransactionTable";
 import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
+import {
+  VoucherAssigneeCreator,
+  VoucherOverview,
+  VoucherTransactionTable,
+  VoucherUsageTimeline,
+} from "./components";
+import { voucherTabs } from "@/constants/tabs";
 
 interface TimelineEvent {
   id: string;
@@ -71,10 +75,12 @@ interface Order {
 }
 
 export default function VoucherDetailsPage() {
-  const { isDark, borderColor } = useThemeClasses();
   const { t } = useTranslation("vouchers");
-  const [voucherId, setVoucherId] = useState("");
   const [searchParams] = useSearchParams();
+  const { isDark, borderColor } = useThemeClasses();
+
+  const [voucherId, setVoucherId] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("overview");
 
   useEffect(() => {
     const voucherId = searchParams.get("voucherId");
@@ -95,12 +101,8 @@ export default function VoucherDetailsPage() {
   const [ordersFromVoucher, setOrdersfromVoucher] = useState<Order[]>([]);
 
   useEffect(() => {
-    setOrdersfromVoucher(orders?.data);
+    setOrdersfromVoucher(orders?.data || []);
   }, [orders]);
-
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "assignee" | "timeline" | "transactions"
-  >("overview");
 
   const createdEvent: TimelineEvent = {
     id: "1",
@@ -186,51 +188,13 @@ export default function VoucherDetailsPage() {
     }
   };
 
-  // const getTransactionTypeLabel = (type: Transaction["type"]) => {
-  //   const labels = {
-  //     product: "Product",
-  //     trip: "Trip",
-  //     funday: "Fun Day",
-  //     refund: "Refund",
-  //   };
-  //   return labels[type];
-  // };
-
-  // const getTransactionTypeColor = (type: Transaction["type"]) => {
-  //   switch (type) {
-  //     case "product":
-  //       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-  //     case "trip":
-  //       return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-  //     case "funday":
-  //       return "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300";
-  //     case "refund":
-  //       return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
-  //   }
-  // };
-
   return (
     <div className=" flex flex-col overflow-hidden relative h-[88vh] ">
       <Spinner isLoading={isLoading} /> {/* Fixed Header */}
-      <div className={clsx(` shrink-0 border-b px-6 py-4 `, borderColor)}>
+      <div className={clsx(` shrink-0 border-b py-4 `, borderColor)}>
         {/* Top Row */}
         <div className="flex items-center justify-between mb-4">
           <BackToListBtn navPath={routes.voucherMgmt} />
-
-          <div className="flex items-center gap-2">
-            {/* <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={voucher?.status}
-            /> */}
-
-            {/* <button
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
-              onClick={handleEditClick}
-            >
-              <Edit className="w-4 h-4" />
-              {t("edit")}
-            </button> */}
-          </div>
         </div>
         <div>
           <div className="px-4">
@@ -249,77 +213,15 @@ export default function VoucherDetailsPage() {
             </span>
           </div>
         </div>
-
-        {/* <PageStats
-          stats={businessStats}
-          isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
-        /> */}
       </div>
-      <div className={`flex gap-1 border-b sticky top-0 z-10 px-4`}>
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "overview"
-              ? `${
-                  isDark
-                    ? "text-teal-400 border-teal-400"
-                    : "text-teal-600 border-teal-600"
-                } border-b-2`
-              : `${isDark ? "text-gray-400 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}`
-          }`}
-        >
-          {t("overview")}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("assignee")}
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "assignee"
-              ? `${
-                  isDark
-                    ? "text-teal-400 border-teal-400"
-                    : "text-teal-600 border-teal-600"
-                } border-b-2`
-              : `${isDark ? "text-gray-400 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}`
-          }`}
-        >
-          {t("assignee_and_creator")}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("timeline")}
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "timeline"
-              ? `${
-                  isDark
-                    ? "text-teal-400 border-teal-400"
-                    : "text-teal-600 border-teal-600"
-                } border-b-2`
-              : `${isDark ? "text-gray-400 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}`
-          }`}
-        >
-          {t("usage_timeline")}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("transactions")}
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "transactions"
-              ? `${
-                  isDark
-                    ? "text-teal-400 border-teal-400"
-                    : "text-teal-600 border-teal-600"
-                } border-b-2`
-              : `${isDark ? "text-gray-400 hover:text-gray-100" : "text-gray-600 hover:text-gray-900"}`
-          }`}
-        >
-          {t("transactions_and_usage")}
-        </button>
-      </div>
+      <TabsSection
+        tabs={voucherTabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
       {/* Scrollable Content */}
       <div className="flex-1 overflow-auto">
-        <div className="px-6 py-6">
+        <div className=" py-6">
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <VoucherOverview
@@ -343,7 +245,7 @@ export default function VoucherDetailsPage() {
 
           {/* Timeline Tab */}
           {activeTab === "timeline" && (
-            <VoucherTimeline
+            <VoucherUsageTimeline
               timeline={timeline}
               getTimelineIcon={getTimelineIcon}
               formatDate={formatDate}

@@ -198,6 +198,9 @@
   "contact_ownership": "Contact & Ownership",
   "not_provided": "Not Provided",
   "images_branding": "Images & Branding",
+  "assignee_and_creator": "Assignee & Creator",
+  "usage_timeline": "Usage Timeline",
+  "transactions_and_usage": "Transactions & Usage",
 
   "impact_score": "Impact Score",
   "location": "Location",

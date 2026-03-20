@@ -280,8 +280,8 @@ export function compareValues(
 }
 
 export const isExpiringSoon = (date: string) => {
-  const daysUntilExpiry = Math.floor(
-    (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  const daysUntilExpiry = Math.ceil(
+    (new Date(date).getTime() - Date.now()) / (700 * 60 * 60 * 24),
   );
   return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
 };
