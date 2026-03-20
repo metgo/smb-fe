@@ -10,6 +10,7 @@ import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subC
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { ProductStatus, ProductType } from 'src/modules/products/products.type';
+import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
 export class Image {
@@ -213,15 +214,15 @@ export class Product extends AuditableSchema {
     accessibilitiesId: mongoose.Schema.Types.ObjectId[];
 
   @Prop({
-    type: [String],
-    validate: {
-      validator(value: string[]) {
-        return value.length <= 5;
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Tags.name,
       },
-      message: 'Tags should not be more than 5',
-    },
+    ],
+    required: false,
   })
-    tags: string[];
+    tagsId: mongoose.Schema.Types.ObjectId[];
 
   @Prop({
     type: {

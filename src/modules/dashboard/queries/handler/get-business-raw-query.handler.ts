@@ -102,7 +102,10 @@ implements IQueryHandler<GetBusinessRawQuery> {
         ];
       }
 
-      return findQuery;
+      const whitelist = campDetails?.whitelist?.business ?? [];
+      const blacklist = campDetails?.blacklist?.business ?? [];
+
+      return { findQuery, whitelist, blacklist };
     } catch (err) {
       exceptionHandling(err);
     }

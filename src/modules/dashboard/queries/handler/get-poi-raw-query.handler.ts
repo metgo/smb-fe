@@ -54,7 +54,10 @@ export class GetPOIRawQueryHandler implements IQueryHandler<GetPOIRawQuery> {
         ];
       }
 
-      return findQuery;
+      const whitelist = campDetails?.whitelist?.poi ?? [];
+      const blacklist = campDetails?.blacklist?.poi ?? [];
+
+      return { findQuery, whitelist, blacklist };
     } catch (err) {
       exceptionHandling(err);
     }

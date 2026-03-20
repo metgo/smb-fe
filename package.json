@@ -25,6 +25,7 @@
     "@google-analytics/data": "^4.8.0",
     "@google-cloud/logging-winston": "^6.0.0",
     "@google-cloud/storage": "^7.5.0",
+    "@google/genai": "^1.46.0",
     "@hapi/joi": "^17.1.1",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@mailchimp/mailchimp_transactional": "^1.0.50",

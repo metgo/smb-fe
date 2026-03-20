@@ -197,7 +197,7 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         search,
       } = queries.body;
 
-      const findQuery = await this.queryBus.execute(
+      const { findQuery } = await this.queryBus.execute(
         new GetBusinessRawQuery({
           categoriesId,
           subCategoriesId,

@@ -49,7 +49,18 @@ export class GetTripRawQueryHandler implements IQueryHandler<GetTripRawQuery> {
         }
       }
 
-      return matchQuery;
+      const tripWhitelist = campDetails?.whitelist?.trip ?? [];
+      const tripBlacklist = campDetails?.blacklist?.trip ?? [];
+      const fundayWhitelist = campDetails?.whitelist?.funday ?? [];
+      const fundayBlacklist = campDetails?.blacklist?.funday ?? [];
+
+      return {
+        matchQuery,
+        tripWhitelist,
+        tripBlacklist,
+        fundayWhitelist,
+        fundayBlacklist,
+      };
     } catch (err) {
       exceptionHandling(err);
     }

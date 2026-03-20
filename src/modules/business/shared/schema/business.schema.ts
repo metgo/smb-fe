@@ -15,6 +15,7 @@ import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subC
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { SocialMedia } from 'src/modules/socialMedia/schema/socialMedia.schema';
+import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
 export class DeliveryArea {
@@ -253,15 +254,15 @@ export class Business extends AuditableSchema {
     bussSubCategoriesId: mongoose.Types.ObjectId[]; // migrate to tags
 
   @Prop({
-    type: [String],
-    validate: {
-      validator(value: string[]) {
-        return value.length <= 5;
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Tags.name,
       },
-      message: 'Tags should not be more than 5',
-    },
+    ],
+    required: false,
   })
-    tags: string[];
+    tagsId: mongoose.Schema.Types.ObjectId[];
 
   @Prop({ required: false })
     openingHrs: [

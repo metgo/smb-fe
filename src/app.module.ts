@@ -53,6 +53,7 @@ import { TripModule } from './modules/trips/trips.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+// import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
@@ -105,6 +106,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     BlogModule,
     MarketingModule,
     DashboardModule,
+    // TagsModule,
   ],
   providers: [
     {

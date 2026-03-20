@@ -174,7 +174,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         search,
       } = queries;
 
-      const findQuery = await this.queryBus.execute(
+      const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
         new GetBusinessRawQuery({
           categoriesId,
           subCategoriesId,
@@ -186,7 +186,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
+        = '_id businessId name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
       const allBusiness = await queryhandler<BusinessesAudit>(
         this.BusinessesAuditModel,
@@ -197,6 +197,31 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           sortOrder: sortOrder || SortOrder.DESC,
         },
       );
+
+      if (blacklist?.length) {
+        const blacklistSet = new Set(blacklist.map((id: any) => id.toString()));
+        allBusiness.data = allBusiness.data.filter(
+          (item: any) => !blacklistSet.has(item.businessId.toString()),
+        );
+        allBusiness.totalData = allBusiness.data.length;
+      }
+
+      if (whitelist?.length) {
+        const whitelistedBusiness = await queryhandler<BusinessesAudit>(
+          this.BusinessesAuditModel,
+          {
+            findQuery: { businessId: { $in: whitelist }, isActive: true },
+            select,
+            sort: sortBy || 'createdAt',
+            sortOrder: sortOrder || SortOrder.DESC,
+          },
+        );
+
+        if (whitelistedBusiness?.data?.length) {
+          allBusiness.data = [...allBusiness.data, ...whitelistedBusiness.data];
+          allBusiness.totalData = allBusiness.data.length;
+        }
+      }
 
       return allBusiness;
     } catch (err) {
@@ -211,7 +236,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     try {
       const { sortBy, sortOrder, search } = queries;
 
-      const findQuery = await this.queryBus.execute(
+      const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
         new GetPOIRawQuery({
           campDetails,
           search,
@@ -219,7 +244,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
+        = '_id businessId name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
       const allPOI = await queryhandler<BusinessesAudit>(
         this.BusinessesAuditModel,
@@ -230,6 +255,31 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           sortOrder: sortOrder || SortOrder.DESC,
         },
       );
+
+      if (blacklist?.length) {
+        const blacklistSet = new Set(blacklist.map((id: any) => id.toString()));
+        allPOI.data = allPOI.data.filter(
+          (item: any) => !blacklistSet.has(item.businessId.toString()),
+        );
+        allPOI.totalData = allPOI.data.length;
+      }
+
+      if (whitelist?.length) {
+        const whitelistedPOI = await queryhandler<BusinessesAudit>(
+          this.BusinessesAuditModel,
+          {
+            findQuery: { businessId: { $in: whitelist }, isActive: true },
+            select,
+            sort: sortBy || 'createdAt',
+            sortOrder: sortOrder || SortOrder.DESC,
+          },
+        );
+
+        if (whitelistedPOI?.data?.length) {
+          allPOI.data = [...allPOI.data, ...whitelistedPOI.data];
+          allPOI.totalData = allPOI.data.length;
+        }
+      }
 
       return allPOI;
     } catch (err) {
@@ -244,7 +294,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     try {
       const { sortBy, sortOrder, search } = queries;
 
-      const findQuery = await this.queryBus.execute(
+      const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
         new GetEventRawQuery({
           campDetails,
           search,
@@ -252,7 +302,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr geoLocation images address slug groupTypesId accessibilitiesId';
+        = '_id eventId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr geoLocation images address slug groupTypesId accessibilitiesId';
 
       const allEvents = await queryhandler<EventsAudit>(this.EventsAuditModel, {
         findQuery: { ...findQuery, isActive: true },
@@ -260,6 +310,31 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,
       });
+
+      if (blacklist?.length) {
+        const blacklistSet = new Set(blacklist.map((id: any) => id.toString()));
+        allEvents.data = allEvents.data.filter(
+          (item: any) => !blacklistSet.has(item.eventId.toString()),
+        );
+        allEvents.totalData = allEvents.data.length;
+      }
+
+      if (whitelist?.length) {
+        const whitelistedEvents = await queryhandler<EventsAudit>(
+          this.EventsAuditModel,
+          {
+            findQuery: { eventId: { $in: whitelist }, isActive: true },
+            select,
+            sort: sortBy || 'createdAt',
+            sortOrder: sortOrder || SortOrder.DESC,
+          },
+        );
+
+        if (whitelistedEvents?.data?.length) {
+          allEvents.data = [...allEvents.data, ...whitelistedEvents.data];
+          allEvents.totalData = allEvents.data.length;
+        }
+      }
 
       allEvents.data = allEvents.data.map(event => ({
         ...event.toObject(),
@@ -281,7 +356,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     try {
       const { sortBy, sortOrder, search } = queries;
 
-      const matchQuery = await this.queryBus.execute(
+      const {
+        matchQuery,
+        tripWhitelist,
+        tripBlacklist,
+        fundayWhitelist,
+        fundayBlacklist,
+      } = await this.queryBus.execute(
         new GetTripRawQuery({
           campDetails,
           serviceType,
@@ -385,7 +466,79 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
 
       const allTrips = await this.TripModel.aggregate(pipeline).exec();
 
-      const mappedTrips = allTrips.map(trip => ({
+      const tripBlacklistSet = new Set(
+        tripBlacklist.map((id: any) => id.toString()),
+      );
+      const fundayBlacklistSet = new Set(
+        fundayBlacklist.map((id: any) => id.toString()),
+      );
+      const filteredTrips = allTrips.filter((trip: any) => {
+        if (trip.serviceType === ServicesTypes.TRIPS) {
+          return !tripBlacklistSet.has(trip._id.toString());
+        }
+        return !fundayBlacklistSet.has(trip._id.toString());
+      });
+
+      const existingIds = new Set(
+        filteredTrips.map((t: any) => t._id.toString()),
+      );
+      const whitelistIds = [
+        ...tripWhitelist.filter((id: any) => !existingIds.has(id.toString())),
+        ...fundayWhitelist.filter((id: any) => !existingIds.has(id.toString())),
+      ];
+
+      if (whitelistIds.length) {
+        const whitelistPipeline: any[] = [
+          { $match: { _id: { $in: whitelistIds }, isDeleted: { $ne: true } } },
+          {
+            $lookup: {
+              from: 'businesses',
+              localField: 'stations._id',
+              foreignField: '_id',
+              as: 'stationBusinessesAddress',
+              pipeline: [{ $project: { address: 1 } }],
+            },
+          },
+          {
+            $addFields: {
+              address: {
+                $ifNull: [
+                  { $arrayElemAt: ['$stationBusinessesAddress.address', 0] },
+                  null,
+                ],
+              },
+              serviceType: {
+                $cond: {
+                  if: '$isTrip',
+                  then: ServicesTypes.TRIPS,
+                  else: ServicesTypes.FUNDAY,
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              description: 1,
+              shortDescription: 1,
+              slug: 1,
+              images: 1,
+              address: 1,
+              createdAt: 1,
+              serviceType: 1,
+              groupTypesId: 1,
+              accessibilitiesId: 1,
+            },
+          },
+        ];
+        const whitelistedTrips = await this.TripModel.aggregate(
+          whitelistPipeline,
+        ).exec();
+        filteredTrips.push(...whitelistedTrips);
+      }
+
+      const mappedTrips = filteredTrips.map((trip: any) => ({
         _id: trip._id,
         name: trip.name,
         shortDescription: trip.shortDescription,

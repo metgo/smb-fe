@@ -73,7 +73,10 @@ implements IQueryHandler<GetEventRawQuery> {
         ];
       }
 
-      return findQuery;
+      const whitelist = campDetails?.whitelist?.event ?? [];
+      const blacklist = campDetails?.blacklist?.event ?? [];
+
+      return { findQuery, whitelist, blacklist };
     } catch (err) {
       exceptionHandling(err);
     }
