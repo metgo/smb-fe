@@ -75,9 +75,7 @@ const VoucherSuccess = ({
           <table className="w-full">
             <thead
               className={`sticky top-0 border-b ${
-                isDark
-                  ? " border-gray-700"
-                  : "bg-gray-50 border-gray-200"
+                isDark ? " border-gray-700" : "bg-gray-50 border-gray-200"
               }`}
             >
               <tr>
