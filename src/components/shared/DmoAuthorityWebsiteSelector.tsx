@@ -10,6 +10,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 
 type Props = {
+  keyId: keyof IAssociatedWebsiteIds;
   isEdit: boolean;
   selectedDmoId: string;
   selectedAuthorityId: string;
@@ -33,6 +34,7 @@ export default function DmoAuthorityWebsiteSelector({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   itemAssociatedWebsites,
+  keyId,
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
@@ -85,17 +87,17 @@ export default function DmoAuthorityWebsiteSelector({
     const allWhitelistIds = unAssociatedWebsites?.map((w) => w?._id);
 
     const itemAssociatedIds = new Set(
-      itemAssociatedWebsites?.map((w) => w?._id) || [],
+      itemAssociatedWebsites?.map((w) => w?.[keyId]) || [],
     );
 
     const selectedBlacklistIds = isEdit
       ? Array.from(itemAssociatedIds).filter((id) =>
-          allBlacklistIds?.includes(id),
+          allBlacklistIds?.includes(id ?? ""),
         )
       : allBlacklistIds;
 
     const selectedWhitelistIds = Array.from(itemAssociatedIds).filter((id) =>
-      allWhitelistIds?.includes(id),
+      allWhitelistIds?.includes(id ?? ""),
     );
 
     setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
@@ -230,6 +232,7 @@ export default function DmoAuthorityWebsiteSelector({
   /* ----------------------------
    UI
   -----------------------------*/
+
   return (
     <section className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-4">

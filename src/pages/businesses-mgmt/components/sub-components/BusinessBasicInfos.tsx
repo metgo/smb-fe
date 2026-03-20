@@ -34,10 +34,10 @@ interface BusinessBasicInfosProps {
   formData: BusinessFormData;
   setFormData: (data: BusinessFormData) => void;
   errors: FormErrors;
-  selectedDmoId?: string;
+  selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   businessId: string;
-  selectedAuthorityId?: string;
+  selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
   websiteVisibilityIds: IWebsiteVisibilityIds;
@@ -62,7 +62,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { t: tc } = useTranslation("common");
-
   const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("he");
@@ -132,16 +131,16 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       <DmoAuthorityWebsiteSelector
         errors={errors}
         isEdit={!!businessId}
-        selectedDmoId={selectedDmoId ?? ""}
+        keyId="externalApiId"
+        selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
-        selectedAuthorityId={selectedAuthorityId ?? ""}
+        selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
         dmoSectionRef={dmoSectionRef}
         websiteVisibilityIds={websiteVisibilityIds}
         setWebsiteVisibilityIds={setWebsiteVisibilityIds}
         itemAssociatedWebsites={businessAssociatedWebsites}
       />
-
       <div
         className="space-y-4"
         dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}

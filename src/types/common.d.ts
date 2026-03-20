@@ -127,6 +127,7 @@ interface IAssociatedWebsiteIds {
   _id: string;
   name: string;
   url: string;
+  externalApiId?: string;
 }
 
 interface ISearchBusiness {

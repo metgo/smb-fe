@@ -111,6 +111,13 @@ export default function ProductsMgmtPage() {
   const [searchParams] = useSearchParams();
   const urlBusinessId = searchParams?.get("businessId");
   const urlBusinessName = searchParams?.get("businessName");
+  const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
+
+  useEffect(() => {
+    if (urlBusinessId && urlBusinessName) {
+      handleCreateNew();
+    }
+  }, [urlBusinessId, urlBusinessName]);
 
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
@@ -589,7 +596,7 @@ export default function ProductsMgmtPage() {
           </div>
 
           {/* Filters Panel */}
-          {(showFilters || urlBusinessName || hasSavedFilters) && (
+          {(showFilters || urlBusinessId || hasSavedFilters) && (
             <div
               className={`rounded-md border p-2 ${borderColor} ${bgPrimary}`}
             >
@@ -624,7 +631,8 @@ export default function ProductsMgmtPage() {
 
                 {(filters.status !== "all" ||
                   filters.businessId !== "" ||
-                  urlBusinessName) && (
+                  urlBusinessName ||
+                  urlBusinessNameProduct) && (
                   <div className="flex flex-col min-w-45">
                     <label className={`block text-sm mb-1 ${textTertiary}`}>
                       {tb("active_filters")}:
@@ -638,10 +646,17 @@ export default function ProductsMgmtPage() {
                       )}
                       {urlBusinessId && urlBusinessName && (
                         <FilterChips
-                          label={urlBusinessName}
+                          label={urlBusinessName ?? ""}
                           onRemove={removeQueryParams}
                         />
                       )}
+                      {urlBusinessId && !urlBusinessName && (
+                        <FilterChips
+                          label={urlBusinessNameProduct ?? ""}
+                          onRemove={removeQueryParams}
+                        />
+                      )}
+
                       {filters.businessId && (
                         <FilterChips
                           label={
