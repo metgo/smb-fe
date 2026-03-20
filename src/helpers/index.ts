@@ -141,6 +141,47 @@ export const modelTitle = (mode: TOpMode, t: (key: string) => string) => {
   }
 };
 
+//vouchers
+export const formatDate = (dateString: string | Date) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+export const getStatusColor = (status: IVoucher["status"]) => {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    case "ASSIGNED":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+    case "UNASSIGNED":
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+    case "REDEEMED":
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    case "EXPIRED":
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+    case "CANCELED":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+  }
+};
+export const getStatusLabel = (status: IVoucher["status"]) => {
+  const labels: Record<string, string> = {
+    ACTIVE: "Active",
+    ASSIGNED: "Assigned",
+    REDEEMED: "Redeemed",
+    EXPIRED: "Expired",
+    CANCELED: "Cancelled",
+    UNASSIGNED: "Unassigned",
+  };
+  return labels[status];
+};
+
 //notification helpers
 
 export const getBorderColor = (type: TNotifType, isRTL: boolean) => {

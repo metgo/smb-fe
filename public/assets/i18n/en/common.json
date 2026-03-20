@@ -12,6 +12,8 @@
   "last_90_days": "Last 90 Days",
   "last_year": "Last Year",
   "no_data": "No data available",
+  "done": "Done",
+
   "not_found": "not found",
   "all_time": "All Time",
   "no_data_available": "No data available",
@@ -31,6 +33,7 @@
   "add_location": "Add Location",
   "location_address": "Location Address",
   "address": "Address",
+  "vouchers": "Vouchers",
 
   "logo": "Logo",
   "upload_logo": "Upload Logo",

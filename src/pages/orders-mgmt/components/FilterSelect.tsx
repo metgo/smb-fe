@@ -29,7 +29,7 @@ export default function FilterSelect({
             : "bg-white border-gray-300 text-gray-900"
         }`}
       >
-        {options.map((opt) => (
+        {options?.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
