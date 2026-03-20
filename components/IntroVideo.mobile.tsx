@@ -1,7 +1,7 @@
 "use client";
 
 import { GoUnmute, GoMute } from "react-icons/go";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BUCKET_URL } from "@/constant/envConstants";
 import useGeneralStore from "@/stores/generalStore";
@@ -14,6 +14,8 @@ const DEFAULT_MOBILE_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
 const IntroVideoMobile = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
+  const currentUrlRef = useRef<string>(DEFAULT_MOBILE_URL);
 
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -24,16 +26,12 @@ const IntroVideoMobile = () => {
   const thumbnailJson = getThumbnail();
   const videoThumbnail = thumbnailJson?.mobile;
 
-  // Compute video URL immediately - don't wait for siteInfo
-  const videoURL = useMemo(() => {
-    return siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
-  }, [siteInfo]);
-
-  // Video setup
+  // Video setup - runs only once
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || initializedRef.current) return;
 
+    initializedRef.current = true;
     video.muted = isMuted;
 
     const handleCanPlay = () => {
@@ -61,7 +59,21 @@ const IntroVideoMobile = () => {
       video.removeEventListener("canplay", handleCanPlay);
       observer.disconnect();
     };
-  }, [videoURL]);
+  }, []);
+
+  // Update video URL only if siteInfo provides a different URL than default
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !siteInfo) return;
+
+    const newUrl = siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
+    // Only reload if URL actually changed to a different value
+    if (newUrl !== currentUrlRef.current) {
+      currentUrlRef.current = newUrl;
+      video.src = newUrl;
+      video.load();
+    }
+  }, [siteInfo]);
 
   const toggleMute = () => {
     setIsMuted((prev) => !prev);
@@ -84,14 +96,14 @@ const IntroVideoMobile = () => {
         }`}
       />
 
-      {/* Video - loads immediately */}
+      {/* Video - loads immediately with default URL */}
       <video
         ref={videoRef}
         loop
         muted={isMuted}
         playsInline
         preload="auto"
-        src={videoURL}
+        src={currentUrlRef.current}
         poster={videoThumbnail}
         className={`object-cover absolute inset-0 w-full h-full z-0 transition-opacity duration-500 ${
           isVideoReady ? "opacity-100" : "opacity-0"

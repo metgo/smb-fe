@@ -1,50 +1,39 @@
 "use client";
 
 import { GoUnmute, GoMute } from "react-icons/go";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BUCKET_URL } from "@/constant/envConstants";
-import useGeneralStore from "@/stores/generalStore";
 import { useDeviceHeight } from "@/hooks";
 import { getThumbnail } from "@/constant/images";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
-// Detect mobile - works on both server and client
-function getIsMobile(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.innerWidth < 768;
-}
-
-// Default video URLs - used immediately, no waiting
+// Default video URLs
 const DEFAULT_DESKTOP_URL = `${BUCKET_URL}/video/intro-video.mp4`;
 const DEFAULT_MOBILE_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
+
+// Detect mobile on client side
+const getIsMobile = () =>
+  typeof window !== "undefined" && window.innerWidth < 768;
 
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
-  // Initialize isMobile immediately (not null)
-  const [isMobile, setIsMobile] = useState(() => getIsMobile());
+  // Initialize with correct URL based on device
+  const isMobileDevice = getIsMobile();
+  const currentUrlRef = useRef<string>(
+    isMobileDevice ? DEFAULT_MOBILE_URL : DEFAULT_DESKTOP_URL,
+  );
+
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  const { siteInfo } = useGeneralStore();
   const { scale, group } = useDeviceHeight();
 
-  // Compute video URL immediately - don't wait for siteInfo
-  const videoURL = useMemo(() => {
-    if (isMobile) {
-      return siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
-    }
-    return siteInfo?.desktopHomeVideos?.[0]?.url || DEFAULT_DESKTOP_URL;
-  }, [isMobile, siteInfo]);
-
-  // Update isMobile on resize (optional, for responsive behavior)
-  useEffect(() => {
-    const handleResize = () => setIsMobile(getIsMobile());
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // Detect mobile on client side only
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   // Thumbnail
   const thumbnailJson = getThumbnail();
@@ -52,11 +41,12 @@ const IntroVideo = () => {
     ? thumbnailJson?.mobile
     : thumbnailJson?.desktop;
 
-  // Main video setup
+  // Video setup - runs only once
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || initializedRef.current) return;
 
+    initializedRef.current = true;
     video.muted = isMuted;
 
     const handleCanPlay = () => {
@@ -88,7 +78,7 @@ const IntroVideo = () => {
       video.removeEventListener("error", handleError);
       observer.disconnect();
     };
-  }, [videoURL]);
+  }, []);
 
   // Sync muted state
   useEffect(() => {
@@ -113,14 +103,14 @@ const IntroVideo = () => {
         }`}
       />
 
-      {/* Video element - loads immediately */}
+      {/* Video - loads immediately with default URL */}
       <video
         ref={videoRef}
         loop
         muted={isMuted}
         playsInline
         preload="auto"
-        src={videoURL}
+        src={currentUrlRef.current}
         poster={videoThumbnail}
         className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${
           isVideoReady && !videoError ? "opacity-100" : "opacity-0"
