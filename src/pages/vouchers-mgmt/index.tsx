@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
-import { VouchersList, CreateVoucherWizard } from "./components";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { VoucherDetailsPage } from "./details/VoucherDetailsPage";
-
+import { VouchersList, CreateVoucherWizard } from "./components";
 import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
 
 export default function VouchersMgmtPage() {
   const { isDark } = useThemeClasses();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: campaigns } = useGetAllCampaignsQuery({
     type: "CASH_IN",
   });
@@ -18,15 +18,6 @@ export default function VouchersMgmtPage() {
     null,
   );
   const [showAddWizard, setShowAddWizard] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  const navigate = useNavigate();
-
-  const handleVoucherUpdated = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
-
-  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const voucherId = searchParams.get("voucherId");
@@ -50,14 +41,9 @@ export default function VouchersMgmtPage() {
     setShowAddWizard(false);
   };
 
-  const handleVoucherCreated = () => {
-    setShowAddWizard(false);
-    handleVoucherUpdated();
-  };
-
   return (
     <div
-      className={`min-h-screen transition-colors flex flex-col ${
+      className={`h-[calc(108vh-180px)]  transition-colors flex flex-col ${
         isDark ? "bg-gray-950" : "bg-gray-50"
       }`}
     >
@@ -73,20 +59,16 @@ export default function VouchersMgmtPage() {
           <VouchersList
             onVoucherClick={handleVoucherClick}
             onAddVoucher={handleAddVoucher}
-            refreshTrigger={refreshTrigger}
             campaigns={campaigns}
+            showAddWizard={showAddWizard}
           />
         </div>
-
-        {/* Detail View */}
-        {selectedVoucherId && <VoucherDetailsPage />}
       </div>
 
       {/* Add Voucher Wizard Modal */}
       {showAddWizard && (
         <CreateVoucherWizard
           onClose={handleCloseAddWizard}
-          onVoucherCreated={handleVoucherCreated}
           campaigns={campaigns}
         />
       )}

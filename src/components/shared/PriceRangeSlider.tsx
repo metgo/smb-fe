@@ -1,5 +1,5 @@
 // PriceRangeInputs.tsx  ← Reusable controlled child component
-import { ChangeEvent } from 'react';
+import type { ChangeEvent } from "react";
 
 interface PriceRangeInputsProps {
   minValue: number;
@@ -42,7 +42,7 @@ export default function PriceRangeInputs({
 
   const handleMinInput = (e: ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    if (input === '') {
+    if (input === "") {
       onMinChange(minLimit);
       return;
     }
@@ -54,7 +54,7 @@ export default function PriceRangeInputs({
 
   const handleMaxInput = (e: ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    if (input === '') {
+    if (input === "") {
       onMaxChange(undefined);
       return;
     }
@@ -65,14 +65,23 @@ export default function PriceRangeInputs({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.8rem" }}>
       {/* MIN slider + label */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-          <label htmlFor="min-slider" style={{ fontSize: '0.9rem', color: '#555' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "0.4rem",
+          }}
+        >
+          <label
+            htmlFor="min-slider"
+            style={{ fontSize: "0.9rem", color: "#555" }}
+          >
             Minimum Price
           </label>
-          <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+          <span style={{ fontSize: "0.9rem", fontWeight: 500 }}>
             ₹{minValue.toLocaleString()}
           </span>
         </div>
@@ -85,7 +94,7 @@ export default function PriceRangeInputs({
           step={step}
           value={minValue}
           onChange={handleMinSlider}
-          style={{ width: '100%', accentColor: '#0070f3' }}
+          style={{ width: "100%", accentColor: "#0070f3" }}
         />
 
         <input
@@ -95,23 +104,32 @@ export default function PriceRangeInputs({
           value={minValue}
           onChange={handleMinInput}
           style={{
-            width: '100%',
-            marginTop: '0.5rem',
-            padding: '8px 12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
+            width: "100%",
+            marginTop: "0.5rem",
+            padding: "8px 12px",
+            border: "1px solid #d1d5db",
+            borderRadius: "6px",
           }}
         />
       </div>
 
       {/* MAX slider + label */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-          <label htmlFor="max-slider" style={{ fontSize: '0.9rem', color: '#555' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "0.4rem",
+          }}
+        >
+          <label
+            htmlFor="max-slider"
+            style={{ fontSize: "0.9rem", color: "#555" }}
+          >
             Maximum Price
           </label>
-          <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>
-            {maxValue !== undefined ? `₹${maxValue.toLocaleString()}` : '∞'}
+          <span style={{ fontSize: "0.9rem", fontWeight: 500 }}>
+            {maxValue !== undefined ? `₹${maxValue.toLocaleString()}` : "∞"}
           </span>
         </div>
 
@@ -123,7 +141,7 @@ export default function PriceRangeInputs({
           step={step}
           value={effectiveMax}
           onChange={handleMaxSlider}
-          style={{ width: '100%', accentColor: '#ef4444' }}
+          style={{ width: "100%", accentColor: "#ef4444" }}
         />
 
         <input
@@ -131,14 +149,14 @@ export default function PriceRangeInputs({
           min={minValue}
           step={step}
           placeholder="No limit"
-          value={maxValue ?? ''}
+          value={maxValue ?? ""}
           onChange={handleMaxInput}
           style={{
-            width: '100%',
-            marginTop: '0.5rem',
-            padding: '8px 12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
+            width: "100%",
+            marginTop: "0.5rem",
+            padding: "8px 12px",
+            border: "1px solid #d1d5db",
+            borderRadius: "6px",
           }}
         />
       </div>

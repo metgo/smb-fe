@@ -152,7 +152,7 @@ export const formatDate = (dateString: string | Date) => {
   });
 };
 
-export const getStatusColor = (status: Voucher["status"]) => {
+export const getStatusColor = (status: IVoucher["status"]) => {
   switch (status) {
     case "ACTIVE":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
@@ -170,8 +170,8 @@ export const getStatusColor = (status: Voucher["status"]) => {
       return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
   }
 };
-export const getStatusLabel = (status: Voucher["status"]) => {
-  const labels = {
+export const getStatusLabel = (status: IVoucher["status"]) => {
+  const labels: Record<string, string> = {
     ACTIVE: "Active",
     ASSIGNED: "Assigned",
     REDEEMED: "Redeemed",

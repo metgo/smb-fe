@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   X,
   Mail,
@@ -33,6 +33,7 @@ import {
   useSendEmailMutation,
   useSendSMSMutation,
 } from "@/store/api/voucherMutationApi";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const LIMIT = 20;
 interface Campaign {
@@ -49,27 +50,24 @@ interface VouchersListProps {
   campaigns?: CampaignsResponse;
   onVoucherClick: (voucherId: string) => void;
   onAddVoucher: () => void;
-  refreshTrigger: number;
+  showAddWizard: boolean;
 }
 
-const USER_ROLE = "admin";
+const SEARCH_STORAGE_KEY = "voucherSearchTerm";
 
 const VouchersList = ({
   onVoucherClick,
   onAddVoucher,
   campaigns,
+  showAddWizard,
 }: VouchersListProps) => {
-  const { textPrimary } = useThemeClasses();
-  const { isDark } = useThemeClasses();
+  const { t } = useTranslation("vouchers");
+  const { textPrimary, isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
+
   const [sendEmail] = useSendEmailMutation();
   const [sendSMS] = useSendSMSMutation();
 
-  const SEARCH_STORAGE_KEY = "voucherSearchTerm";
-  // Permission check
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
-  const { t } = useTranslation("vouchers");
   const { data: voucherStatsResponse, isLoading: isStatsLoading } =
     useGetVoucherStatsQuery({});
 
@@ -131,7 +129,7 @@ const VouchersList = ({
   );
 
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    ...(isSuperadmin ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
     {
       key: "code",
@@ -313,6 +311,7 @@ const VouchersList = ({
   const [dateTo, setDateTo] = useState<string>("");
   const [minAmount, setMinAmount] = useState<number>(0);
   const [maxAmount, setMaxAmount] = useState<number>(10000);
+
   const voucherQueryParams = useMemo(() => {
     const params: Record<string, any> = {
       page,
@@ -346,14 +345,18 @@ const VouchersList = ({
     data: voucherData,
     isLoading,
     isFetching,
-    // refetch,
+    refetch,
   } = useGetAllVouchersQuery(voucherQueryParams);
 
   const allVouchers = voucherData?.data;
-  var maxVoucherAmount = voucherData?.highestAmount;
+  const maxVoucherAmount = voucherData?.highestAmount;
   const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
   const hasMore = voucherData?.meta?.hasNextPage;
   // const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
+
+  useEffect(() => {
+    if (!showAddWizard) refetch();
+  }, [showAddWizard]);
 
   const fetchNextPage = useCallback(() => {
     if (!hasMore || isFetching) return;
@@ -384,7 +387,6 @@ const VouchersList = ({
     minAmount,
     maxAmount,
   ]);
-
   const totalData = voucherData?.datas?.totalData;
 
   const [selectedVouchers, setSelectedVouchers] = useState<Set<string>>(
@@ -703,7 +705,7 @@ const VouchersList = ({
                   <input
                     type="range"
                     min={0}
-                    max={maxVoucherAmount}
+                    max={minAmount}
                     value={minAmount}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
@@ -761,7 +763,7 @@ const VouchersList = ({
                   setCampaignFilter("all");
                   setWebsiteFilter("all");
                   setPaymentFilter("");
-                  setSearchQuery("all");
+                  setSearchQuery("");
                   setMinAmount(amountRange.min);
                   setMaxAmount(amountRange.max);
                   setDateFrom("");

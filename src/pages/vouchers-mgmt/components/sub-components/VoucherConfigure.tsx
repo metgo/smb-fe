@@ -8,8 +8,8 @@ interface Props {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   t: any;
   errors?: any;
-  parsedData?: ParsedData | undefined;
-  setParsedData?: (v: ParsedData | undefined) => void;
+  parsedData?: ParsedData[];
+  setParsedData?: React.Dispatch<React.SetStateAction<ParsedData[]>>;
 }
 
 const VoucherConfigure = ({
@@ -20,7 +20,7 @@ const VoucherConfigure = ({
   errors = {},
 }: Props) => {
   const { isDark } = useThemeClasses();
-  const [formatData, setFormatData] = useState<ParsedData>();
+  const [formatData, setFormatData] = useState<ParsedData[]>([]);
   const [_xlsValidation, setXlsValidation] = useState<{
     valid: number;
     invalid: number;
@@ -56,7 +56,7 @@ const VoucherConfigure = ({
             noOfVoucher: Number(row.NoOfVoucher),
             assigneeEmail: row.AssigneeEmail || "",
             assigneeCountryCode: row.AssigneeCountryCode || "",
-            assigneePhone: row.AssigneePhone || "",
+            assigneePhone: Number(row.AssigneePhone) || 0,
           }),
         );
         console.log("🚀 ~ handleFileUpload ~ formattedData:", formattedData);
@@ -404,9 +404,7 @@ const VoucherConfigure = ({
         {/* Upload Box */}
         <div
           className={`border-2 border-dashed rounded p-6 text-center ${
-            isDark
-              ? "border-gray-600 "
-              : "border-gray-300 bg-gray-50"
+            isDark ? "border-gray-600 " : "border-gray-300 bg-gray-50"
           }`}
         >
           <Upload

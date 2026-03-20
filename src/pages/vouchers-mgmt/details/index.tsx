@@ -17,8 +17,8 @@ import { useSearchParams } from "react-router-dom";
 import { BackToListBtn } from "@/components/btns";
 import { routes } from "@/lib/routes";
 import { formatDate, getStatusColor, getStatusLabel } from "@/helpers";
-import VoucherOverview from "../details/components/VoucherOverview";
-import VoucherAssigneeCreator from "../details/components/VoucherAssigneeCreator";
+import VoucherOverview from "./components/VoucherOverview";
+import VoucherAssigneeCreator from "./components/VoucherAssigneeCreator";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/shared";
@@ -69,7 +69,8 @@ interface Order {
   createdAt: string;
   itemType: string;
 }
-export function VoucherDetailsPage() {
+
+export default function VoucherDetailsPage() {
   const { isDark, borderColor } = useThemeClasses();
   const { t } = useTranslation("vouchers");
   const [voucherId, setVoucherId] = useState("");
@@ -132,12 +133,12 @@ export function VoucherDetailsPage() {
   const productPurchasedEvent: TimelineEvent[] = (ordersFromVoucher ?? []).map(
     (order) => ({
       id: order?._id,
-      type: t("product_purchased"),
+      type: "product_purchased" as const,
       date: order.createdAt,
       description: t("purchaser_info"),
       amount: order.amount,
       linkedId: order._id,
-      linkedType: order?.itemType,
+      linkedType: order?.itemType as TimelineEvent["linkedType"],
       linkedName: order.product?.name,
     }),
   );
@@ -354,10 +355,10 @@ export function VoucherDetailsPage() {
           {/* Transactions Tab */}
           {activeTab === "transactions" && (
             <VoucherTransactionTable
+              t={t}
               isDark={isDark}
               voucher={voucher}
               formatDate={formatDate}
-              t={t}
               ordersFromVoucher={ordersFromVoucher}
               isOrderLoading={isOrderLoading}
             />

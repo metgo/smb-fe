@@ -15,18 +15,20 @@ import { WizardFooter } from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import VoucherInformation from "./sub-components/VoucherInformation";
-import VoucherType from "./sub-components/VoucherType";
-import VoucherConfigure from "./sub-components/VoucherConfigure";
-import VoucherReview from "./sub-components/VoucherReview";
-import VoucherSuccess from "./sub-components/VoucherSuccess";
+import {
+  VoucherConfigure,
+  VoucherInformation,
+  VoucherReview,
+  VoucherSuccess,
+  VoucherType,
+} from "./sub-components";
+
 interface Campaign {
   _id: string;
   name: string;
 }
 interface AddVoucherWizardProps {
   onClose: () => void;
-  onVoucherCreated?: () => void;
   campaigns: {
     datas?: {
       data?: Campaign[];
@@ -34,14 +36,10 @@ interface AddVoucherWizardProps {
   };
 }
 
-const  CreateVoucherWizard = ({
-  onClose,
-  campaigns,
-}: AddVoucherWizardProps)=> {
+const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [parsedData, setParsedData] = useState<ParsedData[]>([]);
-  console.log("🚀 ~ AddVoucherWizard ~ parsedData:", parsedData);
 
   const { isDark } = useThemeClasses();
   const totalSteps = 5;
@@ -128,7 +126,6 @@ const  CreateVoucherWizard = ({
             expireDate: formData.expirationDate,
           },
         ];
-  console.log("🚀 ~ AddVoucherWizard ~ stepPayloadMap:", stepPayloadMap);
 
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
 
@@ -142,20 +139,9 @@ const  CreateVoucherWizard = ({
   const saveDraft = useCallback(
     async (isPublish = false) => {
       try {
-        // if (!Object.keys(stepPayloadMap).length) return;
-
         const payload = stepPayloadMap;
-        console.log("🚀 ~ AddVoucherWizard ~ payload:", payload);
-
-        // if (isPublish) {
-        //   payload = {
-        //     ...payload,
-        //   };
-        // }
-
         const res = await createVoucher(payload).unwrap();
         setResponse(res);
-        // onClose();
 
         toast.success(isPublish ? t("voucher_published") : t("draft_saved"));
       } catch (err: any) {
@@ -444,5 +430,5 @@ const  CreateVoucherWizard = ({
       />
     </ModalWrapper>
   );
-}
+};
 export default CreateVoucherWizard;
