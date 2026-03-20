@@ -339,7 +339,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
           ref={scrollRef}
           className="w-full overflow-auto"
           style={{
-            maxHeight: "calc(100vh - 220px)", // ← Adjust this as needed
+            maxHeight: "calc(100vh - 400px)", // ← Adjust this as needed
             scrollbarWidth: "none",
           }}
         >

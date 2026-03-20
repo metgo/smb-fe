@@ -560,7 +560,7 @@ const VouchersList = ({
   ]);
 
   return (
-    <div className={`flex-1 flex flex-col transition-all duration-300`}>
+    <>
       {/* Page Title and Actions */}
       <div
         className={`transition-colors ${isDark ? "border-gray-800" : "border-gray-200"}`}
@@ -795,7 +795,6 @@ const VouchersList = ({
       {/* Table */}
       <div className="mt-3">
         <ReordableDataTable
-          t={t}
           rowKey="_id"
           columns={columns}
           next={fetchNextPage}
@@ -817,7 +816,7 @@ const VouchersList = ({
           }}
         />
       )}
-    </div>
+    </>
   );
 };
 
