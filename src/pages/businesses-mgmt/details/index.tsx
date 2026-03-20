@@ -1,11 +1,13 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bookmark,
+  ChevronDown,
   Edit,
   Eye,
+  MoreHorizontal,
   MousePointer,
   Plus,
   Share2,
@@ -57,7 +59,21 @@ export default function BusinessDetailsPage() {
   const { isTraveller } = useUserRoles();
 
   const { borderColor, isDark } = useThemeClasses();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const businessId = searchParams.get("businessId") ?? "";
   ///business detail stats
   const {
@@ -163,6 +179,11 @@ export default function BusinessDetailsPage() {
   const onCreateProduct = () => {
     navigate(
       `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+    );
+  };
+  const onViewProduct = () => {
+    navigate(
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${business?.name}`,
     );
   };
 
@@ -275,19 +296,106 @@ export default function BusinessDetailsPage() {
               status={business?.status}
             />
 
-            {!isTraveller && (
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setIsOwnerChangeModalOpen(true)}
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                   isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
                 }`}
               >
-                <UserCog className="w-4 h-4" />
-                {t("change_owner")}
+                <MoreHorizontal className="w-4 h-4" />
+                <span className="text-sm font-medium">{t("actions")}</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                />
               </button>
-            )}
+
+              {isDropdownOpen && (
+                <div
+                  className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                    isDark
+                      ? "bg-gray-900 border-gray-700"
+                      : "bg-white border-gray-200"
+                  }`}
+                >
+                  {/* Change Owner */}
+                  {!isTraveller && (
+                    <button
+                      onClick={() => {
+                        setIsOwnerChangeModalOpen(true);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-gray-300 hover:bg-gray-800"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <UserCog className="w-4 h-4 shrink-0" />
+                      {t("change_owner")}
+                    </button>
+                  )}
+
+                  {/* Edit */}
+                  <button
+                    onClick={() => {
+                      handleMutateData(IOpMode.EDIT);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
+                        ? "text-teal-400 hover:bg-gray-800"
+                        : "text-teal-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Edit className="w-4 h-4 shrink-0" />
+                    {t("edit")}
+                  </button>
+
+                  {/* Create Product */}
+                  {onCreateProduct && (
+                    <button
+                      onClick={() => {
+                        onCreateProduct();
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
+                          ? "text-indigo-400 hover:bg-gray-800"
+                          : "text-indigo-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Plus className="w-4 h-4 shrink-0" />
+                      {t("create_product")}
+                    </button>
+                  )}
+
+                  {/* Divider before View Product */}
+                  <div
+                    className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                  />
+
+                  {/* View Product */}
+                  <button
+                    onClick={() => {
+                      onViewProduct();
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
+                        ? "text-gray-300 hover:bg-gray-800"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Eye className="w-4 h-4 shrink-0" />
+                    View Product
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* <button
               onClick={() => handleMutateData(IOpMode.DUPLICATE)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${isDark
@@ -298,23 +406,6 @@ export default function BusinessDetailsPage() {
               <Copy className="w-4 h-4" />
               <span>{tc("duplicate") || "Duplicate"}</span>
             </button> */}
-            <button
-              onClick={() => handleMutateData(IOpMode.EDIT)}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
-            >
-              <Edit className="w-4 h-4" />
-              {t("edit")}
-            </button>
-
-            {onCreateProduct && (
-              <button
-                onClick={onCreateProduct}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                {t("create_product")}
-              </button>
-            )}
           </div>
         </div>
 
