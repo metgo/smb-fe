@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Download, Mail, Trash } from "lucide-react";
+import { Download, Mail, Trash, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { StatusChangeBtn } from "../btns";
@@ -13,6 +13,9 @@ interface BulkActionBarProps {
   handleResendToVendor?: (v: string) => void;
   handleResendToCustomer?: (v: string) => void;
   handleExportCSV?: () => void;
+  handleSendSMS?: () => void;
+  handleSendEmail?: () => void;
+  // handleExtendExpiration?: () => void;
 }
 
 const BulkActionBar: React.FC<BulkActionBarProps> = ({
@@ -23,9 +26,13 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
   handleResendToVendor,
   handleExportCSV,
   handleResendToCustomer,
+  handleSendEmail,
+  handleSendSMS,
+  // handleExtendExpiration,
 }) => {
   const { t } = useTranslation("common");
   const { t: to } = useTranslation("orders");
+  const { t: tv } = useTranslation("vouchers");
 
   const { theme } = useThemeClasses();
   const isDark = theme === "dark";
@@ -124,6 +131,45 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
             {t("delete")}
           </button>
         )}
+        {/* New Bulk Actions */}
+
+        {handleSendEmail && (
+          <button
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
+              isDark
+                ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            }`}
+            onClick={handleSendEmail}
+          >
+            <Mail className="w-4 h-4" /> {tv("send_email")}
+          </button>
+        )}
+        {handleSendSMS && (
+          <button
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
+              isDark
+                ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            }`}
+            onClick={handleSendSMS}
+          >
+            <Send className="w-4 h-4" /> {tv("send_sms")}
+          </button>
+        )}
+
+        {/* {handleExtendExpiration && (
+          <button
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border transition-colors ${
+              isDark
+                ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            }`}
+            onClick={handleExtendExpiration}
+          >
+            <Calendar className="w-4 h-4" /> {tv("extend_expiration")}
+          </button>
+        )} */}
 
         {/* Exports */}
         {/* <div className="flex items-center gap-2">

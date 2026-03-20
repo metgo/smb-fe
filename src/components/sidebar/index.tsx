@@ -127,17 +127,17 @@ export default function Sidebar() {
     },
     {
       id: "local-economy",
-      path: routes.miniCampaign,
+      path: "#",
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
-      isEnabled: false,
+      isEnabled: true,
       subItems: [
         {
           id: "vouchers",
-          path: routes.vouchers,
+          path: routes.voucherMgmt,
           label: t("vouchers") || "Vouchers",
           icon: Ticket,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "offline-vouchers",

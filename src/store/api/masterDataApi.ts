@@ -59,7 +59,15 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
-
+    getAllCampaigns: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.campaign,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
     getDmos: builder.query<any, void>({
       query: () => ({
         url: endpoints.dmos,
@@ -129,4 +137,5 @@ export const {
   useGetAllWebsitesQuery,
   useGetAllSocialMediaQuery,
   useGetAllTagsQuery,
+  useGetAllCampaignsQuery,
 } = masterDataApi;

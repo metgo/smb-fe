@@ -16,6 +16,8 @@ export const routes = {
   orderDetails: "/order-details",
 
   contentMgmt: "/content-management",
+  voucherMgmt: "/voucher-management",
+  voucherDetails: "/voucher-details",
 
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
