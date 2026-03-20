@@ -5,12 +5,23 @@ import { useEffect } from "react";
 const ServiceWorkerRegistrar = () => {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
+      const registerSW = () => {
         navigator.serviceWorker
           .register("/sw.js")
-          .then(() => {})
+          .then((registration) => {
+            // Check for updates
+            registration.update();
+          })
           .catch((err) => console.error("SW registration failed:", err));
-      });
+      };
+
+      // Register immediately if page is already loaded, otherwise wait
+      if (document.readyState === "complete") {
+        registerSW();
+      } else {
+        window.addEventListener("load", registerSW);
+        return () => window.removeEventListener("load", registerSW);
+      }
     }
   }, []);
 

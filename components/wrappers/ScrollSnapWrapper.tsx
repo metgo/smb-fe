@@ -8,10 +8,15 @@ import ScrollIndicator from "../ScrollIndicator";
 
 type Props = {
   children: React.ReactNode[];
-  hasMarketing: boolean;
+  hasMarketing?: boolean;
 };
 
-export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
+export default function ScrollSnapWrapper({
+  children,
+  hasMarketing: hasMarketingProp,
+}: Props) {
+  // Auto-detect marketing from children[1] if not explicitly provided
+  const hasMarketing = hasMarketingProp ?? Boolean(children[1]);
   const firstRef = useRef<HTMLDivElement | null>(null);
   const secondRef = useRef<HTMLDivElement | null>(null);
   const feedRef = useRef<HTMLDivElement | null>(null);

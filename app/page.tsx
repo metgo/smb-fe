@@ -14,7 +14,11 @@ import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import HomePageClient from "@/components/HomePageClient";
+import ScrollSnapWrapper from "@/components/wrappers/ScrollSnapWrapper";
+import LazyFeedSection from "@/components/LazyFeedSection";
+
+// Enable ISR - revalidate every 60 seconds
+export const revalidate = 60;
 
 /* -------------------------------------------------------
    Helpers
@@ -39,21 +43,7 @@ function parseFeedFiltersSync(params: SearchParams): FiltersProps {
 }
 
 /* -------------------------------------------------------
-   Marketing Section - Streams with Suspense
-------------------------------------------------------- */
-
-async function MarketingSectionWithData() {
-  const marketing = await getMarketing();
-
-  if (!marketing?.items?.length) {
-    return null;
-  }
-
-  return <MarketingSection marketing={marketing} />;
-}
-
-/* -------------------------------------------------------
-   Feed Section - Streams with Suspense
+   Feed Section - Async component for streaming
 ------------------------------------------------------- */
 
 async function FeedSectionWithData({
@@ -113,7 +103,26 @@ function FeedSkeleton() {
 }
 
 /* -------------------------------------------------------
-   Page - Renders IMMEDIATELY, no blocking fetches
+   Video Section Component
+------------------------------------------------------- */
+
+function VideoSection() {
+  return (
+    <div className="relative h-full">
+      <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
+        <div className="flex items-center gap-5">
+          <HamburgerMenu openIcon="white-threeline" closeIcon="close-white" />
+          <MainLogo />
+        </div>
+        <CurrentTempOfYourCity />
+      </div>
+      <IntroVideo />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   Page - Marketing check is cached, feed streams
 ------------------------------------------------------- */
 
 export default async function Page({
@@ -125,33 +134,31 @@ export default async function Page({
   const selectedFiltersIds = parseFeedFiltersSync(params);
   const isAllClear = params?.isAllClear === "true" || false;
 
-  // NO blocking fetches - everything streams with Suspense
+  // Check marketing (cached - fast after first load)
+  const marketing = await getMarketing();
+  const hasMarketing = Boolean(marketing?.items?.length);
+
   return (
-    <HomePageClient>
-      {/* Hero Section - Renders IMMEDIATELY */}
-      <section className="h-screen relative">
-        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
-          <div className="flex items-center gap-5">
-            <HamburgerMenu openIcon="white-threeline" closeIcon="close-white" />
-            <MainLogo />
-          </div>
-          <CurrentTempOfYourCity />
-        </div>
-        <IntroVideo />
-      </section>
+    <ScrollSnapWrapper hasMarketing={hasMarketing}>
+      {[
+        // Section 1: Video - renders immediately
+        <VideoSection key="video" />,
 
-      {/* Marketing - Streams when ready */}
-      <Suspense fallback={null}>
-        <MarketingSectionWithData />
-      </Suspense>
+        // Section 2: Marketing - only if exists
+        hasMarketing ? (
+          <MarketingSection key="marketing" marketing={marketing!} />
+        ) : null,
 
-      {/* Feed - Streams when ready */}
-      <Suspense fallback={<FeedSkeleton />}>
-        <FeedSectionWithData
-          selectedFiltersIds={selectedFiltersIds}
-          isAllClear={isAllClear}
-        />
-      </Suspense>
-    </HomePageClient>
+        // Section 3: Feed - lazy loads when user scrolls to it
+        <LazyFeedSection key="feed" fallback={<FeedSkeleton />}>
+          <Suspense fallback={<FeedSkeleton />}>
+            <FeedSectionWithData
+              selectedFiltersIds={selectedFiltersIds}
+              isAllClear={isAllClear}
+            />
+          </Suspense>
+        </LazyFeedSection>,
+      ]}
+    </ScrollSnapWrapper>
   );
 }

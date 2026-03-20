@@ -168,7 +168,7 @@ export async function getFeedItems(): Promise<FeedItemResponse> {
   try {
     const res = await fetch(baseUrl, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: 60 }, // Cache for 1 minute
     });
 
     if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);

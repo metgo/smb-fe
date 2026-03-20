@@ -61,14 +61,7 @@ export default function RootLayout({ children }: ReactChildNode) {
           media="(max-width: 768px)"
         />
       </head>
-      <body
-        className="
-          enable-toolbar-RTL
-          trigger-position-left
-          quick-links-position-center
-          trigger-size-medium
-        "
-      >
+      <body className="enable-toolbar-RTL trigger-position-left quick-links-position-center trigger-size-medium">
         <Suspense fallback={<InitialLoader />}>
           <Providers>
             <SiteInfoClientProvider>

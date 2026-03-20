@@ -2,92 +2,75 @@
 
 import { GoUnmute, GoMute } from "react-icons/go";
 import { useEffect, useRef, useState } from "react";
-
 import { BUCKET_URL } from "@/constant/envConstants";
-import useGeneralStore from "@/stores/generalStore";
 import { useDeviceHeight } from "@/hooks";
 import { getThumbnail } from "@/constant/images";
 
-// Default mobile video URL - used immediately
+// Default mobile video URL
 const DEFAULT_MOBILE_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
 
 const IntroVideoMobile = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
-  const currentUrlRef = useRef<string>(DEFAULT_MOBILE_URL);
-
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
 
-  const { siteInfo } = useGeneralStore();
   const { scale, group } = useDeviceHeight();
 
   const thumbnailJson = getThumbnail();
   const videoThumbnail = thumbnailJson?.mobile;
 
-  // Video setup - runs only once
+  // Preload video on mount
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || initializedRef.current) return;
-
-    initializedRef.current = true;
-    video.muted = isMuted;
-
-    const handleCanPlay = () => {
-      setIsVideoReady(true);
-      video.play().catch(() => {});
-    };
-
-    video.addEventListener("canplay", handleCanPlay);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!video) return;
-        if (entry.isIntersecting) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-      },
-      { threshold: 0.5 },
-    );
-
-    observer.observe(video);
+    // Add preload link for video
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "video";
+    link.href = DEFAULT_MOBILE_URL;
+    document.head.appendChild(link);
 
     return () => {
-      video.removeEventListener("canplay", handleCanPlay);
-      observer.disconnect();
+      document.head.removeChild(link);
     };
   }, []);
 
-  // Update video URL only if siteInfo provides a different URL than default
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !siteInfo) return;
+    if (!video) return;
 
-    const newUrl = siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
-    // Only reload if URL actually changed to a different value
-    if (newUrl !== currentUrlRef.current) {
-      currentUrlRef.current = newUrl;
-      video.src = newUrl;
-      video.load();
-    }
-  }, [siteInfo]);
+    const handleCanPlay = () => {
+      setIsVideoReady(true);
+      // Play immediately when ready
+      video.play().catch(() => {});
+    };
 
-  const toggleMute = () => {
-    setIsMuted((prev) => !prev);
+    const handlePlaying = () => {
+      setIsVideoReady(true);
+    };
+
+    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("playing", handlePlaying);
+
+    // Start loading immediately
+    video.load();
+
+    return () => {
+      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("playing", handlePlaying);
+    };
+  }, []);
+
+  // Sync muted state via JS (not attribute)
+  useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
+      videoRef.current.muted = isMuted;
     }
-  };
+  }, [isMuted]);
+
+  const toggleMute = () => setIsMuted((prev) => !prev);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-screen max-sm:block md:hidden"
-    >
-      {/* Thumbnail shown while video loads */}
+    <div className="relative w-full h-screen max-sm:block md:hidden">
+      {/* Thumbnail - shows until video starts */}
       <img
         src={videoThumbnail}
         alt="Video thumbnail"
@@ -96,18 +79,17 @@ const IntroVideoMobile = () => {
         }`}
       />
 
-      {/* Video - loads immediately with default URL */}
+      {/* Video */}
       <video
         ref={videoRef}
         loop
-        muted={isMuted}
+        muted
+        autoPlay
         playsInline
         preload="auto"
-        src={currentUrlRef.current}
+        src={DEFAULT_MOBILE_URL}
         poster={videoThumbnail}
-        className={`object-cover absolute inset-0 w-full h-full z-0 transition-opacity duration-500 ${
-          isVideoReady ? "opacity-100" : "opacity-0"
-        }`}
+        className="object-cover absolute inset-0 w-full h-full z-0"
       />
 
       {/* Mute/Unmute Button */}
