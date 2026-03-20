@@ -1,9 +1,9 @@
+import { Suspense } from "react";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import Navbar from "@/components/navbar";
 import IntroVideo from "@/components/IntroVideo";
 import MainLogo from "@/components/navbar/MainLogo";
-import { ScrollSnapWrapper } from "@/components/wrappers";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 
 import { getMarketing } from "@/actions/marketingAction";
@@ -14,6 +14,7 @@ import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import HomePageClient from "@/components/HomePageClient";
 
 /* -------------------------------------------------------
    Helpers
@@ -21,11 +22,7 @@ import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-async function parseFeedFilters(
-  searchParams: Promise<SearchParams>,
-): Promise<FiltersProps> {
-  const params = await searchParams;
-
+function parseFeedFiltersSync(params: SearchParams): FiltersProps {
   const toArray = (value?: string | string[]) => {
     if (!value) return [];
     if (Array.isArray(value)) return value;
@@ -42,7 +39,81 @@ async function parseFeedFilters(
 }
 
 /* -------------------------------------------------------
-   Page
+   Marketing Section - Streams with Suspense
+------------------------------------------------------- */
+
+async function MarketingSectionWithData() {
+  const marketing = await getMarketing();
+
+  if (!marketing?.items?.length) {
+    return null;
+  }
+
+  return <MarketingSection marketing={marketing} />;
+}
+
+/* -------------------------------------------------------
+   Feed Section - Streams with Suspense
+------------------------------------------------------- */
+
+async function FeedSectionWithData({
+  selectedFiltersIds,
+  isAllClear,
+}: {
+  selectedFiltersIds: FiltersProps;
+  isAllClear: boolean;
+}) {
+  const queryClient = getQueryClient();
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["preset-filters"],
+      staleTime: Infinity,
+      queryFn: getPresetFilters,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["filters", selectedFiltersIds],
+      staleTime: Infinity,
+      queryFn: () => getAllFilters(selectedFiltersIds),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["feeds"],
+      staleTime: Infinity,
+      queryFn: () => getFeedItems(),
+    }),
+  ]);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <section className="relative z-50 bg-white">
+        <Navbar showFilterTab />
+        <MobileFeedLayout
+          isAllClear={isAllClear}
+          selectedFiltersIds={selectedFiltersIds}
+        />
+        <FeedLayout selectedFiltersIds={selectedFiltersIds} />
+      </section>
+    </HydrationBoundary>
+  );
+}
+
+function FeedSkeleton() {
+  return (
+    <section className="relative z-50 bg-white min-h-screen">
+      <div className="animate-pulse">
+        <div className="h-16 bg-gray-100" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="bg-gray-200 rounded-lg h-64" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------
+   Page - Renders IMMEDIATELY, no blocking fetches
 ------------------------------------------------------- */
 
 export default async function Page({
@@ -50,66 +121,37 @@ export default async function Page({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const queryClient = getQueryClient();
-
-  const selectedFiltersIds = await parseFeedFilters(searchParams);
   const params = await searchParams;
+  const selectedFiltersIds = parseFeedFiltersSync(params);
   const isAllClear = params?.isAllClear === "true" || false;
 
-  const marketing = await getMarketing();
-
-  await queryClient.prefetchQuery({
-    queryKey: ["preset-filters"],
-    staleTime: Infinity,
-    queryFn: getPresetFilters,
-  });
-
-  await queryClient.prefetchQuery({
-    queryKey: ["filters", selectedFiltersIds],
-    staleTime: Infinity,
-    queryFn: () => getAllFilters(selectedFiltersIds),
-  });
-
-  await queryClient.prefetchQuery({
-    queryKey: ["feeds"],
-    staleTime: Infinity,
-    queryFn: () => getFeedItems(),
-  });
-
+  // NO blocking fetches - everything streams with Suspense
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
-        {/* ---------------- Hero Section ---------------- */}
-        <section className="relative">
-          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
-            <div className="flex items-center gap-5">
-              <HamburgerMenu
-                openIcon="white-threeline"
-                closeIcon="close-white"
-              />
-              <MainLogo />
-            </div>
-            <CurrentTempOfYourCity />
+    <HomePageClient>
+      {/* Hero Section - Renders IMMEDIATELY */}
+      <section className="h-screen relative">
+        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
+          <div className="flex items-center gap-5">
+            <HamburgerMenu openIcon="white-threeline" closeIcon="close-white" />
+            <MainLogo />
           </div>
+          <CurrentTempOfYourCity />
+        </div>
+        <IntroVideo />
+      </section>
 
-          <IntroVideo />
-        </section>
+      {/* Marketing - Streams when ready */}
+      <Suspense fallback={null}>
+        <MarketingSectionWithData />
+      </Suspense>
 
-        {/* ---------------\- Marketing ---------------- */}
-        <MarketingSection marketing={marketing} />
-
-        {/* ---------------- Feed ---------------- */}
-        <section className="relative z-50 bg-white">
-          <Navbar showFilterTab />
-
-          <MobileFeedLayout
-            isAllClear={isAllClear}
-            selectedFiltersIds={selectedFiltersIds}
-          />
-
-          <FeedLayout selectedFiltersIds={selectedFiltersIds} />
-        </section>
-      </ScrollSnapWrapper>
-    </HydrationBoundary>
+      {/* Feed - Streams when ready */}
+      <Suspense fallback={<FeedSkeleton />}>
+        <FeedSectionWithData
+          selectedFiltersIds={selectedFiltersIds}
+          isAllClear={isAllClear}
+        />
+      </Suspense>
+    </HomePageClient>
   );
 }

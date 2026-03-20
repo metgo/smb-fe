@@ -1,85 +1,78 @@
 "use client";
 
 import { GoUnmute, GoMute } from "react-icons/go";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { BUCKET_URL } from "@/constant/envConstants";
 import useGeneralStore from "@/stores/generalStore";
 import { useDeviceHeight } from "@/hooks";
 import { getThumbnail } from "@/constant/images";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 
+// Detect mobile - works on both server and client
+function getIsMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 768;
+}
+
+// Default video URLs - used immediately, no waiting
+const DEFAULT_DESKTOP_URL = `${BUCKET_URL}/video/intro-video.mp4`;
+const DEFAULT_MOBILE_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
+
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize isMobile immediately (not null)
+  const [isMobile, setIsMobile] = useState(() => getIsMobile());
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const { siteInfo } = useGeneralStore();
   const { scale, group } = useDeviceHeight();
 
-  // Detect mobile/desktop after hydration
+  // Compute video URL immediately - don't wait for siteInfo
+  const videoURL = useMemo(() => {
+    if (isMobile) {
+      return siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
+    }
+    return siteInfo?.desktopHomeVideos?.[0]?.url || DEFAULT_DESKTOP_URL;
+  }, [isMobile, siteInfo]);
+
+  // Update isMobile on resize (optional, for responsive behavior)
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    const handleResize = () => setIsMobile(getIsMobile());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Thumbnail
   const thumbnailJson = getThumbnail();
   const videoThumbnail = isMobile
-    ? thumbnailJson.mobile
-    : thumbnailJson.desktop;
+    ? thumbnailJson?.mobile
+    : thumbnailJson?.desktop;
 
-  // Video URLs
-  const videoURLDesktop =
-    siteInfo?.desktopHomeVideos?.[0]?.url ??
-    `${BUCKET_URL}/video/intro-video.mp4`;
-  const videoURLMobile =
-    siteInfo?.mobileHomeVideos?.[0]?.url ??
-    `${BUCKET_URL}/video/intro-video-mobile.mkv`;
-  const videoURL = isMobile ? videoURLMobile : videoURLDesktop;
-
-  const [resolvedVideoURL, setResolvedVideoURL] = useState(videoURL);
-
-  // Update video source when device type or siteInfo changes
-  useEffect(() => {
-    setResolvedVideoURL(videoURL);
-  }, [isMobile, videoURL]);
-
-  // Main video setup: play, load, intersection observer
+  // Main video setup
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    setIsVideoReady(false);
-    setVideoError(false);
     video.muted = isMuted;
 
-    const handleCanPlayThrough = () => {
-      setIsVideoReady(true);
-      video.play().catch((err) => console.warn("Autoplay failed:", err));
-    };
-
     const handleCanPlay = () => {
-      if (!isVideoReady) {
-        setIsVideoReady(true);
-        video.play().catch(() => {});
-      }
+      setIsVideoReady(true);
+      video.play().catch(() => {});
     };
 
     const handleError = () => {
-      console.error("Video failed to load");
       setVideoError(true);
       setIsVideoReady(true);
     };
 
-    video.addEventListener("canplaythrough", handleCanPlayThrough);
     video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("error", handleError);
 
-    // Intersection Observer: pause/play when 50% visible
+    // Intersection Observer: pause/play when visible
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!video) return;
@@ -90,17 +83,14 @@ const IntroVideo = () => {
     );
     observer.observe(video);
 
-    video.load();
-
     return () => {
-      video.removeEventListener("canplaythrough", handleCanPlayThrough);
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("error", handleError);
       observer.disconnect();
     };
-  }, [resolvedVideoURL]);
+  }, [videoURL]);
 
-  // Sync muted state separately (does not reload video)
+  // Sync muted state
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = isMuted;
   }, [isMuted]);
@@ -108,33 +98,31 @@ const IntroVideo = () => {
   const toggleMute = () => setIsMuted((prev) => !prev);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Thumbnail */}
+    <div
+      ref={containerRef}
+      className="relative w-full h-screen overflow-hidden"
+    >
+      {/* Thumbnail - shows until video starts */}
       <img
         src={videoThumbnail}
         alt="Video thumbnail"
-        className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-700 ${
-          isVideoReady && !videoError ? "opacity-0" : "opacity-100"
+        className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 ${
+          isVideoReady && !videoError
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100"
         }`}
       />
 
-      {/* Loading Spinner */}
-      {!isVideoReady && !videoError && (
-        <div className="absolute left-1/2 top-1/2 flex items-center justify-center z-20 ">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent" />
-        </div>
-      )}
-
-      {/* Video */}
+      {/* Video element - loads immediately */}
       <video
         ref={videoRef}
         loop
         muted={isMuted}
         playsInline
         preload="auto"
-        src={resolvedVideoURL}
+        src={videoURL}
         poster={videoThumbnail}
-        className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-700 ${
+        className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${
           isVideoReady && !videoError ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -150,7 +138,7 @@ const IntroVideo = () => {
             });
             toggleMute();
           }}
-          className="absolute right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
+          className="absolute right-10 z-20 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
           aria-label={isMuted ? "Unmute" : "Mute"}
           style={{
             bottom: isMobile

@@ -1,49 +1,53 @@
 "use client";
 
 import { GoUnmute, GoMute } from "react-icons/go";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 import { BUCKET_URL } from "@/constant/envConstants";
 import useGeneralStore from "@/stores/generalStore";
 import { useDeviceHeight } from "@/hooks";
+import { getThumbnail } from "@/constant/images";
+
+// Default mobile video URL - used immediately
+const DEFAULT_MOBILE_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
 
 const IntroVideoMobile = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [isMuted, setIsMuted] = useState(true);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const { siteInfo } = useGeneralStore();
   const { scale, group } = useDeviceHeight();
 
+  const thumbnailJson = getThumbnail();
+  const videoThumbnail = thumbnailJson?.mobile;
+
+  // Compute video URL immediately - don't wait for siteInfo
+  const videoURL = useMemo(() => {
+    return siteInfo?.mobileHomeVideos?.[0]?.url || DEFAULT_MOBILE_URL;
+  }, [siteInfo]);
+
+  // Video setup
   useEffect(() => {
     const video = videoRef.current;
+    if (!video) return;
 
-    // Ensure muted state is synced with video
-    if (video) {
-      video.muted = isMuted;
-    }
+    video.muted = isMuted;
 
-    const tryAutoplay = () => {
-      if (video) {
-        video
-          .play()
-          .then(() => {
-            // Autoplay success
-          })
-          .catch((err) => {
-            console.warn("Initial autoplay failed", err);
-          });
-      }
+    const handleCanPlay = () => {
+      setIsVideoReady(true);
+      video.play().catch(() => {});
     };
 
-    requestAnimationFrame(tryAutoplay);
+    video.addEventListener("canplay", handleCanPlay);
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!video) return;
         if (entry.isIntersecting) {
-          video.play().catch((e) => {
-            console.warn("Autoplay on scroll failed", e);
-          });
+          video.play().catch(() => {});
         } else {
           video.pause();
         }
@@ -51,14 +55,13 @@ const IntroVideoMobile = () => {
       { threshold: 0.5 },
     );
 
-    if (video) {
-      observer.observe(video);
-    }
+    observer.observe(video);
 
     return () => {
-      if (video) observer.unobserve(video);
+      video.removeEventListener("canplay", handleCanPlay);
+      observer.disconnect();
     };
-  }, [isMuted]);
+  }, [videoURL]);
 
   const toggleMute = () => {
     setIsMuted((prev) => !prev);
@@ -68,18 +71,31 @@ const IntroVideoMobile = () => {
   };
 
   return (
-    <div className="relative w-full h-screen max-sm:block md:hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full h-screen max-sm:block md:hidden"
+    >
+      {/* Thumbnail shown while video loads */}
+      <img
+        src={videoThumbnail}
+        alt="Video thumbnail"
+        className={`absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 ${
+          isVideoReady ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
+      />
+
+      {/* Video - loads immediately */}
       <video
         ref={videoRef}
         loop
         muted={isMuted}
         playsInline
         preload="auto"
-        src={
-          siteInfo?.mobileHomeVideos?.[0]?.url ??
-          `${BUCKET_URL}/video/intro-video-mobile.mkv`
-        }
-        className="object-cover absolute inset-0 w-full h-full z-10"
+        src={videoURL}
+        poster={videoThumbnail}
+        className={`object-cover absolute inset-0 w-full h-full z-0 transition-opacity duration-500 ${
+          isVideoReady ? "opacity-100" : "opacity-0"
+        }`}
       />
 
       {/* Mute/Unmute Button */}
@@ -92,7 +108,7 @@ const IntroVideoMobile = () => {
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
-        className="absolute  right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
+        className="absolute right-10 z-20 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
         aria-label="Toggle Mute"
         style={{
           bottom:
@@ -103,7 +119,6 @@ const IntroVideoMobile = () => {
                 : 90 * scale,
         }}
       >
-        {/* max-sm:bottom-26 md:bottom-10 */}
         {isMuted ? <GoMute size={24} /> : <GoUnmute size={24} />}
       </button>
     </div>
