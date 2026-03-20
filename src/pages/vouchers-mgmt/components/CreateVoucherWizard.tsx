@@ -36,22 +36,26 @@ interface AddVoucherWizardProps {
   };
 }
 
+const totalSteps = 5;
+
 const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
+  const { t } = useTranslation("vouchers");
+
+  const { isDark } = useThemeClasses();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [parsedData, setParsedData] = useState<ParsedData[]>([]);
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  const { isDark } = useThemeClasses();
-  const totalSteps = 5;
-  const { t } = useTranslation("vouchers");
   const [formData, setFormData] = useState<IVoucherFormData>({
     campaign: "",
 
     amount: 1000,
     customAmount: false,
 
-    creationType: "single",
-    bulkCount: 10,
+    creationType: "bulk",
+    bulkCount: 1,
     bulkCreateAssigned: false,
 
     // Purchaser fields
@@ -76,7 +80,7 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
     xlsFile: null,
   });
   const [response, setResponse] = useState([]);
-  console.log("🚀 ~ AddVoucherWizard ~ response:", response);
+
   const stepPayloadMap =
     formData?.creationType === "upload"
       ? parsedData?.map((item) => ({
@@ -129,7 +133,6 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
 
   const [createVoucher, { isLoading: isCreating }] = useCreateVoucherMutation();
 
-  const [isPublishing, setIsPublishing] = useState(false);
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
@@ -390,9 +393,9 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
         {currentStep === 2 && (
           <VoucherType
             t={t}
+            errors={errors}
             formData={formData}
             setFormData={setFormData}
-            errors={errors}
           />
         )}
         {currentStep === 3 && (

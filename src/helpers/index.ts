@@ -278,3 +278,14 @@ export function compareValues(
   if (a > b) return direction === "asc" ? 1 : -1;
   return 0;
 }
+
+export const isExpiringSoon = (date: string) => {
+  const daysUntilExpiry = Math.floor(
+    (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+};
+
+export const isExpired = (date: string) => {
+  return new Date(date) < new Date();
+};
