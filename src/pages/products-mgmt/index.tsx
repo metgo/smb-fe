@@ -99,8 +99,6 @@ const columnDefinitions: Array<{
   { key: "updatedAt", isDefault: false },
 ];
 
-type TStatus = "active" | "pending" | "inactive" | "draft" | string;
-
 // ─────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────
@@ -281,7 +279,7 @@ export default function ProductsMgmtPage() {
     const finalSearchTerm =
       localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
     if (finalSearchTerm) params.search = finalSearchTerm;
-    // if (filters.status !== "all") params.status = filters?.status?.toUpperCase();
+    if (filters.status !== "all") params.status = filters?.status;
 
     // Priority: URL param > filter > none
     const effectiveBusinessId = urlBusinessId || filters.businessId || "";
@@ -290,6 +288,7 @@ export default function ProductsMgmtPage() {
     return params;
   }, [
     page,
+    status,
     searchTerm,
     filters,
     language,
@@ -408,7 +407,7 @@ export default function ProductsMgmtPage() {
       try {
         const results = await bulkProductsUpdate({
           productsId: Array.from(selectedProducts),
-          status,
+          status: status.toUpperCase(),
         });
         if (results?.data) {
           toast.success(tc("product_status_update_success"), { id: toastId });
