@@ -11,12 +11,14 @@ import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 const DESKTOP_VIDEO_URL = `${BUCKET_URL}/video/intro-video.mp4`;
 const MOBILE_VIDEO_URL = `${BUCKET_URL}/video/intro-video-mobile.mkv`;
 
-const IntroVideo = () => {
+interface IntroVideoProps {
+  isMobile: boolean;
+}
+
+const IntroVideo = ({ isMobile }: IntroVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [videoUrl, setVideoUrl] = useState(DESKTOP_VIDEO_URL);
 
   const { scale, group } = useDeviceHeight();
 
@@ -25,29 +27,8 @@ const IntroVideo = () => {
     ? thumbnailJson?.mobile
     : thumbnailJson?.desktop;
 
-  // Detect device and set video URL on mount
-  useEffect(() => {
-    const checkMobile = window.innerWidth < 768;
-    setIsMobile(checkMobile);
-    setVideoUrl(checkMobile ? MOBILE_VIDEO_URL : DESKTOP_VIDEO_URL);
-  }, []);
-
-  // Preload video
-  useEffect(() => {
-    if (!videoUrl) return;
-
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "video";
-    link.href = videoUrl;
-    document.head.appendChild(link);
-
-    return () => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-    };
-  }, [videoUrl]);
+  // Video URL is determined by server-side detection
+  const videoUrl = isMobile ? MOBILE_VIDEO_URL : DESKTOP_VIDEO_URL;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -55,7 +36,6 @@ const IntroVideo = () => {
 
     const handleCanPlay = () => {
       setIsVideoReady(true);
-      video.play().catch(() => {});
     };
 
     const handlePlaying = () => {
@@ -65,14 +45,14 @@ const IntroVideo = () => {
     video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("playing", handlePlaying);
 
-    // Start loading
-    video.load();
+    // Try to play (autoPlay may be blocked by browser)
+    video.play().catch(() => {});
 
     return () => {
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("playing", handlePlaying);
     };
-  }, [videoUrl]);
+  }, []);
 
   // Sync muted state
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import Navbar from "@/components/navbar";
@@ -25,6 +26,12 @@ export const revalidate = 60;
 ------------------------------------------------------- */
 
 type SearchParams = Record<string, string | string[] | undefined>;
+
+function isMobileDevice(userAgent: string): boolean {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    userAgent,
+  );
+}
 
 function parseFeedFiltersSync(params: SearchParams): FiltersProps {
   const toArray = (value?: string | string[]) => {
@@ -106,7 +113,7 @@ function FeedSkeleton() {
    Video Section Component
 ------------------------------------------------------- */
 
-function VideoSection() {
+function VideoSection({ isMobile }: { isMobile: boolean }) {
   return (
     <div className="relative h-full">
       <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
@@ -116,7 +123,7 @@ function VideoSection() {
         </div>
         <CurrentTempOfYourCity />
       </div>
-      <IntroVideo />
+      <IntroVideo isMobile={isMobile} />
     </div>
   );
 }
@@ -134,6 +141,11 @@ export default async function Page({
   const selectedFiltersIds = parseFeedFiltersSync(params);
   const isAllClear = params?.isAllClear === "true" || false;
 
+  // Detect device from User-Agent header
+  const headersList = await headers();
+  const userAgent = headersList.get("user-agent") || "";
+  const isMobile = isMobileDevice(userAgent);
+
   // Check marketing (cached - fast after first load)
   const marketing = await getMarketing();
   const hasMarketing = Boolean(marketing?.items?.length);
@@ -141,8 +153,8 @@ export default async function Page({
   return (
     <ScrollSnapWrapper hasMarketing={hasMarketing}>
       {[
-        // Section 1: Video - renders immediately
-        <VideoSection key="video" />,
+        // Section 1: Video - renders immediately with correct device video
+        <VideoSection key="video" isMobile={isMobile} />,
 
         // Section 2: Marketing - only if exists
         hasMarketing ? (
