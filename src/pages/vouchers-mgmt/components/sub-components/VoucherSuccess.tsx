@@ -1,4 +1,5 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import { Download } from "lucide-react";
 interface IVoucherResponse {
   name: string;
@@ -146,22 +147,18 @@ const VoucherSuccess = ({
       <div className="flex gap-3">
         <button
           onClick={handleDownload}
-          className={`flex-1 px-4 py-2 rounded-lg border flex items-center justify-center gap-2 transition-colors ${
+          disabled={response.length === 0}
+          className={clsx(
+            "flex-1 px-4 py-2 rounded-lg border flex items-center justify-center gap-2 transition-colors ",
             isDark
               ? " border-gray-700 text-gray-300 "
-              : "bg-white border-gray-300 text-gray-700 "
-          }`}
+              : "bg-white border-gray-300 text-gray-700 ",
+            response?.length === 0 ? " cursor-not-allowed " : " cursor-pointer",
+          )}
         >
           <Download className="w-4 h-4" />
           {t("download_results")}
         </button>
-
-        {/* <button
-          onClick={onVoucherCreated}
-          className="flex-1 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
-        >
-          {t("done")}
-        </button> */}
       </div>
     </div>
   );
