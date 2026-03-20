@@ -1,3 +1,4 @@
+import { Loader } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -80,7 +81,7 @@ const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({
         className={`p-6 border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
       >
         <h3 className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-          Transaction History
+          {t("transaction_history")}
         </h3>
       </div>
 
@@ -95,13 +96,13 @@ const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({
           >
             <tr>
               {[
-                "Product",
-                "Business",
-                "Customer",
-                "Amount Used",
-                "Qty",
-                "Date",
-                "Status",
+                t("product"),
+                t("business"),
+                t("customer"),
+                t("amount_used"),
+                t("quantity"),
+                t("date"),
+                t("status"),
               ].map((header) => (
                 <th
                   key={header}
@@ -122,9 +123,9 @@ const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({
           >
             {isOrderLoading ? (
               <tr>
-                <td colSpan={7} className="text-center py-12">
+                <td colSpan={7} className="text-center justify-center py-12">
                   <p className={isDark ? "text-gray-400" : "text-gray-500"}>
-                    Loading...
+                    <Loader />
                   </p>
                 </td>
               </tr>
@@ -202,7 +203,7 @@ const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({
                   {/* Status */}
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs  ${getStatusColor(
                         order.status,
                       )}`}
                     >
@@ -220,7 +221,7 @@ const VoucherTransactionTable: React.FC<VoucherTransactionTableProps> = ({
       {!isOrderLoading && ordersFromVoucher?.length === 0 && (
         <div className="text-center py-12">
           <p className={isDark ? "text-gray-400" : "text-gray-500"}>
-            {t("noOrdersFound")}
+            {t("no_orders_found")}
           </p>
         </div>
       )}

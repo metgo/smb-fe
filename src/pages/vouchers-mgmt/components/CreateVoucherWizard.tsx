@@ -34,10 +34,10 @@ interface AddVoucherWizardProps {
   };
 }
 
-export function AddVoucherWizard({
+const  CreateVoucherWizard = ({
   onClose,
   campaigns,
-}: AddVoucherWizardProps) {
+}: AddVoucherWizardProps)=> {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [parsedData, setParsedData] = useState<ParsedData[]>([]);
@@ -445,3 +445,4 @@ export function AddVoucherWizard({
     </ModalWrapper>
   );
 }
+export default CreateVoucherWizard;

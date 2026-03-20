@@ -1,3 +1,4 @@
 import VouchersList from "./VouchersList";
+import CreateVoucherWizard from "./CreateVoucherWizard";
 
-export { VouchersList };
+export { VouchersList, CreateVoucherWizard };

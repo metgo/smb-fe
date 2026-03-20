@@ -12,6 +12,10 @@
   "error_invalid_amount": "Amount must be greater than 0",
   "all_time": "All Time",
   "total_voucher_value": "Total Voucher Value",
+  "assigned_to": "Assigned to {{name}}",
+  "voucher_sent_email": "Voucher sent via email to {{email}}",
+  "product_purchased": "Product Purchased",
+  "purchaser_info": "Purchaser Information",
   "generated_revenue": "Generated Revenue",
   "total_amount_to_redeem": "Total Amount to Redeem",
   "pending_redemption": "Pending Redemption",
@@ -19,6 +23,7 @@
   "redemption_rate": "Redemption Rate",
   "unassigned_vouchers": "Unassigned Vouchers",
   "available": "Available",
+  "no_orders_found": "No orders found",
   "expiration_date": "Expiration Date",
   "send_email": "Send Email",
   "send_sms": "Send SMS",
@@ -82,6 +87,9 @@
   "assignee": "Assignee",
   "quantity": "Quantity",
   "vouchers": "Vouchers",
+  "product": "Product",
+  "business": "Business",
+  "customer": "Customer",
 
   "upload_results": "Upload Results",
   "valid_vouchers_will_be_created": "valid vouchers will be created",
@@ -116,11 +124,13 @@
   "download_results": "Download Results",
   "done": "Done",
   "remaining": "Remaining",
+  "created_byy": "Created by {{firstName}} {{lastName}}",
+
   "search_voucher_placeholder": "Search by code, assignee name, email...",
   "vouchers_management": "Vouchers Management",
   "create_track_manage_vouchers": "Create, track, and manage your vouchers",
   "add_voucher": "Add Voucher",
-
+  "voucher_published": "Voucher Published",
   "assignee_information": "Assignee Information",
 
   "assigned_at": "Assigned At",

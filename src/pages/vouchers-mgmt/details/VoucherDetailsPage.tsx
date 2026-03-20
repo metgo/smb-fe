@@ -3,8 +3,6 @@ import {
   Mail,
   Phone,
   Calendar,
-  Send,
-  XCircle,
   RefreshCw,
   Tag,
   User,
@@ -27,9 +25,7 @@ import { Spinner } from "@/components/shared";
 import clsx from "clsx";
 
 import VoucherTimeline from "./components/VoucherTimeline";
-import VoucherTransactionTable, {
-  type Order,
-} from "./components/VoucherTransactionTable";
+import VoucherTransactionTable from "./components/VoucherTransactionTable";
 import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
 
 interface TimelineEvent {
@@ -52,14 +48,26 @@ interface TimelineEvent {
   linkedType?: "order" | "product" | "trip" | "funday" | "campaign";
   linkedName?: string;
 }
-interface IOrder {
+
+interface Order {
   _id: string;
-  createdAt: string;
-  amount: number;
-  itemType: "order" | "product" | "trip" | "funday" | "campaign";
-  product?: {
+  orderId: string;
+  product: {
+    _id: string;
     name: string;
+    image?: { image: string };
+    business_info?: { name: string };
   };
+  status: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  totalAmount: number;
+  amount: number;
+  quantity: number;
+  paymentDate: string;
+  createdAt: string;
+  itemType: string;
 }
 export function VoucherDetailsPage() {
   const { isDark, borderColor } = useThemeClasses();
@@ -83,7 +91,7 @@ export function VoucherDetailsPage() {
 
     { skip: !voucher?._id },
   );
-  const [ordersFromVoucher, setOrdersfromVoucher] = useState<IOrder[]>([]);
+  const [ordersFromVoucher, setOrdersfromVoucher] = useState<Order[]>([]);
 
   useEffect(() => {
     setOrdersfromVoucher(orders?.data);
@@ -97,30 +105,36 @@ export function VoucherDetailsPage() {
     id: "1",
     type: "created",
     date: voucher?.createdAt,
-    description:
-      `Created by ${voucher?.creatorInfo?.id?.firstName ?? "-"} ${voucher?.creatorInfo?.id?.lastName ?? ""}`.trim(),
+    description: t("created_byy", {
+      firstName: voucher?.creatorInfo?.id?.firstName ?? "-",
+      lastName: voucher?.creatorInfo?.id?.lastName ?? "",
+    }).trim(),
   };
 
   const assignedEvent: TimelineEvent = {
     id: "2",
     type: "assigned",
     date: voucher?.assigneeInfo?.assignedAt,
-    description: `Assigned to ${voucher?.assigneeInfo?.name ? voucher?.assigneeInfo?.name : "-"}`,
+    description: t("assigned_to", {
+      name: voucher?.assigneeInfo?.name ?? "-",
+    }),
   };
 
   const sentEmailEvent: TimelineEvent = {
     id: "3",
     type: "sent_email",
     date: "",
-    description: `Voucher sent via email to ${voucher?.assigneeInfo?.email ? voucher?.assigneeInfo?.email : "-"}`,
+    description: t("voucher_sent_email", {
+      email: voucher?.assigneeInfo?.email ?? "-",
+    }),
   };
 
   const productPurchasedEvent: TimelineEvent[] = (ordersFromVoucher ?? []).map(
     (order) => ({
       id: order?._id,
-      type: "product_purchased",
+      type: t("product_purchased"),
       date: order.createdAt,
-      description: "Purchaser Info",
+      description: t("purchaser_info"),
       amount: order.amount,
       linkedId: order._id,
       linkedType: order?.itemType,

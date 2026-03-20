@@ -127,7 +127,7 @@ export default function Sidebar() {
     },
     {
       id: "local-economy",
-      path: routes.miniCampaign,
+      path: "#",
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
       isEnabled: true,

@@ -308,10 +308,11 @@ const VouchersList = ({
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
   const [websiteFilter, setWebsiteFilter] = useState<string>("all");
-  const [minAmount, setMinAmount] = useState<number>(0);
-  const [maxAmount, setMaxAmount] = useState<number>(1000);
+
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [minAmount, setMinAmount] = useState<number>(0);
+  const [maxAmount, setMaxAmount] = useState<number>(10000);
   const voucherQueryParams = useMemo(() => {
     const params: Record<string, any> = {
       page,
@@ -349,7 +350,7 @@ const VouchersList = ({
   } = useGetAllVouchersQuery(voucherQueryParams);
 
   const allVouchers = voucherData?.data;
-  const maxVoucherAmount = voucherData?.highestAmount;
+  var maxVoucherAmount = voucherData?.highestAmount;
   const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
   const hasMore = voucherData?.meta?.hasNextPage;
   // const [updateVoucher, { isLoading: isSaving }] = useUpdateVoucherMutation();
@@ -435,11 +436,14 @@ const VouchersList = ({
 
   // Calculate min/max amounts from data
   const amountRange = useMemo(() => {
+    if (!allVouchers || allVouchers.length === 0) return { min: 0, max: 0 };
+
+    const amounts = allVouchers.map((voucher: any) => voucher.amount);
     return {
-      min: 0, // assuming the minimum is 0, adjust if needed
-      max: maxVoucherAmount,
+      min: Math.min(...amounts),
+      max: Math.max(...amounts),
     };
-  }, [maxVoucherAmount]);
+  }, [allVouchers]);
 
   const isExpiringSoon = (date: string) => {
     const daysUntilExpiry = Math.floor(
@@ -596,7 +600,7 @@ const VouchersList = ({
             onClick={handleExportCSVVouchers}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               isDark
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                ? "border-gray-700   text-gray-300"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
             }`}
             title={t("downloadCSV")}
@@ -612,7 +616,7 @@ const VouchersList = ({
       {/* Filters Section */}
       {showFilters && (
         <div
-          className={` py-4 border-b transition-colors ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-200"}`}
+          className={` py-4 border-b transition-colors ${isDark ? " border-gray-800" : "bg-gray-50 border-gray-200"}`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Status Filter */}
@@ -676,13 +680,13 @@ const VouchersList = ({
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-800 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 />
                 <input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-900 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
+                  className={`w-1/2 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-colors ${isDark ? "bg-gray-800 border-gray-700 text-gray-100" : "bg-white border-gray-300 text-gray-900"}`}
                 />
               </div>
             </div>
@@ -698,8 +702,8 @@ const VouchersList = ({
                 <div className="relative pt-3">
                   <input
                     type="range"
-                    min={amountRange.min}
-                    max={amountRange.max}
+                    min={0}
+                    max={maxVoucherAmount}
                     value={minAmount}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
@@ -709,8 +713,8 @@ const VouchersList = ({
                   />
                   <input
                     type="range"
-                    min={amountRange.min}
-                    max={amountRange.max}
+                    min={0}
+                    max={maxVoucherAmount}
                     value={maxAmount}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
@@ -724,8 +728,8 @@ const VouchersList = ({
                     <div
                       className="absolute h-2 bg-teal-500 rounded-full"
                       style={{
-                        left: `${((minAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
-                        right: `${100 - ((maxAmount - amountRange.min) / (amountRange.max - amountRange.min)) * 100}%`,
+                        left: `${(minAmount / maxVoucherAmount) * 100}%`,
+                        right: `${100 - (maxAmount / maxVoucherAmount) * 100}%`,
                       }}
                     />
                   </div>

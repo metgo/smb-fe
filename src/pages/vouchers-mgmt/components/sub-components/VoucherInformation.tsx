@@ -42,7 +42,7 @@ const VoucherInformation = ({
           onChange={(e) => handleCampaignChange(e.target.value)}
           className={`w-full px-3 py-2 border rounded-lg ${
             isDark
-              ? "bg-gray-800 text-white border-gray-600"
+              ? " text-white border-gray-600"
               : "bg-white text-black border-gray-300"
           }`}
         >
@@ -64,7 +64,6 @@ const VoucherInformation = ({
             {t("voucher_amount")}
           </label>
           <input
-            type="number"
             value={formData.amount}
             onChange={(e) =>
               setFormData((prev: any) => ({
@@ -75,7 +74,7 @@ const VoucherInformation = ({
             }
             className={`w-full px-3 py-2 border rounded-lg ${
               isDark
-                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                ? " text-white border-gray-600 placeholder-gray-400"
                 : "bg-white text-black border-gray-300"
             }`}
           />
@@ -103,7 +102,7 @@ const VoucherInformation = ({
             }
             className={`w-full px-3 py-2 border rounded-lg ${
               isDark
-                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                ? " text-white border-gray-600 placeholder-gray-400"
                 : "bg-white text-black border-gray-300"
             }`}
           />
@@ -135,7 +134,7 @@ const VoucherInformation = ({
               onChange={(e) => handlePurchaserEmailChange(e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg ${
                 isDark
-                  ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                  ? " text-white border-gray-600 placeholder-gray-400"
                   : "bg-white text-black border-gray-300"
               }`}
             />
@@ -161,7 +160,7 @@ const VoucherInformation = ({
               }
               className={`w-full px-3 py-2 border rounded-lg ${
                 isDark
-                  ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                  ? " text-white border-gray-600 placeholder-gray-400"
                   : "bg-white text-black border-gray-300"
               }`}
             />
@@ -184,7 +183,7 @@ const VoucherInformation = ({
               }
               className={`w-full px-3 py-2 border rounded-lg ${
                 isDark
-                  ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                  ? " text-white border-gray-600 placeholder-gray-400"
                   : "bg-white text-black border-gray-300"
               }`}
             />

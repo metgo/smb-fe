@@ -32,7 +32,7 @@ const VoucherReview = ({ formData, campaigns, xlsValidation, t }: Props) => {
 
       <div
         className={`rounded-lg p-4 space-y-4 border ${
-          isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+          isDark ? " border-gray-800" : "bg-white border-gray-200"
         }`}
       >
         {/* Campaign */}

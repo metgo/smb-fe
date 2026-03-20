@@ -68,7 +68,7 @@ const VoucherSuccess = ({
       {/* Voucher Table */}
       <div
         className={`rounded-lg overflow-hidden border ${
-          isDark ? "bg-gray-800 border-gray-800" : "bg-white border-gray-200"
+          isDark ? " border-gray-800" : "bg-white border-gray-200"
         }`}
       >
         <div className="overflow-x-auto max-h-96 overflow-y-auto">
@@ -76,7 +76,7 @@ const VoucherSuccess = ({
             <thead
               className={`sticky top-0 border-b ${
                 isDark
-                  ? "bg-gray-800 border-gray-700"
+                  ? " border-gray-700"
                   : "bg-gray-50 border-gray-200"
               }`}
             >
@@ -131,7 +131,11 @@ const VoucherSuccess = ({
                     >
                       {item.amount ? `₪${item.amount}` : "-"}
                     </td>
-                    <td>{item?.paymentStatus || "-"}</td>
+                    <td
+                      className={`${isDark ? "text-gray-400" : "text-gray-600"} px-4 py-3 text-sm`}
+                    >
+                      {item?.paymentStatus || "-"}
+                    </td>
                   </tr>
                 ))
               )}
@@ -146,8 +150,8 @@ const VoucherSuccess = ({
           onClick={handleDownload}
           className={`flex-1 px-4 py-2 rounded-lg border flex items-center justify-center gap-2 transition-colors ${
             isDark
-              ? "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              ? " border-gray-700 text-gray-300 "
+              : "bg-white border-gray-300 text-gray-700 "
           }`}
         >
           <Download className="w-4 h-4" />
