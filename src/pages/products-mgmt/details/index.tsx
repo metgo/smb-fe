@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Edit,
   Package,
@@ -9,6 +9,9 @@ import {
   ArrowRight,
   ArrowUpDown,
   Copy,
+  Eye,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -49,6 +52,8 @@ export default function ProductDetailsPage() {
 
   const { isDark, language, isRTL } = useThemeClasses();
   const [updateProduct] = useUpdateProductMutation();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [searchParams] = useSearchParams();
 
@@ -58,10 +63,28 @@ export default function ProductDetailsPage() {
     isLoading,
     refetch,
   } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
+  console.log("🚀 ~ ProductDetailsPage ~ product:", product);
   //individual stats
   const { data: productStats, isLoading: isStatsLoading } =
     useGetProductStatsByIdQuery(productId ?? skipToken);
 
+  const onViewBusiness = () => {
+    navigate(
+      `${routes.businessDetails}?businessId=${product?.businessId?._id}`,
+    );
+  };
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
@@ -222,24 +245,85 @@ export default function ProductDetailsPage() {
                   status={product?.status}
                   handleStatusChange={onStatusChangeHandler}
                 />
-                <button
-                  onClick={() => handleEdit(IOpMode.DUPLICATE)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                  } transition-colors`}
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>{t("duplicate") || "Duplicate"}</span>
-                </button>
-                <button
-                  onClick={() => handleEdit(IOpMode.EDIT)}
-                  className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>{t("edit") || "Edit"}</span>
-                </button>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                    className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                    }`}
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                    <span className="text-sm font-medium">Actions</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div
+                      className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
+                      {/* Duplicate */}
+                      <button
+                        onClick={() => {
+                          handleEdit(IOpMode.DUPLICATE);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-gray-300 hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Copy className="w-4 h-4 shrink-0" />
+                        {t("duplicate") || "Duplicate"}
+                      </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => {
+                          handleEdit(IOpMode.EDIT);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-indigo-400 hover:bg-gray-800"
+                            : "text-indigo-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Edit className="w-4 h-4 shrink-0" />
+                        {t("edit") || "Edit"}
+                      </button>
+
+                      {/* Divider */}
+                      <div
+                        className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                      />
+
+                      {/* View Business */}
+                      <button
+                        onClick={() => {
+                          onViewBusiness();
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-gray-300 hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Eye className="w-4 h-4 shrink-0" />
+                        {t("view_business")}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             </div>
           </div>
