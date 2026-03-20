@@ -63,7 +63,6 @@ export default function ProductDetailsPage() {
     isLoading,
     refetch,
   } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
-  console.log("🚀 ~ ProductDetailsPage ~ product:", product);
   //individual stats
   const { data: productStats, isLoading: isStatsLoading } =
     useGetProductStatsByIdQuery(productId ?? skipToken);
@@ -269,22 +268,6 @@ export default function ProductDetailsPage() {
                           : "bg-white border-gray-200"
                       }`}
                     >
-                      {/* Duplicate */}
-                      <button
-                        onClick={() => {
-                          handleEdit(IOpMode.DUPLICATE);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                          isDark
-                            ? "text-gray-300 hover:bg-gray-800"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <Copy className="w-4 h-4 shrink-0" />
-                        {t("duplicate") || "Duplicate"}
-                      </button>
-
                       {/* Edit */}
                       <button
                         onClick={() => {
@@ -299,6 +282,22 @@ export default function ProductDetailsPage() {
                       >
                         <Edit className="w-4 h-4 shrink-0" />
                         {t("edit") || "Edit"}
+                      </button>
+
+                      {/* Duplicate */}
+                      <button
+                        onClick={() => {
+                          handleEdit(IOpMode.DUPLICATE);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                          isDark
+                            ? "text-gray-300 hover:bg-gray-800"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Copy className="w-4 h-4 shrink-0" />
+                        {t("duplicate") || "Duplicate"}
                       </button>
 
                       {/* Divider */}

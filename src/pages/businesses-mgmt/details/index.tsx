@@ -320,6 +320,22 @@ export default function BusinessDetailsPage() {
                       : "bg-white border-gray-200"
                   }`}
                 >
+                  {/* Edit */}
+                  <button
+                    onClick={() => {
+                      handleMutateData(IOpMode.EDIT);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
+                        ? "text-teal-400 hover:bg-gray-800"
+                        : "text-teal-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Edit className="w-4 h-4 shrink-0" />
+                    {t("edit")}
+                  </button>
+
                   {/* Change Owner */}
                   {!isTraveller && (
                     <button
@@ -338,23 +354,9 @@ export default function BusinessDetailsPage() {
                     </button>
                   )}
 
-                  {/* Edit */}
-                  <button
-                    onClick={() => {
-                      handleMutateData(IOpMode.EDIT);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-teal-400 hover:bg-gray-800"
-                        : "text-teal-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Edit className="w-4 h-4 shrink-0" />
-                    {t("edit")}
-                  </button>
-
-                  {/* Create Product */}
+                  <div
+                    className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                  />
                   {onCreateProduct && (
                     <button
                       onClick={() => {
@@ -371,13 +373,6 @@ export default function BusinessDetailsPage() {
                       {t("create_product")}
                     </button>
                   )}
-
-                  {/* Divider before View Product */}
-                  <div
-                    className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
-                  />
-
-                  {/* View Product */}
                   <button
                     onClick={() => {
                       onViewProduct();
