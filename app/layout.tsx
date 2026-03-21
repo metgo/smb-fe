@@ -9,6 +9,7 @@ import {
   GOOGLE_ANALYTIC_ID,
   GOOGLE_SITE_VERIFICATION_CODE,
   GOOGLE_TAG_MANAGER_ID,
+  CODE,
 } from "@/constant/envConstants";
 import Providers from "@/components/wrappers/Providers";
 import { getFavicon, getThumbnail } from "@/constant/images";
@@ -74,7 +75,11 @@ export default function RootLayout({ children }: ReactChildNode) {
             </SiteInfoClientProvider>
           </Providers>
         </Suspense>
-        <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js"></script>
+        {CODE === "KEFBA" ? (
+          <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-80734/init.js" />
+        ) : (
+          <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js" />
+        )}
       </body>
     </html>
   );

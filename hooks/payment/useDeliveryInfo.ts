@@ -38,7 +38,7 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
         name: item.name,
         imageSrc: item.image || "",
         alt: item.alt || "",
-        quantity: 1,
+        quantity: item.quantity || 1,
         itemType: item.itemType,
         deliveryMethod: isTicket ? "pick_up" : "",
         deliveryPickupLocation: isTicket ? "pick_up" : "",

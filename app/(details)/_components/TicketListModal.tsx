@@ -23,6 +23,7 @@ interface TicketListModalProps {
   setIsOpen: (isOpen: boolean) => void;
   ticketIds: ITicketIds[];
   eventId: string;
+  eventName: string;
 }
 
 interface ISelectedTickets {
@@ -51,6 +52,7 @@ const TicketListModal = ({
   setIsOpen,
   ticketIds,
   eventId,
+  eventName,
 }: TicketListModalProps) => {
   const router = useRouter();
   const { setCartItem } = useCartStore();
@@ -187,8 +189,9 @@ const TicketListModal = ({
       className="max-w-3xl w-full"
     >
       <div className="p-10 max-sm:px-4 max-sm:py-6">
-        <h1 className="font-bold text-2xl text-center">
-          {events.eventTicketTitle}
+        <h1 className="font-bold text-2xl text-center space-x-1">
+          <span>{events.ticketPruchageFor}</span>
+          <span>{eventName}</span>
         </h1>
 
         <div className="mt-6 pb-4 max-h-[60vh] overflow-y-auto space-y-3">

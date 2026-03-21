@@ -109,6 +109,7 @@ export const events = {
   chooseCard: "בחרו כרטיס",
   eventDetails: "פרטי האירוע",
   eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
+  ticketPruchageFor: "רכוש כרטיסים ל",
   eventTicketNotFound: "כרטיס האירוע לא נמצא",
   remaining: "נותרו",
   maxPerUser: "מקסימום למשתמש",
