@@ -29,7 +29,7 @@ const IntroVideoWrapper = () => {
   }
 
   // Render only the appropriate video component
-  return isMobile ? <IntroVideoMobile /> : <IntroVideo />;
+  return isMobile ? <IntroVideoMobile /> : <IntroVideo isMobile />;
 };
 
 export default IntroVideoWrapper;
