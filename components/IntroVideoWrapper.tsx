@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import IntroVideo from "./IntroVideo";
 import IntroVideoMobile from "./IntroVideo.mobile";
 import { getThumbnail } from "@/constant/images";
@@ -29,7 +30,7 @@ const IntroVideoWrapper = () => {
   }
 
   // Render only the appropriate video component
-  return isMobile ? <IntroVideoMobile /> : <IntroVideo isMobile />;
+  return isMobile ? <IntroVideoMobile /> : <IntroVideo isMobile={false} />;
 };
 
 export default IntroVideoWrapper;
