@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
 import { misc } from "@/constant/hebrew";
@@ -17,16 +17,14 @@ import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
+import { filterBusinesses } from "@/lib/helpers";
 import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface FeedLayoutProps {
-  isAllClear: boolean;
   selectedFiltersIds: any;
 }
 
-const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
-  const observerTarget = useRef<HTMLDivElement>(null);
-
+const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   /* ---------------------- Global Stores ---------------------- */
   const {
     activeFilterTab,
@@ -54,69 +52,37 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
     queryFn: () => getAllFilters(selectedFiltersIds),
   });
 
-  const {
-    data: infiniteData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["feeds", selectedFiltersIds],
-    staleTime: 0,
-    queryFn: ({ pageParam = 1 }) =>
-      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  const { data: infiniteData } = useQuery({
+    queryKey: ["feeds"],
+    queryFn: () => getFeedItems(),
   });
 
-  /* ---------------------- Memoized Data ---------------------- */
-  const businesses = useMemo<FeedItem[]>(() => {
-    return infiniteData?.pages.flatMap((page) => page.data) ?? [];
-  }, [infiniteData?.pages]);
-
-  const totalBusiness = businesses.length;
-
-  const visibleFeedItems = useMemo(() => {
-    if (businesses.length === 0) return [];
-
-    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return businesses.filter((item) =>
-        favoriteFeedItemIds.includes(item._id),
-      );
-    }
-
-    return businesses;
-  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
-
-  /* ---------------------- Filters Hook ---------------------- */
   const {
     appliedFilterCount,
     filteredSubCategories,
     isSelected,
     toggleParam,
     handleResetFilters,
+    filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
+  /* ---------------------- Memoized Data ---------------------- */
 
-  /* ---------------------- Infinite Scroll Observer ---------------------- */
-  useEffect(() => {
-    const target = observerTarget.current;
-    if (!target) return;
+  const businesses = infiniteData?.data || [];
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Guard inside callback — not in effect setup —
-        // so the observer stays attached and fires correctly.
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 },
-    );
+  const filteredBusinesses = filterBusinesses(businesses, filterState);
+  const totalBusiness = filteredBusinesses?.length;
 
-    observer.observe(target);
+  const visibleFeedItems = useMemo(() => {
+    if (filteredBusinesses?.length === 0) return [];
 
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return filteredBusinesses.filter((item) =>
+        favoriteFeedItemIds.includes(item._id),
+      );
+    }
+
+    return filteredBusinesses;
+  }, [filteredBusinesses, showFavoriteFeedItems, favoriteFeedItemIds]);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -150,38 +116,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
         {totalBusiness === 0 ? (
           <NoFeedItemLayout isFilterDrawerOpen />
         ) : (
-          <div className="bg-primary">
-            {renderLayout()}
-
-            {/* Infinite Scroll Trigger + Loading Indicator */}
-            {activeFilterTab === "gallery" && (
-              <>
-                {/* Sentinel element — always rendered while in gallery tab,
-                    visibility controlled by hasNextPage to keep ref stable */}
-                <div ref={observerTarget} className="py-8 text-center">
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center items-center">
-                      <span className="ml-3 text-charcoal">
-                        {misc.feedItemsLoading}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Spacer keeps the sentinel visible for the observer
-                      even when neither loading nor end-of-list message shows */}
-                  {!isFetchingNextPage && hasNextPage && (
-                    <div className="h-10" />
-                  )}
-                </div>
-
-                {!hasNextPage && totalBusiness > 10 && (
-                  <div className="py-8 text-center text-charcoal">
-                    {misc.noMoreItems}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <div className="bg-primary">{renderLayout()}</div>
         )}
 
         {/* Filter Button */}
@@ -199,14 +134,13 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
             )}
           </div>
         )}
-
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>
 
       {/* Filter Drawer */}
       {isFilterDrawerOpen && (
         <FeedFilterDrawer
-          itemCount={infiniteData?.pages?.[0]?.totalData ?? 0}
+          itemCount={infiniteData?.totalData ?? 0}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

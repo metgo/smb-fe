@@ -8,7 +8,6 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 
 import { navigationPathsByServiceType } from "@/lib/utils";
 import { startLoading } from "../wrappers/ProgressBar";
-import { useImagePresent } from "@/hooks/image/useImagePresent";
 import {
   getCityOrCenter,
   getPrimaryCategoryId,
@@ -26,6 +25,7 @@ import {
 import { IconImage } from "../ui";
 import { FaHeart } from "react-icons/fa6";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import { useSingleImagePresent } from "@/hooks/image/useSingleImagePresent";
 
 interface FeedCardProps {
   height: number;
@@ -51,7 +51,7 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
   }, [searchParams]);
 
   // Optimized image and dependency arrays
-  const { images, deps } = useMemo(
+  const { images } = useMemo(
     () => ({
       images: feedItem?.images ?? [],
       deps: [urlParams.categoryId, urlParams.subCategoryId],
@@ -60,13 +60,8 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
   );
 
   // Image loading hook
-  const { isLoading, updatedImageList, inView, containerRef } = useImagePresent(
-    width / height,
-    images,
-    0,
-    deps,
-    INTERSECTION_CONFIG,
-  );
+  const { isLoading, updatedImage, inView, containerRef } =
+    useSingleImagePresent(width / height, images[0], INTERSECTION_CONFIG);
 
   // Animation controls
   const animationControls = useAnimation();
@@ -92,7 +87,7 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
         urlParams.activeCategoryKey || "",
         feedItem.primaryCategoryId!,
       ),
-      currentImage: updatedImageList?.[0],
+      currentImage: updatedImage,
       shouldShowSkeleton: !hasMounted || !inView || isLoading,
       locationText: getCityOrCenter(feedItem?.address),
     }),
@@ -100,7 +95,7 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
       urlParams.activeCategoryKey,
       feedItem.primaryCategoryId,
       feedItem?.address,
-      updatedImageList,
+      updatedImage,
       hasMounted,
       inView,
       isLoading,
@@ -213,7 +208,7 @@ const FeedCardContent = ({
 }) => (
   <div className="relative w-full h-full overflow-hidden">
     {/* Gradient Overlay */}
-    <div className="absolute bottom-0 right-0 h-full w-full bg-gradient-to-tl from-black/80 via-black/40 to-black/20 rounded-b-xl" />
+    <div className="absolute bottom-0 right-0 h-full w-full bg-linear-to-tl from-black/80 via-black/40 to-black/20 rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 px-2 py-4 text-white font-bold w-full">

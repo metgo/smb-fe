@@ -1,4 +1,5 @@
 "use server";
+
 import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
@@ -31,7 +32,7 @@ export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
   isAllClear: boolean = false,
-  limit: number = 100,
+  limit: number = 10,
 ): Promise<BusinessesProps> {
   let baseUrl: string;
 
@@ -93,13 +94,13 @@ export async function getAllFeeds(
   }
 }
 
-export async function getFeedItems(
+export async function getFeedItemsWithFilter(
   page: number = 1,
   filters: FiltersProps,
   isAllClear: boolean = false,
 ): Promise<FeedItemResponse> {
   let baseUrl: string;
-  const limit = 20;
+  const limit = 1000;
 
   if (isAllClear) {
     baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}&page=${page}`;
@@ -159,6 +160,34 @@ export async function getFeedItems(
   }
 }
 
+export async function getFeedItems(): Promise<FeedItemResponse> {
+  let baseUrl: string;
+
+  baseUrl = `${urls.feeds}?campCode=${CODE}`;
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: "GET",
+      next: { revalidate: 60 }, // Cache for 1 minute
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
+    };
+  }
+}
 // ------------------------------------------------------------------------------------------
 
 export async function getAllFilters(filters?: FiltersProps) {

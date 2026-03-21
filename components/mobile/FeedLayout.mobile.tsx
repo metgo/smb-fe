@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
@@ -11,25 +11,22 @@ import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import useGeneralStore from "@/stores/generalStore";
-import { getPresetFilters } from "@/actions/commonActions";
-import { SunsetButton } from "../filter-icon/SunsetButton";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getAllFilters, getFeedItems } from "@/actions/feedActions";
-import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
+import { useQuery } from "@tanstack/react-query";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { getPresetFilters } from "@/actions/commonActions";
+import { filterBusinesses } from "@/lib/helpers";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
   isAllClear: boolean;
 }
 
-const MobileFeedLayout = ({
-  selectedFiltersIds,
-  isAllClear,
-}: MobileFeedLayoutProps) => {
-  const observerTarget = useRef<HTMLDivElement>(null);
+const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
   const { isMobile } = useCommonHook();
 
@@ -66,19 +63,9 @@ const MobileFeedLayout = ({
     queryFn: () => getAllFilters(selectedFiltersIds),
   });
 
-  const {
-    data: infiniteData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    // isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["feeds", selectedFiltersIds],
-    queryFn: ({ pageParam = 1 }) =>
-      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  const { data: infiniteData } = useQuery({
+    queryKey: ["feeds"],
+    queryFn: () => getFeedItems(),
   });
 
   /* ---------------------- Memoized Data ---------------------- */
@@ -89,79 +76,29 @@ const MobileFeedLayout = ({
     isSelected,
     toggleParam,
     handleResetFilters,
+    filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
-  const businesses = useMemo<FeedItem[]>(() => {
-    return infiniteData?.pages?.flatMap((page) => page.data) ?? [];
-  }, [infiniteData?.pages]);
+  const businesses = infiniteData?.data || [];
 
-  const totalBusiness = businesses?.length || 0;
+  const filteredBusinesses = filterBusinesses(businesses, filterState);
 
   const visibleFeedItems = useMemo(() => {
-    if (businesses?.length === 0) return [];
+    if (filteredBusinesses?.length === 0) return [];
 
     if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return businesses?.filter((item) =>
+      return filteredBusinesses?.filter((item) =>
         favoriteFeedItemIds?.includes(item._id),
       );
     }
 
-    return businesses;
-  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
-
-  /* ---------------------- Initial Load Effect ---------------------- */
-  useEffect(() => {
-    // Fetch more data initially if we have very few items
-    if (
-      businesses?.length > 0 &&
-      businesses?.length < 10 &&
-      hasNextPage &&
-      !isFetchingNextPage
-    ) {
-      fetchNextPage();
-    }
-  }, [businesses?.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  /* ---------------------- Infinite Scroll Observer ---------------------- */
-  useEffect(() => {
-    const target = observerTarget.current;
-
-    if (!target || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: "200px", // Start loading 200px before the element is visible
-      },
-    );
-
-    // Check if already in view on mount
-    const rect = target.getBoundingClientRect();
-    const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
-
-    if (isInView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-
-    observer.observe(target);
-
-    return () => {
-      if (target) {
-        observer.unobserve(target);
-      }
-      observer.disconnect();
-    };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    return filteredBusinesses;
+  }, [filteredBusinesses, showFavoriteFeedItems, favoriteFeedItemIds]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
     () =>
-      businesses?.map((item) => ({
+      businesses?.map((item: any) => ({
         id: item._id,
         name: item?.name,
         image: item?.images?.[0]?.image,
@@ -214,35 +151,6 @@ const MobileFeedLayout = ({
         </>
       )}
 
-      {activeFilterTabMobile === "gallery" && (
-        <>
-          {hasNextPage && (
-            <div ref={observerTarget} className="pb-24 pt-10 text-center">
-              {isFetchingNextPage ? (
-                <div className="flex justify-center items-center">
-                  <span className="ml-3 text-black/50">
-                    {misc.feedItemsLoading}
-                  </span>
-                </div>
-              ) : (
-                <button
-                  onClick={() => fetchNextPage()}
-                  className="px-8 py-2 border border-black/60 hover:text-white rounded-lg hover:bg-black/80 transition-colors active:bg-green-700 font-medium"
-                >
-                  {"טען עוד"}
-                </button>
-              )}
-            </div>
-          )}
-
-          {!hasNextPage && totalBusiness > 10 && (
-            <div className="py-8 text-center text-black/50">
-              {misc.noMoreItems}
-            </div>
-          )}
-        </>
-      )}
-
       {/* Bottom Panels */}
       {hideFirstTwoSection && (
         <>
@@ -264,7 +172,7 @@ const MobileFeedLayout = ({
       <div className="bg-black/40">
         {isFilterDrawerOpen && (
           <MobileFeedFilterDrawer
-            itemCount={infiniteData?.pages?.[0]?.totalData ?? 0}
+            itemCount={infiniteData?.totalData ?? 0}
             isOpen={isFilterDrawerOpen}
             setIsOpen={setIsFilterDrawerOpen}
             filters={filters}

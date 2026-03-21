@@ -25,8 +25,8 @@ interface MobileFeedFilterDrawerProps {
   itemCount: number;
   filters: FiltersResponse;
   appliedFilterCount: number;
-  isSelected: (key: string, value: string) => boolean;
-  toggleParam: (key: string, value: string) => void;
+  isSelected: (key: any, value: string) => boolean;
+  toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
   filteredSubCategories: SubCategory[];
 }

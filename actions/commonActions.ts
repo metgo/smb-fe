@@ -120,6 +120,7 @@ export async function getPresetFilters() {
   try {
     const res = await fetch(
       `${urls.defaultFilters}?identifierId=${IdentifierId}`,
+      { next: { revalidate: 300 } }, // Cache for 5 minutes
     );
     if (!res.ok) throw new Error("Failed to fetch preset filters");
     const data = await res.json();

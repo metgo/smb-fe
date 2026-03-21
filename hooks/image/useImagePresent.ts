@@ -36,6 +36,7 @@ export const useImagePresent = (
   const [isLoading, setIsLoading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [inView, setInView] = useState(!enabled);
+
   const [updatedImage, setUpdatedImage] = useState({
     imageUrl: staticImages.placeholder,
     alt: "Business",

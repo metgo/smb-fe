@@ -1,35 +1,28 @@
-# Step 1: Build the app with yarn
+# Step 1: Build the app
 FROM node:22.14.0 AS builder
-
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files to install dependencies
-COPY package.json yarn.lock ./
+# Copy package files
+COPY package.json yarn.lock tsconfig.json ./
 
 # Install dependencies
 RUN yarn
 
-# Copy the rest of the application code
+# Copy source code
 COPY . .
 
-# Build the NetJS app
+# Build the Next.js TypeScript app
 RUN yarn build
 
-# Step 2: Prepare the final image (runtime)
+# Step 2: Runtime image
 FROM node:22.14.0 AS runner
-
-
-# Set working directory
 WORKDIR /app
 
 COPY --from=builder /app .
 
-# expose on the port
-EXPOSE 3001
+# Set environment to production
+ENV NODE_ENV=production
+EXPOSE 3000
 
-
-
-# Run the NextJS app
-CMD yarn start
+# Start Next.js
+CMD ["npm", "start"]

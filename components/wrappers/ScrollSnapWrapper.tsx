@@ -8,10 +8,15 @@ import ScrollIndicator from "../ScrollIndicator";
 
 type Props = {
   children: React.ReactNode[];
-  hasMarketing: boolean;
+  hasMarketing?: boolean;
 };
 
-export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
+export default function ScrollSnapWrapper({
+  children,
+  hasMarketing: hasMarketingProp,
+}: Props) {
+  // Auto-detect marketing from children[1] if not explicitly provided
+  const hasMarketing = hasMarketingProp ?? Boolean(children[1]);
   const firstRef = useRef<HTMLDivElement | null>(null);
   const secondRef = useRef<HTMLDivElement | null>(null);
   const feedRef = useRef<HTMLDivElement | null>(null);
@@ -355,30 +360,36 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
     isFilterDrawerOpen,
   ]);
 
-  // JSX
+  // JSX - Keep video mounted but hidden to prevent canceling video download
   return (
     <>
-      {!hideFirstTwoSection && (
-        <>
-          <div ref={firstRef} className="h-screen">
-            {children[0]}
-            <ScrollIndicator
-              hasMarketing={hasMarketing}
-              onClick={() => goToSection(hasMarketing ? "second" : "feed")}
-            />
-          </div>
+      <div
+        ref={firstRef}
+        className={`h-screen ${hideFirstTwoSection ? "hidden" : ""}`}
+      >
+        {children[0]}
+        {!hideFirstTwoSection && (
+          <ScrollIndicator
+            hasMarketing={hasMarketing}
+            onClick={() => goToSection(hasMarketing ? "second" : "feed")}
+          />
+        )}
+      </div>
 
-          {hasMarketing && (
-            <div ref={secondRef} className="relative h-screen">
-              {children[1]}
-              <ScrollIndicator
-                isSecond
-                height={height}
-                onClick={() => goToSection("feed")}
-              />
-            </div>
+      {hasMarketing && (
+        <div
+          ref={secondRef}
+          className={`relative h-screen ${hideFirstTwoSection ? "hidden" : ""}`}
+        >
+          {children[1]}
+          {!hideFirstTwoSection && (
+            <ScrollIndicator
+              isSecond
+              height={height}
+              onClick={() => goToSection("feed")}
+            />
           )}
-        </>
+        </div>
       )}
 
       <div
