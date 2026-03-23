@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useRef, type FC } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper } from "@/components/form-fields";

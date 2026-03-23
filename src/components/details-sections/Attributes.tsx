@@ -56,7 +56,6 @@ const Attributes: FC<AttributesProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
-  opMode,
   editData,
   selectedFormLanguage,
 }) => {
