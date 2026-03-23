@@ -170,13 +170,13 @@ export default function CreateProductWizard({
 
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
-    name: "",
+    nameEn: "",
     nameHe: "",
     nameAr: "",
     shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescription: "",
+    fullDescriptionEn: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     type: "",
@@ -546,15 +546,16 @@ export default function CreateProductWizard({
       case 2:
         return (
           <Attributes
-            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            name={formData.nameHe || formData.nameEn || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
               formData.fullDescriptionEn ||
               formData.fullDescriptionAr
             }
-            productId={productId}
             {...commonProps}
+            editData={product}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
+            opMode={opMode}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}

@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useRef, useState, type FC } from "react";
+import { useEffect, useRef, type FC } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper } from "@/components/form-fields";
@@ -43,6 +43,8 @@ interface BusinessBasicInfosProps {
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   businessAssociatedWebsites?: IAssociatedWebsiteIds[];
+  selectedFormLanguage: Language;
+  setSelectedFormLanguage: (v: Language) => void;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -59,12 +61,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
+  selectedFormLanguage,
+  setSelectedFormLanguage,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { t: tc } = useTranslation("common");
   const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
+
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   /* -------- Helpers -------- */
