@@ -61,7 +61,8 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
-
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("he");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
@@ -563,6 +564,8 @@ export default function CreateBusinessWizard({
         return (
           <BusinessBasicInfos
             {...commonProps}
+            selectedFormLanguage={selectedFormLanguage}
+            setSelectedFormLanguage={setSelectedFormLanguage}
             businessId={businessId}
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
@@ -589,6 +592,7 @@ export default function CreateBusinessWizard({
       case 4:
         return (
           <Attributes
+            selectedFormLanguage={selectedFormLanguage}
             editData={editData}
             {...commonProps}
             name={formData.nameEn || formData.nameHe || formData.nameAr}
@@ -597,6 +601,7 @@ export default function CreateBusinessWizard({
               formData.fullDescriptionEn ||
               formData.fullDescriptionAr
             }
+            formData={formData}
             opMode={opMode}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}

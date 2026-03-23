@@ -170,13 +170,13 @@ export default function CreateProductWizard({
 
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
-    name: "",
+    nameEn: "",
     nameHe: "",
     nameAr: "",
     shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescription: "",
+    fullDescriptionEn: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     type: "",

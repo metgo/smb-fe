@@ -43,6 +43,8 @@ interface BusinessBasicInfosProps {
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   businessAssociatedWebsites?: IAssociatedWebsiteIds[];
+  selectedFormLanguage: Language;
+  setSelectedFormLanguage: (v: Language) => void;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -59,12 +61,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
+  selectedFormLanguage,
+  setSelectedFormLanguage,
 }) => {
   const { isSuperadmin } = useUserRoles();
   const { t: tc } = useTranslation("common");
   const { borderColor, isDark, bgTertiary, textPrimary } = useThemeClasses();
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
+
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   /* -------- Helpers -------- */

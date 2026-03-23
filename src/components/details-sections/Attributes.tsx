@@ -5,6 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
+import { getLngWiseStr } from "@/helpers";
 
 interface Tag {
   en: string;
@@ -13,6 +14,12 @@ interface Tag {
 }
 
 interface AttributesFormData {
+  nameEn: string;
+  nameHe: string;
+  nameAr: string;
+  fullDescriptionEn: string;
+  fullDescriptionHe: string;
+  fullDescriptionAr: string;
   primaryCategory: string;
   serviceType: string;
   tags: Tag[];
@@ -30,7 +37,7 @@ interface AttributesProps {
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
   editData?: any;
-
+  selectedFormLanguage: Language;
   errors: FormErrors;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
@@ -51,12 +58,40 @@ const Attributes: FC<AttributesProps> = ({
   setAccessiblitiesId,
   opMode,
   editData,
+  selectedFormLanguage,
 }) => {
-  console.log("🚀 ~ isFormDirty ~ editData:", editData?.name);
-  console.log("🚀 ~ isFormDirty ~ name:", name);
+  const currentName = getLngWiseStr(
+    selectedFormLanguage,
+    formData?.nameEn,
+    formData?.nameHe,
+    formData?.nameAr,
+  );
+  const currentDescription = getLngWiseStr(
+    selectedFormLanguage,
+    formData?.fullDescriptionEn,
+    formData?.fullDescriptionHe,
+    formData?.fullDescriptionAr,
+  );
 
-  const isFormDirty = () => {
-    return editData?.name !== name || editData?.description !== description;
+  const originalName = getLngWiseStr(
+    selectedFormLanguage,
+    editData?.name,
+    editData?.nameHe,
+    editData?.nameAr,
+  );
+
+  const originalDescription = getLngWiseStr(
+    selectedFormLanguage,
+    editData?.description,
+    editData?.descriptionHe,
+    editData?.descriptionAr,
+  );
+
+  const isNameChanged = () => {
+    return currentName !== originalName;
+  };
+  const isDescriptionChanged = () => {
+    return currentDescription !== originalDescription;
   };
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
@@ -100,10 +135,26 @@ const Attributes: FC<AttributesProps> = ({
   /* ---------------- Auto Generate Tags ---------------- */
 
   useEffect(() => {
-    if (opMode === "EDIT" && !isFormDirty() && formData.tags.length > 0) return;
+    const currentName = getLngWiseStr(
+      selectedFormLanguage,
+      formData?.nameEn,
+      formData?.nameHe,
+      formData?.nameAr,
+    );
+    const currentDescription = getLngWiseStr(
+      selectedFormLanguage,
+      formData?.fullDescriptionEn,
+      formData?.fullDescriptionHe,
+      formData?.fullDescriptionAr,
+    );
 
-    if (!name && !description) return;
-    getGeneratedTags({ name, description }).then((res: any) => {
+    if (!isNameChanged() && !isDescriptionChanged()) return;
+    if (!currentName && !currentDescription) return;
+
+    getGeneratedTags({
+      name: currentName,
+      description: currentDescription,
+    }).then((res: any) => {
       if (res?.data?.length) {
         const newTags: Tag[] = res.data
           .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
