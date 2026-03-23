@@ -1,8 +1,15 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { type FC } from "react";
-import { AlignLeft, ExternalLink, FileText, Globe } from "lucide-react";
-
+import { useState } from "react";
+import {
+  AlignLeft,
+  ExternalLink,
+  FileText,
+  Globe,
+  QrCodeIcon,
+} from "lucide-react";
+import { QRWebsiteModal } from "@/components/shared/QRWebsiteModal";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
@@ -31,22 +38,13 @@ interface BusinessInfoDetailsProps {
   business: Business;
 }
 
-// const qrSites = [
-//   { id: "tav8", name: "TAV8" },
-//   { id: "negevtime", name: "NegevTime" },
-//   { id: "visitnegev", name: "Visit Negev" },
-//   { id: "tourism-il", name: "Tourism IL" },
-//   { id: "google-business", name: "Google My Business" },
-// ];
-
 /* ---------- Component ---------- */
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   const { isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
-  // const [_showQRDropdown, setShowQRDropdown] = useState(false);
-
+  const [selectedWebsite, setSelectedWebsite] = useState<any | null>(null);
   const handleWebsiteClick = (website: any) => {
     if (website.url) {
       window.open(website.url, "_blank");
@@ -56,40 +54,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       duration: 2000,
     });
   };
-
-  // const handleQRDownload = (site: (typeof qrSites)[0]) => {
-  //   toast.success(t("qr_code_downloaded"), {
-  //     description: t(`qr_code_download_description, ${site.name} `),
-  //     duration: 2000,
-  //   });
-  //   setShowQRDropdown(false);
-
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = 300;
-  //   canvas.height = 300;
-  //   const ctx = canvas.getContext("2d");
-  //   if (ctx) {
-  //     ctx.fillStyle = "white";
-  //     ctx.fillRect(0, 0, 300, 300);
-  //     ctx.fillStyle = "black";
-  //     for (let i = 0; i < 10; i++) {
-  //       for (let j = 0; j < 10; j++) {
-  //         if (Math.random() > 0.5) ctx.fillRect(i * 30, j * 30, 28, 28);
-  //       }
-  //     }
-
-  //     canvas.toBlob((blob) => {
-  //       if (blob) {
-  //         const url = URL.createObjectURL(blob);
-  //         const a = document.createElement("a");
-  //         a.href = url;
-  //         a.download = `${business}-${site.id}-qr-code.png`;
-  //         a.click();
-  //         URL.revokeObjectURL(url);
-  //       }
-  //     });
-  //   }
-  // };
 
   return (
     <div className="space-y-6">
@@ -113,7 +77,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         iconBgClass={isDark ? "bg-blue-500/20" : "bg-blue-100"}
         isDark={isDark}
       />
-
       {/* Full Description */}
       <DescriptionCard
         title={t("full_description")}
@@ -135,7 +98,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
         isDark={isDark}
         preWrap={true} // preserves line breaks
       />
-
       {/* Website Connections */}
       {business?.associatedWebsites &&
         business?.associatedWebsites.length > 0 && (
@@ -147,7 +109,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
                 : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
             )}
           >
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-5">
               <div
                 className={clsx(
                   "p-2 rounded-lg",
@@ -176,8 +138,8 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
                     isDark ? "text-gray-400" : "text-gray-600",
                   )}
                 >
-                  {business?.associatedWebsites.length}{" "}
-                  {business?.associatedWebsites.length === 1
+                  {business.associatedWebsites.length}{" "}
+                  {business.associatedWebsites.length === 1
                     ? "website"
                     : "websites"}{" "}
                   connected
@@ -185,127 +147,80 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {business?.associatedWebsites?.map(
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+              {business.associatedWebsites.map(
                 (website: any, index: number) => (
-                  <button
+                  <div
                     key={index}
-                    onClick={() => handleWebsiteClick(website)}
                     className={clsx(
-                      "group relative flex items-center gap-3 px-4 py-3 border rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
+                      "flex flex-col items-center text-center rounded-xl border p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
                       isDark
-                        ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 hover:bg-gray-900"
-                        : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100",
+                        ? "bg-gray-900/50 border-gray-700 hover:border-gray-600"
+                        : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100/60",
                     )}
-                    title={`Open ${website.name}`}
                   >
-                    <div
-                      className={clsx(
-                        "p-2 rounded-lg",
-                        isDark ? "bg-gray-800" : "bg-gray-100",
-                      )}
+                    {/* icon + name + arrow */}
+                    <button
+                      onClick={() => handleWebsiteClick(website)}
+                      className="group  flex w-full items-center justify-between gap-3 px-2 py-2.5 rounded-lg transition-colors"
+                      title={`Open ${website.name}`}
                     >
-                      <ImageWithFallback
-                        src={website?.logo || website?.url}
-                        alt={website?.name}
-                        className="w-6 h-6 object-contain"
-                      />
-                    </div>
-                    <span
-                      className={clsx(
-                        "font-medium text-sm flex-1 text-left",
-                        isDark ? "text-gray-200" : "text-gray-800",
-                      )}
-                    >
-                      {website.name}
-                    </span>
-                    <ExternalLink
-                      className={clsx(
-                        "w-4 h-4 transition-all duration-200",
-                        isDark
-                          ? "text-gray-500 group-hover:text-blue-400"
-                          : "text-gray-400 group-hover:text-blue-600",
-                      )}
-                    />
-                  </button>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                          className={clsx(
+                            "p-2 rounded-lg shrink-0",
+                            isDark ? "bg-gray-800" : "bg-gray-100",
+                          )}
+                        >
+                          <ImageWithFallback
+                            src={website?.logo || website?.url}
+                            alt={website?.name}
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+
+                        <span
+                          className={clsx(
+                            "font-medium text-sm truncate text-left flex-1",
+                            isDark ? "text-gray-200" : "text-gray-800",
+                          )}
+                        >
+                          {website.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedWebsite(website);
+                          }}
+                          className={clsx(
+                            "w-4 h-4 shrink-0 transition-colors duration-200",
+                            isDark
+                              ? "text-gray-500 group-hover:text-blue-400"
+                              : "text-gray-400 group-hover:text-blue-600",
+                          )}
+                        >
+                          <QrCodeIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <ExternalLink
+                            className={clsx(
+                              "w-4 h-4 shrink-0 transition-colors duration-200",
+                              isDark
+                                ? "text-gray-500 group-hover:text-blue-400"
+                                : "text-gray-400 group-hover:text-blue-600",
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </button>
+                  </div>
                 ),
               )}
             </div>
           </div>
         )}
-
-      {/* QR Code Download */}
-      {/* <div
-        className={`p-4 rounded-lg border ${
-          isDark
-            ? "bg-gray-800/30 border-gray-700"
-            : "bg-gray-50 border-gray-200"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <h3
-            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("download_qr_codes")}
-          </h3>
-          <div className="relative">
-            <button
-              onClick={() => setShowQRDropdown(!showQRDropdown)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-                isDark
-                  ? "bg-gray-800 border-gray-600 hover:bg-gray-700 text-gray-300"
-                  : "bg-white border-gray-300 hover:bg-gray-50 text-gray-700"
-              }`}
-            >
-              <Download className="w-4 h-4" />
-              <span className="text-sm">{t("download_qr")}</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${showQRDropdown ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {showQRDropdown && (
-              <div
-                className={`absolute right-0 top-full mt-2 w-64 rounded-lg shadow-lg border z-10 ${
-                  isDark
-                    ? "bg-gray-800 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <div
-                  className={`p-2 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
-                >
-                  <p
-                    className={`text-xs px-2 py-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("select_site_for_qr")}
-                  </p>
-                </div>
-                <div className="p-2 max-h-64 overflow-y-auto">
-                  {qrSites.map((site) => (
-                    <button
-                      key={site.id}
-                      onClick={() => handleQRDownload(site)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${
-                        isDark
-                          ? "hover:bg-gray-700 text-gray-300"
-                          : "hover:bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <Download className="w-4 h-4 text-teal-600" />
-                      {site.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}>
-          {t("qr_code_description")}
-        </p>
-      </div> */}
-
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
         <div
@@ -321,7 +236,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           </p>
         </div>
       )}
-
       {/* Rejection Note */}
       {business?.status === "rejected" && business?.rejectionNote && (
         <div
@@ -337,6 +251,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           </p>
         </div>
       )}
+      <QRWebsiteModal
+        open={!!selectedWebsite}
+        website={selectedWebsite}
+        setSelectedWebsite={setSelectedWebsite}
+        isDark={isDark}
+      />{" "}
     </div>
   );
 };

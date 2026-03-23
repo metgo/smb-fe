@@ -300,5 +300,8 @@
   "role": "Role",
   "viewer_read_only": "Viewer (Read Only)",
   "admin": "Admin",
-  "user_not_in_system_alert": "is not in our system. Please provide their information to send an invitation."
+  "user_not_in_system_alert": "is not in our system. Please provide their information to send an invitation.",
+  "download": "Download QR Code",
+  "scanToVisit": "Scan to visit",
+  "last_active": "Last Active"
 }
