@@ -132,7 +132,6 @@ const Attributes: FC<AttributesProps> = ({
     }) ?? [];
 
   /* ---------------- Auto Generate Tags ---------------- */
-
   useEffect(() => {
     const currentName = getLngWiseStr(
       selectedFormLanguage,
@@ -140,6 +139,7 @@ const Attributes: FC<AttributesProps> = ({
       formData?.nameHe,
       formData?.nameAr,
     );
+
     const currentDescription = getLngWiseStr(
       selectedFormLanguage,
       formData?.fullDescriptionEn,
@@ -147,14 +147,23 @@ const Attributes: FC<AttributesProps> = ({
       formData?.fullDescriptionAr,
     );
 
-    if (!isNameChanged() && !isDescriptionChanged()) return;
     if (!currentName && !currentDescription) return;
+
+    // The two conditions when api call
+    const noTagsYet = !formData?.tags?.length;
+    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
+
+    if (!noTagsYet && !nameOrDescChanged) {
+      return;
+    }
 
     getGeneratedTags({
       name: currentName,
       description: currentDescription,
-    }).then((res: any) => {
-      if (res?.data?.length) {
+    })
+      .then((res: any) => {
+        if (!res?.data?.length) return;
+
         const newTags: Tag[] = res.data
           .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
           .map((tag: Tag) => ({
@@ -169,8 +178,10 @@ const Attributes: FC<AttributesProps> = ({
             tags: [...formData.tags, ...newTags],
           });
         }
-      }
-    });
+      })
+      .catch((err) => {
+        console.error("Tag generation failed:", err);
+      });
   }, [name, description]);
 
   /* ---------------- Handlers ---------------- */
