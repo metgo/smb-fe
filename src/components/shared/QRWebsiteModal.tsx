@@ -30,6 +30,38 @@ async function toDataURL(url: string): Promise<string> {
   });
 }
 
+// Draws an image with rounded corners onto a canvas and returns a data URL
+function toRoundedDataURL(
+  src: string,
+  size: number,
+  radius: number,
+): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, 0, 0, size, size);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.src = src;
+  });
+}
+
 export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
   open,
   website,
@@ -44,6 +76,7 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
     setLogoDataUrl(null); // reset on website change
 
     toDataURL(website.logo)
+      .then((url) => toRoundedDataURL(url, 50, 20))
       .then(setLogoDataUrl)
       .catch(() => setLogoDataUrl(null)); // fall back to no logo on error
   }, [website?.logo]);
@@ -80,7 +113,12 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
             {website.name}
           </h3>
 
-          <div className={clsx("p-5 inline-block mx-auto")}>
+          <div
+            className={clsx(
+              "p-5 inline-block mx-auto rounded-2xl border-2",
+              isDark ? "border-gray-600" : "border-gray-200",
+            )}
+          >
             <QRCodeCanvas
               id={`qr-canvas-${website.name}`}
               value={website.url || ""}
@@ -120,12 +158,14 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
 
           <p
             className={clsx(
-              "text-sm pt-2",
+              "text-sm ",
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
             {t("scanToVisit")}{" "}
-            <span className="font-medium">{new URL(website.url).hostname}</span>
+            <span className="font-bold text-blue-500 underline">
+              {new URL(website.url).hostname}
+            </span>
           </p>
         </div>
       </div>

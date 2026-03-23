@@ -206,8 +206,16 @@ export default function CreateProductWizard({
   });
 
   const initialFormData = useRef(formData);
+  const initialAccessibilitiesId = useRef<string[]>([]);
+  const initialGroupTypesId = useRef<string[]>([]);
   const isFormDirty = () => {
-    return JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
+    return (
+      JSON.stringify(formData) !== JSON.stringify(initialFormData.current) ||
+      JSON.stringify(selectedAccessiblitiesId) !==
+        JSON.stringify(initialAccessibilitiesId.current) ||
+      JSON.stringify(selectedGroupTypesId) !==
+        JSON.stringify(initialGroupTypesId.current)
+    );
   };
 
   useEffect(() => {
@@ -237,7 +245,7 @@ export default function CreateProductWizard({
   useEffect(() => {
     if (!productId || !product) return;
 
-    setFormData({
+    const loadedFormData = {
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
       name:
@@ -291,10 +299,16 @@ export default function CreateProductWizard({
       deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
-    });
+    };
+    setFormData(loadedFormData);
+    initialFormData.current = loadedFormData;
 
-    setAccessiblitiesId(removeNulls(product?.accessibilitiesId));
-    setGroupTypesId(removeNulls(product?.groupTypesId));
+    const loadedAccessibilities = removeNulls(product?.accessibilitiesId);
+    const loadedGroupTypes = removeNulls(product?.groupTypesId);
+    setAccessiblitiesId(loadedAccessibilities);
+    setGroupTypesId(loadedGroupTypes);
+    initialAccessibilitiesId.current = loadedAccessibilities;
+    initialGroupTypesId.current = loadedGroupTypes;
 
     if (opMode === IOpMode.EDIT) {
       setGalleryImages(product?.images);

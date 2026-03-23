@@ -156,8 +156,16 @@ export default function CreateBusinessWizard({
     socialMedia: [],
   });
   const initialFormData = useRef(formData);
+  const initialAccessibilitiesId = useRef<string[]>([]);
+  const initialGroupTypesId = useRef<string[]>([]);
   const isFormDirty = () => {
-    return JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
+    return (
+      JSON.stringify(formData) !== JSON.stringify(initialFormData.current) ||
+      JSON.stringify(selectedAccessiblitiesId) !==
+        JSON.stringify(initialAccessibilitiesId.current) ||
+      JSON.stringify(selectedGroupTypesId) !==
+        JSON.stringify(initialGroupTypesId.current)
+    );
   };
   const {
     images,
@@ -209,7 +217,7 @@ export default function CreateBusinessWizard({
     if (businessId === "" || opMode === IOpMode.CREATE) return;
 
     if (editData && businessId) {
-      setFormData({
+      const loadedFormData = {
         //basic info
         nameEn:
           opMode === IOpMode.DUPLICATE
@@ -260,9 +268,15 @@ export default function CreateBusinessWizard({
         //attributes
         primaryCategory: editData?.primaryCategoryId || "",
         tags: editData?.tagsId || [],
-      });
-      setAccessiblitiesId(removeNulls(editData?.accessibilitiesId));
-      setGroupTypesId(removeNulls(editData?.groupTypesId));
+      };
+      setFormData(loadedFormData);
+      initialFormData.current = loadedFormData;
+      const loadedAccessibilities = removeNulls(editData?.accessibilitiesId);
+      const loadedGroupTypes = removeNulls(editData?.groupTypesId);
+      setAccessiblitiesId(loadedAccessibilities);
+      setGroupTypesId(loadedGroupTypes);
+      initialAccessibilitiesId.current = loadedAccessibilities;
+      initialGroupTypesId.current = loadedGroupTypes;
 
       // Set geo location
       if (editData?.geoLocation) {

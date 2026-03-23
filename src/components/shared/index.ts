@@ -1,3 +1,4 @@
+import ConnectedWebsites from "../details-sections/ConnectedWebsites";
 import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
 import ConfirmDialog from "./ConfirmDialog";
@@ -36,6 +37,7 @@ export {
   ItemStatusBadge,
   RichTextEditor,
   ImageWithFallback,
+  ConnectedWebsites,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,
 };

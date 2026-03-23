@@ -1,18 +1,9 @@
 import clsx from "clsx";
-import { toast } from "sonner";
 import { type FC } from "react";
-import { useState } from "react";
-import {
-  AlignLeft,
-  ExternalLink,
-  FileText,
-  Globe,
-  QrCodeIcon,
-} from "lucide-react";
-import { QRWebsiteModal } from "@/components/shared/QRWebsiteModal";
+import { AlignLeft, FileText } from "lucide-react";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
-import { ImageWithFallback } from "@/components/shared";
+import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 
@@ -43,17 +34,6 @@ interface BusinessInfoDetailsProps {
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
   const { isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
-
-  const [selectedWebsite, setSelectedWebsite] = useState<any | null>(null);
-  const handleWebsiteClick = (website: any) => {
-    if (website.url) {
-      window.open(website.url, "_blank");
-    }
-    toast.success(`${website.name} site opened`, {
-      description: `Redirecting to ${website.name}...`,
-      duration: 2000,
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -101,125 +81,10 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Website Connections */}
       {business?.associatedWebsites &&
         business?.associatedWebsites.length > 0 && (
-          <div
-            className={clsx(
-              "rounded-xl border p-6 transition-all duration-200",
-              isDark
-                ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
-                : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
-            )}
-          >
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className={clsx(
-                  "p-2 rounded-lg",
-                  isDark ? "bg-green-500/20" : "bg-green-100",
-                )}
-              >
-                <Globe
-                  className={clsx(
-                    "w-5 h-5",
-                    isDark ? "text-green-400" : "text-green-600",
-                  )}
-                />
-              </div>
-              <div>
-                <h3
-                  className={clsx(
-                    "text-sm font-semibold uppercase tracking-wide",
-                    isDark ? "text-gray-300" : "text-gray-700",
-                  )}
-                >
-                  {t("connected_websites")}
-                </h3>
-                <p
-                  className={clsx(
-                    "text-xs mt-0.5",
-                    isDark ? "text-gray-400" : "text-gray-600",
-                  )}
-                >
-                  {business.associatedWebsites.length}{" "}
-                  {business.associatedWebsites.length === 1
-                    ? "website"
-                    : "websites"}{" "}
-                  connected
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-              {business.associatedWebsites.map(
-                (website: any, index: number) => (
-                  <div
-                    key={index}
-                    className={clsx(
-                      "flex flex-col items-center text-center rounded-xl border p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg",
-                      isDark
-                        ? "bg-gray-900/50 border-gray-700 hover:border-gray-600"
-                        : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100/60",
-                    )}
-                  >
-                    {/* icon + name + arrow */}
-                    <button
-                      onClick={() => handleWebsiteClick(website)}
-                      className="group  flex w-full items-center justify-between gap-3 px-2 py-2.5 rounded-lg transition-colors"
-                      title={`Open ${website.name}`}
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div
-                          className={clsx(
-                            "p-2 rounded-lg shrink-0",
-                            isDark ? "bg-gray-800" : "bg-gray-100",
-                          )}
-                        >
-                          <ImageWithFallback
-                            src={website?.logo || website?.url}
-                            alt={website?.name}
-                            className="w-6 h-6 object-contain"
-                          />
-                        </div>
-
-                        <span
-                          className={clsx(
-                            "font-medium text-sm truncate text-left flex-1",
-                            isDark ? "text-gray-200" : "text-gray-800",
-                          )}
-                        >
-                          {website.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedWebsite(website);
-                          }}
-                          className={clsx(
-                            "w-4 h-4 shrink-0 transition-colors duration-200",
-                            isDark
-                              ? "text-gray-500 group-hover:text-blue-400"
-                              : "text-gray-400 group-hover:text-blue-600",
-                          )}
-                        >
-                          <QrCodeIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <ExternalLink
-                            className={clsx(
-                              "w-4 h-4 shrink-0 transition-colors duration-200",
-                              isDark
-                                ? "text-gray-500 group-hover:text-blue-400"
-                                : "text-gray-400 group-hover:text-blue-600",
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
+          <ConnectedWebsites
+            t={t}
+            associatedWebsites={business?.associatedWebsites}
+          />
         )}
       {/* Internal Notes */}
       {userRole === UserRole.SUPERADMIN && business?.internalNotes && (
@@ -251,12 +116,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           </p>
         </div>
       )}
-      <QRWebsiteModal
-        open={!!selectedWebsite}
-        website={selectedWebsite}
-        setSelectedWebsite={setSelectedWebsite}
-        isDark={isDark}
-      />{" "}
     </div>
   );
 };
