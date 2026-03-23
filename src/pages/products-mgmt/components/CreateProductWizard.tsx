@@ -532,15 +532,16 @@ export default function CreateProductWizard({
       case 2:
         return (
           <Attributes
-            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            name={formData.nameHe || formData.nameEn || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
               formData.fullDescriptionEn ||
               formData.fullDescriptionAr
             }
-            productId={productId}
             {...commonProps}
+            editData={product}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
+            opMode={opMode}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}

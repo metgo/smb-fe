@@ -5,7 +5,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
-import { IOpMode } from "@/enums/operation.types";
 
 interface Tag {
   en: string;
@@ -30,13 +29,14 @@ interface AttributesProps {
   description: string;
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
+  editData?: any;
+
   errors: FormErrors;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  opMode?: any;
-  productId?: any;
+  opMode?: string;
 }
 
 const Attributes: FC<AttributesProps> = ({
@@ -50,8 +50,14 @@ const Attributes: FC<AttributesProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   opMode,
-  productId,
+  editData,
 }) => {
+  console.log("🚀 ~ isFormDirty ~ editData:", editData?.name);
+  console.log("🚀 ~ isFormDirty ~ name:", name);
+
+  const isFormDirty = () => {
+    return editData?.name !== name || editData?.description !== description;
+  };
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
@@ -94,9 +100,9 @@ const Attributes: FC<AttributesProps> = ({
   /* ---------------- Auto Generate Tags ---------------- */
 
   useEffect(() => {
-    if (opMode === IOpMode.EDIT || productId) return;
-    if (!name && !description) return;
+    if (opMode === "EDIT" && !isFormDirty() && formData.tags.length > 0) return;
 
+    if (!name && !description) return;
     getGeneratedTags({ name, description }).then((res: any) => {
       if (res?.data?.length) {
         const newTags: Tag[] = res.data

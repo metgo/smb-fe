@@ -589,6 +589,7 @@ export default function CreateBusinessWizard({
       case 4:
         return (
           <Attributes
+            editData={editData}
             {...commonProps}
             name={formData.nameEn || formData.nameHe || formData.nameAr}
             description={
@@ -596,6 +597,7 @@ export default function CreateBusinessWizard({
               formData.fullDescriptionEn ||
               formData.fullDescriptionAr
             }
+            opMode={opMode}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
