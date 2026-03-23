@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useState, useEffect } from "react";
 import clsx from "clsx";
 import { QRCodeCanvas } from "qrcode.react";
 import { Download } from "lucide-react";
@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 interface Website {
   name: string;
   url: string;
+  logo: string;
 }
 
 interface QRWebsiteModalProps {
@@ -17,6 +18,18 @@ interface QRWebsiteModalProps {
   setSelectedWebsite: (v: any) => void;
 }
 
+// Fetches an image URL and returns a base64 data URL
+async function toDataURL(url: string): Promise<string> {
+  const response = await fetch(url, { mode: "cors" });
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
   open,
   website,
@@ -24,6 +37,16 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
   setSelectedWebsite,
 }) => {
   const { t } = useTranslation("businesses");
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!website?.logo) return;
+    setLogoDataUrl(null); // reset on website change
+
+    toDataURL(website.logo)
+      .then(setLogoDataUrl)
+      .catch(() => setLogoDataUrl(null)); // fall back to no logo on error
+  }, [website?.logo]);
 
   if (!open || !website) return null;
 
@@ -65,6 +88,20 @@ export const QRWebsiteModal: FC<QRWebsiteModalProps> = ({
               level="Q"
               bgColor={isDark ? "#111827" : "#ffffff"}
               fgColor={isDark ? "#ffffff" : "#000000"}
+              // Only pass imageSettings once the logo is available as a data URL
+              imageSettings={
+                logoDataUrl
+                  ? {
+                      src: logoDataUrl,
+                      x: undefined,
+                      y: undefined,
+                      height: 50,
+                      width: 50,
+                      excavate: true,
+                      opacity: 1.0,
+                    }
+                  : undefined
+              }
             />
           </div>
 
