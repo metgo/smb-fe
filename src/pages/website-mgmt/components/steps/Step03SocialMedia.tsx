@@ -116,7 +116,7 @@ export default function Step03SocialMedia({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {SOCIAL_FIELDS.map(({ field, label, placeholder, color }) => (
+        {SOCIAL_FIELDS.map(({ field, label, placeholder }) => (
           <div key={field} className="flex flex-col gap-2">
             <label className={clsx("text-sm font-medium", textPrimary)}>
               {label}

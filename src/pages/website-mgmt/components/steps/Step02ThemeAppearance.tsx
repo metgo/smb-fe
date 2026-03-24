@@ -38,7 +38,6 @@ function ColorField({
   onChange,
   textPrimary,
   inputClasses,
-  borderColor,
 }: {
   label: string;
   field: keyof SiteSettingsFormData;
@@ -46,7 +45,6 @@ function ColorField({
   onChange: (f: keyof SiteSettingsFormData, v: string) => void;
   textPrimary: string;
   inputClasses: string;
-  borderColor: string;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -79,7 +77,7 @@ function ColorField({
 }
 
 export default function Step02ThemeAppearance({ formData, onChange }: Props) {
-  const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
+  const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
 
   return (
@@ -100,7 +98,6 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
           onChange={onChange}
           textPrimary={textPrimary}
           inputClasses={inputClasses}
-          borderColor={borderColor}
         />
         <ColorField
           label="Secondary Color"
@@ -109,7 +106,6 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
           onChange={onChange}
           textPrimary={textPrimary}
           inputClasses={inputClasses}
-          borderColor={borderColor}
         />
         <ColorField
           label="Background Color"
@@ -118,7 +114,6 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
           onChange={onChange}
           textPrimary={textPrimary}
           inputClasses={inputClasses}
-          borderColor={borderColor}
         />
       </div>
 

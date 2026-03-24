@@ -41,7 +41,6 @@ export default function Step05SeoMeta({
   formData,
   errors,
   onChange,
-  uploadStates,
   onFileSelect,
   onFileClear,
 }: Props) {

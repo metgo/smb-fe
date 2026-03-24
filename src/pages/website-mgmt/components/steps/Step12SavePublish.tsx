@@ -40,7 +40,7 @@ function SummaryRow({
 }
 
 export default function Step12SavePublish({ formData }: Props) {
-  const { textPrimary, textSecondary, borderColor, isDark, cardClasses } =
+  const { textPrimary, textSecondary, borderColor, cardClasses } =
     useThemeClasses();
 
   return (
