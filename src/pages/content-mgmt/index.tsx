@@ -34,6 +34,10 @@ import {
   useCreateContentMutation,
   useUpdateContentMutation,
 } from "@/store/api/contentMutationApi";
+import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
+import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 
 interface SendResult {
   customerId: string;
@@ -122,6 +126,7 @@ const PanelExpandButton = ({
 export default function ContentMgmtPage() {
   const { t } = useTranslation("content");
   const { t: tt } = useTranslation("toast");
+  const [selected, setSelected] = useState<string | null>(null);
 
   const { isDark, language, isRTL } = useThemeClasses();
 
@@ -239,12 +244,12 @@ export default function ContentMgmtPage() {
     primaryCategory: "all",
   });
 
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
   const queryParams = useMemo(() => {
     const params: any = {
-      page,
+      // page,
       dmoId,
       startDate,
       endDate,
@@ -261,7 +266,7 @@ export default function ContentMgmtPage() {
 
     return params;
   }, [
-    page,
+    // page,
     searchQuery,
     language,
     dmoId,
@@ -278,40 +283,163 @@ export default function ContentMgmtPage() {
     isFetching,
   } = useGetAllbusinessesQuery(queryParams);
 
-  const hasMore = businessData?.meta?.hasNextPage;
+  const {
+    data: productData,
+    isLoading: isLoadingProduct,
+    isFetching: isFetchingProduct,
 
+    error,
+  } = useGetAllProductsQuery({});
+
+  const {
+    data: tripData,
+    isLoading: isLoadingTrip,
+    isFetching: isFetchingTrip,
+  } = useGetAllTripsQuery({});
+
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    isFetching: isFetchingEvent,
+  } = useGetAllEventsQuery({});
+
+  const {
+    data: poiData,
+    isLoading: isLoadingPOI,
+    isFetching: isFetchingPOI,
+  } = useGetAllPOIQuery({});
+  // Replace the single page/search state with per-tab state
+  const [tabState, setTabState] = useState<Record<string, { page: number }>>({
+    Businesses: { page: 1 },
+    Products: { page: 1 },
+    Trips: { page: 1 },
+    Events: { page: 1 },
+    POI: { page: 1 },
+  });
+
+  const currentTab = selected ?? "Businesses";
+  const page = tabState[currentTab]?.page ?? 1;
+
+  const setPage = (updater: (prev: number) => number) => {
+    setTabState((prev) => ({
+      ...prev,
+      [currentTab]: { page: updater(prev[currentTab]?.page ?? 1) },
+    }));
+  };
+  // const hasMore = businessData?.meta?.hasNextPage;
+  const hasMoreBusinesses = businessData?.meta?.hasNextPage;
+  const hasMoreProducts = productData?.meta?.hasNextPage;
+  const hasMoreTrips = tripData?.meta?.hasNextPage;
+  const hasMoreEvents = eventData?.meta?.hasNextPage;
+  const hasMorePOI = false; // POI is a flat array with no pagination
+
+  const makeNextPage =
+    (tabName: string, canFetch: boolean, fetching: boolean) => () => {
+      if (!canFetch || fetching) return;
+      setTabState((prev) => ({
+        ...prev,
+        [tabName]: { page: (prev[tabName]?.page ?? 1) + 1 },
+      }));
+    };
+
+  // const fetchNextPage = () => {
+  //   if (!hasMore || isFetching) return;
+  //   setPage((prev) => prev + 1);
+  // };
+
+  const dataMap: Record<
+    string,
+    {
+      rawData: any;
+      fetchNextPage: () => void;
+      hasMore: boolean;
+      isLoading: boolean;
+    }
+  > = {
+    Businesses: {
+      rawData: businessData,
+      fetchNextPage: makeNextPage("Businesses", hasMoreBusinesses, isFetching),
+      hasMore: hasMoreBusinesses,
+      isLoading,
+    },
+    Products: {
+      rawData: productData,
+      fetchNextPage: makeNextPage(
+        "Products",
+        hasMoreProducts,
+        isFetchingProduct,
+      ),
+      hasMore: hasMoreProducts,
+      isLoading: isLoadingProduct,
+    },
+    Trips: {
+      rawData: tripData,
+      fetchNextPage: makeNextPage("Trips", hasMoreTrips, isFetchingTrip),
+      hasMore: hasMoreTrips,
+      isLoading: isLoadingTrip,
+    },
+    Events: {
+      rawData: eventData,
+      fetchNextPage: makeNextPage("Events", hasMoreEvents, isFetchingEvent),
+      hasMore: hasMoreEvents,
+      isLoading: isLoadingEvent,
+    },
+    POI: {
+      rawData: poiData,
+      fetchNextPage: () => {},
+      hasMore: false,
+      isLoading: isLoadingPOI,
+    },
+  };
+  const active = dataMap[selected ?? "Businesses"];
+
+  // useEffect(() => {
+  //   setPage(1);
+  // }, [searchQuery, filters, dmoId, authorityId, startDate, endDate]);
+
+  const [combinedItems, setCombinedItems] = useState<any[]>([]);
+  const getItems = (rawData: any, selected: string | null) => {
+    if (!rawData) return null;
+    if (selected === "POI") return rawData; // POI is the array directly
+    return rawData?.data ?? null; // everything else has .data
+  };
   useEffect(() => {
-    setPage(1);
-  }, [searchQuery, filters, dmoId, authorityId, startDate, endDate]);
+    const items = getItems(active?.rawData, selected);
+    if (!items) return;
 
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (!businessData?.data) return;
     if (page === 1) {
-      setCombinedBusinesses(businessData.data);
+      setCombinedItems(items);
     } else {
-      setCombinedBusinesses((prev) => {
+      setCombinedItems((prev) => {
         const existingIds = new Set(prev.map((b) => b._id));
-        const newItems = businessData.data.filter(
-          (b: any) => !existingIds.has(b._id),
-        );
+        const newItems = items.filter((b: any) => !existingIds.has(b._id));
         return [...prev, ...newItems];
       });
     }
-  }, [businessData?.data, page]);
+  }, [active?.rawData, selected, page]);
 
-  const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => prev + 1);
-  };
+  // useEffect(() => {
+  //   if (!businessData?.data) return;
+  //   if (page === 1) {
+  //     setCombinedBusinesses(businessData.data);
+  //   } else {
+  //     setCombinedBusinesses((prev) => {
+  //       const existingIds = new Set(prev.map((b) => b._id));
+  //       const newItems = businessData.data.filter(
+  //         (b: any) => !existingIds.has(b._id),
+  //       );
+  //       return [...prev, ...newItems];
+  //     });
+  //   }
+  // }, [businessData?.data, page]);
+
   const clearFilter = () => {
     setFilters({
       hasProductFilter: "all",
       primaryCategory: "all",
     });
     setSearchQuery("");
-    setPage(1);
+    // setPage(1);
   };
 
   const onStatusChangeHandler = async (status: string) => {
@@ -528,14 +656,16 @@ export default function ContentMgmtPage() {
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                     />
                     <Contents
+                      selected={selected}
+                      setSelected={setSelected}
                       isExpanded={focus === "both"}
                       viewMode={viewMode}
                       setViewMode={setViewMode}
-                      totalData={businessData?.totalData}
-                      combinedBusinesses={combinedBusinesses}
-                      fetchNextPage={fetchNextPage}
+                      totalData={active?.rawData?.totalData}
+                      combinedBusinesses={combinedItems}
+                      fetchNextPage={active.fetchNextPage}
                       clearFilter={clearFilter}
-                      hasMore={hasMore}
+                      hasMore={active.hasMore}
                       filters={filters}
                       setFilters={setFilters}
                       isLoading={isLoading}

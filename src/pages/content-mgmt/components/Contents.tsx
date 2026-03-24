@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { ContentCard } from "./sub-components";
@@ -20,6 +20,8 @@ interface Filters {
 }
 
 interface ContentsProps {
+  selected: string | null;
+  setSelected: (v: string | null) => void;
   isLoading: boolean;
   isExpanded: boolean;
   viewMode: TViewMode;
@@ -34,7 +36,7 @@ interface ContentsProps {
   templateContents: IContentTemplate[];
   setTemplateContent: (value: IContentTemplate[]) => void;
 }
-
+const FILTER_OPTIONS = ["Businesses", "Trips", "Products", "Events", "POI"];
 const Contents = ({
   isLoading,
   isExpanded,
@@ -47,6 +49,8 @@ const Contents = ({
   filters,
   setFilters,
   totalData,
+  selected,
+  setSelected,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
@@ -108,6 +112,19 @@ const Contents = ({
     }
   };
 
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="flex-1 min-w-0 pt-6">
       <div
@@ -125,6 +142,48 @@ const Contents = ({
           <p className="text-sm text-gray-600 dark:text-gray-400">
             ({t("source_backlog_description", { count: totalData })})
           </p>
+
+          <div className="flex flex-1 justify-end" ref={ref}>
+            <div className="relative">
+              <button
+                onClick={() => setOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {selected ?? "Filter by"}
+                <svg
+                  className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {open && (
+                <div className="absolute right-0 z-50 mt-1 w-40 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md">
+                  {FILTER_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setSelected(option);
+                        setOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                    ${selected === option ? "text-teal-600 dark:text-teal-400 font-medium" : "text-gray-700 dark:text-gray-200"}`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
