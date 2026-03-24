@@ -13,10 +13,24 @@ import {
   Spinner,
   ViewModeToggle,
 } from "@/components/shared";
+import { ReactSelect } from "@/components/form-fields";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface Filters {
   hasProductFilter: string;
   primaryCategory: string;
+  businessId: string;
+  registrationFilter: string;
+  eventTypeFilter: string;
+  dateRangeFilter: {
+    start: string;
+    end: string;
+  };
 }
 
 interface ContentsProps {
@@ -35,6 +49,9 @@ interface ContentsProps {
   setViewMode: (v: TViewMode) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: (value: IContentTemplate[]) => void;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  currentTab: string;
 }
 const FILTER_OPTIONS = ["Businesses", "Trips", "Products", "Events", "POI"];
 const Contents = ({
@@ -51,19 +68,49 @@ const Contents = ({
   totalData,
   selected,
   setSelected,
+  searchQuery,
+  setSearchQuery,
+  currentTab,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
-  const { isDark, textTertiary } = useThemeClasses();
+  const { isDark, textTertiary, language } = useThemeClasses();
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedItems, setSelectedItems] = useState<Map<string, any>>(
     new Map(),
   );
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
+  // ─── Business Data Fetching ─────────
+  const { data: businessData, isLoading: _isBusinessesLoading } =
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      page: 1,
+      dmoId,
+      authorityId,
+      startDate,
+      endDate,
+    });
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching,
+  } = useRemoteSelectData({
+    initialData: businessData?.data,
+    debounceMs: 400,
+    searchParams: { locale: language, dmoId, authorityId, startDate, endDate },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res?.data };
+    },
+  });
   // ─── Selection handler ────────────────────────────────────────────────────
   const handleSelect = useCallback((item: any, isMulti: boolean) => {
     setSelectedItems((prev) => {
@@ -210,59 +257,179 @@ const Contents = ({
           >
             <div className="flex flex-wrap items-start gap-4 w-full">
               <div className="grid grid-cols-8 gap-2 pb-2">
-                {/* Has Products */}
-                <div className="flex flex-col col-span-4">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("has_products")}
-                  </label>
-                  <select
-                    value={filters.hasProductFilter}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        hasProductFilter: e.target.value,
-                      })
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="yes">{t("yes")}</option>
-                    <option value="no">{t("no")}</option>
-                  </select>
-                </div>
+                {/* ── Business filters ── */}
+                {currentTab === "Businesses" && (
+                  <>
+                    <div className="flex flex-col col-span-4">
+                      <label
+                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                      >
+                        {t("has_products")}
+                      </label>
+                      <select
+                        value={filters.hasProductFilter}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            hasProductFilter: e.target.value,
+                          })
+                        }
+                        className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                      >
+                        <option value="all">{t("all")}</option>
+                        <option value="yes">{t("yes")}</option>
+                        <option value="no">{t("no")}</option>
+                      </select>
+                    </div>
 
-                {/* Category */}
-                <div className="flex flex-col col-span-4">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("primary_category")}
-                  </label>
-                  <select
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        primaryCategory: e.target.value,
-                      })
-                    }
-                    value={filters.primaryCategory}
-                    className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="">{t("all")}</option>
-                    {categoryFilter?.map((cat: any) => (
-                      <option key={cat._id} value={cat._id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    <div className="flex flex-col col-span-4">
+                      <label
+                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                      >
+                        {t("primary_category")}
+                      </label>
+                      <select
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            primaryCategory: e.target.value,
+                          })
+                        }
+                        value={filters.primaryCategory}
+                        className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                      >
+                        <option value="">{t("all")}</option>
+                        {categoryFilter?.map((cat: any) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Product filters ── */}
+                {currentTab === "Products" && (
+                  <div className="flex flex-col min-w-45">
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("filter_by_business")}
+                    </label>
+                    <ReactSelect
+                      isClearable
+                      value={filters.businessId}
+                      onChange={(businessId: string) =>
+                        setFilters((prev) => ({ ...prev, businessId }))
+                      }
+                      items={
+                        businesses?.map((item: any) => ({
+                          _id: item._id,
+                          name: item.name,
+                        })) ?? []
+                      }
+                      placeholder={t("select_business")}
+                      onSearch={searchBusiness}
+                      isLoading={isSearching || _isBusinessesLoading}
+                    />
+                  </div>
+                )}
+                {/* ── Event filters ── */}
+                {currentTab === "Events" && (
+                  <div className="flex flex-col min-w-45">
+                    <label className={`block text-sm mb-2`}>
+                      {t("event_type")}
+                    </label>
+                    <select
+                      value={filters.eventTypeFilter}
+                      onChange={(e) =>
+                        setFilters({
+                          ...filters,
+                          eventTypeFilter: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="all">{tc("all")}</option>
+                      <option value="free">{tc("free")}</option>
+                      <option value="paid">{tc("paid")}</option>
+                    </select>
+                    <label className={`block text-sm mb-2 `}>
+                      {t("registration")}
+                    </label>
+                    <select
+                      value={filters.registrationFilter}
+                      onChange={(e) =>
+                        setFilters({
+                          ...filters,
+                          registrationFilter: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="all">{tc("all")}</option>
+                      <option value="true">{tc("required")}</option>
+                      <option value="false">{tc("not_required")}</option>
+                    </select>
+                    <label className={`block text-sm mb-2 `}>
+                      {t("date_range")}
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={filters?.dateRangeFilter.start}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            dateRangeFilter: {
+                              ...filters.dateRangeFilter,
+                              start: e.target.value,
+                            },
+                          })
+                        }
+                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                          isDark
+                            ? "bg-gray-900 border-gray-700 text-white"
+                            : "bg-white border-gray-300 text-gray-900"
+                        }`}
+                      />
+                      <input
+                        type="date"
+                        value={filters?.dateRangeFilter.start}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            dateRangeFilter: {
+                              ...filters.dateRangeFilter,
+                              end: e.target.value,
+                            },
+                          })
+                        }
+                        className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                          isDark
+                            ? "bg-gray-900 border-gray-700 text-white"
+                            : "bg-white border-gray-300 text-gray-900"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Active Filter Chips */}
-              {(filters.hasProductFilter !== "all" ||
-                filters.primaryCategory !== "all") && (
+              {/* ── Active Filter Chips ── */}
+              {(currentTab === "Businesses" &&
+                (filters.hasProductFilter !== "all" ||
+                  filters.primaryCategory !== "all")) ||
+              (currentTab === "Products" && filters.businessId) ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -273,6 +440,13 @@ const Contents = ({
                     <div className="flex flex-wrap gap-2 mb-2 mt-2">
                       {Object.entries(filters).map(([key, value]) => {
                         if (!value || value === "all") return null;
+
+                        // Only show chips relevant to current tab
+                        if (currentTab === "Businesses" && key === "businessId")
+                          return null;
+                        if (currentTab === "Products" && key !== "businessId")
+                          return null;
+
                         let displayValue = value;
                         if (key === "hasProductFilter")
                           displayValue = value === "yes" ? t("yes") : t("no");
@@ -281,7 +455,13 @@ const Contents = ({
                             (item: any) => item._id === value,
                           );
                           displayValue = found?.name || value;
+                        } else if (key === "businessId") {
+                          const found = businesses?.find(
+                            (item: any) => item._id === value,
+                          );
+                          displayValue = found?.name || value;
                         }
+
                         return (
                           <FilterChips
                             key={key}
@@ -289,7 +469,8 @@ const Contents = ({
                             onRemove={() =>
                               setFilters((prev: Filters) => ({
                                 ...prev,
-                                [key as keyof Filters]: "all",
+                                [key as keyof Filters]:
+                                  key === "businessId" ? null : "all",
                               }))
                             }
                           />
@@ -304,7 +485,7 @@ const Contents = ({
                     </button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         )}

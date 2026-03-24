@@ -39,6 +39,11 @@ import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 
+type TabState = {
+  page: number;
+  searchQuery: string;
+  filters: Filters;
+};
 interface SendResult {
   customerId: string;
   customerName: string;
@@ -51,6 +56,13 @@ interface SendResult {
 interface Filters {
   hasProductFilter: string;
   primaryCategory: string;
+  businessId: string;
+  registrationFilter: string;
+  eventTypeFilter: string;
+  dateRangeFilter: {
+    start: string;
+    end: string;
+  };
 }
 type PanelFocus = "both" | "left" | "right";
 
@@ -239,17 +251,75 @@ export default function ContentMgmtPage() {
   }, [templateContentsData, externalApiId]);
 
   // ─── Multi-select state ───────────────────────────────────────────────────
-  const [filters, setFilters] = useState<Filters>({
-    hasProductFilter: "all",
-    primaryCategory: "all",
-  });
+  // const [filters, setFilters] = useState<Filters>({
+  //   hasProductFilter: "all",
+  //   primaryCategory: "all",
+  // });
 
   // const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
 
-  const queryParams = useMemo(() => {
+  // const queryParams = useMemo(() => {
+  //   const params: any = {
+  //     // page,
+  //     dmoId,
+  //     startDate,
+  //     endDate,
+  //     authorityId,
+  //     limit: 20,
+  //     locale: language,
+  //     externalApiId: websiteId,
+  //   };
+
+  //   // if (searchQuery) params.search = searchQuery;
+  //   params.status = "APPROVED";
+  //   // if (filters.hasProductFilter !== "all")
+  //   //   params.hasProductFilter = filters.hasProductFilter === "yes";
+
+  //   return params;
+  // }, [
+  //   // page,
+  //   // searchQuery,
+  //   language,
+  //   dmoId,
+  //   authorityId,
+  //   startDate,
+  //   endDate,
+  //   websiteId,
+  //   // filters,
+  // ]);
+  const defaultTabState: TabState = {
+    page: 1,
+    searchQuery: "",
+    filters: {
+      hasProductFilter: "all",
+      primaryCategory: "all",
+      businessId: "",
+      registrationFilter: "",
+      eventTypeFilter: "",
+      dateRangeFilter: {
+        start: "",
+        end: "",
+      },
+    },
+  };
+  // Replace the single page/search state with per-tab state
+  const [tabState, setTabState] = useState<Record<string, TabState>>({
+    Businesses: { ...defaultTabState },
+    Products: { ...defaultTabState },
+    Trips: { ...defaultTabState },
+    Events: { ...defaultTabState },
+    POI: { ...defaultTabState },
+  });
+  const businessTab = tabState["Businesses"];
+  const productTab = tabState["Products"];
+  const tripTab = tabState["Trips"];
+  const eventTab = tabState["Events"];
+  const poiTab = tabState["POI"];
+  const businessParams = useMemo(() => {
+    const { page, searchQuery, filters } = tabState["Businesses"];
     const params: any = {
-      // page,
+      page,
       dmoId,
       startDate,
       endDate,
@@ -257,88 +327,153 @@ export default function ContentMgmtPage() {
       limit: 20,
       locale: language,
       externalApiId: websiteId,
+      status: "APPROVED",
     };
-
     if (searchQuery) params.search = searchQuery;
-    params.status = "APPROVED";
     if (filters.hasProductFilter !== "all")
       params.hasProductFilter = filters.hasProductFilter === "yes";
-
+    if (filters.primaryCategory !== "all")
+      params.primaryCategory = filters.primaryCategory;
     return params;
   }, [
-    // page,
-    searchQuery,
-    language,
+    businessTab,
     dmoId,
-    authorityId,
     startDate,
     endDate,
+    authorityId,
+    language,
     websiteId,
-    filters,
   ]);
+
+  const productParams = useMemo(() => {
+    const { page, searchQuery, filters } = tabState["Products"];
+    const params: any = { page, limit: 20, status: "APPROVED", externalApiId };
+    if (filters.businessId) {
+      params.businessId = filters.businessId;
+    }
+    if (searchQuery) params.search = searchQuery;
+    return params;
+  }, [productTab, language]);
+
+  const tripParams = useMemo(() => {
+    const { page, searchQuery } = tabState["Trips"];
+    const params: any = {
+      dmoId,
+      authorityId,
+      page,
+      limit: 20,
+    };
+    if (searchQuery) params.search = searchQuery;
+  }, [tripTab, language]);
+
+  const eventParams = useMemo(() => {
+    const { page, searchQuery, filters } = tabState["Events"];
+    const params: any = { page, limit: 20 };
+    if (searchQuery) params.search = searchQuery;
+    if (filters.registrationFilter !== "all") {
+      params.isRegistration = filters.registrationFilter;
+    }
+    if (filters.eventTypeFilter !== "all") {
+      params.isRegistration = filters.eventTypeFilter;
+    }
+
+    if (filters.dateRangeFilter.start) {
+      params.startDate = filters.dateRangeFilter.start;
+    }
+
+    if (filters.dateRangeFilter.end) {
+      params.endDate = filters.dateRangeFilter.end;
+    }
+    return params;
+  }, [eventTab, language]);
+
+  const poiParams = useMemo(() => {
+    const params: any = {
+      dmoId,
+      authorityId,
+    };
+    return params;
+  }, [poiTab, language]);
 
   const {
     data: businessData,
     isLoading,
     isFetching,
-  } = useGetAllbusinessesQuery(queryParams);
+  } = useGetAllbusinessesQuery(businessParams);
 
   const {
     data: productData,
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
-
-    error,
-  } = useGetAllProductsQuery({});
+  } = useGetAllProductsQuery(productParams);
 
   const {
     data: tripData,
     isLoading: isLoadingTrip,
     isFetching: isFetchingTrip,
-  } = useGetAllTripsQuery({});
+  } = useGetAllTripsQuery(tripParams);
 
   const {
     data: eventData,
     isLoading: isLoadingEvent,
     isFetching: isFetchingEvent,
-  } = useGetAllEventsQuery({});
+  } = useGetAllEventsQuery(eventParams);
 
-  const {
-    data: poiData,
-    isLoading: isLoadingPOI,
-    isFetching: isFetchingPOI,
-  } = useGetAllPOIQuery({});
-  // Replace the single page/search state with per-tab state
-  const [tabState, setTabState] = useState<Record<string, { page: number }>>({
-    Businesses: { page: 1 },
-    Products: { page: 1 },
-    Trips: { page: 1 },
-    Events: { page: 1 },
-    POI: { page: 1 },
-  });
+  const { data: poiData, isLoading: isLoadingPOI } =
+    useGetAllPOIQuery(poiParams);
 
   const currentTab = selected ?? "Businesses";
-  const page = tabState[currentTab]?.page ?? 1;
+  const { page, searchQuery, filters } = tabState[currentTab];
 
-  const setPage = (updater: (prev: number) => number) => {
+  // const setPage = (updater: (prev: number) => number) =>
+  //   setTabState((prev) => ({
+  //     ...prev,
+  //     [currentTab]: {
+  //       ...prev[currentTab],
+  //     },
+  //   }));
+
+  const setSearchQuery = (value: string) =>
     setTabState((prev) => ({
       ...prev,
-      [currentTab]: { page: updater(prev[currentTab]?.page ?? 1) },
+      [currentTab]: { ...prev[currentTab], searchQuery: value, page: 1 },
+    }));
+
+  const setFilters = (value: Filters | ((prev: Filters) => Filters)) =>
+    setTabState((prev) => {
+      const next =
+        typeof value === "function" ? value(prev[currentTab].filters) : value;
+      return {
+        ...prev,
+        [currentTab]: { ...prev[currentTab], filters: next, page: 1 },
+      };
+    });
+
+  const clearFilter = () => {
+    setTabState((prev) => ({
+      ...prev,
+      [currentTab]: { ...defaultTabState },
     }));
   };
+
+  // ─── Per-tab query params ─────────────────────────────────────────────────────
+
   // const hasMore = businessData?.meta?.hasNextPage;
   const hasMoreBusinesses = businessData?.meta?.hasNextPage;
   const hasMoreProducts = productData?.meta?.hasNextPage;
   const hasMoreTrips = tripData?.meta?.hasNextPage;
   const hasMoreEvents = eventData?.meta?.hasNextPage;
-  const hasMorePOI = false; // POI is a flat array with no pagination
+  // const hasMorePOI = false; // POI is a flat array with no pagination
 
   const makeNextPage =
     (tabName: string, canFetch: boolean, fetching: boolean) => () => {
       if (!canFetch || fetching) return;
       setTabState((prev) => ({
         ...prev,
-        [tabName]: { page: (prev[tabName]?.page ?? 1) + 1 },
+        [tabName]: {
+          ...prev[tabName], // ✅ preserve searchQuery & filters
+          page: (prev[tabName]?.page ?? 1) + 1,
+        },
       }));
     };
 
@@ -433,14 +568,14 @@ export default function ContentMgmtPage() {
   //   }
   // }, [businessData?.data, page]);
 
-  const clearFilter = () => {
-    setFilters({
-      hasProductFilter: "all",
-      primaryCategory: "all",
-    });
-    setSearchQuery("");
-    // setPage(1);
-  };
+  // const clearFilter = () => {
+  //   setFilters({
+  //     hasProductFilter: "all",
+  //     primaryCategory: "all",
+  //   });
+  //   setSearchQuery("");
+  //   // setPage(1);
+  // };
 
   const onStatusChangeHandler = async (status: string) => {
     if (templateContentId)
@@ -656,6 +791,7 @@ export default function ContentMgmtPage() {
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                     />
                     <Contents
+                      currentTab={currentTab}
                       selected={selected}
                       setSelected={setSelected}
                       isExpanded={focus === "both"}
@@ -668,7 +804,9 @@ export default function ContentMgmtPage() {
                       hasMore={active.hasMore}
                       filters={filters}
                       setFilters={setFilters}
-                      isLoading={isLoading}
+                      searchQuery={searchQuery} //  per-tab
+                      setSearchQuery={setSearchQuery} //  per-tab
+                      isLoading={active.isLoading}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
                     />
