@@ -5,7 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
-import { IOpMode } from "@/enums/operation.types";
+import { getLngWiseStr } from "@/helpers";
 
 interface Tag {
   en: string;
@@ -14,6 +14,12 @@ interface Tag {
 }
 
 interface AttributesFormData {
+  nameEn: string;
+  nameHe: string;
+  nameAr: string;
+  fullDescriptionEn: string;
+  fullDescriptionHe: string;
+  fullDescriptionAr: string;
   primaryCategory: string;
   serviceType: string;
   tags: Tag[];
@@ -30,13 +36,14 @@ interface AttributesProps {
   description: string;
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
+  editData?: any;
+  selectedFormLanguage: Language;
   errors: FormErrors;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  opMode?: any;
-  productId?: any;
+  opMode?: string;
 }
 
 const Attributes: FC<AttributesProps> = ({
@@ -49,9 +56,42 @@ const Attributes: FC<AttributesProps> = ({
   selectedGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
-  opMode,
-  productId,
+  editData,
+  selectedFormLanguage,
 }) => {
+  const currentName = getLngWiseStr(
+    selectedFormLanguage,
+    formData?.nameEn,
+    formData?.nameHe,
+    formData?.nameAr,
+  );
+  const currentDescription = getLngWiseStr(
+    selectedFormLanguage,
+    formData?.fullDescriptionEn,
+    formData?.fullDescriptionHe,
+    formData?.fullDescriptionAr,
+  );
+
+  const originalName = getLngWiseStr(
+    selectedFormLanguage,
+    editData?.name,
+    editData?.nameHe,
+    editData?.nameAr,
+  );
+
+  const originalDescription = getLngWiseStr(
+    selectedFormLanguage,
+    editData?.description,
+    editData?.descriptionHe,
+    editData?.descriptionAr,
+  );
+
+  const isNameChanged = () => {
+    return currentName !== originalName;
+  };
+  const isDescriptionChanged = () => {
+    return currentDescription !== originalDescription;
+  };
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
@@ -92,13 +132,38 @@ const Attributes: FC<AttributesProps> = ({
     }) ?? [];
 
   /* ---------------- Auto Generate Tags ---------------- */
-
   useEffect(() => {
-    if (opMode === IOpMode.EDIT || productId) return;
-    if (!name && !description) return;
+    const currentName = getLngWiseStr(
+      selectedFormLanguage,
+      formData?.nameEn,
+      formData?.nameHe,
+      formData?.nameAr,
+    );
 
-    getGeneratedTags({ name, description }).then((res: any) => {
-      if (res?.data?.length) {
+    const currentDescription = getLngWiseStr(
+      selectedFormLanguage,
+      formData?.fullDescriptionEn,
+      formData?.fullDescriptionHe,
+      formData?.fullDescriptionAr,
+    );
+
+    if (!currentName && !currentDescription) return;
+
+    // The two conditions when api call
+    const noTagsYet = !formData?.tags?.length;
+    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
+
+    if (!noTagsYet && !nameOrDescChanged) {
+      return;
+    }
+
+    getGeneratedTags({
+      name: currentName,
+      description: currentDescription,
+    })
+      .then((res: any) => {
+        if (!res?.data?.length) return;
+
         const newTags: Tag[] = res.data
           .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
           .map((tag: Tag) => ({
@@ -113,8 +178,10 @@ const Attributes: FC<AttributesProps> = ({
             tags: [...formData.tags, ...newTags],
           });
         }
-      }
-    });
+      })
+      .catch((err) => {
+        console.error("Tag generation failed:", err);
+      });
   }, [name, description]);
 
   /* ---------------- Handlers ---------------- */
