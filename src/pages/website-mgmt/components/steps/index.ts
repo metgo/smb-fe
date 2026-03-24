@@ -1,0 +1,10 @@
+export { default as Step01BrandingMedia } from "./Step01BrandingMedia";
+export { default as Step02HomeVideo } from "./Step02HomeVideo";
+export { default as Step02ThemeAppearance } from "./Step02ThemeAppearance";
+export { default as Step03SocialMedia } from "./Step03SocialMedia";
+export { default as Step04ContactDetails } from "./Step04ContactDetails";
+export { default as Step05SeoMeta } from "./Step05SeoMeta";
+export { default as Step06Analytics } from "./Step06Analytics";
+export { default as Step07Localization } from "./Step07Localization";
+export { default as Step11Maintenance } from "./Step11Maintenance";
+export { default as Step12SavePublish } from "./Step12SavePublish";

@@ -211,6 +211,13 @@ export default function Sidebar() {
           icon: Layout,
           isEnabled: false,
         },
+        {
+          id: "website-settings",
+          path: routes.websiteMgmt,
+          label: t("website_settings") || "Website Settings",
+          icon: Settings,
+          isEnabled: true,
+        },
       ],
     },
     {
