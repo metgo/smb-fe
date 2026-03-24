@@ -75,6 +75,7 @@ export const businessQueryApi = createApi({
         url: `${endpoints.business}/${businessId}`,
         method: "GET",
       }),
+      keepUnusedDataFor: 0,
     }),
     getBusinessDeliveryInfoById: builder.query<
       any,
