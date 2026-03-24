@@ -10,32 +10,64 @@ import {
   GOOGLE_SITE_VERIFICATION_CODE,
   GOOGLE_TAG_MANAGER_ID,
   CODE,
+  IdentifierId,
 } from "@/constant/envConstants";
 import Providers from "@/components/wrappers/Providers";
 import { getFavicon, getThumbnail } from "@/constant/images";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import InitialLoader from "@/components/InitialLoader";
 import { SiteInfoClientProvider } from "@/providers/SiteInfoClientProvider";
+import { urls } from "@/lib/endpoints";
 
-// Static metadata - no blocking fetch
-export const metadata: Metadata = {
-  title: "Metgo Travel",
-  description: "Discover amazing travel destinations",
-  openGraph: {
-    title: "Metgo Travel",
-    description: "Discover amazing travel destinations",
-    locale: "he_IL",
-    type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: getFavicon(),
-    apple: getFavicon(),
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const response = await fetch(`${urls.siteInfo}/${IdentifierId}`);
+    if (!response.ok) new Error("Failed to fetch metadata");
+    const data = await response.json();
+
+    return {
+      title: data.metaTitle || "",
+      description: data.metaDescription || "",
+      openGraph: {
+        title: data.metaTitle,
+        description: data.metaDescription,
+        url: data?.siteUrl,
+        siteName: data?.siteName,
+        images: [
+          {
+            url: getFavicon(),
+            width: 1200,
+            height: 630,
+            alt: "Company Logo",
+            type: "image/svg",
+          },
+        ],
+        locale: "he_IL",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: data.metaTitle,
+        description: data.metaDescription,
+        images: [getFavicon()],
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+      icons: {
+        icon: getFavicon(),
+        apple: getFavicon(),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching metadata:", error);
+    return {
+      title: "",
+      description: "",
+    };
+  }
+}
 
 export default function RootLayout({ children }: ReactChildNode) {
   const thumbnail = getThumbnail();
