@@ -19,6 +19,7 @@ export const productQueryApi = createApi({
         url: `${endpoints.products}/${productId}`,
         method: "GET",
       }),
+      keepUnusedDataFor: 0,
     }),
     getProductStats: builder.query<any, any>({
       query: (params) => ({
