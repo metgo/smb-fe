@@ -26,6 +26,7 @@ import {
   ErrorUiPage,
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
+  WebsiteMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -219,6 +220,7 @@ function App() {
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
+        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
