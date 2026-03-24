@@ -111,8 +111,7 @@ const DEFAULT_FORM: SiteSettingsFormData = {
 /* ------------------------------------------------------------------ */
 
 export default function SiteSettingsWizard() {
-  const { textPrimary, textSecondary, borderColor, cardClasses, isDark } =
-    useThemeClasses();
+  const { textSecondary, borderColor, cardClasses, isDark } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<SiteSettingsFormData>(DEFAULT_FORM);

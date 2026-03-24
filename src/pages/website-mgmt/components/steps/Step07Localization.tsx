@@ -56,11 +56,7 @@ const DATE_FORMATS = [
   "MMM DD, YYYY",
 ];
 
-export default function Step07Localization({
-  formData,
-  errors,
-  onChange,
-}: Props) {
+export default function Step07Localization({ formData, onChange }: Props) {
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
 
