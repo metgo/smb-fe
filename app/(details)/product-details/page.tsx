@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router';
+'use client';
+
 import { motion } from 'motion/react';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { 
-  ArrowRight, MapPin, Clock, Heart, Share2, Phone, Mail, 
-  ShoppingCart, Plus, Minus, Star, Timer, Users, 
-  Check, Package, Truck, Calendar, DollarSign, Sparkles, Store, X,
+  ArrowRight, Heart, Share2,
+  ShoppingCart, Plus, Minus, Star, Users, 
+  Check, Truck, Calendar, Sparkles, X,
   Leaf, Wheat, Accessibility, Baby, UserCheck
 } from 'lucide-react';
-import { Header } from '../components/Header';
-import { experiencesData } from '../data/experiences';
 
 // Extended mock products with full details
 const mockProducts = [
@@ -153,9 +153,10 @@ const mockProducts = [
   },
 ];
 
-export function ProductPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+export default function ProductPage() {
+  const params = useParams();
+  const id = params?.id;
+  const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -164,23 +165,16 @@ export function ProductPage() {
     const saved = localStorage.getItem('cartItems');
     return saved ? JSON.parse(saved) : [];
   });
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
-  });
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   const product = mockProducts.find((prod) => prod.id === Number(id));
-  const business = product ? experiencesData.find((exp) => exp.id === product.businessId) : null;
+  // const business = product ? experiencesData.find((exp) => exp.id === product.businessId) : null;
   const relatedProducts = product ? mockProducts.filter((p) => p.businessId === product.businessId && p.id !== product.id) : [];
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [id]);
 
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
 
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -225,13 +219,13 @@ export function ProductPage() {
     return icons[iconName] || Check;
   };
 
-  if (!product || !business) {
+  if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100" dir="rtl">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">המוצר לא נמצא</h1>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => router.push('/')}
             className="px-6 py-3 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors"
           >
             חזרה לדף הבית
@@ -242,8 +236,7 @@ export function ProductPage() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`} dir="rtl">
-      <Header darkMode={darkMode} showWeather={true} cartItemsCount={cartItems.length} />
+    <div className={`min-h-screen transition-colors duration-300 bg-gray-50`} dir="rtl">
 
       {/* Delivery Modal */}
       {showDeliveryModal && product.delivery && (
@@ -256,15 +249,15 @@ export function ProductPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-md rounded-3xl shadow-2xl p-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+            className={`w-full max-w-md rounded-3xl shadow-2xl p-8 bg-white`}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>אזורי משלוח</h3>
+              <h3 className={`text-2xl font-bold text-gray-900`}>אזורי משלוח</h3>
               <button
                 onClick={() => setShowDeliveryModal(false)}
-                className={`p-2 rounded-xl transition-colors ${darkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
+                className={`p-2 rounded-xl transition-colors hover:bg-gray-100`}
               >
-                <X className={`w-6 h-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                <X className={`w-6 h-6 text-gray-600`} />
               </button>
             </div>
 
@@ -272,31 +265,31 @@ export function ProductPage() {
               {product.delivery.zones.map((zone, index) => (
                 <div 
                   key={index}
-                  className={`rounded-xl p-4 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}
+                  className={`rounded-xl p-4 bg-gray-50`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <span className={`text-lg font-bold text-gray-900`}>
                       {zone.name}
                     </span>
                     <span className={`text-xl font-bold ${
                       zone.cost === 0 
-                        ? darkMode ? 'text-teal-400' : 'text-teal-600'
-                        : darkMode ? 'text-orange-400' : 'text-orange-600'
+                        ? 'text-teal-600'
+                        : 'text-orange-600'
                     }`}>
                       {zone.cost === 0 ? 'חינם' : `₪${zone.cost}`}
                     </span>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className={`text-sm text-gray-600`}>
                     {zone.description}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className={`mt-6 p-4 rounded-xl ${darkMode ? 'bg-teal-900/20 border border-teal-500/30' : 'bg-teal-50 border border-teal-200'}`}>
+            <div className={`mt-6 p-4 rounded-xl bg-teal-50 border border-teal-200`}>
               <div className="flex items-start gap-3">
-                <Truck className={`w-5 h-5 flex-shrink-0 mt-0.5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <Truck className={`w-5 h-5 flex-shrink-0 mt-0.5 text-teal-600`} />
+                <p className={`text-sm text-gray-700`}>
                   עלות המשלוח תתווסף למחיר הסופי בעמוד התשלום
                 </p>
               </div>
@@ -313,10 +306,8 @@ export function ProductPage() {
           className="mb-6"
         >
           <button
-            onClick={() => navigate(-1)}
-            className={`px-3 sm:px-4 py-2 flex items-center gap-2 transition-all hover:opacity-70 min-h-[44px] ${ 
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}
+            onClick={() => router.back()}
+            className={`px-3 sm:px-4 py-2 flex items-center gap-2 transition-all hover:opacity-70 min-h-[44px] text-gray-900`}
           >
             <ArrowRight className="w-5 h-5" />
             <span className="font-medium">חזרה</span>
@@ -325,9 +316,7 @@ export function ProductPage() {
           <div className="flex gap-2 sm:gap-3 mt-6 mr-auto">
             <motion.button
               onClick={() => setIsFavorite(!isFavorite)}
-              className={`p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center ${ 
-                darkMode ? 'bg-slate-800' : 'bg-white'
-              }`}
+              className={`p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white`}
               whileTap={{ scale: 0.9 }}
             >
               <motion.div
@@ -338,13 +327,13 @@ export function ProductPage() {
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
                 <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${ 
-                  isFavorite ? 'fill-red-500 text-red-500' : darkMode ? 'text-gray-300' : 'text-gray-600'
+                  isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'
                 }`} />
               </motion.div>
             </motion.button>
             
-            <button className={`p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
-              <Share2 className={`w-5 h-5 sm:w-6 sm:h-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+            <button className={`p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white`}>
+              <Share2 className={`w-5 h-5 sm:w-6 sm:h-6 text-gray-600`} />
             </button>
           </div>
         </motion.div>
@@ -357,35 +346,35 @@ export function ProductPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-3xl shadow-lg overflow-hidden mb-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+          className={`rounded-3xl shadow-lg overflow-hidden mb-8 bg-white`}
         >
           {/* Product Header */}
           <div className="relative p-8 pb-6">
             <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
               <div className="flex-1">
-                <h1 className={`text-3xl sm:text-4xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h1 className={`text-3xl sm:text-4xl font-bold mb-3 text-gray-900`}>
                   {product.name}
                 </h1>
                 
-                <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                <p className={`text-lg text-gray-600 mb-4`}>
                   {product.shortDescription}
                 </p>
                 {/* Price */}
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-4xl font-bold ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>
+                  <span className={`text-4xl font-bold text-teal-600`}>
                     ₪{product.price}
                   </span>
                   {product.delivery && (
                     <div className="flex items-baseline gap-1.5">
-                      <span className={`text-xl ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>+</span>
+                      <span className={`text-xl text-gray-400`}>+</span>
                       <span className={`text-2xl font-bold ${
                         product.delivery.zones[0].cost === 0
-                          ? darkMode ? 'text-teal-400' : 'text-teal-600'
-                          : darkMode ? 'text-orange-400' : 'text-orange-600'
+                          ? 'text-teal-600'
+                          : 'text-orange-600'
                       }`}>
                         {product.delivery.zones[0].cost === 0 ? 'משלוח חינם' : `₪${product.delivery.zones[0].cost}`}
                       </span>
-                      <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>משלוח</span>
+                      <span className={`text-sm text-gray-500`}>משלוח</span>
                     </div>
                   )}
                 </div>
@@ -436,7 +425,7 @@ export function ProductPage() {
                         style={{
                           filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6))'
                         }}
-                        ref={(el) => (thumbnailRefs.current[index] = el)}
+                        // ref={(el) => (thumbnailRefs.current[index] = el)}
                       >
                         <img src={img} alt={`תמונה ${index + 1}`} className="w-full h-full object-cover" />
                       </button>
@@ -453,9 +442,9 @@ export function ProductPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`rounded-3xl shadow-lg p-6 sm:p-8 mb-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+          className={`rounded-3xl shadow-lg p-6 sm:p-8 mb-8 bg-white`}
         >
-          <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>בחר כמות</h2>
+          <h2 className={`text-2xl font-bold mb-6 text-gray-900`}>בחר כמות</h2>
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Quantity Selector */}
@@ -464,27 +453,19 @@ export function ProductPage() {
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                    darkMode 
-                      ? 'bg-slate-700 text-white hover:bg-slate-600' 
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-gray-100 text-gray-900 hover:bg-gray-200`}
                 >
                   <Minus className="w-5 h-5" />
                 </motion.button>
                 
-                <span className={`text-2xl font-bold min-w-[40px] text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`text-2xl font-bold min-w-[40px] text-center text-gray-900`}>
                   {quantity}
                 </span>
                 
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setQuantity(quantity + 1)}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                    darkMode 
-                      ? 'bg-slate-700 text-white hover:bg-slate-600' 
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-gray-100 text-gray-900 hover:bg-gray-200`}
                 >
                   <Plus className="w-5 h-5" />
                 </motion.button>
@@ -493,8 +474,8 @@ export function ProductPage() {
 
             {/* Total Price */}
             <div className="flex items-baseline gap-2">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>סה"כ:</span>
-              <span className={`text-3xl font-bold ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>
+              <span className={`text-sm text-gray-600`}>סה"כ:</span>
+              <span className={`text-3xl font-bold text-teal-600`}>
                 ₪{product.price * quantity}
               </span>
             </div>
@@ -504,11 +485,7 @@ export function ProductPage() {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={() => handleAddToCart(product.id, quantity)}
-                className={`px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-base font-bold min-h-[44px] ${
-                  darkMode 
-                    ? 'bg-slate-700 text-white hover:bg-slate-600' 
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                }`}
+                className={`px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-base font-bold min-h-[44px] bg-gray-100 text-gray-900 hover:bg-gray-200`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span>הוסף לעגלה</span>
@@ -531,10 +508,10 @@ export function ProductPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className={`rounded-3xl shadow-lg p-6 sm:p-8 mb-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+          className={`rounded-3xl shadow-lg p-6 sm:p-8 mb-8 bg-white`}
         >
-          <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>תיאור מלא</h2>
-          <p className={`text-base sm:text-lg leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <h2 className={`text-2xl font-bold mb-6 text-gray-900`}>תיאור מלא</h2>
+          <p className={`text-base sm:text-lg leading-relaxed text-gray-700`}>
             {product.longDescription}
           </p>
         </motion.div>
@@ -553,48 +530,48 @@ export function ProductPage() {
               whileTap={{ scale: 0.98 }}
               className={`rounded-2xl shadow-lg p-6 flex items-start gap-4 transition-all ${
                 product.delivery ? 'cursor-pointer hover:shadow-xl' : 'cursor-default'
-              } ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+              } bg-white`}
             >
               <div className={`p-3 rounded-xl ${
                 product.delivery 
                   ? product.delivery.zones[0].cost === 0
-                    ? darkMode ? 'bg-teal-500/20' : 'bg-teal-50'
-                    : darkMode ? 'bg-orange-500/20' : 'bg-orange-50'
-                  : darkMode ? 'bg-slate-700' : 'bg-gray-100'
+                    ? 'bg-teal-50'
+                    : 'bg-orange-50'
+                  : 'bg-gray-100'
               }`}>
                 <Truck className={`w-6 h-6 ${
                   product.delivery
                     ? product.delivery.zones[0].cost === 0
-                      ? darkMode ? 'text-teal-400' : 'text-teal-600'
-                      : darkMode ? 'text-orange-400' : 'text-orange-600'
-                    : darkMode ? 'text-gray-500' : 'text-gray-400'
+                      ? 'text-teal-600'
+                      : 'text-orange-600'
+                    : 'text-gray-400'
                 }`} />
               </div>
               <div className="text-right flex-1">
-                <p className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>משלוחים</p>
-                <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <p className={`text-sm mb-1 text-gray-600`}>משלוחים</p>
+                <p className={`text-lg font-bold text-gray-900`}>
                   {product.delivery ? product.delivery.zones[0].description : 'לא זמין'}
                 </p>
               </div>
             </motion.button>
 
-            <div className={`rounded-2xl shadow-lg p-6 flex items-start gap-4 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
-              <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-purple-50'}`}>
-                <Users className={`w-6 h-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+            <div className={`rounded-2xl shadow-lg p-6 flex items-start gap-4 bg-white`}>
+              <div className={`p-3 rounded-xl bg-purple-50`}>
+                <Users className={`w-6 h-6 text-purple-600`} />
               </div>
               <div>
-                <p className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>עד היום נרכשו</p>
-                <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{product.groupSize}</p>
+                <p className={`text-sm mb-1 text-gray-600`}>עד היום נרכשו</p>
+                <p className={`text-lg font-bold text-gray-900`}>{product.groupSize}</p>
               </div>
             </div>
 
-            <div className={`rounded-2xl shadow-lg p-6 flex items-start gap-4 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
-              <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-blue-50'}`}>
-                <Calendar className={`w-6 h-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+            <div className={`rounded-2xl shadow-lg p-6 flex items-start gap-4 bg-white`}>
+              <div className={`p-3 rounded-xl bg-blue-50`}>
+                <Calendar className={`w-6 h-6 text-blue-600`} />
               </div>
               <div>
-                <p className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>זמינות</p>
-                <p className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{product.availability}</p>
+                <p className={`text-sm mb-1 text-gray-600`}>זמינות</p>
+                <p className={`text-base font-bold text-gray-900`}>{product.availability}</p>
               </div>
             </div>
           </motion.div>
@@ -604,16 +581,16 @@ export function ProductPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className={`rounded-3xl shadow-lg p-6 sm:p-8 lg:w-3/4 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+            className={`rounded-3xl shadow-lg p-6 sm:p-8 lg:w-3/4 bg-white`}
           >
-            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>מאפיינים</h2>
+            <h2 className={`text-2xl font-bold mb-6 text-gray-900`}>מאפיינים</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {product.included.map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-500/20' : 'bg-teal-50'}`}>
-                    <Check className={`w-5 h-5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+                  <div className={`p-2 rounded-lg bg-teal-50`}>
+                    <Check className={`w-5 h-5 text-teal-600`} />
                   </div>
-                  <span className={`text-base ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{item}</span>
+                  <span className={`text-base text-gray-700`}>{item}</span>
                 </div>
               ))}
             </div>
@@ -626,21 +603,19 @@ export function ProductPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className={`rounded-3xl shadow-lg p-6 sm:p-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}
+            className={`rounded-3xl shadow-lg p-6 sm:p-8 bg-white`}
           >
-            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              מוצרים נוספים מ-{business.title}
+            <h2 className={`text-2xl font-bold mb-6 text-gray-900`}>
+              מוצרים נוספים מ-
             </h2>
             
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {relatedProducts.map((relatedProduct) => (
                 <motion.button
                   key={relatedProduct.id}
-                  onClick={() => navigate(`/product/${relatedProduct.id}`)}
+                  onClick={() => router.push(`/product-details/${relatedProduct.id}`)}
                   whileTap={{ scale: 0.98 }}
-                  className={`flex-shrink-0 w-[280px] sm:w-[300px] rounded-2xl overflow-hidden shadow-lg snap-start ${
-                    darkMode ? 'bg-slate-700' : 'bg-white border border-gray-200'
-                  }`}
+                  className={`flex-shrink-0 w-[280px] sm:w-[300px] rounded-2xl overflow-hidden shadow-lg snap-start bg-white border border-gray-200`}
                 >
                   <div className="relative h-48">
                     <img
@@ -651,21 +626,21 @@ export function ProductPage() {
                   </div>
                   
                   <div className="p-4">
-                    <h3 className={`text-xl font-bold mb-2 line-clamp-2 text-right ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <h3 className={`text-xl font-bold mb-2 line-clamp-2 text-right text-gray-900`}>
                       {relatedProduct.name}
                     </h3>
-                    <p className={`text-sm mb-3 line-clamp-2 text-right ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-sm mb-3 line-clamp-2 text-right text-gray-600`}>
                       {relatedProduct.shortDescription}
                     </p>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <span className={`text-sm font-bold text-gray-900`}>
                           {relatedProduct.rating}
                         </span>
                       </div>
-                      <p className={`text-xl font-bold ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>
+                      <p className={`text-xl font-bold text-teal-600`}>
                         ₪{relatedProduct.price}
                       </p>
                     </div>
