@@ -2,28 +2,31 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Truck, Users, Calendar, X } from "lucide-react";
+import { Truck, Users, X, Building } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const ProductInfoCards = ({
   deliveryArea,
   quantity,
-  openingHrs,
+  // openingHrs,
+  businessId,
 }: {
   deliveryArea: DeliveryArea[];
   quantity: ProductDetailsProps["quantity"];
-  openingHrs: OpeningHrs[];
+  // openingHrs: OpeningHrs[];
+  businessId: any;
 }) => {
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
-
+  const router = useRouter();
   const hasDelivery = deliveryArea?.length > 0;
   const firstDelivery = deliveryArea?.[0];
   const isFreeDelivery = firstDelivery?.price === "0";
 
-  const availabilityText = quantity?.isUnlimited
-    ? "ללא הגבלה"
-    : openingHrs?.[0]
-      ? `${openingHrs[0].days} ${openingHrs[0].open}-${openingHrs[0].close}`
-      : "לפי פניה";
+  // const availabilityText = quantity?.isUnlimited
+  //   ? "ללא הגבלה"
+  //   : openingHrs?.[0]
+  //     ? `${openingHrs[0].days} ${openingHrs[0].open}-${openingHrs[0].close}`
+  //     : "לפי פניה";
 
   return (
     <>
@@ -136,12 +139,16 @@ const ProductInfoCards = ({
 
         <div className="rounded-2xl shadow-lg p-6 flex items-start gap-4 bg-white">
           <div className="p-3 rounded-xl bg-blue-50">
-            <Calendar className="w-6 h-6 text-blue-600" />
+            <Building className="w-6 h-6 text-blue-600" />
           </div>
-          <div>
-            <p className="text-sm mb-1 text-gray-600">זמינות</p>
+          <div
+            className="cursor-pointer"
+            onClick={() => router.push(`/business-details/${businessId?.slug}`)}
+          >
+            {" "}
+            <p className="text-sm mb-1 text-gray-600">שם העסק</p>
             <p className="text-base font-bold text-gray-900">
-              {availabilityText}
+              {businessId?.name}
             </p>
           </div>
         </div>

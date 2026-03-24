@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
+import { useState, useEffect, useRef } from "react";
+import { motion } from "motion/react";
 import {
-  ArrowRight, Heart, Share2, Phone, Mail,
-  Accessibility, Car, PawPrint, Navigation,
+  ArrowRight,
+  Heart,
+  Share2,
+  Phone,
+  Mail,
+  Accessibility,
+  Car,
+  PawPrint,
+  Navigation,
   MapPinned,
-} from 'lucide-react';
-import { BusinessProducts, OpeningHoursModal } from '.';
-import { Map } from '../../_components';
-import { sendGAEvent } from '@/lib/analytics';
-import { triggerName } from '@/lib/googleEventsConfig';
+} from "lucide-react";
+import { BusinessProducts, OpeningHoursModal } from ".";
+import { Map } from "../../_components";
+import { sendGAEvent } from "@/lib/analytics";
+import { triggerName } from "@/lib/googleEventsConfig";
 
 function DescriptionBlock({ html }: { html: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -28,7 +34,7 @@ function DescriptionBlock({ html }: { html: string }) {
     <div>
       <div
         ref={ref}
-        className={`text-base sm:text-lg leading-relaxed text-gray-700 overflow-hidden ${!expanded ? 'line-clamp-2' : ''}`}
+        className={`text-base sm:text-lg leading-relaxed text-gray-700 overflow-hidden ${!expanded ? "line-clamp-2" : ""}`}
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {(isClamped || expanded) && (
@@ -36,7 +42,7 @@ function DescriptionBlock({ html }: { html: string }) {
           onClick={() => setExpanded((v) => !v)}
           className="mt-1 text-sm font-medium text-blue-600 underline cursor-pointer"
         >
-          {expanded ? 'קרא פחות' : 'קרא עוד'}
+          {expanded ? "קרא פחות" : "קרא עוד"}
         </button>
       )}
     </div>
@@ -47,48 +53,74 @@ interface Props {
   businessDetails: BusinessDetailsProps;
 }
 
-const isCurrentlyOpen = (openingHrs: OpeningHrs[], isAlwaysOpen: boolean): boolean => {
+const isCurrentlyOpen = (
+  openingHrs: OpeningHrs[],
+  isAlwaysOpen: boolean,
+): boolean => {
   if (isAlwaysOpen) return true;
   if (!openingHrs?.length) return false;
 
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayNames = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   const currentDay = dayNames[new Date().getDay()];
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
 
-  const todayHours = openingHrs.find((h) => h.days?.toLowerCase() === currentDay);
+  const todayHours = openingHrs.find(
+    (h) => h.days?.toLowerCase() === currentDay,
+  );
   if (!todayHours || todayHours.isHoliday) return false;
 
-  const [openHour, openMin] = todayHours.open.split(':').map(Number);
-  const [closeHour, closeMin] = todayHours.close.split(':').map(Number);
+  const [openHour, openMin] = todayHours.open.split(":").map(Number);
+  const [closeHour, closeMin] = todayHours.close.split(":").map(Number);
 
-  return currentTime >= openHour * 60 + openMin && currentTime <= closeHour * 60 + closeMin;
+  return (
+    currentTime >= openHour * 60 + openMin &&
+    currentTime <= closeHour * 60 + closeMin
+  );
 };
 
 const getAttributeIcon = (name: string) => {
-  const lower = (name ?? '').toLowerCase();
-  if (lower.includes('נגיש') || lower.includes('accessible')) return <Accessibility className="w-4 h-4" />;
-  if (lower.includes('חניה') || lower.includes('parking')) return <Car className="w-4 h-4" />;
-  if (lower.includes('חיות') || lower.includes('pet')) return <PawPrint className="w-4 h-4" />;
+  const lower = (name ?? "").toLowerCase();
+  if (lower.includes("נגיש") || lower.includes("accessible"))
+    return <Accessibility className="w-4 h-4" />;
+  if (lower.includes("חניה") || lower.includes("parking"))
+    return <Car className="w-4 h-4" />;
+  if (lower.includes("חיות") || lower.includes("pet"))
+    return <PawPrint className="w-4 h-4" />;
   return null;
 };
 
 const BusinessDetailsContent = ({ businessDetails }: Props) => {
-  const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showHoursModal, setShowHoursModal] = useState(false);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const images = businessDetails.images ?? [];
-  const isOpen = isCurrentlyOpen(businessDetails.openingHrs, businessDetails.isAlwaysOpen);
+  const isOpen = isCurrentlyOpen(
+    businessDetails.openingHrs,
+    businessDetails.isAlwaysOpen,
+  );
   const lat = businessDetails.geoLocation?.lat;
   const lng = businessDetails.geoLocation?.long;
-  const phone = businessDetails.phoneNumber || businessDetails.contactDetails?.phone;
-  const email = businessDetails.busiEmail || businessDetails.contactDetails?.email;
-  const addressLabel = [businessDetails.address?.location, businessDetails.address?.city]
+  const phone =
+    businessDetails.phoneNumber || businessDetails.contactDetails?.phone;
+  const email =
+    businessDetails.busiEmail || businessDetails.contactDetails?.email;
+  const addressLabel = [
+    businessDetails.address?.location,
+    businessDetails.address?.city,
+  ]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
 
   const handleCopy = async () => {
     const url = window.location.href;
@@ -101,19 +133,19 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
   };
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, []);
 
   useEffect(() => {
     thumbnailRefs.current[selectedImage]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center',
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
     });
   }, [selectedImage]);
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-50" >
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50">
       {showHoursModal && (
         <OpeningHoursModal
           setShowHoursModal={setShowHoursModal}
@@ -136,12 +168,17 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
               whileTap={{ scale: 0.9 }}
             >
               <motion.div
-                animate={isFavorite ? { scale: [1, 1.3, 1], rotate: [0, -10, 10, -5, 0] } : {}}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                animate={
+                  isFavorite
+                    ? { scale: [1, 1.3, 1], rotate: [0, -10, 10, -5, 0] }
+                    : {}
+                }
+                transition={{ duration: 0.5, ease: "easeInOut" }}
               >
                 <Heart
-                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'
-                    }`}
+                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${
+                    isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
+                  }`}
                 />
               </motion.div>
             </motion.button>
@@ -159,7 +196,7 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
 
             {phone && (
               <a
-                target='_blank'
+                target="_blank"
                 href={`tel:${phone}`}
                 className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
               >
@@ -169,7 +206,7 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
 
             {email && (
               <a
-                target='_blank'
+                target="_blank"
                 href={`mailto:${email}`}
                 className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
               >
@@ -189,7 +226,6 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-
         {/* HERO SECTION */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -210,11 +246,15 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
               )}
 
               <div className="flex-1">
-                <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">{businessDetails.name}</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">
+                  {businessDetails.name}
+                </h1>
                 {businessDetails.shortDescription && (
                   <div
                     className="text-lg sm:text-xl text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: businessDetails?.shortDescription }}
+                    dangerouslySetInnerHTML={{
+                      __html: businessDetails?.shortDescription,
+                    }}
                   />
                 )}
               </div>
@@ -228,7 +268,9 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                 {isOpen ? (
                   <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all bg-teal-500 hover:bg-teal-600">
                     <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-                    <span className="text-white font-bold text-sm">פתוח עכשיו</span>
+                    <span className="text-white font-bold text-sm">
+                      פתוח עכשיו
+                    </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all bg-red-500 hover:bg-red-600">
@@ -261,14 +303,22 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
               {images.length > 1 && (
                 <>
                   <button
-                    onClick={() => setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                    onClick={() =>
+                      setSelectedImage((prev) =>
+                        prev === images.length - 1 ? 0 : prev + 1,
+                      )
+                    }
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-20"
                   >
                     <ArrowRight className="w-6 h-6 text-gray-900 rotate-180" />
                   </button>
 
                   <button
-                    onClick={() => setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                    onClick={() =>
+                      setSelectedImage((prev) =>
+                        prev === 0 ? images.length - 1 : prev - 1,
+                      )
+                    }
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-20"
                   >
                     <ArrowRight className="w-6 h-6 text-gray-900" />
@@ -281,14 +331,23 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                         <button
                           key={index}
                           onClick={() => setSelectedImage(index)}
-                          className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden transition-all ${selectedImage === index
-                            ? 'ring-3 ring-teal-400 opacity-100 scale-105 shadow-2xl'
-                            : 'opacity-60 hover:opacity-100 hover:scale-105 shadow-xl'
-                            }`}
-                          style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }}
-                          ref={(el) => { thumbnailRefs.current[index] = el; }}
+                          className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden transition-all ${
+                            selectedImage === index
+                              ? "ring-3 ring-teal-400 opacity-100 scale-105 shadow-2xl"
+                              : "opacity-60 hover:opacity-100 hover:scale-105 shadow-xl"
+                          }`}
+                          style={{
+                            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.6))",
+                          }}
+                          ref={(el) => {
+                            thumbnailRefs.current[index] = el;
+                          }}
                         >
-                          <img src={img.image} alt={img.alt ?? `תמונה ${index + 1}`} className="w-full h-full object-cover" />
+                          <img
+                            src={img.image}
+                            alt={img.alt ?? `תמונה ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
                         </button>
                       ))}
                     </div>
@@ -300,14 +359,17 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
         </motion.div>
 
         {/* Attributes Section */}
-        {((businessDetails.groupTypesId?.length ?? 0) > 0 || (businessDetails.accessibilitiesId?.length ?? 0) > 0) && (
+        {((businessDetails.groupTypesId?.length ?? 0) > 0 ||
+          (businessDetails.accessibilitiesId?.length ?? 0) > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="rounded-3xl shadow-lg p-8 mb-8 bg-white"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">פרטים שחשוב להכיר</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-900">
+              פרטים שחשוב להכיר
+            </h2>
 
             <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2">
               {businessDetails.groupTypesId?.map((attr) => (
@@ -315,7 +377,9 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                   key={attr._id}
                   className="px-4 py-2.5 rounded-xl transition-all whitespace-nowrap bg-gray-100 text-gray-700"
                 >
-                  <span className="text-sm font-medium">{attr.hebrewName || attr.name}</span>
+                  <span className="text-sm font-medium">
+                    {attr.hebrewName || attr.name}
+                  </span>
                 </div>
               ))}
 
@@ -327,7 +391,9 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap bg-gray-100 text-gray-700"
                   >
                     {icon}
-                    <span className="text-sm font-medium">{attr.hebrewName || attr.name}</span>
+                    <span className="text-sm font-medium">
+                      {attr.hebrewName || attr.name}
+                    </span>
                   </div>
                 );
               })}
@@ -349,7 +415,9 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
             <div className="p-6 pb-4">
               <div className="flex items-center gap-3 mb-4">
                 <MapPinned className="w-6 h-6 text-teal-600" />
-                <h2 className="text-2xl font-bold text-gray-900">אנחנו על המפה</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  אנחנו על המפה
+                </h2>
               </div>
               {addressLabel && (
                 <p className="text-gray-500 text-sm">{addressLabel}</p>
