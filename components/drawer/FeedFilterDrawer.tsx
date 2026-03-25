@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
+import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
 
 import {
   CloseIcon,
@@ -16,6 +17,7 @@ import { useCommonHook } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import { SunsetButton } from "../filter-icon/SunsetButton";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import { IdentifierId } from "@/constant/envConstants";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -42,6 +44,8 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
 }) => {
   const { isMobile } = useCommonHook();
   const { aminitiesInfo } = useGeneralStore();
+  const { data, isLoading, isError } = useGetAllCategorySites();
+  console.log("🚀 ~ FeedFilterDrawer ~ data:", data);
 
   if (!isOpen || isMobile) return null;
 
@@ -102,9 +106,28 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   label={filterPanelLabels.pointOfInterest}
                 />
               )}
-
+              {data?.siteTopics?.map((topic: any) => {
+                return topic.siteCategories?.map((category: any) => {
+                  return (
+                    <FilterButton
+                      key={category.title}
+                      active={isSelected("categoryIds", category.title)}
+                      onClick={() => {
+                        toggleParam("categoryIds", category.title);
+                        sendGAEvent(triggerName.clickToCategory, {
+                          category_id: category.title,
+                          category_name: category.title,
+                        });
+                      }}
+                      icon={null}
+                      activeIcon={null}
+                      label={category.title}
+                    />
+                  );
+                });
+              })}
               {/* Main Categories */}
-              {filterCategories?.map((menu) => {
+              {/* {filterCategories?.map((menu) => {
                 const Icon = ICON_MAP[menu._id];
                 return (
                   <FilterButton
@@ -122,7 +145,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                     label={menu.hebrewName}
                   />
                 );
-              })}
+              })} */}
 
               {/* Funday */}
               {aminitiesInfo?.funday && (

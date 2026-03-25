@@ -18,8 +18,7 @@ import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { filterBusinesses } from "@/lib/helpers";
-import { SunsetButton } from "../filter-icon/SunsetButton";
-
+import { SearchButton } from "../filter-icon/SearchButton";
 interface FeedLayoutProps {
   selectedFiltersIds: any;
 }
@@ -99,7 +98,20 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyFeedCardsLayout data={visibleFeedItems} />;
+        return (
+          <OnlyFeedCardsLayout
+            data={visibleFeedItems}
+            isFilterOpen={isFilterDrawerOpen}
+            setIsFilterOpen={setIsFilterDrawerOpen}
+            filters={filters}
+            appliedFilterCount={appliedFilterCount}
+            isSelected={isSelected}
+            toggleParam={toggleParam}
+            handleResetFilters={handleResetFilters}
+            filteredSubCategories={filteredSubCategories}
+            itemCount={infiniteData?.totalData ?? 0}
+          />
+        );
       case "integrated":
         return <MapFeedIntegratedLayout data={visibleFeedItems} />;
       case "map":
@@ -122,10 +134,16 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
         {/* Filter Button */}
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
-            <SunsetButton
+            {/* <SunsetButton
               variant={"black"}
               onClick={handleFilterIconClick}
               appliedFilterCount={appliedFilterCount}
+            /> */}
+            <SearchButton
+              onClick={handleFilterIconClick}
+              activeFiltersCount={appliedFilterCount}
+              variant="continuous"
+              size={96}
             />
             {!alreadyShownFilterTooltip && (
               <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold">
@@ -138,7 +156,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       </div>
 
       {/* Filter Drawer */}
-      {isFilterDrawerOpen && (
+      {/* {isFilterDrawerOpen && (
         <FeedFilterDrawer
           itemCount={infiniteData?.totalData ?? 0}
           isOpen={isFilterDrawerOpen}
@@ -150,7 +168,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           handleResetFilters={handleResetFilters}
           filteredSubCategories={filteredSubCategories}
         />
-      )}
+      )} */}
     </>
   );
 };

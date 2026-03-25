@@ -11,9 +11,55 @@ import {
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
 import NoFeedItemLayout from "./NoFeedItemLayout";
+import { AnimatePresence, motion } from "motion/react";
+import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
+import {
+  CloseIcon,
+  EventIcon,
+  FundayIcon,
+  PointOfInterestIcon,
+  RouteIcon,
+} from "../ui/svgIcons";
+import { filterPanelLabels } from "@/constant/hebrew";
+import { SERVICE_TYPE_MAP } from "@/lib/utils";
+import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import { SunsetButton } from "../filter-icon/SunsetButton";
+import useGeneralStore from "@/stores/generalStore";
 
-const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
+interface OnlyFeedCardsLayoutProps {
+  data: FeedItemList;
+  isFilterOpen: boolean;
+  setIsFilterOpen: (v: boolean) => void;
+  filters: FiltersResponse;
+  appliedFilterCount: number;
+  isSelected: (key: any, value: string) => boolean;
+  toggleParam: (key: any, value: string) => void;
+  handleResetFilters: () => void;
+  filteredSubCategories: SubCategory[];
+  itemCount: number;
+}
+
+const OnlyFeedCardsLayout = ({
+  data,
+  isFilterOpen,
+  setIsFilterOpen,
+  filters,
+  appliedFilterCount,
+  isSelected,
+  toggleParam,
+  handleResetFilters,
+  filteredSubCategories,
+  itemCount,
+}: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
+  const { aminitiesInfo } = useGeneralStore();
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  const {
+    data: categoriesSites,
+    isLoading,
+    isError,
+  } = useGetAllCategorySites();
 
   const [scale, setScale] = useState(1);
 
@@ -50,7 +96,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
 
-        // Skip if feedItem doesn't exist
         if (!feedItem || !cardLayout) return null;
 
         return (
@@ -75,7 +120,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
 
-        // Skip if feedItem doesn't exist
         if (!feedItem || !cardLayout) return null;
 
         return (
@@ -102,7 +146,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
           {layoutData.map((item, i) => {
             const feedItem = data[i + offset];
 
-            // Skip if feedItem doesn't exist
             if (!feedItem) return null;
 
             return (
@@ -144,7 +187,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
 
     const columnCount = 5;
 
-    // Track column heights for better distribution
     const columns: {
       businesses: any[];
       layouts: LayoutItem[];
@@ -155,14 +197,12 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
       height: 0,
     }));
 
-    // Distribute cards to the shortest column for visual balance
     extraBusinesses.forEach((biz, i) => {
-      if (!biz) return; // Skip undefined items
+      if (!biz) return;
 
       const layoutIndex = i % shuffledLayouts.length;
       const layout = shuffledLayouts[layoutIndex];
 
-      // Find the column with the least height
       const shortestColumnIndex = columns.reduce(
         (minIdx, col, idx) =>
           col.height < columns[minIdx].height ? idx : minIdx,
@@ -214,16 +254,347 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   };
 
   return (
-    <div
-      className={clsx(
-        "px-20 py-10 flex items-center justify-center w-full h-full relative",
-      )}
-    >
-      <div className="flex flex-col gap-5 items-start justify-start ">
-        {renderFullLayout()}
+    <div>
+      <div className="flex flex-col justify-center items-center py-12">
+        {/* title */}
+        <h1
+          className={`text-center ${"text-gray-900"}`}
+          style={{
+            fontFamily: "sans-serif",
+            fontSize: "clamp(3.5rem, 12vw, 9rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 0.85,
+          }}
+        >
+          לוקחים נשימה
+        </h1>{" "}
+        {/* subtitle */}
+        <p
+          className="text-center bg-gradient-to-l from-teal-400 via-cyan-400 to-teal-500 bg-clip-text text-transparent "
+          style={{
+            fontFamily: "sans-serif",
+            fontWeight: 600,
+            fontSize: "clamp(3.5rem, 16vw, 9rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 0.85,
+          }}
+        >
+          עם הנגב הפורח
+        </p>{" "}
+        <motion.div className="flex flex-wrap gap-3 justify-center mt-12">
+          {categoriesSites?.siteTopics?.map((topic: any) => {
+            return topic.siteCategories?.map((category: any) => {
+              const isActive = selectedCategories.includes(category.title);
+              return (
+                <motion.button
+                  key={category.title}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() =>
+                    setSelectedCategories(
+                      isActive
+                        ? selectedCategories.filter((c) => c !== category.title)
+                        : [...selectedCategories, category.title],
+                    )
+                  }
+                  className={`px-6 py-3 rounded-xl transition-all flex items-center gap-2 justify-center text-sm font-medium backdrop-blur-sm ${
+                    isActive
+                      ? `bg-blue-500 text-white shadow-lg`
+                      : "bg-white/80 text-gray-700 hover:bg-white shadow-md"
+                  }`}
+                >
+                  {category.title}
+                </motion.button>
+              );
+            });
+          })}
+        </motion.div>
+      </div>
+
+      {/* ── MAIN CONTENT: sticky filter panel + scrollable feed cards side by side ── */}
+      <div
+        className={clsx(
+          "px-20 py-10 flex gap-8 items-start w-full h-full relative overflow-hidden",
+        )}
+      >
+        {/* ── STICKY INLINE FILTER PANEL ── */}
+        <AnimatePresence>
+          {isFilterOpen && (
+            <motion.div
+              key="inline-filter"
+              initial={{ opacity: 0, x: 40, width: 0 }}
+              animate={{ opacity: 1, x: 0, width: 500 }}
+              exit={{ opacity: 0, x: 40, width: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="sticky top-6 self-start shrink-0 overflow-hidden"
+              style={{ width: 320 }}
+            >
+              <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
+                  <span className="font-bold text-lg text-theme">
+                    {filterPanelLabels.main}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500">
+                      {itemCount} {filterPanelLabels.results}
+                    </span>
+                    <button
+                      onClick={() => setIsFilterOpen(false)}
+                      className="custom-cursor p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <CloseIcon />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Scrollable filter body */}
+                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+                  {/* MAIN CATEGORIES & SERVICE TYPES */}
+                  <div>
+                    <div className="font-bold text-theme mb-2">
+                      {filterPanelLabels.main}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {aminitiesInfo?.poi && (
+                        <FilterButton
+                          active={isSelected(
+                            "serviceTypes",
+                            SERVICE_TYPE_MAP.poi,
+                          )}
+                          onClick={() => {
+                            toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi);
+                            sendGAEvent(triggerName.clickToServiceType, {
+                              service_types: filterPanelLabels.pointOfInterest,
+                            });
+                          }}
+                          icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
+                          activeIcon={<PointOfInterestIcon strokColor="#fff" />}
+                          label={filterPanelLabels.pointOfInterest}
+                        />
+                      )}
+                      {aminitiesInfo?.funday && (
+                        <FilterButton
+                          active={isSelected(
+                            "serviceTypes",
+                            SERVICE_TYPE_MAP.fun_day,
+                          )}
+                          onClick={() => {
+                            toggleParam(
+                              "serviceTypes",
+                              SERVICE_TYPE_MAP.fun_day,
+                            );
+                            sendGAEvent(triggerName.clickToServiceType, {
+                              service_types: filterPanelLabels.funDays,
+                            });
+                          }}
+                          icon={<FundayIcon strokColor="#7c7c7c" />}
+                          activeIcon={<FundayIcon strokColor="#fff" />}
+                          label={filterPanelLabels.funDays}
+                        />
+                      )}
+                      {aminitiesInfo?.event && (
+                        <FilterButton
+                          active={isSelected(
+                            "serviceTypes",
+                            SERVICE_TYPE_MAP.event,
+                          )}
+                          onClick={() => {
+                            toggleParam("serviceTypes", SERVICE_TYPE_MAP.event);
+                            sendGAEvent(triggerName.clickToServiceType, {
+                              service_types: filterPanelLabels.events,
+                            });
+                          }}
+                          icon={<EventIcon strokColor="#7c7c7c" />}
+                          activeIcon={<EventIcon strokColor="#fff" />}
+                          label={filterPanelLabels.events}
+                        />
+                      )}
+                      {aminitiesInfo?.trip && (
+                        <FilterButton
+                          active={isSelected(
+                            "serviceTypes",
+                            SERVICE_TYPE_MAP.route,
+                          )}
+                          onClick={() => {
+                            toggleParam("serviceTypes", SERVICE_TYPE_MAP.route);
+                            sendGAEvent(triggerName.clickToServiceType, {
+                              service_types: filterPanelLabels.routes,
+                            });
+                          }}
+                          icon={<RouteIcon strokColor="#7c7c7c" />}
+                          activeIcon={<RouteIcon strokColor="#fff" />}
+                          label={filterPanelLabels.routes}
+                        />
+                      )}
+                      {/* Dynamic categories from API */}
+                      {categoriesSites?.siteTopics?.map((topic: any) =>
+                        topic.siteCategories?.map((category: any) => (
+                          <FilterButton
+                            key={category.title}
+                            active={isSelected("categoryIds", category.title)}
+                            onClick={() => {
+                              toggleParam("categoryIds", category.title);
+                              sendGAEvent(triggerName.clickToCategory, {
+                                category_id: category.title,
+                                category_name: category.title,
+                              });
+                            }}
+                            icon={null}
+                            activeIcon={null}
+                            label={category.title}
+                          />
+                        )),
+                      )}
+                    </div>
+                  </div>
+
+                  {/* SUBCATEGORIES */}
+                  {filteredSubCategories?.length > 0 && (
+                    <div>
+                      <div className="font-bold text-theme mb-2">
+                        {filterPanelLabels.second}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {filteredSubCategories.map((item) => (
+                          <FilterChip
+                            key={item._id}
+                            active={isSelected("subCategoryIds", item._id)}
+                            onClick={() => {
+                              toggleParam("subCategoryIds", item._id);
+                              sendGAEvent(triggerName.clickToSubCategory, {
+                                subcategory_id: item._id,
+                                subcategory_name: item.hebrewName,
+                              });
+                            }}
+                            label={item.hebrewName}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ACCESSIBILITY */}
+                  {filters?.accessibilities?.length > 0 && (
+                    <div>
+                      <div className="font-bold text-theme mb-2">
+                        {filterPanelLabels.accessibility}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {filters.accessibilities.map((item) => (
+                          <FilterChip
+                            key={item._id}
+                            active={isSelected("accessibilityIds", item._id)}
+                            onClick={() => {
+                              toggleParam("accessibilityIds", item._id);
+                              sendGAEvent(triggerName.clickToAccessibility, {
+                                accessibility_id: item._id,
+                                accessibility_name: item.hebrewName,
+                              });
+                            }}
+                            label={item.hebrewName}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TARGET AUDIENCE (Group Types) */}
+                  {filters?.groupTypes?.length > 0 && (
+                    <div>
+                      <div className="font-bold text-theme mb-2">
+                        {filterPanelLabels.targetAudiences}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {filters.groupTypes.map((item) => (
+                          <FilterChip
+                            key={item._id}
+                            active={isSelected("groupTypeIds", item._id)}
+                            onClick={() => {
+                              toggleParam("groupTypeIds", item._id);
+                              sendGAEvent(triggerName.clickToGroupType, {
+                                group_type_id: item._id,
+                                group_type_name: item.hebrewName,
+                              });
+                            }}
+                            label={item.hebrewName}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer actions */}
+                <div className="shrink-0 flex items-center justify-between px-5 py-4 border-t border-gray-100">
+                  <div
+                    onClick={() => setIsFilterOpen(false)}
+                    className="custom-cursor"
+                  >
+                    <SunsetButton
+                      size={50}
+                      variant="black"
+                      appliedFilterCount={appliedFilterCount}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    disabled={appliedFilterCount === 0}
+                    className={clsx(
+                      appliedFilterCount === 0
+                        ? "cursor-not-allowed text-black/30"
+                        : "custom-cursor bg-black/80 text-white font-bold hover:bg-black",
+                      "border border-black/20 font-bold text-lightGray rounded-xl px-8 py-2 transition-colors",
+                    )}
+                  >
+                    {filterPanelLabels.clearAll}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── FEED CARDS ── */}
+        <div className="flex flex-col gap-5 items-start justify-start flex-1 min-w-0 overflow-hidden">
+          {renderFullLayout()}
+        </div>
       </div>
     </div>
   );
 };
+
+// Reusable Filter Button (for icons)
+const FilterButton: React.FC<{
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  activeIcon: React.ReactNode;
+  label: string;
+}> = ({ active, onClick, icon, activeIcon, label }) => (
+  <div
+    onClick={onClick}
+    className={`custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
+      ${active ? "bg-black text-white" : "text-theme"}`}
+  >
+    {active ? activeIcon : icon}
+    <span className="text-[12px] font-bold">{label}</span>
+  </div>
+);
+
+// Reusable Filter Chip
+const FilterChip: React.FC<{
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}> = ({ active, onClick, label }) => (
+  <span
+    onClick={onClick}
+    className={`custom-cursor px-4 h-[38px] flex items-center justify-center rounded-3xl text-[12px] font-bold border border-theme transition-all
+      ${active ? "bg-black text-white" : "text-theme"}`}
+  >
+    {label}
+  </span>
+);
 
 export default OnlyFeedCardsLayout;

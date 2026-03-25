@@ -23,6 +23,8 @@ import {
 import { CODE } from "@/constant/envConstants";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import useGeneralStore from "@/stores/generalStore";
+import FeedLayoutDropdown from "./FeedLayoutDropdown";
+import { ShoppingCart } from "lucide-react";
 // import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
@@ -50,9 +52,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             </Link>
           </div>
 
-          <div className="flex justify-center col-span-2">
-            {showFilterTab && <FeedLyoutSwitcTabs />}
-          </div>
+          <div className="flex justify-center col-span-2"></div>
 
           <div className="flex items-center justify-end col-span-4">
             {/* <button
@@ -97,7 +97,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             <div className="w-[1px] h-10 bg-lightGray mx-4" />
 
             <div className="flex items-center gap-2.5">
-              <SearchFlow />
+              {/* <SearchFlow /> */}
               {pathname !== pathNames.checkout &&
                 pathname !== pathNames.cart && (
                   <div
@@ -111,11 +111,16 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                         </span>
                       </div>
                     )}
-                    <ShopbagIcon />
+                    <ShoppingCart className="text-gray-500 font-light" />
                   </div>
                 )}
               {/* <UserIconHoverCard /> */}
               <CurrentTempOfYourCity />
+              <div>
+                {showFilterTab && (
+                  <FeedLayoutDropdown showFilterTab={showFilterTab} />
+                )}
+              </div>
             </div>
           </div>
         </div>
