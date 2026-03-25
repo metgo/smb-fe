@@ -31,6 +31,7 @@ interface Filters {
     start: string;
     end: string;
   };
+  isTrip: string;
 }
 
 interface ContentsProps {
@@ -186,8 +187,9 @@ const Contents = ({
           >
             {t("source_backlog_title")}
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            ({t("source_backlog_description", { count: totalData })})
+          <p className="text-sm text-gray-600 dark:text-gray-400 flex gap-1">
+            <div>{totalData}</div>
+            {currentTab} {t("available")}
           </p>
 
           <div className="flex flex-1 justify-end" ref={ref}>
@@ -242,7 +244,9 @@ const Contents = ({
               storageKey="contentSearchTerm"
             />
           </div>
-          <FilterButton value={showFilters} onChange={setShowFilters} />
+          {currentTab !== "POI" && (
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+          )}
           <ViewModeToggle
             onChange={setViewMode}
             value={viewMode}
@@ -335,6 +339,34 @@ const Contents = ({
                     />
                   </div>
                 )}
+
+                {currentTab === "Trips" && (
+                  <div className="flex flex-col min-w-45">
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("isTrip")}
+                    </label>
+                    <select
+                      value={filters.isTrip}
+                      onChange={(e) =>
+                        setFilters({
+                          ...filters,
+                          isTrip: e.target.value,
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border ${
+                        isDark
+                          ? "bg-gray-900 border-gray-700 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="all">{tc("all")}</option>
+                      <option value="true">{tc("yes")}</option>
+                      <option value="false">{tc("no")}</option>
+                    </select>
+                  </div>
+                )}
                 {/* ── Event filters ── */}
                 {currentTab === "Events" && (
                   <div className="flex flex-col min-w-45">
@@ -404,7 +436,7 @@ const Contents = ({
                       />
                       <input
                         type="date"
-                        value={filters?.dateRangeFilter.start}
+                        value={filters?.dateRangeFilter.end}
                         onChange={(e) =>
                           setFilters({
                             ...filters,

@@ -63,6 +63,7 @@ interface Filters {
     start: string;
     end: string;
   };
+  isTrip: string;
 }
 type PanelFocus = "both" | "left" | "right";
 
@@ -301,6 +302,7 @@ export default function ContentMgmtPage() {
         start: "",
         end: "",
       },
+      isTrip: "all",
     },
   };
   // Replace the single page/search state with per-tab state
@@ -347,28 +349,41 @@ export default function ContentMgmtPage() {
 
   const productParams = useMemo(() => {
     const { page, searchQuery, filters } = tabState["Products"];
-    const params: any = { page, limit: 20, status: "APPROVED", externalApiId };
+    const params: any = {
+      page,
+      limit: 20,
+      status: "APPROVED",
+      externalApiId,
+      dmoId,
+      authorityId,
+    };
     if (filters.businessId) {
       params.businessId = filters.businessId;
     }
     if (searchQuery) params.search = searchQuery;
     return params;
-  }, [productTab, language]);
+  }, [productTab, language, dmoId, authorityId, externalApiId]);
 
   const tripParams = useMemo(() => {
-    const { page, searchQuery } = tabState["Trips"];
+    const { page, searchQuery, filters } = tabState["Trips"];
     const params: any = {
       dmoId,
       authorityId,
       page,
       limit: 20,
     };
+
+    if (filters.isTrip !== "all") {
+      params.isTrip = filters.isTrip;
+    }
     if (searchQuery) params.search = searchQuery;
-  }, [tripTab, language]);
+
+    return params;
+  }, [tripTab, language, authorityId, dmoId]);
 
   const eventParams = useMemo(() => {
     const { page, searchQuery, filters } = tabState["Events"];
-    const params: any = { page, limit: 20 };
+    const params: any = { page, limit: 20, status: "APPROVED" };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
@@ -393,7 +408,7 @@ export default function ContentMgmtPage() {
       authorityId,
     };
     return params;
-  }, [poiTab, language]);
+  }, [poiTab, language, dmoId, authorityId]);
 
   const {
     data: businessData,
