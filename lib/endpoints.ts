@@ -2,7 +2,7 @@ import { CODE, BASE_URL, SITE_ENVIRONMENT } from "@/constant/envConstants";
 
 export const urls = {
   accessibilities: `${BASE_URL}/accessibilities`,
-  tourismBusinesses: `${BASE_URL}/tourism/businesses`,
+  tourismBusinesses: `${BASE_URL}/businesses`,
   carts: `${BASE_URL}/carts`,
   categories: `${BASE_URL}/categories?campCode=${CODE}`,
   groupTypes: `${BASE_URL}/group-types`,
@@ -16,7 +16,7 @@ export const urls = {
   vouchers: `${BASE_URL}/vouchers`,
   externalApi: `${BASE_URL}/external-api`,
   siteInfo: `${BASE_URL}/external-api/site-info`,
-  businessDetails: `${BASE_URL}/tourism/businesses`,
+  businessDetails: `${BASE_URL}/businesses`,
   sendContactInfo: `${BASE_URL}/contact-us`,
 
   productsDetails: `${BASE_URL}/products`,
