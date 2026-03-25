@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { stationCategory } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/helpers";
 import { IconImage, MapNavButton, NextImage } from "@/components/ui";
 
 // Station Card Component
@@ -35,7 +36,9 @@ const StationCard = ({ station }: { station: TrailStationProps }) => {
         </div>
         <div
           className="font-normal text-theme text-sm line-clamp-2"
-          dangerouslySetInnerHTML={{ __html: station?.description || "" }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(station?.description || ""),
+          }}
         />
         <div className="flex items-center justify-end gap-2 w-full mt-1.75">
           <MapNavButton

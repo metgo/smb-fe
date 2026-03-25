@@ -8,6 +8,7 @@ import { IoIosCloseCircle } from "react-icons/io";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import { misc } from "@/constant/hebrew";
+import { sanitizeHtml } from "@/lib/helpers";
 import { useTrailStations } from "@/hooks";
 import { stationCategory } from "@/lib/utils";
 import { IconImage, MapNavButton, NextImage } from "@/components/ui";
@@ -78,7 +79,9 @@ const StationCard = ({
           </div>
           <div
             className="font-normal text-theme text-sm max-sm:line-clamp-3 md:line-clamp-2"
-            dangerouslySetInnerHTML={{ __html: station?.description || "" }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(station?.description || ""),
+            }}
           />
           <div className="flex items-center justify-end gap-2 w-full mt-1.75">
             <MapNavButton

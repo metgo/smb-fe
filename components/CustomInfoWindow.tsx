@@ -7,6 +7,7 @@ import { FaHeart } from "react-icons/fa6";
 import { useEffect, useRef, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
+import { sanitizeHtml } from "@/lib/helpers";
 import { CardSkeleton } from "./skeletons";
 import useTrailStationStore from "@/stores/trailStationStore";
 import { getLocationDetailsById } from "@/actions/commonActions";
@@ -169,7 +170,7 @@ const CustomInfoWindow = ({
 
           <div
             dangerouslySetInnerHTML={{
-              __html: stationDetails?.description || "",
+              __html: sanitizeHtml(stationDetails?.description || ""),
             }}
             className={clsx(
               "line-clamp-1",

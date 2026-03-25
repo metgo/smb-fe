@@ -1,7 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
+import DOMPurify from "dompurify";
 
 import { pathNames } from "./endpoints";
 import { categoryIds, purposeTypeEnum } from "./utils";
+
+export function sanitizeHtml(html: string = ""): string {
+  if (!html) return "";
+  if (typeof window === "undefined") return html;
+  return DOMPurify.sanitize(html);
+}
 
 // Function to scale layout dimensions based on screen width
 export const scaleLayout = (

@@ -8,7 +8,7 @@ import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import MobileTrailFeedDetails from "../_mobile/TrailFeedDetails.mobile";
 import { NoDetailsFound } from "../../_components";
-import { ensureListStyles } from "@/lib/helpers";
+import { ensureListStyles, sanitizeHtml } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -38,7 +38,9 @@ const page = async ({ params }: PageProps) => {
                 <div
                   className="font-normal prose block"
                   dangerouslySetInnerHTML={{
-                    __html: ensureListStyles(trailsDetails?.description) || "",
+                    __html: sanitizeHtml(
+                      ensureListStyles(trailsDetails?.description) || "",
+                    ),
                   }}
                 />
               )}

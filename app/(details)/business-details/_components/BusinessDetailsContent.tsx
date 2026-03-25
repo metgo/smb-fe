@@ -15,9 +15,11 @@ import {
   MapPinned,
 } from "lucide-react";
 import { BusinessProducts, OpeningHoursModal } from ".";
+import { sanitizeHtml } from "@/lib/helpers";
 import { Map } from "../../_components";
 import { sendGAEvent } from "@/lib/analytics";
 import { triggerName } from "@/lib/googleEventsConfig";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 function DescriptionBlock({ html }: { html: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -35,7 +37,7 @@ function DescriptionBlock({ html }: { html: string }) {
       <div
         ref={ref}
         className={`text-base sm:text-lg leading-relaxed text-gray-700 overflow-hidden ${!expanded ? "line-clamp-2" : ""}`}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
       />
       {(isClamped || expanded) && (
         <button
@@ -99,11 +101,13 @@ const getAttributeIcon = (name: string) => {
 };
 
 const BusinessDetailsContent = ({ businessDetails }: Props) => {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showHoursModal, setShowHoursModal] = useState(false);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const { addFavoriteFeedItemId, favoriteFeedItemIds } =
+    useFavoriteFeedItemStore();
 
+  const isFavorite = favoriteFeedItemIds.includes(businessDetails?._id);
   const images = businessDetails.images ?? [];
   const isOpen = isCurrentlyOpen(
     businessDetails.openingHrs,
@@ -163,8 +167,8 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
         >
           <div className="flex gap-2 sm:gap-3 justify-start ">
             <motion.button
-              onClick={() => setIsFavorite(!isFavorite)}
-              className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
+              onClick={() => addFavoriteFeedItemId(businessDetails?._id)}
+              className="p-2.5 sm:p-3  cursor-pointer rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
               whileTap={{ scale: 0.9 }}
             >
               <motion.div
@@ -253,7 +257,7 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                   <div
                     className="text-lg sm:text-xl text-gray-600"
                     dangerouslySetInnerHTML={{
-                      __html: businessDetails?.shortDescription,
+                      __html: sanitizeHtml(businessDetails?.shortDescription),
                     }}
                   />
                 )}

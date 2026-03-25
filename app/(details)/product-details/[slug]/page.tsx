@@ -1,4 +1,5 @@
-import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
+import { getProductDetailsBySlug } from "@/actions/productActions";
+import { sanitizeHtml } from "@/lib/helpers";
 import { NoDetailsFound, ProductDetailsFilterTab } from "../../_components";
 import {
   ProductGallery,
@@ -17,14 +18,6 @@ const page = async ({ params }: PageProps) => {
 
   if (!productDetails) return <NoDetailsFound />;
 
-  const relatedProducts: Product[] = await getProducts(
-    productDetails.businessId._id,
-  );
-
-  const filteredRelatedProducts = relatedProducts?.filter?.(
-    (item) => item._id !== productDetails._id,
-  );
-
   const {
     name,
     description,
@@ -39,7 +32,6 @@ const page = async ({ params }: PageProps) => {
     businessId,
     accessibilitiesId,
   } = productDetails;
-  console.log("🚀 ~ page ~ openingHrs:", openingHrs);
 
   const firstDeliveryPrice = deliveryArea?.[0]?.price;
   const isFreeDelivery = firstDeliveryPrice === "0";
@@ -59,10 +51,11 @@ const page = async ({ params }: PageProps) => {
                 <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-gray-900">
                   {name}
                 </h1>
-
                 <div
                   className="text-lg text-gray-600 mb-4"
-                  dangerouslySetInnerHTML={{ __html: description }}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(description),
+                  }}
                 />
 
                 {/* Price */}
@@ -107,7 +100,9 @@ const page = async ({ params }: PageProps) => {
             <div className="text-2xl font-bold">תיאור מלא</div>
             <div
               className="font-normal"
-              dangerouslySetInnerHTML={{ __html: description || "" }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(description || ""),
+              }}
             />{" "}
           </div>
         )}
@@ -146,7 +141,10 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         {/* RELATED PRODUCTS */}
-        <RelatedProductsSection products={filteredRelatedProducts} />
+        <RelatedProductsSection
+          businessId={businessId._id}
+          currentProductId={productDetails._id}
+        />
       </div>
     </div>
   );
