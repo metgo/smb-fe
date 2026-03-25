@@ -20,6 +20,11 @@ declare interface ProductDetailsProps {
     deliveryReturnExchange: string[];
     deliveryAdditionalInfo: string;
   };
+  accessibilitiesId?: {
+    hebrewName: string;
+    name: string;
+    _id: string;
+  }[];
   openingHrs: OpeningHrs[];
   deliveryArea: DeliveryArea[];
   deliverySpecificSellerInfo: string[];

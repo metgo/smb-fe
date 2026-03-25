@@ -155,13 +155,13 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
       )}
 
       {/* Back Button & Action Buttons */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 md:pt-8 flex items-start">
+      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 md:pt-8 flex items-end justify-end">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="mb-6"
         >
-          <div className="flex gap-2 sm:gap-3">
+          <div className="flex gap-2 sm:gap-3 justify-start ">
             <motion.button
               onClick={() => setIsFavorite(!isFavorite)}
               className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
@@ -308,7 +308,7 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                         prev === images.length - 1 ? 0 : prev + 1,
                       )
                     }
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-20"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-5"
                   >
                     <ArrowRight className="w-6 h-6 text-gray-900 rotate-180" />
                   </button>
@@ -319,13 +319,13 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
                         prev === 0 ? images.length - 1 : prev - 1,
                       )
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-20"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-xl hover:scale-110 hover:bg-gray-100 transition-all z-5"
                   >
                     <ArrowRight className="w-6 h-6 text-gray-900" />
                   </button>
 
                   {/* Thumbnails */}
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-5">
                     <div className="flex gap-2">
                       {images.map((img, index) => (
                         <button

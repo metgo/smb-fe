@@ -175,8 +175,7 @@ interface DeliveryProductInfo {
   isSelected: boolean;
 }
 
-
- interface ProductRes {
+interface ProductRes {
   _id: string;
   name: string;
   description: string;

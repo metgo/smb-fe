@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { X } from 'lucide-react';
-import { motion } from 'motion/react';
+import { X } from "lucide-react";
+import { motion } from "motion/react";
 
 const DAY_LABELS: { key: string; label: string }[] = [
-  { key: 'sunday', label: 'ראשון' },
-  { key: 'monday', label: 'שני' },
-  { key: 'tuesday', label: 'שלישי' },
-  { key: 'wednesday', label: 'רביעי' },
-  { key: 'thursday', label: 'חמישי' },
-  { key: 'friday', label: 'שישי' },
-  { key: 'saturday', label: 'שבת' },
+  { key: "sunday", label: "ראשון" },
+  { key: "monday", label: "שני" },
+  { key: "tuesday", label: "שלישי" },
+  { key: "wednesday", label: "רביעי" },
+  { key: "thursday", label: "חמישי" },
+  { key: "friday", label: "שישי" },
+  { key: "saturday", label: "שבת" },
 ];
 
 interface Props {
@@ -19,8 +19,20 @@ interface Props {
   isAlwaysOpen: boolean;
 }
 
-const OpeningHoursModal = ({ setShowHoursModal, openingHrs, isAlwaysOpen }: Props) => {
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const OpeningHoursModal = ({
+  setShowHoursModal,
+  openingHrs,
+  isAlwaysOpen,
+}: Props) => {
+  const dayNames = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   const today = dayNames[new Date().getDay()];
 
   return (
@@ -53,20 +65,28 @@ const OpeningHoursModal = ({ setShowHoursModal, openingHrs, isAlwaysOpen }: Prop
           <div className="space-y-2">
             {DAY_LABELS.map((day) => {
               const isToday = day.key === today;
-              const hours = openingHrs?.find((h) => h.days?.toLowerCase() === day.key);
+              const hours = openingHrs?.find(
+                (h) => h.days?.toLowerCase() === day.key,
+              );
 
               return (
                 <div
                   key={day.key}
                   className={`flex items-center justify-between py-3 px-4 rounded-xl ${
-                    isToday ? 'bg-teal-50' : 'bg-gray-50'
+                    isToday ? "bg-teal-50" : "bg-gray-50"
                   }`}
                 >
-                  <span className={`text-base font-medium ${isToday ? 'text-teal-600' : 'text-gray-700'}`}>
+                  <span
+                    className={`text-base font-medium ${isToday ? "text-teal-600" : "text-gray-700"}`}
+                  >
                     {day.label}
                   </span>
-                  <span className={`text-base font-bold ${isToday ? 'text-teal-600' : 'text-gray-600'}`}>
-                    {hours && !hours.isHoliday ? `${hours.open} - ${hours.close}` : 'סגור'}
+                  <span
+                    className={`text-base font-bold ${isToday ? "text-teal-600" : "text-gray-600"}`}
+                  >
+                    {hours && !hours.isHoliday
+                      ? `${hours.open} - ${hours.close}`
+                      : "סגור"}
                   </span>
                 </div>
               );

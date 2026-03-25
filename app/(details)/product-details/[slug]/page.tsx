@@ -37,6 +37,7 @@ const page = async ({ params }: PageProps) => {
     deliveryReturnExchange,
     deliveryAdditionalInfo,
     businessId,
+    accessibilitiesId,
   } = productDetails;
   console.log("🚀 ~ page ~ openingHrs:", openingHrs);
 
@@ -101,13 +102,16 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         <ProductQtyBtns product={productDetails} />
-        <div className="rounded-3xl shadow-lg bg-white mb-8 p-6 lg:p-8">
-          <div className="text-2xl font-bold">תיאור מלא</div>
-          <div
-            className="font-normal"
-            dangerouslySetInnerHTML={{ __html: description || "" }}
-          />{" "}
-        </div>
+        {productDetails.description && (
+          <div className="rounded-3xl shadow-lg bg-white mb-8 p-6 lg:p-8">
+            <div className="text-2xl font-bold">תיאור מלא</div>
+            <div
+              className="font-normal"
+              dangerouslySetInnerHTML={{ __html: description || "" }}
+            />{" "}
+          </div>
+        )}
+
         {/* INFO CARDS + DESCRIPTION/DELIVERY TABS */}
         <div className="flex flex-col lg:flex-row gap-4 mb-8">
           {/* Info Cards — 1/4 */}
@@ -136,6 +140,7 @@ const page = async ({ params }: PageProps) => {
               deliverySpecificSellerInfo={deliverySpecificSellerInfo}
               deliveryReturnExchange={deliveryReturnExchange}
               deliveryAdditionalInfo={deliveryAdditionalInfo}
+              accessibilitiesId={accessibilitiesId}
             />
           </div>
         </div>

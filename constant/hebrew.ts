@@ -74,6 +74,7 @@ export const menuItems = {
   ourStory: "הסיפור שלנו",
   products: "מוצרים",
   deliveries: "משלוחים",
+  accessibilities: "נגישות",
   productDescription: "תיאור המוצר",
   businessPage: "עמוד עסקים",
   visitorCenter: "מרכז המבקרים",
