@@ -31,6 +31,7 @@ import {
   ProductsAudit,
   ProductsAuditSchema,
 } from '../products/schema/products-audit.schema';
+import { BusinessSharedController } from './shared/controllers/business.controller';
 
 @Module({
   imports: [
@@ -51,7 +52,11 @@ import {
     forwardRef(() => DMOModule),
     forwardRef(() => ProductsModule),
   ],
-  controllers: [BusinessMarketplaceController, BusinessTourismController],
+  controllers: [
+    BusinessMarketplaceController,
+    BusinessTourismController,
+    BusinessSharedController,
+  ],
   providers: [
     BusinessService,
     GetAllBusinessForMapHandler,

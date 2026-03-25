@@ -17,7 +17,6 @@ import { GetAllBusinessesForMapRequest } from 'src/modules/business/shared/reque
 import { GetAllApprovedBusinessesQuery } from 'src/modules/business/tourism/queries/get-all-approved-businesses.query';
 import { GetAllApprovedBusinessesRequest } from 'src/modules/business/tourism/request/get-all-approved-businesses.request';
 import { GetAllBusinessForMapTourismQuery } from './queries/get-all-businesses-for-map.query';
-import { GetBusinessDetailForTourismQuery } from './queries/get-business-detail.query';
 import { GetBusinessDetailForMapTourismQuery } from './queries/get-business-detail-for-map.query';
 import { GetByCampCodeQueryRequest } from '../shared/request/get-by-campcode.request';
 import { GetSearchRecommendationQuery } from './queries/get-search-recommendation.query';
@@ -45,32 +44,6 @@ export class BusinessTourismController {
     );
 
     return businesses;
-  }
-
-  @ApiEndpoint({
-    tags: ['Tourism-Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    operation: 'Get any business detail',
-    params: [
-      {
-        name: 'slug',
-        type: 'string',
-        required: true,
-      },
-    ],
-  })
-  @HttpCode(HttpStatus.OK)
-  @Get('businesses/:slug')
-  async getBusinessDetailBySlug(
-    @Param('slug') slug: string,
-    @Query() query: GetByCampCodeQueryRequest,
-  ) {
-    return await this.queryBus.execute(
-      new GetBusinessDetailForTourismQuery(slug, query),
-    );
   }
 
   @ApiEndpoint({
