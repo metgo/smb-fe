@@ -1,3 +1,4 @@
+"se client";
 import { getProductDetailsBySlug } from "@/actions/productActions";
 import { sanitizeHtml } from "@/lib/helpers";
 import { NoDetailsFound, ProductDetailsFilterTab } from "../../_components";
@@ -7,6 +8,9 @@ import {
   ProductQtyBtns,
   RelatedProductsSection,
 } from "../_components";
+import { Copy, Share2 } from "lucide-react";
+import { sendGAEvent } from "@/lib/analytics";
+import { triggerName } from "@/lib/googleEventsConfig";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -36,13 +40,37 @@ const page = async ({ params }: PageProps) => {
   const firstDeliveryPrice = deliveryArea?.[0]?.price;
   const isFreeDelivery = firstDeliveryPrice === "0";
 
+  const handleCopy = async () => {
+    const url = window.location.href;
+    try {
+      sendGAEvent(triggerName.clickToShareUrl, { share_url: url });
+      await navigator.clipboard.writeText(url);
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
   return (
     <div
       className="min-h-screen transition-colors duration-300 bg-gray-50"
       dir="rtl"
     >
+      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-3 pt-40 md:pt-8 flex items-end justify-end">
+        <button
+          // onClick={handleCopy}
+          className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
+        >
+          <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+        </button>
+        <button
+          onClick={handleCopy}
+          className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
+        >
+          <Copy className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+        </button>
+      </div>
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-40 md:pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-40 md:pt-10">
         {/* HERO SECTION — name, price, gallery */}
         <div className="rounded-3xl shadow-lg overflow-hidden mb-8 bg-white">
           <div className="relative p-8 pb-6">
