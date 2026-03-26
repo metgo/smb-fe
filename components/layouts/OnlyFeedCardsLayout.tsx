@@ -28,9 +28,7 @@ interface OnlyFeedCardsLayoutProps {
   itemCount: number;
 }
 
-const OnlyFeedCardsLayout = ({
-  data,
-}: OnlyFeedCardsLayoutProps) => {
+const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);
@@ -40,7 +38,7 @@ const OnlyFeedCardsLayout = ({
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsCategoryHeaderInView(entry.isIntersecting),
-      { threshold: 0 }
+      { threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -65,7 +63,6 @@ const OnlyFeedCardsLayout = ({
     const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
     return shuffleArray(layout16);
   }, [scale]);
-
 
   // Early return AFTER all hooks
   if (!data || data.length < 1) {
@@ -241,8 +238,15 @@ const OnlyFeedCardsLayout = ({
 
   return (
     <div>
-      <div ref={categoryHeaderRef} className="flex flex-col justify-center items-center py-6">
-        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(presetFeedFilters?.header || "") }} />
+      <div
+        ref={categoryHeaderRef}
+        className="flex flex-col justify-center items-center py-6"
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(presetFeedFilters?.header || ""),
+          }}
+        />
         <FeedCategoryButtons />
       </div>
 
@@ -255,12 +259,8 @@ const OnlyFeedCardsLayout = ({
           {renderFullLayout()}
         </div>
       </div>
-
-
     </div>
   );
 };
-
-
 
 export default OnlyFeedCardsLayout;

@@ -16,6 +16,7 @@ interface SearchButtonProps {
   onClick: () => void;
   isFilterOpen: boolean;
   setIsFilterOpen: (v: boolean) => void;
+  isFilterDrawerOpen?: boolean
 }
 
 const BASE_SIZE = 96;
@@ -92,7 +93,7 @@ export const SearchButton = ({
   onClick,
   size = 96,
   isFilterOpen,
-  setIsFilterOpen,
+  setIsFilterOpen,isFilterDrawerOpen
 }: SearchButtonProps) => {
   const config = getAnimationConfig(variant);
 
@@ -175,7 +176,7 @@ export const SearchButton = ({
             {/* Icon */}
             <div className="absolute inset-0 flex items-center justify-center">
               <AnimatePresence mode="wait">
-                {isFilterOpen ? (
+                {isFilterDrawerOpen ? (
                   <motion.div
                     key="close"
                     initial={{ rotate: -180, opacity: 0, scale: 0.3 }}

@@ -22,6 +22,7 @@ import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { SearchButton } from "../filter-icon/SearchButton";
 import { ChevronDown } from "lucide-react";
+import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
@@ -46,13 +47,15 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   handleResetFilters,
   filteredSubCategories,
 }) => {
-  const { aminitiesInfo, isFilterDrawerOpen } = useGeneralStore();
+  const { aminitiesInfo, isFilterDrawerOpen, presetFeedFilters } =
+    useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
 
   if (!isOpen) return null;
 
-  const { setIsFilterDrawerOpen } = useGeneralStore();
+  const { setIsFilterDrawerOpen, selectedSiteCategories, toggleSiteCategory } =
+    useGeneralStore();
 
   const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
   const {
@@ -75,7 +78,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     handleFilterTooltipShown(true);
   };
 
-  const { data: categoriesSites } = useGetAllCategorySites();
   return (
     <div>
       <div
@@ -107,23 +109,21 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
           <span className="font-bold text-lg text-black">
             {filterPanelLabels.searchText}
           </span>
-          {/* {searchKeyword !== "" && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              disabled={appliedFilterCount === 0}
-              className={clsx(
-                appliedFilterCount === 0
-                  ? "cursor-not-allowed opacity-30"
-                  : "custom-cursor hover:bg-cyan-600",
-                "bg-cyan-500 text-white font-bold rounded-full px-4 py-1.5 text-sm flex items-center gap-1.5 transition-colors",
-              )}
-            >
-              <span className="text-base">↺</span>
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            disabled={appliedFilterCount === 0}
+            className={clsx(
+              appliedFilterCount === 0
+                ? "cursor-not-allowed opacity-30"
+                : "custom-cursor hover:bg-cyan-600",
+              "bg-cyan-500 text-white font-bold rounded-full px-4 py-1.5 text-sm flex items-center gap-1.5 transition-colors",
+            )}
+          >
+            <span className="text-base">↺</span>
 
-              {filterPanelLabels.clearAll}
-            </button>
-          )} */}
+            {filterPanelLabels.clearAll}
+          </button>
         </div>
 
         {/* SCROLLABLE CONTENT */}
@@ -262,28 +262,39 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               className="overflow-hidden"
             >
               <>
-                {categoriesSites?.siteTopics?.map((topic: any) => (
+                {presetFeedFilters?.siteTopics?.map((topic: any) => (
                   <div key={topic.title} className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-500  tracking-wide mb-2 px-1">
                       {topic.title}
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {topic.siteCategories?.map((category: any) => (
-                        <FilterButton
-                          key={category.title}
-                          active={isSelected("categoryIds", category.title)}
-                          onClick={() => {
-                            toggleParam("categoryIds", category.title);
-                            sendGAEvent(triggerName.clickToCategory, {
-                              category_id: category.title,
-                              category_name: category.title,
-                            });
-                          }}
-                          icon={null}
-                          activeIcon={null}
-                          label={category.title}
-                        />
-                      ))}
+                      {topic.siteCategories.map((cat: any, index: number) => {
+                        const isSelected = selectedSiteCategories.some(
+                          (c) => c.title === cat.title,
+                        );
+                        const gradient =
+                          CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => toggleSiteCategory(cat)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm custom-cursor transition-colors whitespace-nowrap ${
+                              isSelected
+                                ? `bg-gradient-to-r ${gradient} text-white shadow-md`
+                                : "bg-white text-theme border border-[#EAEAEA] hover:bg-[#F5F5F5]"
+                            }`}
+                          >
+                            {cat.icon && (
+                              <IconImage
+                                icon={cat.icon}
+                                width={18}
+                                height={18}
+                              />
+                            )}
+                            <span>{cat.titleHe ?? cat.title}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -428,11 +439,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         {/* CLOSE BUTTON */}
         <div className="shrink-0 flex items-center justify-between px-4 gap-4 mt-4">
           <div
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsOpen(!isOpen)}
             className="relative custom-cursor"
           >
             <SearchButton
               onClick={handleFilterIconClick}
+              isFilterDrawerOpen={isFilterDrawerOpen}
               activeFiltersCount={appliedFilterCount}
               isFilterOpen={isFilterOpen}
               setIsFilterOpen={setIsFilterOpen}
@@ -456,7 +468,7 @@ const FilterButton: React.FC<{
 }> = ({ active, onClick, icon, activeIcon, label }) => (
   <div
     onClick={onClick}
-    className={`md:col-span-6  max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2  bg-[#f4f5f7]  rounded-xl ps-3 h-[42px] transition-all
+    className={`md:col-span-6  max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2  bg-white  rounded-3xl ps-3 h-[42px] transition-all
       ${active ? "  text-gray-700 border" : "text-theme  "}`}
   >
     <div className="mr-4">{icon}</div>
