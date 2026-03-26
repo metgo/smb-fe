@@ -15,6 +15,7 @@ import {
   MapPinned,
 } from "lucide-react";
 import { BusinessProducts, OpeningHoursModal } from ".";
+import UrlCopyInfoModal from "../../_components/UrlCopyInfoModal";
 import { sanitizeHtml } from "@/lib/helpers";
 import { Map } from "../../_components";
 import { sendGAEvent } from "@/lib/analytics";
@@ -103,6 +104,7 @@ const getAttributeIcon = (name: string) => {
 const BusinessDetailsContent = ({ businessDetails }: Props) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showHoursModal, setShowHoursModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const { addFavoriteFeedItemId, favoriteFeedItemIds } =
     useFavoriteFeedItemStore();
@@ -131,6 +133,7 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
     try {
       sendGAEvent(triggerName.clickToShareUrl, { share_url: url });
       await navigator.clipboard.writeText(url);
+      setShowShareModal(true);
     } catch (err) {
       console.error("Failed to copy: ", err);
     }
@@ -150,6 +153,10 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-gray-50">
+      {showShareModal && (
+        <UrlCopyInfoModal onClose={() => setShowShareModal(false)} />
+      )}
+
       {showHoursModal && (
         <OpeningHoursModal
           setShowHoursModal={setShowHoursModal}

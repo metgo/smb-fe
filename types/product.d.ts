@@ -48,6 +48,7 @@ interface ProductInfoProps {
   };
   businessId: productBusiness;
   description: string;
+  shortDescription: string;
   deliveryArea: DeliveryArea[];
   deliverySpecificSellerInfo: string[];
   categories: categoires[];
