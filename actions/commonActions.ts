@@ -96,7 +96,7 @@ export async function getComboFilters() {
 
 export async function getFilters() {
   try {
-    const res = await fetch(`${urls.filters}?identifierId=${IdentifierId}`);
+    const res = await fetch(`${urls.filters}?campCode=${CODE}`);
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;
