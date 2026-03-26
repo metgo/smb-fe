@@ -71,8 +71,8 @@ const MobileNavbar = () => {
         </div>
         {isFilterTabShow && (
           <div className="flex items-center justify-end gap-2 col-span-8">
-            <div className="flex items-center justify-center">
-               {pathname !== pathNames.checkout &&
+            <div className="flex items-center justify-center gap-2">
+              {pathname !== pathNames.checkout &&
                 pathname !== pathNames.cart && (
                   <div
                     onClick={() => setIsCartDrawerOpen(true)}
@@ -85,10 +85,10 @@ const MobileNavbar = () => {
                         </span>
                       </div>
                     )}
-                    <ShoppingCart className="text-gray-500 font-light" />
+                    <ShoppingCart className=" font-light" />
                   </div>
                 )}
-               {activeFilterTabMobile === "map" && (
+              {activeFilterTabMobile === "map" && (
                 <button
                   onClick={() => {
                     setActiveFilterTabMobile("gallery");
@@ -112,8 +112,6 @@ const MobileNavbar = () => {
                   <FaRegMap color="#0F353A" size={24} />
                 </button>
               )}
-             
-             
             </div>
 
             {/* <SearchFlowMobile /> */}

@@ -469,8 +469,8 @@ type Filters = {
 
 export const filterBusinesses = (
   businesses: any[],
-  filterState: any, 
-  categoriesSites?: any, 
+  filterState: any,
+  categoriesSites?: any,
 ) => {
   console.log("🚀 ~ helpers ~ filterState:", filterState);
   const hasAnyFilter =
@@ -507,10 +507,9 @@ export const filterBusinesses = (
         allowedBusinessIds.map((id: any) => id?.toString().trim()),
       );
 
-
       // Safe check
       const businessIdStr = business?._id?.toString().trim();
-      console.log("🚀 ~ filterBusinesses ~ businessIdStr:", businessIdStr)
+      console.log("🚀 ~ filterBusinesses ~ businessIdStr:", businessIdStr);
 
       if (businessIdStr && allowedBusinessIdsSet.has(businessIdStr)) {
         matched = true;
