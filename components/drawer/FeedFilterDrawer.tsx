@@ -106,26 +106,44 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   label={filterPanelLabels.pointOfInterest}
                 />
               )}
-              {data?.siteTopics?.map((topic: any) => {
-                return topic.siteCategories?.map((category: any) => {
-                  return (
-                    <FilterButton
-                      key={category.title}
-                      active={isSelected("categoryIds", category.title)}
-                      onClick={() => {
-                        toggleParam("categoryIds", category.title);
-                        sendGAEvent(triggerName.clickToCategory, {
-                          category_id: category.title,
-                          category_name: category.title,
-                        });
-                      }}
-                      icon={null}
-                      activeIcon={null}
-                      label={category.title}
-                    />
+              <div className="border-b border-primary py-3">
+                {data?.siteTopics?.map((topic: any) => {
+                  const topicSubCategories = filteredSubCategories.filter(
+                    (item) =>
+                      topic.siteCategories?.some((cat: any) =>
+                        cat.subCategories?.some(
+                          (sub: any) => sub._id === item._id,
+                        ),
+                      ),
                   );
-                });
-              })}
+
+                  if (!topicSubCategories.length) return null;
+
+                  return (
+                    <div key={topic.title} className="mb-4">
+                      <div className="font-bold text-theme mb-1">
+                        {topic.title}
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {topicSubCategories.map((item) => (
+                          <FilterChip
+                            key={item._id}
+                            active={isSelected("subCategoryIds", item._id)}
+                            onClick={() => {
+                              toggleParam("subCategoryIds", item._id);
+                              sendGAEvent(triggerName.clickToSubCategory, {
+                                subcategory_id: item._id,
+                                subcategory_name: item.hebrewName,
+                              });
+                            }}
+                            label={item.hebrewName}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
               {/* Main Categories */}
               {/* {filterCategories?.map((menu) => {
                 const Icon = ICON_MAP[menu._id];

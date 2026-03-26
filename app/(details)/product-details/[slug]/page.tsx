@@ -1,4 +1,6 @@
-import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
+"use client";
+import { getProductDetailsBySlug } from "@/actions/productActions";
+import { sanitizeHtml } from "@/lib/helpers";
 import { NoDetailsFound, ProductDetailsFilterTab } from "../../_components";
 import {
   ProductGallery,
@@ -6,6 +8,9 @@ import {
   ProductQtyBtns,
   RelatedProductsSection,
 } from "../_components";
+import { Copy, Share2 } from "lucide-react";
+import { sendGAEvent } from "@/lib/analytics";
+import { triggerName } from "@/lib/googleEventsConfig";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -16,14 +21,6 @@ const page = async ({ params }: PageProps) => {
     await getProductDetailsBySlug(slug);
 
   if (!productDetails) return <NoDetailsFound />;
-
-  const relatedProducts: Product[] = await getProducts(
-    productDetails.businessId._id,
-  );
-
-  const filteredRelatedProducts = relatedProducts?.filter?.(
-    (item) => item._id !== productDetails._id,
-  );
 
   const {
     name,
@@ -39,18 +36,31 @@ const page = async ({ params }: PageProps) => {
     businessId,
     accessibilitiesId,
   } = productDetails;
-  console.log("🚀 ~ page ~ openingHrs:", openingHrs);
 
   const firstDeliveryPrice = deliveryArea?.[0]?.price;
   const isFreeDelivery = firstDeliveryPrice === "0";
+
+ 
 
   return (
     <div
       className="min-h-screen transition-colors duration-300 bg-gray-50"
       dir="rtl"
     >
+      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-3 pt-40 md:pt-8 flex items-end justify-end">
+        <button
+          className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
+        >
+          <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+        </button>
+        <button
+          className="p-2.5 sm:p-3 rounded-2xl shadow-md hover:shadow-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center bg-white"
+        >
+          <Copy className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+        </button>
+      </div>
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-40 md:pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-40 md:pt-10">
         {/* HERO SECTION — name, price, gallery */}
         <div className="rounded-3xl shadow-lg overflow-hidden mb-8 bg-white">
           <div className="relative p-8 pb-6">
@@ -59,10 +69,11 @@ const page = async ({ params }: PageProps) => {
                 <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-gray-900">
                   {name}
                 </h1>
-
                 <div
                   className="text-lg text-gray-600 mb-4"
-                  dangerouslySetInnerHTML={{ __html: description }}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(description),
+                  }}
                 />
 
                 {/* Price */}
@@ -107,7 +118,9 @@ const page = async ({ params }: PageProps) => {
             <div className="text-2xl font-bold">תיאור מלא</div>
             <div
               className="font-normal"
-              dangerouslySetInnerHTML={{ __html: description || "" }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(description || ""),
+              }}
             />{" "}
           </div>
         )}
@@ -146,7 +159,10 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         {/* RELATED PRODUCTS */}
-        <RelatedProductsSection products={filteredRelatedProducts} />
+        <RelatedProductsSection
+          businessId={businessId._id}
+          currentProductId={productDetails._id}
+        />
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
-import { misc } from "@/constant/hebrew";
+import { misc, searchText, filterLabels } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
@@ -19,6 +19,8 @@ import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { filterBusinesses } from "@/lib/helpers";
 import { SearchButton } from "../filter-icon/SearchButton";
+import { useSearchFlow } from "@/hooks/useSearchFlow";
+import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
 interface FeedLayoutProps {
   selectedFiltersIds: any;
 }
@@ -67,7 +69,26 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   /* ---------------------- Memoized Data ---------------------- */
 
   const businesses = infiniteData?.data || [];
-
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const {
+    hasResults,
+    isLoading: isSearchLoading,
+    hasMounted,
+    handleClearInputText,
+    handleKeywordSelect,
+    recommendedBusinesses,
+    searchItems,
+    searchKeyword,
+    setSearchKeyword,
+  } = useSearchFlow();
+  const [advancedFilter, setAdvancedFilter] = useState(false);
+  const [displayMode, setDisplayMode] = useState("");
+   const { aminitiesInfo } = useGeneralStore();
+     const {
+       data: categoriesSites,
+       isLoading,
+       isError,
+     } = useGetAllCategorySites();
   const filteredBusinesses = filterBusinesses(businesses, filterState);
   const totalBusiness = filteredBusinesses?.length;
 
@@ -90,7 +111,9 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
   /* ---------------------- Handlers ---------------------- */
   const handleFilterIconClick = () => {
-    setIsFilterDrawerOpen(true);
+    const newState = !isFilterDrawerOpen;
+    setIsFilterDrawerOpen(newState);
+    setIsFilterOpen(newState);
     handleFilterTooltipShown(true);
   };
 
@@ -142,6 +165,8 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
             <SearchButton
               onClick={handleFilterIconClick}
               activeFiltersCount={appliedFilterCount}
+              isFilterOpen={isFilterOpen}
+              setIsFilterOpen={setIsFilterOpen}
               variant="continuous"
               size={96}
             />

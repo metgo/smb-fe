@@ -1,4 +1,3 @@
-// import { getAllCategorySites } from "@/actions/categoryActions";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useState } from "react";
@@ -10,12 +9,13 @@ type SunsetVariant =
   | "bounce"
   | "pulse"
   | "black";
-
 interface SearchButtonProps {
   activeFiltersCount?: number;
   variant?: SunsetVariant;
   size?: number;
   onClick: () => void;
+  isFilterOpen: boolean;
+  setIsFilterOpen: (v: boolean) => void;
 }
 
 const BASE_SIZE = 96;
@@ -86,14 +86,15 @@ function FilterBadge({ count, size }: { count: number; size: number }) {
   );
 }
 
-export const SearchButton =  ({
+export const SearchButton = ({
   activeFiltersCount = 0,
   variant = "continuous",
   onClick,
   size = 96,
+  isFilterOpen,
+  setIsFilterOpen,
 }: SearchButtonProps) => {
   const config = getAnimationConfig(variant);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   // const categorySites = await getAllCategorySites();
   // console.log("🚀 ~ SearchButton ~ categorySites:", categorySites)
 
