@@ -27,14 +27,14 @@ export const images = {
       },
       size: {
         height: 100,
-        width: 80,
+        width: 60,
       },
     },
     thumbnail: {
-      desktop: `${BUCKET_URL}/images/thumbnail/desktop.webp`,
-      mobile: `${BUCKET_URL}/images/thumbnail/mobile.webp`,
+      desktop: `${BUCKET_URL}/images/thumbnail/images_thumbnail_desktop.webp`,
+      mobile: `${BUCKET_URL}/images/thumbnail/images_thumbnail_mobile.webp`,
     },
-    favicon: "/images/favicon/negevtime.ico",
+    favicon: "/images/favicon/kefotef.ico",
     contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
   TAV8: {
