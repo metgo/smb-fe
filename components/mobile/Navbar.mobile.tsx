@@ -15,7 +15,6 @@ import PromotionalCards from "../PromotionalCards";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import { fundayEnquiryLables } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
-import SearchFlowMobile from "../navbar/SearchFlow.mobile";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";

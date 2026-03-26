@@ -28,9 +28,7 @@ interface OnlyFeedCardsLayoutProps {
   itemCount: number;
 }
 
-const OnlyFeedCardsLayout = ({
-  data,
-}: OnlyFeedCardsLayoutProps) => {
+const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);
@@ -40,7 +38,7 @@ const OnlyFeedCardsLayout = ({
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsCategoryHeaderInView(entry.isIntersecting),
-      { threshold: 0 }
+      { threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -235,24 +233,33 @@ const OnlyFeedCardsLayout = ({
 
   return (
     <>
-      <div ref={categoryHeaderRef} className="flex flex-col justify-center items-center py-6">
-        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(presetFeedFilters?.header || "") }} />
+      <div
+        ref={categoryHeaderRef}
+        className="flex flex-col justify-center items-center py-6"
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(presetFeedFilters?.header || ""),
+          }}
+        />
         <FeedCategoryButtons />
       </div>
 
-      {data?.length ? <div
-        className={clsx(
-          "px-20 py-10 flex items-center justify-center w-full h-full relative",
-        )}
-      >
-        <div className="flex flex-col gap-5 items-start justify-start ">
-          {renderFullLayout()}
+      {data?.length ? (
+        <div
+          className={clsx(
+            "px-20 py-10 flex items-center justify-center w-full h-full relative",
+          )}
+        >
+          <div className="flex flex-col gap-5 items-start justify-start ">
+            {renderFullLayout()}
+          </div>
         </div>
-      </div> : <NoFeedItemLayout />}
+      ) : (
+        <NoFeedItemLayout />
+      )}
     </>
   );
 };
-
-
 
 export default OnlyFeedCardsLayout;

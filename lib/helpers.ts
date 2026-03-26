@@ -3,8 +3,6 @@ import DOMPurify from "dompurify";
 
 import { pathNames } from "./endpoints";
 import { categoryIds, purposeTypeEnum } from "./utils";
-import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
-
 export function sanitizeHtml(html: string = ""): string {
   if (!html) return "";
   if (typeof window === "undefined") return html;
@@ -458,14 +456,6 @@ export function isPlaceOpenNow(
 
   return false;
 }
-
-type Filters = {
-  categoryIds: string[];
-  subCategoryIds: string[];
-  groupTypeIds: string[];
-  accessibilityIds: string[];
-  serviceTypes: string[];
-};
 
 export const filterBusinesses = (
   businesses: any[],

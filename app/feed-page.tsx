@@ -30,7 +30,6 @@ export function HomePage() {
     const saved = localStorage.getItem("cartItems");
     return saved ? JSON.parse(saved).length : 0;
   });
-  const [categoryButtonsUsed, setCategoryButtonsUsed] = useState(false);
   const [showTitleInHeader, setShowTitleInHeader] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
-import { misc } from "@/constant/hebrew";
 import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -18,7 +17,6 @@ import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 import { useQuery } from "@tanstack/react-query";
 import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
-import { filterBusinesses } from "@/lib/helpers";
 import { SearchButton } from "../filter-icon/SearchButton";
 
 interface MobileFeedLayoutProps {
@@ -28,8 +26,6 @@ interface MobileFeedLayoutProps {
 
 const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
   const { isMobile } = useCommonHook();
 
   const {
@@ -40,11 +36,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     isFackLoading,
   } = useMobileFeedLayout();
 
-  const {
-    favoriteFeedItemIds,
-    alreadyShownFilterTooltip,
-    handleFilterTooltipShown,
-  } = useFavoriteFeedItemStore();
+  const { favoriteFeedItemIds, handleFilterTooltipShown } =
+    useFavoriteFeedItemStore();
 
   const {
     hideFirstTwoSection,
@@ -52,6 +45,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     isFilterDrawerOpen,
     setIsFilterDrawerOpen,
     showFavoriteFeedItems,
+    feedFilterState,
+    selectedSiteCategories,
   } = useGeneralStore();
 
   /* ---------------------- Queries ---------------------- */
@@ -72,30 +67,59 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
 
   /* ---------------------- Memoized Data ---------------------- */
 
-  const {
-    appliedFilterCount,
-    filteredSubCategories,
-    isSelected,
-    toggleParam,
-    handleResetFilters,
-    filterState,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
+  const { appliedFilterCount, isSelected, toggleParam, handleResetFilters } =
+    useFeedFilter(filters, initialSelectedFiltersIds);
 
   const businesses = infiniteData?.data || [];
 
-  const filteredBusinesses = filterBusinesses(businesses, filterState);
-
   const visibleFeedItems = useMemo(() => {
-    if (filteredBusinesses?.length === 0) return [];
+    if (businesses?.length === 0) return [];
 
-    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return filteredBusinesses?.filter((item) =>
-        favoriteFeedItemIds?.includes(item._id),
+    let items = businesses;
+
+    if (selectedSiteCategories.length > 0) {
+      const allowedIds = new Set(
+        selectedSiteCategories.flatMap((cat) => cat.businessIds),
+      );
+      items = items.filter((item) => allowedIds.has(item.businessId));
+    }
+
+    if (feedFilterState.serviceTypes.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.serviceTypes.includes(item.serviceType),
       );
     }
 
-    return filteredBusinesses;
-  }, [filteredBusinesses, showFavoriteFeedItems, favoriteFeedItemIds]);
+    if (feedFilterState.accessibilityIds.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.accessibilityIds.some((id) =>
+          (item as any).accessibilitiesId?.some(
+            (a: any) => (a._id ?? a) === id,
+          ),
+        ),
+      );
+    }
+
+    if (feedFilterState.groupTypeIds.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.groupTypeIds.some((id) =>
+          (item as any).groupTypesId?.some((g: any) => (g._id ?? g) === id),
+        ),
+      );
+    }
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return items.filter((item) => favoriteFeedItemIds.includes(item._id));
+    }
+
+    return items;
+  }, [
+    businesses,
+    showFavoriteFeedItems,
+    favoriteFeedItemIds,
+    selectedSiteCategories,
+    feedFilterState,
+  ]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -156,21 +180,14 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       {/* Bottom Panels */}
       {hideFirstTwoSection && (
         <>
-          <div className="fixed bottom-2 right-[42%] custom-cursor">
+          <div className="fixed bottom-2 right-[42%]  custom-cursor">
             <SearchButton
               onClick={handleFilterIconClick}
               activeFiltersCount={appliedFilterCount}
-              isFilterOpen={isFilterOpen}
-              setIsFilterOpen={setIsFilterOpen}
               variant="continuous"
               size={96}
             />
           </div>
-          {!alreadyShownFilterTooltip && (
-            <div className="bg-[#28C368] px-4 py-2 rounded-md text-white fixed bottom-16 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max font-bold">
-              {misc.filterIconTooltip}
-            </div>
-          )}
         </>
       )}
       <div className="bg-black/40">
@@ -184,7 +201,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             isSelected={isSelected}
             toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
-            filteredSubCategories={filteredSubCategories}
           />
         )}
       </div>
