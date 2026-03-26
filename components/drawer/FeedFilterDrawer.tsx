@@ -4,7 +4,6 @@ import { useState } from "react";
 import { IconImage } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { AnimatePresence, motion } from "motion/react";
-import { useSearchFlow } from "@/hooks/useSearchFlow";
 
 import {
   CloseIcon,
@@ -34,10 +33,9 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   filters,
 }) => {
   const { isMobile } = useCommonHook();
-  const { aminitiesInfo, presetFeedFilters, feedFilterState, toggleFeedFilter, toggleSiteCategory, selectedSiteCategories } = useGeneralStore();
+  const { aminitiesInfo, presetFeedFilters, feedFilterState, toggleFeedFilter, toggleSiteCategory, selectedSiteCategories, feedSearchKeyword, setFeedSearchKeyword } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
-  const { handleClearInputText, searchKeyword, setSearchKeyword } = useSearchFlow();
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
@@ -79,24 +77,24 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             </div>
 
             {/* Scrollable filter body */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-              <div className="flex items-start justify-center py-7.5">
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              <div className="flex items-start justify-center py-2">
                 {/* Search Button */}
-                <div className="max-sm:mx-4 max-sm:w-full md:w-[546px] h-10 rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
+                <div className="max-sm:mx-4 w-full rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
                   <IconImage icon="search" />
                   <input
                     type="text"
-                    value={searchKeyword}
+                    value={feedSearchKeyword}
                     placeholder={searchText.search}
-                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    onChange={(e) => setFeedSearchKeyword(e.target.value)}
                     className="w-full outline-none border-none focus:ring-0"
                   />
-                  {searchKeyword && (
+                  {feedSearchKeyword && (
                     <IconImage
                       height={18}
                       width={18}
                       icon="circular-close-white"
-                      onClick={handleClearInputText}
+                      onClick={() => setFeedSearchKeyword("")}
                     />
                   )}
                 </div>
@@ -122,6 +120,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
                       activeIcon={<PointOfInterestIcon strokColor="#fff" />}
                       label={filterPanelLabels.pointOfInterest}
+                      colorIndex={0}
                     />
                   )}
                   {aminitiesInfo?.funday && (
@@ -142,6 +141,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       icon={<FundayIcon strokColor="#7c7c7c" />}
                       activeIcon={<FundayIcon strokColor="#fff" />}
                       label={filterPanelLabels.funDays}
+                      colorIndex={1}
                     />
                   )}
                   {aminitiesInfo?.event && (
@@ -159,6 +159,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       icon={<EventIcon strokColor="#7c7c7c" />}
                       activeIcon={<EventIcon strokColor="#fff" />}
                       label={filterPanelLabels.events}
+                      colorIndex={2}
                     />
                   )}
                   {aminitiesInfo?.trip && (
@@ -176,6 +177,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       icon={<RouteIcon strokColor="#7c7c7c" />}
                       activeIcon={<RouteIcon strokColor="#fff" />}
                       label={filterPanelLabels.routes}
+                      colorIndex={3}
                     />
                   )}
                 </div>
@@ -229,7 +231,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         {filterPanelLabels.accessibility}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {filters.accessibilities.map((item) => (
+                        {filters.accessibilities.map((item, index) => (
                           <FilterChip
                             key={item._id}
                             active={isSelected(
@@ -247,6 +249,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                               );
                             }}
                             label={item.hebrewName}
+                            colorIndex={index}
                           />
                         ))}
                       </div>
@@ -260,7 +263,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         {filterPanelLabels.targetAudiences}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {filters.groupTypes.map((item) => (
+                        {filters.groupTypes.map((item, index) => (
                           <FilterChip
                             key={item._id}
                             active={isSelected("groupTypeIds", item._id)}
@@ -272,6 +275,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                               });
                             }}
                             label={item.hebrewName}
+                            colorIndex={index}
                           />
                         ))}
                       </div>
@@ -339,30 +343,38 @@ const FilterButton: React.FC<{
   icon: React.ReactNode;
   activeIcon: React.ReactNode;
   label: string;
-}> = ({ active, onClick, icon, activeIcon, label }) => (
-  <div
-    onClick={onClick}
-    className={` custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
-      ${active ? "bg-black text-white" : "text-theme"}`}
-  >
-    {active ? activeIcon : icon}
-    <span className="text-[12px] font-bold">{label}</span>
-  </div>
-);
+  colorIndex?: number;
+}> = ({ active, onClick, icon, activeIcon, label, colorIndex = 0 }) => {
+  const gradient = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+  return (
+    <div
+      onClick={onClick}
+      className={`custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "text-theme"}`}
+    >
+      {active ? activeIcon : icon}
+      <span className="text-[12px] font-bold">{label}</span>
+    </div>
+  );
+};
 
 // Reusable Filter Chip
 const FilterChip: React.FC<{
   active: boolean;
   onClick: () => void;
   label: string;
-}> = ({ active, onClick, label }) => (
-  <span
-    onClick={onClick}
-    className={`custom-cursor px-5 h-[42px] flex items-center justify-center rounded-3xl text-[12px] font-bold border border-theme transition-all
-      ${active ? "bg-black text-white" : "text-theme"}`}
-  >
-    {label}
-  </span>
-);
+  colorIndex?: number;
+}> = ({ active, onClick, label, colorIndex = 0 }) => {
+  const gradient = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+  return (
+    <span
+      onClick={onClick}
+      className={`custom-cursor px-4 h-[42px] flex items-center justify-center rounded-xl text-[12px] font-bold border transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "border-theme text-theme"}`}
+    >
+      {label}
+    </span>
+  );
+};
 
 export default FeedFilterDrawer;

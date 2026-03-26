@@ -1,13 +1,11 @@
 /// @typescript-eslint/no-unused-vars
 
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import useGeneralStore from "@/stores/generalStore";
 import { sanitizeInitialFilters } from "@/lib/helpers";
 
 type FilterKey =
-  | "categoryIds"
-  | "subCategoryIds"
   | "groupTypeIds"
   | "accessibilityIds"
   | "serviceTypes";
@@ -15,8 +13,6 @@ type FilterKey =
 type FilterState = Record<FilterKey, string[]>;
 
 const emptyFilters: FilterState = {
-  categoryIds: [],
-  subCategoryIds: [],
   groupTypeIds: [],
   accessibilityIds: [],
   serviceTypes: [],
@@ -44,7 +40,7 @@ export default function useFeedFilter(
   // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
   useEffect(() => {
     try {
-      const { sanitized, totalCount } = sanitizeInitialFilters(
+      const { sanitized } = sanitizeInitialFilters(
         initialSelectedFiltersIds,
         filters,
         aminitiesInfo,
@@ -55,7 +51,7 @@ export default function useFeedFilter(
         ...sanitized,
       }));
 
-      setAppliedFilterCount(totalCount);
+      setAppliedFilterCount(0);
     } catch (error) {
       console.error("Error applying default filters:", error);
     }
@@ -85,27 +81,10 @@ export default function useFeedFilter(
         }
       }
 
-      let updated: FilterState = {
+      const updated: FilterState = {
         ...prev,
         [key]: next,
       };
-
-      // Auto-clean subcategories when categories change
-      if (key === "categoryIds") {
-        const validSubIds =
-          filters?.subCategories
-            ?.filter((sub) => next.includes(sub.categoryId))
-            .map((sub) => sub._id) ?? [];
-
-        updated.subCategoryIds = updated.subCategoryIds.filter((id) =>
-          validSubIds.includes(id),
-        );
-
-        if (next.length === 0) {
-          updated.groupTypeIds = [];
-          updated.accessibilityIds = [];
-        }
-      }
 
       const total = getTotalAppliedFilters(updated);
       setAppliedFilterCount(total);
@@ -122,12 +101,6 @@ export default function useFeedFilter(
         [key]: [],
       };
 
-      if (key === "categoryIds") {
-        updated.groupTypeIds = [];
-        updated.accessibilityIds = [];
-        updated.subCategoryIds = [];
-      }
-
       window.scrollTo({ behavior: "smooth", top: 0 });
       const total = getTotalAppliedFilters(updated);
       setAppliedFilterCount(total);
@@ -141,19 +114,10 @@ export default function useFeedFilter(
     setAppliedFilterCount(0);
   };
 
-  // Filtered subcategories based on selected categories
-  const filteredSubCategories = useMemo(() => {
-    if (filterState.categoryIds.length === 0) return [];
-    return filters?.subCategories?.filter((sub) =>
-      filterState.categoryIds.includes(sub.categoryId),
-    );
-  }, [filterState.categoryIds, filters?.subCategories]);
-
   return {
     shouldAnimate,
     appliedFilterCount,
     filterState,
-    filteredSubCategories,
     getSelected,
     isSelected,
     toggleParam,

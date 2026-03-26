@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+
 import { filterTabs } from "@/lib/utils";
-import useGeneralStore from "@/stores/generalStore";
 import { IconImage } from "@/components/ui";
+import { ThreeLineIcon } from "../ui/icons";
+import useGeneralStore from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
-import { Logs, Menu, X } from "lucide-react";
 
 const scrollToFeed = (isHomepage: boolean) => {
   window.scrollTo({
@@ -60,9 +61,6 @@ export default function FeedLayoutDropdown({
     sendGAEvent(triggerName.clickToLayoutSwitchBtn, { layout: key });
   };
 
-  const activeTab =
-    filterTabs.find((t) => t.key === activeFilterTab) ?? filterTabs[0];
-
   return (
     <div className="flex justify-center ">
       {showFilterTab && (
@@ -72,7 +70,7 @@ export default function FeedLayoutDropdown({
             onClick={() => setIsOpen((v) => !v)}
             className="flex items-center gap-2 h-12 px-3 bg-white rounded-lg text-sm font-bold text-theme custom-cursor hover:bg-[#F5F5F5] transition-colors"
           >
-            {<Logs />}
+            <ThreeLineIcon />
           </button>
 
           {/* Dropdown Menu */}

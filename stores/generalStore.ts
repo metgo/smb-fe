@@ -151,6 +151,9 @@ interface GeneralStoreState {
   setSelectedSiteCategories: (v: ISiteCategory[]) => void;
   toggleSiteCategory: (cat: ISiteCategory) => void;
 
+  feedSearchKeyword: string;
+  setFeedSearchKeyword: (v: string) => void;
+
   feedFilterState: FeedFilterState;
   toggleFeedFilter: (key: FeedFilterKey, value: string) => void;
   resetFeedFilters: () => void;
@@ -257,6 +260,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
           : [...state.selectedSiteCategories, cat],
       };
     }),
+
+  feedSearchKeyword: "",
+  setFeedSearchKeyword: (v) => set({ feedSearchKeyword: v }),
 
   feedFilterState: emptyFeedFilterState,
   toggleFeedFilter: (key, value) =>

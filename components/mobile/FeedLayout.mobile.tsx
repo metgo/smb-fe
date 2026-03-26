@@ -19,7 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { filterBusinesses } from "@/lib/helpers";
-import { SunsetButton } from "../filter-icon/SunsetButton";
 import { SearchButton } from "../filter-icon/SearchButton";
 
 interface MobileFeedLayoutProps {

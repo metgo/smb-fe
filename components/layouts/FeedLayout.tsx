@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
-import { misc } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
@@ -33,13 +32,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     setShowFavoriteFeedItems,
     selectedSiteCategories,
     feedFilterState,
+    feedSearchKeyword,
     resetFeedFilters,
   } = useGeneralStore();
-  console.log("🚀 ~ FeedLayout ~ selectedSiteCategories:", selectedSiteCategories)
 
   const {
     favoriteFeedItemIds,
-    alreadyShownFilterTooltip,
     handleFilterTooltipShown,
   } = useFavoriteFeedItemStore();
 
@@ -65,7 +63,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters: resetLocalFilters,
-    filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const handleResetFilters = () => {
@@ -115,12 +112,22 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       );
     }
 
+    if (feedSearchKeyword.trim()) {
+      const keyword = feedSearchKeyword.trim().toLowerCase();
+      items = items.filter((item) =>
+        item.name?.toLowerCase().includes(keyword) ||
+        item.description?.toLowerCase().includes(keyword) ||
+        item.address?.city?.toLowerCase().includes(keyword) ||
+        item.address?.address?.toLowerCase().includes(keyword),
+      );
+    }
+
     if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
       return items.filter((item) => favoriteFeedItemIds.includes(item._id));
     }
 
     return items;
-  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds, selectedSiteCategories, feedFilterState]);
+  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds, selectedSiteCategories, feedFilterState, feedSearchKeyword]);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -183,11 +190,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
               variant="continuous"
               size={96}
             />
-            {!alreadyShownFilterTooltip && (
-              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold">
-                {misc.filterIconTooltip}
-              </div>
-            )}
           </div>
         )}
         <FeedFilterDrawer

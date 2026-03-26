@@ -66,12 +66,6 @@ const OnlyFeedCardsLayout = ({
     return shuffleArray(layout16);
   }, [scale]);
 
-
-  // Early return AFTER all hooks
-  if (!data || data.length < 1) {
-    return <NoFeedItemLayout />;
-  }
-
   const renderCards = (
     indexes: number[],
     layout: LayoutItem[],
@@ -240,13 +234,13 @@ const OnlyFeedCardsLayout = ({
   };
 
   return (
-    <div>
+    <>
       <div ref={categoryHeaderRef} className="flex flex-col justify-center items-center py-6">
         <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(presetFeedFilters?.header || "") }} />
         <FeedCategoryButtons />
       </div>
 
-      <div
+      {data?.length ? <div
         className={clsx(
           "px-20 py-10 flex items-center justify-center w-full h-full relative",
         )}
@@ -254,10 +248,8 @@ const OnlyFeedCardsLayout = ({
         <div className="flex flex-col gap-5 items-start justify-start ">
           {renderFullLayout()}
         </div>
-      </div>
-
-
-    </div>
+      </div> : <NoFeedItemLayout />}
+    </>
   );
 };
 
