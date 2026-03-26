@@ -3,7 +3,13 @@ import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import { SunsetButton } from "./filter-icon/SunsetButton";
 import { IconImage } from "./ui";
-import { RouteIcon, EventIcon, CloseIcon, FundayIcon, PointOfInterestIcon } from "./ui/svgIcons";
+import {
+  RouteIcon,
+  EventIcon,
+  CloseIcon,
+  FundayIcon,
+  PointOfInterestIcon,
+} from "./ui/svgIcons";
 import { SERVICE_TYPE_MAP } from "@/lib/utils";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 

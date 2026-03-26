@@ -94,7 +94,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     filterState,
     categoriesSites,
   );
-  console.log("🚀 ~ FeedLayout ~ filteredBusinesses:", filteredBusinesses);
   const totalBusiness = filteredBusinesses?.length;
 
   const visibleFeedItems = useMemo(() => {

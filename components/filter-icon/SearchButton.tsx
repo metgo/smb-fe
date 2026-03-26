@@ -95,8 +95,6 @@ export const SearchButton = ({
   setIsFilterOpen,
 }: SearchButtonProps) => {
   const config = getAnimationConfig(variant);
-  // const categorySites = await getAllCategorySites();
-  // console.log("🚀 ~ SearchButton ~ categorySites:", categorySites)
 
   const buttonScale = scrollY > 100 ? 0.8 : 1;
   // Handle filter toggle with scroll to feed

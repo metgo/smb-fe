@@ -1,6 +1,6 @@
-import { motion, AnimatePresence, useAnimation } from 'motion/react';
-import { Search, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { motion, AnimatePresence, useAnimation } from "motion/react";
+import { Search, X } from "lucide-react";
+import { useEffect } from "react";
 
 interface FloatingNotificationProps {
   isOpen: boolean;
@@ -15,13 +15,13 @@ interface FloatingNotificationProps {
   activeFiltersCount: number;
 }
 
-export function FloatingNotification({ 
-  isOpen, 
-  onClick, 
-  isVisible, 
+export function FloatingNotification({
+  isOpen,
+  onClick,
+  isVisible,
   scrollY,
   darkMode,
-  activeFiltersCount
+  activeFiltersCount,
 }: FloatingNotificationProps) {
   const controls = useAnimation();
 
@@ -31,18 +31,18 @@ export function FloatingNotification({
       await controls.start({
         rotate: 1080, // 3 full rotations
         opacity: 1,
-        transition: { 
-          duration: 1.2, 
-          ease: [0.34, 1.56, 0.64, 1] // Fast bounce easing
-        }
+        transition: {
+          duration: 1.2,
+          ease: [0.34, 1.56, 0.64, 1], // Fast bounce easing
+        },
       });
       // Then settle to 0
       await controls.start({
         rotate: 0,
-        transition: { 
+        transition: {
           duration: 0.4,
-          ease: [0.16, 1, 0.3, 1]
-        }
+          ease: [0.16, 1, 0.3, 1],
+        },
       });
     };
     if (isVisible) {
@@ -61,15 +61,20 @@ export function FloatingNotification({
       <div className="fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[60] pb-safe pointer-events-auto">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ 
-            scale: buttonScale, 
-            opacity: 1
+          animate={{
+            scale: buttonScale,
+            opacity: 1,
           }}
           transition={{
-            scale: { type: 'spring', stiffness: 200, damping: 20 },
-            opacity: { delay: 0.3, type: 'spring', stiffness: 260, damping: 20 }
+            scale: { type: "spring", stiffness: 200, damping: 20 },
+            opacity: {
+              delay: 0.3,
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+            },
           }}
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           {/* Main Search Button */}
           <motion.button
@@ -77,7 +82,7 @@ export function FloatingNotification({
             whileTap={{ scale: 0.9 }}
             onClick={onClick}
             className="relative cursor-pointer"
-            style={{ pointerEvents: 'auto' }}
+            style={{ pointerEvents: "auto" }}
           >
             {/* Pulsing Rings - softened */}
             <motion.div
@@ -88,7 +93,7 @@ export function FloatingNotification({
               transition={{
                 duration: 2.5,
                 repeat: Infinity,
-                ease: 'easeOut',
+                ease: "easeOut",
               }}
               className="absolute inset-0 bg-teal-500 rounded-full"
             />
@@ -100,7 +105,7 @@ export function FloatingNotification({
               transition={{
                 duration: 2.5,
                 repeat: Infinity,
-                ease: 'easeOut',
+                ease: "easeOut",
                 delay: 0.7,
               }}
               className="absolute inset-0 bg-teal-400 rounded-full"
@@ -120,7 +125,7 @@ export function FloatingNotification({
                 transition={{
                   duration: 3,
                   repeat: Infinity,
-                  ease: 'linear',
+                  ease: "linear",
                 }}
                 className="absolute inset-0 rounded-full overflow-hidden"
               >
@@ -133,49 +138,55 @@ export function FloatingNotification({
                   <motion.div
                     key="close"
                     initial={{ rotate: -180, opacity: 0, scale: 0.3 }}
-                    animate={{ 
-                      rotate: 0, 
-                      opacity: 1, 
-                      scale: 1 
+                    animate={{
+                      rotate: 0,
+                      opacity: 1,
+                      scale: 1,
                     }}
-                    exit={{ 
-                      rotate: 180, 
-                      opacity: 0, 
-                      scale: 0.3 
+                    exit={{
+                      rotate: 180,
+                      opacity: 0,
+                      scale: 0.3,
                     }}
-                    transition={{ 
-                      duration: 0.4, 
-                      ease: [0.34, 1.56, 0.64, 1]
+                    transition={{
+                      duration: 0.4,
+                      ease: [0.34, 1.56, 0.64, 1],
                     }}
                     className="relative z-10"
                   >
-                    <X className="w-12 h-12 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" strokeWidth={3.5} />
+                    <X
+                      className="w-12 h-12 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white"
+                      strokeWidth={3.5}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div
                     key="search"
-                    initial={{ 
-                      rotate: 180, 
-                      opacity: 0, 
-                      scale: 0.3 
+                    initial={{
+                      rotate: 180,
+                      opacity: 0,
+                      scale: 0.3,
                     }}
-                    animate={{ 
-                      opacity: 1, 
+                    animate={{
+                      opacity: 1,
                       scale: 1,
-                      rotate: 0
+                      rotate: 0,
                     }}
-                    exit={{ 
-                      rotate: -180, 
-                      opacity: 0, 
-                      scale: 0.3 
+                    exit={{
+                      rotate: -180,
+                      opacity: 0,
+                      scale: 0.3,
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 0.4,
-                      ease: [0.34, 1.56, 0.64, 1]
+                      ease: [0.34, 1.56, 0.64, 1],
                     }}
                     className="relative z-10"
                   >
-                    <Search className="w-12 h-12 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" strokeWidth={2.5} />
+                    <Search
+                      className="w-12 h-12 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white"
+                      strokeWidth={2.5}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -189,15 +200,15 @@ export function FloatingNotification({
               {activeFiltersCount > 0 && (
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
-                  animate={{ 
-                    scale: 1, 
-                    rotate: 0 
+                  animate={{
+                    scale: 1,
+                    rotate: 0,
                   }}
                   exit={{ scale: 0, rotate: 180 }}
                   transition={{
-                    type: 'spring',
+                    type: "spring",
                     stiffness: 500,
-                    damping: 15
+                    damping: 15,
                   }}
                   className="absolute -top-1 -right-1 z-10"
                 >

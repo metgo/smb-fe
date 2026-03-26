@@ -13,4 +13,3 @@ export const getAllCategorySites = async () => {
     return [];
   }
 };
-

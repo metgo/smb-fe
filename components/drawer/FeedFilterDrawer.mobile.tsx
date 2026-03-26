@@ -16,7 +16,6 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
-import { SunsetButton } from "../filter-icon/SunsetButton";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { useSearchFlow } from "@/hooks/useSearchFlow";
 import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
@@ -78,7 +77,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
 
   const { data: categoriesSites } = useGetAllCategorySites();
   return (
-    <>
+    <div>
       <div
         onClick={() => setIsOpen(false)}
         className="fixed inset-0 z-50 custom-cursor"
@@ -89,7 +88,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         type="drawer-bottom"
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl overflow-y-auto h-[60vh]",
+          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col rounded-t-2xl h-[50vh] border-t border-gray-300 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]",
         )}
       >
         {/* SHEET HANDLER */}
@@ -104,21 +103,32 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         </div> */}
 
         {/* HEADER */}
-        <div className="flex  items-center">
-          {/* <div
-            className=" absolute left-4 top-4  custom-cursor"
-            onClick={() => setIsOpen(false)}
-          >
-            <CloseIcon />
-          </div> */}
-          <span className="font-bold text-lg py-4 px-4 text-black mr-5">
+        <div className="flex items-center justify-between py-4 px-10">
+          <span className="font-bold text-lg text-black">
             {filterPanelLabels.searchText}
           </span>
+          {/* {searchKeyword !== "" && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              disabled={appliedFilterCount === 0}
+              className={clsx(
+                appliedFilterCount === 0
+                  ? "cursor-not-allowed opacity-30"
+                  : "custom-cursor hover:bg-cyan-600",
+                "bg-cyan-500 text-white font-bold rounded-full px-4 py-1.5 text-sm flex items-center gap-1.5 transition-colors",
+              )}
+            >
+              <span className="text-base">↺</span>
+
+              {filterPanelLabels.clearAll}
+            </button>
+          )} */}
         </div>
 
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto max-h-[80vh] px-3 z-50">
-          <div className="flex items-start justify-center py-7.5">
+          <div className="flex items-start justify-center py-1">
             {/* Search Button */}
             <div className="max-sm:mx-4 max-sm:w-full md:w-[546px] h-10 rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
               <IconImage icon="search" />
@@ -368,7 +378,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                       <h3
                         className={`text-base font-semibold mb-3 text-right ${"text-gray-600"}`}
                       >
-                        מה להציג?
+                        {filterPanelLabels.whatToshow}{" "}
                       </h3>
                       <div
                         className={`flex gap-1 rounded-xl p-0.5 w-fit ${"bg-gray-100"}`}
@@ -430,22 +440,9 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               size={96}
             />
           </div>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            disabled={appliedFilterCount === 0}
-            className={clsx(
-              appliedFilterCount === 0
-                ? "cursor-not-allowed text-black/30 "
-                : "custom-cursor bg-black/80 text-white font-bold hover:bg-black ",
-              " border border-black/20 items-center font-bold text-lightGray rounded-xl  w-full py-2",
-            )}
-          >
-            {filterPanelLabels.clearAll}
-          </button>
         </div>
       </MotionDialogDiv>
-    </>
+    </div>
   );
 };
 
@@ -459,11 +456,12 @@ const FilterButton: React.FC<{
 }> = ({ active, onClick, icon, activeIcon, label }) => (
   <div
     onClick={onClick}
-    className={`md:col-span-6  max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
-      ${active ? "bg-black text-white" : "text-theme"}`}
+    className={`md:col-span-6  max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2  bg-[#f4f5f7]  rounded-xl ps-3 h-[42px] transition-all
+      ${active ? "  text-gray-700 border" : "text-theme  "}`}
   >
-    {active ? activeIcon : icon}
-    <span className="text-[12px] font-bold ml-4">{label}</span>
+    <div className="mr-4">{icon}</div>
+
+    <span className="text-[12px] font-bold ">{label}</span>
   </div>
 );
 

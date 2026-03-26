@@ -1,5 +1,5 @@
-import { motion } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { motion } from "motion/react";
+import { useEffect, useRef } from "react";
 
 interface HeroProps {
   darkMode?: boolean;
@@ -10,7 +10,9 @@ export function Hero({ darkMode }: HeroProps) {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.play().catch(err => console.log('Video autoplay prevented:', err));
+      videoRef.current
+        .play()
+        .catch((err) => console.log("Video autoplay prevented:", err));
     }
   }, []);
 

@@ -45,7 +45,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   const { isMobile } = useCommonHook();
   const { aminitiesInfo } = useGeneralStore();
   const { data, isLoading, isError } = useGetAllCategorySites();
-  console.log("🚀 ~ FeedFilterDrawer ~ data:", data);
 
   if (!isOpen || isMobile) return null;
 
