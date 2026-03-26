@@ -36,10 +36,8 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     resetFeedFilters,
   } = useGeneralStore();
 
-  const {
-    favoriteFeedItemIds,
-    handleFilterTooltipShown,
-  } = useFavoriteFeedItemStore();
+  const { favoriteFeedItemIds, handleFilterTooltipShown } =
+    useFavoriteFeedItemStore();
 
   /* ---------------------- Queries ---------------------- */
   const { data: initialSelectedFiltersIds } = useQuery({
@@ -59,7 +57,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
   const {
     appliedFilterCount,
-    filteredSubCategories,
     isSelected,
     toggleParam,
     handleResetFilters: resetLocalFilters,
@@ -114,11 +111,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
     if (feedSearchKeyword.trim()) {
       const keyword = feedSearchKeyword.trim().toLowerCase();
-      items = items.filter((item) =>
-        item.name?.toLowerCase().includes(keyword) ||
-        item.description?.toLowerCase().includes(keyword) ||
-        item.address?.city?.toLowerCase().includes(keyword) ||
-        item.address?.address?.toLowerCase().includes(keyword),
+      items = items.filter(
+        (item) =>
+          item.name?.toLowerCase().includes(keyword) ||
+          item.description?.toLowerCase().includes(keyword) ||
+          item.address?.city?.toLowerCase().includes(keyword) ||
+          item.address?.address?.toLowerCase().includes(keyword),
       );
     }
 
@@ -127,7 +125,14 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     }
 
     return items;
-  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds, selectedSiteCategories, feedFilterState, feedSearchKeyword]);
+  }, [
+    businesses,
+    showFavoriteFeedItems,
+    favoriteFeedItemIds,
+    selectedSiteCategories,
+    feedFilterState,
+    feedSearchKeyword,
+  ]);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -156,7 +161,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
             isSelected={isSelected}
             toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
-            filteredSubCategories={filteredSubCategories}
             itemCount={infiniteData?.totalData ?? 0}
           />
         );
@@ -185,8 +189,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
             <SearchButton
               onClick={handleFilterIconClick}
               activeFiltersCount={appliedFilterCount}
-              isFilterOpen={isFilterOpen}
-              setIsFilterOpen={setIsFilterOpen}
               variant="continuous"
               size={96}
             />

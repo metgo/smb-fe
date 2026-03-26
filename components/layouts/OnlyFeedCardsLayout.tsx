@@ -24,7 +24,6 @@ interface OnlyFeedCardsLayoutProps {
   isSelected: (key: any, value: string) => boolean;
   toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
-  filteredSubCategories: SubCategory[];
   itemCount: number;
 }
 

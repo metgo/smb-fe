@@ -11,7 +11,12 @@ function stripHtml(html: string): string {
 }
 
 export default function FeedNavbarCenter() {
-  const { presetFeedFilters, isCategoryHeaderInView, selectedSiteCategories, toggleSiteCategory } = useGeneralStore();
+  const {
+    presetFeedFilters,
+    isCategoryHeaderInView,
+    selectedSiteCategories,
+    toggleSiteCategory,
+  } = useGeneralStore();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +28,10 @@ export default function FeedNavbarCenter() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -55,7 +63,9 @@ export default function FeedNavbarCenter() {
           {isOpen && (
             <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-white border border-[#EAEAEA] rounded-2xl shadow-lg z-50 p-2 flex flex-wrap gap-2 w-max max-w-[480px]">
               {allCategories.map((cat, i) => {
-                const isSelected = selectedSiteCategories.some((c) => c.title === cat.title);
+                const isSelected = selectedSiteCategories.some(
+                  (c) => c.title === cat.title,
+                );
                 const gradient = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
                 return (
                   <button
@@ -67,7 +77,9 @@ export default function FeedNavbarCenter() {
                         : "bg-white text-theme border border-[#EAEAEA] hover:bg-[#F5F5F5]"
                     }`}
                   >
-                    {cat.icon && <IconImage icon={cat.icon} width={18} height={18} />}
+                    {cat.icon && (
+                      <IconImage icon={cat.icon} width={18} height={18} />
+                    )}
                     <span>{cat.titleHe ?? cat.title}</span>
                   </button>
                 );

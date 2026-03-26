@@ -70,6 +70,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   const { appliedFilterCount, isSelected, toggleParam, handleResetFilters } =
     useFeedFilter(filters, initialSelectedFiltersIds);
 
+  const filteredSubCategories = filters?.subCategories ?? [];
+
   const businesses = infiniteData?.data || [];
 
   const visibleFeedItems = useMemo(() => {
@@ -201,6 +203,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             isSelected={isSelected}
             toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
+            filteredSubCategories={filteredSubCategories}
           />
         )}
       </div>

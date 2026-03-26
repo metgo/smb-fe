@@ -35,8 +35,8 @@ export const SiteInfoClientProvider = ({
   }
 
   async function fetchPresetFeedConfig() {
-    const res = await getPresetFeedConfig()
-    setPresetFeedFilters(res)
+    const res = await getPresetFeedConfig();
+    setPresetFeedFilters(res);
   }
 
   async function fetchUserCurrentLocation() {

@@ -47,7 +47,6 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
           </div>
 
           <div className="flex items-center justify-end col-span-4">
-
             {siteStatus.isNegevTime && (
               <Link
                 href={pathNames.fundayEnquiry}

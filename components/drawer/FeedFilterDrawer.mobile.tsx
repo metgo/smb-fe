@@ -14,7 +14,6 @@ import {
 import { SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
-import { useSearchFlow } from "@/hooks/useSearchFlow";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { SearchButton } from "../filter-icon/SearchButton";
 import { ChevronDown } from "lucide-react";
@@ -29,6 +28,7 @@ interface MobileFeedFilterDrawerProps {
   isSelected: (key: any, value: string) => boolean;
   toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
+  filteredSubCategories: SubCategory[];
 }
 
 const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
@@ -39,25 +39,29 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   isSelected,
   toggleParam,
   handleResetFilters,
+  filteredSubCategories,
 }) => {
-  const { aminitiesInfo, isFilterDrawerOpen, presetFeedFilters } =
-    useGeneralStore();
+  const {
+    aminitiesInfo,
+    isFilterDrawerOpen,
+    presetFeedFilters,
+    setIsFilterDrawerOpen,
+    selectedSiteCategories,
+    toggleSiteCategory,
+    feedSearchKeyword,
+    setFeedSearchKeyword,
+  } = useGeneralStore();
+  const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
 
-  if (!isOpen) return null;
-
-  const { setIsFilterDrawerOpen, selectedSiteCategories, toggleSiteCategory } =
-    useGeneralStore();
-
-  const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
-  const { handleClearInputText, searchKeyword, setSearchKeyword } =
-    useSearchFlow();
   const handleFilterIconClick = () => {
     const newState = !isFilterDrawerOpen;
     setIsFilterDrawerOpen(newState);
     handleFilterTooltipShown(true);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div>
@@ -115,17 +119,17 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               <IconImage icon="search" />
               <input
                 type="text"
-                value={searchKeyword}
+                value={feedSearchKeyword}
                 placeholder={searchText.search}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                onChange={(e) => setFeedSearchKeyword(e.target.value)}
                 className="w-full outline-none border-none focus:ring-0"
               />
-              {searchKeyword && (
+              {feedSearchKeyword && (
                 <IconImage
                   height={18}
                   width={18}
                   icon="circular-close-white"
-                  onClick={handleClearInputText}
+                  onClick={() => setFeedSearchKeyword("")}
                 />
               )}
             </div>
@@ -442,14 +446,15 @@ const FilterButton: React.FC<{
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
+  activeIcon: React.ReactNode;
   label: string;
-}> = ({ active, onClick, icon, label }) => (
+}> = ({ active, onClick, icon, activeIcon, label }) => (
   <div
     onClick={onClick}
     className={`md:col-span-6  max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2  bg-white  rounded-3xl ps-3 h-[42px] transition-all
       ${active ? "  text-gray-700 border" : "text-theme  "}`}
   >
-    <div className="mr-4">{icon}</div>
+    <div className="mr-4">{active ? activeIcon : icon}</div>
 
     <span className="text-[12px] font-bold ">{label}</span>
   </div>

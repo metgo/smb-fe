@@ -33,7 +33,16 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   filters,
 }) => {
   const { isMobile } = useCommonHook();
-  const { aminitiesInfo, presetFeedFilters, feedFilterState, toggleFeedFilter, toggleSiteCategory, selectedSiteCategories, feedSearchKeyword, setFeedSearchKeyword } = useGeneralStore();
+  const {
+    aminitiesInfo,
+    presetFeedFilters,
+    feedFilterState,
+    toggleFeedFilter,
+    toggleSiteCategory,
+    selectedSiteCategories,
+    feedSearchKeyword,
+    setFeedSearchKeyword,
+  } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
 
@@ -107,10 +116,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                 <div className="grid grid-cols-4 gap-2">
                   {aminitiesInfo?.poi && (
                     <FilterButton
-                      active={isSelected(
-                        "serviceTypes",
-                        SERVICE_TYPE_MAP.poi,
-                      )}
+                      active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
                       onClick={() => {
                         toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi);
                         sendGAEvent(triggerName.clickToServiceType, {
@@ -130,10 +136,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         SERVICE_TYPE_MAP.fun_day,
                       )}
                       onClick={() => {
-                        toggleParam(
-                          "serviceTypes",
-                          SERVICE_TYPE_MAP.fun_day,
-                        );
+                        toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day);
                         sendGAEvent(triggerName.clickToServiceType, {
                           service_types: filterPanelLabels.funDays,
                         });
@@ -189,18 +192,24 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {topic.siteCategories.map((cat: any, index: number) => {
-                      const isSelected = selectedSiteCategories.some((c) => c.title === cat.title);
-                      const gradient = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+                      const isSelected = selectedSiteCategories.some(
+                        (c) => c.title === cat.title,
+                      );
+                      const gradient =
+                        CATEGORY_COLORS[index % CATEGORY_COLORS.length];
                       return (
                         <button
                           key={index}
                           onClick={() => toggleSiteCategory(cat)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm custom-cursor transition-colors whitespace-nowrap ${isSelected
-                            ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-                            : "bg-white text-theme border border-[#EAEAEA] hover:bg-[#F5F5F5]"
-                            }`}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm custom-cursor transition-colors whitespace-nowrap ${
+                            isSelected
+                              ? `bg-gradient-to-r ${gradient} text-white shadow-md`
+                              : "bg-white text-theme border border-[#EAEAEA] hover:bg-[#F5F5F5]"
+                          }`}
                         >
-                          {cat.icon && <IconImage icon={cat.icon} width={18} height={18} />}
+                          {cat.icon && (
+                            <IconImage icon={cat.icon} width={18} height={18} />
+                          )}
                           <span>{cat.titleHe ?? cat.title}</span>
                         </button>
                       );
@@ -234,19 +243,13 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         {filters.accessibilities.map((item, index) => (
                           <FilterChip
                             key={item._id}
-                            active={isSelected(
-                              "accessibilityIds",
-                              item._id,
-                            )}
+                            active={isSelected("accessibilityIds", item._id)}
                             onClick={() => {
                               toggleParam("accessibilityIds", item._id);
-                              sendGAEvent(
-                                triggerName.clickToAccessibility,
-                                {
-                                  accessibility_id: item._id,
-                                  accessibility_name: item.hebrewName,
-                                },
-                              );
+                              sendGAEvent(triggerName.clickToAccessibility, {
+                                accessibility_id: item._id,
+                                accessibility_name: item.hebrewName,
+                              });
                             }}
                             label={item.hebrewName}
                             colorIndex={index}
@@ -282,7 +285,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                     </div>
                   )}
 
-
                   {/* What to show? */}
                   <div className="mb-8">
                     <h3
@@ -296,30 +298,33 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setDisplayMode("")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${displayMode === ""
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-600 hover:text-gray-900"
-                          }`}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                          displayMode === ""
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
                       >
                         {filterPanelLabels.everything}{" "}
                       </motion.button>
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setDisplayMode("businesses")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${displayMode === "businesses"
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-600 hover:text-gray-900"
-                          }`}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                          displayMode === "businesses"
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
                       >
                         {filterPanelLabels.business}{" "}
                       </motion.button>
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setDisplayMode("products")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${displayMode === "products"
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-600 hover:text-gray-900"
-                          }`}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                          displayMode === "products"
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
                       >
                         {filterPanelLabels.products}{" "}
                       </motion.button>
@@ -331,7 +336,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
           </div>
         </motion.div>
       </AnimatePresence>
-
     </>
   );
 };

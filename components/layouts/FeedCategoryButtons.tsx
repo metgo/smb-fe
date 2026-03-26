@@ -15,17 +15,22 @@ export const CATEGORY_COLORS = [
 ];
 
 export default function FeedCategoryButtons() {
-  const { presetFeedFilters, selectedSiteCategories, toggleSiteCategory } = useGeneralStore();
+  const { presetFeedFilters, selectedSiteCategories, toggleSiteCategory } =
+    useGeneralStore();
 
   const allCategories =
-    presetFeedFilters?.siteTopics?.flatMap((topic) => topic.siteCategories ?? []) ?? [];
+    presetFeedFilters?.siteTopics?.flatMap(
+      (topic) => topic.siteCategories ?? [],
+    ) ?? [];
 
   if (allCategories.length === 0) return null;
 
   return (
     <motion.div className="flex flex-wrap gap-3 justify-center">
       {allCategories.map((category, idx) => {
-        const isActive = selectedSiteCategories.some((c) => c.title === category.title);
+        const isActive = selectedSiteCategories.some(
+          (c) => c.title === category.title,
+        );
         const gradient = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
 
         return (

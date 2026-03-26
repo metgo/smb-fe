@@ -64,14 +64,14 @@ const initialSiteConfig: ISiteConfig = {
 
           isPrimary: false,
           isArchived: false,
-          icon: null
-        }
+          icon: null,
+        },
       ],
 
       order: 0,
-      isArchived: false
-    }
-  ]
+      isArchived: false,
+    },
+  ],
 };
 
 interface GeneralStoreState {

@@ -5,10 +5,7 @@ import { useEffect, useState } from "react";
 import useGeneralStore from "@/stores/generalStore";
 import { sanitizeInitialFilters } from "@/lib/helpers";
 
-type FilterKey =
-  | "groupTypeIds"
-  | "accessibilityIds"
-  | "serviceTypes";
+type FilterKey = "groupTypeIds" | "accessibilityIds" | "serviceTypes";
 
 type FilterState = Record<FilterKey, string[]>;
 
