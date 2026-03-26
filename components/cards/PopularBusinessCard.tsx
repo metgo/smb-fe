@@ -8,6 +8,7 @@ import { searchText } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { pathNames } from "@/lib/endpoints";
+import { sanitizeHtml } from "@/lib/helpers";
 
 const PopularBusinessCard = ({
   name,
@@ -69,7 +70,9 @@ const PopularBusinessCard = ({
           <h4 className="line-clamp-1">{name}</h4>
           <div
             className="text-[12px] line-clamp-1"
-            dangerouslySetInnerHTML={{ __html: description || "" }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(description || ""),
+            }}
           />
           <div className="hidden group-hover:flex items-center justify-between mt-2.5">
             <IconImage

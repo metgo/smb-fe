@@ -63,14 +63,20 @@ export default function ProgressBar() {
         const isMailto = link.href.startsWith("mailto:");
         const isTel = link.href.startsWith("tel:");
 
-        // Start progress bar only for internal navigation
+        const url = new URL(link.href);
+        const isSamePage =
+          url.pathname === window.location.pathname &&
+          url.search === window.location.search;
+
+        // Start progress bar only for internal navigation to a different page
         if (
           !isExternal &&
           !isAnchor &&
           !isNewTab &&
           !isDownload &&
           !isMailto &&
-          !isTel
+          !isTel &&
+          !isSamePage
         ) {
           NProgress.start();
         }

@@ -12,6 +12,7 @@ import { pathNames } from "@/lib/endpoints";
 import useCartStore from "@/stores/cartStore";
 import { getProducts } from "@/actions/productActions";
 import { startLoading } from "@/components/wrappers/ProgressBar";
+import { sanitizeHtml } from "@/lib/helpers";
 
 interface BusinessProductsProps {
   bussinessId: string;
@@ -24,7 +25,7 @@ const BusinessProducts = ({ bussinessId }: BusinessProductsProps) => {
 
   const { cartItems } = useCartStore();
 
-  const { data: products } = useQuery({
+  const { data: products, isLoading } = useQuery({
     queryKey: ["products", bussinessId],
     queryFn: () => getProducts(bussinessId),
   });
@@ -33,7 +34,30 @@ const BusinessProducts = ({ bussinessId }: BusinessProductsProps) => {
     startLoading();
     router.push(`${pathNames.productsDetails}/${productId}`);
   }
-  if (!products.length) return;
+  if (isLoading) {
+    return (
+      <div className="rounded-3xl shadow-lg p-6 sm:p-8 mb-8 bg-white">
+        <div className="h-8 w-40 bg-gray-200 rounded-lg animate-pulse mb-6" />
+        <div className="flex gap-4 overflow-hidden pb-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-[280px] sm:w-[300px] rounded-2xl overflow-hidden bg-gray-100 animate-pulse"
+            >
+              <div className="h-48 bg-gray-200" />
+              <div className="p-4 space-y-3">
+                <div className="h-5 bg-gray-200 rounded w-3/4" />
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!products?.length) return null;
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -78,7 +102,9 @@ const BusinessProducts = ({ bussinessId }: BusinessProductsProps) => {
 
                   <div
                     className="text-sm mb-2 line-clamp-2 text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: product?.description }}
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(product?.description),
+                    }}
                   />
 
                   <div className="mb-2">

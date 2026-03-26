@@ -9,7 +9,7 @@ import { daysMapping } from "@/lib/utils";
 import { CardSkeleton } from "@/components/skeletons";
 import { menuItems, misc } from "@/constant/hebrew";
 import ContactUsInfo from "@/components/ContactUsInfo";
-import { isPlaceOpenNow } from "@/lib/helpers";
+import { isPlaceOpenNow, sanitizeHtml } from "@/lib/helpers";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -71,10 +71,14 @@ const OurStoryTabContent = ({
 
         <div className="col-span-7">
           <div className="text-dark font-normal space-y-4 mt-3 mb-10 w-2/3">
-            <div dangerouslySetInnerHTML={{ __html: description || "" }} />
             <div
               dangerouslySetInnerHTML={{
-                __html: shortDescription || "",
+                __html: sanitizeHtml(description || ""),
+              }}
+            />
+            <div
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(shortDescription || ""),
               }}
             />
           </div>

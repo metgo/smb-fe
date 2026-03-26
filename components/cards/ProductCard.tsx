@@ -13,6 +13,7 @@ import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { pathNames } from "@/lib/endpoints";
 import { startLoading } from "../wrappers/ProgressBar";
+import { sanitizeHtml } from "@/lib/helpers";
 import { itemTypeEnum } from "@/lib/utils";
 
 const ImageCard = ({
@@ -141,7 +142,9 @@ const ProductCard = ({
         <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
         <div
           className="line-clamp-2 text-theme text-[12px] h-8.5 font-normal"
-          dangerouslySetInnerHTML={{ __html: product?.description || "" }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHtml(product?.description || ""),
+          }}
         />
         <PriceTag
           price={product?.price?.sellingPrice}

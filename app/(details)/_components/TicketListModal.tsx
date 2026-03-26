@@ -12,7 +12,7 @@ import PriceTag from "@/components/PriceTag";
 import useCartStore from "@/stores/cartStore";
 import { staticImages } from "@/constant/staticImages";
 import { buttonLabels, events } from "@/constant/hebrew";
-import { formatDateMonth, isDateUpcoming } from "@/lib/helpers";
+import { formatDateMonth, isDateUpcoming, sanitizeHtml } from "@/lib/helpers";
 import { BiCalendar } from "react-icons/bi";
 import { GoClock } from "react-icons/go";
 
@@ -246,7 +246,7 @@ const TicketListModal = ({
                         <div
                           className="text-sm line-clamp-1 mt-0.5"
                           dangerouslySetInnerHTML={{
-                            __html: ticket?.description || "",
+                            __html: sanitizeHtml(ticket?.description || ""),
                           }}
                         />
 

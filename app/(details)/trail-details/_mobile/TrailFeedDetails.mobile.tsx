@@ -4,7 +4,7 @@ import { useTrailStations } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import TrailStations from "../_components/TrailStations";
 import AttributePills from "@/components/AttributePills";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { removeInlineStylesFromHTML, sanitizeHtml } from "@/lib/helpers";
 import MobileTrailDetailsRouteMap from "./TrailDetailsRouteMap.mobile";
 import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
 
@@ -39,7 +39,9 @@ const MobileTrailFeedDetails = ({
               <h1 className="text-2xl text-dark font-bold text-wrap">{name}</h1>
               <div
                 dangerouslySetInnerHTML={{
-                  __html: removeInlineStylesFromHTML(description || ""),
+                  __html: sanitizeHtml(
+                    removeInlineStylesFromHTML(description || ""),
+                  ),
                 }}
                 className=" font-normal text-theme mt-1"
               />

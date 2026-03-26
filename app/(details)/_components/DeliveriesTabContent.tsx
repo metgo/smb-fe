@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { IconImage } from "@/components/ui";
 import { deliveries } from "@/constant/hebrew";
 import { devlieryInfoMapData } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/helpers";
 
 // Helper components
 const DeliveryTitleLayout = ({
@@ -24,7 +25,7 @@ const DeliveryTitleLayout = ({
     </div>
     <div
       className="text-sm font-normal text-theme mt-2.5"
-      dangerouslySetInnerHTML={{ __html: desc || "" }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc || "") }}
     />
     {children}
   </div>

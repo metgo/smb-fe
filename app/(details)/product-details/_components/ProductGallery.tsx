@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
+import { NextImage } from "@/components/ui";
 
 const ProductGallery = ({
   images,
@@ -17,12 +17,10 @@ const ProductGallery = ({
 
   return (
     <div className="relative h-[400px] sm:h-[500px] bg-gray-200">
-      <motion.img
+      <NextImage
+        isFill
         key={selectedImage}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        src={images[selectedImage]?.image}
+        imgSrc={images[selectedImage]?.image}
         alt={images[selectedImage]?.alt || name}
         className="w-full h-full object-cover"
       />
@@ -51,9 +49,9 @@ const ProductGallery = ({
             <ArrowRight className="w-6 h-6 text-gray-900" />
           </button>
 
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
             <div className="flex gap-2">
-              {images.map((img, index) => (
+              {images?.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -66,8 +64,10 @@ const ProductGallery = ({
                     filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6))",
                   }}
                 >
-                  <img
-                    src={img.image}
+                  <NextImage
+                    width={80}
+                    height={80}
+                    imgSrc={img.image}
                     alt={img.alt || `תמונה ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
