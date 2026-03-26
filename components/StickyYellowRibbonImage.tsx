@@ -12,7 +12,12 @@ const StickyYellowRibbonImage = ({
   activeFilterTab: string;
 }) => {
   const { zIndex } = useGeneralStore();
-  if (activeFilterTab !== "gallery" || siteStatus.isHofash) return;
+  if (
+    activeFilterTab !== "gallery" ||
+    siteStatus.isHofash ||
+    siteStatus.isKefotef
+  )
+    return;
 
   return (
     <Image

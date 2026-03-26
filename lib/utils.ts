@@ -28,6 +28,7 @@ interface MenuItem {
 export const siteStatus = {
   isNegevTime: CODE === "BNEI" || CODE === "TAV8DL",
   isHofash: CODE === "HOFASH",
+  isKefotef: CODE === "KEFBA",
 };
 
 export const itemTypeEnum = {
