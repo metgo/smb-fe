@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
@@ -20,6 +20,7 @@ import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { filterBusinesses } from "@/lib/helpers";
 import { SunsetButton } from "../filter-icon/SunsetButton";
+import { SearchButton } from "../filter-icon/SearchButton";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
@@ -28,6 +29,8 @@ interface MobileFeedLayoutProps {
 
 const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const { isMobile } = useCommonHook();
 
   const {
@@ -155,11 +158,13 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       {hideFirstTwoSection && (
         <>
           <div className="fixed bottom-2 right-[42%] custom-cursor">
-            <SunsetButton
-              size={60}
-              variant={"black"}
+            <SearchButton
               onClick={handleFilterIconClick}
-              appliedFilterCount={appliedFilterCount}
+              activeFiltersCount={appliedFilterCount}
+              isFilterOpen={isFilterOpen}
+              setIsFilterOpen={setIsFilterOpen}
+              variant="continuous"
+              size={96}
             />
           </div>
           {!alreadyShownFilterTooltip && (
