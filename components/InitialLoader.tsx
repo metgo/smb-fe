@@ -13,7 +13,7 @@ const InitialLoader = () => {
         <div className={clsx(`w-40 h-40`)}>
           <Image
             alt="Logo"
-            src={logo?.image.black || ""}
+            src={logo?.image.white || ""}
             width={100}
             height={100}
             unoptimized

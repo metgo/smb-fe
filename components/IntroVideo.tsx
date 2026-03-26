@@ -48,9 +48,23 @@ const IntroVideo = ({ isMobile }: IntroVideoProps) => {
     // Try to play (autoPlay may be blocked by browser)
     video.play().catch(() => {});
 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(video);
+
     return () => {
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("playing", handlePlaying);
+      observer.disconnect();
     };
   }, []);
 
