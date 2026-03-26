@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 
 import { pathNames } from "./endpoints";
 import { categoryIds, purposeTypeEnum } from "./utils";
+import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
 
 export function sanitizeHtml(html: string = ""): string {
   if (!html) return "";
@@ -466,63 +467,99 @@ type Filters = {
   serviceTypes: string[];
 };
 
-export const filterBusinesses = (businesses: any[], filters: Filters) => {
+export const filterBusinesses = (
+  businesses: any[],
+  filterState: any, 
+  categoriesSites?: any, 
+) => {
+  console.log("🚀 ~ helpers ~ filterState:", filterState);
   const hasAnyFilter =
-    filters.categoryIds.length > 0 ||
-    filters.subCategoryIds.length > 0 ||
-    filters.groupTypeIds.length > 0 ||
-    filters.accessibilityIds.length > 0 ||
-    filters.serviceTypes.length > 0;
+    filterState.categoryIds?.length > 0 ||
+    filterState.subCategoryIds?.length > 0 ||
+    filterState.groupTypeIds?.length > 0 ||
+    filterState.accessibilityIds?.length > 0 ||
+    filterState.serviceTypes?.length > 0;
 
-  // If no filters selected → show all
+  // If no filters selected → show all businesses
   if (!hasAnyFilter) return businesses;
 
   return businesses.filter((business) => {
     let matched = false;
-
-    // Category
+    // ====================== CATEGORY FILTER ======================
     if (
-      filters.categoryIds.length > 0 &&
-      filters.categoryIds.includes(business.primaryCategoryId)
+      Array.isArray(filterState.categoryIds) &&
+      filterState.categoryIds.length > 0
+    ) {
+      if (!categoriesSites?.siteTopics) {
+        return false; // hide until categoriesSites is loaded
+      }
+
+      const selectedCategoryTitles = filterState.categoryIds;
+
+      const allowedBusinessIds = categoriesSites.siteTopics
+        .flatMap((topic) => topic.siteCategories || [])
+        .filter((category) => selectedCategoryTitles.includes(category.title))
+        .flatMap((category) => category.businessIds || []);
+
+      console.log("Allowed Business IDs (raw):", allowedBusinessIds);
+
+      const allowedBusinessIdsSet = new Set(
+        allowedBusinessIds.map((id: any) => id?.toString().trim()),
+      );
+
+
+      // Safe check
+      const businessIdStr = business?._id?.toString().trim();
+      console.log("🚀 ~ filterBusinesses ~ businessIdStr:", businessIdStr)
+
+      if (businessIdStr && allowedBusinessIdsSet.has(businessIdStr)) {
+        matched = true;
+        console.log(`Match found for business: ${businessIdStr}`);
+      } else {
+        console.log(`No match for business: ${businessIdStr}`);
+      }
+    }
+
+    // ====================== SUB-CATEGORY ======================
+    if (
+      Array.isArray(filterState.subCategoryIds) &&
+      filterState.subCategoryIds.length > 0 &&
+      filterState.subCategoryIds.includes(business.subCategoryId)
     ) {
       matched = true;
     }
 
-    // Sub-category
+    // ====================== GROUP TYPES ======================
     if (
-      filters.subCategoryIds.length > 0 &&
-      filters.subCategoryIds.includes(business.subCategoryId)
-    ) {
-      matched = true;
-    }
-
-    // Group Types
-    if (
-      filters.groupTypeIds.length > 0 &&
+      Array.isArray(filterState.groupTypeIds) &&
+      filterState.groupTypeIds.length > 0 &&
       business.groupTypesId?.some((id: string) =>
-        filters.groupTypeIds.includes(id),
+        filterState.groupTypeIds.includes(id),
       )
     ) {
       matched = true;
     }
 
-    // Accessibilities
+    // ====================== ACCESSIBILITIES ======================
     if (
-      filters.accessibilityIds.length > 0 &&
+      Array.isArray(filterState.accessibilityIds) &&
+      filterState.accessibilityIds.length > 0 &&
       business.accessibilitiesId?.some((id: string) =>
-        filters.accessibilityIds.includes(id),
+        filterState.accessibilityIds.includes(id),
       )
     ) {
       matched = true;
     }
 
-    // Service Types
+    // ====================== SERVICE TYPES ======================
     if (
-      filters.serviceTypes.length > 0 &&
-      filters.serviceTypes.includes(business.serviceType)
+      Array.isArray(filterState.serviceTypes) &&
+      filterState.serviceTypes.length > 0 &&
+      filterState.serviceTypes.includes(business.serviceType)
     ) {
       matched = true;
     }
+    console.log("🚀 ~ filterBusinesses ~ matched:", matched);
 
     return matched;
   });

@@ -83,13 +83,18 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   } = useSearchFlow();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
-   const { aminitiesInfo } = useGeneralStore();
-     const {
-       data: categoriesSites,
-       isLoading,
-       isError,
-     } = useGetAllCategorySites();
-  const filteredBusinesses = filterBusinesses(businesses, filterState);
+  const { aminitiesInfo } = useGeneralStore();
+  const {
+    data: categoriesSites,
+    isLoading,
+    isError,
+  } = useGetAllCategorySites();
+  const filteredBusinesses = filterBusinesses(
+    businesses,
+    filterState,
+    categoriesSites,
+  );
+  console.log("🚀 ~ FeedLayout ~ filteredBusinesses:", filteredBusinesses);
   const totalBusiness = filteredBusinesses?.length;
 
   const visibleFeedItems = useMemo(() => {
