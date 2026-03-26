@@ -17,11 +17,16 @@ import { fundayEnquiryLables } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import SearchFlowMobile from "../navbar/SearchFlow.mobile";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import useCartStore from "@/stores/cartStore";
+import { CartDrawer } from "../drawer";
+import { ShoppingCart } from "lucide-react";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
   const [isFilterTabShow, setIsFilterTabShow] = useState(false);
   const { activeFilterTabMobile, setActiveFilterTabMobile } = useGeneralStore();
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const { getTotalQuantity } = useCartStore();
 
   const basePagePath = pathname.split("/").slice(0, 2).join("/");
 
@@ -67,6 +72,34 @@ const MobileNavbar = () => {
         {isFilterTabShow && (
           <div className="flex items-center justify-end gap-2 col-span-8">
             <div className="flex items-center justify-center">
+               {pathname !== pathNames.checkout &&
+                pathname !== pathNames.cart && (
+                  <div
+                    onClick={() => setIsCartDrawerOpen(true)}
+                    className="p-2 relative custom-cursor"
+                  >
+                    {getTotalQuantity() > 0 && (
+                      <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full h-[16px] w-[16px] flex items-center justify-center">
+                        <span className="text-[10px] text-white font-bold mt-[1px]">
+                          {getTotalQuantity()}
+                        </span>
+                      </div>
+                    )}
+                    <ShoppingCart className="text-gray-500 font-light" />
+                  </div>
+                )}
+               {activeFilterTabMobile === "map" && (
+                <button
+                  onClick={() => {
+                    setActiveFilterTabMobile("gallery");
+                    sendGAEvent(triggerName.clickToLayoutSwitchBtn, {
+                      layout: "gallery",
+                    });
+                  }}
+                >
+                  <LuLayoutDashboard color="#0F353A" size={24} />
+                </button>
+              )}
               {activeFilterTabMobile === "gallery" && (
                 <button
                   onClick={() => {
@@ -79,26 +112,17 @@ const MobileNavbar = () => {
                   <FaRegMap color="#0F353A" size={24} />
                 </button>
               )}
-              {activeFilterTabMobile === "map" && (
-                <button
-                  onClick={() => {
-                    setActiveFilterTabMobile("gallery");
-                    sendGAEvent(triggerName.clickToLayoutSwitchBtn, {
-                      layout: "gallery",
-                    });
-                  }}
-                >
-                  <LuLayoutDashboard color="#0F353A" size={24} />
-                </button>
-              )}
+             
+             
             </div>
 
-            <SearchFlowMobile />
+            {/* <SearchFlowMobile /> */}
             {/* {showFilterIcon && <IconImage icon="filter" />} */}
           </div>
         )}
       </div>
       <PromotionalCards />
+      {isCartDrawerOpen && <CartDrawer setIsOpen={setIsCartDrawerOpen} />}
     </nav>
   );
 };

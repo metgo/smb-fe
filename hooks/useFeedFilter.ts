@@ -109,7 +109,7 @@ export default function useFeedFilter(
 
       const total = getTotalAppliedFilters(updated);
       setAppliedFilterCount(total);
-      window.scrollTo({ behavior: "smooth", top: 0 });
+      // window.scrollTo({ behavior: "smooth", top: 0 });
 
       return updated;
     });

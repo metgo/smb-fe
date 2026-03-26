@@ -12,13 +12,20 @@ import { scaleLayout, shuffleArray } from "@/lib/helpers";
 import FeedCardMobile from "../cards/FeedCard.mobile";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import { useCommonHook } from "@/hooks";
+import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
+import { motion } from "motion/react";
 
 const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   const { isMobile } = useCommonHook();
   const searchParams = useSearchParams();
   const activeCategoryKey = searchParams.get("categoryId");
-
+  const {
+    data: categoriesSites,
+    isLoading,
+    isError,
+  } = useGetAllCategorySites();
   const feedItemCount = data?.length ?? 0;
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // ── All hooks are called unconditionally (order never changes) ──
   const [scale, setScale] = useState(1);
@@ -91,23 +98,81 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
       if (!feedItem || !cardLayout) return null;
 
       return (
-        <FeedCardMobile
-          key={`${feedItem._id}-${i}`}
-          width={cardLayout.width}
-          height={cardLayout.height}
-          feedItem={feedItem}
-        />
+        <div>
+          <FeedCardMobile
+            key={`${feedItem._id}-${i}`}
+            width={cardLayout.width}
+            height={cardLayout.height}
+            feedItem={feedItem}
+          />
+        </div>
       );
     });
 
   return (
-    <div className="px-2 pt-20 flex w-full min-h-screen">
-      <div className="flex gap-3 w-full">
-        <div className="flex flex-col gap-y-3 flex-1">
-          {renderCards(shuffledCols.col1)}
-        </div>
-        <div className="flex flex-col gap-y-3 flex-1">
-          {renderCards(shuffledCols.col2)}
+    <div className="mt-20">
+      <div className="flex flex-col justify-center items-center py-12">
+        {/* title */}
+        <h1
+          className={`text-center ${"text-gray-900"}`}
+          style={{
+            fontFamily: "sans-serif",
+            fontSize: "clamp(3.5rem, 12vw, 9rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 0.85,
+          }}
+        >
+          לוקחים נשימה
+        </h1>{" "}
+        {/* subtitle */}
+        <p
+          className="text-center bg-gradient-to-l from-teal-400 via-cyan-400 to-teal-500 bg-clip-text text-transparent "
+          style={{
+            fontFamily: "sans-serif",
+            fontWeight: 600,
+            fontSize: "clamp(3.5rem, 16vw, 9rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 0.85,
+          }}
+        >
+          עם הנגב הפורח
+        </p>{" "}
+        <motion.div className="flex flex-wrap gap-3 justify-center mt-12">
+          {categoriesSites?.siteTopics?.map((topic: any) => {
+            return topic.siteCategories?.map((category: any) => {
+              const isActive = selectedCategories.includes(category.title);
+              return (
+                <motion.button
+                  key={category.title}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() =>
+                    setSelectedCategories(
+                      isActive
+                        ? selectedCategories.filter((c) => c !== category.title)
+                        : [...selectedCategories, category.title],
+                    )
+                  }
+                  className={`px-6 py-3 rounded-xl transition-all flex items-center gap-2 justify-center text-sm font-medium backdrop-blur-sm ${
+                    isActive
+                      ? `bg-blue-500 text-white shadow-lg`
+                      : "bg-white/80 text-gray-700 hover:bg-white shadow-md"
+                  }`}
+                >
+                  {category.title}
+                </motion.button>
+              );
+            });
+          })}
+        </motion.div>
+      </div>
+      <div className="px-2  flex w-full min-h-screen">
+        <div className="flex gap-3 w-full">
+          <div className="flex flex-col gap-y-3 flex-1">
+            {renderCards(shuffledCols.col1)}
+          </div>
+          <div className="flex flex-col gap-y-3 flex-1">
+            {renderCards(shuffledCols.col2)}
+          </div>
         </div>
       </div>
     </div>
