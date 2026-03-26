@@ -1,0 +1,48 @@
+"use client";
+
+import { motion } from "motion/react";
+import useGeneralStore from "@/stores/generalStore";
+
+export const CATEGORY_COLORS = [
+  "from-pink-500 to-rose-500",
+  "from-teal-400 to-cyan-500",
+  "from-violet-500 to-purple-600",
+  "from-amber-400 to-orange-500",
+  "from-blue-400 to-indigo-500",
+  "from-emerald-400 to-green-500",
+  "from-orange-500 to-red-500",
+  "from-fuchsia-500 to-pink-500",
+];
+
+export default function FeedCategoryButtons() {
+  const { presetFeedFilters, selectedSiteCategories, toggleSiteCategory } = useGeneralStore();
+
+  const allCategories =
+    presetFeedFilters?.siteTopics?.flatMap((topic) => topic.siteCategories ?? []) ?? [];
+
+  if (allCategories.length === 0) return null;
+
+  return (
+    <motion.div className="flex flex-wrap gap-3 justify-center">
+      {allCategories.map((category, idx) => {
+        const isActive = selectedSiteCategories.some((c) => c.title === category.title);
+        const gradient = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+
+        return (
+          <motion.button
+            key={category.title}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => toggleSiteCategory(category)}
+            className={`px-6 py-3 rounded-xl transition-all flex items-center gap-2 justify-center text-sm font-medium ${
+              isActive
+                ? `bg-gradient-to-r ${gradient} text-white shadow-lg`
+                : "bg-white/80 text-gray-700 hover:bg-white shadow-md"
+            }`}
+          >
+            {category.title}
+          </motion.button>
+        );
+      })}
+    </motion.div>
+  );
+}

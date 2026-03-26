@@ -35,6 +35,18 @@ export async function getAllLocations() {
   }
 }
 
+export const getPresetFeedConfig= async () => {
+  try {
+    const res = await fetch(urls.categoriesSites);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    return [];
+  }
+};
+
 export async function getLocationDetailsById(locationId: string) {
   try {
     const res = await fetch(

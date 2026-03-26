@@ -5,27 +5,24 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 import NavLogo from "./NavLogo";
-import SearchFlow from "./SearchFlow";
-import { fundayEnquiryLables, navbar } from "@/constant/hebrew";
+import { fundayEnquiryLables } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
-import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
-import FeedLyoutSwitcTabs from "./FeedFilterTabs";
 import {
   HeartFilledIcon,
   HeartOutlineIcon,
   RedFlowerIcon,
 } from "../ui/svgIcons";
-import { CODE } from "@/constant/envConstants";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import useGeneralStore from "@/stores/generalStore";
 import FeedLayoutDropdown from "./FeedLayoutDropdown";
+import FeedNavbarCenter from "./FeedNavbarCenter";
 import { ShoppingCart } from "lucide-react";
-// import { GiftBoxIcon } from "../ui/svgIcons";
+import { siteStatus } from "@/lib/utils";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const pathname = usePathname();
@@ -43,28 +40,15 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
           <div className="flex items-center gap-4 col-span-4">
             <HamburgerMenu />
             <NavLogo />
-            <Link
-              href={pathNames.joinBusiness}
-              target="_blank"
-              className="text-theme font-bold ms-8 custom-cursor"
-            >
-              {navbar.toJoinAsaBusiness}
-            </Link>
           </div>
 
-          <div className="flex justify-center col-span-2"></div>
+          <div className="flex justify-center col-span-2">
+            <FeedNavbarCenter />
+          </div>
 
           <div className="flex items-center justify-end col-span-4">
-            {/* <button
-              type="button"
-              onClick={() => {}}
-              className="text-theme border border-theme font-bold rounded-xl px-4 py-2 flex items-center gap-2 custom-cursor"
-            >
-              <GiftBoxIcon />
-              {navbar.souvenirShop}
-            </button> */}
 
-            {CODE === "BNEI" && (
+            {siteStatus.isNegevTime && (
               <Link
                 href={pathNames.fundayEnquiry}
                 className="flex items-center border border-theme rounded-xl ps-4 pe-10 py-1 h-10 custom-cursor relative"
@@ -114,7 +98,6 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                     <ShoppingCart className="text-gray-500 font-light" />
                   </div>
                 )}
-              {/* <UserIconHoverCard /> */}
               <CurrentTempOfYourCity />
               <div>
                 {showFilterTab && (

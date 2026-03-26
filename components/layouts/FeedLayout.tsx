@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useFeedFilter } from "@/hooks";
-import { misc, searchText, filterLabels } from "@/constant/hebrew";
+import { misc } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
@@ -13,14 +13,11 @@ import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
-import { filterBusinesses } from "@/lib/helpers";
 import { SearchButton } from "../filter-icon/SearchButton";
-import { useSearchFlow } from "@/hooks/useSearchFlow";
-import { useGetAllCategorySites } from "@/hooks/useGetAllCategorySites";
+import { FeedFilterDrawer } from "../drawer";
 interface FeedLayoutProps {
   selectedFiltersIds: any;
 }
@@ -34,7 +31,11 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     isFilterDrawerOpen,
     showFavoriteFeedItems,
     setShowFavoriteFeedItems,
+    selectedSiteCategories,
+    feedFilterState,
+    resetFeedFilters,
   } = useGeneralStore();
+  console.log("🚀 ~ FeedLayout ~ selectedSiteCategories:", selectedSiteCategories)
 
   const {
     favoriteFeedItemIds,
@@ -63,46 +64,63 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     filteredSubCategories,
     isSelected,
     toggleParam,
-    handleResetFilters,
+    handleResetFilters: resetLocalFilters,
     filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
+
+  const handleResetFilters = () => {
+    resetLocalFilters();
+    resetFeedFilters();
+  };
   /* ---------------------- Memoized Data ---------------------- */
 
   const businesses = infiniteData?.data || [];
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const {
-    hasResults,
-    isLoading: isSearchLoading,
-    hasMounted,
-    handleClearInputText,
-    handleKeywordSelect,
-    recommendedBusinesses,
-    searchItems,
-    searchKeyword,
-    setSearchKeyword,
-  } = useSearchFlow();
-  const [advancedFilter, setAdvancedFilter] = useState(false);
-  const [displayMode, setDisplayMode] = useState("");
-   const { aminitiesInfo } = useGeneralStore();
-     const {
-       data: categoriesSites,
-       isLoading,
-       isError,
-     } = useGetAllCategorySites();
-  const filteredBusinesses = filterBusinesses(businesses, filterState);
-  const totalBusiness = filteredBusinesses?.length;
+
+  const totalBusiness = businesses?.length;
 
   const visibleFeedItems = useMemo(() => {
-    if (filteredBusinesses?.length === 0) return [];
+    if (businesses?.length === 0) return [];
 
-    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return filteredBusinesses.filter((item) =>
-        favoriteFeedItemIds.includes(item._id),
+    let items = businesses;
+
+    if (selectedSiteCategories.length > 0) {
+      const allowedIds = new Set(
+        selectedSiteCategories.flatMap((cat) => cat.businessIds),
+      );
+      items = items.filter((item) => allowedIds.has(item.businessId));
+    }
+
+    if (feedFilterState.serviceTypes.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.serviceTypes.includes(item.serviceType),
       );
     }
 
-    return filteredBusinesses;
-  }, [filteredBusinesses, showFavoriteFeedItems, favoriteFeedItemIds]);
+    if (feedFilterState.accessibilityIds.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.accessibilityIds.some((id) =>
+          (item as any).accessibilitiesId?.some(
+            (a: any) => (a._id ?? a) === id,
+          ),
+        ),
+      );
+    }
+
+    if (feedFilterState.groupTypeIds.length > 0) {
+      items = items.filter((item) =>
+        feedFilterState.groupTypeIds.some((id) =>
+          (item as any).groupTypesId?.some((g: any) => (g._id ?? g) === id),
+        ),
+      );
+    }
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return items.filter((item) => favoriteFeedItemIds.includes(item._id));
+    }
+
+    return items;
+  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds, selectedSiteCategories, feedFilterState]);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -147,7 +165,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   /* ---------------------- JSX ---------------------- */
   return (
     <>
-      <div className="md:block max-sm:hidden">
+      <div className="md:block max-sm:hidden relative">
         {totalBusiness === 0 ? (
           <NoFeedItemLayout isFilterDrawerOpen />
         ) : (
@@ -157,11 +175,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
         {/* Filter Button */}
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
-            {/* <SunsetButton
-              variant={"black"}
-              onClick={handleFilterIconClick}
-              appliedFilterCount={appliedFilterCount}
-            /> */}
             <SearchButton
               onClick={handleFilterIconClick}
               activeFiltersCount={appliedFilterCount}
@@ -177,23 +190,14 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
             )}
           </div>
         )}
+        <FeedFilterDrawer
+          isOpen={isFilterOpen}
+          setIsOpen={setIsFilterOpen}
+          itemCount={totalBusiness}
+          filters={filters}
+        />
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>
-
-      {/* Filter Drawer */}
-      {/* {isFilterDrawerOpen && (
-        <FeedFilterDrawer
-          itemCount={infiniteData?.totalData ?? 0}
-          isOpen={isFilterDrawerOpen}
-          setIsOpen={setIsFilterDrawerOpen}
-          filters={filters}
-          appliedFilterCount={appliedFilterCount}
-          isSelected={isSelected}
-          toggleParam={toggleParam}
-          handleResetFilters={handleResetFilters}
-          filteredSubCategories={filteredSubCategories}
-        />
-      )} */}
     </>
   );
 };

@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { useState } from "react";
 
 type SunsetVariant =
   | "continuous"
@@ -9,6 +8,7 @@ type SunsetVariant =
   | "bounce"
   | "pulse"
   | "black";
+  
 interface SearchButtonProps {
   activeFiltersCount?: number;
   variant?: SunsetVariant;
@@ -95,39 +95,7 @@ export const SearchButton = ({
   setIsFilterOpen,
 }: SearchButtonProps) => {
   const config = getAnimationConfig(variant);
-  // const categorySites = await getAllCategorySites();
-  // console.log("🚀 ~ SearchButton ~ categorySites:", categorySites)
 
-  const buttonScale = scrollY > 100 ? 0.8 : 1;
-  // Handle filter toggle with scroll to feed
-  const handleFilterToggle = () => {
-    const newState = !isFilterOpen;
-    setIsFilterOpen(newState);
-
-    // DON'T prevent body scroll when filter is open on mobile - we want to keep feed scrollable
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      // On mobile, don't lock body scroll anymore
-      // This allows the feed to remain scrollable behind the half-screen filter
-    }
-
-    // If opening filter, scroll to feed (main content) on desktop only
-    if (newState && !isMobile) {
-      setTimeout(() => {
-        const mainElement = document.querySelector("main");
-        if (mainElement) {
-          const offset = 100; // Small offset from top
-          const elementPosition = mainElement.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth",
-          });
-        }
-      }, 100);
-    }
-  };
   return (
     <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
       <motion.div
