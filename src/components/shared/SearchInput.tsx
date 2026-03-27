@@ -5,7 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
-  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  setSearchTerm: (v: string) => void;
   storageKey?: string;
 }
 

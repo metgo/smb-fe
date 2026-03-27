@@ -27,6 +27,8 @@ import { saveSettings, saveUserInfo } from "@/lib/storage";
 import { contentMutationApi } from "./api/contentMutationApi";
 import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
+import { tripQueryApi } from "./api/tripsQueryApi";
+import { poiQueryApi } from "./api/poiQueryApi";
 
 export const store = configureStore({
   reducer: {
@@ -62,6 +64,8 @@ export const store = configureStore({
     [voucherMutationApi.reducerPath]: voucherMutationApi.reducer,
 
     [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
+    [tripQueryApi.reducerPath]: tripQueryApi.reducer,
+    [poiQueryApi.reducerPath]: poiQueryApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
   },
@@ -89,6 +93,8 @@ export const store = configureStore({
       voucherMutationApi.middleware,
       voucherQueryApi.middleware,
       notificationApi.middleware,
+      tripQueryApi.middleware,
+      poiQueryApi.middleware,
     ),
 });
 

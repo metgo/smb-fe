@@ -25,6 +25,7 @@ interface ContentCardProps {
   // Map of all currently selected items (id → full business object).
   // Passed down from Contents so the drag item can carry ALL selected items.
   selectedItems?: Map<string, any>;
+  contentType?: string;
 
   handleContextMenu?: () => void;
   handleClick?: (e: React.MouseEvent) => void;
@@ -42,6 +43,7 @@ const ContentCard = ({
   viewMode = "grid",
   isSelected,
   selectedItems,
+  contentType,
   handleClick,
   handleRemove,
   handleContextMenu,
@@ -58,12 +60,13 @@ const ContentCard = ({
       if (isSelected && selectedItems && selectedItems.size > 1) {
         return {
           isMultiple: true,
-          // Array of { _id, name, image, description } for each selected item
+          // Array of { _id, name, image, description, contentType } for each selected item
           items: Array.from(selectedItems.values()).map((b) => ({
             _id: b._id,
             name: b.name,
             image: b.images?.[0]?.image ?? "",
             description: b.shortDescription ?? "",
+            contentType,
           })),
           count: selectedItems.size,
         };
@@ -78,6 +81,7 @@ const ContentCard = ({
             name,
             image,
             description: descripition,
+            contentType,
           },
         ],
         count: 1,

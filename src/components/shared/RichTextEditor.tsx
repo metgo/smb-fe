@@ -58,9 +58,6 @@ const PRESET_COLORS = [
   "#A52A2A",
 ];
 
-// Commands tracked for active (highlighted) state in the toolbar.
-// These are read inside a selectionchange listener — NOT during render —
-// so there is no "ref access during render" lint violation.
 const TRACKED_COMMANDS = [
   "bold",
   "italic",
@@ -108,57 +105,136 @@ const CHECKERBOARD: React.CSSProperties = {
   backgroundPosition: "0 0,3px 3px",
 };
 
-// ─── Pure DOM helpers (defined outside component — no hooks, no refs) ─────────
+// ─── Pure DOM helpers ────────────────────────────────────────────────────────
 
 /**
- * Applies font size to the current selection using the Range API directly.
- * Never uses execCommand('fontSize') because that only accepts keyword sizes
- * 1–7, where size 7 = "xx-large" = 48px — not an arbitrary px value.
+ * Walks up to every block ancestor (up to but not including root) and sets its
+ * line-height to 1.4× the tallest computed font-size found among all its
+ * inline descendants. This ensures the block row height always reflects the
+ * actual largest font inside it — including when shrinking from large → small.
  */
-function applyFontSizeDOM(px: number): void {
+function updateBlockLineHeight(node: Node, root: HTMLElement): void {
+  let cur: Node | null =
+    node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+
+  while (cur && cur !== root) {
+    if (cur instanceof HTMLElement && BLOCK_TAGS.has(cur.tagName)) {
+      let maxPx = 0;
+
+      // Only count descendants with an explicitly set inline font-size.
+      // Using computed style here would pick up inherited/default 16px from
+      // wrapper spans that have no font-size of their own, causing the
+      // block's line-height to stay inflated after shrinking to a small font.
+      cur.querySelectorAll<HTMLElement>("*").forEach((el) => {
+        if (el.style.fontSize) {
+          const fs = parseFloat(el.style.fontSize);
+          if (!isNaN(fs) && fs > maxPx) maxPx = fs;
+        }
+      });
+
+      // Also check an explicit font-size on the block element itself
+      if (cur.style.fontSize) {
+        const blockFs = parseFloat(cur.style.fontSize);
+        if (!isNaN(blockFs) && blockFs > maxPx) maxPx = blockFs;
+      }
+
+      // Fall back to computed font-size only when nothing explicit was found
+      // (e.g. a block containing unstyled plain text)
+      if (maxPx === 0) {
+        maxPx = parseFloat(window.getComputedStyle(cur).fontSize) || 16;
+      }
+
+      cur.style.lineHeight = `${(maxPx * 1.4).toFixed(1)}px`;
+    }
+    cur = cur.parentElement;
+  }
+}
+
+/**
+ * Applies a font size to the current selection and then updates the
+ * line-height of every block ancestor so row height matches immediately.
+ *
+ * Key fix: line-height is NOT set on the inner <span> (where it has no
+ * effect on block row height) but instead on the block element via
+ * updateBlockLineHeight(), which the browser respects for row sizing.
+ */
+function applyFontSizeDOM(px: number, root?: HTMLElement): void {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;
 
   const range = sel.getRangeAt(0);
 
-  if (range.collapsed) {
-    // Insert a zero-width span so the next characters typed inherit the size.
+  const createStyledSpan = () => {
     const span = document.createElement("span");
     span.style.fontSize = `${px}px`;
+    // ❌ Do NOT set line-height here — a unitless ratio on an inline span
+    //    does not affect block row height. We handle it at block level below.
+    span.style.display = "inline";
+    return span;
+  };
+
+  if (range.collapsed) {
+    const span = createStyledSpan();
     span.appendChild(document.createTextNode("\u200B"));
     range.insertNode(span);
+
     range.setStart(span.firstChild!, 1);
     range.setEnd(span.firstChild!, 1);
     sel.removeAllRanges();
     sel.addRange(range);
+
+    if (root) updateBlockLineHeight(span, root);
     return;
   }
 
-  const reselect = (span: HTMLSpanElement) => {
-    sel.removeAllRanges();
-    const r = document.createRange();
-    r.selectNodeContents(span);
-    sel.addRange(r);
-  };
+  let insertedSpan: HTMLElement | null = null;
 
   try {
-    // surroundContents works for simple (single-element) ranges
-    const span = document.createElement("span");
-    span.style.fontSize = `${px}px`;
+    // Simple case: selection is within a single element
+    const span = createStyledSpan();
     range.surroundContents(span);
-    reselect(span);
+    insertedSpan = span;
+
+    // Strip font-size from any nested spans so the old large font doesn't
+    // persist inside the new span and inflate the block's line-height.
+    span.querySelectorAll<HTMLElement>("span[style]").forEach((child) => {
+      child.style.fontSize = "";
+      child.style.lineHeight = "";
+    });
+
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
   } catch {
-    // Falls back for cross-element ranges: extract → wrap → reinsert
-    const span = document.createElement("span");
-    span.style.fontSize = `${px}px`;
-    span.appendChild(range.extractContents());
+    // Complex selection fallback (crosses element boundaries)
+    const span = createStyledSpan();
+    const fragment = range.extractContents();
+
+    // Strip font-size / line-height from nested spans to avoid conflicts
+    fragment.querySelectorAll("span[style]").forEach((child) => {
+      if (child instanceof HTMLElement) {
+        child.style.fontSize = "";
+        child.style.lineHeight = "";
+      }
+    });
+
+    span.appendChild(fragment);
     range.insertNode(span);
-    reselect(span);
+    insertedSpan = span;
+
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
   }
+
+  // ✅ Update line-height on block ancestor so the row height matches the new font size
+  if (root && insertedSpan) updateBlockLineHeight(insertedSpan, root);
 }
 
 /**
- * Finds the nearest block-level ancestor of `node` inside `root`.
+ * Finds nearest block ancestor
  */
 function getNearestBlock(node: Node, root: HTMLElement): Element | null {
   let cur: Node | null =
@@ -171,9 +247,7 @@ function getNearestBlock(node: Node, root: HTMLElement): Element | null {
 }
 
 /**
- * Applies a heading tag (h1–h6 or p) to the block containing the selection.
- * Uses direct DOM replacement instead of execCommand('formatBlock') which is
- * deprecated and silently no-ops in many browser contexts.
+ * Apply heading with improved style handling
  */
 function applyHeadingDOM(tag: string, root: HTMLElement): void {
   const sel = window.getSelection();
@@ -183,21 +257,20 @@ function applyHeadingDOM(tag: string, root: HTMLElement): void {
   const block = getNearestBlock(range.commonAncestorContainer, root);
   if (!block) return;
 
-  // Toggle: same tag → revert to <p>
   const target = block.tagName.toLowerCase() === tag ? "p" : tag;
   const newEl = document.createElement(target);
   newEl.innerHTML = block.innerHTML;
 
-  // Carry over alignment/other inline styles but drop font-size
-  // (headings have their own sizes in the browser default stylesheet)
+  // Carry over styles but reset font-size and line-height (headings have own defaults)
   if ((block as HTMLElement).style?.cssText) {
     (newEl as HTMLElement).style.cssText = (block as HTMLElement).style.cssText;
     (newEl as HTMLElement).style.fontSize = "";
+    (newEl as HTMLElement).style.lineHeight = "";
   }
 
   block.replaceWith(newEl);
 
-  // Restore cursor at end of new element
+  // Restore cursor at the end
   sel.removeAllRanges();
   const r = document.createRange();
   r.selectNodeContents(newEl);
@@ -223,7 +296,95 @@ function getPlainText(html: string): string {
   return d.textContent ?? d.innerText ?? "";
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Allowed inline style properties to preserve when pasting rich content
+const ALLOWED_STYLE_PROPS = new Set([
+  "color",
+  "background-color",
+  "font-size",
+  "font-family",
+  "font-weight",
+  "font-style",
+  "text-decoration",
+  "text-align",
+  "line-height",
+]);
+
+// Tags that are always removed (along with their children)
+const DANGEROUS_TAGS = new Set([
+  "SCRIPT",
+  "IFRAME",
+  "OBJECT",
+  "EMBED",
+  "FORM",
+  "INPUT",
+  "BUTTON",
+  "SELECT",
+  "TEXTAREA",
+  "STYLE",
+  "LINK",
+  "META",
+  "BASE",
+]);
+
+/**
+ * Sanitizes pasted HTML:
+ * - Removes dangerous tags and their children
+ * - Strips all event-handler attributes (on*)
+ * - Strips href="javascript:..." links
+ * - Keeps only allowed CSS properties in inline styles
+ */
+function sanitizePastedHTML(html: string): string {
+  const root = document.createElement("div");
+  root.innerHTML = html;
+
+  const walk = (node: Node) => {
+    const children = Array.from(node.childNodes);
+    for (const child of children) {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const el = child as HTMLElement;
+
+        if (DANGEROUS_TAGS.has(el.tagName)) {
+          node.removeChild(el);
+          continue;
+        }
+
+        // Strip dangerous attributes
+        const attrs = Array.from(el.attributes);
+        for (const attr of attrs) {
+          if (attr.name.startsWith("on")) {
+            el.removeAttribute(attr.name);
+          } else if (
+            attr.name === "href" ||
+            attr.name === "src" ||
+            attr.name === "action"
+          ) {
+            const val = attr.value.trim().toLowerCase().replace(/\s/g, "");
+            if (val.startsWith("javascript:") || val.startsWith("data:")) {
+              el.removeAttribute(attr.name);
+            }
+          }
+        }
+
+        // Filter inline styles to only allowed properties
+        if (el.style.cssText) {
+          const kept: string[] = [];
+          for (const prop of ALLOWED_STYLE_PROPS) {
+            const val = el.style.getPropertyValue(prop);
+            if (val) kept.push(`${prop}:${val}`);
+          }
+          el.style.cssText = kept.join(";");
+        }
+
+        walk(el);
+      }
+    }
+  };
+
+  walk(root);
+  return root.innerHTML;
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const RichTextEditor = ({
   value,
@@ -249,7 +410,7 @@ const RichTextEditor = ({
   const textColorDropRef = useRef<HTMLDivElement>(null);
   const bgColorDropRef = useRef<HTMLDivElement>(null);
 
-  // ── UI state ──────────────────────────────────────────────────────────────
+  // UI State
   const [isFocused, setIsFocused] = useState(false);
   const [headingOpen, setHeadingOpen] = useState(false);
   const [fontSizeOpen, setFontSizeOpen] = useState(false);
@@ -260,13 +421,11 @@ const RichTextEditor = ({
   const [customBgColor, setCustomBgColor] = useState("");
   const [characterCount, setCharacterCount] = useState(0);
 
-  // ── Active-state indicators (updated in selectionchange, never in render) ─
+  // Active states (updated only in selectionchange)
   const [activeHeading, setActiveHeading] = useState("p");
   const [activeFontSize, setActiveFontSize] = useState("16");
   const [activeTextColor, setActiveTextColor] = useState("#000000");
   const [activeBgColor, setActiveBgColor] = useState("transparent");
-  // FIX: store queryCommandState results in state so we never call
-  // document.queryCommandState() during render (lint: react-hooks/refs)
   const [activeCommands, setActiveCommands] = useState<Record<string, boolean>>(
     {},
   );
@@ -274,7 +433,7 @@ const RichTextEditor = ({
   const activeBg = isDark ? "bg-gray-700" : "bg-gray-200";
   const dropdownBg = isDark ? "bg-gray-900" : "bg-white";
 
-  // ── Sync external value into editor ──────────────────────────────────────
+  // Sync external value
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;
@@ -282,7 +441,7 @@ const RichTextEditor = ({
     }
   }, [value]);
 
-  // ── Close dropdowns on outside click ─────────────────────────────────────
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -310,9 +469,7 @@ const RichTextEditor = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── selectionchange: update ALL active state in one listener ──────────────
-  // This is the only place we read the DOM / queryCommandState.
-  // We store results in useState so render only reads state, never the DOM.
+  // Update active states on selection change
   useEffect(() => {
     const onSelectionChange = () => {
       if (!editorRef.current) return;
@@ -327,7 +484,7 @@ const RichTextEditor = ({
       const hEl = node.closest("h1,h2,h3,h4,h5,h6");
       setActiveHeading(hEl ? hEl.tagName.toLowerCase() : "p");
 
-      // Font size via computed style (always accurate, ignores keyword mapping)
+      // Font size from computed style
       const cs = window.getComputedStyle(node);
       const fsPx = parseFloat(cs.fontSize);
       if (!isNaN(fsPx)) setActiveFontSize(Math.round(fsPx).toString());
@@ -346,8 +503,7 @@ const RichTextEditor = ({
             : bg,
       );
 
-      // FIX: Read queryCommandState here (in an effect/listener) not in render.
-      // Store results in a plain state object keyed by command name.
+      // Command states
       const states: Record<string, boolean> = {};
       for (const cmd of TRACKED_COMMANDS) {
         try {
@@ -364,16 +520,17 @@ const RichTextEditor = ({
       document.removeEventListener("selectionchange", onSelectionChange);
   }, []);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
+  // Handlers
   const handleInput = () => {
     const el = editorRef.current;
     if (!el) return;
+
     const plain = getPlainText(el.innerHTML);
     if (maxLength && plain.length > maxLength) {
-      el.innerHTML = value; // revert to last valid value
+      el.innerHTML = value;
       return;
     }
+
     setCharacterCount(plain.length);
     onChange(el.innerHTML);
   };
@@ -394,25 +551,50 @@ const RichTextEditor = ({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text/plain");
+    const htmlData = e.clipboardData.getData("text/html");
+    const plainData = e.clipboardData.getData("text/plain");
     const current = getPlainText(editorRef.current?.innerHTML ?? "");
-    if (maxLength) {
-      const allowed = maxLength - current.length;
-      if (allowed <= 0) return;
-      document.execCommand("insertText", false, pasted.slice(0, allowed));
+
+    if (htmlData) {
+      // Rich paste: sanitize and insert HTML preserving styles
+      const sanitized = sanitizePastedHTML(htmlData);
+      if (maxLength) {
+        // Rough check: count plain-text length of sanitized content
+        const pastedPlain = getPlainText(sanitized);
+        const allowed = maxLength - current.length;
+        if (allowed <= 0) return;
+        if (pastedPlain.length <= allowed) {
+          document.execCommand("insertHTML", false, sanitized);
+        } else {
+          // Fall back to truncated plain text when over limit
+          document.execCommand(
+            "insertText",
+            false,
+            plainData.slice(0, allowed),
+          );
+        }
+      } else {
+        document.execCommand("insertHTML", false, sanitized);
+      }
     } else {
-      document.execCommand("insertText", false, pasted);
+      // Plain-text paste
+      if (maxLength) {
+        const allowed = maxLength - current.length;
+        if (allowed <= 0) return;
+        document.execCommand("insertText", false, plainData.slice(0, allowed));
+      } else {
+        document.execCommand("insertText", false, plainData);
+      }
     }
     handleInput();
   };
 
-  // execCommand wrapper — still fine for bold/italic/color/lists/align
   const execCmd = (command: string, val?: string) => {
     document.execCommand(command, false, val);
     editorRef.current?.focus();
   };
 
-  // ── Heading ───────────────────────────────────────────────────────────────
+  // Heading
   const applyHeading = (tag: string) => {
     setHeadingOpen(false);
     if (!editorRef.current) return;
@@ -421,28 +603,29 @@ const RichTextEditor = ({
     onChange(editorRef.current.innerHTML);
   };
 
-  // ── Font size ─────────────────────────────────────────────────────────────
+  // Font Size — passes editorRef.current as root so updateBlockLineHeight works
   const applyFontSize = (px: number) => {
     setFontSizeOpen(false);
-    applyFontSizeDOM(px); // pure DOM — no execCommand
+    applyFontSizeDOM(px, editorRef.current ?? undefined);
     setActiveFontSize(px.toString());
     if (editorRef.current) onChange(editorRef.current.innerHTML);
   };
 
   const applyCustomFontSize = () => {
-    const n = parseInt(customFontSize, 10);
-    if (!isNaN(n) && n > 0 && n <= 999) {
+    const n = parseInt(customFontSize.trim(), 10);
+    if (!isNaN(n) && n >= 1 && n <= 999) {
       applyFontSize(n);
       setCustomFontSize("");
     }
   };
 
-  // ── Colors ────────────────────────────────────────────────────────────────
+  // Colors
   const applyTextColor = (color: string) => {
     execCmd("foreColor", color);
     setActiveTextColor(color);
     setTextColorOpen(false);
   };
+
   const applyCustomTextColor = () => {
     if (customTextColor) {
       applyTextColor(customTextColor);
@@ -455,6 +638,7 @@ const RichTextEditor = ({
     setActiveBgColor(color);
     setBgColorOpen(false);
   };
+
   const applyCustomBgColor = () => {
     if (customBgColor) {
       applyBgColor(customBgColor);
@@ -462,13 +646,11 @@ const RichTextEditor = ({
     }
   };
 
-  // ── Link ──────────────────────────────────────────────────────────────────
   const insertLink = () => {
     const url = prompt("Enter URL:");
     if (url) execCmd("createLink", url);
   };
 
-  // ── Variable insertion ────────────────────────────────────────────────────
   const insertVariable = (val: string) => {
     if (!editorRef.current) return;
     editorRef.current.focus();
@@ -488,7 +670,7 @@ const RichTextEditor = ({
     handleInput();
   };
 
-  // ── Toolbar groups config ─────────────────────────────────────────────────
+  // Toolbar config
   const toolbarGroups: { group: string; buttons: TBtn[] }[] = [
     {
       group: "fmt",
@@ -548,7 +730,6 @@ const RichTextEditor = ({
     },
   ];
 
-  // ── Derived display values ────────────────────────────────────────────────
   const isOverLimit = !!maxLength && characterCount > maxLength;
   const isNearLimit =
     !!maxLength && characterCount >= maxLength * 0.9 && !isOverLimit;
@@ -558,8 +739,7 @@ const RichTextEditor = ({
       ? "text-amber-500"
       : textTertiary;
 
-  // ── Shared sub-components (defined inside render so they close over theme) ─
-
+  // Sub components
   const Divider = () => (
     <div
       className={`w-px h-6 mx-1 ${isDark ? "bg-gray-700" : "bg-gray-300"}`}
@@ -591,12 +771,11 @@ const RichTextEditor = ({
               onSelect(c);
             }}
             style={{ backgroundColor: c }}
-            className={[
-              "w-7 h-7 rounded border transition-transform hover:scale-110",
+            className={`w-7 h-7 rounded border transition-transform hover:scale-110 ${
               activeColor === c
                 ? "border-teal-500 ring-2 ring-teal-400/50"
-                : "border-gray-300 dark:border-gray-600",
-            ].join(" ")}
+                : "border-gray-300 dark:border-gray-600"
+            }`}
           />
         ))}
       </div>
@@ -635,11 +814,11 @@ const RichTextEditor = ({
     <div
       className={`rounded-lg border ${borderColor} ${bgPrimary} ${className}`}
     >
-      {/* ══ Toolbar ══════════════════════════════════════════════════════════ */}
+      {/* Toolbar */}
       <div
         className={`flex flex-wrap items-center gap-1 p-2 border-b ${borderColor}`}
       >
-        {/* Heading dropdown */}
+        {/* Heading */}
         <div className="relative" ref={headingDropRef}>
           <button
             type="button"
@@ -659,6 +838,7 @@ const RichTextEditor = ({
             </div>
             <ChevronDown className="w-3 h-3 shrink-0" />
           </button>
+
           {headingOpen && (
             <div
               className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-[130px]`}
@@ -672,12 +852,9 @@ const RichTextEditor = ({
                       e.preventDefault();
                       applyHeading(tag);
                     }}
-                    className={[
-                      `w-full text-left px-3 py-2 text-sm`,
-                      `first:rounded-t-lg last:rounded-b-lg`,
-                      `${hoverBg} ${textPrimary}`,
-                      activeHeading === tag ? activeBg : "",
-                    ].join(" ")}
+                    className={`w-full text-left px-3 py-2 text-sm ${hoverBg} ${textPrimary} ${
+                      activeHeading === tag ? activeBg : ""
+                    } first:rounded-t-lg last:rounded-b-lg`}
                   >
                     {tag === "p" ? "Paragraph" : tag.toUpperCase()}
                   </button>
@@ -687,7 +864,7 @@ const RichTextEditor = ({
           )}
         </div>
 
-        {/* Font size dropdown */}
+        {/* Font Size */}
         <div className="relative" ref={fontSizeDropRef}>
           <button
             type="button"
@@ -700,6 +877,7 @@ const RichTextEditor = ({
             <span className="text-sm">{activeFontSize}px</span>
             <ChevronDown className="w-3 h-3 shrink-0" />
           </button>
+
           {fontSizeOpen && (
             <div
               className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-[110px] max-h-60 overflow-y-auto`}
@@ -712,15 +890,14 @@ const RichTextEditor = ({
                     e.preventDefault();
                     applyFontSize(size);
                   }}
-                  className={[
-                    `w-full text-left px-3 py-2 text-sm`,
-                    `${hoverBg} ${textPrimary}`,
-                    activeFontSize === size.toString() ? activeBg : "",
-                  ].join(" ")}
+                  className={`w-full text-left px-3 py-2 text-sm ${hoverBg} ${textPrimary} ${
+                    activeFontSize === size.toString() ? activeBg : ""
+                  }`}
                 >
                   {size}px
                 </button>
               ))}
+
               <div className={`border-t ${borderColor} p-2`}>
                 <div className="flex gap-1">
                   <input
@@ -754,7 +931,7 @@ const RichTextEditor = ({
           )}
         </div>
 
-        {/* Text color */}
+        {/* Text Color */}
         <div className="relative" ref={textColorDropRef}>
           <button
             type="button"
@@ -786,7 +963,7 @@ const RichTextEditor = ({
           )}
         </div>
 
-        {/* Background / highlight color */}
+        {/* Background Color */}
         <div className="relative" ref={bgColorDropRef}>
           <button
             type="button"
@@ -811,7 +988,6 @@ const RichTextEditor = ({
             <div
               className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 w-40`}
             >
-              {/* None / transparent */}
               <div className="p-2 pb-0">
                 <button
                   type="button"
@@ -819,11 +995,9 @@ const RichTextEditor = ({
                     e.preventDefault();
                     applyBgColor("transparent");
                   }}
-                  className={[
-                    `w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm`,
-                    `${hoverBg} ${textPrimary}`,
-                    activeBgColor === "transparent" ? activeBg : "",
-                  ].join(" ")}
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm ${hoverBg} ${textPrimary} ${
+                    activeBgColor === "transparent" ? activeBg : ""
+                  }`}
                 >
                   <div
                     className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 shrink-0"
@@ -845,14 +1019,11 @@ const RichTextEditor = ({
 
         <Divider />
 
-        {/* Bold / italic / lists / align / insert button groups */}
+        {/* Toolbar Button Groups */}
         {toolbarGroups.map((grp, gi) => (
           <div key={grp.group} className="flex items-center">
             {grp.buttons.map((btn, bi) => {
               const Icon = btn.icon;
-              // FIX: Read from activeCommands state (set in selectionchange listener),
-              // NOT from document.queryCommandState() directly during render.
-              // This eliminates the "cannot access ref during render" lint error.
               const isActive =
                 btn.command !== "link" &&
                 btn.command !== "formatBlock" &&
@@ -865,13 +1036,9 @@ const RichTextEditor = ({
                   title={btn.title}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    if (btn.onClick) {
-                      btn.onClick();
-                    } else {
-                      execCmd(btn.command, btn.value);
-                    }
+                    if (btn.onClick) btn.onClick();
+                    else execCmd(btn.command, btn.value);
                   }}
-                  // FIX: use ternary, not &&, to avoid "no-unused-expressions"
                   className={`p-2 rounded transition-colors ${isActive ? activeBg : hoverBg} ${textPrimary}`}
                 >
                   <Icon className="w-4 h-4" />
@@ -883,7 +1050,7 @@ const RichTextEditor = ({
         ))}
       </div>
 
-      {/* ══ Variables ════════════════════════════════════════════════════════ */}
+      {/* Variables */}
       {variables.length > 0 && (
         <div className={`p-3 border-b ${borderColor}`}>
           <div className="flex flex-wrap gap-2">
@@ -902,7 +1069,7 @@ const RichTextEditor = ({
         </div>
       )}
 
-      {/* ══ Editor area ══════════════════════════════════════════════════════ */}
+      {/* Editor Area */}
       <div className="relative">
         <div
           ref={editorRef}
@@ -913,9 +1080,7 @@ const RichTextEditor = ({
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          // rte-content class restores heading/list/blockquote styles that
-          // Tailwind preflight resets. See rte-content.css.
-          className={`min-h-[150px] max-h-[400px] overflow-y-auto p-3 outline-none rte-content ${textPrimary}`}
+          className={`min-h-37.5 max-h-100 overflow-y-auto p-3 outline-none rte-content ${textPrimary}`}
           style={{ wordBreak: "break-word" }}
         />
         {!value && !isFocused && (
@@ -927,7 +1092,7 @@ const RichTextEditor = ({
         )}
       </div>
 
-      {/* ══ Character counter ════════════════════════════════════════════════ */}
+      {/* Character Counter */}
       {maxLength !== undefined && (
         <div className={`flex justify-end px-3 py-2 border-t ${borderColor}`}>
           <span
