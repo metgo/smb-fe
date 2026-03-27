@@ -185,7 +185,7 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
       ];
 
       const hasAnyParam = keys.some((key) => params.has(key));
-      if (!hasAnyParam) return state;
+      if (!hasAnyParam) return state; // ← no URL params, keep state as is
 
       const newFilterState = { ...state.feedFilterState };
       keys.forEach((key) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,7 @@ interface MobileFeedFilterDrawerProps {
   handleResetFilters: () => void;
   filteredSubCategories: SubCategory[];
   initFiltersFromURL: any;
+  filterState: any;
 }
 
 const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
@@ -42,6 +43,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   handleResetFilters,
   filteredSubCategories,
   initFiltersFromURL,
+  filterState,
 }) => {
   const {
     aminitiesInfo,
@@ -53,25 +55,22 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     feedSearchKeyword,
     setFeedSearchKeyword,
   } = useGeneralStore();
+
   const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
+  console.log("🚀 ~ filterState:", filterState);
 
   const handleFilterIconClick = () => {
     const newState = !isFilterDrawerOpen;
     setIsFilterDrawerOpen(newState);
     handleFilterTooltipShown(true);
   };
-  const syncFiltersToURL = (feedFilterState: any) => {
+
+  const syncFiltersToURL = (filterState: any) => {
     const params = new URLSearchParams();
+    console.log("🚀 ~ syncFiltersToURL ~ params:", params);
 
-    Object.entries(feedFilterState).forEach(([key, values]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        values.forEach((value) => params.append(key, value));
-      }
-    });
-
-    // Append filterState (skips empty arrays automatically)
     Object.entries(filterState).forEach(([key, values]) => {
       if (Array.isArray(values) && values.length > 0) {
         values.forEach((value) => params.append(key, value));
@@ -88,40 +87,19 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     const newURL = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, "", newURL);
   };
+
+  const totalActiveFilters =
+    appliedFilterCount + (selectedSiteCategories?.length || 0);
+
+  useEffect(() => {
+    syncFiltersToURL(filterState);
+  }, [filterState, feedSearchKeyword, selectedSiteCategories]);
+
   useEffect(() => {
     initFiltersFromURL();
   }, []);
 
   if (!isOpen) return null;
-  const syncFiltersToURL = (feedFilterState: any) => {
-    const params = new URLSearchParams();
-
-    Object.entries(feedFilterState).forEach(([key, values]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        values.forEach((value) => params.append(key, value));
-      }
-    });
-
-    // Append filterState (skips empty arrays automatically)
-    Object.entries(filterState).forEach(([key, values]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        values.forEach((value) => params.append(key, value));
-      }
-    });
-
-    if (feedSearchKeyword) params.set("search", feedSearchKeyword);
-    if (selectedSiteCategories.length > 0) {
-      selectedSiteCategories.forEach((cat) =>
-        params.append("siteCategory", cat.title),
-      );
-    }
-
-    const newURL = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", newURL);
-  };
-  useEffect(() => {
-    initFiltersFromURL();
-  }, []);
 
   return (
     <div>
@@ -490,7 +468,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             <SearchButton
               onClick={handleFilterIconClick}
               isFilterDrawerOpen={isFilterDrawerOpen}
-              activeFiltersCount={appliedFilterCount}
+              activeFiltersCount={totalActiveFilters}
               variant="continuous"
               size={96}
             />

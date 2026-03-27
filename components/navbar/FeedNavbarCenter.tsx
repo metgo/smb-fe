@@ -7,9 +7,14 @@ import IconImage from "@/components/ui/IconImage";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  let text = html.replace(/<[^>]*>/g, "");
+  text = text.replace(/&nbsp;/g, " "); // replace non-breaking space with normal space
+  text = text.replace(/&amp;/g, "&"); // replace &amp; with &
+  text = text.replace(/&quot;/g, '"'); // replace &quot; with "
+  text = text.replace(/&lt;/g, "<"); // replace &lt; with <
+  text = text.replace(/&gt;/g, ">"); // replace &gt; with >
+  return text.trim();
 }
-
 export default function FeedNavbarCenter() {
   const {
     presetFeedFilters,

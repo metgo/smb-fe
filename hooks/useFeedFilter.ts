@@ -91,6 +91,7 @@ export default function useFeedFilter(
     ];
 
     const hasAnyParam = keys.some((key) => params.has(key));
+    console.log("🚀 ~ initFiltersFromURL ~ hasAnyParam:", hasAnyParam)
     if (!hasAnyParam) return; // ← no URL params, keep state as is
 
     setFilterState((prev) => {

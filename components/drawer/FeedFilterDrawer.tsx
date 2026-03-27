@@ -46,6 +46,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
+
   // Hook to sync filters to URL
   const syncFiltersToURL = (feedFilterState: any) => {
     const params = new URLSearchParams();
@@ -56,7 +57,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
       }
     });
 
-    // Also append other state like displayMode, search keyword, etc.
     if (feedSearchKeyword) params.set("search", feedSearchKeyword);
     if (displayMode) params.set("displayMode", displayMode);
     if (selectedSiteCategories.length > 0) {
@@ -68,13 +68,16 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     const newURL = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, "", newURL);
   };
+
   // In your component
   useEffect(() => {
     syncFiltersToURL(feedFilterState);
-  }, [feedFilterState, displayMode, feedSearchKeyword, selectedSiteCategories]);
+  }, [feedFilterState, feedSearchKeyword, selectedSiteCategories]);
+
   useEffect(() => {
     initFeedFiltersFromURL();
   }, []);
+
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
 

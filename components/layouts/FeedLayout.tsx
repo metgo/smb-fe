@@ -62,10 +62,18 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     handleResetFilters: resetLocalFilters,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
+  const totalLength = Object.values(feedFilterState)
+  .reduce((sum, arr) => sum + arr.length, 0);
+
+
+  const totalActiveFilters =
+    totalLength + (selectedSiteCategories?.length || 0);
+
   const handleResetFilters = () => {
     resetLocalFilters();
     resetFeedFilters();
   };
+
   /* ---------------------- Memoized Data ---------------------- */
 
   const businesses = infiniteData?.data || [];
@@ -188,7 +196,8 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
             <SearchButton
               onClick={handleFilterIconClick}
-              activeFiltersCount={appliedFilterCount}
+              activeFiltersCount={totalActiveFilters}
+              isFilterDrawerOpen={isFilterDrawerOpen}
               variant="continuous"
               size={96}
             />

@@ -67,10 +67,22 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
 
   /* ---------------------- Memoized Data ---------------------- */
 
-  const { appliedFilterCount, isSelected, toggleParam, handleResetFilters, initFiltersFromURL } =
-    useFeedFilter(filters, initialSelectedFiltersIds);
+  const {
+    appliedFilterCount,
+    isSelected,
+    toggleParam,
+    handleResetFilters,
+    initFiltersFromURL,
+    filterState,
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
 
-
+  const totalLength = Object.values(feedFilterState).reduce(
+    (sum, arr) => sum + arr.length,
+    0,
+  );
+  console.log("🚀 ~ MobileFeedLayout ~ totalLength:", totalLength);
+  const totalActiveFilters =
+    appliedFilterCount + (selectedSiteCategories?.length || 0);
 
   const filteredSubCategories = filters?.subCategories ?? [];
 
@@ -187,7 +199,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
           <div className="fixed bottom-2 right-[42%]  custom-cursor">
             <SearchButton
               onClick={handleFilterIconClick}
-              activeFiltersCount={appliedFilterCount}
+              activeFiltersCount={totalActiveFilters}
               variant="continuous"
               size={96}
             />
@@ -207,6 +219,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             handleResetFilters={handleResetFilters}
             filteredSubCategories={filteredSubCategories}
             initFiltersFromURL={initFiltersFromURL}
+            filterState={filterState}
           />
         )}
       </div>
