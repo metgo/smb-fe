@@ -150,13 +150,13 @@ interface GeneralStoreState {
   selectedSiteCategories: ISiteCategory[];
   setSelectedSiteCategories: (v: ISiteCategory[]) => void;
   toggleSiteCategory: (cat: ISiteCategory) => void;
-
   feedSearchKeyword: string;
   setFeedSearchKeyword: (v: string) => void;
-
+  initFeedFiltersFromURL: () => void;
   feedFilterState: FeedFilterState;
   toggleFeedFilter: (key: FeedFilterKey, value: string) => void;
   resetFeedFilters: () => void;
+  clearSiteCategories: () => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -171,6 +171,30 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setActiveFilterTabMobile: (activeFilterTabMobile) =>
     set({ activeFilterTabMobile }),
 
+  initFeedFiltersFromURL: () =>
+    set((state) => {
+      if (typeof window === "undefined") return state;
+
+      const params = new URLSearchParams(window.location.search);
+      const keys: FeedFilterKey[] = [
+        "categoryIds",
+        "subCategoryIds",
+        "groupTypeIds",
+        "accessibilityIds",
+        "serviceTypes",
+      ];
+
+      const hasAnyParam = keys.some((key) => params.has(key));
+      if (!hasAnyParam) return state;
+
+      const newFilterState = { ...state.feedFilterState };
+      keys.forEach((key) => {
+        const values = params.getAll(key);
+        if (values.length > 0) newFilterState[key] = values;
+      });
+
+      return { feedFilterState: newFilterState };
+    }),
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
 
@@ -274,6 +298,10 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
       return { feedFilterState: { ...state.feedFilterState, [key]: next } };
     }),
   resetFeedFilters: () => set({ feedFilterState: emptyFeedFilterState }),
+  clearSiteCategories: () =>
+    set({
+      selectedSiteCategories: [],
+    }),
 }));
 
 export default useGeneralStore;
