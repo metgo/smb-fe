@@ -35,6 +35,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     feedSearchKeyword,
     resetFeedFilters,
   } = useGeneralStore();
+  console.log("🚀 ~ FeedLayout ~ selectedSiteCategories:", selectedSiteCategories)
 
   const { favoriteFeedItemIds, handleFilterTooltipShown } =
     useFavoriteFeedItemStore();
@@ -63,7 +64,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const totalLength = Object.values(feedFilterState)
-  .reduce((sum, arr) => sum + arr.length, 0);
+    .reduce((sum, arr) => sum + arr.length, 0);
 
 
   const totalActiveFilters =
@@ -90,7 +91,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       const allowedIds = new Set(
         selectedSiteCategories.flatMap((cat) => cat.businessIds),
       );
-      items = items.filter((item) => allowedIds.has(item.businessId));
+      const allowedProdIds = new Set(
+        selectedSiteCategories.flatMap((cat) => cat.productIds),
+      );
+      items = items.filter(
+        (item) => allowedIds.has(item.businessId) || allowedProdIds.has(item.productId),
+      );
     }
 
     if (feedFilterState.serviceTypes.length > 0) {

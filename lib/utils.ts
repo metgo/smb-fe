@@ -327,6 +327,7 @@ export const navigationPaths = {
 
 export const navigationPathsByServiceType = {
   ["business"]: pathNames.businessDetails,
+  ["product"]: pathNames.productsDetails,
   ["point_of_interest"]: pathNames.businessDetails,
   ["event"]: pathNames.eventDetails,
   ["trip"]: pathNames.trailDetails,
