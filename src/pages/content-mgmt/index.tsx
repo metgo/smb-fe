@@ -2,7 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { DndProvider } from "react-dnd";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,7 +29,7 @@ import { Spinner } from "@/components/shared";
 import { PublishButton } from "@/components/btns";
 import { skipToken } from "@reduxjs/toolkit/query";
 import DraftButton from "@/components/btns/DraftButton";
-import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { useLazyGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentByExternalIdQuery } from "@/store/api/contentQueryApi";
 import {
   useCreateContentMutation,
@@ -40,7 +41,6 @@ import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 
 type TabState = {
-  page: number;
   searchQuery: string;
   filters: Filters;
 };
@@ -65,6 +65,8 @@ interface Filters {
   };
   isTrip: string;
 }
+
+const BUSINESS_PAGE_LIMIT = 20;
 type PanelFocus = "both" | "left" | "right";
 
 // ─── Animation config ─────────────────────────────────────────────────────────
@@ -143,7 +145,7 @@ export default function ContentMgmtPage() {
 
   const { isDark, language, isRTL } = useThemeClasses();
 
-  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
 
@@ -156,7 +158,6 @@ export default function ContentMgmtPage() {
   const [templateContentId, setTemplateContentId] = useState<string | null>(
     null,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ templateContentId:", templateContentId);
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
@@ -169,40 +170,31 @@ export default function ContentMgmtPage() {
   } = useGetContentByExternalIdQuery(
     externalApiId ? { externalApiId } : skipToken,
   );
-  console.log(
-    "🚀 ~ ContentMgmtPage ~ templateContentsData:",
-    templateContentsData,
-  );
 
   const initialTemplateContent: IContentTemplate[] = [
     {
-      topic: t("homepage_hero_section"),
+      topic: "מה בא לכם לעשות?",
       isHideTopic: false,
       groups: [
         {
           isPrimary: false,
           isHideCategory: false,
-          category: "Limited Time Offers",
+          category: "",
           contents: [],
         },
       ],
     },
     {
-      topic: t("recommended_this_week"),
+      topic: "מוצרים ושירותים",
       isHideTopic: false,
       groups: [
         {
           isPrimary: false,
           isHideCategory: false,
-          category: "Trending This Week",
+          category: "",
           contents: [],
         },
       ],
-    },
-    {
-      topic: t("featured_businesses"),
-      isHideTopic: false,
-      groups: [],
     },
   ];
 
@@ -217,36 +209,60 @@ export default function ContentMgmtPage() {
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
 
+  const initializedRef = useRef(false);
+
   // Reset state immediately when externalApiId changes to avoid stale templateContentId
   useEffect(() => {
+    initializedRef.current = false;
     setHeader("<p></p>");
     setTemplateContentId(null);
     setContentStatus("draft");
     setTemplateContent(initialTemplateContent);
   }, [externalApiId]);
 
+  // Recreate initialTemplateContent when dmoId or authorityId changes
+  useEffect(() => {
+    initializedRef.current = false;
+    setTemplateContent(initialTemplateContent);
+  }, [dmoId, authorityId]);
+
   useEffect(() => {
     if (templateContentsData && externalApiId) {
-      if (externalApiId === templateContentsData.externalApiId._id) {
+      if (externalApiId === templateContentsData?.externalApiId._id) {
         const formattedTemplateContents = templateContentsData?.siteTopics?.map(
           (topic) => ({
             topic: topic.title,
             order: topic.order,
             isHideTopic: topic.isArchived,
-            groups: topic.siteCategories?.map((item) => ({
-              isPrimary: item.isPrimary,
-              isHideCategory: item.isArchived,
-              category: item.title,
-              contents: item?.businessIds?.map((content) => ({
-                _id: content._id,
-                name: content.name,
-                desc: content.description,
-                imageUrl: content?.images[0]?.image,
-                primaryCategory: content?.primaryCategoryId?.name,
-                title: content.name || "", // Provide a fallback if needed
-                message: content.description || "", // Provide a fallback if needed
-              })),
-            })),
+            groups: topic.siteCategories?.map((item) => {
+              const mapContents = (
+                arr: IContentFeedItem[],
+                type: IContent["contentType"],
+              ) =>
+                (arr ?? []).map((content) => ({
+                  _id: content._id,
+                  name: content.name,
+                  desc: content.description,
+                  imageUrl: content?.images[0]?.image,
+                  primaryCategory: content?.primaryCategoryId?.hebrewName,
+                  contentType: type,
+                  title: content.name || "",
+                  message: content.description || "",
+                }));
+
+              return {
+                isPrimary: item.isPrimary,
+                isHideCategory: item.isArchived,
+                category: item.title,
+                contents: [
+                  ...mapContents(item.businessIds, "business"),
+                  ...mapContents(item.productIds, "product"),
+                  ...mapContents(item.tripIds, "trip"),
+                  ...mapContents(item.eventIds, "event"),
+                  ...mapContents(item.poiIds, "poi"),
+                ],
+              };
+            }),
           }),
         );
         setContentStatus(
@@ -264,46 +280,7 @@ export default function ContentMgmtPage() {
     }
   }, [templateContentsData, externalApiId]);
 
-  // ─── Multi-select state ───────────────────────────────────────────────────
-  // const [filters, setFilters] = useState<Filters>({
-  //   hasProductFilter: "all",
-  //   primaryCategory: "all",
-  // });
-
-  // const [page, setPage] = useState(1);
-  // const [searchQuery, setSearchQuery] = useState("");
-
-  // const queryParams = useMemo(() => {
-  //   const params: any = {
-  //     // page,
-  //     dmoId,
-  //     startDate,
-  //     endDate,
-  //     authorityId,
-  //     limit: 20,
-  //     locale: language,
-  //     externalApiId: websiteId,
-  //   };
-
-  //   // if (searchQuery) params.search = searchQuery;
-  //   params.status = "APPROVED";
-  //   // if (filters.hasProductFilter !== "all")
-  //   //   params.hasProductFilter = filters.hasProductFilter === "yes";
-
-  //   return params;
-  // }, [
-  //   // page,
-  //   // searchQuery,
-  //   language,
-  //   dmoId,
-  //   authorityId,
-  //   startDate,
-  //   endDate,
-  //   websiteId,
-  //   // filters,
-  // ]);
   const defaultTabState: TabState = {
-    page: 1,
     searchQuery: "",
     filters: {
       hasProductFilter: "all",
@@ -332,16 +309,13 @@ export default function ContentMgmtPage() {
   const eventTab = tabState["Events"];
   const poiTab = tabState["POI"];
   const businessParams = useMemo(() => {
-    const { page, searchQuery, filters } = tabState["Businesses"];
+    const { searchQuery, filters } = tabState["Businesses"];
     const params: any = {
-      page,
       dmoId,
       startDate,
       endDate,
       authorityId,
-      limit: 20,
       locale: language,
-      externalApiId: websiteId,
       status: "APPROVED",
     };
     if (searchQuery) params.search = searchQuery;
@@ -350,23 +324,12 @@ export default function ContentMgmtPage() {
     if (filters.primaryCategory !== "all")
       params.primaryCategory = filters.primaryCategory;
     return params;
-  }, [
-    businessTab,
-    dmoId,
-    startDate,
-    endDate,
-    authorityId,
-    language,
-    websiteId,
-  ]);
+  }, [businessTab, dmoId, startDate, endDate, authorityId, language]);
 
   const productParams = useMemo(() => {
-    const { page, searchQuery, filters } = tabState["Products"];
+    const { searchQuery, filters } = tabState["Products"];
     const params: any = {
-      page,
-      limit: 20,
       status: "APPROVED",
-      externalApiId,
       dmoId,
       authorityId,
     };
@@ -378,12 +341,10 @@ export default function ContentMgmtPage() {
   }, [productTab, language, dmoId, authorityId, externalApiId]);
 
   const tripParams = useMemo(() => {
-    const { page, searchQuery, filters } = tabState["Trips"];
+    const { searchQuery, filters } = tabState["Trips"];
     const params: any = {
       dmoId,
       authorityId,
-      page,
-      limit: 20,
     };
 
     if (filters.isTrip !== "all") {
@@ -395,8 +356,8 @@ export default function ContentMgmtPage() {
   }, [tripTab, language, authorityId, dmoId]);
 
   const eventParams = useMemo(() => {
-    const { page, searchQuery, filters } = tabState["Events"];
-    const params: any = { page, limit: 20, status: "APPROVED" };
+    const { searchQuery, filters } = tabState["Events"];
+    const params: any = { status: "APPROVED" };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
@@ -423,49 +384,83 @@ export default function ContentMgmtPage() {
     return params;
   }, [poiTab, language, dmoId, authorityId]);
 
-  const {
-    data: businessData,
-    isLoading,
-    isFetching,
-  } = useGetAllbusinessesQuery(businessParams);
+  const [fetchBusinesses] = useLazyGetAllbusinessesQuery();
+  const [allBusinessItems, setAllBusinessItems] = useState<any[]>([]);
+  const [businessTotalData, setBusinessTotalData] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const fetchGenRef = useRef(0);
 
-  const {
-    data: productData,
-    isLoading: isLoadingProduct,
-    isFetching: isFetchingProduct,
-  } = useGetAllProductsQuery(productParams);
+  const fetchBusinessChunks = useCallback(
+    async (params: any) => {
+      const gen = ++fetchGenRef.current;
+      setIsLoading(true);
+      setAllBusinessItems([]);
+      setBusinessTotalData(0);
 
-  const {
-    data: tripData,
-    isLoading: isLoadingTrip,
-    isFetching: isFetchingTrip,
-  } = useGetAllTripsQuery(tripParams);
+      let page = 1;
+      const accumulated: any[] = [];
 
-  const {
-    data: eventData,
-    isLoading: isLoadingEvent,
-    isFetching: isFetchingEvent,
-  } = useGetAllEventsQuery(eventParams);
+      while (true) {
+        if (gen !== fetchGenRef.current) return;
+        try {
+          const result = await fetchBusinesses({
+            ...params,
+            page,
+            limit: BUSINESS_PAGE_LIMIT,
+          }).unwrap();
+          if (gen !== fetchGenRef.current) return;
 
-  const { data: poiData, isLoading: isLoadingPOI } =
-    useGetAllPOIQuery(poiParams);
+          const items: any[] = result?.data ?? [];
+          const total: number = result?.totalData ?? 0;
+          accumulated.push(...items);
+          setAllBusinessItems([...accumulated]);
+          setBusinessTotalData(total);
+
+          if (items.length === 0 || accumulated.length >= total) break;
+          page++;
+        } catch {
+          break;
+        }
+      }
+
+      if (gen === fetchGenRef.current) setIsLoading(false);
+    },
+    [fetchBusinesses],
+  );
+
+  useEffect(() => {
+    fetchBusinessChunks(businessParams);
+  }, [businessParams]);
+
+  const businessData = { data: allBusinessItems, totalData: businessTotalData };
+
+  const { data: productData, isLoading: isLoadingProduct } =
+    useGetAllProductsQuery(selected === "Products" ? productParams : skipToken);
+  console.log("🚀 ~ ContentMgmtPage ~ productData:", productData);
+
+  const { data: tripData, isLoading: isLoadingTrip } = useGetAllTripsQuery(
+    selected === "Trips" ? tripParams : skipToken,
+  );
+
+  const { data: eventData, isLoading: isLoadingEvent } = useGetAllEventsQuery(
+    selected === "Events" ? eventParams : skipToken,
+  );
+
+  const { data: poiData, isLoading: isLoadingPOI } = useGetAllPOIQuery(
+    selected === "POI" ? poiParams : skipToken,
+  );
 
   const currentTab = selected ?? "Businesses";
-  const { page, searchQuery, filters } = tabState[currentTab];
+  const { searchQuery, filters } = tabState[currentTab];
 
-  // const setPage = (updater: (prev: number) => number) =>
-  //   setTabState((prev) => ({
-  //     ...prev,
-  //     [currentTab]: {
-  //       ...prev[currentTab],
-  //     },
-  //   }));
-
-  const setSearchQuery = (value: string) =>
-    setTabState((prev) => ({
-      ...prev,
-      [currentTab]: { ...prev[currentTab], searchQuery: value, page: 1 },
-    }));
+  const setSearchQuery = useCallback(
+    (value: string) =>
+      setTabState((prev) => ({
+        ...prev,
+        [currentTab]: { ...prev[currentTab], searchQuery: value },
+      })),
+    [currentTab],
+  );
 
   const setFilters = (value: Filters | ((prev: Filters) => Filters)) =>
     setTabState((prev) => {
@@ -473,7 +468,7 @@ export default function ContentMgmtPage() {
         typeof value === "function" ? value(prev[currentTab].filters) : value;
       return {
         ...prev,
-        [currentTab]: { ...prev[currentTab], filters: next, page: 1 },
+        [currentTab]: { ...prev[currentTab], filters: next },
       };
     });
 
@@ -484,126 +479,131 @@ export default function ContentMgmtPage() {
     }));
   };
 
-  // ─── Per-tab query params ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (templateContentId) return;
+    initializedRef.current = false;
+  }, [filters, searchQuery]);
 
-  // const hasMore = businessData?.meta?.hasNextPage;
-  const hasMoreBusinesses = businessData?.meta?.hasNextPage;
-  const hasMoreProducts = productData?.meta?.hasNextPage;
-  const hasMoreTrips = tripData?.meta?.hasNextPage;
-  const hasMoreEvents = eventData?.meta?.hasNextPage;
-  // const hasMorePOI = false; // POI is a flat array with no pagination
+  useEffect(() => {
+    if (templateContentId) return;
+    initializedRef.current = false;
+  }, [selected]);
 
-  const makeNextPage =
-    (tabName: string, canFetch: boolean, fetching: boolean) => () => {
-      if (!canFetch || fetching) return;
-      setTabState((prev) => ({
-        ...prev,
-        [tabName]: {
-          ...prev[tabName], // ✅ preserve searchQuery & filters
-          page: (prev[tabName]?.page ?? 1) + 1,
-        },
-      }));
-    };
-
-  // const fetchNextPage = () => {
-  //   if (!hasMore || isFetching) return;
-  //   setPage((prev) => prev + 1);
-  // };
-
-  const dataMap: Record<
-    string,
-    {
-      rawData: any;
-      fetchNextPage: () => void;
-      hasMore: boolean;
-      isLoading: boolean;
-    }
-  > = {
-    Businesses: {
-      rawData: businessData,
-      fetchNextPage: makeNextPage("Businesses", hasMoreBusinesses, isFetching),
-      hasMore: hasMoreBusinesses,
-      isLoading,
-    },
-    Products: {
-      rawData: productData,
-      fetchNextPage: makeNextPage(
-        "Products",
-        hasMoreProducts,
-        isFetchingProduct,
-      ),
-      hasMore: hasMoreProducts,
-      isLoading: isLoadingProduct,
-    },
-    Trips: {
-      rawData: tripData,
-      fetchNextPage: makeNextPage("Trips", hasMoreTrips, isFetchingTrip),
-      hasMore: hasMoreTrips,
-      isLoading: isLoadingTrip,
-    },
-    Events: {
-      rawData: eventData,
-      fetchNextPage: makeNextPage("Events", hasMoreEvents, isFetchingEvent),
-      hasMore: hasMoreEvents,
-      isLoading: isLoadingEvent,
-    },
-    POI: {
-      rawData: poiData,
-      fetchNextPage: () => {},
-      hasMore: false,
-      isLoading: isLoadingPOI,
-    },
+  const dataMap: Record<string, { rawData: any; isLoading: boolean }> = {
+    Businesses: { rawData: businessData, isLoading },
+    Products: { rawData: productData, isLoading: isLoadingProduct },
+    Trips: { rawData: tripData, isLoading: isLoadingTrip },
+    Events: { rawData: eventData, isLoading: isLoadingEvent },
+    POI: { rawData: poiData, isLoading: isLoadingPOI },
   };
   const active = dataMap[selected ?? "Businesses"];
 
-  // useEffect(() => {
-  //   setPage(1);
-  // }, [searchQuery, filters, dmoId, authorityId, startDate, endDate]);
-
-  const [combinedItems, setCombinedItems] = useState<any[]>([]);
-  const getItems = (rawData: any, selected: string | null) => {
-    if (!rawData) return null;
-    if (selected === "POI") return rawData; // POI is the array directly
-    return rawData?.data ?? null; // everything else has .data
+  const getItems = (rawData: any, tab: string | null) => {
+    if (!rawData) return [];
+    if (tab === "POI") return rawData;
+    return rawData?.data ?? [];
   };
-  useEffect(() => {
-    const items = getItems(active?.rawData, selected);
-    if (!items) return;
+  const combinedItems: any[] = getItems(active?.rawData, selected);
 
-    if (page === 1) {
-      setCombinedItems(items);
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (templateContentId) return;
+    // Wait for the fetch to settle before deciding no saved content exists
+    if (externalApiId && (isTemplateFetching || isTemplateLoading)) return;
+    // If the API already has saved content for this site, let the API effect handle it
+    if (
+      externalApiId &&
+      templateContentsData?.externalApiId?._id === externalApiId
+    )
+      return;
+    if (!combinedItems.length) return;
+
+    const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
+      Businesses: "business",
+      Products: "product",
+      Trips: "trip",
+      Events: "event",
+      POI: "poi",
+    };
+
+    const grouped = combinedItems?.reduce<Record<string, IContent[]>>(
+      (acc, item) => {
+        const categoryName = item?.primaryCategoryId?.hebrewName;
+        if (!categoryName) return acc;
+        if (!acc[categoryName]) acc[categoryName] = [];
+        acc[categoryName].push({
+          _id: item._id,
+          name: item.name,
+          desc: item.shortDescription || item.description || "",
+          imageUrl: item?.images?.[0]?.image || "",
+          primaryCategory: categoryName,
+          contentType: TAB_TO_CONTENT_TYPE[currentTab] ?? "business",
+          title: item.name || "",
+          message: item.shortDescription || item.description || "",
+        });
+        return acc;
+      },
+      {} as Record<string, IContent[]>,
+    );
+
+    const groups: IContentGroup[] = (
+      Object.entries(grouped) as [string, IContent[]][]
+    ).map(([category, contents]) => ({
+      category,
+      isPrimary: false,
+      isHideCategory: false,
+      contents,
+    }));
+
+    if (!groups.length) return;
+
+    initializedRef.current = true;
+    if (currentTab === "Products") {
+      setTemplateContent((prev) => {
+        const updated = [...prev];
+        const idx = updated.findIndex(
+          (t) => t.topic === initialTemplateContent[1].topic,
+        );
+        const productTopic = {
+          topic: initialTemplateContent[1].topic,
+          isHideTopic: false,
+          groups,
+        };
+        if (idx !== -1) {
+          updated[idx] = productTopic;
+        } else {
+          updated.push(productTopic);
+        }
+        return updated;
+      });
     } else {
-      setCombinedItems((prev) => {
-        const existingIds = new Set(prev.map((b) => b._id));
-        const newItems = items.filter((b: any) => !existingIds.has(b._id));
-        return [...prev, ...newItems];
+      setTemplateContent((prev) => {
+        const updated = [...prev];
+        const idx = updated.findIndex(
+          (t) => t.topic === initialTemplateContent[0].topic,
+        );
+        const businessTopic = {
+          topic: initialTemplateContent[0].topic,
+          isHideTopic: false,
+          groups,
+        };
+        if (idx !== -1) {
+          updated[idx] = businessTopic;
+        } else {
+          updated.unshift(businessTopic);
+        }
+        return updated;
       });
     }
-  }, [active?.rawData, selected, page]);
-
-  // useEffect(() => {
-  //   if (!businessData?.data) return;
-  //   if (page === 1) {
-  //     setCombinedBusinesses(businessData.data);
-  //   } else {
-  //     setCombinedBusinesses((prev) => {
-  //       const existingIds = new Set(prev.map((b) => b._id));
-  //       const newItems = businessData.data.filter(
-  //         (b: any) => !existingIds.has(b._id),
-  //       );
-  //       return [...prev, ...newItems];
-  //     });
-  //   }
-  // }, [businessData?.data, page]);
-
-  // const clearFilter = () => {
-  //   setFilters({
-  //     hasProductFilter: "all",
-  //     primaryCategory: "all",
-  //   });
-  //   setSearchQuery("");
-  //   // setPage(1);
-  // };
+  }, [
+    combinedItems,
+    templateContentId,
+    externalApiId,
+    isTemplateFetching,
+    isTemplateLoading,
+    templateContentsData,
+    selected,
+  ]);
 
   const onStatusChangeHandler = async (status: string) => {
     if (templateContentId)
@@ -631,14 +631,35 @@ export default function ContentMgmtPage() {
         externalApiId,
         siteTopics: templateContents
           ?.map((template, index) => {
+            const TYPE_TO_KEY: Record<string, string> = {
+              business: "businessIds",
+              product: "productIds",
+              trip: "tripIds",
+              event: "eventIds",
+              poi: "poiIds",
+            };
+
             const filteredCategories = template?.groups
               ?.filter((group) => group?.contents?.length > 0)
-              ?.map((group) => ({
-                title: group.category,
-                isPrimary: group.isPrimary,
-                isArchived: group.isHideCategory,
-                businessIds: group.contents.map((item) => item._id),
-              }));
+              ?.map((group) => {
+                const idsByType = group.contents.reduce<
+                  Record<string, string[]>
+                >((acc, item) => {
+                  const key =
+                    TYPE_TO_KEY[item.contentType ?? "business"] ??
+                    "businessIds";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(item._id);
+                  return acc;
+                }, {});
+
+                return {
+                  title: group.category,
+                  isPrimary: group.isPrimary,
+                  isArchived: group.isHideCategory,
+                  ...idsByType,
+                };
+              });
 
             if (!filteredCategories || filteredCategories.length === 0) {
               return null;
@@ -663,10 +684,16 @@ export default function ContentMgmtPage() {
         return;
       }
 
-      const res = templateContentId
+      const existingId =
+        templateContentId ??
+        (templateContentsData?.externalApiId?._id === externalApiId
+          ? templateContentsData._id
+          : null);
+
+      const res = existingId
         ? await updateContent({
             body: payload,
-            contentId: templateContentId,
+            contentId: existingId,
           }).unwrap()
         : await createContent(payload).unwrap();
 
@@ -830,10 +857,24 @@ export default function ContentMgmtPage() {
                       viewMode={viewMode}
                       setViewMode={setViewMode}
                       totalData={active?.rawData?.totalData}
+                      tabCounts={{
+                        Businesses: businessData?.totalData ?? 0,
+                        Products: productData?.totalData ?? 0,
+                        Trips: tripData?.totalData ?? 0,
+                        Events: eventData?.totalData ?? 0,
+                        POI: Array.isArray(poiData)
+                          ? poiData.length
+                          : (poiData?.totalData ?? 0),
+                      }}
+                      tabLoadings={{
+                        Businesses: isLoading,
+                        Products: isLoadingProduct,
+                        Trips: isLoadingTrip,
+                        Events: isLoadingEvent,
+                        POI: isLoadingPOI,
+                      }}
                       combinedBusinesses={combinedItems}
-                      fetchNextPage={active.fetchNextPage}
                       clearFilter={clearFilter}
-                      hasMore={active.hasMore}
                       filters={filters}
                       setFilters={setFilters}
                       searchQuery={searchQuery} //  per-tab

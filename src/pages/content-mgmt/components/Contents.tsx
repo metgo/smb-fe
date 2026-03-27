@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import InfiniteScroll from "react-infinite-scroll-component";
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { ContentCard } from "./sub-components";
@@ -41,11 +40,11 @@ interface ContentsProps {
   isExpanded: boolean;
   viewMode: TViewMode;
   combinedBusinesses: any[];
-  hasMore: boolean;
   filters: Filters;
   totalData: number;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
-  fetchNextPage: () => void;
+  tabCounts: Record<string, number>;
+  tabLoadings: Record<string, boolean>;
+  setFilters: (value: Filters | ((prev: Filters) => Filters)) => void;
   clearFilter: () => void;
   setViewMode: (v: TViewMode) => void;
   templateContents: IContentTemplate[];
@@ -54,19 +53,117 @@ interface ContentsProps {
   setSearchQuery: (v: string) => void;
   currentTab: string;
 }
-const FILTER_OPTIONS = ["Businesses", "Trips", "Products", "Events", "POI"];
+const FILTER_OPTIONS = [
+  "Businesses",
+  "Products",
+  // "Trips",
+  // "Events",
+  // "POI",
+];
+
+const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
+  Businesses: "business",
+  Products: "product",
+  Trips: "trip",
+  Events: "event",
+  POI: "poi",
+};
+
+const FILTER_ICONS: Record<string, React.ReactNode> = {
+  Businesses: (
+    <svg
+      className="w-3.5 h-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      />
+    </svg>
+  ),
+  Trips: (
+    <svg
+      className="w-3.5 h-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+      />
+    </svg>
+  ),
+  Products: (
+    <svg
+      className="w-3.5 h-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+      />
+    </svg>
+  ),
+  Events: (
+    <svg
+      className="w-3.5 h-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  ),
+  POI: (
+    <svg
+      className="w-3.5 h-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  ),
+};
 const Contents = ({
   isLoading,
   isExpanded,
   viewMode,
-  hasMore,
   setViewMode,
   combinedBusinesses,
-  fetchNextPage,
   clearFilter,
   filters,
   setFilters,
   totalData,
+  tabCounts,
+  tabLoadings,
   selected,
   setSelected,
   searchQuery,
@@ -76,7 +173,7 @@ const Contents = ({
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
-  const { isDark, textTertiary, language } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
@@ -160,19 +257,6 @@ const Contents = ({
     }
   };
 
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
     <div className="flex-1 min-w-0 pt-6">
       <div
@@ -187,50 +271,56 @@ const Contents = ({
           >
             {t("source_backlog_title")}
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 flex gap-1">
+          <div className="text-sm text-gray-600 dark:text-gray-400 flex gap-1">
             <div>{totalData}</div>
             {currentTab} {t("available")}
-          </p>
+          </div>
 
-          <div className="flex flex-1 justify-end" ref={ref}>
-            <div className="relative">
-              <button
-                onClick={() => setOpen((prev) => !prev)}
-                className="flex items-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                {selected ?? "Filter by"}
-                <svg
-                  className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-
-              {open && (
-                <div className="absolute right-0 z-50 mt-1 w-40 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md">
-                  {FILTER_OPTIONS.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => {
-                        setSelected(option);
-                        setOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
-                    ${selected === option ? "text-teal-600 dark:text-teal-400 font-medium" : "text-gray-700 dark:text-gray-200"}`}
+          <div className="flex flex-1 justify-end">
+            <div className="flex items-center gap-1">
+              {FILTER_OPTIONS.map((option) => {
+                const isSelected = selected === option;
+                const count = tabCounts[option] ?? "?";
+                const isTabLoading = tabLoadings[option] ?? false;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => setSelected(isSelected ? null : option)}
+                    className={clsx(
+                      "group relative flex items-center gap-0.5 rounded-md px-2 py-1.5 transition-colors border",
+                      isSelected
+                        ? "bg-teal-500/15 border-teal-500/40 text-teal-600 dark:text-teal-400"
+                        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300",
+                    )}
+                  >
+                    {FILTER_ICONS[option]}
+                    <span
+                      className={clsx(
+                        "text-xs font-medium",
+                        isSelected
+                          ? "text-teal-600 dark:text-teal-400"
+                          : "text-gray-500 dark:text-gray-400",
+                      )}
                     >
                       {option}
-                    </button>
-                  ))}
-                </div>
-              )}
+                    </span>
+                    {isTabLoading ? (
+                      <span className="w-5 h-3 rounded animate-pulse bg-gray-300 dark:bg-gray-600 inline-block" />
+                    ) : (
+                      <span
+                        className={clsx(
+                          "text-xs leading-none tabular-nums font-bold px-1.5 py-0.5 rounded-full",
+                          isSelected
+                            ? "bg-teal-500/20 text-teal-600 dark:text-teal-400"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400",
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -472,6 +562,7 @@ const Contents = ({
                     <div className="flex flex-wrap gap-2 mb-2 mt-2">
                       {Object.entries(filters).map(([key, value]) => {
                         if (!value || value === "all") return null;
+                        if (typeof value === "object") return null;
 
                         // Only show chips relevant to current tab
                         if (currentTab === "Businesses" && key === "businessId")
@@ -546,43 +637,25 @@ const Contents = ({
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />
-        <InfiniteScroll
-          dataLength={combinedBusinesses?.length}
-          next={fetchNextPage}
-          hasMore={hasMore}
-          scrollableTarget="scrollableDiv"
-          loader={
-            <p className={clsx("text-center mt-4", textTertiary)}>
-              {tc("loading_text")}
-            </p>
-          }
-          endMessage={
-            !hasMore && (
-              <p className={clsx("text-center mt-4", textTertiary)}>
-                {tc("loading_end_text")}
-              </p>
-            )
-          }
-        >
-          <div className={clsx("grid grid-cols-12 gap-2")}>
-            {combinedBusinesses?.map((item: any) => (
-              <ContentCard
-                key={item._id}
-                _id={item._id}
-                name={item?.name}
-                descripition={item?.shortDescription}
-                image={item?.images?.[0]?.image}
-                categoryName={item?.primaryCategoryId?.name}
-                viewMode={viewMode}
-                isExpanded={isExpanded}
-                isSelected={selectedItems.has(item._id)}
-                selectedItems={selectedItems}
-                handleClick={(e) => handleClick(e, item)}
-                handleContextMenu={() => handleContextMenu(item)}
-              />
-            ))}
-          </div>
-        </InfiniteScroll>
+        <div className={clsx("grid grid-cols-12 gap-2")}>
+          {combinedBusinesses?.map((item: any) => (
+            <ContentCard
+              key={item._id}
+              _id={item._id}
+              name={item?.name}
+              descripition={item?.shortDescription}
+              image={item?.images?.[0]?.image}
+              categoryName={item?.primaryCategoryId?.name}
+              viewMode={viewMode}
+              isExpanded={isExpanded}
+              isSelected={selectedItems.has(item._id)}
+              selectedItems={selectedItems}
+              contentType={TAB_TO_CONTENT_TYPE[currentTab] ?? "business"}
+              handleClick={(e) => handleClick(e, item)}
+              handleContextMenu={() => handleContextMenu(item)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ interface IContent {
     _id: string;
     name: string;
   };
+  contentType?: "business" | "product" | "trip" | "event" | "poi";
 }
 
 interface IContentGroup {
@@ -25,7 +26,7 @@ interface IContentTemplate {
 
 // -------------------- Response ---------------------
 
-interface IContentBusiness {
+interface IContentFeedItem {
   _id: string;
   name: string;
   nameHe: string | null;
@@ -62,7 +63,12 @@ interface ISiteCategory {
   descriptionHe: string | null;
   descriptionAr: string | null;
 
-  businessIds: IContentBusiness[];
+  businessIds: IContentFeedItem[];
+  eventIds: IContentFeedItem[];
+  poiIds: IContentFeedItem[];
+  tripIds: IContentFeedItem[];
+  productIds: IContentFeedItem[];
+  fundayIds: IContentFeedItem[];
 
   isPrimary: boolean;
   isArchived: boolean;

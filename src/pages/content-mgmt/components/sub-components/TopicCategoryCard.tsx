@@ -74,6 +74,7 @@ const TopicCategoryCard = ({
           desc: draggedItem.description || "",
           imageUrl: draggedItem.image || "",
           primaryCategory: "",
+          contentType: draggedItem.contentType || "business",
           title: draggedItem.title || draggedItem.name || "",
           message: draggedItem.message || "",
         });

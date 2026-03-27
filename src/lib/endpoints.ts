@@ -84,6 +84,15 @@ export const endpoints = {
   trips: "/trips",
   stations: "/stations",
 
+  // cmpaings
+  campaign: "",
+  postVoucher: "",
+  sendemail: "",
+  sendsms: "",
+  vouchers: "",
+  bulkVouchersUpdate: "",
+  voucherStatDashboard: "",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
   googleMapRouteDirection:
