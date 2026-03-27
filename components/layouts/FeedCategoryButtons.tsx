@@ -18,11 +18,11 @@ export const CATEGORY_COLORS = [
 export default function FeedCategoryButtons() {
   const { presetFeedFilters, selectedSiteCategories, toggleSiteCategory } =
     useGeneralStore();
-      const topics = presetFeedFilters?.siteTopics ?? [];
+  const topics = presetFeedFilters?.siteTopics ?? [];
 
-const [selectedTopic, setSelectedTopic] = useState<string | null>(
-  topics[0]?.title ?? null
-);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(
+    topics[0]?.title ?? null,
+  );
   const activeTopic = topics.find((t) => t.title === selectedTopic);
 
   const allCategories =
@@ -58,41 +58,34 @@ const [selectedTopic, setSelectedTopic] = useState<string | null>(
       </motion.div>
 
       {/* Level 2: Categories for the selected topic */}
-      <AnimatePresence>
-        {activeTopic && (
-          <motion.div
-            key={activeTopic.title}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <motion.div className="flex flex-wrap gap-2 justify-center pt-1 mb-2">
-              {(activeTopic.siteCategories ?? []).map((category) => {
-                const isActive = selectedSiteCategories.some(
-                  (c) => c.title === category.title,
-                );
+      <div className="gap-2 flex ">
+        <AnimatePresence>
+          {(activeTopic?.siteCategories ?? []).map((category) => {
+            const isActive = selectedSiteCategories?.some(
+              (c) => c.title === category.title,
+            );
+            const idx = allCategories.findIndex(
+              (c) => c.title === category.title,
+            );
+            const gradient = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
 
-                return (
-                  <motion.button
-                    key={category.title}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => toggleSiteCategory(category)}
-                    className={`px-4 py-2 rounded-lg transition-all text-xs font-medium ${
-                      isActive
-                        ? "bg-gray-800 text-white shadow-md"
-                        : "bg-white/60 text-gray-600 hover:bg-white shadow-sm border border-gray-200"
-                    }`}
-                  >
-                    {category.title}
-                  </motion.button>
-                );
-              })}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            return (
+              <motion.button
+                key={category.title}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => toggleSiteCategory(category)}
+                className={`px-4 py-2 rounded-lg transition-all text-xs font-medium ${
+                  isActive
+                    ? `bg-gradient-to-r ${gradient} text-white shadow-md`
+                    : "bg-white/60 text-gray-600 hover:bg-white shadow-sm border border-gray-200"
+                }`}
+              >
+                {category.title}
+              </motion.button>
+            );
+          })}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
