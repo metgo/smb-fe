@@ -14,7 +14,6 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
-import { getPresetFilters } from "@/actions/commonActions";
 import { SearchButton } from "../filter-icon/SearchButton";
 import { FeedFilterDrawer } from "../drawer";
 interface FeedLayoutProps {
@@ -40,10 +39,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     useFavoriteFeedItemStore();
 
   /* ---------------------- Queries ---------------------- */
-  const { data: initialSelectedFiltersIds } = useQuery({
-    queryKey: ["preset-filters"],
-    queryFn: getPresetFilters,
-  });
 
   const { data: filters } = useQuery({
     queryKey: ["filters", selectedFiltersIds],
@@ -60,11 +55,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters: resetLocalFilters,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
+  } = useFeedFilter();
 
-  const totalLength = Object.values(feedFilterState)
-  .reduce((sum, arr) => sum + arr.length, 0);
-
+  const totalLength = Object.values(feedFilterState).reduce(
+    (sum, arr) => sum + arr.length,
+    0,
+  );
 
   const totalActiveFilters =
     totalLength + (selectedSiteCategories?.length || 0);
@@ -141,7 +137,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     feedFilterState,
     feedSearchKeyword,
   ]);
-  console.log("🚀 ~ FeedLayout ~ visibleFeedItems:", visibleFeedItems)
+  console.log("🚀 ~ FeedLayout ~ visibleFeedItems:", visibleFeedItems);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -208,7 +204,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           isOpen={isFilterOpen}
           visibleFeedItems={visibleFeedItems}
           filters={filters}
-
         />
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>

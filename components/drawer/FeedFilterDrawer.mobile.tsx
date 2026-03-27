@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,7 +42,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   isSelected,
   toggleParam,
   filteredSubCategories,
-  initFiltersFromURL,
   visibleFeedItems,
   handleResetFilters: handleClearFilters,
   filterState,
@@ -58,7 +57,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     feedSearchKeyword,
     setFeedSearchKeyword,
     clearSiteCategories,
-    resetFeedFilters,
   } = useGeneralStore();
 
   const { handleFilterTooltipShown } = useFavoriteFeedItemStore();

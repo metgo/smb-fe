@@ -16,7 +16,6 @@ import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 import { useQuery } from "@tanstack/react-query";
 import { getAllFilters, getFeedItems } from "@/actions/feedActions";
-import { getPresetFilters } from "@/actions/commonActions";
 import { SearchButton } from "../filter-icon/SearchButton";
 
 interface MobileFeedLayoutProps {
@@ -50,10 +49,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   } = useGeneralStore();
 
   /* ---------------------- Queries ---------------------- */
-  const { data: initialSelectedFiltersIds } = useQuery({
-    queryKey: ["preset-filters"],
-    queryFn: getPresetFilters,
-  });
 
   const { data: filters } = useQuery({
     queryKey: ["filters", selectedFiltersIds],
@@ -74,12 +69,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     handleResetFilters,
     initFiltersFromURL,
     filterState,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
+  } = useFeedFilter();
 
-  const totalLength = Object.values(feedFilterState).reduce(
-    (sum, arr) => sum + arr.length,
-    0,
-  );
   const totalActiveFilters =
     appliedFilterCount + (selectedSiteCategories?.length || 0);
 

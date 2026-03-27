@@ -1,25 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IconImage } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { AnimatePresence, motion } from "motion/react";
 
 import {
-  CloseIcon,
   EventIcon,
   FundayIcon,
   PointOfInterestIcon,
   RouteIcon,
 } from "../ui/svgIcons";
 import { SERVICE_TYPE_MAP } from "@/lib/utils";
-import { useCommonHook, useFeedFilter } from "@/hooks";
+import { useCommonHook } from "@/hooks";
 import useGeneralStore, { FeedFilterKey } from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
-import { getPresetFilters } from "@/actions/commonActions";
-import { useQuery } from "@tanstack/react-query";
+
 import clsx from "clsx";
 
 interface FeedFilterDrawerProps {
@@ -49,10 +47,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
-  const { data: initialSelectedFiltersIds } = useQuery({
-    queryKey: ["preset-filters"],
-    queryFn: getPresetFilters,
-  });
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
