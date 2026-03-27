@@ -3,7 +3,7 @@ name: Deploy to Docker Hub kefotef PROD
 on:
   push:
     branches:
-      - main # Trigger this workflow only on pushes to the main branch
+      - kefotef # Trigger this workflow only on pushes to the main branch
 
 jobs:
   build:
