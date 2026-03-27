@@ -65,6 +65,7 @@ export const eventQueryApi = createApi({
         url: `${endpoints.events}/${eventId}`,
         method: "GET",
       }),
+      keepUnusedDataFor: 0,
     }),
   }),
 });

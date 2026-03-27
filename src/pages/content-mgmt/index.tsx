@@ -156,6 +156,7 @@ export default function ContentMgmtPage() {
   const [templateContentId, setTemplateContentId] = useState<string | null>(
     null,
   );
+  console.log("🚀 ~ ContentMgmtPage ~ templateContentId:", templateContentId);
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
@@ -167,6 +168,10 @@ export default function ContentMgmtPage() {
     isFetching: isTemplateFetching,
   } = useGetContentByExternalIdQuery(
     externalApiId ? { externalApiId } : skipToken,
+  );
+  console.log(
+    "🚀 ~ ContentMgmtPage ~ templateContentsData:",
+    templateContentsData,
   );
 
   const initialTemplateContent: IContentTemplate[] = [
@@ -211,6 +216,14 @@ export default function ContentMgmtPage() {
   const [showSendResults, setShowSendResults] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
+
+  // Reset state immediately when externalApiId changes to avoid stale templateContentId
+  useEffect(() => {
+    setHeader("<p></p>");
+    setTemplateContentId(null);
+    setContentStatus("draft");
+    setTemplateContent(initialTemplateContent);
+  }, [externalApiId]);
 
   useEffect(() => {
     if (templateContentsData && externalApiId) {
@@ -657,7 +670,11 @@ export default function ContentMgmtPage() {
           }).unwrap()
         : await createContent(payload).unwrap();
 
-      toast.success(res?.message || "Saved successfully");
+      if (res) {
+        setTemplateContentId(res._id || res.id);
+        refetch();
+        toast.success(res?.message || "Saved successfully");
+      }
     } catch (error: any) {
       const errorMessage =
         error?.data?.message ||
