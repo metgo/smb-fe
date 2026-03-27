@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +29,7 @@ interface MobileFeedFilterDrawerProps {
   toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
   filteredSubCategories: SubCategory[];
+  initFiltersFromURL: any;
 }
 
 const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
@@ -40,6 +41,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   toggleParam,
   handleResetFilters,
   filteredSubCategories,
+  initFiltersFromURL,
 }) => {
   const {
     aminitiesInfo,
@@ -60,8 +62,66 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     setIsFilterDrawerOpen(newState);
     handleFilterTooltipShown(true);
   };
+  const syncFiltersToURL = (feedFilterState: any) => {
+    const params = new URLSearchParams();
+
+    Object.entries(feedFilterState).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach((value) => params.append(key, value));
+      }
+    });
+
+    // Append filterState (skips empty arrays automatically)
+    Object.entries(filterState).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach((value) => params.append(key, value));
+      }
+    });
+
+    if (feedSearchKeyword) params.set("search", feedSearchKeyword);
+    if (selectedSiteCategories.length > 0) {
+      selectedSiteCategories.forEach((cat) =>
+        params.append("siteCategory", cat.title),
+      );
+    }
+
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newURL);
+  };
+  useEffect(() => {
+    initFiltersFromURL();
+  }, []);
 
   if (!isOpen) return null;
+  const syncFiltersToURL = (feedFilterState: any) => {
+    const params = new URLSearchParams();
+
+    Object.entries(feedFilterState).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach((value) => params.append(key, value));
+      }
+    });
+
+    // Append filterState (skips empty arrays automatically)
+    Object.entries(filterState).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach((value) => params.append(key, value));
+      }
+    });
+
+    if (feedSearchKeyword) params.set("search", feedSearchKeyword);
+    if (selectedSiteCategories.length > 0) {
+      selectedSiteCategories.forEach((cat) =>
+        params.append("siteCategory", cat.title),
+      );
+    }
+
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newURL);
+  };
+  useEffect(() => {
+    initFiltersFromURL();
+  }, []);
 
   return (
     <div>

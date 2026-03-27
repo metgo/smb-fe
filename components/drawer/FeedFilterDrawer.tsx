@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconImage } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { AnimatePresence, motion } from "motion/react";
@@ -42,10 +42,39 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     selectedSiteCategories,
     feedSearchKeyword,
     setFeedSearchKeyword,
+    initFeedFiltersFromURL,
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
+  // Hook to sync filters to URL
+  const syncFiltersToURL = (feedFilterState: any) => {
+    const params = new URLSearchParams();
 
+    Object.entries(feedFilterState).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach((value) => params.append(key, value));
+      }
+    });
+
+    // Also append other state like displayMode, search keyword, etc.
+    if (feedSearchKeyword) params.set("search", feedSearchKeyword);
+    if (displayMode) params.set("displayMode", displayMode);
+    if (selectedSiteCategories.length > 0) {
+      selectedSiteCategories.forEach((cat) =>
+        params.append("siteCategory", cat.title),
+      );
+    }
+
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newURL);
+  };
+  // In your component
+  useEffect(() => {
+    syncFiltersToURL(feedFilterState);
+  }, [feedFilterState, displayMode, feedSearchKeyword, selectedSiteCategories]);
+  useEffect(() => {
+    initFeedFiltersFromURL();
+  }, []);
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
 

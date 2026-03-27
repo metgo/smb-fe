@@ -67,8 +67,10 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
 
   /* ---------------------- Memoized Data ---------------------- */
 
-  const { appliedFilterCount, isSelected, toggleParam, handleResetFilters } =
+  const { appliedFilterCount, isSelected, toggleParam, handleResetFilters, initFiltersFromURL } =
     useFeedFilter(filters, initialSelectedFiltersIds);
+
+
 
   const filteredSubCategories = filters?.subCategories ?? [];
 
@@ -204,6 +206,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
             filteredSubCategories={filteredSubCategories}
+            initFiltersFromURL={initFiltersFromURL}
           />
         )}
       </div>

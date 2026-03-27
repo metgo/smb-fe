@@ -80,9 +80,9 @@ export default function useFeedFilter(
 
   const initFiltersFromURL = () => {
     if (typeof window === "undefined") return;
-console.log("msbd")
+
     const params = new URLSearchParams(window.location.search);
-    const keys: FilterKeyUrl[] = [
+    const keys: FilterKey[] = [
       "categoryIds",
       "subCategoryIds",
       "groupTypeIds",
@@ -151,6 +151,6 @@ console.log("msbd")
     toggleParam,
     clearParam,
     handleResetFilters,
-    initFiltersFromURL,
+    initFiltersFromURL
   };
 }
