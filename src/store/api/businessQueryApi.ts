@@ -107,6 +107,7 @@ export const businessQueryApi = createApi({
 
 export const {
   useGetAllbusinessesQuery,
+  useLazyGetAllbusinessesQuery,
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
   useGetBusinessStatsQuery,

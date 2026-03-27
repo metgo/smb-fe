@@ -206,8 +206,8 @@ export default function BusinessesMgmtPage() {
     const params: Record<string, any> = {
       page,
       dmoId,
-      startDate,
-      endDate,
+      // startDate,
+      // endDate,
       authorityId,
       limit: LIMIT,
       locale: language,
@@ -228,8 +228,8 @@ export default function BusinessesMgmtPage() {
     language,
     dmoId,
     authorityId,
-    startDate,
-    endDate,
+    // startDate,
+    // endDate,
     websiteId,
   ]);
 

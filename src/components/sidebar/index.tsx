@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -60,6 +60,7 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const menuItems: MenuItem[] = [
     {
@@ -127,7 +128,7 @@ export default function Sidebar() {
     },
     {
       id: "local-economy",
-      path: "#",
+      path: "#local_economy",
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
       isEnabled: true,
@@ -157,7 +158,7 @@ export default function Sidebar() {
     },
     {
       id: "site-management",
-      path: "#",
+      path: "#site_management",
       label: t("site_management") || "Site Management",
       icon: Globe,
       isEnabled: true,
@@ -252,12 +253,21 @@ export default function Sidebar() {
     },
   ];
 
-  const toggleExpanded = (path: string) => {
+  const toggleExpanded = (path: string, itemId: string) => {
+    const isCurrentlyExpanded = expandedItems.includes(path);
     setExpandedItems((prev) =>
       prev.includes(path)
         ? prev.filter((navPath) => navPath !== path)
         : [...prev, path],
     );
+    if (!isCurrentlyExpanded) {
+      setTimeout(() => {
+        subItemsRefs.current[itemId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }, 50);
+    }
   };
 
   const handleItemClick = (item: MenuItem, hasSubItems: boolean) => {
@@ -267,7 +277,7 @@ export default function Sidebar() {
     }
 
     if (hasSubItems) {
-      toggleExpanded(item.path);
+      toggleExpanded(item.path, item.id);
     }
     navigate(item.path);
   };
@@ -332,7 +342,12 @@ export default function Sidebar() {
 
         {/* Sub-items */}
         {!isSidebarCollapsed && hasSubItems && expanded && !isDisabled && (
-          <div className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}>
+          <div
+            ref={(el) => {
+              subItemsRefs.current[item.id] = el;
+            }}
+            className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}
+          >
             {item.subItems!.map((subItem) =>
               renderMenuItem(subItem, level + 1),
             )}

@@ -31,7 +31,7 @@ export const endpoints = {
   groupType: "/admin/group-type",
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
-  campaign: "/admin/campaign",
+
   // business
   business: "/businesses",
   businesses: "/businesses",
@@ -58,16 +58,6 @@ export const endpoints = {
   events: "/events",
   eventsStats: "/events-stats",
 
-  //voucher
-  vouchers: "/vouchers",
-  voucher: "/voucher-id",
-  postVoucher: "/vouchers",
-  searchVoucher: "/search-vouchers",
-  voucherStatDashboard: "/vouchers-stats",
-  bulkVouchersUpdate: "/bulk-vouchers-update",
-  sendemail: "/vouchers/send-email",
-  sendsms: "/vouchers/send-sms",
-
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
@@ -90,6 +80,21 @@ export const endpoints = {
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
 
+  // trips
+  trips: "/trips",
+  stations: "/stations",
+
+  // cmpaings
+  campaign: "",
+  postVoucher: "",
+  sendemail: "",
+  sendsms: "",
+  vouchers: "",
+  bulkVouchersUpdate: "",
+  voucherStatDashboard: "",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
+  googleMapRouteDirection:
+    "https://routes.googleapis.com/directions/v2:computeRoutes",
 };
