@@ -457,7 +457,6 @@ export function isPlaceOpenNow(
   return false;
 }
 
-
 export function groupTicketsByDateTime(
   ticketIds: ITicketIds[],
 ): GroupedTicketSlot[] {

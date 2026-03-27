@@ -17,10 +17,7 @@ const getTotalAppliedFilters = (filters: FilterState) => {
   return Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
 };
 
-export default function useFeedFilter(
- 
-) {
-
+export default function useFeedFilter() {
   const [filterState, setFilterState] = useState<FilterState>(emptyFilters);
 
   const [appliedFilterCount, setAppliedFilterCount] = useState(0);
@@ -74,14 +71,13 @@ export default function useFeedFilter(
 
     const params = new URLSearchParams(window.location.search);
     const keys: FilterKey[] = [
-      
       "groupTypeIds",
       "accessibilityIds",
       "serviceTypes",
     ];
 
     const hasAnyParam = keys.some((key) => params.has(key));
-    console.log("🚀 ~ initFiltersFromURL ~ hasAnyParam:", hasAnyParam)
+    console.log("🚀 ~ initFiltersFromURL ~ hasAnyParam:", hasAnyParam);
     if (!hasAnyParam) return; // ← no URL params, keep state as is
 
     setFilterState((prev) => {
@@ -142,6 +138,6 @@ export default function useFeedFilter(
     toggleParam,
     clearParam,
     handleResetFilters,
-    initFiltersFromURL
+    initFiltersFromURL,
   };
 }

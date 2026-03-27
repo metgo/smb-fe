@@ -40,15 +40,15 @@ declare interface FeedItemResponse {
   data: FeedItem[];
   totalData?: number;
   meta?:
-  | {
-    page: number;
-    limit: string;
-    data: number;
-    pageCount: number;
-    hasPreviousPage: boolean;
-    hasNextPage: boolean;
-  }
-  | any;
+    | {
+        page: number;
+        limit: string;
+        data: number;
+        pageCount: number;
+        hasPreviousPage: boolean;
+        hasNextPage: boolean;
+      }
+    | any;
 }
 
 declare interface FeedItemDetailsResponse {

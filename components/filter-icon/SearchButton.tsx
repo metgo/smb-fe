@@ -92,7 +92,7 @@ export const SearchButton = ({
   size = 96,
   isFilterDrawerOpen,
 }: SearchButtonProps) => {
-  console.log("🚀 ~ SearchButton ~ activeFiltersCount:", activeFiltersCount)
+  console.log("🚀 ~ SearchButton ~ activeFiltersCount:", activeFiltersCount);
   const config = getAnimationConfig(variant);
 
   return (
