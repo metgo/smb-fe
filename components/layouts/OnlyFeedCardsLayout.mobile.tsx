@@ -107,11 +107,14 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   return (
     <div className="">
       <div className="flex flex-col justify-center items-center py-12 ">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(presetFeedFilters?.header || ""),
-          }}
-        />
+        {presetFeedFilters?.header && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(presetFeedFilters?.header || ""),
+            }}
+          />
+        )}
+
         <FeedCategoryButtons />
       </div>
       <div className="px-2  flex w-full min-h-screen">

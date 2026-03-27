@@ -2,16 +2,9 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import useGeneralStore from "@/stores/generalStore";
-import { sanitizeInitialFilters } from "@/lib/helpers";
 
 type FilterKey = "groupTypeIds" | "accessibilityIds" | "serviceTypes";
-type FilterKeyUrl =
-  | "groupTypeIds"
-  | "accessibilityIds"
-  | "serviceTypes"
-  | "categoryIds"
-  | "subCategoryIds";
+
 type FilterState = Record<FilterKey, string[]>;
 
 const emptyFilters: FilterState = {
@@ -25,10 +18,8 @@ const getTotalAppliedFilters = (filters: FilterState) => {
 };
 
 export default function useFeedFilter(
-  filters: FiltersResponse,
-  initialSelectedFiltersIds: PresetFilterItems,
+ 
 ) {
-  const { aminitiesInfo } = useGeneralStore();
 
   const [filterState, setFilterState] = useState<FilterState>(emptyFilters);
 
@@ -83,8 +74,7 @@ export default function useFeedFilter(
 
     const params = new URLSearchParams(window.location.search);
     const keys: FilterKey[] = [
-      "categoryIds",
-      "subCategoryIds",
+      
       "groupTypeIds",
       "accessibilityIds",
       "serviceTypes",

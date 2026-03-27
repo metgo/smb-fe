@@ -236,11 +236,13 @@ const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
         ref={categoryHeaderRef}
         className="flex flex-col justify-center items-center py-6"
       >
-        <div
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(presetFeedFilters?.header || ""),
-          }}
-        />
+        {presetFeedFilters?.header && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(presetFeedFilters?.header || ""),
+            }}
+          />
+        )}
         <FeedCategoryButtons />
       </div>
 

@@ -80,7 +80,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     (sum, arr) => sum + arr.length,
     0,
   );
-  console.log("🚀 ~ MobileFeedLayout ~ totalLength:", totalLength);
   const totalActiveFilters =
     appliedFilterCount + (selectedSiteCategories?.length || 0);
 
@@ -206,6 +205,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
           </div>
         </>
       )}
+
       <div className="bg-black/40">
         {isFilterDrawerOpen && (
           <MobileFeedFilterDrawer
@@ -220,6 +220,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             filteredSubCategories={filteredSubCategories}
             initFiltersFromURL={initFiltersFromURL}
             filterState={filterState}
+            visibleFeedItems={visibleFeedItems}
           />
         )}
       </div>

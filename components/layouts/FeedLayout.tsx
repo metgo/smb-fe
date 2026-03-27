@@ -141,6 +141,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     feedFilterState,
     feedSearchKeyword,
   ]);
+  console.log("🚀 ~ FeedLayout ~ visibleFeedItems:", visibleFeedItems)
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -207,7 +208,9 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           isOpen={isFilterOpen}
           setIsOpen={setIsFilterOpen}
           itemCount={totalBusiness}
+          visibleFeedItems={visibleFeedItems}
           filters={filters}
+
         />
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>

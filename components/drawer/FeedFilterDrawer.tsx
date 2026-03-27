@@ -13,24 +13,26 @@ import {
   RouteIcon,
 } from "../ui/svgIcons";
 import { SERVICE_TYPE_MAP } from "@/lib/utils";
-import { useCommonHook } from "@/hooks";
+import { useCommonHook, useFeedFilter } from "@/hooks";
 import useGeneralStore, { FeedFilterKey } from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
+import { getPresetFilters } from "@/actions/commonActions";
+import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
-  setIsOpen: (v: boolean) => void;
-  itemCount: number;
   filters: FiltersResponse;
+  visibleFeedItems?: any;
 }
 
 const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   isOpen,
-  setIsOpen,
-  itemCount,
+  
   filters,
+  visibleFeedItems,
 }) => {
   const { isMobile } = useCommonHook();
   const {
@@ -42,47 +44,71 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     selectedSiteCategories,
     feedSearchKeyword,
     setFeedSearchKeyword,
-    initFeedFiltersFromURL,
+    resetFeedFilters,
+    clearSiteCategories,
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [displayMode, setDisplayMode] = useState("");
-
+  const { data: initialSelectedFiltersIds } = useQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
   // Hook to sync filters to URL
-  const syncFiltersToURL = (feedFilterState: any) => {
-    const params = new URLSearchParams();
+  // const syncFiltersToURL = (feedFilterState: any) => {
+  //   const params = new URLSearchParams();
 
-    Object.entries(feedFilterState).forEach(([key, values]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        values.forEach((value) => params.append(key, value));
-      }
-    });
+  //   Object.entries(feedFilterState).forEach(([key, values]) => {
+  //     if (Array.isArray(values) && values.length > 0) {
+  //       values.forEach((value) => params.append(key, value));
+  //     }
+  //   });
 
-    if (feedSearchKeyword) params.set("search", feedSearchKeyword);
-    if (displayMode) params.set("displayMode", displayMode);
-    if (selectedSiteCategories.length > 0) {
-      selectedSiteCategories.forEach((cat) =>
-        params.append("siteCategory", cat.title),
-      );
-    }
+  //   if (feedSearchKeyword) params.set("search", feedSearchKeyword);
+  //   if (displayMode) params.set("displayMode", displayMode);
+  //   if (selectedSiteCategories.length > 0) {
+  //     selectedSiteCategories.forEach((cat) =>
+  //       params.append("siteCategory", cat.title),
+  //     );
+  //   }
 
-    const newURL = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", newURL);
-  };
+  //   const newURL = `${window.location.pathname}?${params.toString()}`;
+  //   window.history.replaceState(null, "", newURL);
+  // };
 
-  // In your component
-  useEffect(() => {
-    syncFiltersToURL(feedFilterState);
-  }, [feedFilterState, feedSearchKeyword, selectedSiteCategories]);
+  // // In your component
+  // useEffect(() => {
+  //   syncFiltersToURL(feedFilterState);
+  // }, [feedFilterState, feedSearchKeyword, selectedSiteCategories]);
 
-  useEffect(() => {
-    initFeedFiltersFromURL();
-  }, []);
+  // useEffect(() => {
+  //   initFeedFiltersFromURL();
+  // }, []);
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
 
   const toggleParam = (key: FeedFilterKey, value: string) =>
     toggleFeedFilter(key, value);
+
+  const {
+    appliedFilterCount,
+
+    initFiltersFromURL,
+    filterState,
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
+
+  const handleResetFilters = () => {
+    resetFeedFilters();
+    clearSiteCategories();
+    setFeedSearchKeyword("");
+  };
+
+  const hasActiveFilters =
+    Object.values(feedFilterState).some(
+      (arr) => Array.isArray(arr) && arr.length > 0,
+    ) ||
+    feedSearchKeyword.length > 0 ||
+    selectedSiteCategories.length > 0;
 
   if (!isOpen || isMobile) return null;
 
@@ -101,10 +127,31 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
           <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden fixed bottom-4 right-2 w-[620px]">
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
-              <span className="font-bold text-lg text-theme">
+              <span className="font-bold text-3xl text-black">
                 {filterPanelLabels.searchText}
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex justify-center items-center gap-3">
+                <span className="text-sm text-gray-500">
+                  {visibleFeedItems?.length} {filterPanelLabels.results}
+                </span>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className={clsx(
+                      "custom-cursor hover:bg-cyan-600",
+                      "bg-cyan-500 text-white font-bold rounded-lg px-4 py-1.5 text-sm flex items-center gap-1.5 transition-colors",
+                    )}
+                  >
+                    <span className="text-base">
+                      <RotateCcw className="h-4 w-4" />
+                    </span>
+                    {filterPanelLabels.clearAll}
+                  </button>
+                )}
+              </div>
+
+              {/* <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-500">
                   {itemCount} {filterPanelLabels.results}
                 </span>
@@ -114,14 +161,14 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                 >
                   <CloseIcon />
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {/* Scrollable filter body */}
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
               <div className="flex items-start justify-center py-2">
                 {/* Search Button */}
-                <div className="max-sm:mx-4 w-full rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
+                <div className="w-7xl rounded-xl border border-gray-100 flex items-center gap-2 px-4 py-2">
                   <IconImage icon="search" />
                   <input
                     type="text"
@@ -142,7 +189,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               </div>
               {/* MAIN CATEGORIES & SERVICE TYPES */}
               <div>
-                <div className="font-bold text-theme mb-2">
+                <div className="font-bold text-gray-800 mb-2">
                   {filterPanelLabels.main}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -219,7 +266,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               </div>
               {presetFeedFilters?.siteTopics?.map((topic: any) => (
                 <div key={topic.title} className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500  tracking-wide mb-2 px-1">
+                  <h3 className="text-sm font-bold text-gray-800  tracking-wide mb-2 px-1">
                     {topic.title}
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -236,13 +283,15 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                           className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm custom-cursor transition-colors whitespace-nowrap ${
                             isSelected
                               ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-                              : "bg-white text-theme border border-[#EAEAEA] hover:bg-[#F5F5F5]"
+                              : "bg-gray-100 px-2 py-3 rounded-xl text-gray-800"
                           }`}
                         >
                           {cat.icon && (
                             <IconImage icon={cat.icon} width={18} height={18} />
                           )}
-                          <span>{cat.titleHe ?? cat.title}</span>
+                          <span className="font-bold">
+                            {cat.titleHe ?? cat.title}
+                          </span>
                         </button>
                       );
                     })}
@@ -268,7 +317,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   {/* ACCESSIBILITY */}
                   {filters?.accessibilities?.length > 0 && (
                     <div>
-                      <div className="font-bold text-theme mb-2">
+                      <div className="font-bold text-gray-800 mb-2">
                         {filterPanelLabels.accessibility}
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -294,7 +343,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   {/* TARGET AUDIENCE (Group Types) */}
                   {filters?.groupTypes?.length > 0 && (
                     <div>
-                      <div className="font-bold text-theme mb-2">
+                      <div className="font-bold text-gray-800 mb-2">
                         {filterPanelLabels.targetAudiences}
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -320,7 +369,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   {/* What to show? */}
                   <div className="mb-8">
                     <h3
-                      className={`text-base font-semibold mb-3 text-right ${"text-gray-600"}`}
+                      className={`text-base font-semibold mb-3 text-right ${"text-gray-800"}`}
                     >
                       מה להציג?
                     </h3>
@@ -333,7 +382,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
                           displayMode === ""
                             ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            : "text-gray-800 hover:text-gray-900"
                         }`}
                       >
                         {filterPanelLabels.everything}{" "}
@@ -344,7 +393,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
                           displayMode === "businesses"
                             ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            : "text-gray-800 hover:text-gray-900"
                         }`}
                       >
                         {filterPanelLabels.business}{" "}
@@ -355,7 +404,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
                           displayMode === "products"
                             ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-600 hover:text-gray-900"
+                            : "text-gray-800 hover:text-gray-900"
                         }`}
                       >
                         {filterPanelLabels.products}{" "}
@@ -385,11 +434,11 @@ const FilterButton: React.FC<{
   return (
     <div
       onClick={onClick}
-      className={`custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
-        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "text-theme"}`}
+      className={`custom-cursor flex items-center justify-start gap-2 bg-gray-100 rounded-xl ps-3 h-[42px] transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "text-gray-800"}`}
     >
       {active ? activeIcon : icon}
-      <span className="text-[12px] font-bold">{label}</span>
+      <span className="text-[12px] font-bold ">{label}</span>
     </div>
   );
 };
@@ -405,8 +454,8 @@ const FilterChip: React.FC<{
   return (
     <span
       onClick={onClick}
-      className={`custom-cursor px-4 h-[42px] flex items-center justify-center rounded-xl text-[12px] font-bold border transition-all
-        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "border-theme text-theme"}`}
+      className={`custom-cursor px-4 h-[42px] flex items-center justify-center rounded-xl text-[12px] font-bold bg-gray-100 transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : " text-gray-800"}`}
     >
       {label}
     </span>
