@@ -15,6 +15,12 @@ export const softValidationPipe = new ValidationPipe({
 
 export const milesConfig = 5;
 
+export const impactRange = {
+  min: 200,
+  max: 800,
+};
+
+export const notifPayload = { type: 'NEW_NOTIFICATION' };
 export const defaultMetGoLogo = 'default-metgo-logo-OBNusjAgOeNMDToi1.png';
 export const defaultMetGoLogoURL
   = 'https://storage.googleapis.com/metgo_dev/2024/6/dzqmK8civ9yuGPs8.png';
@@ -39,6 +45,7 @@ export const ServerErrors = {
   UNAUTHORIZED_ACCESS: 'Unauthorized access',
   IS_NOT_EMPTY: 'cannot be empty',
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
+  DUPLICATE: 'already exists',
   DATE_IS_NOT_LESS: 'start date must be less than end date.',
   INVALID_ID: 'id is invalid',
   INVALID: 'is invalid',
@@ -175,7 +182,10 @@ export const ServerErrors = {
 };
 
 export const ServerSuccess = {
-  LISTED: 'Report listed successfully',
+  CREATED: 'was created successfully',
+  LISTED: 'was listed sucessfully',
+  UPDATED: 'was updated sucessfully',
+  DELETED: 'was deleted sucessfully',
   CONTACT_US_EMAIL: 'Contact Us email saved successfully',
   INQUIRY_FUNDAY: 'Inquiry funday saved successfully',
   SEARCH: 'Search data listed successfully',
@@ -356,5 +366,16 @@ export const ServerSuccess = {
   },
   EMAIL: {
     SENT: 'Email was sent successfully',
+  },
+  SMS: {
+    SENT: 'SMS was sent successfully',
+  },
+  THEME: {
+    CREATED: 'Theme was created successfully',
+  },
+  TICKET: {
+    CREATED: 'Ticket for event was created successfully',
+    DELETED: 'Ticket for event was deleted successfully',
+    LISTED: 'Ticket for event was listed successfully',
   },
 };

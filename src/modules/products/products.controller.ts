@@ -35,10 +35,10 @@ export class ProductsController {
       status: HttpStatus.OK,
       description: ServerSuccess.PRODUCTS.LISTED,
     },
-    operation: 'Get detail of a product',
+    operation: 'Get detail of a product by slug',
     params: [
       {
-        name: 'productId',
+        name: 'slug',
         type: 'string',
         required: true,
       },
@@ -47,12 +47,12 @@ export class ProductsController {
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
-  @Get('/products/:productId')
+  @Get('/products/:slug')
   async getProductDetails(
-    @Param('productId') productId: string,
+    @Param('slug') slug: string,
     @Query() query: GetProductsQuery,
   ) {
-    const products = await this.productsService.getOne(productId, query);
+    const products = await this.productsService.getOne(slug, query);
     return products;
   }
 

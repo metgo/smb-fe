@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
+import { CqrsModule } from '@nestjs/cqrs';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WinstonModule } from 'nest-winston';
@@ -53,10 +54,12 @@ import { TripModule } from './modules/trips/trips.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { SiteFiltersConfigModule } from './modules/site-filters-config/site-filters-config.module';
 // import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(dbConfig.uri),
     WinstonModule.forRoot(winstonConfig),
@@ -107,6 +110,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     MarketingModule,
     DashboardModule,
     // TagsModule,
+    SiteFiltersConfigModule,
   ],
   providers: [
     {

@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 export interface Recipient {
   FirstName: string;
   LastName?: string;
@@ -28,4 +29,9 @@ export interface SmsResponse {
   success: boolean;
   data?: any;
   error?: any;
+}
+
+export enum SMSTemplateStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
 }

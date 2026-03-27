@@ -23,6 +23,10 @@ import { GetTripRawQuery } from '../get-trip-raw-query.query';
 import { GetPOIRawQuery } from '../get-poi-raw-query.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ServerErrors } from 'src/common/constant';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
@@ -51,11 +55,15 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     private GroupTypeModel: Model<GroupType>,
 
     private readonly queryBus: QueryBus,
+
+    @InjectModel(ExternalApi.name)
+    private ExternalApiModel: Model<ExternalApi>,
   ) {}
 
   async execute(queries: GetFiltersQuery): Promise<GetAllFilterResponse> {
     try {
       const {
+        identifierId,
         campCode,
         categoriesId,
         subCategoriesId,
@@ -64,10 +72,33 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         serviceType,
       } = queries.body;
 
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        campCode,
-      );
+      if (!identifierId && !campCode) {
+        throw new BadRequestException('Please enter identifierId or campcode');
+      }
+
+      let campDetails;
+
+      if (identifierId) {
+        const externalApi = await this.ExternalApiModel.findOne({
+          identifierId,
+        }).select('primaryCampIds');
+
+        if (!externalApi) {
+          throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
+        }
+
+        // need to add if multiple primary campId exists
+        campDetails = await this.queryBus.execute(
+          new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
+        );
+      }
+
+      if (campCode) {
+        campDetails = await this.campaignService.findCampaignAndReturn(
+          'code',
+          campCode,
+        );
+      }
 
       // eslint-disable-next-line no-nested-ternary
       const finalServiceType = serviceType

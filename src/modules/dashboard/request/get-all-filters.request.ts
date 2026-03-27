@@ -1,14 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFiltersRequest {
   @ApiProperty({ type: String, required: true })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+    identifierId: string;
+
+  @ApiProperty({ type: String, required: true })
+  @IsString()
+  @IsOptional()
     campCode: string;
 
   @ApiProperty({

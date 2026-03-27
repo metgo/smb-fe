@@ -5,4 +5,5 @@ export enum ServicesTypes {
   EVENT = 'event',
   TRIPS = 'trip',
   FUNDAY = 'funday',
+  PRODUCT = 'product',
 }

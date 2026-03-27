@@ -56,17 +56,20 @@ implements IQueryHandler<GetAllProductsQuery> {
       );
 
       let select
-        = '_id name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId categories subCategories productId';
+        = '_id name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId groupTypesId accessibilitiesId tagsId categories subCategories productId deliveryArea isPickUpAvailable deliveryAdditionalInfo deliverySpecificSellerInfo deliveryReturnExchange';
 
       let populate = [
         {
           path: 'businessId',
-          select:
-            '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen slug',
+          select: '_id logo name nameHe nameAr isAlwaysOpen slug',
         },
         {
           path: 'categories subCategories',
           select: '_id name hebrewName',
+        },
+        {
+          path: 'tagsId',
+          select: '_id name nameHe nameAr',
         },
       ];
 

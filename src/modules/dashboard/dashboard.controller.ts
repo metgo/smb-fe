@@ -31,6 +31,7 @@ export class DashboardController {
   async getAllFeedItems(@Query() request: GetAllFeedItemsRequest) {
     return this.queryBus.execute(
       new GetAllFeedItemsQuery(
+        request.identifierId,
         request.campCode,
         request.groupTypesId,
         request.accessibilitiesId,
@@ -61,7 +62,7 @@ export class DashboardController {
     name: 'identifierId',
     required: true,
     type: String,
-    description: 'Identifier ID used to filter items',
+    description: 'Identifier ID used to filter items out of all filters',
   })
   async getDefaultFilterItems(@Query('identifierId') identifierId: string) {
     return this.queryBus.execute(new GetDefaultFiltersQuery(identifierId));

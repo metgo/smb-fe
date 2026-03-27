@@ -3,7 +3,8 @@ import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFeedItemsQuery {
   constructor(
-    readonly campCode: string,
+    readonly identifierId?: string,
+    readonly campCode?: string,
     readonly groupTypesId?: string[],
     readonly accessibilitiesId?: string[],
     readonly categoriesId?: string[],

@@ -82,7 +82,7 @@ export class ProductsService {
     }
   }
 
-  async getOne(productId: string, query: GetProductsQuery) {
+  async getOne(slug: string, query: GetProductsQuery) {
     try {
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
@@ -107,8 +107,8 @@ export class ProductsService {
         select: '_id name hebrewName',
       };
 
-      const product = await this.ProductsAuditModel.findOne({
-        productId,
+      let product = await this.ProductsAuditModel.findOne({
+        slug,
         isActive: true,
         status: ProductStatus.APPROVED,
         isDeleted: { $ne: true },
@@ -126,6 +126,26 @@ export class ProductsService {
         .lean();
 
       if (!product) {
+        product = await this.ProductsAuditModel.findOne({
+          productId: slug,
+          isActive: true,
+          status: ProductStatus.APPROVED,
+          isDeleted: { $ne: true },
+          $or: [
+            { 'quantity.remaining': { $gt: 0 } },
+            { 'quantity.isUnlimited': true },
+          ],
+        })
+          .populate<{ businessId: Business }>(
+            'businessId',
+            '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
+          )
+          .populate(populate)
+          .select(select)
+          .lean();
+      }
+
+      if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
@@ -134,7 +154,7 @@ export class ProductsService {
           new mongoose.Types.ObjectId(product.dmoId),
         )
         && !campDetails.productIds.includes(
-          new mongoose.Types.ObjectId(productId),
+          new mongoose.Types.ObjectId(product._id),
         )
         && !campDetails.authorityIds.includes(
           new mongoose.Types.ObjectId(product.authorityId),

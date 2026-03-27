@@ -1,16 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { SortOrder } from 'src/common/enum';
 import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFeedItemsRequest extends CommonFilterQuery {
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+    identifierId: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
     campCode: string;
 
   @ApiProperty({

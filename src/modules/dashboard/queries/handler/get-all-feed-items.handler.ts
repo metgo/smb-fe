@@ -19,6 +19,12 @@ import { GetBusinessRawQuery } from '../get-business-raw-query.query';
 import { GetEventRawQuery } from '../get-event-raw-query.query';
 import { GetTripRawQuery } from '../get-trip-raw-query.query';
 import { GetPOIRawQuery } from '../get-poi-raw-query.query';
+import { GetProductRawQuery } from '../get-product-raw-query.query';
+import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ServerErrors } from 'src/common/constant';
 
 @QueryHandler(GetAllFeedItemsQuery)
 export class GetAllFeedItemsHandler
@@ -30,6 +36,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     private EventsAuditModel: Model<EventsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
+
+    @InjectModel(ExternalApi.name)
+    private ExternalApiModel: Model<ExternalApi>,
+
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
+
     private campaignService: CampaignService,
     private readonly queryBus: QueryBus,
   ) {}
@@ -39,6 +52,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
   ): Promise<GetAllFeedItemResponse> {
     try {
       const {
+        identifierId,
         campCode,
         serviceType,
         page,
@@ -49,15 +63,39 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         groupTypesId,
       } = queries;
 
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        campCode,
-      );
+      if (!identifierId && !campCode) {
+        throw new BadRequestException('Please enter identifierId or campcode');
+      }
+
+      let campDetails;
+
+      if (identifierId) {
+        const externalApi = await this.ExternalApiModel.findOne({
+          identifierId,
+        }).select('_id primaryCampIds');
+
+        if (!externalApi) {
+          throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
+        }
+
+        // need to add if multiple primary campId exists
+        campDetails = await this.queryBus.execute(
+          new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
+        );
+      }
+
+      if (campCode) {
+        campDetails = await this.campaignService.findCampaignAndReturn(
+          'code',
+          campCode,
+        );
+      }
 
       let business: any;
       let poi: any;
       let tripAndFunday;
       let event;
+      let product: any;
 
       // eslint-disable-next-line no-nested-ternary
       const finalServiceType = serviceType
@@ -95,6 +133,10 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         = !hasServiceFilter
         || finalServiceType.some(t => [ServicesTypes.TRIPS, ServicesTypes.FUNDAY].includes(t));
 
+      const wantsProducts
+        = identifierId
+        && (!hasServiceFilter || finalServiceType.includes(ServicesTypes.PRODUCT));
+
       if (wantsBusiness) {
         business = await this.getBusinesses(queries, campDetails);
       }
@@ -115,14 +157,22 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         );
       }
 
+      if (wantsProducts) {
+        product = await this.getProducts(queries, campDetails);
+      }
+
       const allItems = [
         ...(Array.isArray(business?.data) ? business.data : []),
         ...(Array.isArray(poi?.data) ? poi.data : []),
         ...(Array.isArray(event?.data) ? event.data : []),
         ...(Array.isArray(tripAndFunday?.data) ? tripAndFunday.data : []),
+        ...(Array.isArray(product?.data) ? product.data : []),
       ];
 
-      const shuffledItems = this.deterministicShuffle(allItems, campCode);
+      const shuffledItems = this.deterministicShuffle(
+        allItems,
+        identifierId || campCode,
+      );
 
       const paginatedItems = paginateData(page, limit, shuffledItems);
 
@@ -559,6 +609,88 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         data: mappedTrips,
         totalData: mappedTrips.length,
       };
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  private async getProducts(
+    queries: GetAllFeedItemsQuery,
+    campDetails: any,
+  ): Promise<GetAllFeedItemResponse> {
+    try {
+      const {
+        categoriesId,
+        subCategoriesId,
+        accessibilitiesId,
+        groupTypesId,
+        sortBy,
+        sortOrder,
+        search,
+      } = queries;
+
+      const result = await this.queryBus.execute(
+        new GetProductRawQuery({
+          categoriesId,
+          subCategoriesId,
+          accessibilitiesId,
+          groupTypesId,
+          campDetails,
+          search,
+        }),
+      );
+
+      if (!result) {
+        return { data: [], totalData: 0 };
+      }
+
+      const { findQuery, whitelist, blacklist } = result;
+
+      const select
+        = '_id productId name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr images primaryCategoryId address slug groupTypesId accessibilitiesId price';
+
+      const allProducts = await queryhandler<ProductsAudit>(
+        this.ProductsAuditModel,
+        {
+          findQuery,
+          select,
+          sort: sortBy || 'createdAt',
+          sortOrder: sortOrder || SortOrder.DESC,
+        },
+      );
+
+      if (blacklist?.length) {
+        const blacklistSet = new Set(blacklist.map((id: any) => id.toString()));
+        allProducts.data = allProducts.data.filter(
+          (item: any) => !blacklistSet.has(item.productId.toString()),
+        );
+        allProducts.totalData = allProducts.data.length;
+      }
+
+      if (whitelist?.length) {
+        const whitelistedProducts = await queryhandler<ProductsAudit>(
+          this.ProductsAuditModel,
+          {
+            findQuery: { productId: { $in: whitelist }, isActive: true },
+            select,
+            sort: sortBy || 'createdAt',
+            sortOrder: sortOrder || SortOrder.DESC,
+          },
+        );
+
+        if (whitelistedProducts?.data?.length) {
+          allProducts.data = [...allProducts.data, ...whitelistedProducts.data];
+          allProducts.totalData = allProducts.data.length;
+        }
+      }
+
+      allProducts.data = allProducts.data.map((prod: any) => ({
+        ...prod.toObject(),
+        serviceType: ServicesTypes.PRODUCT,
+        geoLocation: { lat: '', long: '' },
+      }));
+
+      return allProducts;
     } catch (err) {
       exceptionHandling(err);
     }

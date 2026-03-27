@@ -4,13 +4,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { GenerateTagsHandler } from './command/handler/generate-tags.handler';
 import { TagsController } from './controllers/tags.controllers';
 import { ConfigModule } from 'src/services/config/config.module';
-import { TagsSchema } from './schema/tags.schema';
+import { Tags, TagsSchema } from './schema/tags.schema';
 import { CreateTagHandler } from './command/handler/create-tags.handler';
 import { GetAllTagsHandler } from './queries/handler/get-all-tags.handler';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Tags', schema: TagsSchema }]),
+    CqrsModule,
+    MongooseModule.forFeature([{ name: Tags.name, schema: TagsSchema }]),
     ConfigModule,
   ],
   controllers: [TagsController],

@@ -18,6 +18,9 @@ export enum PaymentStatus {
   SUCCESS = 'SUCCESS',
   FAILURE = 'FAILURE',
   PENDING = 'PENDING',
+  CANCELING = 'CANCELING',
+  REFUND_IN_PROCESS = 'REFUND_IN_PROCESS',
+  REFUND_SUCCESS = 'REFUND_SUCCESS',
   UNPAID = 'UNPAID',
 }
 
@@ -25,6 +28,39 @@ export enum VoucherPaymentStatus {
   PAID = 'PAID',
   UNPAID = 'UNPAID',
   FAILED = 'FAILED',
+}
+
+export enum ItemStatus {
+  ALL = 'ALL',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  CLOSED = 'CLOSED',
+  REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED',
+}
+
+export enum ItemType {
+  ALL = 'ALL',
+  BUSINESS = 'BUSINESS',
+  PRODUCT = 'PRODUCT',
+  EVENT = 'EVENT',
+  FUNDAY = 'FUNDAY',
+  TRIP = 'TRIP',
+}
+export enum NotificationType {
+  ALL = 'ALL',
+  INFO = 'INFO',
+  WARNING = 'WARNING',
+  ACTION = 'ACTION',
+  ERROR = 'ERROR',
+  URGENT = 'URGENT',
+}
+
+export enum NotifReadType {
+  ALL = 'ALL',
+  READ = 'READ',
+  UNREAD = 'UNREAD',
 }
 
 export enum Currency {

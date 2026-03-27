@@ -34,6 +34,7 @@ import { GetBusinessRawQueryHandler } from './queries/handler/get-business-raw-q
 import { GetEventRawQueryHandler } from './queries/handler/get-event-raw-query.handler';
 import { GetTripRawQueryHandler } from './queries/handler/get-trip-raw-query.handler';
 import { GetPOIRawQueryHandler } from './queries/handler/get-poi-raw-query.handler';
+import { GetProductRawQueryHandler } from './queries/handler/get-product-raw-query.handler';
 import {
   EventsAudit,
   EventsAuditSchema,
@@ -73,6 +74,7 @@ import {
     GetPOIRawQueryHandler,
     GetEventRawQueryHandler,
     GetTripRawQueryHandler,
+    GetProductRawQueryHandler,
   ],
 })
 export class DashboardModule {}

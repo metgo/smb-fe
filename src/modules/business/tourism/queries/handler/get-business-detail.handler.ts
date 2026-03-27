@@ -8,7 +8,6 @@ import { ServerErrors } from 'src/common/constant';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetBusinessDetailForTourismQuery } from '../get-business-detail.query';
-import { GetAllProductsByBusinessIdQuery } from 'src/modules/products/queries/get-all-products-by-businessId.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 
@@ -41,12 +40,16 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
       }
 
       const select
-        = '_id businessId dmoId slug authorityId location cover logo images name nameHe nameAr address countryCode phoneNumber busiEmail shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation  groupTypesId accessibilitiesId primaryCategoryId bussCategoriesId bussSubCategoriesId openingHrs isAlwaysOpen slug impact socialMedia  deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
+        = '_id businessId dmoId authorityId location cover logo images name nameHe nameAr address countryCode phoneNumber busiEmail shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId primaryCategoryId tagsId bussCategoriesId bussSubCategoriesId openingHrs isAlwaysOpen slug socialMedia impact deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
 
       const populate = [
         {
           path: 'groupTypesId accessibilitiesId',
           select: '_id name hebrewName',
+        },
+        {
+          path: 'tagsId',
+          select: '_id name nameHe nameAr',
         },
       ];
 
@@ -80,17 +83,9 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }
 
-        const products = await this.queryBus.execute(
-          new GetAllProductsByBusinessIdQuery(
-            business._id.toString(),
-            query.locale,
-          ),
-        );
-
         const mappedData = {
           ...rest,
           _id: businessId,
-          products: products?.data || [],
         };
 
         const response = await this.businessService.localizeBusiness(
