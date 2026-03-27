@@ -30,7 +30,7 @@ interface FeedFilterDrawerProps {
 
 const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   isOpen,
-  
+
   filters,
   visibleFeedItems,
 }) => {
@@ -53,49 +53,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     queryKey: ["preset-filters"],
     queryFn: getPresetFilters,
   });
-  // Hook to sync filters to URL
-  // const syncFiltersToURL = (feedFilterState: any) => {
-  //   const params = new URLSearchParams();
-
-  //   Object.entries(feedFilterState).forEach(([key, values]) => {
-  //     if (Array.isArray(values) && values.length > 0) {
-  //       values.forEach((value) => params.append(key, value));
-  //     }
-  //   });
-
-  //   if (feedSearchKeyword) params.set("search", feedSearchKeyword);
-  //   if (displayMode) params.set("displayMode", displayMode);
-  //   if (selectedSiteCategories.length > 0) {
-  //     selectedSiteCategories.forEach((cat) =>
-  //       params.append("siteCategory", cat.title),
-  //     );
-  //   }
-
-  //   const newURL = `${window.location.pathname}?${params.toString()}`;
-  //   window.history.replaceState(null, "", newURL);
-  // };
-
-  // // In your component
-  // useEffect(() => {
-  //   syncFiltersToURL(feedFilterState);
-  // }, [feedFilterState, feedSearchKeyword, selectedSiteCategories]);
-
-  // useEffect(() => {
-  //   initFeedFiltersFromURL();
-  // }, []);
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
 
   const toggleParam = (key: FeedFilterKey, value: string) =>
     toggleFeedFilter(key, value);
-
-  const {
-    appliedFilterCount,
-
-    initFiltersFromURL,
-    filterState,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const handleResetFilters = () => {
     resetFeedFilters();
@@ -124,7 +87,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
           className="sticky top-24 self-start shrink-0 "
           style={{ width: 320 }}
         >
-          <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden fixed bottom-4 right-2 w-[620px]">
+          <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden fixed bottom-4 right-2 w-[550px]">
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
               <span className="font-bold text-3xl text-black">
