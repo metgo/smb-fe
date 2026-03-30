@@ -60,12 +60,21 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     setFeedSearchKeyword("");
   };
 
+  console.log("🚀 ~ FeedFilterDrawer ~ feedFilterState:", feedFilterState);
+
   const hasActiveFilters =
-    Object.values(feedFilterState).some(
-      (arr) => Array.isArray(arr) && arr.length > 0,
-    ) ||
+    //  Check other arrays (exclude serviceTypes)
+    Object.entries(feedFilterState).some(([key, arr]) => {
+      return key !== "serviceTypes" && Array.isArray(arr) && arr.length > 0;
+    }) ||
+    //  Check serviceTypes only if it has values OUTSIDE the default 3
+    (Array.isArray(feedFilterState.serviceTypes) &&
+      feedFilterState.serviceTypes.length > 0 &&
+      feedFilterState.serviceTypes.some(
+        (type) => !["event", "business", "funday"].includes(type),
+      )) ||
     feedSearchKeyword.length > 0 ||
-    selectedSiteCategories.length > 0 
+    selectedSiteCategories.length > 0;
 
   if (!isOpen || isMobile) return null;
 

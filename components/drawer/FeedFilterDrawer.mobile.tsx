@@ -78,13 +78,19 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     setIsFilterDrawerOpen(newState);
     handleFilterTooltipShown(true);
   };
-
   const hasActiveFilters =
-    Object.values(filterState).some(
-      (value) => Array.isArray(value) && value.length > 0,
-    ) ||
-    (feedSearchKeyword && feedSearchKeyword.length > 0) ||
-    (selectedSiteCategories && selectedSiteCategories.length > 0);
+    //  Check other arrays (exclude serviceTypes)
+    Object.entries(feedFilterState).some(([key, arr]) => {
+      return key !== "serviceTypes" && Array.isArray(arr) && arr.length > 0;
+    }) ||
+    //  Check serviceTypes only if it has values OUTSIDE the default 3
+    (Array.isArray(feedFilterState.serviceTypes) &&
+      feedFilterState.serviceTypes.length > 0 &&
+      feedFilterState.serviceTypes.some(
+        (type) => !["event", "business", "funday"].includes(type),
+      )) ||
+    feedSearchKeyword.length > 0 ||
+    selectedSiteCategories.length > 0;
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
