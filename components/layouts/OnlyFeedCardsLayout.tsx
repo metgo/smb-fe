@@ -18,16 +18,12 @@ import clsx from "clsx";
 interface OnlyFeedCardsLayoutProps {
   data: FeedItemList;
   isFilterOpen: boolean;
-  setIsFilterOpen: (v: boolean) => void;
-  filters: FiltersResponse;
-  appliedFilterCount: number;
-  isSelected: (key: any, value: string) => boolean;
-  toggleParam: (key: any, value: string) => void;
-  handleResetFilters: () => void;
-  itemCount: number;
 }
 
-const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
+const OnlyFeedCardsLayout = ({
+  data,
+  isFilterOpen,
+}: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);
@@ -68,23 +64,25 @@ const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
     layout: LayoutItem[],
     offset: number,
   ) => {
-    return <div className="space-y-5">
-      {indexes.map((i) => {
-        const feedItem = data[i + offset];
-        const cardLayout = layout[i];
+    return (
+      <div className="space-y-5">
+        {indexes.map((i) => {
+          const feedItem = data[i + offset];
+          const cardLayout = layout[i];
 
-        if (!feedItem || !cardLayout) return null;
+          if (!feedItem || !cardLayout) return null;
 
-        return (
-          <FeedCard
-            key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
-            width={cardLayout.width}
-            height={cardLayout.height}
-            feedItem={feedItem}
-          />
-        );
-      })}
-    </div>;
+          return (
+            <FeedCard
+              key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
+              width={cardLayout.width}
+              height={cardLayout.height}
+              feedItem={feedItem}
+            />
+          );
+        })}
+      </div>
+    );
   };
 
   const renderHorizontalCards = (

@@ -22,14 +22,33 @@ export default function FeedNavbarCenter() {
     selectedSiteCategories,
     toggleSiteCategory,
   } = useGeneralStore();
+
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const headerText = stripHtml(presetFeedFilters?.header ?? "");
-  const allCategories =
-    presetFeedFilters?.siteTopics
-      ?.flatMap((topic) => topic.siteCategories ?? [])
-      .filter((cat) => !cat.isArchived) ?? [];
+  const allCategories = (() => {
+    const topics = presetFeedFilters?.siteTopics ?? [];
+
+    // Find if there's any primary topic
+    const primaryTopic = topics.find((topic) => topic.isPrimary === true);
+
+    let selectedTopic;
+
+    if (primaryTopic) {
+      // If primary topic exists, use only that one
+      selectedTopic = primaryTopic;
+    } else if (topics.length > 0) {
+      // Otherwise, use the first topic
+      selectedTopic = topics[0];
+    }
+
+    // Extract categories from the selected topic
+    const categories =
+      selectedTopic?.siteCategories?.filter((cat) => !cat.isArchived) ?? [];
+
+    return categories;
+  })();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -47,6 +66,7 @@ export default function FeedNavbarCenter() {
   if (!headerText && allCategories.length === 0) return null;
   if (isCategoryHeaderInView) return null;
 
+  console.log("🚀 ~ FeedNavbarCenter ~ allCategories:", allCategories);
   return (
     <div className="flex items-center gap-3 justify-center">
       {headerText && (

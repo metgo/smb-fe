@@ -18,9 +18,7 @@ interface FeedLayoutProps {
 
 const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const {
-    appliedFilterCount,
-    isSelected,
-    toggleParam,
+    
     handleResetFilters: resetLocalFilters,
 
     activeFilterTab,
@@ -35,9 +33,9 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     filters,
     totalBusiness,
     visibleFeedItems,
-    infiniteData,
     handleFilterTooltipShown,
   } = useFeedFilter(selectedFiltersIds);
+    console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen)
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
@@ -75,13 +73,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           <OnlyFeedCardsLayout
             data={visibleFeedItems}
             isFilterOpen={isFilterDrawerOpen}
-            setIsFilterOpen={setIsFilterDrawerOpen}
-            filters={filters}
-            appliedFilterCount={appliedFilterCount}
-            isSelected={isSelected}
-            toggleParam={toggleParam}
-            handleResetFilters={handleResetFilters}
-            itemCount={infiniteData?.totalData ?? 0}
+          
           />
         );
       case "integrated":
