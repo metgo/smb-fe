@@ -19,7 +19,7 @@ const emptyFeedFilterState: FeedFilterState = {
   subCategoryIds: [],
   groupTypeIds: [],
   accessibilityIds: [],
-  serviceTypes: [],
+  serviceTypes: [ "event", "business"],
 };
 
 type LatLngType = {
@@ -202,9 +202,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
 
-  displayMode: "",
+  displayMode: "businesses",
   setDisplayMode: (v) => set({ displayMode: v }),
-  
+
   isSearchModalOpen: false,
   setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
   isOnSection2: false,

@@ -16,7 +16,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { SearchButton } from "../filter-icon/SearchButton";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { Building, ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 interface MobileFeedFilterDrawerProps {
@@ -29,7 +29,6 @@ interface MobileFeedFilterDrawerProps {
   toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
   filteredSubCategories: SubCategory[];
-  initFiltersFromURL: any;
   filterState: any;
   visibleFeedItems: any;
 }
@@ -83,8 +82,9 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     (selectedSiteCategories && selectedSiteCategories.length > 0);
 
   const totalActiveFilters =
-    appliedFilterCount + (selectedSiteCategories?.length || 0);
-
+    appliedFilterCount +
+    (selectedSiteCategories?.length || 0) +
+    (displayMode !== "" ? 1 : 0);
   if (!isOpen) return null;
 
   return (
@@ -177,7 +177,20 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
 
             <div className="grid grid-cols-3 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
-
+              {aminitiesInfo?.business && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.business)}
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.business);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.business,
+                    });
+                  }}
+                  icon={<Building />}
+                  activeIcon={<Building color="white" />}
+                  label={filterPanelLabels.business}
+                />
+              )}
               {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
@@ -401,7 +414,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                       </div>
                     </div>
                     {/* What to show? */}
-                    <div className="mb-8">
+                    {/* <div className="mb-8">
                       <h3
                         className={`text-base font-bold mb-3 text-right ${"text-gray-800"}`}
                       >
@@ -444,7 +457,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                           {filterPanelLabels.products}{" "}
                         </motion.button>
                       </div>
-                    </div>
+                    </div> */}
                   </>
                 )}
               </>

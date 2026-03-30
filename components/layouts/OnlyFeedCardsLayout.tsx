@@ -29,7 +29,6 @@ interface OnlyFeedCardsLayoutProps {
 
 const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
-  console.log("🚀 ~ OnlyFeedCardsLayout ~ feedItemCount:", feedItemCount)
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);
 
@@ -68,8 +67,8 @@ const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
     indexes: number[],
     layout: LayoutItem[],
     offset: number,
-  ) => (
-    <div className="space-y-5">
+  ) => {
+    return <div className="space-y-5">
       {indexes.map((i) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
@@ -85,8 +84,8 @@ const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
           />
         );
       })}
-    </div>
-  );
+    </div>;
+  };
 
   const renderHorizontalCards = (
     indexes: number[],

@@ -15,7 +15,7 @@ import { SERVICE_TYPE_MAP } from "@/lib/utils";
 import { useCommonHook } from "@/hooks";
 import useGeneralStore, { FeedFilterKey } from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { Building, ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 import clsx from "clsx";
@@ -44,9 +44,9 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     setFeedSearchKeyword,
     resetFeedFilters,
     clearSiteCategories,
-    displayMode, setDisplayMode
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
+  const [inputValue, setInputValue] = useState(feedSearchKeyword);
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
@@ -65,7 +65,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
       (arr) => Array.isArray(arr) && arr.length > 0,
     ) ||
     feedSearchKeyword.length > 0 ||
-    selectedSiteCategories.length > 0;
+    selectedSiteCategories.length > 0 
 
   if (!isOpen || isMobile) return null;
 
@@ -126,20 +126,29 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               <div className="flex items-start justify-center py-2">
                 {/* Search Button */}
                 <div className="w-7xl rounded-xl border border-gray-100 flex items-center gap-2 px-4 py-2">
-                  <IconImage icon="search" />
+                  <IconImage
+                    icon="search"
+                    onClick={() => setFeedSearchKeyword(inputValue)}
+                  />
                   <input
                     type="text"
-                    value={feedSearchKeyword}
+                    value={inputValue}
                     placeholder={searchText.search}
-                    onChange={(e) => setFeedSearchKeyword(e.target.value)}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && setFeedSearchKeyword(inputValue)
+                    }
                     className="w-full outline-none border-none focus:ring-0"
                   />
-                  {feedSearchKeyword && (
+                  {inputValue && (
                     <IconImage
                       height={18}
                       width={18}
                       icon="circular-close-white"
-                      onClick={() => setFeedSearchKeyword("")}
+                      onClick={() => {
+                        setInputValue("");
+                        setFeedSearchKeyword("");
+                      }}
                     />
                   )}
                 </div>
@@ -150,6 +159,48 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   {filterPanelLabels.main}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
+                  {aminitiesInfo?.business && (
+                    <FilterButton
+                      active={isSelected(
+                        "serviceTypes",
+                        SERVICE_TYPE_MAP.business,
+                      )}
+                      onClick={() => {
+                        toggleParam("serviceTypes", SERVICE_TYPE_MAP.business);
+                        sendGAEvent(triggerName.clickToServiceType, {
+                          service_types: filterPanelLabels.business,
+                        });
+                      }}
+                      icon={<Building />}
+                      activeIcon={<Building color="white" />}
+                      label={filterPanelLabels.business}
+                      colorIndex={0}
+                    />
+                  )}
+                  {/* <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() =>
+                      setDisplayMode(
+                        displayMode === "businesses" ? "" : "businesses",
+                      )
+                    }
+                    className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      displayMode === "businesses"
+                        ? "bg-violet-500 text-white shadow-sm"
+                        : "text-gray-800 hover:text-gray-900 bg-gray-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Building
+                        className={
+                          displayMode === "businesses"
+                            ? "text-white"
+                            : "text-gray-500"
+                        }
+                      />
+                      {filterPanelLabels.business}
+                    </div>
+                  </motion.button> */}
                   {aminitiesInfo?.poi && (
                     <FilterButton
                       active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
@@ -324,7 +375,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   )}
 
                   {/* What to show? */}
-                  <div className="mb-8">
+                  {/* <div className="mb-8">
                     <h3
                       className={`text-base font-semibold mb-3 text-right ${"text-gray-800"}`}
                     >
@@ -344,17 +395,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       >
                         {filterPanelLabels.everything}{" "}
                       </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setDisplayMode("businesses")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                          displayMode === "businesses"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-800 hover:text-gray-900"
-                        }`}
-                      >
-                        {filterPanelLabels.business}{" "}
-                      </motion.button>
+                     
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setDisplayMode("products")}
@@ -367,7 +408,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                         {filterPanelLabels.products}{" "}
                       </motion.button>
                     </div>
-                  </div>
+                  </div> */}
                 </>
               )}
             </div>

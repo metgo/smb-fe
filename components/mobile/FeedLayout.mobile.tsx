@@ -68,13 +68,12 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters,
-    initFiltersFromURL,
     filterState,
   } = useFeedFilter();
 
   const totalActiveFilters =
-    appliedFilterCount + (selectedSiteCategories?.length || 0);
-
+    appliedFilterCount +
+    (selectedSiteCategories?.length || 0) 
   const filteredSubCategories = filters?.subCategories ?? [];
 
   const businesses = infiniteData?.data || [];
@@ -215,7 +214,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
             filteredSubCategories={filteredSubCategories}
-            initFiltersFromURL={initFiltersFromURL}
             filterState={filterState}
             visibleFeedItems={visibleFeedItems}
           />

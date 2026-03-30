@@ -149,7 +149,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     selectedSiteCategories,
     feedFilterState,
     feedSearchKeyword,
-    displayMode
+    displayMode,
   ]);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */

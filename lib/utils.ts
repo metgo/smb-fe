@@ -91,6 +91,7 @@ export const SERVICE_TYPE_MAP = {
   fun_day: "funday",
   event: "event",
   route: "trip",
+  business: "business",
 } as const;
 
 export const contactFormReasonOptions = [
