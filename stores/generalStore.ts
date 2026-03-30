@@ -70,6 +70,7 @@ const initialSiteConfig: ISiteConfig = {
 
       order: 0,
       isArchived: false,
+      isPrimary: false,
     },
   ],
 };
@@ -156,7 +157,6 @@ interface GeneralStoreState {
   toggleSiteCategory: (cat: ISiteCategory) => void;
   feedSearchKeyword: string;
   setFeedSearchKeyword: (v: string) => void;
-  initFeedFiltersFromURL: () => void;
   feedFilterState: FeedFilterState;
   toggleFeedFilter: (key: FeedFilterKey, value: string) => void;
   resetFeedFilters: () => void;
@@ -165,152 +165,129 @@ interface GeneralStoreState {
 
 const useGeneralStore = create<GeneralStoreState>((set) => {
   return {
-  zIndex: "20",
-  setZIndex: (zIndex) => set({ zIndex }),
-  activeCategoryKey: "",
-  setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
+    zIndex: "20",
+    setZIndex: (zIndex) => set({ zIndex }),
+    activeCategoryKey: "",
+    setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
 
-  activeFilterTab: "gallery",
-  setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
-  activeFilterTabMobile: "gallery",
-  setActiveFilterTabMobile: (activeFilterTabMobile) =>
-    set({ activeFilterTabMobile }),
+    activeFilterTab: "gallery",
+    setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
+    activeFilterTabMobile: "gallery",
+    setActiveFilterTabMobile: (activeFilterTabMobile) =>
+      set({ activeFilterTabMobile }),
 
-  initFeedFiltersFromURL: () =>
-    set((state) => {
-      if (typeof window === "undefined") return state;
+    clickedBusinessId: "",
+    setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
 
-      const params = new URLSearchParams(window.location.search);
-      const keys: FeedFilterKey[] = [
-        "categoryIds",
-        "subCategoryIds",
-        "groupTypeIds",
-        "accessibilityIds",
-        "serviceTypes",
-      ];
+    displayMode: "businesses",
+    setDisplayMode: (v) => set({ displayMode: v }),
 
-      const hasAnyParam = keys.some((key) => params.has(key));
-      if (!hasAnyParam) return state; // ← no URL params, keep state as is
-
-      const newFilterState = { ...state.feedFilterState };
-      keys.forEach((key) => {
-        const values = params.getAll(key);
-        if (values.length > 0) newFilterState[key] = values;
-      });
-
-      return { feedFilterState: newFilterState };
-    }),
-  clickedBusinessId: "",
-  setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
-
-  displayMode: "businesses",
-  setDisplayMode: (v) => set({ displayMode: v }),
-
-  isSearchModalOpen: false,
-  setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
-  isOnSection2: false,
-  setIsOnSection2: (isOnSection2) => set({ isOnSection2 }),
-  groupTypes: [],
-  setGroupTypes: (item) => set({ groupTypes: item }),
-  accessibilities: [],
-  setAccessibilities: (item) => set({ accessibilities: item }),
-  appliedFilterItemCount: 0,
-  setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
-  hideFirstTwoSection: false,
-  setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
-  isMobile: false,
-  setIsMobile: (v) => set({ isMobile: v }),
-  homePageSectionState: "first",
-  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
-
-  aminitiesInfo: {
-    event: false,
-    trip: false,
-    business: false,
-    funday: false,
-    poi: false,
-  },
-  setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
-
-  siteInfo: {
-    name: "",
-    metaTitle: "",
-    metaDescription: "",
-    siteName: "",
-    desktopHomeVideos: [],
-    mobileHomeVideos: [],
-  },
-  setSiteInfo: (v) => set({ siteInfo: v }),
-
-  userLiveLocation: null,
-  setUserLiveLocation: (v) => set({ userLiveLocation: v }),
-
-  clickedOnSoundButton: false,
-  setClickedOnSoundButton: (v) => set({ clickedOnSoundButton: v }),
-
-  activeFeedItemIndex: 0,
-  setActiveFeedItemIndex: (v) => set({ activeFeedItemIndex: v }),
-
-  promotionalItems: [],
-  setPromotionalItems: (v) => set({ promotionalItems: v }),
-
-  filterItems: {
+    isSearchModalOpen: false,
+    setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
+    isOnSection2: false,
+    setIsOnSection2: (isOnSection2) => set({ isOnSection2 }),
     groupTypes: [],
+    setGroupTypes: (item) => set({ groupTypes: item }),
     accessibilities: [],
-    categories: [],
-    subCategories: [{ _id: "", hebrewName: "", categoryId: "" }],
-    displayBusinesses: false,
-    displayEvents: false,
-    displayFunday: false,
-    displayPOI: false,
-    displayTrips: false,
-  },
-  setFilterItems: (v) => set({ filterItems: v }),
+    setAccessibilities: (item) => set({ accessibilities: item }),
+    appliedFilterItemCount: 0,
+    setAppliedFilterItemCount: (count) =>
+      set({ appliedFilterItemCount: count }),
+    hideFirstTwoSection: false,
+    setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
+    isMobile: false,
+    setIsMobile: (v) => set({ isMobile: v }),
+    homePageSectionState: "first",
+    setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 
-  isFilterDrawerOpen: false,
-  setIsFilterDrawerOpen: (v) => set({ isFilterDrawerOpen: v }),
+    aminitiesInfo: {
+      event: false,
+      trip: false,
+      business: false,
+      funday: false,
+      poi: false,
+    },
+    setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
 
-  showFavoriteFeedItems: false,
-  setShowFavoriteFeedItems: (v) => set({ showFavoriteFeedItems: v }),
+    siteInfo: {
+      name: "",
+      metaTitle: "",
+      metaDescription: "",
+      siteName: "",
+      desktopHomeVideos: [],
+      mobileHomeVideos: [],
+    },
+    setSiteInfo: (v) => set({ siteInfo: v }),
 
-  presetFeedFilters: initialSiteConfig,
-  setPresetFeedFilters: (v) => set({ presetFeedFilters: v }),
+    userLiveLocation: null,
+    setUserLiveLocation: (v) => set({ userLiveLocation: v }),
 
-  isCategoryHeaderInView: true,
-  setIsCategoryHeaderInView: (v) => set({ isCategoryHeaderInView: v }),
+    clickedOnSoundButton: false,
+    setClickedOnSoundButton: (v) => set({ clickedOnSoundButton: v }),
 
-  selectedSiteCategories: [],
-  setSelectedSiteCategories: (v) => set({ selectedSiteCategories: v }),
-  toggleSiteCategory: (cat) =>
-    set((state) => {
-      const exists = state.selectedSiteCategories.some(
-        (c) => c.title === cat.title,
-      );
-      return {
-        selectedSiteCategories: exists
-          ? state.selectedSiteCategories.filter((c) => c.title !== cat.title)
-          : [...state.selectedSiteCategories, cat],
-      };
-    }),
+    activeFeedItemIndex: 0,
+    setActiveFeedItemIndex: (v) => set({ activeFeedItemIndex: v }),
 
-  feedSearchKeyword: "",
-  setFeedSearchKeyword: (v) => set({ feedSearchKeyword: v }),
+    promotionalItems: [],
+    setPromotionalItems: (v) => set({ promotionalItems: v }),
 
-  feedFilterState: emptyFeedFilterState,
-  toggleFeedFilter: (key, value) =>
-    set((state) => {
-      const current = state.feedFilterState[key] ?? [];
-      const next = current.includes(value)
-        ? current.filter((i) => i !== value)
-        : [...current, value];
-      return { feedFilterState: { ...state.feedFilterState, [key]: next } };
-    }),
-  resetFeedFilters: () => set({ feedFilterState: emptyFeedFilterState }),
-  clearSiteCategories: () =>
-    set({
-      selectedSiteCategories: [],
-    }),
-};
+    filterItems: {
+      groupTypes: [],
+      accessibilities: [],
+      categories: [],
+      subCategories: [{ _id: "", hebrewName: "", categoryId: "" }],
+      displayBusinesses: false,
+      displayEvents: false,
+      displayFunday: false,
+      displayPOI: false,
+      displayTrips: false,
+    },
+    setFilterItems: (v) => set({ filterItems: v }),
+
+    isFilterDrawerOpen: false,
+    setIsFilterDrawerOpen: (v) => set({ isFilterDrawerOpen: v }),
+
+    showFavoriteFeedItems: false,
+    setShowFavoriteFeedItems: (v) => set({ showFavoriteFeedItems: v }),
+
+    presetFeedFilters: initialSiteConfig,
+    setPresetFeedFilters: (v) => set({ presetFeedFilters: v }),
+
+    isCategoryHeaderInView: true,
+    setIsCategoryHeaderInView: (v) => set({ isCategoryHeaderInView: v }),
+
+    selectedSiteCategories: [],
+    setSelectedSiteCategories: (v) => set({ selectedSiteCategories: v }),
+    toggleSiteCategory: (cat) =>
+      set((state) => {
+        const exists = state.selectedSiteCategories.some(
+          (c) => c.title === cat.title,
+        );
+        return {
+          selectedSiteCategories: exists
+            ? state.selectedSiteCategories.filter((c) => c.title !== cat.title)
+            : [...state.selectedSiteCategories, cat],
+        };
+      }),
+
+    feedSearchKeyword: "",
+    setFeedSearchKeyword: (v) => set({ feedSearchKeyword: v }),
+
+    feedFilterState: emptyFeedFilterState,
+    toggleFeedFilter: (key, value) =>
+      set((state) => {
+        const current = state.feedFilterState[key] ?? [];
+        const next = current.includes(value)
+          ? current.filter((i) => i !== value)
+          : [...current, value];
+        return { feedFilterState: { ...state.feedFilterState, [key]: next } };
+      }),
+    resetFeedFilters: () => set({ feedFilterState: emptyFeedFilterState }),
+    clearSiteCategories: () =>
+      set({
+        selectedSiteCategories: [],
+      }),
+  };
 });
 
 export default useGeneralStore;

@@ -214,6 +214,7 @@ interface ISiteTopic {
   siteCategories: ISiteCategory[];
   order: number;
   isArchived: boolean;
+  isPrimary: boolean;
 }
 
 interface ISiteCategory {

@@ -117,6 +117,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
         )}
         <FeedFilterDrawer
           isOpen={isFilterOpen}
+          
           visibleFeedItems={visibleFeedItems}
           filters={filters}
         />

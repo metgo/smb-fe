@@ -28,7 +28,6 @@ interface FeedFilterDrawerProps {
 
 const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   isOpen,
-
   filters,
   visibleFeedItems,
 }) => {
@@ -59,8 +58,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     clearSiteCategories();
     setFeedSearchKeyword("");
   };
-
-  console.log("🚀 ~ FeedFilterDrawer ~ feedFilterState:", feedFilterState);
 
   const hasActiveFilters =
     //  Check other arrays (exclude serviceTypes)

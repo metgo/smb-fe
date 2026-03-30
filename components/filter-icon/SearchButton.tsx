@@ -15,6 +15,7 @@ interface SearchButtonProps {
   size?: number;
   onClick: () => void;
   isFilterDrawerOpen?: boolean;
+  setIsFilterOpen?:any
 }
 
 const BASE_SIZE = 96;
@@ -90,7 +91,7 @@ export const SearchButton = ({
   variant = "continuous",
   onClick,
   size = 96,
-  isFilterDrawerOpen,
+  isFilterDrawerOpen,setIsFilterOpen
 }: SearchButtonProps) => {
   const config = getAnimationConfig(variant);
 

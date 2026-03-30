@@ -36,7 +36,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   const {
     appliedFilterCount,
     isSelected,
-    toggleParam,
     handleResetFilters,
     filterState,
 
@@ -49,8 +48,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     setIsFilterDrawerOpen,
     selectedSiteCategories,
     handleFilterTooltipShown,
-    setHideFirstTwoSection,
-    feedFilterState,
+    setHideFirstTwoSection,feedFilterState
   } = useFeedFilter(selectedFiltersIds);
 
   const totalLength = Object.values(feedFilterState).reduce(
