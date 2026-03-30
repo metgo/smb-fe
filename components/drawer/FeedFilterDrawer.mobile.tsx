@@ -2,9 +2,11 @@
 
 import clsx from "clsx";
 import { useState } from "react";
+import { ChevronDown, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   EventIcon,
   FundayIcon,
@@ -16,7 +18,6 @@ import useGeneralStore from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { SearchButton } from "../filter-icon/SearchButton";
-import { ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 interface MobileFeedFilterDrawerProps {
@@ -28,7 +29,6 @@ interface MobileFeedFilterDrawerProps {
   isSelected: (key: any, value: string) => boolean;
   toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
-  filteredSubCategories: SubCategory[];
   initFiltersFromURL: any;
   filterState: any;
   visibleFeedItems: any;
@@ -41,12 +41,10 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   appliedFilterCount,
   isSelected,
   toggleParam,
-  filteredSubCategories,
   visibleFeedItems,
   handleResetFilters: handleClearFilters,
   filterState,
 }) => {
-  console.log("🚀 ~ MobileFeedFilterDrawer ~ filterState:", filterState);
   const {
     aminitiesInfo,
     isFilterDrawerOpen,
@@ -101,17 +99,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
           "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col rounded-t-2xl h-[50vh] border-t border-gray-300 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]",
         )}
       >
-        {/* SHEET HANDLER */}
-        {/* <div className="w-full flex justify-center items-center pt-4 relative">
-          <button
-            type="button"
-            onClick={() => setShowAllFilters((prev) => !prev)}
-            className="transition-transform duration-300"
-          >
-            {showAllFilters ? <DownAngleArrowIcon /> : <UpAngleArrowIcon />}
-          </button>
-        </div> */}
-
         {/* HEADER */}
         <div className="flex items-center justify-between py-4 px-4">
           <span className="font-bold text-lg text-black">
@@ -191,27 +178,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   label={filterPanelLabels.pointOfInterest}
                 />
               )}
-
-              {/* Main Categories */}
-              {/* {filterCategories?.map((menu) => {
-                const Icon = ICON_MAP[menu._id];
-                return (
-                  <FilterButton
-                    key={menu._id}
-                    active={isSelected("categoryIds", menu._id)}
-                    onClick={() => {
-                      toggleParam("categoryIds", menu._id);
-                      sendGAEvent(triggerName.clickToCategory, {
-                        category_id: menu._id,
-                        category_name: menu.hebrewName,
-                      });
-                    }}
-                    icon={Icon && <Icon strokColor="#7c7c7c" />}
-                    activeIcon={Icon && <Icon strokColor="#fff" />}
-                    label={menu.hebrewName}
-                  />
-                );
-              })} */}
 
               {/* Funday */}
               {aminitiesInfo?.funday && (
@@ -328,32 +294,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                 </motion.button>
                 {advancedFilter && (
                   <>
-                    {/* SUBCATEGORIES */}
-                    {filteredSubCategories &&
-                      filteredSubCategories?.length > 0 && (
-                        <div className=" py-3">
-                          <div className="font-bold text-gray-800">
-                            {filterPanelLabels.second}
-                          </div>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {filteredSubCategories.map((item) => (
-                              <FilterChip
-                                key={item._id}
-                                active={isSelected("subCategoryIds", item._id)}
-                                onClick={() => {
-                                  toggleParam("subCategoryIds", item._id);
-                                  sendGAEvent(triggerName.clickToSubCategory, {
-                                    subcategory_id: item._id,
-                                    subcategory_name: item.hebrewName,
-                                  });
-                                }}
-                                label={item.hebrewName}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                     {/* ACCESSIBILITY */}
                     <div className=" py-3">
                       <div className="font-bold text-gray-800">
