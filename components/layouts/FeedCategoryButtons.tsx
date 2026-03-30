@@ -58,7 +58,7 @@ export default function FeedCategoryButtons() {
       </motion.div>
 
       {/* Level 2: Categories for the selected topic */}
-      <div className="gap-2 flex ">
+      <div className="gap-2 flex justify-center ">
         <AnimatePresence>
           {(activeTopic?.siteCategories ?? []).map((category) => {
             const isActive = selectedSiteCategories?.some(

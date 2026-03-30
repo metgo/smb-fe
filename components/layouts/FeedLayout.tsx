@@ -33,11 +33,8 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     feedFilterState,
     feedSearchKeyword,
     resetFeedFilters,
+    displayMode,
   } = useGeneralStore();
-  console.log(
-    "🚀 ~ FeedLayout ~ selectedSiteCategories:",
-    selectedSiteCategories,
-  );
 
   const { favoriteFeedItemIds, handleFilterTooltipShown } =
     useFavoriteFeedItemStore();
@@ -99,6 +96,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       );
     }
 
+    if (displayMode === "businesses") {
+      items = items.filter((item) => item.serviceType === "business");
+    } else if (displayMode === "products") {
+      items = items.filter((item) => item.serviceType === "product");
+    }
+
     if (feedFilterState.serviceTypes.length > 0) {
       items = items.filter((item) =>
         feedFilterState.serviceTypes.includes(item.serviceType),
@@ -146,8 +149,8 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     selectedSiteCategories,
     feedFilterState,
     feedSearchKeyword,
+    displayMode
   ]);
-  console.log("🚀 ~ FeedLayout ~ visibleFeedItems:", visibleFeedItems);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {

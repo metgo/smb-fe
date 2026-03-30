@@ -149,6 +149,10 @@ interface GeneralStoreState {
 
   selectedSiteCategories: ISiteCategory[];
   setSelectedSiteCategories: (v: ISiteCategory[]) => void;
+
+  displayMode: string;
+  setDisplayMode: (v: string) => void;
+
   toggleSiteCategory: (cat: ISiteCategory) => void;
   feedSearchKeyword: string;
   setFeedSearchKeyword: (v: string) => void;
@@ -198,6 +202,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
 
+  displayMode: "",
+  setDisplayMode: (v) => set({ displayMode: v }),
+  
   isSearchModalOpen: false,
   setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
   isOnSection2: false,

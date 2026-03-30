@@ -57,11 +57,12 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     feedSearchKeyword,
     setFeedSearchKeyword,
     clearSiteCategories,
+    displayMode,
+    setDisplayMode,
   } = useGeneralStore();
 
   const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
-  const [displayMode, setDisplayMode] = useState("");
 
   const handleResetFilters = () => {
     clearSiteCategories();

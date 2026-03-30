@@ -29,6 +29,7 @@ interface OnlyFeedCardsLayoutProps {
 
 const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
+  console.log("🚀 ~ OnlyFeedCardsLayout ~ feedItemCount:", feedItemCount)
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);
 

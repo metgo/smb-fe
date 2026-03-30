@@ -46,6 +46,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     showFavoriteFeedItems,
     feedFilterState,
     selectedSiteCategories,
+    displayMode,
   } = useGeneralStore();
 
   /* ---------------------- Queries ---------------------- */
@@ -89,7 +90,11 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       );
       items = items.filter((item) => allowedIds.has(item.businessId));
     }
-
+    if (displayMode === "businesses") {
+      items = items.filter((item) => item.serviceType === "business");
+    } else if (displayMode === "products") {
+      items = items.filter((item) => item.serviceType === "product");
+    }
     if (feedFilterState.serviceTypes.length > 0) {
       items = items.filter((item) =>
         feedFilterState.serviceTypes.includes(item.serviceType),
@@ -125,6 +130,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     favoriteFeedItemIds,
     selectedSiteCategories,
     feedFilterState,
+    displayMode,
   ]);
 
   // Prepare feed items for carousel

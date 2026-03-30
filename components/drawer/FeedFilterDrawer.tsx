@@ -44,9 +44,9 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     setFeedSearchKeyword,
     resetFeedFilters,
     clearSiteCategories,
+    displayMode, setDisplayMode
   } = useGeneralStore();
   const [advancedFilter, setAdvancedFilter] = useState(false);
-  const [displayMode, setDisplayMode] = useState("");
 
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;

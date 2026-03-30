@@ -42,9 +42,13 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             <NavLogo />
           </div>
 
-          <div className="flex justify-center col-span-2">
-            <FeedNavbarCenter />
-          </div>
+          {pathname === "/" ? (
+            <div className="flex justify-center col-span-2">
+              <FeedNavbarCenter />
+            </div>
+          ) : (
+            <div className="flex justify-center col-span-2"></div>
+          )}
 
           <div className="flex items-center justify-end col-span-4">
             {siteStatus.isNegevTime && (
