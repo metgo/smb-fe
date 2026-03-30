@@ -19,7 +19,7 @@ const emptyFeedFilterState: FeedFilterState = {
   subCategoryIds: [],
   groupTypeIds: [],
   accessibilityIds: [],
-  serviceTypes: [ "event", "business"],
+  serviceTypes: ["event", "business", "funday"],
 };
 
 type LatLngType = {
@@ -163,7 +163,8 @@ interface GeneralStoreState {
   clearSiteCategories: () => void;
 }
 
-const useGeneralStore = create<GeneralStoreState>((set) => ({
+const useGeneralStore = create<GeneralStoreState>((set) => {
+  return {
   zIndex: "20",
   setZIndex: (zIndex) => set({ zIndex }),
   activeCategoryKey: "",
@@ -309,6 +310,7 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
     set({
       selectedSiteCategories: [],
     }),
-}));
+};
+});
 
 export default useGeneralStore;

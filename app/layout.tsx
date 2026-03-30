@@ -13,6 +13,7 @@ import {
   IdentifierId,
 } from "@/constant/envConstants";
 import Providers from "@/components/wrappers/Providers";
+import ProgressBar from "@/components/wrappers/ProgressBar";
 import { getFavicon, getThumbnail } from "@/constant/images";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import InitialLoader from "@/components/InitialLoader";
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: ReactChildNode) {
       </head>
       <body className="enable-toolbar-RTL trigger-position-left quick-links-position-center trigger-size-medium">
         <Suspense fallback={<InitialLoader />}>
+          <ProgressBar />
           <Providers>
             <SiteInfoClientProvider>
               <GoogleAnalytics debugMode={false} gaId={GOOGLE_ANALYTIC_ID!} />
