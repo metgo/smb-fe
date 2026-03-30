@@ -13,9 +13,27 @@ const DAY_LABELS: { key: string; label: string }[] = [
   { key: "saturday", label: "שבת" },
 ];
 
+// Mapping from your data's day codes to full keys
+const DAY_MAP: Record<string, string> = {
+  SUN: "sunday",
+  MON: "monday",
+  TUE: "tuesday",
+  WED: "wednesday",
+  THU: "thursday",
+  FRI: "friday",
+  SAT: "saturday",
+};
+
+interface OpeningHr {
+  day: string;
+  open: string;
+  close: string;
+  isHoliday: boolean;
+}
+
 interface Props {
   setShowHoursModal: (v: boolean) => void;
-  openingHrs: OpeningHrs[];
+  openingHrs: OpeningHr[];
   isAlwaysOpen: boolean;
 }
 
@@ -65,9 +83,21 @@ const OpeningHoursModal = ({
           <div className="space-y-2">
             {DAY_LABELS.map((day) => {
               const isToday = day.key === today;
-              const hours = openingHrs?.find(
-                (h) => h.days?.toLowerCase() === day.key,
+
+              // Find the matching hours using the day code mapping
+              const hoursData = openingHrs?.find(
+                (h) => DAY_MAP[h.day] === day.key,
               );
+
+              const isClosed =
+                !hoursData ||
+                hoursData.isHoliday ||
+                !hoursData.open ||
+                !hoursData.close;
+
+              const displayHours = isClosed
+                ? "סגור"
+                : `${hoursData.open} - ${hoursData.close}`;
 
               return (
                 <div
@@ -84,9 +114,7 @@ const OpeningHoursModal = ({
                   <span
                     className={`text-base font-bold ${isToday ? "text-teal-600" : "text-gray-600"}`}
                   >
-                    {hours && !hours.isHoliday
-                      ? `${hours.open} - ${hours.close}`
-                      : "סגור"}
+                    {displayHours}
                   </span>
                 </div>
               );

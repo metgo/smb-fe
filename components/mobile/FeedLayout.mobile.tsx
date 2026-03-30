@@ -34,10 +34,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   /* ---------------------- Memoized Data ---------------------- */
 
   const {
-    appliedFilterCount,
     isSelected,
     handleResetFilters,
-    filterState,
 
     filters,
     infiniteData,
@@ -48,7 +46,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     setIsFilterDrawerOpen,
     selectedSiteCategories,
     handleFilterTooltipShown,
-    setHideFirstTwoSection,feedFilterState
+    setHideFirstTwoSection,
+    feedFilterState,
   } = useFeedFilter(selectedFiltersIds);
 
   const totalLength = Object.values(feedFilterState).reduce(
@@ -138,10 +137,8 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             isOpen={isFilterDrawerOpen}
             setIsOpen={setIsFilterDrawerOpen}
             filters={filters}
-            appliedFilterCount={appliedFilterCount}
             isSelected={isSelected}
             handleResetFilters={handleResetFilters}
-            filterState={filterState}
             visibleFeedItems={visibleFeedItems}
           />
         )}

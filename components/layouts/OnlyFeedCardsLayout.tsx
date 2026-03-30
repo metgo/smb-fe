@@ -17,13 +17,9 @@ import clsx from "clsx";
 
 interface OnlyFeedCardsLayoutProps {
   data: FeedItemList;
-  isFilterOpen: boolean;
 }
 
-const OnlyFeedCardsLayout = ({
-  data,
-  isFilterOpen,
-}: OnlyFeedCardsLayoutProps) => {
+const OnlyFeedCardsLayout = ({ data }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
   const categoryHeaderRef = useRef<HTMLDivElement>(null);

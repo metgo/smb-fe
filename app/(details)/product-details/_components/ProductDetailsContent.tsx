@@ -14,15 +14,17 @@ import {
 } from ".";
 import UrlCopyInfoModal from "../../_components/UrlCopyInfoModal";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 interface Props {
   productDetails: ProductDetailsProps;
 }
 
-const isFavorite = false;
-
 const ProductDetailsContent = ({ productDetails }: Props) => {
   const [showShareModal, setShowShareModal] = useState(false);
+  const { addFavoriteFeedItemId, favoriteFeedItemIds } =
+    useFavoriteFeedItemStore();
+  const isFavorite = favoriteFeedItemIds.includes(productDetails?._id);
 
   const {
     name,
@@ -71,6 +73,7 @@ const ProductDetailsContent = ({ productDetails }: Props) => {
           whileTap={{ scale: 0.9 }}
         >
           <motion.div
+            onClick={() => addFavoriteFeedItemId(productDetails?._id)}
             animate={
               isFavorite
                 ? { scale: [1, 1.3, 1], rotate: [0, -10, 10, -5, 0] }

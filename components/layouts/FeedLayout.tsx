@@ -18,9 +18,6 @@ interface FeedLayoutProps {
 
 const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const {
-    
-    handleResetFilters: resetLocalFilters,
-
     activeFilterTab,
     hideFirstTwoSection,
     setIsFilterDrawerOpen,
@@ -28,14 +25,13 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     setShowFavoriteFeedItems,
     selectedSiteCategories,
     feedFilterState,
-    resetFeedFilters,
 
     filters,
     totalBusiness,
     visibleFeedItems,
     handleFilterTooltipShown,
   } = useFeedFilter(selectedFiltersIds);
-    console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen)
+  console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen);
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
@@ -44,11 +40,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
   const totalActiveFilters =
     totalLength + (selectedSiteCategories?.length || 0);
-
-  const handleResetFilters = () => {
-    resetLocalFilters();
-    resetFeedFilters();
-  };
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -69,13 +60,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return (
-          <OnlyFeedCardsLayout
-            data={visibleFeedItems}
-            isFilterOpen={isFilterDrawerOpen}
-          
-          />
-        );
+        return <OnlyFeedCardsLayout data={visibleFeedItems} />;
       case "integrated":
         return <MapFeedIntegratedLayout data={visibleFeedItems} />;
       case "map":
@@ -109,7 +94,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
         )}
         <FeedFilterDrawer
           isOpen={isFilterOpen}
-          
           visibleFeedItems={visibleFeedItems}
           filters={filters}
         />

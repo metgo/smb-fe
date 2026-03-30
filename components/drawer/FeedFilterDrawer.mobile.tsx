@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   EventIcon,
   FundayIcon,
@@ -24,10 +24,8 @@ interface MobileFeedFilterDrawerProps {
   setIsOpen: (v: boolean) => void;
   itemCount: number;
   filters: FiltersResponse;
-  appliedFilterCount: number;
   isSelected: (key: any, value: string) => boolean;
   handleResetFilters: () => void;
-  filterState: any;
   visibleFeedItems: any;
 }
 
@@ -35,13 +33,11 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   isOpen,
   setIsOpen,
   filters,
-  appliedFilterCount,
   // isSelected,
   // toggleParam,
 
   visibleFeedItems,
   handleResetFilters: handleClearFilters,
-  filterState,
 }) => {
   const {
     aminitiesInfo,
