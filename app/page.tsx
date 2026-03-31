@@ -141,6 +141,15 @@ export default async function Page({
   const selectedFiltersIds = parseFeedFiltersSync(params);
   const isAllClear = params?.isAllClear === "true" || false;
 
+  // If the URL already carries filter state, skip the intro sections and go straight to the feed
+  const hasUrlFilters = Boolean(
+    params.serviceTypes ||
+      params.accessibilityIds ||
+      params.groupTypeIds ||
+      params.search ||
+      params.categories,
+  );
+
   // Detect device from User-Agent header
   const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "";
@@ -151,7 +160,7 @@ export default async function Page({
   const hasMarketing = Boolean(marketing?.items?.length);
 
   return (
-    <ScrollSnapWrapper hasMarketing={hasMarketing}>
+    <ScrollSnapWrapper hasMarketing={hasMarketing} skipToFeed={hasUrlFilters}>
       {[
         // Section 1: Video - renders immediately with correct device video
         <VideoSection key="video" isMobile={isMobile} />,
@@ -162,7 +171,11 @@ export default async function Page({
         ) : null,
 
         // Section 3: Feed - lazy loads when user scrolls to it
-        <LazyFeedSection key="feed" fallback={<FeedSkeleton />}>
+        <LazyFeedSection
+          key="feed"
+          fallback={<FeedSkeleton />}
+          loadImmediately={hasUrlFilters}
+        >
           <Suspense fallback={<FeedSkeleton />}>
             <FeedSectionWithData
               selectedFiltersIds={selectedFiltersIds}

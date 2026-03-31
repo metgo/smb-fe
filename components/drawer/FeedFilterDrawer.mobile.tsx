@@ -2,53 +2,104 @@
 
 import clsx from "clsx";
 import { useState } from "react";
-import { MotionDialogDiv } from "../ui";
-import { filterPanelLabels } from "@/constant/hebrew";
-import { motion, AnimatePresence } from "framer-motion";
+import { IconImage, MotionDialogDiv } from "../ui";
+import { filterPanelLabels, searchText } from "@/constant/hebrew";
+import { motion } from "framer-motion";
 import {
-  CloseIcon,
-  DownAngleArrowIcon,
   EventIcon,
   FundayIcon,
   PointOfInterestIcon,
   RouteIcon,
-  UpAngleArrowIcon,
 } from "../ui/svgIcons";
-import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
-import useGeneralStore from "@/stores/generalStore";
-import { SunsetButton } from "../filter-icon/SunsetButton";
+import { SERVICE_TYPE_MAP } from "@/lib/utils";
+import useGeneralStore, { FeedFilterKey } from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import { SearchButton } from "../filter-icon/SearchButton";
+import { Building, ChevronDown, RotateCcw } from "lucide-react";
+import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
   itemCount: number;
   filters: FiltersResponse;
-  appliedFilterCount: number;
   isSelected: (key: any, value: string) => boolean;
-  toggleParam: (key: any, value: string) => void;
   handleResetFilters: () => void;
-  filteredSubCategories: SubCategory[];
+  visibleFeedItems: any;
 }
 
 const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   isOpen,
   setIsOpen,
-  itemCount,
   filters,
-  appliedFilterCount,
-  isSelected,
-  toggleParam,
-  handleResetFilters,
-  filteredSubCategories,
-}) => {
-  const { aminitiesInfo } = useGeneralStore();
-  const [showAllFilters, setShowAllFilters] = useState(false);
+  // isSelected,
+  // toggleParam,
 
+  visibleFeedItems,
+  handleResetFilters: handleClearFilters,
+}) => {
+  const {
+    aminitiesInfo,
+    isFilterDrawerOpen,
+    presetFeedFilters,
+    setIsFilterDrawerOpen,
+    selectedSiteCategories,
+    toggleSiteCategory,
+    feedSearchKeyword,
+    setFeedSearchKeyword,
+    clearSiteCategories,
+    toggleFeedFilter,
+    feedFilterState,
+  } = useGeneralStore();
+
+  const isSelected = (key: FeedFilterKey, value: string) =>
+    feedFilterState[key]?.includes(value) ?? false;
+
+  const toggleParam = (key: FeedFilterKey, value: string) =>
+    toggleFeedFilter(key, value);
+
+  const { handleFilterTooltipShown } = useFavoriteFeedItemStore();
+  const [advancedFilter, setAdvancedFilter] = useState(false);
+  const [inputValue, setInputValue] = useState(feedSearchKeyword);
+
+  const handleResetFilters = () => {
+    clearSiteCategories();
+    setFeedSearchKeyword("");
+    handleClearFilters();
+  };
+
+  const handleFilterIconClick = () => {
+    const newState = !isFilterDrawerOpen;
+    setIsFilterDrawerOpen(newState);
+    handleFilterTooltipShown(true);
+  };
+
+  const hasActiveFilters =
+    //  Check other arrays (exclude serviceTypes)
+    Object.entries(feedFilterState).some(([key, arr]) => {
+      return key !== "serviceTypes" && Array.isArray(arr) && arr.length > 0;
+    }) ||
+    //  Check serviceTypes only if it has values OUTSIDE the default 4
+    (Array.isArray(feedFilterState.serviceTypes) &&
+      feedFilterState.serviceTypes.length > 0 &&
+      feedFilterState.serviceTypes.some(
+        (type) => !["event", "business", "funday", "trip"].includes(type),
+      )) ||
+    feedSearchKeyword.length > 0 ||
+    selectedSiteCategories.length > 0;
+
+  const totalLength = Object.values(feedFilterState).reduce(
+    (sum, arr) => sum + arr.length,
+    0,
+  );
+
+  const totalActiveFilters =
+    totalLength + (selectedSiteCategories?.length || 0);
   if (!isOpen) return null;
 
   return (
-    <>
+    <div>
       <div
         onClick={() => setIsOpen(false)}
         className="fixed inset-0 z-50 custom-cursor"
@@ -59,12 +110,11 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         type="drawer-bottom"
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl overflow-y-auto",
-          showAllFilters ? "h-[calc(100dvh-65px)]" : "max-h-max",
+          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col rounded-t-2xl h-[50vh] border-t border-gray-300 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]",
         )}
       >
         {/* SHEET HANDLER */}
-        <div className="w-full flex justify-center items-center pt-4 relative">
+        {/* <div className="w-full flex justify-center items-center pt-4 relative">
           <button
             type="button"
             onClick={() => setShowAllFilters((prev) => !prev)}
@@ -72,34 +122,112 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
           >
             {showAllFilters ? <DownAngleArrowIcon /> : <UpAngleArrowIcon />}
           </button>
-        </div>
+        </div> */}
 
         {/* HEADER */}
-
-        <div
-          className=" absolute left-4 top-4  custom-cursor"
-          onClick={() => setIsOpen(false)}
-        >
-          <CloseIcon />
+        <div className="flex items-center justify-between py-4 px-4">
+          <span className="font-bold text-lg text-black">
+            {filterPanelLabels.searchText}
+          </span>
+          <div className="flex justify-center items-center gap-3">
+            <span className="text-sm text-gray-500">
+              {visibleFeedItems?.length} {filterPanelLabels.results}
+            </span>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className={clsx(
+                  "custom-cursor hover:bg-cyan-600",
+                  "bg-cyan-500 text-white font-bold rounded-lg px-4 py-1.5 text-sm flex items-center gap-1.5 transition-colors",
+                )}
+              >
+                <span className="text-base">
+                  <RotateCcw className="h-4 w-4" />
+                </span>
+                {filterPanelLabels.clearAll}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto max-h-[80vh] px-5 z-50">
-          {/* MAIN CATEGORIES & SERVICE TYPES */}
-          <div className="border-b border-primary py-3">
-            <div className="flex items-center justify-between">
-              <div className="font-bold text-theme">
-                {filterPanelLabels.main}
-              </div>
-              <h2 className="text-lg font-bold">
-                <span>{itemCount}</span>{" "}
-                <span>{filterPanelLabels.results}</span>
-              </h2>
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div className="flex items-start justify-center py-2">
+            {/* Search Button */}
+            <div className="w-7xl rounded-xl border border-gray-100 flex items-center gap-2 px-4 py-2">
+              <IconImage
+                icon="search"
+                onClick={() => setFeedSearchKeyword(inputValue)}
+              />
+              <input
+                type="text"
+                value={inputValue}
+                placeholder={searchText.search}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && setFeedSearchKeyword(inputValue)
+                }
+                className="w-full outline-none border-none focus:ring-0"
+              />
+              {inputValue && (
+                <IconImage
+                  height={18}
+                  width={18}
+                  icon="circular-close-white"
+                  onClick={() => {
+                    setInputValue("");
+                    setFeedSearchKeyword("");
+                  }}
+                />
+              )}
             </div>
-
-            <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
-              {/* Point of Interest */}
-
+          </div>
+          {/* MAIN CATEGORIES & SERVICE TYPES */}
+          <div>
+            <div className="font-bold text-gray-800 mb-2">
+              {filterPanelLabels.main}
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {aminitiesInfo?.business && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.business)}
+                  onClick={() => {
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.business);
+                    sendGAEvent(triggerName.clickToServiceType, {
+                      service_types: filterPanelLabels.business,
+                    });
+                  }}
+                  icon={<Building />}
+                  activeIcon={<Building color="white" />}
+                  label={filterPanelLabels.business}
+                  colorIndex={0}
+                />
+              )}
+              {/* <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() =>
+                              setDisplayMode(
+                                displayMode === "businesses" ? "" : "businesses",
+                              )
+                            }
+                            className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                              displayMode === "businesses"
+                                ? "bg-violet-500 text-white shadow-sm"
+                                : "text-gray-800 hover:text-gray-900 bg-gray-100"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Building
+                                className={
+                                  displayMode === "businesses"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }
+                              />
+                              {filterPanelLabels.business}
+                            </div>
+                          </motion.button> */}
               {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
@@ -112,31 +240,9 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
                   activeIcon={<PointOfInterestIcon strokColor="#fff" />}
                   label={filterPanelLabels.pointOfInterest}
+                  colorIndex={0}
                 />
               )}
-
-              {/* Main Categories */}
-              {filterCategories?.map((menu) => {
-                const Icon = ICON_MAP[menu._id];
-                return (
-                  <FilterButton
-                    key={menu._id}
-                    active={isSelected("categoryIds", menu._id)}
-                    onClick={() => {
-                      toggleParam("categoryIds", menu._id);
-                      sendGAEvent(triggerName.clickToCategory, {
-                        category_id: menu._id,
-                        category_name: menu.hebrewName,
-                      });
-                    }}
-                    icon={Icon && <Icon strokColor="#7c7c7c" />}
-                    activeIcon={Icon && <Icon strokColor="#fff" />}
-                    label={menu.hebrewName}
-                  />
-                );
-              })}
-
-              {/* Funday */}
               {aminitiesInfo?.funday && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
@@ -149,10 +255,9 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   icon={<FundayIcon strokColor="#7c7c7c" />}
                   activeIcon={<FundayIcon strokColor="#fff" />}
                   label={filterPanelLabels.funDays}
+                  colorIndex={1}
                 />
               )}
-
-              {/* Events */}
               {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
@@ -165,10 +270,9 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   icon={<EventIcon strokColor="#7c7c7c" />}
                   activeIcon={<EventIcon strokColor="#fff" />}
                   label={filterPanelLabels.events}
+                  colorIndex={2}
                 />
               )}
-
-              {/* Routes */}
               {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
@@ -181,129 +285,169 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
                   icon={<RouteIcon strokColor="#7c7c7c" />}
                   activeIcon={<RouteIcon strokColor="#fff" />}
                   label={filterPanelLabels.routes}
+                  colorIndex={3}
                 />
               )}
             </div>
           </div>
-
-          <AnimatePresence>
-            {showAllFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{
-                  duration: 0,
-                  ease: "easeInOut",
-                }}
-                className="overflow-hidden"
-              >
-                <>
-                  {/* SUBCATEGORIES */}
-                  {filteredSubCategories &&
-                    filteredSubCategories?.length > 0 && (
-                      <div className="border-b border-primary py-3">
-                        <div className="font-bold text-theme">
-                          {filterPanelLabels.second}
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {filteredSubCategories.map((item) => (
-                            <FilterChip
-                              key={item._id}
-                              active={isSelected("subCategoryIds", item._id)}
-                              onClick={() => {
-                                toggleParam("subCategoryIds", item._id);
-                                sendGAEvent(triggerName.clickToSubCategory, {
-                                  subcategory_id: item._id,
-                                  subcategory_name: item.hebrewName,
-                                });
-                              }}
-                              label={item.hebrewName}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  {/* ACCESSIBILITY */}
-                  <div className="border-b border-primary py-3">
-                    <div className="font-bold text-theme">
-                      {filterPanelLabels.accessibility}
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {filters?.accessibilities?.map((item) => (
-                        <FilterChip
-                          key={item._id}
-                          active={isSelected("accessibilityIds", item._id)}
-                          onClick={() => {
-                            toggleParam("accessibilityIds", item._id);
-                            sendGAEvent(triggerName.clickToAccessibility, {
-                              accessibility_id: item._id,
-                              accessibility_name: item.hebrewName,
-                            });
-                          }}
-                          label={item.hebrewName}
-                        />
-                      ))}
-                    </div>
+          {presetFeedFilters?.siteTopics?.map((topic: any) => (
+            <div key={topic.title} className="mb-4">
+              <h3 className="text-sm font-bold text-gray-800  tracking-wide mb-2 px-1">
+                {topic.title}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {topic.siteCategories.map((cat: any, index: number) => {
+                  const isSelected = selectedSiteCategories.some(
+                    (c) => c.title === cat.title,
+                  );
+                  const gradient =
+                    CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => toggleSiteCategory(cat)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm custom-cursor transition-colors whitespace-nowrap ${
+                        isSelected
+                          ? `bg-gradient-to-r ${gradient} text-white shadow-md`
+                          : "bg-gray-100 px-2 py-3 rounded-xl text-gray-800"
+                      }`}
+                    >
+                      {cat.icon && (
+                        <IconImage icon={cat.icon} width={18} height={18} />
+                      )}
+                      <span className="font-bold">
+                        {cat.titleHe ?? cat.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {/* Advanced Search Toggle Button */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setAdvancedFilter(!advancedFilter)}
+            className={`mb-8 px-4 py-2.5 rounded-lg transition-all flex items-center gap-3 text-sm font-medium mr-auto ${"bg-white text-teal-600 hover:bg-gray-50 border-2 border-gray-200 shadow-sm"}`}
+          >
+            <span>חיפוש מתקדם</span>
+            <motion.div
+              animate={{ rotate: advancedFilter ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </motion.div>
+          </motion.button>
+          {advancedFilter && (
+            <>
+              {/* ACCESSIBILITY */}
+              {filters?.accessibilities?.length > 0 && (
+                <div>
+                  <div className="font-bold text-gray-800 mb-2">
+                    {filterPanelLabels.accessibility}
                   </div>
-
-                  {/* TARGET AUDIENCE */}
-                  <div className="border-b border-primary py-3">
-                    <div className="font-bold text-theme">
-                      {filterPanelLabels.targetAudiences}
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {filters?.groupTypes?.map((item) => (
-                        <FilterChip
-                          key={item._id}
-                          active={isSelected("groupTypeIds", item._id)}
-                          onClick={() => {
-                            toggleParam("groupTypeIds", item._id);
-                            sendGAEvent(triggerName.clickToGroupType, {
-                              group_type_id: item._id,
-                              group_type_name: item.hebrewName,
-                            });
-                          }}
-                          label={item.hebrewName}
-                        />
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {filters.accessibilities.map((item, index) => (
+                      <FilterChip
+                        key={item._id}
+                        active={isSelected("accessibilityIds", item._id)}
+                        onClick={() => {
+                          toggleParam("accessibilityIds", item._id);
+                          sendGAEvent(triggerName.clickToAccessibility, {
+                            accessibility_id: item._id,
+                            accessibility_name: item.hebrewName,
+                          });
+                        }}
+                        label={item.hebrewName}
+                        colorIndex={index}
+                      />
+                    ))}
                   </div>
-                </>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </div>
+              )}
+
+              {/* TARGET AUDIENCE (Group Types) */}
+              {filters?.groupTypes?.length > 0 && (
+                <div>
+                  <div className="font-bold text-gray-800 mb-2">
+                    {filterPanelLabels.targetAudiences}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {filters.groupTypes.map((item, index) => (
+                      <FilterChip
+                        key={item._id}
+                        active={isSelected("groupTypeIds", item._id)}
+                        onClick={() => {
+                          toggleParam("groupTypeIds", item._id);
+                          sendGAEvent(triggerName.clickToGroupType, {
+                            group_type_id: item._id,
+                            group_type_name: item.hebrewName,
+                          });
+                        }}
+                        label={item.hebrewName}
+                        colorIndex={index}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* What to show? */}
+              {/* <div className="mb-8">
+                            <h3
+                              className={`text-base font-semibold mb-3 text-right ${"text-gray-800"}`}
+                            >
+                              מה להציג?
+                            </h3>
+                            <div
+                              className={`flex gap-1 rounded-xl p-0.5 w-fit ${"bg-gray-100"}`}
+                            >
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setDisplayMode("")}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                  displayMode === ""
+                                    ? "bg-white text-gray-900 shadow-sm"
+                                    : "text-gray-800 hover:text-gray-900"
+                                }`}
+                              >
+                                {filterPanelLabels.everything}{" "}
+                              </motion.button>
+                             
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setDisplayMode("products")}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                  displayMode === "products"
+                                    ? "bg-white text-gray-900 shadow-sm"
+                                    : "text-gray-800 hover:text-gray-900"
+                                }`}
+                              >
+                                {filterPanelLabels.products}{" "}
+                              </motion.button>
+                            </div>
+                          </div> */}
+            </>
+          )}
         </div>
 
         {/* CLOSE BUTTON */}
         <div className="shrink-0 flex items-center justify-between px-4 gap-4 mt-4">
           <div
-            onClick={() => setIsOpen(false)}
+            onClick={() => setIsOpen(!isOpen)}
             className="relative custom-cursor"
           >
-            <SunsetButton
-              size={46}
-              variant={"black"}
-              appliedFilterCount={appliedFilterCount}
+            <SearchButton
+              onClick={handleFilterIconClick}
+              isFilterDrawerOpen={isFilterDrawerOpen}
+              activeFiltersCount={totalActiveFilters}
+              variant="continuous"
+              size={96}
             />
           </div>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            disabled={appliedFilterCount === 0}
-            className={clsx(
-              appliedFilterCount === 0
-                ? "cursor-not-allowed text-black/30 "
-                : "custom-cursor bg-black/80 text-white font-bold hover:bg-black ",
-              " border border-black/20 items-center font-bold text-lightGray rounded-xl  w-full py-2",
-            )}
-          >
-            {filterPanelLabels.clearAll}
-          </button>
         </div>
       </MotionDialogDiv>
-    </>
+    </div>
   );
 };
 
@@ -314,30 +458,37 @@ const FilterButton: React.FC<{
   icon: React.ReactNode;
   activeIcon: React.ReactNode;
   label: string;
-}> = ({ active, onClick, icon, activeIcon, label }) => (
-  <div
-    onClick={onClick}
-    className={`md:col-span-6 max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
-      ${active ? "bg-black text-white" : "text-theme"}`}
-  >
-    {active ? activeIcon : icon}
-    <span className="text-[12px] font-bold">{label}</span>
-  </div>
-);
-
+  colorIndex?: number;
+}> = ({ active, onClick, icon, activeIcon, label, colorIndex = 0 }) => {
+  const gradient = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+  return (
+    <div
+      onClick={onClick}
+      className={`custom-cursor flex items-center justify-start gap-2 bg-gray-100 rounded-xl ps-3 h-[42px] transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : "text-gray-800"}`}
+    >
+      {active ? activeIcon : icon}
+      <span className="text-[12px] font-bold ">{label}</span>
+    </div>
+  );
+};
 // Reusable Filter Chip
 const FilterChip: React.FC<{
   active: boolean;
   onClick: () => void;
   label: string;
-}> = ({ active, onClick, label }) => (
-  <span
-    onClick={onClick}
-    className={`custom-cursor px-5 h-[42px] flex items-center justify-center rounded-3xl text-[12px] font-bold border border-theme transition-all
-      ${active ? "bg-black text-white" : "text-theme"}`}
-  >
-    {label}
-  </span>
-);
+  colorIndex?: number;
+}> = ({ active, onClick, label, colorIndex = 0 }) => {
+  const gradient = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+  return (
+    <span
+      onClick={onClick}
+      className={`custom-cursor px-4 h-[42px] flex items-center justify-center rounded-xl text-[12px] font-bold bg-gray-100 transition-all
+        ${active ? `bg-gradient-to-r ${gradient} text-white shadow-md border-transparent` : " text-gray-800"}`}
+    >
+      {label}
+    </span>
+  );
+};
 
 export default MobileFeedFilterDrawer;

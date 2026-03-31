@@ -1,5 +1,6 @@
 import AddToCartBuyNowBtns from "./AddToCartBuyNowBtns";
 import BusinessDetailsFilterTab from "./BusinessDetailsFilterTab";
+import ProductDetailsFilterTab from "./ProductDetailsFilterTab";
 import EventDateRange from "./EventDateRange";
 import EventLocationMap from "./EventLocationMap";
 import Footer from "./Footer.details";
@@ -26,4 +27,5 @@ export {
   ReturnToPrevPageBtn,
   AddToCartBuyNowBtns,
   MainProductImage,
+  ProductDetailsFilterTab,
 };

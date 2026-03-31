@@ -1,8 +1,9 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect, useMemo } from "react";
-import { scaleLayout, shuffleArray } from "@/lib/helpers";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { AnimatePresence } from "motion/react";
+import { sanitizeHtml, scaleLayout, shuffleArray } from "@/lib/helpers";
 
 import {
   onlyCardsColumns,
@@ -11,23 +12,60 @@ import {
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
 import NoFeedItemLayout from "./NoFeedItemLayout";
+import FeedCategoryButtons from "./FeedCategoryButtons";
 
-const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
+import useGeneralStore from "@/stores/generalStore";
+import { FeedFilterDrawer } from "../drawer";
+import { SearchButton } from "../filter-icon/SearchButton";
+
+interface OnlyFeedCardsLayoutProps {
+  data: FeedItemList;
+  filters: any;
+  isFilterOpen: boolean;
+  hideFirstTwoSection: boolean;
+  onFilterIconClick: () => void;
+  totalActiveFilters: number;
+}
+
+const OnlyFeedCardsLayout = ({
+  data,
+  filters,
+  isFilterOpen,
+  hideFirstTwoSection,
+  onFilterIconClick,
+  totalActiveFilters,
+}: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
+  const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
+  const categoryHeaderRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = categoryHeaderRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsCategoryHeaderInView(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const DRAWER_WIDTH = 500; // 500px drawer + 24px gap
 
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
     const updateScale = () => {
-      const currentWidth = window.innerWidth;
-      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
-      setScale(newScale);
+      const availableWidth = isFilterOpen
+        ? window.innerWidth - DRAWER_WIDTH
+        : window.innerWidth;
+      setScale(availableWidth / REFERENCE_SCREEN_WIDTH);
     };
 
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
-  }, []);
+  }, [isFilterOpen]);
 
   // Memoize shuffled layouts so they only shuffle once
   const shuffledLayouts = useMemo(() => {
@@ -35,35 +73,31 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     return shuffleArray(layout16);
   }, [scale]);
 
-  // Early return BEFORE any complex rendering logic
-  if (!data || data.length < 1) {
-    return <NoFeedItemLayout />;
-  }
-
   const renderCards = (
     indexes: number[],
     layout: LayoutItem[],
     offset: number,
-  ) => (
-    <div className="space-y-5">
-      {indexes.map((i) => {
-        const feedItem = data[i + offset];
-        const cardLayout = layout[i];
+  ) => {
+    return (
+      <div className="space-y-5">
+        {indexes.map((i) => {
+          const feedItem = data[i + offset];
+          const cardLayout = layout[i];
 
-        // Skip if feedItem doesn't exist
-        if (!feedItem || !cardLayout) return null;
+          if (!feedItem || !cardLayout) return null;
 
-        return (
-          <FeedCard
-            key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
-            width={cardLayout.width}
-            height={cardLayout.height}
-            feedItem={feedItem}
-          />
-        );
-      })}
-    </div>
-  );
+          return (
+            <FeedCard
+              key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
+              width={cardLayout.width}
+              height={cardLayout.height}
+              feedItem={feedItem}
+            />
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderHorizontalCards = (
     indexes: number[],
@@ -75,7 +109,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
 
-        // Skip if feedItem doesn't exist
         if (!feedItem || !cardLayout) return null;
 
         return (
@@ -102,7 +135,6 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
           {layoutData.map((item, i) => {
             const feedItem = data[i + offset];
 
-            // Skip if feedItem doesn't exist
             if (!feedItem) return null;
 
             return (
@@ -139,12 +171,9 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     );
   };
 
-  const renderExtraCards = (extraBusinesses: any[]) => {
+  const renderExtraCards = (extraBusinesses: any[], columnCount = 5) => {
     if (extraBusinesses.length === 0) return null;
 
-    const columnCount = 5;
-
-    // Track column heights for better distribution
     const columns: {
       businesses: any[];
       layouts: LayoutItem[];
@@ -155,23 +184,16 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
       height: 0,
     }));
 
-    // Distribute cards to the shortest column for visual balance
     extraBusinesses.forEach((biz, i) => {
-      if (!biz) return; // Skip undefined items
+      if (!biz) return;
 
       const layoutIndex = i % shuffledLayouts.length;
       const layout = shuffledLayouts[layoutIndex];
+      const colIdx = i % columnCount;
 
-      // Find the column with the least height
-      const shortestColumnIndex = columns.reduce(
-        (minIdx, col, idx) =>
-          col.height < columns[minIdx].height ? idx : minIdx,
-        0,
-      );
-
-      columns[shortestColumnIndex].businesses.push(biz);
-      columns[shortestColumnIndex].layouts.push(layout);
-      columns[shortestColumnIndex].height += layout.height;
+      columns[colIdx].businesses.push(biz);
+      columns[colIdx].layouts.push(layout);
+      columns[colIdx].height += layout.height;
     });
 
     return (
@@ -204,25 +226,69 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     const columnLayout = onlyCardsColumns[safeLayoutKey] ?? null;
 
     const extraBusinesses = feedItemCount > 16 ? data.slice(16) : [];
+    const extraColumnCount = 5;
 
     return (
       <div key="layout-root">
         {renderLayoutSection(layout, columnLayout, 0, 0)}
-        {feedItemCount > 16 && renderExtraCards(extraBusinesses)}
+        {feedItemCount > 16 &&
+          renderExtraCards(extraBusinesses, extraColumnCount)}
       </div>
     );
   };
 
   return (
-    <div
-      className={clsx(
-        "px-20 py-10 flex items-center justify-center w-full h-full relative",
-      )}
-    >
-      <div className="flex flex-col gap-5 items-start justify-start ">
-        {renderFullLayout()}
+    <>
+      <div
+        ref={categoryHeaderRef}
+        className="flex flex-col justify-center items-center py-6"
+      >
+        {presetFeedFilters?.header && (
+          <div
+            className="mb-2"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(presetFeedFilters?.header || ""),
+            }}
+          />
+        )}
+        <FeedCategoryButtons />
       </div>
-    </div>
+
+      {hideFirstTwoSection && (
+        <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block z-50">
+          <SearchButton
+            onClick={onFilterIconClick}
+            activeFiltersCount={totalActiveFilters}
+            isFilterDrawerOpen={isFilterOpen}
+            variant="continuous"
+            size={96}
+          />
+        </div>
+      )}
+
+      <div
+        className={clsx(
+          "px-10 py-6 flex mx-auto h-full relative",
+          isFilterOpen
+            ? "items-start justify-start gap-3"
+            : "items-center justify-center",
+        )}
+      >
+        <AnimatePresence>
+          {isFilterOpen && (
+            <FeedFilterDrawer
+              key="feed-filter-drawer"
+              isInline
+              visibleFeedItems={data}
+              filters={filters}
+            />
+          )}
+        </AnimatePresence>
+        <div className="flex flex-col gap-5 items-start justify-start">
+          {data?.length ? renderFullLayout() : <NoFeedItemLayout />}
+        </div>
+      </div>
+    </>
   );
 };
 

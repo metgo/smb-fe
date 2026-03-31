@@ -7,7 +7,7 @@ import { NextImage } from "../ui";
 import MobileNavbar from "./Navbar.mobile";
 import { staticImages } from "@/constant/staticImages";
 import { useMobileBlogFeedLayout } from "@/hooks";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { removeInlineStylesFromHTML, sanitizeHtml } from "@/lib/helpers";
 import { blogLabels } from "@/constant/hebrew";
 
 const ACTIVE_THUMBNAIL_SIZE = 100;
@@ -98,7 +98,9 @@ const GalleryView = ({
       </h1>
       <div
         dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(activeFeedItem?.subTitle) || "",
+          __html: sanitizeHtml(
+            removeInlineStylesFromHTML(activeFeedItem?.subTitle) || "",
+          ),
         }}
         className="line-clamp-3 font-bold text-2xl mt-1"
       />

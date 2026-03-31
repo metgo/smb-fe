@@ -25,7 +25,7 @@ export async function getProducts(businessId: string) {
     );
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
-    return data?.data ?? data?.products;
+    return data?.data ?? (data?.products as ProductRes[]);
   } catch (error) {
     console.error("Error fetching categories:", error);
   }

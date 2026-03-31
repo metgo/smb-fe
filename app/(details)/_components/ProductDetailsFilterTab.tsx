@@ -8,7 +8,7 @@ import DeliveriesTabContent from "./DeliveriesTabContent";
 import ProductDescriptionTabContent from "./ProductDescriptionTabContent";
 
 const tabs = [
-  { id: 1, label: menuItems.productDescription },
+  { id: 1, label: menuItems.accessibilities },
   { id: 2, label: menuItems.deliveries },
 ];
 
@@ -17,7 +17,7 @@ const ProductDetailsFilterTab = ({
   deliverySpecificSellerInfo,
   deliveryReturnExchange,
   deliveryAdditionalInfo,
-  description,
+  accessibilitiesId,
 }: ProductDetailsProps) => {
   const [activeTab, setActiveTab] = useState<number>(1);
   const [updatedTabs, setUpdatedTabs] = useState<typeof tabs>([]);
@@ -45,7 +45,11 @@ const ProductDetailsFilterTab = ({
   const rederTabContent = () => {
     switch (activeTab) {
       case 1:
-        return <ProductDescriptionTabContent description={description || ""} />;
+        return (
+          <ProductDescriptionTabContent
+            accessibilitiesId={accessibilitiesId ?? []}
+          />
+        );
       case 2:
         return (
           <DeliveriesTabContent

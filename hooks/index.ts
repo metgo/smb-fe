@@ -15,6 +15,7 @@ import { useTrailStations } from "./useTrailStations";
 import { useDeviceHeight } from "./useDeviceHeight";
 import useFeedFilter from "./useFeedFilter";
 import { useFeedQueryParams } from "./useFeedQueryParams";
+import { useFeedFilterUrlSync } from "./useFeedFilterUrlSync";
 
 export {
   useSwipeHooks,
@@ -32,5 +33,6 @@ export {
   useMobileBlogFeedLayout,
   useTrailStations,
   useFeedQueryParams,
+  useFeedFilterUrlSync,
   useGoogleRouteDetailsMapMobile,
 };

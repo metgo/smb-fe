@@ -1,5 +1,6 @@
 import PriceTag from "../PriceTag";
 import { misc } from "@/constant/hebrew";
+import { sanitizeHtml } from "@/lib/helpers";
 import { AddToCartBuyNowBtns } from "@/app/(details)/_components";
 import MobileImageGallery from "./ImageGallery.mobile";
 import MobileProductList from "./ProductList.mobile";
@@ -24,7 +25,7 @@ const MobileProductDetails = ({
         <div
           className="font-normal text-2xl text-theme"
           dangerouslySetInnerHTML={{
-            __html: productDetails?.description || "",
+            __html: sanitizeHtml(productDetails?.description || ""),
           }}
         />
         <PriceTag

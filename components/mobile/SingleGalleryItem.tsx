@@ -2,7 +2,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 import { staticImages } from "@/constant/staticImages";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { removeInlineStylesFromHTML, sanitizeHtml } from "@/lib/helpers";
 import MobileFeedScreenActionIcons from "./FeedScreenActionIcons.mobile";
 
 interface SingleGalleryItemProps {
@@ -59,8 +59,8 @@ const SingleGalleryItem = ({
           </h1>
           <div
             dangerouslySetInnerHTML={{
-              __html: removeInlineStylesFromHTML(
-                activeFeedItem?.description || "",
+              __html: sanitizeHtml(
+                removeInlineStylesFromHTML(activeFeedItem?.description || ""),
               ),
             }}
             style={{ fontSize: 24 * scale }}

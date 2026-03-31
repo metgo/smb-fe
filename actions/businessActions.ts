@@ -69,7 +69,7 @@ export async function getBusinessDetailsBySlug(slug: string) {
     const res = await fetch(`${urls.businessDetails}/${slug}?campCode=${CODE}`);
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
-    return data;
+    return data as BusinessDetailsProps;
   } catch (error) {
     console.error("Error fetching categories:", error);
   }
