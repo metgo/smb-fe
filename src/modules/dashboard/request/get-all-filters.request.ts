@@ -4,12 +4,12 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFiltersRequest {
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   @IsString()
   @IsOptional()
     identifierId: string;
 
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   @IsString()
   @IsOptional()
     campCode: string;

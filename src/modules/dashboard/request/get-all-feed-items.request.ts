@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
-import { SortOrder } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFeedItemsRequest extends CommonFilterQuery {
@@ -69,4 +69,9 @@ export class GetAllFeedItemsRequest extends CommonFilterQuery {
   @IsOptional()
   @IsEnum(ServicesTypes, { each: true })
     serviceType?: ServicesTypes[];
+
+  @ApiProperty({ enum: Locale, required: false, default: Locale.HEBREW })
+  @IsOptional()
+  @IsEnum(Locale)
+    locale?: Locale = Locale.HEBREW;
 }

@@ -43,6 +43,7 @@ export class DashboardController {
         request.search,
         request.page,
         request.limit,
+        request.locale,
       ),
     );
   }

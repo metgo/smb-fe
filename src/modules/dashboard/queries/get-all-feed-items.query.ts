@@ -1,4 +1,4 @@
-import { SortOrder } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 import { ServicesTypes } from '../dashboard.type';
 
 export class GetAllFeedItemsQuery {
@@ -15,5 +15,6 @@ export class GetAllFeedItemsQuery {
     readonly search?: string,
     readonly page?: number,
     readonly limit?: number,
+    readonly locale?: Locale,
   ) {}
 }

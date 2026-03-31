@@ -3,7 +3,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { SortOrder } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 import { paginateData } from 'src/common/pagination';
 import { shuffleArray } from 'src/common/utils/shuffle';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -222,6 +222,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         sortBy,
         sortOrder,
         search,
+        locale,
       } = queries;
 
       const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
@@ -245,6 +246,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           select,
           sort: sortBy || 'createdAt',
           sortOrder: sortOrder || SortOrder.DESC,
+          isLean: true,
         },
       );
 
@@ -264,6 +266,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
+            isLean: true,
           },
         );
 
@@ -272,6 +275,10 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           allBusiness.totalData = allBusiness.data.length;
         }
       }
+
+      allBusiness.data = await Promise.all(
+        allBusiness.data.map(p => this.localizeItem(p, locale)),
+      );
 
       return allBusiness;
     } catch (err) {
@@ -284,7 +291,9 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     campDetails: any,
   ): Promise<GetAllFeedItemResponse> {
     try {
-      const { sortBy, sortOrder, search } = queries;
+      const {
+        sortBy, sortOrder, search, locale,
+      } = queries;
 
       const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
         new GetPOIRawQuery({
@@ -303,6 +312,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           select,
           sort: sortBy || 'createdAt',
           sortOrder: sortOrder || SortOrder.DESC,
+          isLean: true,
         },
       );
 
@@ -322,6 +332,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
+            isLean: true,
           },
         );
 
@@ -330,6 +341,10 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           allPOI.totalData = allPOI.data.length;
         }
       }
+
+      allPOI.data = await Promise.all(
+        allPOI.data.map(p => this.localizeItem(p, locale)),
+      );
 
       return allPOI;
     } catch (err) {
@@ -342,7 +357,9 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     campDetails: any,
   ): Promise<GetAllFeedItemResponse> {
     try {
-      const { sortBy, sortOrder, search } = queries;
+      const {
+        sortBy, sortOrder, search, locale,
+      } = queries;
 
       const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
         new GetEventRawQuery({
@@ -359,6 +376,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         select,
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,
+        isLean: true,
       });
 
       if (blacklist?.length) {
@@ -377,6 +395,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
+            isLean: true,
           },
         );
 
@@ -386,11 +405,15 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         }
       }
 
-      allEvents.data = allEvents.data.map(event => ({
-        ...event.toObject(),
+      const mappedEvents = allEvents.data.map(event => ({
+        ...event,
         serviceType: ServicesTypes.EVENT,
         primaryCategoryId: '6566e208a77d2a477266d2b3',
       }));
+
+      allEvents.data = await Promise.all(
+        mappedEvents.map(p => this.localizeItem(p, locale)),
+      );
 
       return allEvents;
     } catch (err) {
@@ -627,6 +650,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         sortBy,
         sortOrder,
         search,
+        locale,
       } = queries;
 
       const result = await this.queryBus.execute(
@@ -656,6 +680,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           select,
           sort: sortBy || 'createdAt',
           sortOrder: sortOrder || SortOrder.DESC,
+          isLean: true,
         },
       );
 
@@ -675,6 +700,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
+            isLean: true,
           },
         );
 
@@ -684,15 +710,64 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         }
       }
 
-      allProducts.data = allProducts.data.map((prod: any) => ({
-        ...prod.toObject(),
+      const mappedProducts = allProducts.data.map((prod: any) => ({
+        ...prod,
         serviceType: ServicesTypes.PRODUCT,
         geoLocation: { lat: '', long: '' },
       }));
 
+      allProducts.data = await Promise.all(
+        mappedProducts.map(p => this.localizeItem(p, locale)),
+      );
+
       return allProducts;
     } catch (err) {
       exceptionHandling(err);
+    }
+  }
+
+  async localizeItem(item: any, locale: Locale) {
+    const {
+      nameAr,
+      descriptionAr,
+      shortDescriptionAr,
+      name,
+      description,
+      shortDescription,
+      nameHe,
+      descriptionHe,
+      shortDescriptionHe,
+      ...rest
+    } = item;
+
+    switch (locale) {
+      case Locale.ARABIC:
+        return {
+          ...rest,
+          name: nameAr || name || nameHe,
+          description: descriptionAr || description || descriptionHe,
+          shortDescription:
+            shortDescriptionAr || shortDescription || shortDescriptionHe,
+        };
+      case Locale.HEBREW:
+        return {
+          ...rest,
+          name: nameHe || name || nameAr,
+          description: descriptionHe || description || descriptionAr,
+          shortDescription:
+            shortDescriptionHe || shortDescription || shortDescriptionAr,
+        };
+
+      case Locale.ENGLISH:
+        return {
+          ...rest,
+          name: name || nameHe || nameAr,
+          description: description || descriptionHe || descriptionAr,
+          shortDescription:
+            shortDescription || shortDescriptionHe || shortDescriptionAr,
+        };
+      default:
+        return item;
     }
   }
 }
