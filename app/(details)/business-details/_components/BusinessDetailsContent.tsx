@@ -56,40 +56,6 @@ interface Props {
   businessDetails: BusinessDetailsProps;
 }
 
-const isCurrentlyOpen = (
-  openingHrs: OpeningHrs[],
-  isAlwaysOpen: boolean,
-): boolean => {
-  if (isAlwaysOpen) return true;
-  if (!openingHrs?.length) return false;
-
-  const dayNames = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
-  const currentDay = dayNames[new Date().getDay()];
-  const now = new Date();
-  const currentTime = now.getHours() * 60 + now.getMinutes();
-
-  const todayHours = openingHrs.find(
-    (h) => h.days?.toLowerCase() === currentDay,
-  );
-  if (!todayHours || todayHours.isHoliday) return false;
-
-  const [openHour, openMin] = todayHours.open.split(":").map(Number);
-  const [closeHour, closeMin] = todayHours.close.split(":").map(Number);
-
-  return (
-    currentTime >= openHour * 60 + openMin &&
-    currentTime <= closeHour * 60 + closeMin
-  );
-};
-
 const getAttributeIcon = (name: string) => {
   const lower = (name ?? "").toLowerCase();
   if (lower.includes("נגיש") || lower.includes("accessible"))
@@ -105,16 +71,83 @@ const BusinessDetailsContent = ({ businessDetails }: Props) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const { addFavoriteFeedItemId, favoriteFeedItemIds } =
     useFavoriteFeedItemStore();
 
+  useEffect(() => {
+    const calculateIsOpen = () => {
+      if (businessDetails.isAlwaysOpen) {
+        setIsOpen(true);
+        return;
+      }
+
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      // Map JS day number to your "days" format (SUN, MON, ...)
+      const dayMap: Record<number, string> = {
+        0: "SUN",
+        1: "MON",
+        2: "TUE",
+        3: "WED",
+        4: "THU",
+        5: "FRI",
+        6: "SAT",
+      };
+
+      const todayStr = dayMap[currentDay];
+      const todayHours = businessDetails?.openingHrs?.find(
+        (h) => h.days === todayStr,
+      );
+
+      if (
+        !todayHours ||
+        todayHours.isHoliday ||
+        !todayHours.open ||
+        !todayHours.close
+      ) {
+        setIsOpen(false);
+        return;
+      }
+
+      // Parse open and close times (format "HH:mm")
+      const [openH, openM] = todayHours.open.split(":").map(Number);
+      const [closeH, closeM] = todayHours.close.split(":").map(Number);
+
+      if (isNaN(openH) || isNaN(openM) || isNaN(closeH) || isNaN(closeM)) {
+        setIsOpen(false);
+        return;
+      }
+
+      // Convert everything to minutes since midnight for easy comparison
+      const currentMinutes = currentHour * 60 + currentMinute;
+      const openMinutes = openH * 60 + openM;
+      const closeMinutes = closeH * 60 + closeM;
+
+      // Handle overnight shifts (close time < open time, e.g. 22:00 -> 06:00 next day)
+      const isCurrentlyOpen =
+        closeMinutes > openMinutes
+          ? currentMinutes >= openMinutes && currentMinutes < closeMinutes
+          : currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+
+      setIsOpen(isCurrentlyOpen);
+    };
+
+    calculateIsOpen();
+
+    // Re-check every minute so the status updates live
+    const interval = setInterval(calculateIsOpen, 60000);
+
+    return () => clearInterval(interval);
+  }, [businessDetails.openingHrs, businessDetails.isAlwaysOpen]);
+
   const isFavorite = favoriteFeedItemIds.includes(businessDetails?._id);
   const images = businessDetails.images ?? [];
-  const isOpen = isCurrentlyOpen(
-    businessDetails.openingHrs,
-    businessDetails.isAlwaysOpen,
-  );
+
   const lat = businessDetails.geoLocation?.lat;
   const lng = businessDetails.geoLocation?.long;
   const phone =
