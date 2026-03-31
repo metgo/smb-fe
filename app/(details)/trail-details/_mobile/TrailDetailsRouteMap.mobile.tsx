@@ -17,7 +17,7 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 
 import MobileTrailStationsSheet from "./TrailStationsSheet.mobile";
 import { categoryColors } from "@/lib/utils";
-import { ensureListStyles, sanitizeHtml } from "@/lib/helpers";
+import { ensureListStyles } from "@/lib/helpers";
 
 interface MobileTrailDetailsRouteMapProps {
   _id: string;
@@ -127,7 +127,7 @@ const MobileTrailDetailsRouteMap = ({
             <div
               className="text-theme font-normal line-clamp-2"
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(ensureListStyles(description) || ""),
+                __html: ensureListStyles(description) || "",
               }}
             />
           )}

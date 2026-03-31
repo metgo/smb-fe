@@ -9,13 +9,11 @@ import ScrollIndicator from "../ScrollIndicator";
 type Props = {
   children: React.ReactNode[];
   hasMarketing?: boolean;
-  skipToFeed?: boolean;
 };
 
 export default function ScrollSnapWrapper({
   children,
   hasMarketing: hasMarketingProp,
-  skipToFeed = false,
 }: Props) {
   // Auto-detect marketing from children[1] if not explicitly provided
   const hasMarketing = hasMarketingProp ?? Boolean(children[1]);
@@ -32,17 +30,6 @@ export default function ScrollSnapWrapper({
   } = useGeneralStore();
 
   const { height } = useDeviceHeight();
-
-  // Jump straight to the feed section when the URL already has filter params
-  useEffect(() => {
-    if (!skipToFeed) return;
-    setHideFirstTwoSection(true);
-    // Let the DOM apply the hidden class first, then scroll
-    requestAnimationFrame(() => {
-      const top = feedRef.current?.offsetTop ?? 0;
-      window.scrollTo({ top, behavior: "instant" as ScrollBehavior });
-    });
-  }, []);
 
   // internal locks
   const isAnimating = useRef(false);

@@ -26,7 +26,7 @@ const Tabs = ({ tabs, activeTab, setActiveTab }: TabsProps) => {
             <div
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className="custom-cursor  w-max mb-2.5"
+              className="custom-cursor text-dark w-max mb-2.5"
             >
               <div
                 className={`relative inline-block ${isActive ? "font-bold" : "font-normal"}`}
@@ -35,7 +35,7 @@ const Tabs = ({ tabs, activeTab, setActiveTab }: TabsProps) => {
                 {isActive && (
                   <motion.div
                     layoutId="underline"
-                    className="absolute left-0 -bottom-2.5 w-full  rounded-sm"
+                    className="absolute left-0 -bottom-2.5 h-[3px] w-full bg-dark rounded-sm"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}

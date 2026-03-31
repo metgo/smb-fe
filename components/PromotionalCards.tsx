@@ -8,7 +8,7 @@ import { pathNames } from "@/lib/endpoints";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "./wrappers/ProgressBar";
 import { staticImages } from "@/constant/staticImages";
-import { removeInlineStylesFromHTML, sanitizeHtml } from "@/lib/helpers";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import { ReturnToPrevPageBtn } from "@/app/(details)/_components";
 
 const PromotionalCards = () => {
@@ -98,10 +98,9 @@ const PromotionalCards = () => {
                   <div dir="rtl" className=" max-w-[120px]">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(
+                        __html:
                           removeInlineStylesFromHTML(item?.shortDescription) ||
-                            "",
-                        ),
+                          "",
                       }}
                       className="font-bold text-gray-800 line-clamp-1"
                     />

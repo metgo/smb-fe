@@ -4,7 +4,7 @@ import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import { getBlogById } from "@/actions/blogActions";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
 import MobileActionIcons from "@/components/mobile/ActionIcons.mobile";
-import { shuffleArray, sanitizeHtml } from "@/lib/helpers";
+import { shuffleArray } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -36,9 +36,7 @@ const page = async ({ params }: PageProps) => {
 
         <div
           className="max-sm:px-6 max-w-[50rem] mx-auto mt-16 font-normal"
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(articleDetails?.content || ""),
-          }}
+          dangerouslySetInnerHTML={{ __html: articleDetails?.content || "" }}
         />
       </div>
     </div>

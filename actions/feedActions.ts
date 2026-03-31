@@ -1,7 +1,7 @@
 "use server";
 
 import { urls } from "@/lib/endpoints";
-import { CODE, IdentifierId } from "@/constant/envConstants";
+import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
 
 // Direct fetch function without any caching
@@ -163,7 +163,7 @@ export async function getFeedItemsWithFilter(
 export async function getFeedItems(): Promise<FeedItemResponse> {
   let baseUrl: string;
 
-  baseUrl = `${urls.feeds}?identifierId=${IdentifierId}`;
+  baseUrl = `${urls.feeds}?campCode=${CODE}`;
 
   try {
     const res = await fetch(baseUrl, {
@@ -193,7 +193,7 @@ export async function getFeedItems(): Promise<FeedItemResponse> {
 export async function getAllFilters(filters?: FiltersProps) {
   const query = new URLSearchParams();
 
-  query.append("identifierId", IdentifierId!);
+  query.append("campCode", CODE!);
 
   // Safely append only if available
   filters?.categoryIds?.forEach((id) => query.append("categoriesId", id));
@@ -219,7 +219,7 @@ export async function getAllFilters(filters?: FiltersProps) {
 export async function getAllFiltersOld(filters?: FiltersProps) {
   const query = new URLSearchParams();
 
-  query.append("identifierId", IdentifierId!);
+  query.append("campCode", CODE!);
 
   // Safely append only if available
   filters?.categoryIds?.forEach((id) => query.append("categoriesId", id));

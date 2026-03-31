@@ -12,7 +12,6 @@ import {
   getCityOrCenter,
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
-  sanitizeHtml,
 } from "@/lib/helpers";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
@@ -216,9 +215,7 @@ const FeedCardContent = ({
       <div
         className="line-clamp-1"
         dangerouslySetInnerHTML={{
-          __html: sanitizeHtml(
-            removeInlineStylesFromHTML(feedItem?.shortDescription) || "",
-          ),
+          __html: removeInlineStylesFromHTML(feedItem?.shortDescription) || "",
         }}
       />
       <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { motion } from "motion/react";
-import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import { BiErrorCircle } from "react-icons/bi";
+import { HiRefresh } from "react-icons/hi";
+import { AiFillHome } from "react-icons/ai";
 
 export default function Error({
   error,
@@ -12,94 +13,63 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log the error to an error reporting service
     console.error(error);
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
       <div className="max-w-md w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-lg p-8 text-center"
-        >
+        <div className="bg-white rounded-2xl p-8 text-center">
           {/* Icon */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-            className="mx-auto w-20 h-20 bg-red-50 rounded-2xl flex items-center justify-center mb-6"
-          >
-            <AlertCircle className="w-10 h-10 text-red-500" />
-          </motion.div>
+          <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <BiErrorCircle className="w-10 h-10 text-red-600" />
+          </div>
 
           {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl font-bold text-gray-900 mb-3"
-          >
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
             אופס! משהו השתבש
-          </motion.h1>
+          </h1>
 
           {/* Description */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <p className="text-gray-600 mb-2">נתקלנו בבעיה בלתי צפויה</p>
-            <p className="text-sm text-gray-500 mb-8">
-              אנחנו עובדים על פתרון הבעיה. בינתיים, נסה לרענן את הדף או לחזור
-              לדף הבית.
-            </p>
-          </motion.div>
+          <p className="text-gray-600 mb-2">נתקלנו בבעיה בלתי צפויה</p>
+          <p className="text-sm text-gray-500 mb-8">
+            אנחנו עובדים על פתרון הבעיה. בינתיים, נסה לרענן את הדף או לחזור לדף
+            הבית.
+          </p>
 
           {/* Error Details (Development Only) */}
           {process.env.NODE_ENV === "development" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mb-6 p-4 bg-gray-50 rounded-2xl text-left"
-            >
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg text-left">
               <p className="text-xs font-mono text-gray-700 break-words">
                 {error.message}
               </p>
               {error.digest && (
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-500 mt-2">
                   Digest: {error.digest}
                 </p>
               )}
-            </motion.div>
+            </div>
           )}
 
           {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-3"
-          >
-            <motion.button
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
               onClick={reset}
-              whileTap={{ scale: 0.95 }}
-              className="custom-cursor flex-1 flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200"
+              className=" custom-cursor flex-1 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/90 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
             >
-              <RefreshCw className="w-5 h-5" />
+              <HiRefresh className="w-5 h-5" />
               נסה שוב
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               onClick={() => (window.location.href = "/")}
-              whileTap={{ scale: 0.95 }}
-              className="custom-cursor flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200"
+              className="flex-1 custom-cursor flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
             >
-              <Home className="w-5 h-5" />
+              <AiFillHome className="w-5 h-5" />
               דף הבית
-            </motion.button>
-          </motion.div>
-        </motion.div>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

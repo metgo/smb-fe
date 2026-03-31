@@ -3,7 +3,6 @@ declare interface ProductDetailsProps {
   name: string;
   dmoId: string;
   description: string;
-  shortDescription?: string;
   images: ImageItem[];
   price: Price;
   quantity: {
@@ -21,11 +20,6 @@ declare interface ProductDetailsProps {
     deliveryReturnExchange: string[];
     deliveryAdditionalInfo: string;
   };
-  accessibilitiesId?: {
-    hebrewName: string;
-    name: string;
-    _id: string;
-  }[];
   openingHrs: OpeningHrs[];
   deliveryArea: DeliveryArea[];
   deliverySpecificSellerInfo: string[];
@@ -49,7 +43,6 @@ interface ProductInfoProps {
   };
   businessId: productBusiness;
   description: string;
-  shortDescription: string;
   deliveryArea: DeliveryArea[];
   deliverySpecificSellerInfo: string[];
   categories: categoires[];

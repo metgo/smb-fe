@@ -5,7 +5,6 @@ import useGeneralStore from "@/stores/generalStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAminitiesInfo,
-  getPresetFeedConfig,
   getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
@@ -26,17 +25,11 @@ export const SiteInfoClientProvider = ({
     setAminitiesInfo,
     setPromotionalItems,
     setHideFirstTwoSection,
-    setPresetFeedFilters,
   } = useGeneralStore();
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
     setSiteInfo(res);
-  }
-
-  async function fetchPresetFeedConfig() {
-    const res = await getPresetFeedConfig();
-    setPresetFeedFilters(res);
   }
 
   async function fetchUserCurrentLocation() {
@@ -80,7 +73,6 @@ export const SiteInfoClientProvider = ({
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
     fetchPromotionalItems();
-    fetchPresetFeedConfig();
   }, []);
 
   return <div>{children}</div>;

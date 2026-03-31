@@ -6,7 +6,7 @@ import ContactUsInfo from "@/components/ContactUsInfo";
 import FunDayStations from "../_components/FunDayStations";
 import { funDaysLabels, menuItems } from "@/constant/hebrew";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
-import { ensureListStyles, shuffleArray, sanitizeHtml } from "@/lib/helpers";
+import { ensureListStyles, shuffleArray } from "@/lib/helpers";
 import { ImageGallery, NoDetailsFound } from "../../_components";
 import FunDayDetailsRouteMap from "../_components/FunDayDetailsRouteMap";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
@@ -52,9 +52,7 @@ const page = async ({ params }: PageProps) => {
                 <div
                   className="font-normal prose block"
                   dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(
-                      ensureListStyles(funDayDetails?.description) || "",
-                    ),
+                    __html: ensureListStyles(funDayDetails?.description) || "",
                   }}
                 />
               )}

@@ -13,11 +13,7 @@ import MobileImageGallery from "./ImageGallery.mobile";
 import { categoryColors, daysMapping } from "@/lib/utils";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
-import {
-  isPlaceOpenNow,
-  removeInlineStylesFromHTML,
-  sanitizeHtml,
-} from "@/lib/helpers";
+import { isPlaceOpenNow, removeInlineStylesFromHTML } from "@/lib/helpers";
 import ContactUsInfo from "../ContactUsInfo";
 import { getProducts } from "@/actions/productActions";
 import { useQuery } from "@tanstack/react-query";
@@ -82,10 +78,8 @@ const MobileBusinessDetails = ({
           <div
             className=" font-normal text-theme mb-2"
             dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(
-                removeInlineStylesFromHTML(
-                  businessDetails?.shortDescription || "",
-                ),
+              __html: removeInlineStylesFromHTML(
+                businessDetails?.shortDescription || "",
               ),
             }}
           />
@@ -134,7 +128,7 @@ const MobileBusinessDetails = ({
           <div
             className="font-normal text-theme text-wrap"
             dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(businessDetails?.description || ""),
+              __html: businessDetails?.description || "",
             }}
           />
         </div>

@@ -8,19 +8,17 @@ import {
   getMobileCardLayouts,
   getMobileCardColumns,
 } from "@/constant/collageLayouts.mobile";
-import { scaleLayout, shuffleArray, sanitizeHtml } from "@/lib/helpers";
+import { scaleLayout, shuffleArray } from "@/lib/helpers";
 import FeedCardMobile from "../cards/FeedCard.mobile";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import { useCommonHook } from "@/hooks";
-import FeedCategoryButtons from "./FeedCategoryButtons";
-import useGeneralStore from "@/stores/generalStore";
 
 const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   const { isMobile } = useCommonHook();
   const searchParams = useSearchParams();
   const activeCategoryKey = searchParams.get("categoryId");
+
   const feedItemCount = data?.length ?? 0;
-  const { presetFeedFilters } = useGeneralStore();
 
   // ── All hooks are called unconditionally (order never changes) ──
   const [scale, setScale] = useState(1);
@@ -93,38 +91,23 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
       if (!feedItem || !cardLayout) return null;
 
       return (
-        <div>
-          <FeedCardMobile
-            key={`${feedItem._id}-${i}`}
-            width={cardLayout.width}
-            height={cardLayout.height}
-            feedItem={feedItem}
-          />
-        </div>
+        <FeedCardMobile
+          key={`${feedItem._id}-${i}`}
+          width={cardLayout.width}
+          height={cardLayout.height}
+          feedItem={feedItem}
+        />
       );
     });
 
   return (
-    <div className="">
-      <div className="flex flex-col justify-center items-center py-12 ">
-        {presetFeedFilters?.header && (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(presetFeedFilters?.header || ""),
-            }}
-          />
-        )}
-
-        <FeedCategoryButtons />
-      </div>
-      <div className="px-2  flex w-full min-h-screen">
-        <div className="flex gap-3 w-full">
-          <div className="flex flex-col gap-y-3 flex-1">
-            {renderCards(shuffledCols.col1)}
-          </div>
-          <div className="flex flex-col gap-y-3 flex-1">
-            {renderCards(shuffledCols.col2)}
-          </div>
+    <div className="px-2 pt-20 flex w-full min-h-screen">
+      <div className="flex gap-3 w-full">
+        <div className="flex flex-col gap-y-3 flex-1">
+          {renderCards(shuffledCols.col1)}
+        </div>
+        <div className="flex flex-col gap-y-3 flex-1">
+          {renderCards(shuffledCols.col2)}
         </div>
       </div>
     </div>

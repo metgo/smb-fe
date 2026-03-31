@@ -1,6 +1,6 @@
 "use client";
 
-import { getCityOrCenter, sanitizeHtml } from "@/lib/helpers";
+import { getCityOrCenter } from "@/lib/helpers";
 import AttributePills from "@/components/AttributePills";
 import { EventDateRange, EventLocationMap } from "@/app/(details)/_components";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
@@ -26,7 +26,7 @@ const MobileEventDetails = ({
           <div
             className="font-normal text-theme line-clamp-3 mt-4 mb-8"
             dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(eventDetails?.shortDescription || ""),
+              __html: eventDetails?.shortDescription || "",
             }}
           />
           <div className="flex items-center gap-2 mt-2">
@@ -52,7 +52,7 @@ const MobileEventDetails = ({
         <div
           className="font-normal text-theme mt-4 mb-8 px-8"
           dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(eventDetails?.description || ""),
+            __html: eventDetails?.description || "",
           }}
         />
 

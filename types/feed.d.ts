@@ -32,8 +32,6 @@ declare interface FeedItem {
   description: string;
   imageUrl: string;
   primaryCategoryId: string;
-  businessId: string;
-  productId: string;
 }
 
 declare interface FeedItemResponse {
@@ -190,49 +188,4 @@ declare interface BusinessDetailsProps {
   deliverySpecificSellerInfo: string[];
   deliveryReturnExchange: string[];
   deliveryAdditionalInfo: string;
-}
-
-// Site Config
-interface ISiteConfig {
-  _id: string;
-  header: string;
-  headerDescription: string | null;
-  headerHe: string | null;
-  headerDescriptionHe: string | null;
-  headerAr: string | null;
-  headerDescriptionAr: string | null;
-  siteTopics: ISiteTopic[];
-}
-
-interface ISiteTopic {
-  title: string;
-  titleHe: string | null;
-  titleAr: string | null;
-  description: string | null;
-  descriptionHe: string | null;
-  descriptionAr: string | null;
-  siteCategories: ISiteCategory[];
-  order: number;
-  isArchived: boolean;
-  isPrimary: boolean;
-}
-
-interface ISiteCategory {
-  title: string;
-  titleHe: string | null;
-  titleAr: string | null;
-  description: string | null;
-  descriptionHe: string | null;
-  descriptionAr: string | null;
-
-  businessIds: string[];
-  eventIds: string[];
-  poiIds: string[];
-  tripIds: string[];
-  productIds: string[];
-  fundayIds: string[];
-
-  isPrimary: boolean;
-  isArchived: boolean;
-  icon: string | null;
 }

@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { sanitizeHtml } from "@/lib/helpers";
 
 import { pathNames } from "@/lib/endpoints";
 import PriceTag from "@/components/PriceTag";
@@ -78,9 +77,7 @@ const YourCartProducts = () => {
                         </div>
                         <div
                           className="line-clamp-2 font-normal w-1/2 text-[14px] text-theme"
-                          dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(item?.desc || ""),
-                          }}
+                          dangerouslySetInnerHTML={{ __html: item?.desc || "" }}
                         />
                         {item?.eventDate &&
                           item?.startTime &&

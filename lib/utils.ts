@@ -91,7 +91,6 @@ export const SERVICE_TYPE_MAP = {
   fun_day: "funday",
   event: "event",
   route: "trip",
-  business: "business",
 } as const;
 
 export const contactFormReasonOptions = [
@@ -328,7 +327,6 @@ export const navigationPaths = {
 
 export const navigationPathsByServiceType = {
   ["business"]: pathNames.businessDetails,
-  ["product"]: pathNames.productsDetails,
   ["point_of_interest"]: pathNames.businessDetails,
   ["event"]: pathNames.eventDetails,
   ["trip"]: pathNames.trailDetails,

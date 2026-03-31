@@ -1,143 +1,70 @@
 /// @typescript-eslint/no-unused-vars
 
 "use client";
-
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-
 import useGeneralStore from "@/stores/generalStore";
-import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
-import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { sanitizeInitialFilters } from "@/lib/helpers";
 
-type FilterKey = "groupTypeIds" | "accessibilityIds" | "serviceTypes";
+type FilterKey =
+  | "categoryIds"
+  | "subCategoryIds"
+  | "groupTypeIds"
+  | "accessibilityIds"
+  | "serviceTypes";
 
 type FilterState = Record<FilterKey, string[]>;
 
 const emptyFilters: FilterState = {
+  categoryIds: [],
+  subCategoryIds: [],
   groupTypeIds: [],
   accessibilityIds: [],
-  serviceTypes: ["event", "business", "fun_day"],
+  serviceTypes: [],
 };
 
-const getTotalAppliedFilters = (filters: FilterState) => {
-  return Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
-};
+const getTotalAppliedFilters = (filters: FilterState) =>
+  Object.values(filters).reduce((sum, arr) => sum + arr.length, 0);
 
-export default function useFeedFilter(selectedFiltersIds: FiltersProps) {
+export default function useFeedFilter(
+  filters: FiltersResponse,
+  initialSelectedFiltersIds: PresetFilterItems,
+) {
+  const { aminitiesInfo } = useGeneralStore();
+
   const [filterState, setFilterState] = useState<FilterState>(emptyFilters);
 
   const [appliedFilterCount, setAppliedFilterCount] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(true);
 
-  const {
-    activeFilterTab,
-    hideFirstTwoSection,
-    setIsFilterDrawerOpen,
-    isFilterDrawerOpen,
-    showFavoriteFeedItems,
-    setShowFavoriteFeedItems,
-    selectedSiteCategories,
-    feedFilterState,
-    feedSearchKeyword,
-    resetFeedFilters,
-    setHideFirstTwoSection,
-  } = useGeneralStore();
-
-  const { favoriteFeedItemIds, handleFilterTooltipShown } =
-    useFavoriteFeedItemStore();
-
-  const { data: filters } = useQuery({
-    queryKey: ["filters", selectedFiltersIds],
-    queryFn: () => getAllFilters(selectedFiltersIds),
-  });
-
-  const { data: infiniteData } = useQuery({
-    queryKey: ["feeds"],
-    queryFn: () => getFeedItems(),
-  });
-
-  const businesses = infiniteData?.data || [];
-
-  const totalBusiness = businesses?.length;
-
-  const visibleFeedItems = useMemo(() => {
-    if (businesses?.length === 0) return [];
-
-    let items = businesses;
-
-    if (selectedSiteCategories.length > 0) {
-      const allowedIds = new Set(
-        selectedSiteCategories.flatMap((cat) => cat.businessIds),
-      );
-      const allowedProdIds = new Set(
-        selectedSiteCategories.flatMap((cat) => cat.productIds),
-      );
-      items = items.filter(
-        (item) =>
-          allowedIds.has(item.businessId) || allowedProdIds.has(item.productId),
-      );
-    }
-
-    if (feedFilterState.serviceTypes.length > 0) {
-      items = items.filter((item) =>
-        feedFilterState.serviceTypes.includes(item.serviceType),
-      );
-    }
-
-    if (feedFilterState.accessibilityIds.length > 0) {
-      items = items.filter((item) =>
-        feedFilterState.accessibilityIds.some((id) =>
-          (item as any).accessibilitiesId?.some(
-            (a: any) => (a._id ?? a) === id,
-          ),
-        ),
-      );
-    }
-
-    if (feedFilterState.groupTypeIds.length > 0) {
-      items = items.filter((item) =>
-        feedFilterState.groupTypeIds.some((id) =>
-          (item as any).groupTypesId?.some((g: any) => (g._id ?? g) === id),
-        ),
-      );
-    }
-
-    if (feedSearchKeyword.trim()) {
-      const keyword = feedSearchKeyword.trim().toLowerCase();
-      items = items.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(keyword) ||
-          item.description?.toLowerCase().includes(keyword) ||
-          item.address?.city?.toLowerCase().includes(keyword) ||
-          item.address?.address?.toLowerCase().includes(keyword),
-      );
-    }
-
-    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return items.filter((item) => favoriteFeedItemIds.includes(item._id));
-    }
-
-    return items;
-  }, [
-    businesses,
-    showFavoriteFeedItems,
-    favoriteFeedItemIds,
-    selectedSiteCategories,
-    feedFilterState,
-    feedSearchKeyword,
-  ]);
-
-  // -----
   useEffect(() => {
     const timer = setTimeout(() => setShouldAnimate(false), 10000);
     return () => clearTimeout(timer);
   }, []);
 
+  // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
+  useEffect(() => {
+    try {
+      const { sanitized, totalCount } = sanitizeInitialFilters(
+        initialSelectedFiltersIds,
+        filters,
+        aminitiesInfo,
+      );
+
+      setFilterState((prev) => ({
+        ...prev,
+        ...sanitized,
+      }));
+
+      setAppliedFilterCount(totalCount);
+    } catch (error) {
+      console.error("Error applying default filters:", error);
+    }
+  }, []);
+
   const getSelected = (key: FilterKey) => filterState[key] ?? [];
 
-  const isSelected = (key: FilterKey, value: string) => {
-    return filterState[key]?.includes(value);
-  };
+  const isSelected = (key: FilterKey, value: string) =>
+    filterState[key]?.includes(value);
 
   const toggleParam = (key: FilterKey, value: string) => {
     setFilterState((prev) => {
@@ -158,14 +85,31 @@ export default function useFeedFilter(selectedFiltersIds: FiltersProps) {
         }
       }
 
-      const updated: FilterState = {
+      let updated: FilterState = {
         ...prev,
         [key]: next,
       };
 
+      // Auto-clean subcategories when categories change
+      if (key === "categoryIds") {
+        const validSubIds =
+          filters?.subCategories
+            ?.filter((sub) => next.includes(sub.categoryId))
+            .map((sub) => sub._id) ?? [];
+
+        updated.subCategoryIds = updated.subCategoryIds.filter((id) =>
+          validSubIds.includes(id),
+        );
+
+        if (next.length === 0) {
+          updated.groupTypeIds = [];
+          updated.accessibilityIds = [];
+        }
+      }
+
       const total = getTotalAppliedFilters(updated);
       setAppliedFilterCount(total);
-      // window.scrollTo({ behavior: "smooth", top: 0 });
+      window.scrollTo({ behavior: "smooth", top: 0 });
 
       return updated;
     });
@@ -177,6 +121,12 @@ export default function useFeedFilter(selectedFiltersIds: FiltersProps) {
         ...prev,
         [key]: [],
       };
+
+      if (key === "categoryIds") {
+        updated.groupTypeIds = [];
+        updated.accessibilityIds = [];
+        updated.subCategoryIds = [];
+      }
 
       window.scrollTo({ behavior: "smooth", top: 0 });
       const total = getTotalAppliedFilters(updated);
@@ -191,32 +141,23 @@ export default function useFeedFilter(selectedFiltersIds: FiltersProps) {
     setAppliedFilterCount(0);
   };
 
+  // Filtered subcategories based on selected categories
+  const filteredSubCategories = useMemo(() => {
+    if (filterState.categoryIds.length === 0) return [];
+    return filters?.subCategories?.filter((sub) =>
+      filterState.categoryIds.includes(sub.categoryId),
+    );
+  }, [filterState.categoryIds, filters?.subCategories]);
+
   return {
     shouldAnimate,
     appliedFilterCount,
     filterState,
+    filteredSubCategories,
     getSelected,
     isSelected,
     toggleParam,
     clearParam,
     handleResetFilters,
-
-    activeFilterTab,
-    hideFirstTwoSection,
-    setIsFilterDrawerOpen,
-    isFilterDrawerOpen,
-    showFavoriteFeedItems,
-    setShowFavoriteFeedItems,
-    selectedSiteCategories,
-    feedFilterState,
-    feedSearchKeyword,
-    resetFeedFilters,
-
-    filters,
-    totalBusiness,
-    visibleFeedItems,
-    infiniteData,
-    handleFilterTooltipShown,
-    setHideFirstTwoSection,
   };
 }

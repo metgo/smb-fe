@@ -6,11 +6,7 @@ import { useMemo, useState, useEffect } from "react";
 
 import { IconImage } from "../ui";
 import { CardSkeleton } from "../skeletons";
-import {
-  getCityOrCenter,
-  removeInlineStylesFromHTML,
-  sanitizeHtml,
-} from "@/lib/helpers";
+import { getCityOrCenter, removeInlineStylesFromHTML } from "@/lib/helpers";
 import { useSingleImagePresent } from "@/hooks/image/useSingleImagePresent";
 import { INTERSECTION_CONFIG } from "@/lib/animationConfig";
 import { staticImages } from "@/constant/staticImages";
@@ -112,8 +108,8 @@ const MobileBusinessFeedGalleryView = ({
           </h1>
           <div
             dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(
-                removeInlineStylesFromHTML(activeFeedItem?.description || ""),
+              __html: removeInlineStylesFromHTML(
+                activeFeedItem?.description || "",
               ),
             }}
             style={{ fontSize: 24 * scale }}

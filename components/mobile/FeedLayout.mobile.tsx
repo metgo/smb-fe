@@ -6,13 +6,20 @@ import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
+import { misc } from "@/constant/hebrew";
+import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import useGeneralStore from "@/stores/generalStore";
 import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
-import { SearchButton } from "../filter-icon/SearchButton";
-import { pathNames } from "@/lib/endpoints";
+import { useQuery } from "@tanstack/react-query";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { getPresetFilters } from "@/actions/commonActions";
+import { filterBusinesses } from "@/lib/helpers";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
@@ -31,34 +38,62 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     isFackLoading,
   } = useMobileFeedLayout();
 
+  const {
+    favoriteFeedItemIds,
+    alreadyShownFilterTooltip,
+    handleFilterTooltipShown,
+  } = useFavoriteFeedItemStore();
+
+  const {
+    hideFirstTwoSection,
+    setHideFirstTwoSection,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+    showFavoriteFeedItems,
+  } = useGeneralStore();
+
+  /* ---------------------- Queries ---------------------- */
+  const { data: initialSelectedFiltersIds } = useQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
+
+  const { data: filters } = useQuery({
+    queryKey: ["filters", selectedFiltersIds],
+    queryFn: () => getAllFilters(selectedFiltersIds),
+  });
+
+  const { data: infiniteData } = useQuery({
+    queryKey: ["feeds"],
+    queryFn: () => getFeedItems(),
+  });
+
   /* ---------------------- Memoized Data ---------------------- */
 
   const {
+    appliedFilterCount,
+    filteredSubCategories,
     isSelected,
+    toggleParam,
     handleResetFilters,
-
-    filters,
-    infiniteData,
-    visibleFeedItems,
-    hideFirstTwoSection,
-    isFilterDrawerOpen,
-    totalBusiness,
-    setIsFilterDrawerOpen,
-    selectedSiteCategories,
-    handleFilterTooltipShown,
-    setHideFirstTwoSection,
-    feedFilterState,
-  } = useFeedFilter(selectedFiltersIds);
-
-  const totalLength = Object.values(feedFilterState).reduce(
-    (sum, arr) => sum + arr.length,
-    0,
-  );
-
-  const totalActiveFilters =
-    totalLength + (selectedSiteCategories?.length || 0);
+    filterState,
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const businesses = infiniteData?.data || [];
+
+  const filteredBusinesses = filterBusinesses(businesses, filterState);
+
+  const visibleFeedItems = useMemo(() => {
+    if (filteredBusinesses?.length === 0) return [];
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return filteredBusinesses?.filter((item) =>
+        favoriteFeedItemIds?.includes(item._id),
+      );
+    }
+
+    return filteredBusinesses;
+  }, [filteredBusinesses, showFavoriteFeedItems, favoriteFeedItemIds]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -119,27 +154,33 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       {/* Bottom Panels */}
       {hideFirstTwoSection && (
         <>
-          <div className="fixed bottom-2 right-[42%]  custom-cursor">
-            <SearchButton
+          <div className="fixed bottom-2 right-[42%] custom-cursor">
+            <SunsetButton
+              size={60}
+              variant={"black"}
               onClick={handleFilterIconClick}
-              activeFiltersCount={totalActiveFilters}
-              variant="continuous"
-              size={96}
+              appliedFilterCount={appliedFilterCount}
             />
           </div>
+          {!alreadyShownFilterTooltip && (
+            <div className="bg-[#28C368] px-4 py-2 rounded-md text-white fixed bottom-16 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max font-bold">
+              {misc.filterIconTooltip}
+            </div>
+          )}
         </>
       )}
-
       <div className="bg-black/40">
         {isFilterDrawerOpen && (
           <MobileFeedFilterDrawer
-            itemCount={totalBusiness ?? 0}
+            itemCount={infiniteData?.totalData ?? 0}
             isOpen={isFilterDrawerOpen}
             setIsOpen={setIsFilterDrawerOpen}
             filters={filters}
+            appliedFilterCount={appliedFilterCount}
             isSelected={isSelected}
+            toggleParam={toggleParam}
             handleResetFilters={handleResetFilters}
-            visibleFeedItems={visibleFeedItems}
+            filteredSubCategories={filteredSubCategories}
           />
         )}
       </div>

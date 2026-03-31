@@ -9,7 +9,6 @@ import { misc, searchText } from "@/constant/hebrew";
 import { SearchIcon } from "@/components/ui/svgIcons";
 import { useSearchFlow } from "@/hooks/useSearchFlow";
 import { startLoading } from "../wrappers/ProgressBar";
-import { sanitizeHtml } from "@/lib/helpers";
 import { Dialog, IconImage, NextImage } from "@/components/ui";
 
 interface CardListProps {
@@ -54,9 +53,7 @@ const MobileCardList = ({
               <h4 className="line-clamp-1 font-bold">{item.name}</h4>
               <div
                 className="line-clamp-1 font-normal text-theme overflow-hidden"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(item.description || ""),
-                }}
+                dangerouslySetInnerHTML={{ __html: item.description || "" }}
               />
             </div>
           </div>

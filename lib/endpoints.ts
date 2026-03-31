@@ -1,16 +1,10 @@
-import {
-  CODE,
-  BASE_URL,
-  SITE_ENVIRONMENT,
-  IdentifierId,
-} from "@/constant/envConstants";
+import { CODE, BASE_URL, SITE_ENVIRONMENT } from "@/constant/envConstants";
 
 export const urls = {
   accessibilities: `${BASE_URL}/accessibilities`,
   tourismBusinesses: `${BASE_URL}/businesses`,
   carts: `${BASE_URL}/carts`,
   categories: `${BASE_URL}/categories?campCode=${CODE}`,
-  categoriesSites: `${BASE_URL}/site-filter-config/${IdentifierId}`,
   groupTypes: `${BASE_URL}/group-types`,
   locations: `${BASE_URL}/tourism/map-businesses?campCode=${CODE}`,
   locationData: `${BASE_URL}/tourism/map-businesses`,

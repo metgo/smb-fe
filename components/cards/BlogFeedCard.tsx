@@ -14,7 +14,6 @@ import { useImagePresent } from "@/hooks/image/useImagePresent";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
-  sanitizeHtml,
 } from "@/lib/helpers";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
@@ -203,7 +202,7 @@ const BlogFeedCardContent = ({
 
       <div
         dangerouslySetInnerHTML={{
-          __html: sanitizeHtml(removeInlineStylesFromHTML(feedItem?.subTitle)),
+          __html: removeInlineStylesFromHTML(feedItem?.subTitle),
         }}
         className="line-clamp-2 font-bold text-[12px] text-white mt-1"
       />
