@@ -8,6 +8,7 @@ import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
+import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -41,7 +42,7 @@ import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-
     forwardRef(() => CampaignModule),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService, CreateMiniSiteOrderHandler],
+  providers: [OrdersService, ExpireOrderService, CreateMiniSiteOrderHandler],
   exports: [OrdersService],
 })
 export class OrdersModule {}
