@@ -27,6 +27,7 @@ export default function FeedLayoutDropdown({
 
   const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
     useGeneralStore();
+  console.log("🚀 ~ FeedLayoutDropdown ~ activeFilterTab:", activeFilterTab);
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +71,16 @@ export default function FeedLayoutDropdown({
             onClick={() => setIsOpen((v) => !v)}
             className="flex items-center gap-2 h-12 px-3 bg-white rounded-lg text-sm font-bold text-theme custom-cursor hover:bg-[#F5F5F5] transition-colors"
           >
-            <ThreeLineIcon />
+            {(() => {
+              const activeTab = filterTabs.find(
+                (t) => t.key === activeFilterTab,
+              );
+              return activeTab ? (
+                <IconImage icon={activeTab.icon} width={22} height={22} />
+              ) : (
+                <ThreeLineIcon />
+              );
+            })()}
           </button>
 
           {/* Dropdown Menu */}
