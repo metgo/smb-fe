@@ -25,7 +25,8 @@ const DAY_MAP: Record<string, string> = {
 };
 
 interface OpeningHr {
-  day: string;
+  day?: string;
+  days?: string;
   open: string;
   close: string;
   isHoliday: boolean;
@@ -85,19 +86,19 @@ const OpeningHoursModal = ({
               const isToday = day.key === today;
 
               // Find the matching hours using the day code mapping
-              const hoursData = openingHrs?.find(
-                (h) => DAY_MAP[h.day] === day.key,
-              );
+              const hoursData = openingHrs?.find((h) => {
+                const dayCode = (h.day ?? h.days ?? "").toUpperCase();
+                return DAY_MAP[dayCode] === day.key;
+              });
 
               const isClosed =
-                !hoursData ||
-                hoursData.isHoliday ||
-                !hoursData.open ||
-                !hoursData.close;
+                !hoursData || !hoursData.open || !hoursData.close;
 
-              const displayHours = isClosed
-                ? "סגור"
-                : `${hoursData.open} - ${hoursData.close}`;
+              const displayHours = hoursData?.isHoliday
+                ? "חג"
+                : isClosed
+                  ? "סגור"
+                  : `${hoursData.open} - ${hoursData.close}`;
 
               return (
                 <div

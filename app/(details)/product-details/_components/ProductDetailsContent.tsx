@@ -39,6 +39,7 @@ const ProductDetailsContent = ({ productDetails }: Props) => {
     deliveryAdditionalInfo,
     businessId,
     accessibilitiesId,
+    shortDescription,
   } = productDetails;
 
   const firstDeliveryPrice = deliveryArea?.[0]?.price;
@@ -102,7 +103,7 @@ const ProductDetailsContent = ({ productDetails }: Props) => {
                 <div
                   className="text-lg text-gray-600 mb-4"
                   dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(description),
+                    __html: sanitizeHtml(shortDescription),
                   }}
                 />
 
