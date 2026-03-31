@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconImage } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { AnimatePresence, motion } from "motion/react";
@@ -44,9 +44,13 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     resetFeedFilters,
     clearSiteCategories,
   } = useGeneralStore();
+
+  useEffect(() => {
+    resetFeedFilters();
+  }, []);
+
   const [advancedFilter, setAdvancedFilter] = useState(false);
   const [inputValue, setInputValue] = useState(feedSearchKeyword);
-
   const isSelected = (key: FeedFilterKey, value: string) =>
     feedFilterState[key]?.includes(value) ?? false;
 
@@ -64,11 +68,11 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     Object.entries(feedFilterState).some(([key, arr]) => {
       return key !== "serviceTypes" && Array.isArray(arr) && arr.length > 0;
     }) ||
-    //  Check serviceTypes only if it has values OUTSIDE the default 3
+    //  Check serviceTypes only if it has values OUTSIDE the default 4
     (Array.isArray(feedFilterState.serviceTypes) &&
       feedFilterState.serviceTypes.length > 0 &&
       feedFilterState.serviceTypes.some(
-        (type) => !["event", "business", "funday"].includes(type),
+        (type) => !["event", "business", "funday", "trip"].includes(type),
       )) ||
     feedSearchKeyword.length > 0 ||
     selectedSiteCategories.length > 0;

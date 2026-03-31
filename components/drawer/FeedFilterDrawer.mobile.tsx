@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconImage, MotionDialogDiv } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
 import { motion } from "framer-motion";
@@ -51,6 +51,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     clearSiteCategories,
     toggleFeedFilter,
     feedFilterState,
+    resetFeedFilters,
   } = useGeneralStore();
 
   const isSelected = (key: FeedFilterKey, value: string) =>
@@ -74,16 +75,20 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     setIsFilterDrawerOpen(newState);
     handleFilterTooltipShown(true);
   };
+  useEffect(() => {
+    resetFeedFilters();
+  }, []);
+
   const hasActiveFilters =
     //  Check other arrays (exclude serviceTypes)
     Object.entries(feedFilterState).some(([key, arr]) => {
       return key !== "serviceTypes" && Array.isArray(arr) && arr.length > 0;
     }) ||
-    //  Check serviceTypes only if it has values OUTSIDE the default 3
+    //  Check serviceTypes only if it has values OUTSIDE the default 4
     (Array.isArray(feedFilterState.serviceTypes) &&
       feedFilterState.serviceTypes.length > 0 &&
       feedFilterState.serviceTypes.some(
-        (type) => !["event", "business", "funday"].includes(type),
+        (type) => !["event", "business", "funday", "trip"].includes(type),
       )) ||
     feedSearchKeyword.length > 0 ||
     selectedSiteCategories.length > 0;
