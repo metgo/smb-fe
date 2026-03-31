@@ -235,15 +235,15 @@ function applyFontSizeDOM(px: number, root?: HTMLElement): void {
 /**
  * Finds nearest block ancestor
  */
-function getNearestBlock(node: Node, root: HTMLElement): Element | null {
-  let cur: Node | null =
-    node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-  while (cur && cur !== root) {
-    if (cur instanceof Element && BLOCK_TAGS.has(cur.tagName)) return cur;
-    cur = cur.parentElement;
-  }
-  return null;
-}
+// function getNearestBlock(node: Node, root: HTMLElement): Element | null {
+//   let cur: Node | null =
+//     node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+//   while (cur && cur !== root) {
+//     if (cur instanceof Element && BLOCK_TAGS.has(cur.tagName)) return cur;
+//     cur = cur.parentElement;
+//   }
+//   return null;
+// }
 
 function rgbToHex(rgb: string): string {
   const m = rgb.match(/\d+/g);
