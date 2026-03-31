@@ -11,14 +11,13 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 
 import { SearchButton } from "../filter-icon/SearchButton";
-import { FeedFilterDrawer } from "../drawer";
 interface FeedLayoutProps {
   selectedFiltersIds: any;
 }
 
 const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const {
-    
+
     handleResetFilters: resetLocalFilters,
 
     activeFilterTab,
@@ -35,7 +34,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     visibleFeedItems,
     handleFilterTooltipShown,
   } = useFeedFilter(selectedFiltersIds);
-    console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen)
+  console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen)
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
@@ -71,9 +70,9 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
       case "gallery":
         return (
           <OnlyFeedCardsLayout
+            filters={filters}
             data={visibleFeedItems}
-            isFilterOpen={isFilterDrawerOpen}
-          
+            isFilterOpen={isFilterOpen}
           />
         );
       case "integrated":
@@ -107,12 +106,11 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
             />
           </div>
         )}
-        <FeedFilterDrawer
+        {/* <FeedFilterDrawer
           isOpen={isFilterOpen}
-          
           visibleFeedItems={visibleFeedItems}
           filters={filters}
-        />
+        /> */}
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>
     </>

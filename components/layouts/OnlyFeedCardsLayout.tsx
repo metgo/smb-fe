@@ -1,6 +1,8 @@
 "use client";
 
+import clsx from "clsx";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { AnimatePresence } from "motion/react";
 import { sanitizeHtml, scaleLayout, shuffleArray } from "@/lib/helpers";
 
 import {
@@ -13,15 +15,17 @@ import NoFeedItemLayout from "./NoFeedItemLayout";
 import FeedCategoryButtons from "./FeedCategoryButtons";
 
 import useGeneralStore from "@/stores/generalStore";
-import clsx from "clsx";
+import { FeedFilterDrawer } from "../drawer";
 
 interface OnlyFeedCardsLayoutProps {
   data: FeedItemList;
+  filters: any;
   isFilterOpen: boolean;
 }
 
 const OnlyFeedCardsLayout = ({
   data,
+  filters,
   isFilterOpen,
 }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
@@ -39,19 +43,22 @@ const OnlyFeedCardsLayout = ({
     return () => observer.disconnect();
   }, []);
 
+  const DRAWER_WIDTH = 524; // 500px drawer + 24px gap
+
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
     const updateScale = () => {
-      const currentWidth = window.innerWidth;
-      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
-      setScale(newScale);
+      const availableWidth = isFilterOpen
+        ? window.innerWidth - DRAWER_WIDTH
+        : window.innerWidth;
+      setScale(availableWidth / REFERENCE_SCREEN_WIDTH);
     };
 
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
-  }, []);
+  }, [isFilterOpen]);
 
   // Memoize shuffled layouts so they only shuffle once
   const shuffledLayouts = useMemo(() => {
@@ -157,10 +164,8 @@ const OnlyFeedCardsLayout = ({
     );
   };
 
-  const renderExtraCards = (extraBusinesses: any[]) => {
+  const renderExtraCards = (extraBusinesses: any[], columnCount = 5) => {
     if (extraBusinesses.length === 0) return null;
-
-    const columnCount = 5;
 
     const columns: {
       businesses: any[];
@@ -177,16 +182,11 @@ const OnlyFeedCardsLayout = ({
 
       const layoutIndex = i % shuffledLayouts.length;
       const layout = shuffledLayouts[layoutIndex];
+      const colIdx = i % columnCount;
 
-      const shortestColumnIndex = columns.reduce(
-        (minIdx, col, idx) =>
-          col.height < columns[minIdx].height ? idx : minIdx,
-        0,
-      );
-
-      columns[shortestColumnIndex].businesses.push(biz);
-      columns[shortestColumnIndex].layouts.push(layout);
-      columns[shortestColumnIndex].height += layout.height;
+      columns[colIdx].businesses.push(biz);
+      columns[colIdx].layouts.push(layout);
+      columns[colIdx].height += layout.height;
     });
 
     return (
@@ -219,11 +219,12 @@ const OnlyFeedCardsLayout = ({
     const columnLayout = onlyCardsColumns[safeLayoutKey] ?? null;
 
     const extraBusinesses = feedItemCount > 16 ? data.slice(16) : [];
+    const extraColumnCount = isFilterOpen ? 3 : 5;
 
     return (
       <div key="layout-root">
         {renderLayoutSection(layout, columnLayout, 0, 0)}
-        {feedItemCount > 16 && renderExtraCards(extraBusinesses)}
+        {feedItemCount > 16 && renderExtraCards(extraBusinesses, extraColumnCount)}
       </div>
     );
   };
@@ -247,10 +248,21 @@ const OnlyFeedCardsLayout = ({
       {data?.length ? (
         <div
           className={clsx(
-            "px-20 py-10 flex items-center justify-center w-full h-full relative",
+            "px-20 py-10 flex w-full h-full relative",
+            isFilterOpen ? "items-start justify-start gap-6" : "items-center justify-center",
           )}
-        >
-          <div className="flex flex-col gap-5 items-start justify-start ">
+          >
+          <AnimatePresence>
+            {isFilterOpen && (
+              <FeedFilterDrawer
+                key="feed-filter-drawer"
+                isInline
+                visibleFeedItems={data}
+                filters={filters}
+              />
+            )}
+          </AnimatePresence>
+          <div className="flex flex-col gap-5 items-start justify-start">
             {renderFullLayout()}
           </div>
         </div>

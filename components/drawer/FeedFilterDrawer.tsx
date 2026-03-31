@@ -1,9 +1,10 @@
 "use client";
 
+import clsx from "clsx";
 import { useState } from "react";
 import { IconImage } from "../ui";
 import { filterPanelLabels, searchText } from "@/constant/hebrew";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 
 import {
   EventIcon,
@@ -12,26 +13,23 @@ import {
   RouteIcon,
 } from "../ui/svgIcons";
 import { SERVICE_TYPE_MAP } from "@/lib/utils";
-import { useCommonHook } from "@/hooks";
 import useGeneralStore, { FeedFilterKey } from "@/stores/generalStore";
 import { sendGAEvent, triggerName } from "@/lib/googleEventsConfig";
 import { Building, ChevronDown, RotateCcw } from "lucide-react";
 import { CATEGORY_COLORS } from "@/components/layouts/FeedCategoryButtons";
 
-import clsx from "clsx";
 
 interface FeedFilterDrawerProps {
-  isOpen: boolean;
   filters: FiltersResponse;
   visibleFeedItems?: any;
+  isInline?: boolean;
 }
 
 const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
-  isOpen,
   filters,
   visibleFeedItems,
+  isInline = false,
 }) => {
-  const { isMobile } = useCommonHook();
   const {
     aminitiesInfo,
     presetFeedFilters,
@@ -73,21 +71,18 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     feedSearchKeyword.length > 0 ||
     selectedSiteCategories.length > 0;
 
-  if (!isOpen || isMobile) return null;
 
   return (
-    <>
-      <AnimatePresence>
-        <motion.div
-          key="inline-filter"
-          initial={{ opacity: 0, x: 40, width: 0 }}
-          animate={{ opacity: 1, x: 0, width: 500 }}
-          exit={{ opacity: 0, x: 40, width: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="sticky top-24 self-start shrink-0 "
-          style={{ width: 320 }}
-        >
-          <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden fixed bottom-4 right-2 w-[500px]">
+    <motion.div
+      key="inline-filter"
+      initial={{ opacity: 0, x: 40, width: 0 }}
+      animate={{ opacity: 1, x: 0, width: 500 }}
+      exit={{ opacity: 0, x: 40, width: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="sticky top-24 self-start shrink-0"
+      style={{ width: 320 }}
+    >
+      <div className={clsx("bg-white rounded-2xl shadow-xl flex flex-col max-h-[88vh] overflow-hidden w-[450px]", !isInline && "fixed bottom-4 right-2")}>
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
               <span className="font-bold text-3xl text-black">
@@ -113,18 +108,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                   </button>
                 )}
               </div>
-
-              {/* <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500">
-                  {itemCount} {filterPanelLabels.results}
-                </span>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="custom-cursor p-1 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <CloseIcon />
-                </button>
-              </div> */}
             </div>
 
             {/* Scrollable filter body */}
@@ -183,30 +166,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       colorIndex={0}
                     />
                   )}
-                  {/* <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() =>
-                      setDisplayMode(
-                        displayMode === "businesses" ? "" : "businesses",
-                      )
-                    }
-                    className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                      displayMode === "businesses"
-                        ? "bg-violet-500 text-white shadow-sm"
-                        : "text-gray-800 hover:text-gray-900 bg-gray-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Building
-                        className={
-                          displayMode === "businesses"
-                            ? "text-white"
-                            : "text-gray-500"
-                        }
-                      />
-                      {filterPanelLabels.business}
-                    </div>
-                  </motion.button> */}
                   {aminitiesInfo?.poi && (
                     <FilterButton
                       active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
@@ -379,49 +338,11 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
                       </div>
                     </div>
                   )}
-
-                  {/* What to show? */}
-                  {/* <div className="mb-8">
-                    <h3
-                      className={`text-base font-semibold mb-3 text-right ${"text-gray-800"}`}
-                    >
-                      מה להציג?
-                    </h3>
-                    <div
-                      className={`flex gap-1 rounded-xl p-0.5 w-fit ${"bg-gray-100"}`}
-                    >
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setDisplayMode("")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                          displayMode === ""
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-800 hover:text-gray-900"
-                        }`}
-                      >
-                        {filterPanelLabels.everything}{" "}
-                      </motion.button>
-                     
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setDisplayMode("products")}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                          displayMode === "products"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-800 hover:text-gray-900"
-                        }`}
-                      >
-                        {filterPanelLabels.products}{" "}
-                      </motion.button>
-                    </div>
-                  </div> */}
                 </>
               )}
             </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </>
+      </div>
+    </motion.div>
   );
 };
 
