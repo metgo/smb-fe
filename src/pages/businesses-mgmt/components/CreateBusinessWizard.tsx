@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   MapPin,
@@ -24,7 +24,6 @@ import {
   BusinessBasicInfos,
   BusinessContactOwership,
   BusinessLocation,
-  // BusinessMedia,
   BusinessOnlinePresence,
   BusinessOpeningHours,
   BusinessReviewSubmit,
@@ -207,6 +206,60 @@ export default function CreateBusinessWizard({
 
   const totalSteps = 9;
 
+  const completionPercent = useMemo(() => {
+    const checks = [
+      // Basic Info (30%)
+      {
+        weight: 10,
+        filled: !!(
+          formData.nameEn?.trim() ||
+          formData.nameHe?.trim() ||
+          formData.nameAr?.trim()
+        ),
+      },
+      {
+        weight: 10,
+        filled: !!(
+          formData.shortDescriptionEn?.trim() ||
+          formData.shortDescriptionHe?.trim() ||
+          formData.shortDescriptionAr?.trim()
+        ),
+      },
+      {
+        weight: 10,
+        filled: !!(
+          formData.fullDescriptionEn?.trim() ||
+          formData.fullDescriptionHe?.trim() ||
+          formData.fullDescriptionAr?.trim()
+        ),
+      },
+      // Contact (15%)
+      { weight: 8, filled: !!formData.email?.trim() },
+      { weight: 7, filled: !!formData.phone?.trim() },
+      // Location (15%)
+      { weight: 15, filled: !!address?.trim() },
+      // Attributes (15%)
+      { weight: 10, filled: !!formData.primaryCategory?.trim() },
+      { weight: 5, filled: formData.tags?.length > 0 },
+      // Media (10%)
+      { weight: 5, filled: !!(logoImage || businessLogoImage) },
+      { weight: 5, filled: (images?.length ?? 0) > 0 },
+      // Operating Hours (5%)
+      { weight: 5, filled: formData.operatingHours?.length > 0 },
+      // Online Presence (5%)
+      { weight: 5, filled: formData.socialMedia?.length > 0 },
+      // Delivery (5%)
+      { weight: 5, filled: formData.deliveryArea?.length > 0 },
+    ];
+
+    const total = checks.reduce((sum, c) => sum + c.weight, 0);
+    const earned = checks.reduce(
+      (sum, c) => sum + (c.filled ? c.weight : 0),
+      0,
+    );
+    return Math.round((earned / total) * 100);
+  }, [formData, address, images, logoImage, businessLogoImage]);
+
   useEffect(() => {
     if (userRole === "authority") {
       setSelectAuthorityId(authorityId);
@@ -385,6 +438,7 @@ export default function CreateBusinessWizard({
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
     // step 8
     socialMedia: formData.socialMedia,
+    completionPercent: completionPercent,
   };
 
   const { markDirty, saveDraft } = useBusinessDraftSaver({
@@ -668,7 +722,58 @@ export default function CreateBusinessWizard({
               </p>
             )}
           </div>
-          <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+          <div className="flex items-center gap-4">
+            {/* Impact Percent Indicator */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative w-14 h-14">
+                <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="22"
+                    fill="none"
+                    strokeWidth="5"
+                    className={
+                      theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
+                    }
+                  />
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="22"
+                    fill="none"
+                    strokeWidth="5"
+                    strokeDasharray={`${2 * Math.PI * 22}`}
+                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                    stroke={
+                      completionPercent >= 70
+                        ? "#16a34a"
+                        : completionPercent >= 40
+                          ? "#f59e0b"
+                          : "#ef4444"
+                    }
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span
+                    className={clsx(
+                      "text-xs font-bold",
+                      completionPercent >= 70
+                        ? "text-green-600"
+                        : completionPercent >= 40
+                          ? "text-amber-500"
+                          : "text-red-500",
+                    )}
+                  >
+                    {completionPercent}%
+                  </span>
+                </div>
+              </div>
+            </div>
+            <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
