@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { GripVertical, ChevronDown, ChevronRight, Layers } from "lucide-react";
@@ -124,6 +124,15 @@ const TopicBlock = ({
     );
   };
 
+  const handleTogglePrimary = (templateIndex: number) => {
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => ({
+        ...template,
+        isPrimary: tIndex === templateIndex,
+      })),
+    );
+  };
+
   return (
     <div
       ref={setRefs}
@@ -204,9 +213,15 @@ const TopicBlock = ({
           {/* Topic name + meta */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <TopicHeader
-              topic={{ index, name: topic.topic, isHidden: topic.isHideTopic }}
+              topic={{
+                index,
+                name: topic.topic,
+                isHidden: topic.isHideTopic,
+                isPrimary: topic.isPrimary,
+              }}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
+              onTogglePrimary={handleTogglePrimary}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />
@@ -283,6 +298,20 @@ const ContentComposer = ({
 
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Auto-set the only topic as primary; clear isPrimary when multiple topics exist
+  useEffect(() => {
+    if (templateContents.length === 1 && !templateContents[0].isPrimary) {
+      setTemplateContent((prev) =>
+        prev.map((t, i) => ({ ...t, isPrimary: i === 0 })),
+      );
+    } else if (templateContents.length > 1) {
+      const hasPrimary = templateContents.some((t) => t.isPrimary);
+      if (!hasPrimary) {
+        // no-op: keep all false until user picks one
+      }
+    }
+  }, [templateContents.length]);
 
   const deleteTopic = (index: number) => {
     if (!topicToDelete) return;

@@ -6,6 +6,7 @@ import {
   Eye,
   EyeClosed,
   MoreVertical,
+  Star,
   Trash2,
   X,
 } from "lucide-react";
@@ -20,9 +21,11 @@ interface TopicHeaderProps {
     index: number;
     name: string;
     isHidden: boolean | undefined;
+    isPrimary: boolean | undefined;
   };
   onRename: (topicIdx: number, newName: string) => void;
   onToggleVisibility: (topicIdx: number) => void;
+  onTogglePrimary: (topicIdx: number) => void;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
 }
@@ -31,6 +34,7 @@ const TopicHeader = ({
   topic,
   onRename,
   onToggleVisibility,
+  onTogglePrimary,
   setTopicToDelete,
   setShowDeleteConfirm,
 }: TopicHeaderProps) => {
@@ -126,11 +130,14 @@ const TopicHeader = ({
         <>
           <h3
             className={clsx(
-              "flex-1 text-sm font-semibold truncate min-w-60",
+              "flex-1 text-sm font-semibold truncate min-w-60 flex items-center gap-2",
               isDark ? "text-gray-100" : "text-gray-800",
             )}
           >
             {topic.name}
+            {topic.isPrimary && (
+              <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 shrink-0" />
+            )}
           </h3>
 
           <div ref={menuRef} className="relative shrink-0">
@@ -191,6 +198,31 @@ const TopicHeader = ({
                     <EyeClosed className="w-3.5 h-3.5 shrink-0" />
                   )}
                   {topic.isHidden ? t("show_topic") : t("hide_topic")}
+                </button>
+
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                  )}
+                  onClick={() => {
+                    onTogglePrimary(topic.index);
+                    setShowMenu(false);
+                  }}
+                >
+                  <Star
+                    className={clsx(
+                      "w-3.5 h-3.5 shrink-0",
+                      topic.isPrimary
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-400",
+                    )}
+                  />
+                  {topic.isPrimary
+                    ? t("unset_primary_topic")
+                    : t("set_primary_topic")}
                 </button>
 
                 <div

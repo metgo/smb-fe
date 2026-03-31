@@ -14,7 +14,6 @@ import {
   Code,
   Quote,
   ChevronDown,
-  Type,
   Palette,
   Highlighter,
 } from "lucide-react";
@@ -246,38 +245,6 @@ function getNearestBlock(node: Node, root: HTMLElement): Element | null {
   return null;
 }
 
-/**
- * Apply heading with improved style handling
- */
-function applyHeadingDOM(tag: string, root: HTMLElement): void {
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return;
-
-  const range = sel.getRangeAt(0);
-  const block = getNearestBlock(range.commonAncestorContainer, root);
-  if (!block) return;
-
-  const target = block.tagName.toLowerCase() === tag ? "p" : tag;
-  const newEl = document.createElement(target);
-  newEl.innerHTML = block.innerHTML;
-
-  // Carry over styles but reset font-size and line-height (headings have own defaults)
-  if ((block as HTMLElement).style?.cssText) {
-    (newEl as HTMLElement).style.cssText = (block as HTMLElement).style.cssText;
-    (newEl as HTMLElement).style.fontSize = "";
-    (newEl as HTMLElement).style.lineHeight = "";
-  }
-
-  block.replaceWith(newEl);
-
-  // Restore cursor at the end
-  sel.removeAllRanges();
-  const r = document.createRange();
-  r.selectNodeContents(newEl);
-  r.collapse(false);
-  sel.addRange(r);
-}
-
 function rgbToHex(rgb: string): string {
   const m = rgb.match(/\d+/g);
   if (!m) return rgb;
@@ -405,14 +372,13 @@ const RichTextEditor = ({
   } = useThemeClasses();
 
   const editorRef = useRef<HTMLDivElement>(null);
-  const headingDropRef = useRef<HTMLDivElement>(null);
+  const savedRangeRef = useRef<Range | null>(null);
   const fontSizeDropRef = useRef<HTMLDivElement>(null);
   const textColorDropRef = useRef<HTMLDivElement>(null);
   const bgColorDropRef = useRef<HTMLDivElement>(null);
 
   // UI State
   const [isFocused, setIsFocused] = useState(false);
-  const [headingOpen, setHeadingOpen] = useState(false);
   const [fontSizeOpen, setFontSizeOpen] = useState(false);
   const [textColorOpen, setTextColorOpen] = useState(false);
   const [bgColorOpen, setBgColorOpen] = useState(false);
@@ -422,7 +388,6 @@ const RichTextEditor = ({
   const [characterCount, setCharacterCount] = useState(0);
 
   // Active states (updated only in selectionchange)
-  const [activeHeading, setActiveHeading] = useState("p");
   const [activeFontSize, setActiveFontSize] = useState("16");
   const [activeTextColor, setActiveTextColor] = useState("#000000");
   const [activeBgColor, setActiveBgColor] = useState("transparent");
@@ -444,11 +409,6 @@ const RichTextEditor = ({
   // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (
-        headingDropRef.current &&
-        !headingDropRef.current.contains(e.target as Node)
-      )
-        setHeadingOpen(false);
       if (
         fontSizeDropRef.current &&
         !fontSizeDropRef.current.contains(e.target as Node)
@@ -479,10 +439,6 @@ const RichTextEditor = ({
       let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
       if (node?.nodeType === Node.TEXT_NODE) node = node.parentElement;
       if (!(node instanceof Element)) return;
-
-      // Heading
-      const hEl = node.closest("h1,h2,h3,h4,h5,h6");
-      setActiveHeading(hEl ? hEl.tagName.toLowerCase() : "p");
 
       // Font size from computed style
       const cs = window.getComputedStyle(node);
@@ -594,27 +550,36 @@ const RichTextEditor = ({
     editorRef.current?.focus();
   };
 
-  // Heading
-  const applyHeading = (tag: string) => {
-    setHeadingOpen(false);
-    if (!editorRef.current) return;
-    applyHeadingDOM(tag, editorRef.current);
-    setActiveHeading(tag === activeHeading ? "p" : tag);
-    onChange(editorRef.current.innerHTML);
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    const range = savedRangeRef.current;
+    if (!range) return;
+    const sel = window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
   };
 
   // Font Size — passes editorRef.current as root so updateBlockLineHeight works
   const applyFontSize = (px: number) => {
     setFontSizeOpen(false);
+    restoreSelection();
     applyFontSizeDOM(px, editorRef.current ?? undefined);
     setActiveFontSize(px.toString());
     if (editorRef.current) onChange(editorRef.current.innerHTML);
   };
 
   const applyCustomFontSize = () => {
-    const n = parseInt(customFontSize.trim(), 10);
-    if (!isNaN(n) && n >= 1 && n <= 999) {
-      applyFontSize(n);
+    const rem = parseFloat(customFontSize.trim());
+    if (!isNaN(rem) && rem >= 0.1 && rem <= 62) {
+      applyFontSize(rem * 16);
       setCustomFontSize("");
     }
   };
@@ -818,63 +783,18 @@ const RichTextEditor = ({
       <div
         className={`flex flex-wrap items-center gap-1 p-2 border-b ${borderColor}`}
       >
-        {/* Heading */}
-        <div className="relative" ref={headingDropRef}>
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setHeadingOpen((o) => !o);
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-[110px] justify-between`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Type className="w-4 h-4 shrink-0" />
-              <span className="text-sm">
-                {activeHeading === "p"
-                  ? "Paragraph"
-                  : activeHeading.toUpperCase()}
-              </span>
-            </div>
-            <ChevronDown className="w-3 h-3 shrink-0" />
-          </button>
-
-          {headingOpen && (
-            <div
-              className={`absolute top-full left-0 mt-1 ${dropdownBg} border ${borderColor} rounded-lg shadow-lg z-20 min-w-[130px]`}
-            >
-              {(["p", "h1", "h2", "h3", "h4", "h5", "h6"] as const).map(
-                (tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      applyHeading(tag);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm ${hoverBg} ${textPrimary} ${
-                      activeHeading === tag ? activeBg : ""
-                    } first:rounded-t-lg last:rounded-b-lg`}
-                  >
-                    {tag === "p" ? "Paragraph" : tag.toUpperCase()}
-                  </button>
-                ),
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Font Size */}
         <div className="relative" ref={fontSizeDropRef}>
           <button
             type="button"
             onMouseDown={(e) => {
               e.preventDefault();
+              saveSelection();
               setFontSizeOpen((o) => !o);
             }}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded transition-colors ${hoverBg} ${textPrimary} min-w-[72px] justify-between`}
           >
-            <span className="text-sm">{activeFontSize}px</span>
+            <span className="text-sm">{parseInt(activeFontSize) / 16}rem</span>
             <ChevronDown className="w-3 h-3 shrink-0" />
           </button>
 
@@ -894,7 +814,7 @@ const RichTextEditor = ({
                     activeFontSize === size.toString() ? activeBg : ""
                   }`}
                 >
-                  {size}px
+                  {size / 16}rem
                 </button>
               ))}
 
@@ -903,9 +823,10 @@ const RichTextEditor = ({
                   <input
                     type="number"
                     value={customFontSize}
-                    placeholder="Custom"
-                    min={1}
-                    max={999}
+                    placeholder="rem"
+                    min={0.1}
+                    max={62}
+                    step={0.1}
                     onChange={(e) => setCustomFontSize(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {

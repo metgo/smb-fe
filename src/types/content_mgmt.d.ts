@@ -20,6 +20,7 @@ interface IContentGroup {
 
 interface IContentTemplate {
   topic: string;
+  isPrimary?: boolean;
   isHideTopic?: boolean;
   groups: IContentGroup[];
 }
@@ -84,6 +85,7 @@ interface IContentTopic {
 
   siteCategories: ISiteCategory[];
 
+  isPrimary: boolean;
   order: number;
   isArchived: boolean;
 }
