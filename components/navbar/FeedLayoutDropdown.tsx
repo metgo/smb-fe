@@ -27,7 +27,6 @@ export default function FeedLayoutDropdown({
 
   const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
     useGeneralStore();
-  console.log("🚀 ~ FeedLayoutDropdown ~ activeFilterTab:", activeFilterTab);
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useFeedFilter } from "@/hooks";
 
@@ -31,7 +31,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     visibleFeedItems,
     handleFilterTooltipShown,
   } = useFeedFilter(selectedFiltersIds);
-  console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen);
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
@@ -40,8 +39,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
   const totalActiveFilters =
     totalLength + (selectedSiteCategories?.length || 0);
-
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -52,7 +49,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const handleFilterIconClick = () => {
     const newState = !isFilterDrawerOpen;
     setIsFilterDrawerOpen(newState);
-    setIsFilterOpen(newState);
     handleFilterTooltipShown(true);
   };
 
@@ -93,7 +89,7 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           </div>
         )}
         <FeedFilterDrawer
-          isOpen={isFilterOpen}
+          isOpen={isFilterDrawerOpen}
           visibleFeedItems={visibleFeedItems}
           filters={filters}
         />
