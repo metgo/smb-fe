@@ -27,6 +27,16 @@ interface Props {
 
 const dayOrder = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+const dayFullKey: Record<string, string> = {
+  SUN: "sunday",
+  MON: "monday",
+  TUE: "tuesday",
+  WED: "wednesday",
+  THU: "thursday",
+  FRI: "friday",
+  SAT: "saturday",
+};
+
 const normalizeDay = (value?: string): string | null => {
   if (!value) return null;
 
@@ -230,7 +240,7 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
                     isDark ? "text-white" : "text-gray-800"
                   }`}
                 >
-                  {t(day.toLowerCase())}
+                  {t(dayFullKey[day])}
                 </div>
                 {isToday && (
                   <small className="text-teal-500">{t("today")}</small>

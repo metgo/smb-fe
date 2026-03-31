@@ -317,7 +317,32 @@ export default function CreateBusinessWizard({
           whatsAppNumber: editData?.contactDetails?.whatsAppNumber,
           prefferedChannel: editData?.contactDetails?.prefferedChannel,
         },
-        operatingHours: editData?.openingHrs,
+        operatingHours: (() => {
+          const dayNormMap: Record<string, string> = {
+            sun: "SUN",
+            mon: "MON",
+            tue: "TUE",
+            tues: "TUE",
+            wed: "WED",
+            thu: "THU",
+            thurs: "THU",
+            fri: "FRI",
+            sat: "SAT",
+          };
+          const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+          return days.map((day) => {
+            const entry = editData?.openingHrs?.find((h: any) => {
+              const d = (h.day || h.days || "").toLowerCase().trim();
+              return dayNormMap[d] === day;
+            });
+            return {
+              day,
+              open: entry?.open || "",
+              close: entry?.close || "",
+              isHoliday: entry?.isHoliday || false,
+            };
+          });
+        })(),
         //attributes
         primaryCategory: editData?.primaryCategoryId || "",
         tags: editData?.tagsId || [],

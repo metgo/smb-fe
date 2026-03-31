@@ -314,7 +314,7 @@ const ContentComposer = ({
   }, [templateContents.length]);
 
   const deleteTopic = (index: number) => {
-    if (!topicToDelete) return;
+    if (topicToDelete === null) return;
 
     const updated = [...templateContents];
     updated.splice(index, 1);
@@ -430,7 +430,7 @@ const ContentComposer = ({
         </div>
       </div>
 
-      {showDeleteConfirm && topicToDelete && (
+      {showDeleteConfirm && topicToDelete !== null && (
         <ConfirmDialog
           open={showDeleteConfirm}
           title={t("delete_topic")}
