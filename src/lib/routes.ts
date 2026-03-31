@@ -30,6 +30,7 @@ export const routes = {
   auth: "/authentication",
   miniSite: "/mini-site",
   profile: "/profile",
+  websiteMgmt: "/website-settings",
 };
 
 export type RouteKey = keyof typeof routes;

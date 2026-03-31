@@ -17,6 +17,16 @@ interface BusinessOpeningHoursProps {
 
 const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+const dayFullKey: Record<string, string> = {
+  SUN: "sunday",
+  MON: "monday",
+  TUE: "tuesday",
+  WED: "wednesday",
+  THU: "thursday",
+  FRI: "friday",
+  SAT: "saturday",
+};
+
 const BusinessOpeningHours = ({
   formData,
   setFormData,
@@ -30,8 +40,8 @@ const BusinessOpeningHours = ({
         ...formData,
         operatingHours: daysOfWeek.map((day) => ({
           day,
-          open: "",
-          close: "",
+          open: "10:00",
+          close: "17:00",
           isHoliday: false,
         })),
       });
@@ -70,8 +80,10 @@ const BusinessOpeningHours = ({
         >
           {/* Left side: Day and open time (open time below day) */}
           <div className="flex flex-col">
-            <div className={clsx("w-12 font-semibold", textSecondary)}>
-              {t(hour.day)}
+            <div
+              className={clsx("font-semibold capitalize mb-1", textSecondary)}
+            >
+              {t(dayFullKey[hour.day])}
             </div>
             <div className="flex gap-4 items-center">
               <input
@@ -110,7 +122,7 @@ const BusinessOpeningHours = ({
                 className="w-4 h-4 rounded border-gray-300"
               />
               <span className={isDark ? "text-gray-300" : "text-gray-700"}>
-                Closed
+                {t("closed")}
               </span>
             </label>
           </div>

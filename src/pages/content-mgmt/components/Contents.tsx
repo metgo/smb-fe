@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import React, { useState, useCallback } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useCommon } from "@/hooks/useCommon";
 import { ContentCard } from "./sub-components";
@@ -35,7 +36,7 @@ interface Filters {
 
 interface ContentsProps {
   selected: string | null;
-  setSelected: (v: string | null) => void;
+  setSelected: (v: string) => void;
   isLoading: boolean;
   isExpanded: boolean;
   viewMode: TViewMode;
@@ -52,6 +53,8 @@ interface ContentsProps {
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   currentTab: string;
+  loadMore?: () => void;
+  hasMore?: boolean;
 }
 const FILTER_OPTIONS = [
   "Businesses",
@@ -169,11 +172,13 @@ const Contents = ({
   searchQuery,
   setSearchQuery,
   currentTab,
+  loadMore,
+  hasMore,
 }: ContentsProps) => {
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
-  const { isDark, language } = useThemeClasses();
+  const { isDark, language, textTertiary } = useThemeClasses();
   const { categories: categoryFilter } = useCommon();
 
   const [showFilters, setShowFilters] = useState(false);
@@ -285,12 +290,14 @@ const Contents = ({
                 return (
                   <button
                     key={option}
-                    onClick={() => setSelected(isSelected ? null : option)}
+                    onClick={() => setSelected(option)}
                     className={clsx(
                       "group relative flex items-center gap-0.5 rounded-md px-2 py-1.5 transition-colors border",
                       isSelected
-                        ? "bg-teal-500/15 border-teal-500/40 text-teal-600 dark:text-teal-400"
-                        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300",
+                        ? "bg-teal-500/15 border-teal-500/40 text-teal-600"
+                        : isDark
+                          ? "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
+                          : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600",
                     )}
                   >
                     {FILTER_ICONS[option]}
@@ -298,21 +305,30 @@ const Contents = ({
                       className={clsx(
                         "text-xs font-medium",
                         isSelected
-                          ? "text-teal-600 dark:text-teal-400"
-                          : "text-gray-500 dark:text-gray-400",
+                          ? "text-teal-600"
+                          : isDark
+                            ? "text-gray-400"
+                            : "text-gray-500",
                       )}
                     >
                       {option}
                     </span>
                     {isTabLoading ? (
-                      <span className="w-5 h-3 rounded animate-pulse bg-gray-300 dark:bg-gray-600 inline-block" />
+                      <span
+                        className={clsx(
+                          "w-5 h-3 rounded animate-pulse inline-block",
+                          isDark ? "bg-gray-600" : "bg-gray-300",
+                        )}
+                      />
                     ) : (
                       <span
                         className={clsx(
                           "text-xs leading-none tabular-nums font-bold px-1.5 py-0.5 rounded-full",
                           isSelected
-                            ? "bg-teal-500/20 text-teal-600 dark:text-teal-400"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400",
+                            ? "bg-teal-500/20 text-teal-600"
+                            : isDark
+                              ? "bg-gray-700 text-gray-400"
+                              : "bg-gray-100 text-gray-500",
                         )}
                       >
                         {count}
@@ -637,25 +653,44 @@ const Contents = ({
         onClick={handleContainerClick}
       >
         <Spinner isLoading={isLoading} />
-        <div className={clsx("grid grid-cols-12 gap-2")}>
-          {combinedBusinesses?.map((item: any) => (
-            <ContentCard
-              key={item._id}
-              _id={item._id}
-              name={item?.name}
-              descripition={item?.shortDescription}
-              image={item?.images?.[0]?.image}
-              categoryName={item?.primaryCategoryId?.name}
-              viewMode={viewMode}
-              isExpanded={isExpanded}
-              isSelected={selectedItems.has(item._id)}
-              selectedItems={selectedItems}
-              contentType={TAB_TO_CONTENT_TYPE[currentTab] ?? "business"}
-              handleClick={(e) => handleClick(e, item)}
-              handleContextMenu={() => handleContextMenu(item)}
-            />
-          ))}
-        </div>
+        <InfiniteScroll
+          dataLength={combinedBusinesses?.length ?? 0}
+          next={() => loadMore?.()}
+          hasMore={!!hasMore}
+          scrollableTarget="scrollableDiv"
+          loader={
+            <p className={clsx("text-center mt-4", textTertiary)}>
+              {tc("loading_text")}
+            </p>
+          }
+          endMessage={
+            hasMore === false && (
+              <p className={clsx("text-center mt-4", textTertiary)}>
+                {tc("loading_end_text")}
+              </p>
+            )
+          }
+        >
+          <div className={clsx("grid grid-cols-12 gap-2")}>
+            {combinedBusinesses?.map((item: any) => (
+              <ContentCard
+                key={item._id}
+                _id={item._id}
+                name={item?.name}
+                descripition={item?.shortDescription}
+                image={item?.images?.[0]?.image}
+                categoryName={item?.primaryCategoryId?.name}
+                viewMode={viewMode}
+                isExpanded={isExpanded}
+                isSelected={selectedItems.has(item._id)}
+                selectedItems={selectedItems}
+                contentType={TAB_TO_CONTENT_TYPE[currentTab] ?? "business"}
+                handleClick={(e) => handleClick(e, item)}
+                handleContextMenu={() => handleContextMenu(item)}
+              />
+            ))}
+          </div>
+        </InfiniteScroll>
       </div>
     </div>
   );

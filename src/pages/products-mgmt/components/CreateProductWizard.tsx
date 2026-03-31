@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -80,6 +80,7 @@ export default function CreateProductWizard({
     textTertiary,
     textSecondary,
     borderColor,
+    isDark,
   } = useThemeClasses();
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
@@ -321,6 +322,65 @@ export default function CreateProductWizard({
     useInitProductCreateMutation();
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
 
+  const completionPercent = useMemo(() => {
+    const checks = [
+      // Basic Info (35%)
+      {
+        weight: 10,
+        filled: !!(
+          formData.name?.trim() ||
+          formData.nameHe?.trim() ||
+          formData.nameAr?.trim()
+        ),
+      },
+      {
+        weight: 8,
+        filled: !!(
+          formData.shortDescription?.trim() ||
+          formData.shortDescriptionHe?.trim() ||
+          formData.shortDescriptionAr?.trim()
+        ),
+      },
+      {
+        weight: 7,
+        filled: !!(
+          formData.fullDescription?.trim() ||
+          formData.fullDescriptionHe?.trim() ||
+          formData.fullDescriptionAr?.trim()
+        ),
+      },
+      { weight: 10, filled: !!formData.businessId },
+      // Attributes (15%)
+      { weight: 10, filled: !!formData.primaryCategory?.trim() },
+      { weight: 5, filled: formData.tags?.length > 0 },
+      // Pricing (20%)
+      {
+        weight: 15,
+        filled: !!(
+          formData.sellingPrice && parseFloat(formData.sellingPrice) > 0
+        ),
+      },
+      {
+        weight: 5,
+        filled: !!(
+          formData.isUnlimited ||
+          (formData.quantity && parseInt(formData.quantity) >= 0)
+        ),
+      },
+      // Media (15%)
+      { weight: 15, filled: (images?.length ?? 0) > 0 },
+      // Delivery (15%)
+      { weight: 15, filled: formData.deliveryArea?.length > 0 },
+    ];
+
+    const total = checks.reduce((sum, c) => sum + c.weight, 0);
+    const earned = checks.reduce(
+      (sum, c) => sum + (c.filled ? c.weight : 0),
+      0,
+    );
+    return Math.round((earned / total) * 100);
+  }, [formData, images]);
+
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
     { number: 2, title: t("product_segmentation"), icon: Package },
@@ -415,6 +475,7 @@ export default function CreateProductWizard({
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
+    completionPercent: completionPercent,
     businessId: formData.businessId,
 
     name: formData.name,
@@ -604,7 +665,56 @@ export default function CreateProductWizard({
         </div>
 
         {/* Right content */}
-        <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+        <div className="flex items-center gap-4">
+          {/* Impact Percent Indicator */}
+          <div className="flex flex-col items-center gap-1">
+            <div className="relative w-14 h-14">
+              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  strokeDasharray={`${2 * Math.PI * 22}`}
+                  strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                  stroke={
+                    completionPercent >= 70
+                      ? "#16a34a"
+                      : completionPercent >= 40
+                        ? "#f59e0b"
+                        : "#ef4444"
+                  }
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className={clsx(
+                    "text-xs font-bold",
+                    completionPercent >= 70
+                      ? "text-green-600"
+                      : completionPercent >= 40
+                        ? "text-amber-500"
+                        : "text-red-500",
+                  )}
+                >
+                  {completionPercent}%
+                </span>
+              </div>
+            </div>
+          </div>
+          <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+        </div>
       </div>
 
       {/* Progress Bar */}

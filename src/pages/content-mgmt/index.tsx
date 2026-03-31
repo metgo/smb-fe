@@ -29,7 +29,7 @@ import { Spinner } from "@/components/shared";
 import { PublishButton } from "@/components/btns";
 import { skipToken } from "@reduxjs/toolkit/query";
 import DraftButton from "@/components/btns/DraftButton";
-import { useLazyGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentByExternalIdQuery } from "@/store/api/contentQueryApi";
 import {
   useCreateContentMutation,
@@ -141,7 +141,7 @@ const PanelExpandButton = ({
 export default function ContentMgmtPage() {
   const { t } = useTranslation("content");
   const { t: tt } = useTranslation("toast");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string>("Businesses");
 
   const { isDark, language, isRTL } = useThemeClasses();
 
@@ -174,6 +174,7 @@ export default function ContentMgmtPage() {
   const initialTemplateContent: IContentTemplate[] = [
     {
       topic: "מה בא לכם לעשות?",
+      isPrimary: false,
       isHideTopic: false,
       groups: [
         {
@@ -186,6 +187,7 @@ export default function ContentMgmtPage() {
     },
     {
       topic: "מוצרים ושירותים",
+      isPrimary: false,
       isHideTopic: false,
       groups: [
         {
@@ -208,12 +210,17 @@ export default function ContentMgmtPage() {
   const [showSendResults, setShowSendResults] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
+  const [page, setPage] = useState(1);
 
   const initializedRef = useRef(false);
+  const businessInitializedRef = useRef(false);
+  const productInitializedRef = useRef(false);
 
   // Reset state immediately when externalApiId changes to avoid stale templateContentId
   useEffect(() => {
     initializedRef.current = false;
+    businessInitializedRef.current = false;
+    productInitializedRef.current = false;
     setHeader("<p></p>");
     setTemplateContentId(null);
     setContentStatus("draft");
@@ -223,6 +230,8 @@ export default function ContentMgmtPage() {
   // Recreate initialTemplateContent when dmoId or authorityId changes
   useEffect(() => {
     initializedRef.current = false;
+    businessInitializedRef.current = false;
+    productInitializedRef.current = false;
     setTemplateContent(initialTemplateContent);
   }, [dmoId, authorityId]);
 
@@ -263,6 +272,7 @@ export default function ContentMgmtPage() {
                 ],
               };
             }),
+            isPrimary: topic.isPrimary,
           }),
         );
         setContentStatus(
@@ -308,6 +318,9 @@ export default function ContentMgmtPage() {
   const tripTab = tabState["Trips"];
   const eventTab = tabState["Events"];
   const poiTab = tabState["POI"];
+
+  const [productPage, setProductPage] = useState(1);
+
   const businessParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Businesses"];
     const params: any = {
@@ -317,6 +330,8 @@ export default function ContentMgmtPage() {
       authorityId,
       locale: language,
       status: "APPROVED",
+      page,
+      limit: BUSINESS_PAGE_LIMIT,
     };
     if (searchQuery) params.search = searchQuery;
     if (filters.hasProductFilter !== "all")
@@ -324,7 +339,7 @@ export default function ContentMgmtPage() {
     if (filters.primaryCategory !== "all")
       params.primaryCategory = filters.primaryCategory;
     return params;
-  }, [businessTab, dmoId, startDate, endDate, authorityId, language]);
+  }, [businessTab, dmoId, startDate, endDate, authorityId, language, page]);
 
   const productParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Products"];
@@ -332,19 +347,22 @@ export default function ContentMgmtPage() {
       status: "APPROVED",
       dmoId,
       authorityId,
+      limit: BUSINESS_PAGE_LIMIT,
+      page: productPage,
     };
     if (filters.businessId) {
       params.businessId = filters.businessId;
     }
     if (searchQuery) params.search = searchQuery;
     return params;
-  }, [productTab, language, dmoId, authorityId, externalApiId]);
+  }, [productTab, language, dmoId, authorityId, externalApiId, productPage]);
 
   const tripParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Trips"];
     const params: any = {
       dmoId,
       authorityId,
+      limit: BUSINESS_PAGE_LIMIT,
     };
 
     if (filters.isTrip !== "all") {
@@ -357,7 +375,7 @@ export default function ContentMgmtPage() {
 
   const eventParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Events"];
-    const params: any = { status: "APPROVED" };
+    const params: any = { status: "APPROVED", limit: BUSINESS_PAGE_LIMIT };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
@@ -380,63 +398,88 @@ export default function ContentMgmtPage() {
     const params: any = {
       dmoId,
       authorityId,
+      limit: BUSINESS_PAGE_LIMIT,
     };
     return params;
   }, [poiTab, language, dmoId, authorityId]);
 
-  const [fetchBusinesses] = useLazyGetAllbusinessesQuery();
-  const [allBusinessItems, setAllBusinessItems] = useState<any[]>([]);
-  const [businessTotalData, setBusinessTotalData] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const fetchGenRef = useRef(0);
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
-  const fetchBusinessChunks = useCallback(
-    async (params: any) => {
-      const gen = ++fetchGenRef.current;
-      setIsLoading(true);
-      setAllBusinessItems([]);
-      setBusinessTotalData(0);
+  const {
+    data: businessData,
+    isLoading,
+    isFetching,
+  } = useGetAllbusinessesQuery(businessParams);
 
-      let page = 1;
-      const accumulated: any[] = [];
-
-      while (true) {
-        if (gen !== fetchGenRef.current) return;
-        try {
-          const result = await fetchBusinesses({
-            ...params,
-            page,
-            limit: BUSINESS_PAGE_LIMIT,
-          }).unwrap();
-          if (gen !== fetchGenRef.current) return;
-
-          const items: any[] = result?.data ?? [];
-          const total: number = result?.totalData ?? 0;
-          accumulated.push(...items);
-          setAllBusinessItems([...accumulated]);
-          setBusinessTotalData(total);
-
-          if (items.length === 0 || accumulated.length >= total) break;
-          page++;
-        } catch {
-          break;
-        }
-      }
-
-      if (gen === fetchGenRef.current) setIsLoading(false);
-    },
-    [fetchBusinesses],
-  );
+  const businessHasMore = businessData?.meta?.hasNextPage;
 
   useEffect(() => {
-    fetchBusinessChunks(businessParams);
-  }, [businessParams]);
+    setPage(1);
+    setCombinedBusinesses([]);
+  }, [
+    businessTab.searchQuery,
+    businessTab.filters,
+    dmoId,
+    authorityId,
+    startDate,
+    endDate,
+  ]);
 
-  const businessData = { data: allBusinessItems, totalData: businessTotalData };
+  useEffect(() => {
+    if (!businessData?.data) return;
+    if (page === 1) {
+      setCombinedBusinesses(businessData.data);
+    } else {
+      setCombinedBusinesses((prev) => {
+        const existingIds = new Set(prev.map((b) => b._id));
+        const newItems = businessData.data.filter(
+          (b: any) => !existingIds.has(b._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [businessData?.data, page]);
 
-  const { data: productData, isLoading: isLoadingProduct } =
-    useGetAllProductsQuery(selected === "Products" ? productParams : skipToken);
-  console.log("🚀 ~ ContentMgmtPage ~ productData:", productData);
+  const fetchNextPage = () => {
+    if (!businessHasMore || isFetching) return;
+    setPage((prev) => prev + 1);
+  };
+
+  const {
+    data: productData,
+    isLoading: isLoadingProduct,
+    isFetching: isFetchingProduct,
+  } = useGetAllProductsQuery(
+    selected === "Products" ? productParams : skipToken,
+  );
+
+  const productHasMore = productData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    setProductPage(1);
+    setCombinedProducts([]);
+  }, [productTab.searchQuery, productTab.filters, dmoId, authorityId]);
+
+  useEffect(() => {
+    if (!productData?.data) return;
+    if (productPage === 1) {
+      setCombinedProducts(productData.data);
+    } else {
+      setCombinedProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p._id));
+        const newItems = productData.data.filter(
+          (p: any) => !existingIds.has(p._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [productData?.data, productPage]);
+
+  const fetchNextProductPage = () => {
+    if (!productHasMore || isFetchingProduct) return;
+    setProductPage((prev) => prev + 1);
+  };
 
   const { data: tripData, isLoading: isLoadingTrip } = useGetAllTripsQuery(
     selected === "Trips" ? tripParams : skipToken,
@@ -482,16 +525,38 @@ export default function ContentMgmtPage() {
   useEffect(() => {
     if (templateContentId) return;
     initializedRef.current = false;
+    businessInitializedRef.current = false;
+    productInitializedRef.current = false;
   }, [filters, searchQuery]);
 
   useEffect(() => {
     if (templateContentId) return;
     initializedRef.current = false;
+    businessInitializedRef.current = false;
+    productInitializedRef.current = false;
   }, [selected]);
 
-  const dataMap: Record<string, { rawData: any; isLoading: boolean }> = {
-    Businesses: { rawData: businessData, isLoading },
-    Products: { rawData: productData, isLoading: isLoadingProduct },
+  const dataMap: Record<
+    string,
+    {
+      rawData: any;
+      isLoading: boolean;
+      loadMore?: () => void;
+      hasMore?: boolean;
+    }
+  > = {
+    Businesses: {
+      rawData: combinedBusinesses,
+      isLoading,
+      loadMore: fetchNextPage,
+      hasMore: businessHasMore,
+    },
+    Products: {
+      rawData: combinedProducts,
+      isLoading: isLoadingProduct,
+      loadMore: fetchNextProductPage,
+      hasMore: productHasMore,
+    },
     Trips: { rawData: tripData, isLoading: isLoadingTrip },
     Events: { rawData: eventData, isLoading: isLoadingEvent },
     POI: { rawData: poiData, isLoading: isLoadingPOI },
@@ -500,109 +565,119 @@ export default function ContentMgmtPage() {
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (tab === "POI") return rawData;
+    if (tab === "POI" || tab === "Businesses" || tab === "Products")
+      return rawData;
     return rawData?.data ?? [];
   };
   const combinedItems: any[] = getItems(active?.rawData, selected);
 
+  const buildGroups = (
+    items: any[],
+    contentType: IContent["contentType"],
+  ): IContentGroup[] => {
+    const grouped = items.reduce<Record<string, IContent[]>>((acc, item) => {
+      const categoryName = item?.primaryCategoryId?.hebrewName;
+      if (!categoryName) return acc;
+      if (!acc[categoryName]) acc[categoryName] = [];
+      acc[categoryName].push({
+        _id: item._id,
+        name: item.name,
+        desc: item.shortDescription || item.description || "",
+        imageUrl: item?.images?.[0]?.image || "",
+        primaryCategory: categoryName,
+        contentType,
+        title: item.name || "",
+        message: item.shortDescription || item.description || "",
+      });
+      return acc;
+    }, {});
+
+    return (Object.entries(grouped) as [string, IContent[]][]).map(
+      ([category, contents]) => ({
+        category,
+        isPrimary: false,
+        isHideCategory: false,
+        contents,
+      }),
+    );
+  };
+
+  // ── Businesses → topic[0] ──────────────────────────────────────────────────
   useEffect(() => {
-    if (initializedRef.current) return;
+    if (businessInitializedRef.current) return;
     if (templateContentId) return;
-    // Wait for the fetch to settle before deciding no saved content exists
     if (externalApiId && (isTemplateFetching || isTemplateLoading)) return;
-    // If the API already has saved content for this site, let the API effect handle it
     if (
       externalApiId &&
       templateContentsData?.externalApiId?._id === externalApiId
     )
       return;
-    if (!combinedItems.length) return;
+    if (!combinedBusinesses.length) return;
 
-    const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
-      Businesses: "business",
-      Products: "product",
-      Trips: "trip",
-      Events: "event",
-      POI: "poi",
-    };
-
-    const grouped = combinedItems?.reduce<Record<string, IContent[]>>(
-      (acc, item) => {
-        const categoryName = item?.primaryCategoryId?.hebrewName;
-        if (!categoryName) return acc;
-        if (!acc[categoryName]) acc[categoryName] = [];
-        acc[categoryName].push({
-          _id: item._id,
-          name: item.name,
-          desc: item.shortDescription || item.description || "",
-          imageUrl: item?.images?.[0]?.image || "",
-          primaryCategory: categoryName,
-          contentType: TAB_TO_CONTENT_TYPE[currentTab] ?? "business",
-          title: item.name || "",
-          message: item.shortDescription || item.description || "",
-        });
-        return acc;
-      },
-      {} as Record<string, IContent[]>,
-    );
-
-    const groups: IContentGroup[] = (
-      Object.entries(grouped) as [string, IContent[]][]
-    ).map(([category, contents]) => ({
-      category,
-      isPrimary: false,
-      isHideCategory: false,
-      contents,
-    }));
-
+    const groups = buildGroups(combinedBusinesses, "business");
     if (!groups.length) return;
 
-    initializedRef.current = true;
-    if (currentTab === "Products") {
-      setTemplateContent((prev) => {
-        const updated = [...prev];
-        const idx = updated.findIndex(
-          (t) => t.topic === initialTemplateContent[1].topic,
-        );
-        const productTopic = {
-          topic: initialTemplateContent[1].topic,
-          isHideTopic: false,
-          groups,
-        };
-        if (idx !== -1) {
-          updated[idx] = productTopic;
-        } else {
-          updated.push(productTopic);
-        }
-        return updated;
-      });
-    } else {
-      setTemplateContent((prev) => {
-        const updated = [...prev];
-        const idx = updated.findIndex(
-          (t) => t.topic === initialTemplateContent[0].topic,
-        );
-        const businessTopic = {
-          topic: initialTemplateContent[0].topic,
-          isHideTopic: false,
-          groups,
-        };
-        if (idx !== -1) {
-          updated[idx] = businessTopic;
-        } else {
-          updated.unshift(businessTopic);
-        }
-        return updated;
-      });
-    }
+    businessInitializedRef.current = true;
+    setTemplateContent((prev) => {
+      const updated = [...prev];
+      const idx = updated.findIndex(
+        (t) => t.topic === initialTemplateContent[0].topic,
+      );
+      const topic = {
+        topic: initialTemplateContent[0].topic,
+        isHideTopic: false,
+        groups,
+      };
+      if (idx !== -1) updated[idx] = topic;
+      else updated.unshift(topic);
+      return updated;
+    });
   }, [
-    combinedItems,
+    combinedBusinesses,
     templateContentId,
     externalApiId,
     isTemplateFetching,
     isTemplateLoading,
     templateContentsData,
-    selected,
+  ]);
+
+  // ── Products → topic[1] ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (productInitializedRef.current) return;
+    if (templateContentId) return;
+    if (externalApiId && (isTemplateFetching || isTemplateLoading)) return;
+    if (
+      externalApiId &&
+      templateContentsData?.externalApiId?._id === externalApiId
+    )
+      return;
+    if (!combinedProducts.length) return;
+
+    const groups = buildGroups(combinedProducts, "product");
+    if (!groups.length) return;
+
+    productInitializedRef.current = true;
+    setTemplateContent((prev) => {
+      const updated = [...prev];
+      const idx = updated.findIndex(
+        (t) => t.topic === initialTemplateContent[1].topic,
+      );
+      const topic = {
+        topic: initialTemplateContent[1].topic,
+        isHideTopic: false,
+        groups,
+      };
+      if (idx !== -1) updated[idx] = topic;
+      else updated.push(topic);
+      return updated;
+    });
+  }, [
+    combinedProducts,
+    templateContentId,
+    externalApiId,
+    isTemplateFetching,
+    isTemplateLoading,
+    templateContentsData,
   ]);
 
   const onStatusChangeHandler = async (status: string) => {
@@ -667,6 +742,7 @@ export default function ContentMgmtPage() {
 
             return {
               title: template.topic,
+              isPrimary: template.isPrimary,
               isArchived: template.isHideTopic,
               order: index,
               siteCategories: filteredCategories,
@@ -856,7 +932,11 @@ export default function ContentMgmtPage() {
                       isExpanded={focus === "both"}
                       viewMode={viewMode}
                       setViewMode={setViewMode}
-                      totalData={active?.rawData?.totalData}
+                      totalData={
+                        selected === "Products"
+                          ? productData?.totalData
+                          : active?.rawData?.totalData
+                      }
                       tabCounts={{
                         Businesses: businessData?.totalData ?? 0,
                         Products: productData?.totalData ?? 0,
@@ -880,6 +960,8 @@ export default function ContentMgmtPage() {
                       searchQuery={searchQuery} //  per-tab
                       setSearchQuery={setSearchQuery} //  per-tab
                       isLoading={active.isLoading}
+                      loadMore={active?.loadMore}
+                      hasMore={active?.hasMore}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
                     />

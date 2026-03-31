@@ -14,6 +14,7 @@ import NotificationsMgmtPage from "./notification-mgmt";
 import AnalyticsDashboardPage from "./analytics-dashboard";
 import VouchersMgmtPage from "./vouchers-mgmt";
 import VoucherDetailsPage from "./vouchers-mgmt/details";
+import WebsiteMgmtPage from "./website-mgmt";
 
 export {
   AuthPage,
@@ -32,4 +33,5 @@ export {
   ContentMgmtPage,
   VouchersMgmtPage,
   VoucherDetailsPage,
+  WebsiteMgmtPage,
 };
