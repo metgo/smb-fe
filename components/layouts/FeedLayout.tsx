@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import { useFeedFilter } from "@/hooks";
+import { useFeedFilter, useFeedFilterUrlSync } from "@/hooks";
 
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import BusinessPinMap from "../maps/BusinessPinMap";
@@ -10,16 +10,14 @@ import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 
-import { SearchButton } from "../filter-icon/SearchButton";
 interface FeedLayoutProps {
   selectedFiltersIds: any;
 }
 
 const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
+  useFeedFilterUrlSync();
+
   const {
-
-    handleResetFilters: resetLocalFilters,
-
     activeFilterTab,
     hideFirstTwoSection,
     setIsFilterDrawerOpen,
@@ -27,14 +25,12 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     setShowFavoriteFeedItems,
     selectedSiteCategories,
     feedFilterState,
-    resetFeedFilters,
 
     filters,
     totalBusiness,
     visibleFeedItems,
     handleFilterTooltipShown,
   } = useFeedFilter(selectedFiltersIds);
-  console.log("🚀 ~ FeedLayout ~ isFilterDrawerOpen:", isFilterDrawerOpen)
 
   const totalLength = Object.values(feedFilterState).reduce(
     (sum, arr) => sum + arr.length,
@@ -43,13 +39,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
 
   const totalActiveFilters =
     totalLength + (selectedSiteCategories?.length || 0);
-
-  const handleResetFilters = () => {
-    resetLocalFilters();
-    resetFeedFilters();
-  };
-
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
@@ -60,7 +49,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
   const handleFilterIconClick = () => {
     const newState = !isFilterDrawerOpen;
     setIsFilterDrawerOpen(newState);
-    setIsFilterOpen(newState);
     handleFilterTooltipShown(true);
   };
 
@@ -72,7 +60,10 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           <OnlyFeedCardsLayout
             filters={filters}
             data={visibleFeedItems}
-            isFilterOpen={isFilterOpen}
+            isFilterOpen={isFilterDrawerOpen}
+            hideFirstTwoSection={hideFirstTwoSection}
+            onFilterIconClick={handleFilterIconClick}
+            totalActiveFilters={totalActiveFilters}
           />
         );
       case "integrated":
@@ -94,23 +85,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
           <div className="bg-primary">{renderLayout()}</div>
         )}
 
-        {/* Filter Button */}
-        {hideFirstTwoSection && (
-          <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
-            <SearchButton
-              onClick={handleFilterIconClick}
-              activeFiltersCount={totalActiveFilters}
-              isFilterDrawerOpen={isFilterDrawerOpen}
-              variant="continuous"
-              size={96}
-            />
-          </div>
-        )}
-        {/* <FeedFilterDrawer
-          isOpen={isFilterOpen}
-          visibleFeedItems={visibleFeedItems}
-          filters={filters}
-        /> */}
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>
     </>

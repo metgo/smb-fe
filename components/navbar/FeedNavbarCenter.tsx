@@ -66,7 +66,6 @@ export default function FeedNavbarCenter() {
   if (!headerText && allCategories.length === 0) return null;
   if (isCategoryHeaderInView) return null;
 
-  console.log("🚀 ~ FeedNavbarCenter ~ allCategories:", allCategories);
   return (
     <div className="flex items-center gap-3 justify-center">
       {headerText && (

@@ -16,17 +16,24 @@ import FeedCategoryButtons from "./FeedCategoryButtons";
 
 import useGeneralStore from "@/stores/generalStore";
 import { FeedFilterDrawer } from "../drawer";
+import { SearchButton } from "../filter-icon/SearchButton";
 
 interface OnlyFeedCardsLayoutProps {
   data: FeedItemList;
   filters: any;
   isFilterOpen: boolean;
+  hideFirstTwoSection: boolean;
+  onFilterIconClick: () => void;
+  totalActiveFilters: number;
 }
 
 const OnlyFeedCardsLayout = ({
   data,
   filters,
   isFilterOpen,
+  hideFirstTwoSection,
+  onFilterIconClick,
+  totalActiveFilters,
 }: OnlyFeedCardsLayoutProps) => {
   const feedItemCount = data?.length;
   const { presetFeedFilters, setIsCategoryHeaderInView } = useGeneralStore();
@@ -43,7 +50,7 @@ const OnlyFeedCardsLayout = ({
     return () => observer.disconnect();
   }, []);
 
-  const DRAWER_WIDTH = 524; // 500px drawer + 24px gap
+  const DRAWER_WIDTH = 500; // 500px drawer + 24px gap
 
   const [scale, setScale] = useState(1);
 
@@ -219,12 +226,13 @@ const OnlyFeedCardsLayout = ({
     const columnLayout = onlyCardsColumns[safeLayoutKey] ?? null;
 
     const extraBusinesses = feedItemCount > 16 ? data.slice(16) : [];
-    const extraColumnCount = isFilterOpen ? 3 : 5;
+    const extraColumnCount = 5;
 
     return (
       <div key="layout-root">
         {renderLayoutSection(layout, columnLayout, 0, 0)}
-        {feedItemCount > 16 && renderExtraCards(extraBusinesses, extraColumnCount)}
+        {feedItemCount > 16 &&
+          renderExtraCards(extraBusinesses, extraColumnCount)}
       </div>
     );
   };
@@ -237,6 +245,7 @@ const OnlyFeedCardsLayout = ({
       >
         {presetFeedFilters?.header && (
           <div
+            className="mb-2"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(presetFeedFilters?.header || ""),
             }}
@@ -245,30 +254,40 @@ const OnlyFeedCardsLayout = ({
         <FeedCategoryButtons />
       </div>
 
-      {data?.length ? (
-        <div
-          className={clsx(
-            "px-20 py-10 flex w-full h-full relative",
-            isFilterOpen ? "items-start justify-start gap-6" : "items-center justify-center",
-          )}
-          >
-          <AnimatePresence>
-            {isFilterOpen && (
-              <FeedFilterDrawer
-                key="feed-filter-drawer"
-                isInline
-                visibleFeedItems={data}
-                filters={filters}
-              />
-            )}
-          </AnimatePresence>
-          <div className="flex flex-col gap-5 items-start justify-start">
-            {renderFullLayout()}
-          </div>
+      {hideFirstTwoSection && (
+        <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block z-50">
+          <SearchButton
+            onClick={onFilterIconClick}
+            activeFiltersCount={totalActiveFilters}
+            isFilterDrawerOpen={isFilterOpen}
+            variant="continuous"
+            size={96}
+          />
         </div>
-      ) : (
-        <NoFeedItemLayout />
       )}
+
+      <div
+        className={clsx(
+          "px-10 py-6 flex mx-auto h-full relative",
+          isFilterOpen
+            ? "items-start justify-start gap-3"
+            : "items-center justify-center",
+        )}
+      >
+        <AnimatePresence>
+          {isFilterOpen && (
+            <FeedFilterDrawer
+              key="feed-filter-drawer"
+              isInline
+              visibleFeedItems={data}
+              filters={filters}
+            />
+          )}
+        </AnimatePresence>
+        <div className="flex flex-col gap-5 items-start justify-start">
+          {data?.length ? renderFullLayout() : <NoFeedItemLayout />}
+        </div>
+      </div>
     </>
   );
 };

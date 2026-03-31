@@ -5,13 +5,19 @@ import { useState, useEffect, useRef, ReactNode } from "react";
 type Props = {
   children: ReactNode;
   fallback: ReactNode;
+  loadImmediately?: boolean;
 };
 
-export default function LazyFeedSection({ children, fallback }: Props) {
-  const [shouldLoad, setShouldLoad] = useState(false);
+export default function LazyFeedSection({
+  children,
+  fallback,
+  loadImmediately = false,
+}: Props) {
+  const [shouldLoad, setShouldLoad] = useState(loadImmediately);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (shouldLoad) return; // already loaded (e.g. loadImmediately=true)
     const container = containerRef.current;
     if (!container) return;
 

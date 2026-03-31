@@ -19,7 +19,7 @@ const emptyFeedFilterState: FeedFilterState = {
   subCategoryIds: [],
   groupTypeIds: [],
   accessibilityIds: [],
-  serviceTypes: ["event", "business", "funday"],
+  serviceTypes: ["event", "business", "funday", "trip"],
 };
 
 type LatLngType = {
@@ -159,6 +159,7 @@ interface GeneralStoreState {
   setFeedSearchKeyword: (v: string) => void;
   feedFilterState: FeedFilterState;
   toggleFeedFilter: (key: FeedFilterKey, value: string) => void;
+  setFeedFilterState: (state: FeedFilterState) => void;
   resetFeedFilters: () => void;
   clearSiteCategories: () => void;
 }
@@ -274,14 +275,16 @@ const useGeneralStore = create<GeneralStoreState>((set) => {
     setFeedSearchKeyword: (v) => set({ feedSearchKeyword: v }),
 
     feedFilterState: emptyFeedFilterState,
-    toggleFeedFilter: (key, value) =>
-      set((state) => {
+    toggleFeedFilter: (key, value) => {
+      return set((state) => {
         const current = state.feedFilterState[key] ?? [];
         const next = current.includes(value)
           ? current.filter((i) => i !== value)
           : [...current, value];
         return { feedFilterState: { ...state.feedFilterState, [key]: next } };
-      }),
+      });
+    },
+    setFeedFilterState: (state) => set({ feedFilterState: state }),
     resetFeedFilters: () => set({ feedFilterState: emptyFeedFilterState }),
     clearSiteCategories: () =>
       set({

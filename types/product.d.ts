@@ -3,6 +3,7 @@ declare interface ProductDetailsProps {
   name: string;
   dmoId: string;
   description: string;
+  shortDescription?: string;
   images: ImageItem[];
   price: Price;
   quantity: {

@@ -171,8 +171,6 @@ export default function useFeedFilter(selectedFiltersIds: FiltersProps) {
     });
   };
 
-  
-
   const clearParam = (key: FilterKey) => {
     setFilterState((prev) => {
       const updated = {

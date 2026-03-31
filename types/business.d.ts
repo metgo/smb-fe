@@ -126,7 +126,7 @@ declare interface Product {
 }
 
 declare interface OpeningHrs {
-  days: string;
+  day: string;
   open: string;
   close: string;
   isHoliday: boolean;
