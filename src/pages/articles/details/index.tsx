@@ -1,11 +1,22 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
-  ArrowLeft, Edit, FileText, Copy, Calendar, Globe, Tag, TrendingUp,
-  MousePointer, Image as ImageIcon, Eye, Clock, Share2, BarChart3
-} from 'lucide-react';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { useTranslation } from 'react-i18next';
-
+  ArrowLeft,
+  Edit,
+  FileText,
+  Copy,
+  Calendar,
+  Globe,
+  Tag,
+  TrendingUp,
+  MousePointer,
+  Image as ImageIcon,
+  Eye,
+  Clock,
+  Share2,
+  BarChart3,
+} from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Article {
   id: string;
@@ -14,7 +25,7 @@ interface Article {
   title: { en: string; he: string; ar: string };
   shortDescription: { en: string; he: string; ar: string };
   slug: string;
-  status: 'draft' | 'published' | 'scheduled' | 'archived';
+  status: "draft" | "published" | "scheduled" | "archived";
   tags: string[];
   primaryMedia: string;
   author: string;
@@ -33,41 +44,51 @@ interface ArticleDetailsProps {
   onDuplicate: () => void;
 }
 
-const USER_ROLE = 'admin'; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
+const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
-export default function ArticleDetails({ article, theme, onBack, onEdit, onDuplicate }: ArticleDetailsProps) {
-   const { t } = useTranslation("common");
-    const { isDark, isRTL, language } = useThemeClasses();
-  const [activeTab, setActiveTab] = useState('overview');
+export default function ArticleDetails({
+  article,
+  theme,
+  onBack,
+  onEdit,
+  onDuplicate,
+}: ArticleDetailsProps) {
+  const { t } = useTranslation("common");
+  const { isDark, isRTL, language } = useThemeClasses();
+  const [activeTab, setActiveTab] = useState("overview");
 
-  const canEdit = ['superadmin', 'admin', 'dmo', 'authority'].includes(USER_ROLE);
+  const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
+    USER_ROLE,
+  );
 
-  const bgPrimary = theme === 'dark' ? 'bg-gray-900' : 'bg-white';
-  const bgSecondary = theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50';
-  const textPrimary = theme === 'dark' ? 'text-white' : 'text-gray-900';
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-500';
-  const borderColor = theme === 'dark' ? 'border-gray-700' : 'border-gray-200';
+  const bgPrimary = theme === "dark" ? "bg-gray-900" : "bg-white";
+  const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
+  const textPrimary = theme === "dark" ? "text-white" : "text-gray-900";
+  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
+  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-500";
+  const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
   const tabs = [
-    { id: 'overview', label: t.overview || 'Overview', icon: FileText },
-    { id: 'content', label: 'Content', icon: FileText },
-    { id: 'seo', label: 'SEO & Publishing', icon: Globe },
-    { id: 'media', label: t.media || 'Media', icon: ImageIcon },
+    { id: "overview", label: t.overview || "Overview", icon: FileText },
+    { id: "content", label: "Content", icon: FileText },
+    { id: "seo", label: "SEO & Publishing", icon: Globe },
+    { id: "media", label: t.media || "Media", icon: ImageIcon },
   ];
 
-  const StatusBadge = ({ status }: { status: Article['status'] }) => {
+  const StatusBadge = ({ status }: { status: Article["status"] }) => {
     const statusConfig = {
-      draft: { color: 'bg-gray-500', label: 'Draft' },
-      published: { color: 'bg-green-500', label: 'Published' },
-      scheduled: { color: 'bg-blue-500', label: 'Scheduled' },
-      archived: { color: 'bg-orange-500', label: 'Archived' },
+      draft: { color: "bg-gray-500", label: "Draft" },
+      published: { color: "bg-green-500", label: "Published" },
+      scheduled: { color: "bg-blue-500", label: "Scheduled" },
+      archived: { color: "bg-orange-500", label: "Archived" },
     };
 
     const config = statusConfig[status];
 
     return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
+      >
         {config.label}
       </span>
     );
@@ -77,29 +98,27 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
     <div className="space-y-6">
       {/* Article Image */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Featured Image
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
         <div className="w-full h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
-          <img src={article.primaryMedia} alt={article.title[language as 'en' | 'he' | 'ar']} className="w-full h-full object-cover" />
+          <img
+            src={article.primaryMedia}
+            alt={article.title[language as "en" | "he" | "ar"]}
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
 
       {/* Short Description */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Short Description
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Short Description</h3>
         <p className={textPrimary}>
-          {article.shortDescription[language as 'en' | 'he' | 'ar']}
+          {article.shortDescription[language as "en" | "he" | "ar"]}
         </p>
       </div>
 
       {/* Website */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Website
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Website</h3>
         <div className={`flex items-center gap-2 ${textSecondary}`}>
           <Globe className="w-4 h-4" />
           <span>{article.websiteName}</span>
@@ -108,25 +127,21 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
 
       {/* Author */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Author
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Author</h3>
         <p className={textSecondary}>{article.author}</p>
       </div>
 
       {/* Tags */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Tags
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Tags</h3>
         <div className="flex flex-wrap gap-2">
           {article.tags.map((tag, idx) => (
             <span
               key={idx}
               className={`px-3 py-1 rounded-full text-sm ${
-                theme === 'dark'
-                  ? 'bg-blue-900/30 text-blue-400'
-                  : 'bg-blue-100 text-blue-800'
+                theme === "dark"
+                  ? "bg-blue-900/30 text-blue-400"
+                  : "bg-blue-100 text-blue-800"
               }`}
             >
               {tag}
@@ -138,26 +153,20 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
       {/* Dates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>
-            Created
-          </h3>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>Created</h3>
           <p className={textSecondary}>
             {new Date(article.createdAt).toLocaleString()}
           </p>
         </div>
         <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>
-            Last Updated
-          </h3>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>Last Updated</h3>
           <p className={textSecondary}>
             {new Date(article.updatedAt).toLocaleString()}
           </p>
         </div>
         {article.publishedAt && (
           <div>
-            <h3 className={`text-sm mb-2 ${textTertiary}`}>
-              Published
-            </h3>
+            <h3 className={`text-sm mb-2 ${textTertiary}`}>Published</h3>
             <p className={textSecondary}>
               {new Date(article.publishedAt).toLocaleString()}
             </p>
@@ -171,7 +180,9 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
     <div className="space-y-6">
       <div className={`p-6 rounded-lg border ${borderColor} ${bgSecondary}`}>
         <p className={textSecondary}>
-          Full article content editor would go here. This would include a rich text editor for managing the complete article body in multiple languages.
+          Full article content editor would go here. This would include a rich
+          text editor for managing the complete article body in multiple
+          languages.
         </p>
       </div>
     </div>
@@ -180,15 +191,14 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
   const renderSEO = () => (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          URL Slug
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>URL Slug</h3>
         <p className={textSecondary}>{article.slug}</p>
       </div>
 
       <div className={`p-6 rounded-lg border ${borderColor} ${bgSecondary}`}>
         <p className={textSecondary}>
-          SEO metadata, meta descriptions, keywords, and social sharing configurations would be displayed here.
+          SEO metadata, meta descriptions, keywords, and social sharing
+          configurations would be displayed here.
         </p>
       </div>
     </div>
@@ -197,11 +207,13 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
   const renderMedia = () => (
     <div className="space-y-6">
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>
-          Featured Image
-        </h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
         <div className="w-full h-80 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
-          <img src={article.primaryMedia} alt={article.title[language as 'en' | 'he' | 'ar']} className="w-full h-full object-cover" />
+          <img
+            src={article.primaryMedia}
+            alt={article.title[language as "en" | "he" | "ar"]}
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
 
@@ -215,13 +227,13 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'overview':
+      case "overview":
         return renderOverview();
-      case 'content':
+      case "content":
         return renderContent();
-      case 'seo':
+      case "seo":
         return renderSEO();
-      case 'media':
+      case "media":
         return renderMedia();
       default:
         return renderOverview();
@@ -245,7 +257,7 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className={`text-3xl font-bold ${textPrimary}`}>
-                  {article.title[language as 'en' | 'he' | 'ar']}
+                  {article.title[language as "en" | "he" | "ar"]}
                 </h1>
                 <StatusBadge status={article.status} />
               </div>
@@ -275,29 +287,42 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
 
         {/* Analytics Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}>
+          <div
+            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
+          >
             <div className="flex items-center gap-2 mb-2">
               <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <h3 className={`text-sm ${textTertiary}`}>Total Views</h3>
             </div>
-            <p className={`text-3xl font-bold ${textPrimary}`}>{article.views.toLocaleString()}</p>
+            <p className={`text-3xl font-bold ${textPrimary}`}>
+              {article.views.toLocaleString()}
+            </p>
           </div>
 
-          <div className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}>
+          <div
+            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
+          >
             <div className="flex items-center gap-2 mb-2">
               <Share2 className="w-5 h-5 text-green-600 dark:text-green-400" />
               <h3 className={`text-sm ${textTertiary}`}>Total Shares</h3>
             </div>
-            <p className={`text-3xl font-bold ${textPrimary}`}>{article.shares.toLocaleString()}</p>
+            <p className={`text-3xl font-bold ${textPrimary}`}>
+              {article.shares.toLocaleString()}
+            </p>
           </div>
 
-          <div className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}>
+          <div
+            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
+          >
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               <h3 className={`text-sm ${textTertiary}`}>Engagement Rate</h3>
             </div>
             <p className={`text-3xl font-bold ${textPrimary}`}>
-              {article.views > 0 ? ((article.shares / article.views) * 100).toFixed(1) : '0'}%
+              {article.views > 0
+                ? ((article.shares / article.views) * 100).toFixed(1)
+                : "0"}
+              %
             </p>
           </div>
         </div>
@@ -326,9 +351,7 @@ export default function ArticleDetails({ article, theme, onBack, onEdit, onDupli
         </div>
 
         {/* Tab Content */}
-        <div className={`${bgPrimary} rounded-lg`}>
-          {renderTabContent()}
-        </div>
+        <div className={`${bgPrimary} rounded-lg`}>{renderTabContent()}</div>
       </div>
     </div>
   );

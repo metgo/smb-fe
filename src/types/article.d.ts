@@ -1,4 +1,4 @@
- interface Article {
+interface Article {
   id: string;
   websiteId: string;
   websiteName: string;

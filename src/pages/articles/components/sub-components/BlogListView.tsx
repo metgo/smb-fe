@@ -33,7 +33,7 @@ interface BlogListViewProps {
 
 const USER_ROLE = "admin"; // Change this based on your auth logic
 
-export const BlogListView = ({
+const BlogListView = ({
   t,
   isLoading,
   blogs,
@@ -214,3 +214,4 @@ export const BlogListView = ({
     </div>
   );
 };
+export default BlogListView;

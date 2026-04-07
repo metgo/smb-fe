@@ -127,7 +127,7 @@ function buildFormFromArticle(article: Article): ArticleFormData {
   };
 }
 
-export const ArticleWizard = ({
+const ArticleWizard = ({
   theme,
   onClose,
   existingArticle,
@@ -1012,3 +1012,4 @@ export const ArticleWizard = ({
     </ModalWrapper>
   );
 };
+export default ArticleWizard;

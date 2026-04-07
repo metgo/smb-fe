@@ -7,7 +7,6 @@ export const blogQueryApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Blog"],
   endpoints: (builder) => ({
-
     // GET /blogs
     getAllBlogs: builder.query<any, any>({
       query: (params) => ({
