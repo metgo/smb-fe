@@ -28,11 +28,12 @@ interface BlogListViewProps {
   selectedBlogs: Set<string>;
   setSelectedBlogs: (v: Set<string>) => void;
   t: (key: string) => string;
+  onBusinessClick: (business: any) => void;
 }
 
 const USER_ROLE = "admin"; // Change this based on your auth logic
 
-export default function BlogListView({
+export const BlogListView = ({
   t,
   isLoading,
   blogs,
@@ -42,7 +43,8 @@ export default function BlogListView({
   columnVisibility,
   selectedBlogs,
   setSelectedBlogs,
-}: BlogListViewProps) {
+  onBusinessClick,
+}: BlogListViewProps) => {
   const { textPrimary, textSecondary, isDark } = useThemeClasses();
   const [error, setError] = useState(false);
 
@@ -52,9 +54,7 @@ export default function BlogListView({
   );
 
   const columns = [
-    ...(canChangeStatus
-      ? [{ key: "checkbox", label: "", width: "50px" }]
-      : []),
+    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
     // Title
     columnVisibility.title && {
@@ -105,9 +105,7 @@ export default function BlogListView({
       render: (blog: any) => (
         <div className="flex items-center gap-2">
           <ImageIcon className="w-4 h-4 text-purple-500" />
-          <span className={textPrimary}>
-            {blog.images?.length || 0}
-          </span>
+          <span className={textPrimary}>{blog.images?.length || 0}</span>
         </div>
       ),
     },
@@ -139,9 +137,7 @@ export default function BlogListView({
       label: t("updated_at") || "Updated",
       render: (blog: any) => (
         <span className={textSecondary}>
-          {blog.updatedAt
-            ? new Date(blog.updatedAt).toLocaleDateString()
-            : "-"}
+          {blog.updatedAt ? new Date(blog.updatedAt).toLocaleDateString() : "-"}
         </span>
       ),
     },
@@ -153,9 +149,7 @@ export default function BlogListView({
       width: "80px",
       render: (blog: any) => {
         // Replace with your actual blog URL logic
-        const publicUrl = blog.slug
-          ? `/blog/${blog.slug}`
-          : null;
+        const publicUrl = blog.slug ? `/blog/${blog.slug}` : null;
 
         if (!publicUrl) return null;
 
@@ -186,7 +180,9 @@ export default function BlogListView({
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h3 className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+          <h3
+            className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
+          >
             Failed to load articles
           </h3>
           <button
@@ -217,4 +213,4 @@ export default function BlogListView({
       />
     </div>
   );
-}
+};

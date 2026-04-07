@@ -80,13 +80,21 @@ export default function ArticlesManagement() {
   const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
     useThemeClasses();
 
+  const handleBusinessClick = useCallback(
+    (business: any) => {
+      navigate(`${routes.articleDetails}?blogId=${business?._id}`, {
+        replace: true,
+      });
+    },
+    [navigate],
+  );
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  console.log("🚀 ~ ArticlesManagement ~ isCreateModalOpen:", isCreateModalOpen)
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -124,7 +132,9 @@ export default function ArticlesManagement() {
       const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
       if (saved)
         setColumnVisibility({ ...defaultColumns, ...JSON.parse(saved) });
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
 
   // Persist state
@@ -190,26 +200,22 @@ export default function ArticlesManagement() {
     setPage((p) => p + 1);
   }, [hasMore, isFetching]);
 
-  // const handleBlogClick = useCallback((blog: any) => {
-  //   navigate(`${routes.blogDetails}?blogId=${blog._id}`);
-  // }, [navigate]);
+  // const clearFilter = useCallback(() => {
+  //   localStorage.removeItem(STORAGE_KEY);
+  //   setFilters({ status: "all" });
+  //   setSearchTerm("");
+  //   setPage(1);
+  // }, []);
 
-  const clearFilter = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setFilters({ status: "all" });
-    setSearchTerm("");
-    setPage(1);
-  }, []);
+  // const resetToDefault = useCallback(() => {
+  //   setColumnVisibility(defaultColumns);
+  // }, []);
 
-  const resetToDefault = useCallback(() => {
-    setColumnVisibility(defaultColumns);
-  }, []);
-
-  const promptBulkDelete = useCallback(() => {
-    if (selectedBlogs.size === 0) return;
-    setIsBulkDelete(true);
-    setIsConfirmOpen(true);
-  }, [selectedBlogs.size]);
+  // const promptBulkDelete = useCallback(() => {
+  //   if (selectedBlogs.size === 0) return;
+  //   setIsBulkDelete(true);
+  //   setIsConfirmOpen(true);
+  // }, [selectedBlogs.size]);
 
   // const handleBulkDelete = useCallback(async () => {
   //   if (!selectedBlogs.size) return;
@@ -445,18 +451,18 @@ export default function ArticlesManagement() {
             <BlogListView
               blogs={combinedBlogs}
               columnVisibility={columnVisibility}
-              onBlogClick={() => {}}
               selectedBlogs={selectedBlogs}
               setSelectedBlogs={setSelectedBlogs}
               hasMore={!!hasMore}
               next={fetchNextPage}
               t={t}
+              onBlogClick={handleBusinessClick}
               isLoading={isLoading}
             />
           ) : (
             <BlogGridView
               data={combinedBlogs}
-              onRowClick={() => {}}
+              onRowClick={handleBusinessClick}
               selectedItems={selectedBlogs}
               setSelectedItems={setSelectedBlogs}
               hasMore={!!hasMore}
@@ -486,7 +492,6 @@ export default function ArticlesManagement() {
             refetch={refetch}
           />
         )}
-       
       </div>
     </>
   );

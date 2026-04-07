@@ -40,7 +40,7 @@ interface BlogGridViewProps {
   setSelectedItems?: (v: Set<string>) => void;
 }
 
-function BlogGridView({
+const BlogGridView = ({
   data,
   onRowClick,
   refetch,
@@ -49,7 +49,7 @@ function BlogGridView({
   isLoading = false,
   selectedItems,
   setSelectedItems,
-}: BlogGridViewProps) {
+}: BlogGridViewProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const { isDark, language } = useThemeClasses();
 
@@ -82,7 +82,9 @@ function BlogGridView({
   // };
 
   return (
-    <div className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}>
+    <div
+      className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
+    >
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         id="blog-table-scroll"
@@ -169,14 +171,18 @@ function BlogGridView({
                   </h3>
 
                   {blog.subTitle && (
-                    <p className={`text-sm mb-3 line-clamp-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                    <p
+                      className={`text-sm mb-3 line-clamp-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
                       {blog.subTitle}
                     </p>
                   )}
 
                   {/* Preview Text */}
                   {contentPreview && (
-                    <p className={`text-xs mb-4 line-clamp-3 ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+                    <p
+                      className={`text-xs mb-4 line-clamp-3 ${isDark ? "text-gray-500" : "text-gray-500"}`}
+                    >
                       {contentPreview}
                     </p>
                   )}
@@ -207,7 +213,9 @@ function BlogGridView({
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader className="w-10 h-10 animate-spin text-violet-600" />
-            <p className="mt-3 text-sm text-gray-500">Loading more articles...</p>
+            <p className="mt-3 text-sm text-gray-500">
+              Loading more articles...
+            </p>
           </div>
         )}
 
@@ -240,6 +248,6 @@ function BlogGridView({
       /> */}
     </div>
   );
-}
+};
 
 export default BlogGridView;
