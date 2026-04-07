@@ -32,7 +32,6 @@ export const endpoints = {
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
 
-  blogs: "/blogs",
   // business
   business: "/businesses",
   businesses: "/businesses",
@@ -93,6 +92,10 @@ export const endpoints = {
   vouchers: "",
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
+
+  // Blog Articles
+  blogs: "/blogs",
+  blogGenerateSeo: "/blogs/generate-seo",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

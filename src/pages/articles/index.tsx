@@ -11,23 +11,14 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  CheckCircle,
-  AlertCircle,
   Columns,
-  FileText,
-  Calendar,
-  Eye,
-  Users,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  BulkActionBar,
-  ConfirmDialog,
   PageHeader,
-  PageStats,
   ViewModeToggle,
 } from "@/components/shared";
 import {
@@ -39,7 +30,7 @@ import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
-import ArticleWizard from "./components/ArticleWizard";
+import CreateArticleWizard from "./components/CreateArticleWizard";
 
 const LIMIT = 20;
 const STORAGE_KEY = "blog_query_state";
@@ -77,8 +68,7 @@ const columnDefinitions = [
 export default function ArticlesManagement() {
   const navigate = useNavigate();
   const { t } = useTranslation("blogs"); // ← Create this namespace if needed
-  const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
-    useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
 
   const handleBusinessClick = useCallback(
     (business: any) => {
@@ -88,15 +78,13 @@ export default function ArticlesManagement() {
     },
     [navigate],
   );
-  const { dmoId, authorityId, websiteId } = useAppSelector(
+  const { websiteId } = useAppSelector(
     (state) => state.auth,
   );
 
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -373,7 +361,7 @@ export default function ArticlesManagement() {
                       <div className="flex justify-between mb-2">
                         <h3>Column Settings</h3>
                         <button
-                          onClick={resetToDefault}
+                          onClick={()=>{}}
                           className="text-xs text-teal-600"
                         >
                           Reset
@@ -455,7 +443,6 @@ export default function ArticlesManagement() {
               setSelectedBlogs={setSelectedBlogs}
               hasMore={!!hasMore}
               next={fetchNextPage}
-              t={t}
               onBlogClick={handleBusinessClick}
               isLoading={isLoading}
             />
@@ -467,7 +454,6 @@ export default function ArticlesManagement() {
               setSelectedItems={setSelectedBlogs}
               hasMore={!!hasMore}
               next={fetchNextPage}
-              t={t}
               isLoading={isLoading || isFetching}
               refetch={refetch}
             />
@@ -487,9 +473,8 @@ export default function ArticlesManagement() {
         /> */}
 
         {isCreateModalOpen && (
-          <ArticleWizard
+          <CreateArticleWizard
             onClose={() => setIsCreateModalOpen(false)}
-            refetch={refetch}
           />
         )}
       </div>

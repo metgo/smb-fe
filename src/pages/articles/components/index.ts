@@ -1,3 +1,4 @@
-import { ArticleWizard } from "./ArticleWizard";
+import CreateArticleWizard from "./CreateArticleWizard";
 
-export { ArticleWizard };
+
+export { CreateArticleWizard };

@@ -31,7 +31,7 @@ export const blogMutationApi = createApi({
     // POST /blogs/generate-seo - Generate SEO for blog
     generateBlogSeo: builder.mutation<any, any>({
       query: (body) => ({
-        url: `${endpoints.blogs}/generate-seo`,
+        url: endpoints.blogGenerateSeo,
         method: "POST",
         data: body,
       }),

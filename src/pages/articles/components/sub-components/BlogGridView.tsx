@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Image, Loader, Calendar, Eye } from "lucide-react";
@@ -9,7 +8,6 @@ import { DeleteIconBtn } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
-  ConfirmDialog,
   ImageWithFallback,
   ItemStatusBadge,
 } from "@/components/shared";
@@ -51,7 +49,7 @@ const BlogGridView = ({
   setSelectedItems,
 }: BlogGridViewProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { isDark, language } = useThemeClasses();
+  const { isDark } = useThemeClasses();
 
   useInfiniteScroll({
     ref: scrollRef,

@@ -5,6 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
 import { getPlainTextFromRichText } from "@/helpers";
 import { StatusPill } from "@/components/pills";
+import { useTranslation } from "react-i18next";
 
 export const defaultBlogColumns = {
   title: true,
@@ -27,14 +28,11 @@ interface BlogListViewProps {
   columnVisibility: BlogColumnVisibility;
   selectedBlogs: Set<string>;
   setSelectedBlogs: (v: Set<string>) => void;
-  t: (key: string) => string;
-  onBusinessClick: (business: any) => void;
 }
 
 const USER_ROLE = "admin"; // Change this based on your auth logic
 
 const BlogListView = ({
-  t,
   isLoading,
   blogs,
   onBlogClick,
@@ -43,8 +41,9 @@ const BlogListView = ({
   columnVisibility,
   selectedBlogs,
   setSelectedBlogs,
-  onBusinessClick,
 }: BlogListViewProps) => {
+    const { t } = useTranslation("blogs");
+  
   const { textPrimary, textSecondary, isDark } = useThemeClasses();
   const [error, setError] = useState(false);
 

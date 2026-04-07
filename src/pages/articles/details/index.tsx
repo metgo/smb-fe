@@ -4,14 +4,9 @@ import {
   Edit,
   FileText,
   Copy,
-  Calendar,
   Globe,
-  Tag,
-  TrendingUp,
-  MousePointer,
   Image as ImageIcon,
   Eye,
-  Clock,
   Share2,
   BarChart3,
 } from "lucide-react";
@@ -54,7 +49,7 @@ export default function ArticleDetails({
   onDuplicate,
 }: ArticleDetailsProps) {
   const { t } = useTranslation("common");
-  const { isDark, isRTL, language } = useThemeClasses();
+  const { language } = useThemeClasses();
   const [activeTab, setActiveTab] = useState("overview");
 
   const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
@@ -138,11 +133,10 @@ export default function ArticleDetails({
           {article.tags.map((tag, idx) => (
             <span
               key={idx}
-              className={`px-3 py-1 rounded-full text-sm ${
-                theme === "dark"
+              className={`px-3 py-1 rounded-full text-sm ${theme === "dark"
                   ? "bg-blue-900/30 text-blue-400"
                   : "bg-blue-100 text-blue-800"
-              }`}
+                }`}
             >
               {tag}
             </span>
@@ -336,11 +330,10 @@ export default function ArticleDetails({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
+                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                       ? `border-blue-600 ${textPrimary}`
                       : `border-transparent ${textSecondary} hover:${textPrimary}`
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
