@@ -39,6 +39,7 @@ import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
+import ArticleWizard from "./components/ArticleWizard";
 
 const LIMIT = 20;
 const STORAGE_KEY = "blog_query_state";
@@ -85,6 +86,7 @@ export default function ArticlesManagement() {
 
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  console.log("🚀 ~ ArticlesManagement ~ isCreateModalOpen:", isCreateModalOpen)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -478,12 +480,13 @@ export default function ArticlesManagement() {
           onConfirm={handleBulkDelete}
         /> */}
 
-        {/* {isCreateModalOpen && (
-          <CreateBlogWizard
+        {isCreateModalOpen && (
+          <ArticleWizard
             onClose={() => setIsCreateModalOpen(false)}
             refetch={refetch}
           />
-        )} */}
+        )}
+       
       </div>
     </>
   );
