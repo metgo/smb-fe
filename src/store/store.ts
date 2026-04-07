@@ -29,6 +29,7 @@ import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
 import { tripQueryApi } from "./api/tripsQueryApi";
 import { poiQueryApi } from "./api/poiQueryApi";
+import { blogQueryApi } from "./api/blogQueryApi";
 
 export const store = configureStore({
   reducer: {
@@ -65,6 +66,8 @@ export const store = configureStore({
 
     [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
     [tripQueryApi.reducerPath]: tripQueryApi.reducer,
+    [blogQueryApi.reducerPath]: blogQueryApi.reducer,
+
     [poiQueryApi.reducerPath]: poiQueryApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
@@ -94,6 +97,7 @@ export const store = configureStore({
       voucherQueryApi.middleware,
       notificationApi.middleware,
       tripQueryApi.middleware,
+      blogQueryApi.middleware,
       poiQueryApi.middleware,
     ),
 });

@@ -186,10 +186,10 @@ export default function Sidebar() {
         },
         {
           id: "blog",
-          path: routes.dashboard,
+          path: routes.articleMgmt,
           label: t("blog") || "Blog",
           icon: FileText,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "news-feed",

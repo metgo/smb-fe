@@ -3,9 +3,9 @@ import {
   ArrowLeft, Edit, FileText, Copy, Calendar, Globe, Tag, TrendingUp,
   MousePointer, Image as ImageIcon, Eye, Clock, Share2, BarChart3
 } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { Theme } from '../App';
-import { toast } from 'sonner@2.0.3';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
+import { useTranslation } from 'react-i18next';
+
 
 interface Article {
   id: string;
@@ -36,7 +36,8 @@ interface ArticleDetailsProps {
 const USER_ROLE = 'admin'; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
 export default function ArticleDetails({ article, theme, onBack, onEdit, onDuplicate }: ArticleDetailsProps) {
-  const { t, isRTL, language } = useLanguage();
+   const { t } = useTranslation("common");
+    const { isDark, isRTL, language } = useThemeClasses();
   const [activeTab, setActiveTab] = useState('overview');
 
   const canEdit = ['superadmin', 'admin', 'dmo', 'authority'].includes(USER_ROLE);

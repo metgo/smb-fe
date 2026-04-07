@@ -38,6 +38,7 @@ import {
   setNotifications,
 } from "./features/notificationSlice";
 import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
+import ArticlesManagement from "./pages/articles";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -205,6 +206,8 @@ function App() {
 
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
         { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+
+        { path: routes.articleMgmt, element: <ArticlesManagement /> },
 
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.eventDetails, element: <EventDetailsPage /> },

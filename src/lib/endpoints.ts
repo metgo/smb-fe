@@ -32,6 +32,7 @@ export const endpoints = {
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
 
+  blogs: "/blogs",
   // business
   business: "/businesses",
   businesses: "/businesses",
