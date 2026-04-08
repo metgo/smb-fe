@@ -1,18 +1,14 @@
-import {
-  X,
-  Eye,
-  Calendar,
-  Clock,
-  Plus,
-  Loader2,
-  Sparkles,
-} from "lucide-react";
+import { X, Eye, Calendar, Clock, Plus, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useCallback, useEffect } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import { ModalWrapper } from "@/components/wrapper";
-import { ConfirmDialog, ImageWithFallback, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  ImageWithFallback,
+  WizardFooter,
+} from "@/components/shared";
 import RichTextEditor from "./sub-components/RichTextEditor";
 
 import {
@@ -47,7 +43,7 @@ interface ArticleFormData {
   content: string; // full HTML content
   slug: string;
   tags: string[];
-  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED";
+  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED";
   summary: string;
   metaTitle: string;
   metaDescription: string;
@@ -69,7 +65,6 @@ const DEFAULT_FORM: ArticleFormData = {
   images: [],
 };
 
-// Helper: build form from existingArticle (maps your Article type → API shape)
 function buildFormFromArticle(article: Article): ArticleFormData {
   const titleStr =
     typeof article.title === "string" ? article.title : article.title?.en || "";
@@ -86,13 +81,13 @@ function buildFormFromArticle(article: Article): ArticleFormData {
 
   const images: ArticleImage[] = article.primaryMedia
     ? [
-      {
-        image: article.primaryMedia,
-        caption: "",
-        alt: titleStr,
-        isPrimary: true,
-      },
-    ]
+        {
+          image: article.primaryMedia,
+          caption: "",
+          alt: titleStr,
+          isPrimary: true,
+        },
+      ]
     : [];
 
   return {
@@ -119,7 +114,15 @@ const CreateArticleWizard = ({
   const { t } = useTranslation("blogs");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
 
-  const { theme, bgPrimary, bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses()
+  const {
+    theme,
+    bgPrimary,
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const {
@@ -138,6 +141,18 @@ const CreateArticleWizard = ({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
+  // ─── Form State (matches API payload) ───────────────────────────────────────
+  const [formData, setFormData] = useState<ArticleFormData>(DEFAULT_FORM);
+  useEffect(() => {
+    const mapped: ArticleImage[] = images.map((img, idx) => ({
+      image: img.previewUrl, // or img.url if available after upload
+      caption: img.caption || "",
+      alt: formData.title || "",
+      isPrimary: idx === primaryImageIndex,
+      stationId: img.stationId,
+    }));
+    setFormData((prev) => ({ ...prev, images: mapped }));
+  }, [images, primaryImageIndex]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
@@ -148,8 +163,7 @@ const CreateArticleWizard = ({
   );
   const [tagInput, setTagInput] = useState("");
 
-  // ─── Form State (matches API payload) ───────────────────────────────────────
-  const [formData, setFormData] = useState<ArticleFormData>(DEFAULT_FORM);
+  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
 
   // ─── Populate from existingArticle via useEffect ─────────────────────────────
   useEffect(() => {
@@ -162,12 +176,11 @@ const CreateArticleWizard = ({
 
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-  const [generateBlogSeo, { isLoading: isGeneratingSeo }] = useGenerateBlogSeoMutation();
+  const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
+    useGenerateBlogSeoMutation();
 
   const isEditMode = !!existingArticle;
   const isLoading = isCreating || isUpdating;
-
-
 
   const handleTitleChange = (value: string) => {
     setFormData((prev) => ({
@@ -176,7 +189,6 @@ const CreateArticleWizard = ({
       metaTitle: prev.metaTitle || value, // auto-fill metaTitle if empty
     }));
   };
-
 
   // ─── Tags ─────────────────────────────────────────────────────────────────────
   const addTag = () => {
@@ -215,11 +227,13 @@ const CreateArticleWizard = ({
   const saveArticle = useCallback(
     async (isPublish: boolean = false) => {
       if (!validateArticle()) return;
+      await uploadAll();
 
       // Build exact API payload
       const payload: ArticleFormData = {
         ...formData,
-        status: isPublish ? "PUBLISHED" : formData.status,
+        externalApiId,
+        status: isPublish ? "APPROVED" : formData.status,
       };
 
       try {
@@ -238,7 +252,15 @@ const CreateArticleWizard = ({
         toast.error(err?.data?.message || "Failed to save article");
       }
     },
-    [formData, isEditMode, existingArticle, createBlog, updateBlog, onClose],
+    [
+      formData,
+      isEditMode,
+      existingArticle,
+      createBlog,
+      updateBlog,
+      onClose,
+      externalApiId,
+    ],
   );
 
   const handleGenerateSeo = async () => {
@@ -280,7 +302,11 @@ const CreateArticleWizard = ({
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <ModalWrapper maxWidth="max-w-7xl" onClose={onClose} showSpinner={isLoading}>
+    <ModalWrapper
+      maxWidth="max-w-7xl"
+      onClose={onClose}
+      showSpinner={isLoading}
+    >
       {/* Header */}
       <div
         className={`px-6 py-4 flex items-center justify-between border-b ${borderColor}`}
@@ -289,12 +315,13 @@ const CreateArticleWizard = ({
           <h2 className={`text-2xl font-bold ${textPrimary}`}>
             {existingArticle ? "Edit Article" : "Create Article"}
           </h2>
-
           <ReactSelect
             minWidth={180}
-            value={externalApiId}
+            value={formData.externalApiId}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, externalApiId: value }))
+            }
             items={associatedWebsite}
-            onChange={(value) => setExternalApiId(value)}
             placeholder={t("select_website")}
           />
 
@@ -304,10 +331,11 @@ const CreateArticleWizard = ({
               <button
                 key={lang}
                 onClick={() => setEditingLanguage(lang)}
-                className={`px-3 py-1 rounded-lg transition-colors ${editingLanguage === lang
-                  ? "bg-blue-600 text-white"
-                  : `${bgSecondary} ${textSecondary}`
-                  }`}
+                className={`px-3 py-1 rounded-lg transition-colors ${
+                  editingLanguage === lang
+                    ? "bg-blue-600 text-white"
+                    : `${bgSecondary} ${textSecondary}`
+                }`}
               >
                 {lang.toUpperCase()}
               </button>
@@ -431,8 +459,9 @@ const CreateArticleWizard = ({
               {/* Image Gallery */}
               <div>
                 <label
-                  className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
+                  className={`block text-sm mb-2 ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
                 >
                   {t("image_gallery")}
                   <span className="text-xs ml-2 text-gray-500">
@@ -444,8 +473,9 @@ const CreateArticleWizard = ({
                   {images.map((img, idx) => (
                     <div
                       key={idx}
-                      className={`relative aspect-square rounded-lg overflow-hidden border group ${theme === "dark" ? "border-gray-700" : "border-gray-300"
-                        }`}
+                      className={`relative aspect-square rounded-lg overflow-hidden border group ${
+                        theme === "dark" ? "border-gray-700" : "border-gray-300"
+                      }`}
                     >
                       <ImageWithFallback
                         src={img.previewUrl}
@@ -491,11 +521,14 @@ const CreateArticleWizard = ({
                   {/* Upload New Image */}
                   {images?.length < 10 && (
                     <div
-                      className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${theme === "dark"
-                        ? "border-gray-700 hover:border-gray-600"
-                        : "border-gray-300 hover:border-gray-400"
-                        }`}
-                      onClick={() => document.getElementById("image-upload")?.click()}
+                      className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
+                        theme === "dark"
+                          ? "border-gray-700 hover:border-gray-600"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                      onClick={() =>
+                        document.getElementById("image-upload")?.click()
+                      }
                     >
                       {/* Hidden file input */}
                       <input
@@ -510,12 +543,14 @@ const CreateArticleWizard = ({
                       />
                       <div className="text-center">
                         <Plus
-                          className={`w-8 h-8 mx-auto mb-1 ${theme === "dark" ? "text-gray-600" : "text-gray-400"
-                            }`}
+                          className={`w-8 h-8 mx-auto mb-1 ${
+                            theme === "dark" ? "text-gray-600" : "text-gray-400"
+                          }`}
                         />
                         <p
-                          className={`text-xs ${theme === "dark" ? "text-gray-600" : "text-gray-500"
-                            }`}
+                          className={`text-xs ${
+                            theme === "dark" ? "text-gray-600" : "text-gray-500"
+                          }`}
                         >
                           {t("upload_images") || "Upload"}
                         </p>
@@ -537,20 +572,6 @@ const CreateArticleWizard = ({
               />
             </div>
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           {/* ── Settings Sidebar ────────────────────────────────────────────── */}
           <div
@@ -582,7 +603,6 @@ const CreateArticleWizard = ({
                   </button>
                 </div>
               </div>
-
 
               {/* Tags */}
               <div>
