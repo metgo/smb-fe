@@ -50,22 +50,8 @@ interface ArticleFormData {
   images: ArticleImage[];
 }
 
-const DEFAULT_FORM: ArticleFormData = {
-  externalApiId: "",
-  title: "",
-  subTitle: "",
-  shortDescription: "",
-  content: "",
-  slug: "",
-  tags: [],
-  status: "DRAFT",
-  summary: "",
-  metaTitle: "",
-  metaDescription: "",
-  images: [],
-};
-
 function buildFormFromArticle(article: Article): ArticleFormData {
+  console.log("🚀 ~ buildFormFromArticle ~ article:", article);
   const titleStr =
     typeof article.title === "string" ? article.title : article.title?.en || "";
 
@@ -74,28 +60,22 @@ function buildFormFromArticle(article: Article): ArticleFormData {
       ? article.shortDescription
       : article.shortDescription?.en || "";
 
-  const content =
-    typeof article.fullDescription === "string"
-      ? article.fullDescription
-      : article.fullDescription?.en || "";
-
-  const images: ArticleImage[] = article.primaryMedia
-    ? [
-        {
-          image: article.primaryMedia,
-          caption: "",
-          alt: titleStr,
-          isPrimary: true,
-        },
-      ]
-    : [];
-
+  const images: ArticleImage[] =
+    Array.isArray(article.images) && article.images.length > 0
+      ? article.images.map((img: any) => ({
+          image: img.image || "",
+          caption: img.caption || "",
+          alt: img.alt || titleStr,
+          isPrimary: img.isPrimary ?? false,
+          stationId: img.stationId,
+        }))
+      : [];
   return {
-    externalApiId: article.externalApiId || article.id || "",
+    externalApiId: article.externalApiId || "",
     title: titleStr,
     subTitle: article.subTitle || "",
     shortDescription: shortDesc,
-    content,
+    content: article.content,
     slug: article.slug || "",
     tags: article.tags || [],
     status:
@@ -142,35 +122,39 @@ const CreateArticleWizard = ({
     onChange: setGalleryImages,
   });
   // ─── Form State (matches API payload) ───────────────────────────────────────
-  const [formData, setFormData] = useState<ArticleFormData>(DEFAULT_FORM);
-  useEffect(() => {
-    const mapped: ArticleImage[] = images.map((img, idx) => ({
-      image: img.previewUrl, // or img.url if available after upload
-      caption: img.caption || "",
-      alt: formData.title || "",
-      isPrimary: idx === primaryImageIndex,
-      stationId: img.stationId,
-    }));
-    setFormData((prev) => ({ ...prev, images: mapped }));
-  }, [images, primaryImageIndex]);
+  const [formData, setFormData] = useState<ArticleFormData>({
+    externalApiId: "",
+    title: "",
+    subTitle: "",
+    shortDescription: "",
+    content: "",
+    slug: "",
+    tags: [],
+    status: "DRAFT",
+    summary: "",
+    metaTitle: "",
+    metaDescription: "",
+    images: [],
+  });
+
+  // useEffect(() => {
+  //   setFormData((prev) => ({ ...prev, images: mapped }));
+  // }, [images, primaryImageIndex]);
+
+  console.log("🚀 ~ CreateArticleWizard ~ images:", images);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [externalApiId, setExternalApiId] = useState("");
   const [editingLanguage, setEditingLanguage] = useState<"en" | "he" | "ar">(
     "en",
   );
   const [tagInput, setTagInput] = useState("");
 
-  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
-
   // ─── Populate from existingArticle via useEffect ─────────────────────────────
   useEffect(() => {
     if (existingArticle) {
       setFormData(buildFormFromArticle(existingArticle));
-    } else {
-      setFormData(DEFAULT_FORM);
     }
   }, [existingArticle]);
 
@@ -216,10 +200,10 @@ const CreateArticleWizard = ({
       toast.error("Please enter a short description");
       return false;
     }
-    if (formData.images.length === 0) {
-      toast.error("Please upload at least one image");
-      return false;
-    }
+    // if (formData.images.length === 0) {
+    //   toast.error("Please upload at least one image");
+    //   return false;
+    // }
     return true;
   };
 
@@ -227,20 +211,30 @@ const CreateArticleWizard = ({
   const saveArticle = useCallback(
     async (isPublish: boolean = false) => {
       if (!validateArticle()) return;
-      await uploadAll();
 
-      // Build exact API payload
+      const res = await uploadAll();
+
+      const mapped: ArticleImage[] = images.map((img, idx) => ({
+        image: img?.gcsURL,
+        caption: img.caption || "",
+        alt: formData.title || "",
+        isPrimary: idx === primaryImageIndex,
+        stationId: img.stationId,
+      }));
+
+      const { externalApiId, ...restFormData } = formData;
+
       const payload: ArticleFormData = {
-        ...formData,
-        externalApiId,
-        status: isPublish ? "APPROVED" : formData.status,
+        ...(isEditMode ? restFormData : formData),
+        status: isPublish ? "APPROVED" : "PENDING",
+        images: mapped,
       };
 
       try {
-        if (isEditMode && existingArticle?.id) {
+        if (isEditMode && existingArticle?._id) {
           await updateBlog({
             body: payload,
-            blogId: existingArticle.id,
+            blogId: existingArticle._id,
           }).unwrap();
           toast.success(isPublish ? "Article published!" : "Article updated!");
         } else {
@@ -259,10 +253,12 @@ const CreateArticleWizard = ({
       createBlog,
       updateBlog,
       onClose,
-      externalApiId,
+      validateArticle,
+      uploadAll,
+      images,
+      primaryImageIndex,
     ],
   );
-
   const handleGenerateSeo = async () => {
     try {
       const result = await generateBlogSeo({
@@ -293,12 +289,12 @@ const CreateArticleWizard = ({
     setIsPublishing(false);
   };
 
-  const handleNext = () =>
+  const handleNext = async () =>
     currentStep === 2 ? handlePublish() : setCurrentStep((p) => p + 1);
 
   const handlePrevious = () => currentStep > 1 && setCurrentStep((p) => p - 1);
 
-  const totalSteps = 1;
+  const totalSteps = 2;
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (

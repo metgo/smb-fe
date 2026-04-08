@@ -12,34 +12,92 @@ import {
 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
+import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
+import { IOpMode } from "@/enums/operation.types";
+import { CreateArticleWizard } from "../components";
 
-interface Article {
-  id: string;
-  websiteId: string;
-  websiteName: string;
-  title: { en: string; he: string; ar: string };
-  shortDescription: { en: string; he: string; ar: string };
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
+interface BlogImage {
+  image: string;
+  alt: string;
+  isPrimary: boolean;
+  caption?: string;
+}
+
+interface BlogDetails {
+  _id: string;
+  status: string;
+  title: string;
+  subTitle: string;
+  shortDescription: string;
+  content: string;
+  summary: string;
   slug: string;
-  status: "draft" | "published" | "scheduled" | "archived";
+  metaTitle: string;
+  metaDescription: string;
   tags: string[];
-  primaryMedia: string;
-  author: string;
+  images: BlogImage[];
   createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
-  views: number;
-  shares: number;
+  updatedAt: string | null;
+  createdBy: string;
+  updatedBy: string | null;
 }
 
 interface ArticleDetailsProps {
-  article: Article;
+  article?: any; // fallback prop
   theme: Theme;
   onBack: () => void;
   onEdit: () => void;
   onDuplicate: () => void;
 }
 
-const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
+// ─── Mapper ───────────────────────────────────────────────────────────────────
+
+function mapBlogDetailsToArticle(data: any): BlogDetails {
+  return {
+    _id: data._id,
+    status: data.status?.toLowerCase() ?? "draft",
+    title: data.title ?? "",
+    subTitle: data.subTitle ?? "",
+    shortDescription: data.shortDescription ?? "",
+    content: data.content ?? "",
+    summary: data.summary ?? "",
+    slug: data.slug ?? "",
+    metaTitle: data.metaTitle ?? "",
+    metaDescription: data.metaDescription ?? "",
+    tags: data.tags ?? [],
+    images: data.images ?? [],
+    createdAt: data.createdAt ?? "",
+    updatedAt: data.updatedAt ?? null,
+    createdBy: data.createdBy ?? "",
+    updatedBy: data.updatedBy ?? null,
+  };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getPrimaryImage(images: BlogImage[]): string {
+  return images.find((img) => img.isPrimary)?.image ?? images[0]?.image ?? "";
+}
+
+function formatStatus(
+  status: string,
+): "draft" | "published" | "scheduled" | "archived" | "approved" {
+  const map: Record<string, any> = {
+    approved: "approved",
+    published: "published",
+    draft: "draft",
+    scheduled: "scheduled",
+    archived: "archived",
+  };
+  return map[status] ?? "draft";
+}
+
+const USER_ROLE = "admin";
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ArticleDetails({
   article,
@@ -49,13 +107,29 @@ export default function ArticleDetails({
   onDuplicate,
 }: ArticleDetailsProps) {
   const { t } = useTranslation("common");
-  const { language } = useThemeClasses();
   const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams] = useSearchParams();
+  const blogId = searchParams.get("blogId") ?? "";
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { isDark, language, isRTL } = useThemeClasses();
+
+  const { data: blogDetailsRaw, isLoading: isDetailLoading } =
+    useGetBlogByIdQuery({ blogId }, { skip: !blogId });
+
+  // Prefer API data; fall back to passed article prop
+  const data: BlogDetails | null = blogDetailsRaw
+    ? mapBlogDetailsToArticle(blogDetailsRaw)
+    : null;
 
   const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
-
+  const handleEdit = (mode: TOpMode) => {
+    setIsEditOpen(true);
+    setOpMode(mode);
+  };
   const bgPrimary = theme === "dark" ? "bg-gray-900" : "bg-white";
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const textPrimary = theme === "dark" ? "text-white" : "text-gray-900";
@@ -64,22 +138,23 @@ export default function ArticleDetails({
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
   const tabs = [
-    { id: "overview", label: t.overview || "Overview", icon: FileText },
+    { id: "overview", label: "Overview", icon: FileText },
     { id: "content", label: "Content", icon: FileText },
     { id: "seo", label: "SEO & Publishing", icon: Globe },
-    { id: "media", label: t.media || "Media", icon: ImageIcon },
+    { id: "media", label: "Media", icon: ImageIcon },
   ];
 
-  const StatusBadge = ({ status }: { status: Article["status"] }) => {
-    const statusConfig = {
+  // ─── Status Badge ───────────────────────────────────────────────────────────
+
+  const StatusBadge = ({ status }: { status: string }) => {
+    const statusConfig: Record<string, { color: string; label: string }> = {
       draft: { color: "bg-gray-500", label: "Draft" },
       published: { color: "bg-green-500", label: "Published" },
       scheduled: { color: "bg-blue-500", label: "Scheduled" },
       archived: { color: "bg-orange-500", label: "Archived" },
+      approved: { color: "bg-teal-500", label: "Approved" },
     };
-
-    const config = statusConfig[status];
-
+    const config = statusConfig[status] ?? statusConfig.draft;
     return (
       <span
         className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
@@ -89,80 +164,96 @@ export default function ArticleDetails({
     );
   };
 
+  // ─── Loading State ──────────────────────────────────────────────────────────
+
+  if (isDetailLoading) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${bgPrimary}`}
+      >
+        <p className={textTertiary}>Loading article...</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${bgPrimary}`}
+      >
+        <p className={textTertiary}>Article not found.</p>
+      </div>
+    );
+  }
+
+  const primaryImage = getPrimaryImage(data.images);
+
+  // ─── Tab Renderers ──────────────────────────────────────────────────────────
+
   const renderOverview = () => (
     <div className="space-y-6">
-      {/* Article Image */}
-      <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
-        <div className="w-full h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
-          <img
-            src={article.primaryMedia}
-            alt={article.title[language as "en" | "he" | "ar"]}
-            className="w-full h-full object-cover"
-          />
+      {/* Featured Image */}
+      {primaryImage && (
+        <div>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
+          <div className="w-full h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
+            <img
+              src={primaryImage}
+              alt={data.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Short Description */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>Short Description</h3>
-        <p className={textPrimary}>
-          {article.shortDescription[language as "en" | "he" | "ar"]}
-        </p>
+        <p className={textPrimary}>{data.shortDescription}</p>
       </div>
 
-      {/* Website */}
-      <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Website</h3>
-        <div className={`flex items-center gap-2 ${textSecondary}`}>
-          <Globe className="w-4 h-4" />
-          <span>{article.websiteName}</span>
+      {/* Subtitle */}
+      {data.subTitle && (
+        <div>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>Subtitle</h3>
+          <p className={textSecondary}>{data.subTitle}</p>
         </div>
-      </div>
-
-      {/* Author */}
-      <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Author</h3>
-        <p className={textSecondary}>{article.author}</p>
-      </div>
+      )}
 
       {/* Tags */}
-      <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Tags</h3>
-        <div className="flex flex-wrap gap-2">
-          {article.tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className={`px-3 py-1 rounded-full text-sm ${theme === "dark"
-                  ? "bg-blue-900/30 text-blue-400"
-                  : "bg-blue-100 text-blue-800"
+      {data.tags.length > 0 && (
+        <div>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>Tags</h3>
+          <div className="flex flex-wrap gap-2">
+            {data.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  theme === "dark"
+                    ? "bg-blue-900/30 text-blue-400"
+                    : "bg-blue-100 text-blue-800"
                 }`}
-            >
-              {tag}
-            </span>
-          ))}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Dates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <h3 className={`text-sm mb-2 ${textTertiary}`}>Created</h3>
           <p className={textSecondary}>
-            {new Date(article.createdAt).toLocaleString()}
+            {new Date(data.createdAt).toLocaleString()}
           </p>
         </div>
-        <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>Last Updated</h3>
-          <p className={textSecondary}>
-            {new Date(article.updatedAt).toLocaleString()}
-          </p>
-        </div>
-        {article.publishedAt && (
+        {data.updatedAt && (
           <div>
-            <h3 className={`text-sm mb-2 ${textTertiary}`}>Published</h3>
+            <h3 className={`text-sm mb-2 ${textTertiary}`}>Last Updated</h3>
             <p className={textSecondary}>
-              {new Date(article.publishedAt).toLocaleString()}
+              {new Date(data.updatedAt).toLocaleString()}
             </p>
           </div>
         )}
@@ -172,27 +263,38 @@ export default function ArticleDetails({
 
   const renderContent = () => (
     <div className="space-y-6">
-      <div className={`p-6 rounded-lg border ${borderColor} ${bgSecondary}`}>
-        <p className={textSecondary}>
-          Full article content editor would go here. This would include a rich
-          text editor for managing the complete article body in multiple
-          languages.
-        </p>
-      </div>
+      <div
+        className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} prose max-w-none`}
+        dangerouslySetInnerHTML={{ __html: data.content }}
+      />
     </div>
   );
 
   const renderSEO = () => (
     <div className="space-y-6">
+      {/* Slug */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>URL Slug</h3>
-        <p className={textSecondary}>{article.slug}</p>
+        <p className={textSecondary}>{data.slug || "—"}</p>
       </div>
 
-      <div className={`p-6 rounded-lg border ${borderColor} ${bgSecondary}`}>
-        <p className={textSecondary}>
-          SEO metadata, meta descriptions, keywords, and social sharing
-          configurations would be displayed here.
+      {/* Meta Title */}
+      <div>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Meta Title</h3>
+        <p className={textSecondary}>{data.metaTitle || "—"}</p>
+      </div>
+
+      {/* Meta Description */}
+      <div>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Meta Description</h3>
+        <p className={textSecondary}>{data.metaDescription || "—"}</p>
+      </div>
+
+      {/* Summary */}
+      <div>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>Summary</h3>
+        <p className={`${textSecondary} leading-relaxed`}>
+          {data.summary || "—"}
         </p>
       </div>
     </div>
@@ -200,22 +302,36 @@ export default function ArticleDetails({
 
   const renderMedia = () => (
     <div className="space-y-6">
-      <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
-        <div className="w-full h-80 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
-          <img
-            src={article.primaryMedia}
-            alt={article.title[language as "en" | "he" | "ar"]}
-            className="w-full h-full object-cover"
-          />
+      {data.images.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {data.images.map((img, idx) => (
+            <div
+              key={idx}
+              className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+            >
+              <img
+                src={img.image}
+                alt={img.alt || data.title}
+                className="w-full h-full object-cover"
+              />
+              {img.isPrimary && (
+                <span className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded">
+                  Primary
+                </span>
+              )}
+              {img.caption && (
+                <p
+                  className={`absolute bottom-0 left-0 right-0 text-xs px-2 py-1 bg-black/50 text-white`}
+                >
+                  {img.caption}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className={`p-6 rounded-lg border ${borderColor} ${bgSecondary}`}>
-        <p className={textSecondary}>
-          Additional images, videos, and media gallery would be displayed here.
-        </p>
-      </div>
+      ) : (
+        <p className={textTertiary}>No media available.</p>
+      )}
     </div>
   );
 
@@ -234,6 +350,8 @@ export default function ArticleDetails({
     }
   };
 
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className={`min-h-screen ${bgPrimary}`}>
       <div className="max-w-[1400px] mx-auto p-6">
@@ -249,75 +367,28 @@ export default function ArticleDetails({
 
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className={`text-3xl font-bold ${textPrimary}`}>
-                  {article.title[language as "en" | "he" | "ar"]}
+                  {data.title}
                 </h1>
-                <StatusBadge status={article.status} />
+                <StatusBadge status={formatStatus(data.status)} />
               </div>
-              <p className={textTertiary}>Article ID: {article.id}</p>
+              <p className={textTertiary}>Article ID: {data._id}</p>
             </div>
-
-            {canEdit && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={onDuplicate}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${borderColor} ${bgSecondary} ${textSecondary} hover:${textPrimary} transition-colors`}
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>Duplicate</span>
-                </button>
-                <button
-                  onClick={onEdit}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit Article</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Analytics Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div
-            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h3 className={`text-sm ${textTertiary}`}>Total Views</h3>
-            </div>
-            <p className={`text-3xl font-bold ${textPrimary}`}>
-              {article.views.toLocaleString()}
-            </p>
-          </div>
-
-          <div
-            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Share2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <h3 className={`text-sm ${textTertiary}`}>Total Shares</h3>
-            </div>
-            <p className={`text-3xl font-bold ${textPrimary}`}>
-              {article.shares.toLocaleString()}
-            </p>
-          </div>
-
-          <div
-            className={`p-4 rounded-lg border ${borderColor} ${bgSecondary}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <h3 className={`text-sm ${textTertiary}`}>Engagement Rate</h3>
-            </div>
-            <p className={`text-3xl font-bold ${textPrimary}`}>
-              {article.views > 0
-                ? ((article.shares / article.views) * 100).toFixed(1)
-                : "0"}
-              %
-            </p>
+            <button
+              onClick={() => {
+                handleEdit(IOpMode.EDIT);
+                setIsDropdownOpen(false);
+              }}
+              className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                isDark
+                  ? "text-indigo-400 hover:bg-gray-800"
+                  : "text-indigo-600 hover:bg-gray-50"
+              }`}
+            >
+              <Edit className="w-4 h-4 shrink-0" />
+              {t("edit") || "Edit"}
+            </button>
           </div>
         </div>
 
@@ -330,10 +401,11 @@ export default function ArticleDetails({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
                       ? `border-blue-600 ${textPrimary}`
                       : `border-transparent ${textSecondary} hover:${textPrimary}`
-                    }`}
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
@@ -346,6 +418,12 @@ export default function ArticleDetails({
         {/* Tab Content */}
         <div className={`${bgPrimary} rounded-lg`}>{renderTabContent()}</div>
       </div>
+      {isEditOpen && (
+        <CreateArticleWizard
+          onClose={() => setIsEditOpen(false)}
+          existingArticle={blogDetailsRaw}
+        />
+      )}
     </div>
   );
 }
