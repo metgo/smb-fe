@@ -1,0 +1,22 @@
+{
+  "page_title": "דפים דינמיים",
+  "page_subtitle": "נהל את תוכן הדפים המשפטיים הסטטיים שלך",
+
+  "tab_terms": "תנאי שימוש",
+  "tab_privacy": "מדיניות פרטיות",
+
+  "field_title": "כותרת",
+  "field_title_placeholder_terms": "לדוגמה: תנאי שימוש",
+  "field_title_placeholder_privacy": "לדוגמה: מדיניות פרטיות",
+  "field_title_required": "שדה כותרת הוא חובה",
+
+  "field_subtitle": "כותרת משנה",
+  "field_subtitle_optional": "(אופציונלי)",
+  "field_subtitle_placeholder": "תיאור קצר שיוצג מתחת לכותרת",
+
+  "field_content": "תוכן",
+  "field_content_placeholder": "כתוב את תוכן הדף כאן…",
+  "field_content_required": "שדה תוכן הוא חובה",
+
+  "btn_save": "שמור"
+}

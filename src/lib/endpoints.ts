@@ -93,6 +93,9 @@ export const endpoints = {
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
 
+  // Admin endpoints
+  dynamicPage: "/settings",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
   googleMapRouteDirection:

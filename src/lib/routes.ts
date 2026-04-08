@@ -31,6 +31,7 @@ export const routes = {
   miniSite: "/mini-site",
   profile: "/profile",
   websiteMgmt: "/website-settings",
+  dynamicPages: "/dynamic-pages",
 };
 
 export type RouteKey = keyof typeof routes;

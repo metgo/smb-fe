@@ -1,0 +1,22 @@
+{
+  "page_title": "الصفحات الديناميكية",
+  "page_subtitle": "إدارة محتوى صفحاتك القانونية الثابتة",
+
+  "tab_terms": "الشروط والأحكام",
+  "tab_privacy": "سياسة الخصوصية",
+
+  "field_title": "العنوان",
+  "field_title_placeholder_terms": "مثال: الشروط والأحكام",
+  "field_title_placeholder_privacy": "مثال: سياسة الخصوصية",
+  "field_title_required": "حقل العنوان مطلوب",
+
+  "field_subtitle": "العنوان الفرعي",
+  "field_subtitle_optional": "(اختياري)",
+  "field_subtitle_placeholder": "وصف قصير يظهر أسفل العنوان",
+
+  "field_content": "المحتوى",
+  "field_content_placeholder": "اكتب محتوى الصفحة هنا…",
+  "field_content_required": "حقل المحتوى مطلوب",
+
+  "btn_save": "حفظ"
+}

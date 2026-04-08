@@ -14,6 +14,7 @@ import RichTextEditor from "./RichTextEditor";
 import SearchInput from "./SearchInput";
 import SelectableChips from "./SelectableChips";
 import Spinner from "./Spinner";
+import SplashLoader from "./SplashLoader";
 import TabsSection from "./TabsSection";
 import ViewModeToggle from "./ViewModeToggle";
 import WebsiteSelect from "./WebsiteSelect";
@@ -21,6 +22,7 @@ import WizardFooter from "./WizardFooter";
 
 export {
   Spinner,
+  SplashLoader,
   PageStats,
   PageHeader,
   IdleLogout,
