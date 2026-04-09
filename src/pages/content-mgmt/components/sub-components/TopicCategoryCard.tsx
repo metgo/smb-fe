@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useDrop } from "react-dnd";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +20,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ContentCard from "./ContentCard";
 
 import { ConfirmDialog } from "@/components/shared";
+import { useCommon } from "@/hooks/useCommon";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -51,6 +51,16 @@ const TopicCategoryCard = ({
     topicIndex: number;
     categoryIndex: number;
   } | null>(null);
+
+  const { allIcons } = useCommon();
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+
+  const handleSelectIcon = (icon: IContentGroup["icon"]) => {
+    const updated = [...templateContents];
+    updated[topicIndex].groups[categoryIndex].icon = icon;
+    setTemplateContent(updated);
+    setIconPickerOpen(false);
+  };
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.BUSINESS_CARD,
@@ -232,6 +242,69 @@ const TopicCategoryCard = ({
             </>
           ) : (
             <>
+              {/* Icon selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setIconPickerOpen((prev) => !prev)}
+                  className={clsx(
+                    "w-12 h-12 rounded border flex items-center justify-center",
+                    isDark
+                      ? "border-gray-600 bg-gray-700 "
+                      : "border-gray-300  ",
+                  )}
+                >
+                  {group.icon ? (
+                    <img
+                      src={group.icon}
+                      alt={group.icon.iconAlt}
+                      className="w-12 h-12 object-contain invert"
+                    />
+                  ) : (
+                    <span className="text-xs text-white flex items-center">
+                      +
+                    </span>
+                  )}
+                </button>
+
+                {iconPickerOpen && (
+                  <div
+                    className={clsx(
+                      "absolute top-12 left-0 z-50 p-2 rounded-lg border shadow-md grid grid-cols-7  w-72",
+                      isDark
+                        ? "bg-gray-800 border-gray-600"
+                        : "bg-white border-gray-200",
+                    )}
+                  >
+                    {allIcons?.data?.map((icon) => (
+                      <button
+                        key={icon._id}
+                        onClick={() =>
+                          handleSelectIcon({
+                            _id: icon._id,
+                            name: icon.name,
+                            iconPath: icon.iconPath,
+                            iconAlt: icon.iconAlt,
+                          })
+                        }
+                        className={clsx(
+                          "w-12 h-12 rounded flex items-center justify-center gap-2 ",
+                          isDark ? "" : "",
+                          group.icon?._id === icon._id &&
+                            "ring-2 ring-green-400 bg-green-300",
+                        )}
+                        title={icon.name}
+                      >
+                        <img
+                          src={icon.iconPath}
+                          alt={icon.iconAlt}
+                          className="w-12 h-12 object-contain invert"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <h3
                 className={clsx(
                   "text-lg font-semibold flex items-center gap-2 w-80",

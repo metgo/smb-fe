@@ -181,6 +181,7 @@ export default function ContentMgmtPage() {
           isPrimary: false,
           isHideCategory: false,
           category: "",
+          icon: undefined,
           contents: [],
         },
       ],
@@ -194,6 +195,7 @@ export default function ContentMgmtPage() {
           isPrimary: false,
           isHideCategory: false,
           category: "",
+          icon: undefined,
           contents: [],
         },
       ],
@@ -203,6 +205,7 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
+
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
   );
@@ -263,6 +266,7 @@ export default function ContentMgmtPage() {
                 isPrimary: item.isPrimary,
                 isHideCategory: item.isArchived,
                 category: item.title,
+                icon: item.icon,
                 contents: [
                   ...mapContents(item.businessIds, "business"),
                   ...mapContents(item.productIds, "product"),
@@ -732,6 +736,7 @@ export default function ContentMgmtPage() {
                   title: group.category,
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
+                  icon: group?.icon?.iconPath,
                   ...idsByType,
                 };
               });

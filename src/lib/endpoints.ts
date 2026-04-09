@@ -20,7 +20,7 @@ export const endpoints = {
   onlineOrderStats: "/stats/orders",
   offlineOrderStats: "/home-stats/offline-order",
   purchaseReportsStats: "/home-stats/purchase-reports",
-
+  icons: "/admin/icons?isCategories=true",
   googleAnalyticsViews: "/google-analytics-views",
 
   categories: "/admin/buss-category",

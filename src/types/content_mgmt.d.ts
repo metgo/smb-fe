@@ -16,6 +16,14 @@ interface IContentGroup {
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];
+  icon?:
+    | {
+        _id: string;
+        name: string;
+        iconPath: string;
+        iconAlt: string;
+      }
+    | string;
 }
 
 interface IContentTemplate {
@@ -63,7 +71,7 @@ interface ISiteCategory {
   description: string | null;
   descriptionHe: string | null;
   descriptionAr: string | null;
-
+  icon: string;
   businessIds: IContentFeedItem[];
   eventIds: IContentFeedItem[];
   poiIds: IContentFeedItem[];
