@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Image, Loader, Calendar, Eye } from "lucide-react";
 
@@ -49,6 +50,7 @@ const BlogGridView = ({
   setSelectedItems,
 }: BlogGridViewProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useTranslation("article");
   const { isDark } = useThemeClasses();
 
   useInfiniteScroll({
@@ -144,7 +146,7 @@ const BlogGridView = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center">
+                    <div className="w-full h-full bg-linear-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center">
                       <Image className="w-16 h-16 text-white/50" />
                     </div>
                   )}
@@ -197,7 +199,7 @@ const BlogGridView = ({
                     {blog.images?.length > 0 && (
                       <div className="flex items-center gap-1 text-purple-600">
                         <Eye className="w-3.5 h-3.5" />
-                        <span>{blog.images.length} photos</span>
+                        <span>{blog.images.length} {t("photos")}</span>
                       </div>
                     )}
                   </div>
@@ -212,14 +214,14 @@ const BlogGridView = ({
           <div className="flex flex-col items-center justify-center py-12">
             <Loader className="w-10 h-10 animate-spin text-violet-600" />
             <p className="mt-3 text-sm text-gray-500">
-              Loading more articles...
+              {t("loading_more")}
             </p>
           </div>
         )}
 
         {!isLoading && data.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No articles found</p>
+            <p className="text-gray-500">{t("no_articles_found")}</p>
           </div>
         )}
       </div>

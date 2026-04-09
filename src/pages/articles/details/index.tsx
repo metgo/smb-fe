@@ -1,23 +1,23 @@
+import clsx from "clsx";
+import { toast } from "sonner";
 import { useState } from "react";
-import {
-  ArrowLeft,
-  Edit,
-  FileText,
-  Copy,
-  Globe,
-  Image as ImageIcon,
-  Eye,
-  Share2,
-  BarChart3,
-} from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
-import { IOpMode } from "@/enums/operation.types";
-import { CreateArticleWizard } from "../components";
+import {
+  Edit,
+  FileText,
+  Globe,
+  Image as ImageIcon,
+} from "lucide-react";
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
+import { routes } from "@/lib/routes";
+import { CreateArticleWizard } from "../components";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
+import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
+import { formatDateTime } from "@/helpers/formatter";
 
 interface BlogImage {
   image: string;
@@ -30,7 +30,6 @@ interface BlogDetails {
   _id: string;
   status: string;
   title: string;
-  subTitle: string;
   shortDescription: string;
   content: string;
   summary: string;
@@ -45,34 +44,27 @@ interface BlogDetails {
   updatedBy: string | null;
 }
 
-interface ArticleDetailsProps {
-  article?: any; // fallback prop
-  theme: Theme;
-  onBack: () => void;
-  onEdit: () => void;
-  onDuplicate: () => void;
-}
+
 
 // ─── Mapper ───────────────────────────────────────────────────────────────────
 
-function mapBlogDetailsToArticle(data: any): BlogDetails {
+function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
   return {
-    _id: data._id,
-    status: data.status?.toLowerCase() ?? "draft",
-    title: data.title ?? "",
-    subTitle: data.subTitle ?? "",
-    shortDescription: data.shortDescription ?? "",
-    content: data.content ?? "",
-    summary: data.summary ?? "",
-    slug: data.slug ?? "",
-    metaTitle: data.metaTitle ?? "",
-    metaDescription: data.metaDescription ?? "",
-    tags: data.tags ?? [],
-    images: data.images ?? [],
-    createdAt: data.createdAt ?? "",
-    updatedAt: data.updatedAt ?? null,
-    createdBy: data.createdBy ?? "",
-    updatedBy: data.updatedBy ?? null,
+    _id: blogDetails?._id,
+    status: blogDetails?.status?.toLowerCase() ?? "draft",
+    title: blogDetails?.title ?? "",
+    shortDescription: blogDetails?.shortDescription ?? "",
+    content: blogDetails?.content ?? "",
+    summary: blogDetails?.summary ?? "",
+    slug: blogDetails?.slug ?? "",
+    metaTitle: blogDetails?.metaTitle ?? "",
+    metaDescription: blogDetails?.metaDescription ?? "",
+    tags: blogDetails?.tags ?? [],
+    images: blogDetails?.images ?? [],
+    createdAt: blogDetails?.createdAt ?? "",
+    updatedAt: blogDetails?.updatedAt ?? null,
+    createdBy: blogDetails?.createdBy ?? "",
+    updatedBy: blogDetails?.updatedBy ?? null,
   };
 }
 
@@ -82,111 +74,60 @@ function getPrimaryImage(images: BlogImage[]): string {
   return images.find((img) => img.isPrimary)?.image ?? images[0]?.image ?? "";
 }
 
-function formatStatus(
-  status: string,
-): "draft" | "published" | "scheduled" | "archived" | "approved" {
-  const map: Record<string, any> = {
-    approved: "approved",
-    published: "published",
-    draft: "draft",
-    scheduled: "scheduled",
-    archived: "archived",
-  };
-  return map[status] ?? "draft";
-}
-
-const USER_ROLE = "admin";
 
 // ─── Component ────────────────────────────────────────────────────────────────
+export default function ArticleDetails() {
+  const { t } = useTranslation("article");
+  const { t: tt } = useTranslation("toast");
 
-export default function ArticleDetails({
-  article,
-  theme,
-  onBack,
-  onEdit,
-  onDuplicate,
-}: ArticleDetailsProps) {
-  const { t } = useTranslation("common");
-  const [activeTab, setActiveTab] = useState("overview");
+  const { isDark, language } = useThemeClasses();
   const [searchParams] = useSearchParams();
   const blogId = searchParams.get("blogId") ?? "";
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { isDark, language, isRTL } = useThemeClasses();
 
-  const { data: blogDetailsRaw, isLoading: isDetailLoading } =
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const [updateBlog] = useUpdateBlogMutation()
+  const { data: blogDetailsRaw, isLoading: isDetailLoading, refetch } =
     useGetBlogByIdQuery({ blogId }, { skip: !blogId });
 
   // Prefer API data; fall back to passed article prop
-  const data: BlogDetails | null = blogDetailsRaw
+  const blogDetails: BlogDetails | null = blogDetailsRaw
     ? mapBlogDetailsToArticle(blogDetailsRaw)
     : null;
 
-  const canEdit = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
-  const handleEdit = (mode: TOpMode) => {
+
+  const handleEdit = () => {
     setIsEditOpen(true);
-    setOpMode(mode);
   };
-  const bgPrimary = theme === "dark" ? "bg-gray-900" : "bg-white";
-  const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
-  const textPrimary = theme === "dark" ? "text-white" : "text-gray-900";
-  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
-  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-500";
-  const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
+
+  const { bgPrimary, bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses();
 
   const tabs = [
-    { id: "overview", label: "Overview", icon: FileText },
-    { id: "content", label: "Content", icon: FileText },
-    { id: "seo", label: "SEO & Publishing", icon: Globe },
-    { id: "media", label: "Media", icon: ImageIcon },
+    { id: "overview", label: t("tab_overview"), icon: FileText },
+    { id: "content", label: t("tab_content"), icon: FileText },
+    { id: "seo", label: t("tab_seo"), icon: Globe },
+    { id: "media", label: t("tab_media"), icon: ImageIcon },
   ];
 
-  // ─── Status Badge ───────────────────────────────────────────────────────────
 
-  const StatusBadge = ({ status }: { status: string }) => {
-    const statusConfig: Record<string, { color: string; label: string }> = {
-      draft: { color: "bg-gray-500", label: "Draft" },
-      published: { color: "bg-green-500", label: "Published" },
-      scheduled: { color: "bg-blue-500", label: "Scheduled" },
-      archived: { color: "bg-orange-500", label: "Archived" },
-      approved: { color: "bg-teal-500", label: "Approved" },
-    };
-    const config = statusConfig[status] ?? statusConfig.draft;
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
-      >
-        {config.label}
-      </span>
-    );
+  const primaryImage = getPrimaryImage(blogDetails?.images || []);
+
+
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      await updateBlog({
+        blogId,
+        body: { status: status.toUpperCase() },
+      }).unwrap();
+
+      toast.success(tt("business_status_update_success"));
+      refetch();
+    } catch (error) {
+      toast.error(tt("business_status_update_failed"));
+      console.error(error);
+    }
   };
-
-  // ─── Loading State ──────────────────────────────────────────────────────────
-
-  if (isDetailLoading) {
-    return (
-      <div
-        className={`min-h-screen flex items-center justify-center ${bgPrimary}`}
-      >
-        <p className={textTertiary}>Loading article...</p>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div
-        className={`min-h-screen flex items-center justify-center ${bgPrimary}`}
-      >
-        <p className={textTertiary}>Article not found.</p>
-      </div>
-    );
-  }
-
-  const primaryImage = getPrimaryImage(data.images);
 
   // ─── Tab Renderers ──────────────────────────────────────────────────────────
 
@@ -195,11 +136,11 @@ export default function ArticleDetails({
       {/* Featured Image */}
       {primaryImage && (
         <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>Featured Image</h3>
-          <div className="w-full h-64 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
-            <img
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("featured_image")}</h3>
+          <div className="w-full h-64 rounded-lg overflow-hidden bg-linear-to-br from-blue-500 to-indigo-600">
+            <ImageWithFallback
               src={primaryImage}
-              alt={data.title}
+              alt={blogDetails?.title}
               className="w-full h-full object-cover"
             />
           </div>
@@ -208,31 +149,30 @@ export default function ArticleDetails({
 
       {/* Short Description */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Short Description</h3>
-        <p className={textPrimary}>{data.shortDescription}</p>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("short_description")}</h3>
+        <p className={textPrimary}>{blogDetails?.shortDescription}</p>
       </div>
 
       {/* Subtitle */}
-      {data.subTitle && (
+      {blogDetails?.summary && (
         <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>Subtitle</h3>
-          <p className={textSecondary}>{data.subTitle}</p>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("subtitle")}</h3>
+          <p className={textSecondary}>{blogDetails?.summary}</p>
         </div>
       )}
 
       {/* Tags */}
-      {data.tags.length > 0 && (
+      {blogDetails && blogDetails?.tags?.length > 0 && (
         <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>Tags</h3>
+          <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("tags")}</h3>
           <div className="flex flex-wrap gap-2">
-            {data.tags.map((tag, idx) => (
+            {blogDetails?.tags?.map((tag, idx) => (
               <span
                 key={idx}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  theme === "dark"
-                    ? "bg-blue-900/30 text-blue-400"
-                    : "bg-blue-100 text-blue-800"
-                }`}
+                className={`px-3 py-1 rounded-full text-sm ${isDark
+                  ? "bg-blue-900/30 text-blue-400"
+                  : "bg-blue-100 text-blue-800"
+                  }`}
               >
                 {tag}
               </span>
@@ -240,61 +180,43 @@ export default function ArticleDetails({
           </div>
         </div>
       )}
-
-      {/* Dates */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>Created</h3>
-          <p className={textSecondary}>
-            {new Date(data.createdAt).toLocaleString()}
-          </p>
-        </div>
-        {data.updatedAt && (
-          <div>
-            <h3 className={`text-sm mb-2 ${textTertiary}`}>Last Updated</h3>
-            <p className={textSecondary}>
-              {new Date(data.updatedAt).toLocaleString()}
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 
   const renderContent = () => (
     <div className="space-y-6">
       <div
-        className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} prose max-w-none`}
-        dangerouslySetInnerHTML={{ __html: data.content }}
+        className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
+        dangerouslySetInnerHTML={{ __html: blogDetails?.content || "" }}
       />
     </div>
   );
 
   const renderSEO = () => (
-    <div className="space-y-6">
+    <div className={clsx("space-y-6 p-6 rounded-lg", borderColor, bgSecondary, textPrimary)}>
       {/* Slug */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>URL Slug</h3>
-        <p className={textSecondary}>{data.slug || "—"}</p>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("url_slug")}</h3>
+        <p className={textSecondary}>{blogDetails?.slug || "—"}</p>
       </div>
 
       {/* Meta Title */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Meta Title</h3>
-        <p className={textSecondary}>{data.metaTitle || "—"}</p>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("meta_title")}</h3>
+        <p className={textSecondary}>{blogDetails?.metaTitle || "—"}</p>
       </div>
 
       {/* Meta Description */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Meta Description</h3>
-        <p className={textSecondary}>{data.metaDescription || "—"}</p>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("meta_description")}</h3>
+        <p className={textSecondary}>{blogDetails?.metaDescription || "—"}</p>
       </div>
 
       {/* Summary */}
       <div>
-        <h3 className={`text-sm mb-2 ${textTertiary}`}>Summary</h3>
+        <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("summary")}</h3>
         <p className={`${textSecondary} leading-relaxed`}>
-          {data.summary || "—"}
+          {blogDetails?.summary || "—"}
         </p>
       </div>
     </div>
@@ -302,16 +224,16 @@ export default function ArticleDetails({
 
   const renderMedia = () => (
     <div className="space-y-6">
-      {data.images.length > 0 ? (
+      {blogDetails && blogDetails?.images?.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {data.images.map((img, idx) => (
+          {blogDetails?.images.map((img, idx) => (
             <div
               key={idx}
-              className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+              className="relative aspect-square rounded-lg  overflow-hidden border border-gray-200 dark:border-gray-700"
             >
               <img
                 src={img.image}
-                alt={img.alt || data.title}
+                alt={img.alt || blogDetails?.title}
                 className="w-full h-full object-cover"
               />
               {img.isPrimary && (
@@ -330,7 +252,7 @@ export default function ArticleDetails({
           ))}
         </div>
       ) : (
-        <p className={textTertiary}>No media available.</p>
+        <p className={textTertiary}>{t("no_media_available")}</p>
       )}
     </div>
   );
@@ -354,69 +276,114 @@ export default function ArticleDetails({
 
   return (
     <div className={`min-h-screen ${bgPrimary}`}>
-      <div className="max-w-[1400px] mx-auto p-6">
+      <Spinner isLoading={isDetailLoading} />
+      <div className=" mx-auto p-6">
         {/* Header */}
         <div className="mb-6">
-          <button
-            onClick={onBack}
-            className={`flex items-center gap-2 mb-4 ${textSecondary} hover:${textPrimary} transition-colors`}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Articles</span>
-          </button>
 
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <h1 className={`text-3xl font-bold ${textPrimary}`}>
-                  {data.title}
-                </h1>
-                <StatusBadge status={formatStatus(data.status)} />
-              </div>
-              <p className={textTertiary}>Article ID: {data._id}</p>
-            </div>
-            <button
-              onClick={() => {
-                handleEdit(IOpMode.EDIT);
-                setIsDropdownOpen(false);
-              }}
-              className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                isDark
-                  ? "text-indigo-400 hover:bg-gray-800"
-                  : "text-indigo-600 hover:bg-gray-50"
-              }`}
-            >
-              <Edit className="w-4 h-4 shrink-0" />
-              {t("edit") || "Edit"}
-            </button>
-          </div>
-        </div>
+          <div className="flex items-center justify-between">
+            <BackToListBtn navPath={routes.articleMgmt} />
 
-        {/* Tabs */}
-        <div className={`border-b ${borderColor} mb-6`}>
-          <div className="flex gap-1 overflow-x-auto">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
+            <div className="flex items-center gap-4">
+              <StatusChangeBtn
+                handleStatusChange={onStatusChangeHandler}
+                status={blogDetails?.status as TStatus}
+              />
+              <div>
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? `border-blue-600 ${textPrimary}`
-                      : `border-transparent ${textSecondary} hover:${textPrimary}`
-                  }`}
+                  onClick={handleEdit}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer bg-blue-500 rounded-md ${isDark
+                    ? "text-white hover:bg-gray-800"
+                    : "text-indigo-200 hover:text-indigo-500 hover:bg-gray-200"
+                    }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
+                  <Edit className="w-4 h-4 shrink-0" />
+                  {t("edit")}
                 </button>
-              );
-            })}
+              </div>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h1 className={`text-3xl font-bold ${textPrimary}`}>
+              {blogDetails?.title}
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            {blogDetails?.createdAt && (
+              <div className="flex items-center gap-1.5">
+                <svg
+                  className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                  <path d="M5 1.5v3M11 1.5v3M2 7h12" />
+                </svg>
+                <span className={clsx(" font-medium", textTertiary)}>
+                  {t("created")}
+                </span>
+                <span className={clsx("", textTertiary)}>
+                  {formatDateTime(blogDetails?.createdAt, language)}
+                </span>
+              </div>
+            )}
+
+            <div
+              className={clsx(
+                "w-px h-3 shrink-0",
+                textTertiary,
+                "opacity-30",
+              )}
+              style={{ background: "currentColor" }}
+            />
+
+            {blogDetails?.updatedAt && (
+              <div className="flex items-center gap-1.5">
+                <svg
+                  className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    d="M13.5 8A5.5 5.5 0 1 1 8 2.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M10.5 1.5l3 1-1 3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8 5v3.5l2 1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className={clsx(" font-medium", textTertiary)}>
+                  {t("updated")}
+                </span>
+                <span className={clsx("", textTertiary)}>
+                  {formatDateTime(blogDetails?.updatedAt, language)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
+
+        <TabsSection
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
 
         {/* Tab Content */}
-        <div className={`${bgPrimary} rounded-lg`}>{renderTabContent()}</div>
+        <div className={`${bgPrimary} rounded-lg mt-4`}>{renderTabContent()}</div>
       </div>
       {isEditOpen && (
         <CreateArticleWizard

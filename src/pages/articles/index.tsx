@@ -67,7 +67,7 @@ const columnDefinitions = [
 
 export default function ArticlesManagement() {
   const navigate = useNavigate();
-  const { t } = useTranslation("blogs"); // ← Create this namespace if needed
+  const { t } = useTranslation("article");
   const { isDark, isRTL } = useThemeClasses();
 
   const handleBusinessClick = useCallback(
@@ -249,7 +249,7 @@ export default function ArticlesManagement() {
         : combinedBlogs;
 
     if (!blogsToExport.length) {
-      toast.info("No blogs to export");
+      toast.info(t("no_blogs_to_export"));
       return;
     }
 
@@ -315,9 +315,9 @@ export default function ArticlesManagement() {
           className={`border-b ${isDark ? "border-gray-800" : "border-gray-200"} z-10`}
         >
           <PageHeader
-            title="Blog & Articles Management"
-            description="Create, manage and publish high-quality content across your platforms"
-            btnLabel="Create Article"
+            title={t("page_title")}
+            description={t("page_description")}
+            btnLabel={t("create_article")}
             onClick={() => setIsCreateModalOpen(true)}
             h1Gradient="bg-linear-to-r text-transparent from-violet-500 via-fuchsia-600 to-pink-600"
             totalCount={totalData}
@@ -329,7 +329,7 @@ export default function ArticlesManagement() {
           <div className="py-4 flex flex-col lg:flex-row gap-3">
             <div className="flex-1">
               <SearchInput
-                placeholder="Search articles by title or subtitle..."
+                placeholder={t("search_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 storageKey={SEARCH_STORAGE_KEY}
@@ -345,7 +345,7 @@ export default function ArticlesManagement() {
                   className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"}`}
                 >
                   <Columns className="w-5 h-5" />
-                  Columns
+                  {t("columns")}
                   {showColumnSettings ? (
                     <ChevronUp className="w-4 h-4" />
                   ) : (
@@ -359,12 +359,12 @@ export default function ArticlesManagement() {
                   >
                     <div className="p-4 border-b">
                       <div className="flex justify-between mb-2">
-                        <h3>Column Settings</h3>
+                        <h3>{t("column_settings")}</h3>
                         <button
                           onClick={()=>{}}
                           className="text-xs text-teal-600"
                         >
-                          Reset
+                          {t("reset")}
                         </button>
                       </div>
                     </div>
@@ -398,7 +398,7 @@ export default function ArticlesManagement() {
               className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"}`}
             >
               <Download className="w-5 h-5" />
-              Export
+              {t("export")}
             </button>
 
             <ViewModeToggle

@@ -1,113 +1,152 @@
-import { X, Eye, Calendar, Clock, Plus, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { FileText, Globe } from "lucide-react";
 
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import {
-  ConfirmDialog,
-  ImageWithFallback,
-  WizardFooter,
-} from "@/components/shared";
-import RichTextEditor from "./sub-components/RichTextEditor";
+import { ConfirmDialog, WizardFooter } from "@/components/shared";
 
 import {
   useCreateBlogMutation,
   useUpdateBlogMutation,
   useGenerateBlogSeoMutation,
 } from "@/store/api/blogMutationApi";
-import { ReactSelect } from "@/components/form-fields";
-import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
+import { ReactSelect } from "@/components/form-fields";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 
-interface CreateArticleWizardProps {
-  onClose: () => void;
-  existingArticle?: Article;
-}
+import ArticleContentForm from "./sub-components/ArticleContentForm";
+import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
+import { getLngWiseStr } from "@/helpers";
 
-// Mirrors the API payload shape exactly
+
 interface ArticleImage {
-  image: string; // base64 or URL
-  caption: string;
+  image: string;
   alt: string;
   isPrimary: boolean;
-  stationId?: string;
 }
 
+/** Mirrors the API payload exactly (all language variants as flat fields) */
 interface ArticleFormData {
   externalApiId: string;
-  title: string; // single-language string per API schema
-  subTitle: string;
+  // Content — EN / HE / AR
+  title: string;
+  titleHe: string;
+  titleAr: string;
   shortDescription: string;
-  content: string; // full HTML content
-  slug: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
+  content: string;
+  contentHe: string;
+  contentAr: string;
+  // Tags
   tags: string[];
-  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED";
+  tagsHe: string[];
+  tagsAr: string[];
+  // Summary
   summary: string;
+  summaryHe: string;
+  summaryAr: string;
+  // SEO
   metaTitle: string;
+  metaTitleHe: string;
+  metaTitleAr: string;
   metaDescription: string;
+  metaDescriptionHe: string;
+  metaDescriptionAr: string;
+  // Common
+  slug: string;
+  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
   images: ArticleImage[];
 }
 
-function buildFormFromArticle(article: Article): ArticleFormData {
-  console.log("🚀 ~ buildFormFromArticle ~ article:", article);
-  const titleStr =
-    typeof article.title === "string" ? article.title : article.title?.en || "";
+const EMPTY_FORM: ArticleFormData = {
+  externalApiId: "",
+  title: "", titleHe: "", titleAr: "",
+  shortDescription: "", shortDescriptionHe: "", shortDescriptionAr: "",
+  content: "", contentHe: "", contentAr: "",
+  tags: [], tagsHe: [], tagsAr: [],
+  summary: "", summaryHe: "", summaryAr: "",
+  metaTitle: "", metaTitleHe: "", metaTitleAr: "",
+  metaDescription: "", metaDescriptionHe: "", metaDescriptionAr: "",
+  slug: "",
+  status: "DRAFT",
+  images: [],
+};
 
-  const shortDesc =
-    typeof article.shortDescription === "string"
-      ? article.shortDescription
-      : article.shortDescription?.en || "";
+function buildFormFromArticle(article: any): ArticleFormData {
+  console.log("🚀 ~ buildFormFromArticle ~ article:", article)
+  const str = (v: any) => (typeof v === "string" ? v : v?.en || "");
+  const arr = (v: any) => (Array.isArray(v) ? v : []);
 
-  const images: ArticleImage[] =
-    Array.isArray(article.images) && article.images.length > 0
-      ? article.images.map((img: any) => ({
-          image: img.image || "",
-          caption: img.caption || "",
-          alt: img.alt || titleStr,
-          isPrimary: img.isPrimary ?? false,
-          stationId: img.stationId,
-        }))
-      : [];
   return {
     externalApiId: article.externalApiId || "",
-    title: titleStr,
-    subTitle: article.subTitle || "",
-    shortDescription: shortDesc,
-    content: article.content,
+    title: str(article.title),
+    titleHe: article.titleHe || "",
+    titleAr: article.titleAr || "",
+    shortDescription: str(article.shortDescription),
+    shortDescriptionHe: article.shortDescriptionHe || "",
+    shortDescriptionAr: article.shortDescriptionAr || "",
+    content: article.content || "",
+    contentHe: article.contentHe || "",
+    contentAr: article.contentAr || "",
+    tags: arr(article.tags),
+    tagsHe: arr(article.tagsHe),
+    tagsAr: arr(article.tagsAr),
+    summary: article.summary || "",
+    summaryHe: article.summaryHe || "",
+    summaryAr: article.summaryAr || "",
+    metaTitle: article.metaTitle || "",
+    metaTitleHe: article.metaTitleHe || "",
+    metaTitleAr: article.metaTitleAr || "",
+    metaDescription: article.metaDescription || "",
+    metaDescriptionHe: article.metaDescriptionHe || "",
+    metaDescriptionAr: article.metaDescriptionAr || "",
     slug: article.slug || "",
-    tags: article.tags || [],
-    status:
-      (article.status?.toUpperCase() as ArticleFormData["status"]) || "DRAFT",
-    summary: article.summary || shortDesc,
-    metaTitle: article.metaTitle || titleStr,
-    metaDescription: article.metaDescription || shortDesc,
-    images,
+    status: (article.status?.toUpperCase() as ArticleFormData["status"]) || "DRAFT",
+    images: arr(article.images).map((img: any) => ({
+      image: img.image || "",
+      caption: img.caption || "",
+      alt: img.alt || "",
+      isPrimary: img.isPrimary ?? false,
+      stationId: img.stationId,
+    })),
   };
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+interface CreateArticleWizardProps {
+  onClose: () => void;
+  existingArticle?: any;
+}
+
+const LANG_OPTIONS: { key: Language; label: string }[] = [
+  { key: "en", label: "EN" },
+  { key: "he", label: "HE" },
+  { key: "ar", label: "AR" },
+];
+
+function getTagsField(lang: Language): keyof ArticleFormData {
+  if (lang === "en") return "tags";
+  if (lang === "he") return "tagsHe";
+  return "tagsAr";
 }
 
 const CreateArticleWizard = ({
   onClose,
   existingArticle,
 }: CreateArticleWizardProps) => {
-  const { t } = useTranslation("blogs");
+  console.log("🚀 ~ CreateArticleWizard ~ existingArticle:", existingArticle)
+  const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const { bgSecondary, textPrimary, textSecondary, borderColor } = useThemeClasses();
 
-  const {
-    theme,
-    bgPrimary,
-    bgSecondary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-  } = useThemeClasses();
+  // ─── Images ──────────────────────────────────────────────────────────────────
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
   const {
     images,
-    imagesRef,
     primaryImageIndex,
     handleImageUpload,
     uploadAll,
@@ -117,155 +156,76 @@ const CreateArticleWizard = ({
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-  // ─── Form State (matches API payload) ───────────────────────────────────────
-  const [formData, setFormData] = useState<ArticleFormData>({
-    externalApiId: "",
-    title: "",
-    subTitle: "",
-    shortDescription: "",
-    content: "",
-    slug: "",
-    tags: [],
-    status: "DRAFT",
-    summary: "",
-    metaTitle: "",
-    metaDescription: "",
-    images: [],
-  });
+  } = useImagesUpload({ initialImages: galleryImages, onChange: setGalleryImages });
 
-  // useEffect(() => {
-  //   setFormData((prev) => ({ ...prev, images: mapped }));
-  // }, [images, primaryImageIndex]);
-
-  console.log("🚀 ~ CreateArticleWizard ~ images:", images);
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showPreview, setShowPreview] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [editingLanguage, setEditingLanguage] = useState<"en" | "he" | "ar">(
-    "en",
-  );
+  // ─── Form state ───────────────────────────────────────────────────────────────
+  const [formData, setFormData] = useState<ArticleFormData>(EMPTY_FORM);
+  const [editingLanguage, setEditingLanguage] = useState<Language>("en");
   const [tagInput, setTagInput] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  // ─── Populate from existingArticle via useEffect ─────────────────────────────
   useEffect(() => {
-    if (existingArticle) {
-      setFormData(buildFormFromArticle(existingArticle));
-    }
+    if (existingArticle) setFormData(buildFormFromArticle(existingArticle));
   }, [existingArticle]);
 
+  // ─── Mutations ────────────────────────────────────────────────────────────────
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-  const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
-    useGenerateBlogSeoMutation();
+  const [generateBlogSeo, { isLoading: isGeneratingSeo }] = useGenerateBlogSeoMutation();
 
   const isEditMode = !!existingArticle;
   const isLoading = isCreating || isUpdating;
 
-  const handleTitleChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      title: value,
-      metaTitle: prev.metaTitle || value, // auto-fill metaTitle if empty
-    }));
-  };
+  // ─── Handlers ─────────────────────────────────────────────────────────────────
+  const handleChange = useCallback((updates: Partial<ArticleFormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+  }, []);
 
-  // ─── Tags ─────────────────────────────────────────────────────────────────────
   const addTag = () => {
     const tag = tagInput.trim();
-    if (tag && !formData.tags.includes(tag)) {
-      setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }));
-      setTagInput("");
+    if (!tag) return;
+    const field = getTagsField(editingLanguage);
+    const current = formData[field] as string[];
+    if (!current.includes(tag)) {
+      setFormData((prev) => ({ ...prev, [field]: [...current, tag] }));
     }
+    setTagInput("");
   };
 
   const removeTag = (tag: string) => {
+    const field = getTagsField(editingLanguage);
     setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
+      [field]: (prev[field] as string[]).filter((t) => t !== tag),
     }));
   };
 
   // ─── Validation ───────────────────────────────────────────────────────────────
   const validateArticle = () => {
-    if (!formData.title.trim()) {
-      toast.error("Please enter a title");
+    const hasTitle =
+      formData.title.trim() || formData.titleHe.trim() || formData.titleAr.trim();
+    if (!hasTitle) {
+      toast.error(t("validation_title_required"));
       return false;
     }
-    if (!formData.shortDescription.trim()) {
-      toast.error("Please enter a short description");
+    const hasShortDescription =
+      formData.shortDescription.trim() ||
+      formData.shortDescriptionHe.trim() ||
+      formData.shortDescriptionAr.trim();
+    if (!hasShortDescription) {
+      toast.error(t("validation_short_desc_required"));
       return false;
     }
-    // if (formData.images.length === 0) {
-    //   toast.error("Please upload at least one image");
-    //   return false;
-    // }
     return true;
   };
 
-  // ─── Save / Publish ───────────────────────────────────────────────────────────
-  const saveArticle = useCallback(
-    async (isPublish: boolean = false) => {
-      if (!validateArticle()) return;
-
-      const res = await uploadAll();
-
-      const mapped: ArticleImage[] = images.map((img, idx) => ({
-        image: img?.gcsURL,
-        caption: img.caption || "",
-        alt: formData.title || "",
-        isPrimary: idx === primaryImageIndex,
-        stationId: img.stationId,
-      }));
-
-      const { externalApiId, ...restFormData } = formData;
-
-      const payload: ArticleFormData = {
-        ...(isEditMode ? restFormData : formData),
-        status: isPublish ? "APPROVED" : "PENDING",
-        images: mapped,
-      };
-
-      try {
-        if (isEditMode && existingArticle?._id) {
-          await updateBlog({
-            body: payload,
-            blogId: existingArticle._id,
-          }).unwrap();
-          toast.success(isPublish ? "Article published!" : "Article updated!");
-        } else {
-          await createBlog(payload).unwrap();
-          toast.success(isPublish ? "Article published!" : "Draft saved!");
-        }
-        if (isPublish) onClose();
-      } catch (err: any) {
-        toast.error(err?.data?.message || "Failed to save article");
-      }
-    },
-    [
-      formData,
-      isEditMode,
-      existingArticle,
-      createBlog,
-      updateBlog,
-      onClose,
-      validateArticle,
-      uploadAll,
-      images,
-      primaryImageIndex,
-    ],
-  );
+  // ─── SEO generation ───────────────────────────────────────────────────────────
   const handleGenerateSeo = async () => {
     try {
       const result = await generateBlogSeo({
-        title: formData.title,
-        subTitle: formData.subTitle,
-        shortDescription: formData.shortDescription,
-        content: formData.content,
+        title: getLngWiseStr(editingLanguage, formData.title, formData.titleHe, formData.titleAr),
+        shortDescription: getLngWiseStr(editingLanguage, formData.shortDescription, formData.shortDescriptionHe, formData.shortDescriptionAr),
+        content: getLngWiseStr(editingLanguage, formData.content, formData.contentHe, formData.contentAr),
       }).unwrap();
 
       setFormData((prev) => ({
@@ -274,12 +234,58 @@ const CreateArticleWizard = ({
         metaTitle: result.metaTitle ?? prev.metaTitle,
         metaDescription: result.metaDescription ?? prev.metaDescription,
         tags: result.tags?.length ? result.tags : prev.tags,
+        summaryHe: result.summaryHe ?? prev.summaryHe,
+        metaTitleHe: result.metaTitleHe ?? prev.metaTitleHe,
+        metaDescriptionHe: result.metaDescriptionHe ?? prev.metaDescriptionHe,
+        tagsHe: result.tagsHe?.length ? result.tagsHe : prev.tagsHe,
+        summaryAr: result.summaryAr ?? prev.summaryAr,
+        metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
+        metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
+        tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
+        // Auto-fill slug from title if empty
+        slug: prev.slug || result.slug || formData.title.toLowerCase().replace(/\s+/g, "-"),
       }));
-      toast.success("SEO fields generated successfully");
+      toast.success(t("seo_generated_success"));
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to generate SEO");
+      toast.error(err?.data?.message || t("seo_generate_failed"));
     }
   };
+
+  const saveArticle = useCallback(
+    async (isPublish: boolean = false) => {
+      if (!validateArticle()) return;
+
+      await uploadAll();
+
+      const mapped = images.map((img, idx) => ({
+        image: img?.gcsURL,
+        alt: formData.title || "",
+        isPrimary: idx === primaryImageIndex,
+      }));
+
+      const { externalApiId, ...restFormData } = formData;
+
+      const payload = {
+        ...(isEditMode ? restFormData : formData),
+        status: isPublish ? "APPROVED" : "PENDING",
+        images: mapped,
+      };
+
+      try {
+        if (isEditMode && existingArticle?._id) {
+          await updateBlog({ body: payload, blogId: existingArticle._id }).unwrap();
+          toast.success(isPublish ? t("article_published") : t("article_updated"));
+        } else {
+          await createBlog(payload).unwrap();
+          toast.success(isPublish ? t("article_published") : t("draft_saved"));
+        }
+        if (isPublish) onClose();
+      } catch (err: any) {
+        toast.error(err?.data?.message || t("save_failed"));
+      }
+    },
+    [formData, isEditMode, existingArticle, createBlog, updateBlog, onClose, uploadAll, images, primaryImageIndex],
+  );
 
   const handleSaveDraft = () => saveArticle(false);
 
@@ -289,440 +295,103 @@ const CreateArticleWizard = ({
     setIsPublishing(false);
   };
 
-  const handleNext = async () =>
-    currentStep === 2 ? handlePublish() : setCurrentStep((p) => p + 1);
-
-  const handlePrevious = () => currentStep > 1 && setCurrentStep((p) => p - 1);
-
-  const totalSteps = 2;
-
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <ModalWrapper
-      maxWidth="max-w-7xl"
-      onClose={onClose}
-      showSpinner={isLoading}
-    >
-      {/* Header */}
-      <div
-        className={`px-6 py-4 flex items-center justify-between border-b ${borderColor}`}
-      >
-        <div className="flex items-center gap-4">
-          <h2 className={`text-2xl font-bold ${textPrimary}`}>
-            {existingArticle ? "Edit Article" : "Create Article"}
-          </h2>
+    <ModalWrapper maxWidth="max-w-7xl" onClose={onClose} showSpinner={isLoading}>
+      <div className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} flex-wrap gap-3`}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-500" />
+            <h2 className={`text-xl font-bold ${textPrimary}`}>
+              {isEditMode ? t("edit_article") : t("create_article")}
+            </h2>
+          </div>
+
           <ReactSelect
             minWidth={180}
             value={formData.externalApiId}
-            onChange={(value) =>
-              setFormData((prev) => ({ ...prev, externalApiId: value }))
-            }
+            onChange={(value) => handleChange({ externalApiId: value })}
             items={associatedWebsite}
             placeholder={t("select_website")}
           />
+        </div>
 
-          {/* Language selector (UI only — API accepts single lang strings) */}
-          <div className="flex items-center gap-2">
-            {(["en", "he", "ar"] as const).map((lang) => (
+        {/* Language selector */}
+        <div className="flex items-center gap-1.5">
+          <Globe className={`w-4 h-4 ${textSecondary}`} />
+          <div className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}>
+            {LANG_OPTIONS.map(({ key, label }) => (
               <button
-                key={lang}
-                onClick={() => setEditingLanguage(lang)}
-                className={`px-3 py-1 rounded-lg transition-colors ${
-                  editingLanguage === lang
-                    ? "bg-blue-600 text-white"
-                    : `${bgSecondary} ${textSecondary}`
-                }`}
+                key={key}
+                onClick={() => setEditingLanguage(key)}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${editingLanguage === key
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : `${textSecondary} hover:bg-blue-50 dark:hover:bg-gray-700`
+                  }`}
               >
-                {lang.toUpperCase()}
+                {label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-hidden flex">
-          {/* ── Editor ────────────────────────────────────────────────────── */}
-          <div
-            className={`flex-1 overflow-y-auto p-6 ${showPreview ? "hidden lg:block" : ""}`}
-          >
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Title */}
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-2`}
-                >
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Enter article title..."
-                  className={`w-full text-3xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  dir={editingLanguage !== "en" ? "rtl" : "ltr"}
-                />
-                <p className={`text-xs ${textTertiary} mt-1`}>
-                  {formData.title.length} characters
-                </p>
-              </div>
+      {/* ── Body ────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-hidden flex">
+        {/* Main editor */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <ArticleContentForm
+            formData={formData}
+            editingLanguage={editingLanguage}
+            onChange={handleChange}
+            images={images}
+            primaryImageIndex={primaryImageIndex}
+            onImageUpload={handleImageUpload}
+            onImageDelete={handleDeleteImage}
+            onSetPrimaryImage={setPrimaryImage}
+            syncKey={existingArticle?.id}
+          />
+        </div>
 
-              {/* Subtitle */}
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-2`}
-                >
-                  Subtitle
-                </label>
-                <input
-                  type="text"
-                  value={formData.subTitle}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      subTitle: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter subtitle..."
-                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  dir={editingLanguage !== "en" ? "rtl" : "ltr"}
-                />
-              </div>
-
-              {/* Short Description */}
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-2`}
-                >
-                  Short Description *
-                </label>
-                <textarea
-                  value={formData.shortDescription}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      shortDescription: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter a brief description..."
-                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
-                  rows={3}
-                  dir={editingLanguage !== "en" ? "rtl" : "ltr"}
-                />
-                <p className={`text-xs ${textTertiary} mt-1`}>
-                  {formData.shortDescription.length} characters
-                </p>
-              </div>
-
-              {/* Summary */}
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-2`}
-                >
-                  Summary
-                </label>
-                <textarea
-                  value={formData.summary}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      summary: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter article summary..."
-                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
-                  rows={2}
-                  dir={editingLanguage !== "en" ? "rtl" : "ltr"}
-                />
-              </div>
-
-              {/* Rich Text Content */}
-              <RichTextEditor
-                content={formData.content}
-                onChange={(html) =>
-                  setFormData((prev) => ({ ...prev, content: html }))
-                }
-                editingLanguage={editingLanguage}
-                bgPrimary={bgPrimary}
-                bgSecondary={bgSecondary}
-                textPrimary={textPrimary}
-                textTertiary={textTertiary}
-                borderColor={borderColor}
-                syncKey={existingArticle?.id}
-              />
-
-              {/* Image Gallery */}
-              <div>
-                <label
-                  className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {t("image_gallery")}
-                  <span className="text-xs ml-2 text-gray-500">
-                    ({t("upload_up_to_10_images")})
-                  </span>
-                </label>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className={`relative aspect-square rounded-lg overflow-hidden border group ${
-                        theme === "dark" ? "border-gray-700" : "border-gray-300"
-                      }`}
-                    >
-                      <ImageWithFallback
-                        src={img.previewUrl}
-                        alt={`Image ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-
-                      {/* Delete */}
-                      <button
-                        onClick={() => handleDeleteImage(img, idx)}
-                        className="absolute top-2 right-2 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700 z-10"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                      {img.status === "uploading" && (
-                        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center">
-                          {/* Circular loader */}
-                          <Loader2 className="w-16 h-16 text-white animate-spin" />
-
-                          {/* Progress text */}
-                          <span className="mt-2 text-white font-bold text-xs">
-                            {img.progress}%
-                          </span>
-                        </div>
-                      )}
-                      {/* Primary Badge */}
-                      {idx === primaryImageIndex && (
-                        <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded z-10">
-                          {t("primary_image")}
-                        </div>
-                      )}
-
-                      {/* Set as Primary */}
-                      <button
-                        onClick={() => setPrimaryImage(idx)}
-                        className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
-                      >
-                        {t("set_as_primary") || "Set as Primary"}
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Upload New Image */}
-                  {images?.length < 10 && (
-                    <div
-                      className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
-                        theme === "dark"
-                          ? "border-gray-700 hover:border-gray-600"
-                          : "border-gray-300 hover:border-gray-400"
-                      }`}
-                      onClick={() =>
-                        document.getElementById("image-upload")?.click()
-                      }
-                    >
-                      {/* Hidden file input */}
-                      <input
-                        id="image-upload"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) =>
-                          e.target.files && handleImageUpload(e.target.files)
-                        }
-                        className="hidden"
-                      />
-                      <div className="text-center">
-                        <Plus
-                          className={`w-8 h-8 mx-auto mb-1 ${
-                            theme === "dark" ? "text-gray-600" : "text-gray-400"
-                          }`}
-                        />
-                        <p
-                          className={`text-xs ${
-                            theme === "dark" ? "text-gray-600" : "text-gray-500"
-                          }`}
-                        >
-                          {t("upload_images") || "Upload"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <ConfirmDialog
-                open={!!deleteTarget}
-                title="delete_image"
-                message="delete_image_confirm"
-                confirmText="delete"
-                loading={isImageDeleting}
-                variant="danger"
-                onCancel={() => setDeleteTarget(null)}
-                onConfirm={confirmDelete}
-              />
-            </div>
-          </div>
-
-          {/* ── Settings Sidebar ────────────────────────────────────────────── */}
-          <div
-            className={`w-full lg:w-96 border-l ${borderColor} ${bgSecondary} overflow-y-auto p-6 ${showPreview ? "" : "hidden lg:block"}`}
-          >
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className={`text-lg font-semibold ${textPrimary}`}>
-                  Settings
-                </h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleGenerateSeo}
-                    disabled={isGeneratingSeo}
-                    title="Generate SEO with AI"
-                    className="p-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isGeneratingSeo ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className={`p-2 rounded-lg ${textTertiary} lg:hidden`}
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <h4 className={`text-sm font-semibold ${textSecondary} mb-3`}>
-                  Tags
-                </h4>
-                <div className="flex gap-2 mb-3">
-                  <input
-                    type="text"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && addTag()}
-                    placeholder="Add tag..."
-                    className={`flex-1 px-3 py-2 ${bgPrimary} ${textPrimary} border ${borderColor} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                  <button
-                    onClick={addTag}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`inline-flex items-center gap-1 px-3 py-1 ${bgPrimary} ${textSecondary} border ${borderColor} rounded-full text-sm`}
-                    >
-                      {tag}
-                      <button
-                        onClick={() => removeTag(tag)}
-                        className="hover:text-red-600"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* SEO */}
-              <div>
-                <h4 className={`text-sm font-semibold ${textSecondary} mb-3`}>
-                  SEO & Metadata
-                </h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className={`block text-xs ${textTertiary} mb-1`}>
-                      Meta Title
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.metaTitle}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          metaTitle: e.target.value,
-                        }))
-                      }
-                      className={`w-full px-3 py-2 ${bgPrimary} ${textPrimary} border ${borderColor} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-xs ${textTertiary} mb-1`}>
-                      Meta Description
-                    </label>
-                    <textarea
-                      value={formData.metaDescription}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          metaDescription: e.target.value,
-                        }))
-                      }
-                      rows={2}
-                      className={`w-full px-3 py-2 ${bgPrimary} ${textPrimary} border ${borderColor} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Attribution */}
-              <div>
-                <h4 className={`text-sm font-semibold ${textSecondary} mb-3`}>
-                  Attribution
-                </h4>
-                <div className="space-y-2">
-                  {existingArticle && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Clock className={`w-4 h-4 ${textTertiary}`} />
-                        <span className={`text-sm ${textTertiary}`}>
-                          Created{" "}
-                          {new Date(
-                            existingArticle.createdAt,
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className={`w-4 h-4 ${textTertiary}`} />
-                        <span className={`text-sm ${textTertiary}`}>
-                          Updated{" "}
-                          {new Date(
-                            existingArticle.updatedAt,
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Settings sidebar */}
+        <div className={`w-80 xl:w-96 border-l ${borderColor} ${bgSecondary} overflow-y-auto p-5 shrink-0`}>
+          <ArticleSeoSettings
+            formData={formData}
+            editingLanguage={editingLanguage}
+            onChange={handleChange}
+            tagInput={tagInput}
+            onTagInputChange={setTagInput}
+            onAddTag={addTag}
+            onRemoveTag={removeTag}
+            isGeneratingSeo={isGeneratingSeo}
+            onGenerateSeo={handleGenerateSeo}
+            showPreview={false}
+            onTogglePreview={() => { }}
+            existingArticle={existingArticle}
+          />
         </div>
       </div>
 
-      {/* Footer */}
+      {/* ── Image delete confirm ─────────────────────────────────────────────── */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title={t("delete_image")}
+        message={t("delete_image_confirm")}
+        confirmText={t("delete")}
+        loading={isImageDeleting}
+        variant="danger"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
+
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <WizardFooter
-        currentStep={currentStep}
-        totalSteps={totalSteps}
+        currentStep={1}
+        totalSteps={1}
         isSaving={isLoading}
         isPublishing={isPublishing}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+        onPrevious={() => { }}
+        onNext={handlePublish}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         isPublishButton={true}
@@ -730,4 +399,5 @@ const CreateArticleWizard = ({
     </ModalWrapper>
   );
 };
+
 export default CreateArticleWizard;

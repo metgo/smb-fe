@@ -42,7 +42,7 @@ const BlogListView = ({
   selectedBlogs,
   setSelectedBlogs,
 }: BlogListViewProps) => {
-    const { t } = useTranslation("blogs");
+    const { t } = useTranslation("article");
   
   const { textPrimary, textSecondary, isDark } = useThemeClasses();
   const [error, setError] = useState(false);
@@ -62,7 +62,7 @@ const BlogListView = ({
       label: t("title") || "Title",
       render: (blog: any) => (
         <div className={`${textPrimary} font-medium line-clamp-2 pr-4`}>
-          {blog.title || "Untitled Article"}
+          {blog.title || t("untitled_article")}
         </div>
       ),
     },
@@ -182,13 +182,13 @@ const BlogListView = ({
           <h3
             className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
           >
-            Failed to load articles
+            {t("failed_to_load")}
           </h3>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       </div>
