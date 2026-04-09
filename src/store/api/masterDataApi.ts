@@ -31,7 +31,7 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
-    getAllIcons: builder.query<any, Params>({
+    getAllIcons: builder.query<any, any>({
       query: (params) => ({
         url: endpoints.icons,
         method: "GET",

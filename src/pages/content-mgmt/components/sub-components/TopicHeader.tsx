@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
-import { useCommon } from "@/hooks/useCommon";
 
 interface TopicHeaderProps {
   topic: {
@@ -40,7 +39,6 @@ const TopicHeader = ({
   setShowDeleteConfirm,
 }: TopicHeaderProps) => {
   const { isDark } = useThemeClasses();
-  const { allIcons } = useCommon();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(topic.name);

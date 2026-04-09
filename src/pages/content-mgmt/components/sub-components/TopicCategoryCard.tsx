@@ -27,7 +27,7 @@ const ItemTypes = {
 };
 
 interface Props {
-  group: IContentGroup;
+  group: any;
   topicIndex: number;
   categoryIndex: number;
   templateContents: IContentTemplate[];
@@ -269,13 +269,13 @@ const TopicCategoryCard = ({
                 {iconPickerOpen && (
                   <div
                     className={clsx(
-                      "absolute top-12 left-0 z-50 p-2 rounded-lg border shadow-md grid grid-cols-7  w-72",
+                      "absolute top-12 left-0 z-50 p-2 max-h-62 overflow-y-auto rounded-lg border shadow-md grid grid-cols-7  w-72",
                       isDark
                         ? "bg-gray-800 border-gray-600"
                         : "bg-white border-gray-200",
                     )}
                   >
-                    {allIcons?.data?.map((icon) => (
+                    {allIcons?.data?.map((icon: any) => (
                       <button
                         key={icon._id}
                         onClick={() =>
@@ -396,7 +396,7 @@ const TopicCategoryCard = ({
         <div className="mt-4 px-2 pb-1">
           {group?.contents?.length > 0 ? (
             <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
-              {group.contents.map((content) => (
+              {group.contents.map((content: any) => (
                 <div key={content._id} className="w-44 shrink-0">
                   <ContentCard
                     _id={content._id}

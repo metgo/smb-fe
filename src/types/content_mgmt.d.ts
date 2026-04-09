@@ -11,19 +11,19 @@ interface IContent {
   contentType?: "business" | "product" | "trip" | "event" | "poi";
 }
 
+interface IIcon {
+  _id: string;
+  name: string;
+  iconPath: string;
+  iconAlt: string;
+}
+
 interface IContentGroup {
   category: string;
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];
-  icon?:
-    | {
-        _id: string;
-        name: string;
-        iconPath: string;
-        iconAlt: string;
-      }
-    | string;
+  icon?: string | IIcon | null;
 }
 
 interface IContentTemplate {

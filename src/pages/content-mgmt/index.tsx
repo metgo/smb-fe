@@ -240,6 +240,10 @@ export default function ContentMgmtPage() {
 
   useEffect(() => {
     if (templateContentsData && externalApiId) {
+      console.log(
+        "🚀 ~ ContentMgmtPage ~ templateContentsData:",
+        templateContentsData,
+      );
       if (externalApiId === templateContentsData?.externalApiId._id) {
         const formattedTemplateContents = templateContentsData?.siteTopics?.map(
           (topic) => ({
@@ -736,7 +740,7 @@ export default function ContentMgmtPage() {
                   title: group.category,
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
-                  icon: group?.icon?.iconPath,
+                  icon: (group.icon as IIcon)?.iconPath,
                   ...idsByType,
                 };
               });
