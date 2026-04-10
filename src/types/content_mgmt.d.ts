@@ -11,11 +11,19 @@ interface IContent {
   contentType?: "business" | "product" | "trip" | "event" | "poi";
 }
 
+interface IIcon {
+  _id: string;
+  name: string;
+  iconPath: string;
+  iconAlt: string;
+}
+
 interface IContentGroup {
   category: string;
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];
+  icon?: string | IIcon | null;
 }
 
 interface IContentTemplate {
@@ -63,7 +71,7 @@ interface ISiteCategory {
   description: string | null;
   descriptionHe: string | null;
   descriptionAr: string | null;
-
+  icon: string;
   businessIds: IContentFeedItem[];
   eventIds: IContentFeedItem[];
   poiIds: IContentFeedItem[];
