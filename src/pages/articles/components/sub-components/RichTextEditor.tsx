@@ -130,22 +130,62 @@ const RichTextEditor = ({
 
   const toolbarGroups = [
     [
-      { icon: <Bold className="w-4 h-4" />, action: () => insertFormatting("**", "**"), title: "Bold" },
-      { icon: <Italic className="w-4 h-4" />, action: () => insertFormatting("*", "*"), title: "Italic" },
+      {
+        icon: <Bold className="w-4 h-4" />,
+        action: () => insertFormatting("**", "**"),
+        title: "Bold",
+      },
+      {
+        icon: <Italic className="w-4 h-4" />,
+        action: () => insertFormatting("*", "*"),
+        title: "Italic",
+      },
     ],
     [
-      { icon: <Heading1 className="w-4 h-4" />, action: () => insertFormatting("# "), title: "H1" },
-      { icon: <Heading2 className="w-4 h-4" />, action: () => insertFormatting("## "), title: "H2" },
-      { icon: <Heading3 className="w-4 h-4" />, action: () => insertFormatting("### "), title: "H3" },
+      {
+        icon: <Heading1 className="w-4 h-4" />,
+        action: () => insertFormatting("# "),
+        title: "H1",
+      },
+      {
+        icon: <Heading2 className="w-4 h-4" />,
+        action: () => insertFormatting("## "),
+        title: "H2",
+      },
+      {
+        icon: <Heading3 className="w-4 h-4" />,
+        action: () => insertFormatting("### "),
+        title: "H3",
+      },
     ],
     [
-      { icon: <List className="w-4 h-4" />, action: () => insertFormatting("- "), title: "Bullet list" },
-      { icon: <ListOrdered className="w-4 h-4" />, action: () => insertFormatting("1. "), title: "Numbered list" },
+      {
+        icon: <List className="w-4 h-4" />,
+        action: () => insertFormatting("- "),
+        title: "Bullet list",
+      },
+      {
+        icon: <ListOrdered className="w-4 h-4" />,
+        action: () => insertFormatting("1. "),
+        title: "Numbered list",
+      },
     ],
     [
-      { icon: <ImageIcon className="w-4 h-4" />, action: () => imageInputRef.current?.click(), title: "Insert image" },
-      { icon: <Video className="w-4 h-4" />, action: () => videoInputRef.current?.click(), title: "Insert video" },
-      { icon: <LinkIcon className="w-4 h-4" />, action: () => insertFormatting("[", "](url)"), title: "Insert link" },
+      {
+        icon: <ImageIcon className="w-4 h-4" />,
+        action: () => imageInputRef.current?.click(),
+        title: "Insert image",
+      },
+      {
+        icon: <Video className="w-4 h-4" />,
+        action: () => videoInputRef.current?.click(),
+        title: "Insert video",
+      },
+      {
+        icon: <LinkIcon className="w-4 h-4" />,
+        action: () => insertFormatting("[", "](url)"),
+        title: "Insert link",
+      },
     ],
   ];
 

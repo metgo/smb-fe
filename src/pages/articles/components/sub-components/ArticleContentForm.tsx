@@ -3,9 +3,12 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
 import ArticleImageGallery from "./ArticleImageGallery";
 
-
 const LANG_SUFFIX: Record<Language, string> = { en: "", he: "He", ar: "Ar" };
-const LANG_DIR: Record<Language, "ltr" | "rtl"> = { en: "ltr", he: "rtl", ar: "rtl" };
+const LANG_DIR: Record<Language, "ltr" | "rtl"> = {
+  en: "ltr",
+  he: "rtl",
+  ar: "rtl",
+};
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -54,8 +57,8 @@ export default function ArticleContentForm({
       {/* Title */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("title")}{langLabel}{" "}
-          <span className="text-red-500">*</span>
+          {t("title")}
+          {langLabel} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -73,8 +76,8 @@ export default function ArticleContentForm({
       {/* Short Description */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("short_description")}{langLabel}{" "}
-          <span className="text-red-500">*</span>
+          {t("short_description")}
+          {langLabel} <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData[shortDescField] || ""}

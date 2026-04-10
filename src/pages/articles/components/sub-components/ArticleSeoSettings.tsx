@@ -1,11 +1,24 @@
 import { useTranslation } from "react-i18next";
-import { X, Plus, Eye, Calendar, Clock, Loader2, Sparkles, Tag, Search } from "lucide-react";
+import {
+  X,
+  Plus,
+  Eye,
+  Calendar,
+  Clock,
+  Loader2,
+  Sparkles,
+  Tag,
+  Search,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-
 const LANG_SUFFIX: Record<Language, string> = { en: "", he: "He", ar: "Ar" };
-const LANG_DIR: Record<Language, "ltr" | "rtl"> = { en: "ltr", he: "rtl", ar: "rtl" };
+const LANG_DIR: Record<Language, "ltr" | "rtl"> = {
+  en: "ltr",
+  he: "rtl",
+  ar: "rtl",
+};
 
 // tagsHe, tagsAr — the tags base field doesn't have a suffix for EN
 function getTagsField(lang: Language): string {
@@ -41,8 +54,14 @@ export default function ArticleSeoSettings({
   onTogglePreview,
   existingArticle,
 }: ArticleSeoSettingsProps) {
-  const { bgPrimary, bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
   const { t } = useTranslation("article");
 
   const suffix = LANG_SUFFIX[editingLanguage];
@@ -63,7 +82,9 @@ export default function ArticleSeoSettings({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className={`text-base font-semibold ${textPrimary}`}>{t("settings")}</h3>
+        <h3 className={`text-base font-semibold ${textPrimary}`}>
+          {t("settings")}
+        </h3>
         <div className="flex items-center gap-2">
           <button
             onClick={onGenerateSeo}
@@ -89,18 +110,26 @@ export default function ArticleSeoSettings({
 
       {/* Slug */}
       <div>
-        <label className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}>
+        <label
+          className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
+        >
           {t("url_slug")}
         </label>
-        <div className={`flex items-center border ${borderColor} rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500`}>
-          <span className={`px-3 py-2.5 text-sm ${textTertiary} ${bgSecondary} border-r ${borderColor} select-none`}>
+        <div
+          className={`flex items-center border ${borderColor} rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500`}
+        >
+          <span
+            className={`px-3 py-2.5 text-sm ${textTertiary} ${bgSecondary} border-r ${borderColor} select-none`}
+          >
             /
           </span>
           <input
             type="text"
             value={formData.slug || ""}
             onChange={(e) =>
-              onChange({ slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })
+              onChange({
+                slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+              })
             }
             placeholder={t("url_slug_placeholder")}
             className={`flex-1 px-3 py-2.5 ${bgPrimary} ${textPrimary} focus:outline-none text-sm font-mono`}
@@ -112,8 +141,11 @@ export default function ArticleSeoSettings({
 
       {/* Summary */}
       <div>
-        <label className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}>
-          {t("summary")}{langLabel}
+        <label
+          className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
+        >
+          {t("summary")}
+          {langLabel}
         </label>
         <textarea
           value={formData[summaryField] || ""}
@@ -127,9 +159,12 @@ export default function ArticleSeoSettings({
 
       {/* Tags */}
       <div>
-        <label className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}>
+        <label
+          className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
+        >
           <Tag className="w-3.5 h-3.5" />
-          {t("tags")}{langLabel}
+          {t("tags")}
+          {langLabel}
         </label>
         <div className="flex gap-2 mb-2">
           <input
@@ -155,7 +190,9 @@ export default function ArticleSeoSettings({
         </div>
         <div className="flex flex-wrap gap-1.5 min-h-7">
           {currentTags.length === 0 ? (
-            <p className={`text-xs ${textTertiary} italic`}>{t("no_tags_yet")}</p>
+            <p className={`text-xs ${textTertiary} italic`}>
+              {t("no_tags_yet")}
+            </p>
           ) : (
             currentTags.map((tag) => (
               <span
@@ -177,15 +214,22 @@ export default function ArticleSeoSettings({
 
       {/* SEO */}
       <div>
-        <label className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-3`}>
+        <label
+          className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-3`}
+        >
           <Search className="w-3.5 h-3.5" />
-          {t("seo_metadata")}{langLabel}
+          {t("seo_metadata")}
+          {langLabel}
         </label>
         <div className="space-y-3">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className={`text-xs font-medium ${textSecondary}`}>{t("meta_title")}</label>
-              <span className={`text-xs ${metaTitleLen > 60 ? "text-red-400" : textTertiary}`}>
+              <label className={`text-xs font-medium ${textSecondary}`}>
+                {t("meta_title")}
+              </label>
+              <span
+                className={`text-xs ${metaTitleLen > 60 ? "text-red-400" : textTertiary}`}
+              >
                 {metaTitleLen}/60
               </span>
             </div>
@@ -203,8 +247,12 @@ export default function ArticleSeoSettings({
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className={`text-xs font-medium ${textSecondary}`}>{t("meta_description")}</label>
-              <span className={`text-xs ${metaDescLen > 160 ? "text-red-400" : textTertiary}`}>
+              <label className={`text-xs font-medium ${textSecondary}`}>
+                {t("meta_description")}
+              </label>
+              <span
+                className={`text-xs ${metaDescLen > 160 ? "text-red-400" : textTertiary}`}
+              >
                 {metaDescLen}/160
               </span>
             </div>
@@ -225,7 +273,9 @@ export default function ArticleSeoSettings({
       {/* Attribution */}
       {existingArticle && (
         <div>
-          <label className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}>
+          <label
+            className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
+          >
             {t("attribution")}
           </label>
           <div className="space-y-2">
@@ -234,11 +284,14 @@ export default function ArticleSeoSettings({
                 <Clock className={`w-3.5 h-3.5 ${textTertiary} shrink-0`} />
                 <span className={`text-xs ${textTertiary}`}>
                   {t("created")}{" "}
-                  {new Date(existingArticle.createdAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {new Date(existingArticle.createdAt).toLocaleDateString(
+                    undefined,
+                    {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    },
+                  )}
                 </span>
               </div>
             )}
@@ -247,11 +300,14 @@ export default function ArticleSeoSettings({
                 <Calendar className={`w-3.5 h-3.5 ${textTertiary} shrink-0`} />
                 <span className={`text-xs ${textTertiary}`}>
                   {t("last_updated")}{" "}
-                  {new Date(existingArticle.updatedAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {new Date(existingArticle.updatedAt).toLocaleDateString(
+                    undefined,
+                    {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    },
+                  )}
                 </span>
               </div>
             )}
