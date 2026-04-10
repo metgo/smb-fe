@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
+import { SubmitBusinessRegistrationHandler } from './commands/handler/submit-business-registration.handler';
 
 import {
   BussSubCategory,
@@ -47,6 +48,7 @@ import {
   BusinessesAudit,
   BusinessesAuditSchema,
 } from '../business/shared/schema/businesses-audit.schema';
+import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.module';
 
 @Module({
   imports: [
@@ -64,9 +66,11 @@ import {
     ]),
     ExternalApiModule,
     CampaignModule,
+    GoogleSheetsModule,
   ],
   controllers: [DashboardController],
   providers: [
+    SubmitBusinessRegistrationHandler,
     GetDefaultFiltersHandler,
     GetAllFeedItemsHandler,
     GetFiltersHandler,

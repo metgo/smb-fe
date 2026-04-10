@@ -1,8 +1,14 @@
 // dashboard/dashboard.controller.ts
 import {
-  Controller, Get, HttpCode, HttpStatus, Query,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiQuery } from '@nestjs/swagger';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -12,10 +18,15 @@ import { GetAllFeedItemsQuery } from './queries/get-all-feed-items.query';
 import { GetDefaultFiltersQuery } from './queries/get-default-filters.query';
 import { GetFiltersQuery } from './queries/get-filters.query';
 import { GetAllFiltersRequest } from './request/get-all-filters.request';
+import { SubmitBusinessRegistrationRequest } from './request/submit-business-registration.request';
+import { SubmitBusinessRegistrationCommand } from './commands/submit-business-registration.command';
 
 @Controller('')
 export class DashboardController {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Get('feed')
@@ -82,5 +93,35 @@ export class DashboardController {
   })
   async getFilterItems(@Query() query: GetAllFiltersRequest) {
     return this.queryBus.execute(new GetFiltersQuery(query));
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('business-verification')
+  @ApiEndpoint({
+    tags: ['Tourism-Feed'],
+    response: {
+      status: HttpStatus.CREATED,
+      description: 'Business verification submitted successfully',
+    },
+    operation: 'Submit business verification form and upload to Google Drive',
+  })
+  async submitBusinessRegistration(
+    @Body() body: SubmitBusinessRegistrationRequest,
+  ) {
+    return this.commandBus.execute(
+      new SubmitBusinessRegistrationCommand(
+        body.businessName,
+        body.idNumber,
+        body.businessDescription,
+        body.address,
+        body.landlinePhone,
+        body.fax,
+        body.email,
+        body.contactName,
+        body.contactPhone,
+        body.isPrimaryIncome,
+        body.categories,
+      ),
+    );
   }
 }
