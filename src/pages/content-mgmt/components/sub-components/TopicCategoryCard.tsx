@@ -246,79 +246,159 @@ const TopicCategoryCard = ({
               <div className="relative">
                 <button
                   onClick={() => setIconPickerOpen((prev) => !prev)}
+                  title="Change icon"
                   className={clsx(
-                    "w-12 h-12 rounded border flex items-center justify-center",
-                    isDark
-                      ? "border-gray-600 bg-gray-700 "
-                      : "border-gray-300  ",
+                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
+                    "hover:scale-105 active:scale-95",
+                    iconPickerOpen
+                      ? isDark
+                        ? "border-blue-400 bg-blue-900/40"
+                        : "border-blue-400 bg-blue-50 "
+                      : isDark
+                        ? "border-gray-600 bg-gray-700/80 hover:border-gray-400 hover:bg-gray-600"
+                        : "border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50",
                   )}
                 >
                   {group.icon ? (
                     <img
-                      src={group.icon}
-                      alt={group.icon.iconAlt}
-                      className="w-12 h-12 object-contain invert"
+                      src={group.icon.iconPath ?? group.icon}
+                      alt={group.icon.iconAlt ?? "icon"}
+                      className={clsx(
+                        "w-12 h-12 object-contain",
+                        !isDark && "invert",
+                      )}
                     />
                   ) : (
-                    <span className="text-xs text-white flex items-center">
+                    <span
+                      className={clsx(
+                        "text-lg font-light leading-none",
+                        isDark ? "text-gray-400" : "text-gray-400",
+                      )}
+                    >
                       +
                     </span>
                   )}
                 </button>
 
                 {iconPickerOpen && (
-                  <div
-                    className={clsx(
-                      "absolute top-12 left-0 z-50 p-2 max-h-62 overflow-y-auto rounded-lg border shadow-md grid grid-cols-7  w-72",
-                      isDark
-                        ? "bg-gray-800 border-gray-600"
-                        : "bg-white border-gray-200",
-                    )}
-                  >
-                    {allIcons?.data?.map((icon: any) => (
-                      <button
-                        key={icon._id}
-                        onClick={() =>
-                          handleSelectIcon({
-                            _id: icon._id,
-                            name: icon.name,
-                            iconPath: icon.iconPath,
-                            iconAlt: icon.iconAlt,
-                          })
-                        }
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIconPickerOpen(false)}
+                    />
+
+                    {/* Picker panel */}
+                    <div
+                      className={clsx(
+                        "absolute top-12 left-0 z-50 rounded-xl border shadow-2xl",
+                        "w-72 overflow-hidden",
+                        "animate-in fade-in slide-in-from-top-2 duration-150",
+                        isDark
+                          ? "bg-gray-900 border-gray-700 shadow-black/60"
+                          : "bg-white border-gray-200 shadow-gray-300/60",
+                      )}
+                    >
+                      {/* Panel header */}
+                      <div
                         className={clsx(
-                          "w-12 h-12 rounded flex items-center justify-center gap-2 ",
-                          isDark ? "" : "",
-                          group.icon?._id === icon._id &&
-                            "ring-2 ring-green-400 bg-green-300",
+                          "flex items-center justify-between px-3 py-2 border-b",
+                          isDark
+                            ? "border-gray-700 bg-gray-800/60"
+                            : "border-gray-100 bg-gray-50",
                         )}
-                        title={icon.name}
                       >
-                        <img
-                          src={icon.iconPath}
-                          alt={icon.iconAlt}
-                          className="w-12 h-12 object-contain invert"
-                        />
-                      </button>
-                    ))}
-                  </div>
+                        <span
+                          className={clsx(
+                            "text-xs font-semibold tracking-wide uppercase",
+                            isDark ? "text-gray-400" : "text-gray-500",
+                          )}
+                        >
+                          Select Icon
+                        </span>
+                        <button
+                          onClick={() => setIconPickerOpen(false)}
+                          className={clsx(
+                            "p-0.5 rounded transition-colors",
+                            isDark
+                              ? "text-gray-500 hover:text-gray-300 hover:bg-gray-700"
+                              : "text-gray-400 hover:text-gray-600 hover:bg-gray-200",
+                          )}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Icon grid */}
+                      <div className="p-2 max-h-56 overflow-y-auto">
+                        <div className="grid grid-cols-7 gap-0.5">
+                          {allIcons?.data?.map((icon: any) => {
+                            const isSelected = group.icon?._id === icon._id;
+                            return (
+                              <button
+                                key={icon._id}
+                                onClick={() =>
+                                  handleSelectIcon({
+                                    _id: icon._id,
+                                    name: icon.name,
+                                    iconPath: icon.iconPath,
+                                    iconAlt: icon.iconAlt,
+                                  })
+                                }
+                                title={icon.name}
+                                className={clsx(
+                                  "relative w-9 h-9 rounded-lg flex items-center justify-center",
+                                  "transition-all duration-150",
+                                  "hover:scale-110 active:scale-95",
+                                  isSelected
+                                    ? isDark
+                                      ? "bg-blue-600/30 ring-2 ring-blue-400 ring-offset-1 ring-offset-gray-900"
+                                      : "bg-blue-50 ring-2 ring-blue-400 ring-offset-1 ring-offset-white"
+                                    : isDark
+                                      ? "hover:bg-gray-700/80"
+                                      : "hover:bg-gray-100",
+                                )}
+                              >
+                                <img
+                                  src={icon.iconPath}
+                                  alt={icon.iconAlt}
+                                  className={clsx(
+                                    "w-12 h-12 object-contain transition-opacity",
+                                    !isDark && "invert",
+                                    isSelected
+                                      ? "opacity-100"
+                                      : "opacity-70 group-hover:opacity-100",
+                                  )}
+                                />
+                                {isSelected && (
+                                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-400 rounded-full border-2 border-white dark:border-gray-900" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 
-              <h3
-                className={clsx(
-                  "text-lg font-semibold flex items-center gap-2 w-80",
-                  isDark ? "text-gray-100" : "text-gray-900",
-                )}
-              >
-                {group.category}
-                {group.isPrimary && (
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                )}
-              </h3>
-              <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
-                {group.contents.length}
-              </span>
+              <div className="flex items-center gap-2">
+                <h3
+                  className={clsx(
+                    "text-lg font-semibold flex items-center gap-2 w-80",
+                    isDark ? "text-gray-100" : "text-gray-900",
+                  )}
+                >
+                  {group.category}
+                  {group.isPrimary && (
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  )}
+                </h3>
+                <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
+                  {group.contents.length}
+                </span>
+              </div>
             </>
           )}
         </div>
