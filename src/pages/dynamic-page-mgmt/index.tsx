@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, Shield } from "lucide-react";
+import { FileText, Shield, BookOpen } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/hooks";
@@ -23,7 +23,7 @@ interface PageFormData {
   content: string;
   status?: "DRAFT" | "APPROVED";
 }
-type TabId = "terms_and_condition" | "privacy";
+type TabId = "terms_and_condition" | "privacy" | "business_regulation";
 
 const INITIAL_FORM: PageFormData = {
   title: "",
@@ -55,6 +55,11 @@ export default function DynamicPageMgmt() {
       icon: FileText,
     },
     { id: "privacy" as TabId, label: t("tab_privacy"), icon: Shield },
+    {
+      id: "business_regulation" as TabId,
+      label: t("tab_business_regulation"),
+      icon: BookOpen,
+    },
   ];
 
   const [externalApiId, setExternalApiId] = useState<string>("");
@@ -63,10 +68,12 @@ export default function DynamicPageMgmt() {
   const [forms, setForms] = useState<Record<TabId, PageFormData>>({
     terms_and_condition: { ...INITIAL_FORM },
     privacy: { ...INITIAL_FORM },
+    business_regulation: { ...INITIAL_FORM },
   });
   const [errors, setErrors] = useState<Record<TabId, Partial<PageFormData>>>({
     terms_and_condition: {},
     privacy: {},
+    business_regulation: {},
   });
 
   const [createDynamicPage, { isLoading: isCreating }] =
