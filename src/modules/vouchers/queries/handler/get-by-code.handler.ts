@@ -16,9 +16,9 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { Voucher } from '../../schema/voucher.schema';
 import { GetByCodeQuery } from '../get-by-code.query';
-import { GetByCodeInterface } from '../../interface/get-by-code.handler';
 import { ProductsService } from 'src/modules/products/products.services';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
+import { GetByCodeResponse } from '../../responses/get-by-code.response';
 
 @QueryHandler(GetByCodeQuery)
 export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
@@ -29,7 +29,7 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
     private externalApiService: ExternalApiServices,
   ) {}
 
-  async execute(queries: GetByCodeQuery): Promise<GetByCodeInterface> {
+  async execute(queries: GetByCodeQuery): Promise<GetByCodeResponse> {
     try {
       const { queryData, code, loggedInUser } = queries;
 
@@ -43,11 +43,16 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
 
       const [voucher, externalApi] = await Promise.all([
         this.VoucherModel.findOne(findQuery)
-          .select('_id code remainingAmount expireDate paymentStatus campId')
+          .select(
+            '_id code remainingAmount purchaserInfo assigneeInfo creatorInfo expireDate paymentStatus campId createdAt',
+          )
           .populate<{ campId: Campaign }>(
             'campId',
             'code name dmoIds productIds businessIds',
           )
+          .populate('purchaserInfo.id', 'firstName lastName email')
+          .populate('assigneeInfo.id', 'firstName lastName email')
+          .populate('creatorInfo.id', 'firstName lastName email')
           .exec(),
         this.externalApiService.findByFieldName('identifierId', identifierId),
       ]);
@@ -113,6 +118,32 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
         remainingAmount: voucher.remainingAmount,
         expireDate: voucher.expireDate,
         paymentStatus: voucher.paymentStatus,
+        purchaser:
+          ((voucher.purchaserInfo?.id as any)?.firstName
+            && `${(voucher.purchaserInfo.id as any).firstName} ${
+              (voucher.purchaserInfo.id as any).lastName
+            }`.trim())
+          || (voucher.purchaserInfo?.id as any)?.email
+          || voucher.purchaserInfo?.name
+          || voucher.purchaserInfo?.email
+          || ((voucher.creatorInfo?.id as any)?.firstName
+            && `${(voucher.creatorInfo.id as any).firstName} ${
+              (voucher.creatorInfo.id as any).lastName
+            }`.trim())
+          || (voucher.creatorInfo?.id as any)?.email
+          || voucher.creatorInfo?.name
+          || voucher.creatorInfo?.email
+          || null,
+        assignee:
+          ((voucher.assigneeInfo?.id as any)?.firstName
+            && `${(voucher.assigneeInfo.id as any).firstName} ${
+              (voucher.assigneeInfo.id as any).lastName
+            }`.trim())
+          || (voucher.assigneeInfo?.id as any)?.email
+          || voucher.assigneeInfo?.name
+          || voucher.assigneeInfo?.email
+          || null,
+        createdAt: voucher.createdAt,
       };
     } catch (err) {
       exceptionHandling(err);
