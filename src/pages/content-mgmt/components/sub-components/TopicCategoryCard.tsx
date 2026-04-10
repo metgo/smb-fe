@@ -55,10 +55,19 @@ const TopicCategoryCard = ({
   const { allIcons } = useCommon();
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
 
-  const handleSelectIcon = (icon: IContentGroup["icon"]) => {
-    const updated = [...templateContents];
-    updated[topicIndex].groups[categoryIndex].icon = icon;
-    setTemplateContent(updated);
+  const handleSelectIcon = (icon: string) => {
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== topicIndex) return template;
+        return {
+          ...template,
+          groups: template.groups.map((grp, gIndex) => {
+            if (gIndex !== categoryIndex) return grp;
+            return { ...grp, icon };
+          }),
+        };
+      }),
+    );
     setIconPickerOpen(false);
   };
 
@@ -123,9 +132,18 @@ const TopicCategoryCard = ({
   };
 
   const renameCategory = () => {
-    const updated = [...templateContents];
-    updated[topicIndex].groups[categoryIndex].category = editValue;
-    setTemplateContent(updated);
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== topicIndex) return template;
+        return {
+          ...template,
+          groups: template.groups.map((grp, gIndex) => {
+            if (gIndex !== categoryIndex) return grp;
+            return { ...grp, category: editValue };
+          }),
+        };
+      }),
+    );
     setEditing(false);
   };
 
@@ -153,21 +171,37 @@ const TopicCategoryCard = ({
   };
 
   const togglePrimary = () => {
-    const updated = [...templateContents];
-    updated[topicIndex].groups = updated[topicIndex].groups.map((g, i) => ({
-      ...g,
-      isPrimary: i === categoryIndex,
-    }));
-    setTemplateContent(updated);
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== topicIndex) return template;
+        return {
+          ...template,
+          groups: template.groups.map((grp, gIndex) => ({
+            ...grp,
+            isPrimary: gIndex === categoryIndex,
+          })),
+        };
+      }),
+    );
   };
 
   const handleRemoveContent = (e: React.MouseEvent, contentId: string) => {
     e.stopPropagation();
-    const updated = [...templateContents];
-    updated[topicIndex].groups[categoryIndex].contents = updated[
-      topicIndex
-    ].groups[categoryIndex].contents.filter((c: any) => c._id !== contentId);
-    setTemplateContent(updated);
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== topicIndex) return template;
+        return {
+          ...template,
+          groups: template.groups.map((grp, gIndex) => {
+            if (gIndex !== categoryIndex) return grp;
+            return {
+              ...grp,
+              contents: grp.contents.filter((c: any) => c._id !== contentId),
+            };
+          }),
+        };
+      }),
+    );
   };
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -337,14 +371,7 @@ const TopicCategoryCard = ({
                             return (
                               <button
                                 key={icon._id}
-                                onClick={() =>
-                                  handleSelectIcon({
-                                    _id: icon._id,
-                                    name: icon.name,
-                                    iconPath: icon.iconPath,
-                                    iconAlt: icon.iconAlt,
-                                  })
-                                }
+                                onClick={() => handleSelectIcon(icon?.iconPath)}
                                 title={icon.name}
                                 className={clsx(
                                   "relative w-9 h-9 rounded-lg flex items-center justify-center",

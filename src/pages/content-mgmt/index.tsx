@@ -181,7 +181,7 @@ export default function ContentMgmtPage() {
           isPrimary: false,
           isHideCategory: false,
           category: "",
-          icon: undefined,
+          icon: "",
           contents: [],
         },
       ],
@@ -195,7 +195,7 @@ export default function ContentMgmtPage() {
           isPrimary: false,
           isHideCategory: false,
           category: "",
-          icon: undefined,
+          icon: "",
           contents: [],
         },
       ],
@@ -205,6 +205,7 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
+  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
@@ -240,10 +241,6 @@ export default function ContentMgmtPage() {
 
   useEffect(() => {
     if (templateContentsData && externalApiId) {
-      console.log(
-        "🚀 ~ ContentMgmtPage ~ templateContentsData:",
-        templateContentsData,
-      );
       if (externalApiId === templateContentsData?.externalApiId._id) {
         const formattedTemplateContents = templateContentsData?.siteTopics?.map(
           (topic) => ({
@@ -740,7 +737,7 @@ export default function ContentMgmtPage() {
                   title: group.category,
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
-                  icon: (group.icon as IIcon)?.iconPath,
+                  icon: group.icon,
                   ...idsByType,
                 };
               });

@@ -23,7 +23,7 @@ interface IContentGroup {
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];
-  icon?: string | IIcon | null;
+  icon?: string | null;
 }
 
 interface IContentTemplate {

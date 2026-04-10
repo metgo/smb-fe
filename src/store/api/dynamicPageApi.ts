@@ -5,7 +5,7 @@ import { endpoints } from "@/lib/endpoints";
 interface IDynamicPageBody {
   status: "DRAFT" | "APPROVED";
   externalApiId: string;
-  type: "terms_and_condition" | "privacy";
+  type: "terms_and_condition" | "privacy" | "business_regulation";
   title: string;
   subTitle?: string;
   description: string;
@@ -19,7 +19,7 @@ interface IDynamicPageRes {
 interface IDynamicPageData {
   data: {
     _id: string;
-    type: "terms_and_condition" | "privacy";
+    type: "terms_and_condition" | "privacy" | "business_regulation";
     title: string;
     subTitle?: string;
     description: string;

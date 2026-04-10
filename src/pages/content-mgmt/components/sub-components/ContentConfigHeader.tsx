@@ -163,7 +163,7 @@ const ContentConfigHeader = ({
                 >
                   <option value="">{t("select_topic_placeholder")}</option>
 
-                  {topics.map((topic) => (
+                  {topics?.map((topic) => (
                     <option key={topic.id} value={topic.name}>
                       {topic.name}
                     </option>
@@ -200,7 +200,7 @@ const ContentConfigHeader = ({
               </Button>
             </div>
 
-            {templateContents.length === 0 && (
+            {templateContents?.length === 0 && (
               <p
                 className={clsx(
                   "text-xs",
