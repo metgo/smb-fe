@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Image, Loader, Calendar, Eye } from "lucide-react";
@@ -8,10 +8,7 @@ import { getPlainTextFromRichText } from "@/helpers";
 import { DeleteIconBtn } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import {
-  ImageWithFallback,
-  ItemStatusBadge,
-} from "@/components/shared";
+import { ImageWithFallback, ItemStatusBadge } from "@/components/shared";
 
 interface Blog {
   _id: string;
@@ -42,7 +39,6 @@ interface BlogGridViewProps {
 const BlogGridView = ({
   data,
   onRowClick,
-  refetch,
   hasMore,
   next,
   isLoading = false,
@@ -60,8 +56,8 @@ const BlogGridView = ({
     onLoadMore: next,
   });
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
+  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
   // const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
 
   const toggleCheckBox = (itemId: string) => {
@@ -131,8 +127,8 @@ const BlogGridView = ({
                   <DeleteIconBtn
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsConfirmOpen(true);
-                      setBlogToDelete(blog?._id);
+                      // setIsConfirmOpen(true);
+                      // setBlogToDelete(blog?._id);
                     }}
                   />
                 </div>
@@ -170,14 +166,6 @@ const BlogGridView = ({
                     {blog.title}
                   </h3>
 
-                  {blog.subTitle && (
-                    <p
-                      className={`text-sm mb-3 line-clamp-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {blog.subTitle}
-                    </p>
-                  )}
-
                   {/* Preview Text */}
                   {contentPreview && (
                     <p
@@ -199,7 +187,9 @@ const BlogGridView = ({
                     {blog.images?.length > 0 && (
                       <div className="flex items-center gap-1 text-purple-600">
                         <Eye className="w-3.5 h-3.5" />
-                        <span>{blog.images.length} {t("photos")}</span>
+                        <span>
+                          {blog.images.length} {t("photos")}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -213,9 +203,7 @@ const BlogGridView = ({
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader className="w-10 h-10 animate-spin text-violet-600" />
-            <p className="mt-3 text-sm text-gray-500">
-              {t("loading_more")}
-            </p>
+            <p className="mt-3 text-sm text-gray-500">{t("loading_more")}</p>
           </div>
         )}
 

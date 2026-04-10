@@ -20,63 +20,34 @@ import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import { getLngWiseStr } from "@/helpers";
 
-
-interface ArticleImage {
-  image: string;
-  alt: string;
-  isPrimary: boolean;
-}
-
-/** Mirrors the API payload exactly (all language variants as flat fields) */
-interface ArticleFormData {
-  externalApiId: string;
-  // Content — EN / HE / AR
-  title: string;
-  titleHe: string;
-  titleAr: string;
-  shortDescription: string;
-  shortDescriptionHe: string;
-  shortDescriptionAr: string;
-  content: string;
-  contentHe: string;
-  contentAr: string;
-  // Tags
-  tags: string[];
-  tagsHe: string[];
-  tagsAr: string[];
-  // Summary
-  summary: string;
-  summaryHe: string;
-  summaryAr: string;
-  // SEO
-  metaTitle: string;
-  metaTitleHe: string;
-  metaTitleAr: string;
-  metaDescription: string;
-  metaDescriptionHe: string;
-  metaDescriptionAr: string;
-  // Common
-  slug: string;
-  status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
-  images: ArticleImage[];
-}
-
-const EMPTY_FORM: ArticleFormData = {
+const EMPTY_FORM: IArticleFormData = {
   externalApiId: "",
-  title: "", titleHe: "", titleAr: "",
-  shortDescription: "", shortDescriptionHe: "", shortDescriptionAr: "",
-  content: "", contentHe: "", contentAr: "",
-  tags: [], tagsHe: [], tagsAr: [],
-  summary: "", summaryHe: "", summaryAr: "",
-  metaTitle: "", metaTitleHe: "", metaTitleAr: "",
-  metaDescription: "", metaDescriptionHe: "", metaDescriptionAr: "",
+  title: "",
+  titleHe: "",
+  titleAr: "",
+  shortDescription: "",
+  shortDescriptionHe: "",
+  shortDescriptionAr: "",
+  content: "",
+  contentHe: "",
+  contentAr: "",
+  tags: [],
+  tagsHe: [],
+  tagsAr: [],
+  summary: "",
+  summaryHe: "",
+  summaryAr: "",
+  metaTitle: "",
+  metaTitleHe: "",
+  metaTitleAr: "",
+  metaDescription: "",
+  metaDescriptionHe: "",
+  metaDescriptionAr: "",
   slug: "",
   status: "DRAFT",
-  images: [],
 };
 
-function buildFormFromArticle(article: any): ArticleFormData {
-  console.log("🚀 ~ buildFormFromArticle ~ article:", article)
+function buildFormFromArticle(article: any): IArticleFormData {
   const str = (v: any) => (typeof v === "string" ? v : v?.en || "");
   const arr = (v: any) => (Array.isArray(v) ? v : []);
 
@@ -104,14 +75,8 @@ function buildFormFromArticle(article: any): ArticleFormData {
     metaDescriptionHe: article.metaDescriptionHe || "",
     metaDescriptionAr: article.metaDescriptionAr || "",
     slug: article.slug || "",
-    status: (article.status?.toUpperCase() as ArticleFormData["status"]) || "DRAFT",
-    images: arr(article.images).map((img: any) => ({
-      image: img.image || "",
-      caption: img.caption || "",
-      alt: img.alt || "",
-      isPrimary: img.isPrimary ?? false,
-      stationId: img.stationId,
-    })),
+    status:
+      (article.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
 }
 
@@ -128,7 +93,7 @@ const LANG_OPTIONS: { key: Language; label: string }[] = [
   { key: "ar", label: "AR" },
 ];
 
-function getTagsField(lang: Language): keyof ArticleFormData {
+function getTagsField(lang: Language): keyof IArticleFormData {
   if (lang === "en") return "tags";
   if (lang === "he") return "tagsHe";
   return "tagsAr";
@@ -138,12 +103,11 @@ const CreateArticleWizard = ({
   onClose,
   existingArticle,
 }: CreateArticleWizardProps) => {
-  console.log("🚀 ~ CreateArticleWizard ~ existingArticle:", existingArticle)
   const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
-  const { bgSecondary, textPrimary, textSecondary, borderColor } = useThemeClasses();
+  const { bgSecondary, textPrimary, textSecondary, borderColor } =
+    useThemeClasses();
 
-  // ─── Images ──────────────────────────────────────────────────────────────────
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const {
     images,
@@ -156,28 +120,46 @@ const CreateArticleWizard = ({
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({ initialImages: galleryImages, onChange: setGalleryImages });
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
 
   // ─── Form state ───────────────────────────────────────────────────────────────
-  const [formData, setFormData] = useState<ArticleFormData>(EMPTY_FORM);
+  const [formData, setFormData] = useState<IArticleFormData>(
+    existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
+  );
   const [editingLanguage, setEditingLanguage] = useState<Language>("en");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
-    if (existingArticle) setFormData(buildFormFromArticle(existingArticle));
+    if (existingArticle) {
+      setFormData(buildFormFromArticle(existingArticle));
+      const arr = (v: any) => (Array.isArray(v) ? v : []);
+      const images = arr(existingArticle.images)
+        .filter((img: any) => img?.image) // only keep items with image
+        .map((img: any) => ({
+          image: img.image,
+          alt: img.alt || "",
+          isPrimary: img.isPrimary ?? false,
+        }));
+
+      setGalleryImages(images);
+    }
   }, [existingArticle]);
 
   // ─── Mutations ────────────────────────────────────────────────────────────────
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-  const [generateBlogSeo, { isLoading: isGeneratingSeo }] = useGenerateBlogSeoMutation();
+  const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
+    useGenerateBlogSeoMutation();
 
   const isEditMode = !!existingArticle;
   const isLoading = isCreating || isUpdating;
 
   // ─── Handlers ─────────────────────────────────────────────────────────────────
-  const handleChange = useCallback((updates: Partial<ArticleFormData>) => {
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   }, []);
 
@@ -203,7 +185,9 @@ const CreateArticleWizard = ({
   // ─── Validation ───────────────────────────────────────────────────────────────
   const validateArticle = () => {
     const hasTitle =
-      formData.title.trim() || formData.titleHe.trim() || formData.titleAr.trim();
+      formData.title.trim() ||
+      formData.titleHe.trim() ||
+      formData.titleAr.trim();
     if (!hasTitle) {
       toast.error(t("validation_title_required"));
       return false;
@@ -223,9 +207,24 @@ const CreateArticleWizard = ({
   const handleGenerateSeo = async () => {
     try {
       const result = await generateBlogSeo({
-        title: getLngWiseStr(editingLanguage, formData.title, formData.titleHe, formData.titleAr),
-        shortDescription: getLngWiseStr(editingLanguage, formData.shortDescription, formData.shortDescriptionHe, formData.shortDescriptionAr),
-        content: getLngWiseStr(editingLanguage, formData.content, formData.contentHe, formData.contentAr),
+        title: getLngWiseStr(
+          editingLanguage,
+          formData.title,
+          formData.titleHe,
+          formData.titleAr,
+        ),
+        shortDescription: getLngWiseStr(
+          editingLanguage,
+          formData.shortDescription,
+          formData.shortDescriptionHe,
+          formData.shortDescriptionAr,
+        ),
+        content: getLngWiseStr(
+          editingLanguage,
+          formData.content,
+          formData.contentHe,
+          formData.contentAr,
+        ),
       }).unwrap();
 
       setFormData((prev) => ({
@@ -243,7 +242,10 @@ const CreateArticleWizard = ({
         metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
         tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
         // Auto-fill slug from title if empty
-        slug: prev.slug || result.slug || formData.title.toLowerCase().replace(/\s+/g, "-"),
+        slug:
+          prev.slug ||
+          result.slug ||
+          formData.title.toLowerCase().replace(/\s+/g, "-"),
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -253,11 +255,15 @@ const CreateArticleWizard = ({
 
   const saveArticle = useCallback(
     async (isPublish: boolean = false) => {
+      if (!formData?.externalApiId) {
+        toast.error(t("please_select_website"));
+        return;
+      }
       if (!validateArticle()) return;
 
-      await uploadAll();
+      const uploadedImages = await uploadAll();
 
-      const mapped = images.map((img, idx) => ({
+      const mapped = uploadedImages.map((img, idx) => ({
         image: img?.gcsURL,
         alt: formData.title || "",
         isPrimary: idx === primaryImageIndex,
@@ -273,8 +279,13 @@ const CreateArticleWizard = ({
 
       try {
         if (isEditMode && existingArticle?._id) {
-          await updateBlog({ body: payload, blogId: existingArticle._id }).unwrap();
-          toast.success(isPublish ? t("article_published") : t("article_updated"));
+          await updateBlog({
+            body: payload,
+            blogId: existingArticle._id,
+          }).unwrap();
+          toast.success(
+            isPublish ? t("article_published") : t("article_updated"),
+          );
         } else {
           await createBlog(payload).unwrap();
           toast.success(isPublish ? t("article_published") : t("draft_saved"));
@@ -284,11 +295,21 @@ const CreateArticleWizard = ({
         toast.error(err?.data?.message || t("save_failed"));
       }
     },
-    [formData, isEditMode, existingArticle, createBlog, updateBlog, onClose, uploadAll, images, primaryImageIndex],
+    [
+      formData,
+      isEditMode,
+      existingArticle,
+      t,
+      createBlog,
+      updateBlog,
+      onClose,
+      uploadAll,
+      primaryImageIndex,
+      validateArticle,
+    ],
   );
 
   const handleSaveDraft = () => saveArticle(false);
-
   const handlePublish = async () => {
     setIsPublishing(true);
     await saveArticle(true);
@@ -297,8 +318,14 @@ const CreateArticleWizard = ({
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
-    <ModalWrapper maxWidth="max-w-7xl" onClose={onClose} showSpinner={isLoading}>
-      <div className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} flex-wrap gap-3`}>
+    <ModalWrapper
+      maxWidth="max-w-7xl"
+      onClose={onClose}
+      showSpinner={isLoading}
+    >
+      <div
+        className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} flex-wrap gap-3`}
+      >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-500" />
@@ -319,15 +346,18 @@ const CreateArticleWizard = ({
         {/* Language selector */}
         <div className="flex items-center gap-1.5">
           <Globe className={`w-4 h-4 ${textSecondary}`} />
-          <div className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}>
+          <div
+            className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}
+          >
             {LANG_OPTIONS.map(({ key, label }) => (
               <button
                 key={key}
                 onClick={() => setEditingLanguage(key)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${editingLanguage === key
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : `${textSecondary} hover:bg-blue-50 dark:hover:bg-gray-700`
-                  }`}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                  editingLanguage === key
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : `${textSecondary} hover:bg-blue-50 dark:hover:bg-gray-700`
+                }`}
               >
                 {label}
               </button>
@@ -349,12 +379,14 @@ const CreateArticleWizard = ({
             onImageUpload={handleImageUpload}
             onImageDelete={handleDeleteImage}
             onSetPrimaryImage={setPrimaryImage}
-            syncKey={existingArticle?.id}
+            syncKey={existingArticle?._id}
           />
         </div>
 
         {/* Settings sidebar */}
-        <div className={`w-80 xl:w-96 border-l ${borderColor} ${bgSecondary} overflow-y-auto p-5 shrink-0`}>
+        <div
+          className={`w-80 xl:w-96 border-l ${borderColor} ${bgSecondary} overflow-y-auto p-5 shrink-0`}
+        >
           <ArticleSeoSettings
             formData={formData}
             editingLanguage={editingLanguage}
@@ -366,7 +398,7 @@ const CreateArticleWizard = ({
             isGeneratingSeo={isGeneratingSeo}
             onGenerateSeo={handleGenerateSeo}
             showPreview={false}
-            onTogglePreview={() => { }}
+            onTogglePreview={() => {}}
             existingArticle={existingArticle}
           />
         </div>
@@ -390,7 +422,7 @@ const CreateArticleWizard = ({
         totalSteps={1}
         isSaving={isLoading}
         isPublishing={isPublishing}
-        onPrevious={() => { }}
+        onPrevious={() => {}}
         onNext={handlePublish}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}

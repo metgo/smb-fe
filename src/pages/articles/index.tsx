@@ -7,20 +7,12 @@ import { routes } from "@/lib/routes";
 import BlogListView from "./components/sub-components/BlogListView";
 import BlogGridView from "./components/sub-components/BlogGridView";
 
-import {
-  Download,
-  ChevronDown,
-  ChevronUp,
-  Columns,
-} from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Columns } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  PageHeader,
-  ViewModeToggle,
-} from "@/components/shared";
+import { PageHeader, ViewModeToggle } from "@/components/shared";
 import {
   useGetAllBlogsQuery,
   // useGetBlogStatsQuery,
@@ -31,6 +23,7 @@ import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
 import CreateArticleWizard from "./components/CreateArticleWizard";
+import clsx from "clsx";
 
 const LIMIT = 20;
 const STORAGE_KEY = "blog_query_state";
@@ -44,7 +37,8 @@ type ColumnVisibility = {
   createdAt: boolean;
   updatedAt: boolean;
   imageCount: boolean;
-  author?: boolean; // if you add author later
+  contentPreview: boolean;
+  author?: boolean;
 };
 
 const defaultColumns: ColumnVisibility = {
@@ -54,6 +48,7 @@ const defaultColumns: ColumnVisibility = {
   createdAt: true,
   updatedAt: true,
   imageCount: true,
+  contentPreview: false,
 };
 
 const columnDefinitions = [
@@ -68,7 +63,7 @@ const columnDefinitions = [
 export default function ArticlesManagement() {
   const navigate = useNavigate();
   const { t } = useTranslation("article");
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark, isRTL, textPrimary, borderColor } = useThemeClasses();
 
   const handleBusinessClick = useCallback(
     (business: any) => {
@@ -78,9 +73,7 @@ export default function ArticlesManagement() {
     },
     [navigate],
   );
-  const { websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { websiteId } = useAppSelector((state) => state.auth);
 
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -273,7 +266,7 @@ export default function ArticlesManagement() {
     link.download = `blogs_export_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-  }, [selectedBlogs, combinedBlogs]);
+  }, [selectedBlogs, combinedBlogs, t]);
 
   // Stats
   // const blogStats = useMemo(() => [
@@ -342,7 +335,7 @@ export default function ArticlesManagement() {
               <div className="relative" ref={columnSettingsRef}>
                 <button
                   onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"}`}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
                 >
                   <Columns className="w-5 h-5" />
                   {t("columns")}
@@ -361,7 +354,7 @@ export default function ArticlesManagement() {
                       <div className="flex justify-between mb-2">
                         <h3>{t("column_settings")}</h3>
                         <button
-                          onClick={()=>{}}
+                          onClick={() => {}}
                           className="text-xs text-teal-600"
                         >
                           {t("reset")}
@@ -372,7 +365,10 @@ export default function ArticlesManagement() {
                       {columnDefinitions.map(({ key }) => (
                         <label
                           key={key}
-                          className="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className={clsx(
+                            "flex items-center gap-2 p-2 rounded cursor-pointer",
+                            textPrimary,
+                          )}
                         >
                           <input
                             type="checkbox"
@@ -395,7 +391,7 @@ export default function ArticlesManagement() {
 
             <button
               onClick={handleExport}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${isDark ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
             >
               <Download className="w-5 h-5" />
               {t("export")}
@@ -473,9 +469,7 @@ export default function ArticlesManagement() {
         /> */}
 
         {isCreateModalOpen && (
-          <CreateArticleWizard
-            onClose={() => setIsCreateModalOpen(false)}
-          />
+          <CreateArticleWizard onClose={() => setIsCreateModalOpen(false)} />
         )}
       </div>
     </>

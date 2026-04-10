@@ -48,6 +48,7 @@
 
   "edit_article": "Edit Article",
   "select_website": "Select Website",
+  "please_select_website": "Please select a website before saving",
   "validation_title_required": "Please enter a title (EN)",
   "validation_short_desc_required": "Please enter a short description (EN)",
   "seo_generated_success": "SEO fields generated successfully",

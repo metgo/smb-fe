@@ -48,6 +48,7 @@
 
   "edit_article": "עריכת מאמר",
   "select_website": "בחר אתר",
+  "please_select_website": "אנא בחר אתר לפני השמירה",
   "validation_title_required": "אנא הזן כותרת (באנגלית)",
   "validation_short_desc_required": "אנא הזן תיאור קצר (באנגלית)",
   "seo_generated_success": "שדות SEO נוצרו בהצלחה",

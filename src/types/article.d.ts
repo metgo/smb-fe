@@ -28,3 +28,47 @@ interface Article {
   views: number;
   shares: number;
 }
+
+interface IArticleImage {
+  image: string;
+  alt: string;
+  isPrimary: boolean;
+}
+
+interface IArticleFormData {
+  externalApiId: string;
+  // Content — EN / HE / AR
+  title: string;
+  titleHe: string;
+  titleAr: string;
+  shortDescription: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
+  content: string;
+  contentHe: string;
+  contentAr: string;
+  // Tags
+  tags: string[];
+  tagsHe: string[];
+  tagsAr: string[];
+  // Summary
+  summary: string;
+  summaryHe: string;
+  summaryAr: string;
+  // SEO
+  metaTitle: string;
+  metaTitleHe: string;
+  metaTitleAr: string;
+  metaDescription: string;
+  metaDescriptionHe: string;
+  metaDescriptionAr: string;
+  // Common
+  slug: string;
+  status:
+    | "DRAFT"
+    | "PUBLISHED"
+    | "SCHEDULED"
+    | "ARCHIVED"
+    | "APPROVED"
+    | "PENDING";
+}

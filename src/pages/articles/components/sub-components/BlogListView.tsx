@@ -1,5 +1,4 @@
-import { AlertCircle, ExternalLink, Image as ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { Image as ImageIcon } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
@@ -42,10 +41,9 @@ const BlogListView = ({
   selectedBlogs,
   setSelectedBlogs,
 }: BlogListViewProps) => {
-    const { t } = useTranslation("article");
-  
-  const { textPrimary, textSecondary, isDark } = useThemeClasses();
-  const [error, setError] = useState(false);
+  const { t } = useTranslation("article");
+
+  const { textPrimary, textSecondary } = useThemeClasses();
 
   // Permission check (you can make this dynamic later)
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
@@ -142,30 +140,30 @@ const BlogListView = ({
     },
 
     // Optional: View on Site (if you have a public URL)
-    {
-      key: "viewOnSite",
-      label: "",
-      width: "80px",
-      render: (blog: any) => {
-        // Replace with your actual blog URL logic
-        const publicUrl = blog.slug ? `/blog/${blog.slug}` : null;
+    // {
+    //   key: "viewOnSite",
+    //   label: "",
+    //   width: "80px",
+    //   render: (blog: any) => {
+    //     // Replace with your actual blog URL logic
+    //     const publicUrl = blog.slug ? `/blog/${blog.slug}` : null;
 
-        if (!publicUrl) return null;
+    //     if (!publicUrl) return null;
 
-        return (
-          <a
-            href={publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-center text-teal-500 hover:text-teal-600"
-            title="View on site"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        );
-      },
-    },
+    //     return (
+    //       <a
+    //         href={publicUrl}
+    //         target="_blank"
+    //         rel="noopener noreferrer"
+    //         onClick={(e) => e.stopPropagation()}
+    //         className="flex items-center justify-center text-teal-500 hover:text-teal-600"
+    //         title="View on site"
+    //       >
+    //         <ExternalLink className="w-4 h-4" />
+    //       </a>
+    //     );
+    //   },
+    // },
   ].filter(Boolean) as {
     key: string;
     label: string;
@@ -173,27 +171,6 @@ const BlogListView = ({
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
-
-  if (error) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h3
-            className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
-          >
-            {t("failed_to_load")}
-          </h3>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
-          >
-            {t("retry")}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">

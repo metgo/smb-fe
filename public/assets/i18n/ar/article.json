@@ -48,6 +48,7 @@
 
   "edit_article": "تحرير المقال",
   "select_website": "اختر الموقع",
+  "please_select_website": "يرجى اختيار موقع إلكتروني قبل الحفظ",
   "validation_title_required": "يرجى إدخال عنوان (بالإنجليزية)",
   "validation_short_desc_required": "يرجى إدخال وصف قصير (بالإنجليزية)",
   "seo_generated_success": "تم إنشاء حقول تحسين محركات البحث بنجاح",
