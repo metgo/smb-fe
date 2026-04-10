@@ -173,7 +173,7 @@ const BlogListView = ({
   }[];
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">
+    <div className="flex flex-col overflow-hidden h-[85vh]">
       <ReordableDataTable
         rowKey="_id"
         data={blogs}

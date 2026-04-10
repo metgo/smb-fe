@@ -82,7 +82,7 @@ const BlogGridView = ({
       className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
+        className="overflow-x-auto  h-[60vh] overflow-y-auto mb-20"
         id="blog-table-scroll"
         ref={scrollRef}
       >
