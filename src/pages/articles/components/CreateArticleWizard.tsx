@@ -269,10 +269,8 @@ const CreateArticleWizard = ({
         isPrimary: idx === primaryImageIndex,
       }));
 
-      const { externalApiId, ...restFormData } = formData;
-
       const payload = {
-        ...(isEditMode ? restFormData : formData),
+        ...formData,
         status: isPublish ? "APPROVED" : "PENDING",
         images: mapped,
       };

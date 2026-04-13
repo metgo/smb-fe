@@ -1,10 +1,10 @@
-import { Image as ImageIcon } from "lucide-react";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ReordableDataTable } from "@/components/shared";
-import { getPlainTextFromRichText } from "@/helpers";
-import { StatusPill } from "@/components/pills";
 import { useTranslation } from "react-i18next";
+
+import { StatusPill } from "@/components/pills";
+import { getPlainTextFromRichText } from "@/helpers";
+import { ReordableDataTable } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 export const defaultBlogColumns = {
   title: true,
@@ -13,7 +13,7 @@ export const defaultBlogColumns = {
   createdAt: true,
   updatedAt: false,
   imageCount: true,
-  contentPreview: false, // optional: show a snippet of content
+  contentPreview: false,
 };
 
 export type BlogColumnVisibility = typeof defaultBlogColumns;
@@ -29,8 +29,6 @@ interface BlogListViewProps {
   setSelectedBlogs: (v: Set<string>) => void;
 }
 
-const USER_ROLE = "admin"; // Change this based on your auth logic
-
 const BlogListView = ({
   isLoading,
   blogs,
@@ -42,16 +40,11 @@ const BlogListView = ({
   setSelectedBlogs,
 }: BlogListViewProps) => {
   const { t } = useTranslation("article");
-
   const { textPrimary, textSecondary } = useThemeClasses();
-
-  // Permission check (you can make this dynamic later)
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
+  const { isSuperadmin } = useUserRoles();
 
   const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    ...(isSuperadmin ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
     // Title
     columnVisibility.title && {
@@ -91,20 +84,6 @@ const BlogListView = ({
           </div>
         );
       },
-    },
-
-    // Images Count
-    columnVisibility.imageCount && {
-      key: "imageCount",
-      sortable: true,
-      label: t("images") || "Images",
-      width: "100px",
-      render: (blog: any) => (
-        <div className="flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-purple-500" />
-          <span className={textPrimary}>{blog.images?.length || 0}</span>
-        </div>
-      ),
     },
 
     // Status

@@ -181,6 +181,14 @@ export default function ArticlesManagement() {
     setPage((p) => p + 1);
   }, [hasMore, isFetching]);
 
+  const handleRefetch = useCallback(() => {
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
+
   // const clearFilter = useCallback(() => {
   //   localStorage.removeItem(STORAGE_KEY);
   //   setFilters({ status: "all" });
@@ -451,7 +459,7 @@ export default function ArticlesManagement() {
               hasMore={!!hasMore}
               next={fetchNextPage}
               isLoading={isLoading || isFetching}
-              refetch={refetch}
+              refetch={handleRefetch}
             />
           )}
         </div>
