@@ -1,14 +1,20 @@
 import clsx from "clsx";
-import { useRef } from "react";
+import { toast } from "sonner";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Image, Loader, Calendar, Eye } from "lucide-react";
 
-import { getPlainTextFromRichText } from "@/helpers";
 import { DeleteIconBtn } from "@/components/btns";
+import { getPlainTextFromRichText } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { ImageWithFallback, ItemStatusBadge } from "@/components/shared";
+import { useDeleteBlogMutation } from "@/store/api/blogMutationApi";
+import {
+  ConfirmDialog,
+  ImageWithFallback,
+  ItemStatusBadge,
+} from "@/components/shared";
 
 interface Blog {
   _id: string;
@@ -41,6 +47,7 @@ const BlogGridView = ({
   onRowClick,
   hasMore,
   next,
+  refetch,
   isLoading = false,
   selectedItems,
   setSelectedItems,
@@ -56,9 +63,9 @@ const BlogGridView = ({
     onLoadMore: next,
   });
 
-  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  // const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
-  // const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
+  const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
 
   const toggleCheckBox = (itemId: string) => {
     const newSelected = new Set(selectedItems);
@@ -67,24 +74,24 @@ const BlogGridView = ({
     if (setSelectedItems) setSelectedItems(newSelected);
   };
 
-  // const handleBlogDelete = async (blogId: string) => {
-  //   try {
-  //     const res = await deleteBlog({ blogId });
-  //     toast.success(res?.data?.message || "Article deleted successfully");
-  //     refetch();
-  //   } catch (error: any) {
-  //     toast.error(error?.message || "Failed to delete article");
-  //   }
-  // };
+  const handleBlogDelete = async (blogId: string) => {
+    try {
+      const res = await deleteBlog({ blogId });
+      toast.success(res?.data?.message || "Article deleted successfully");
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete article");
+    }
+  };
 
   return (
     <div
       className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
-        id="blog-table-scroll"
         ref={scrollRef}
+        id="blog-table-scroll"
+        className="overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto mb-20"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {data?.map((blog) => {
@@ -127,8 +134,8 @@ const BlogGridView = ({
                   <DeleteIconBtn
                     onClick={(e) => {
                       e.stopPropagation();
-                      // setIsConfirmOpen(true);
-                      // setBlogToDelete(blog?._id);
+                      setIsConfirmOpen(true);
+                      setBlogToDelete(blog?._id);
                     }}
                   />
                 </div>
@@ -215,7 +222,7 @@ const BlogGridView = ({
       </div>
 
       {/* Delete Confirmation Dialog */}
-      {/* <ConfirmDialog
+      <ConfirmDialog
         open={isConfirmOpen}
         title="Delete Article"
         message="Are you sure you want to delete this article? This action cannot be undone."
@@ -233,7 +240,7 @@ const BlogGridView = ({
           setIsConfirmOpen(false);
           setBlogToDelete(null);
         }}
-      /> */}
+      />
     </div>
   );
 };
