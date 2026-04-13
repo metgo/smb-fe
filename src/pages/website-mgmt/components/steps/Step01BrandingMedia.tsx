@@ -104,6 +104,8 @@ function UploadBox({
 
 export default function Step01BrandingMedia({
   formData,
+  errors,
+  onChange,
   uploadStates,
   onFileSelect,
   onFileClear,
@@ -126,6 +128,49 @@ export default function Step01BrandingMedia({
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
           Branding & Media Assets
         </h2>
+      </div>
+
+      {/* Website Name & Slogan */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            Website Name
+          </label>
+          <input
+            type="text"
+            value={formData.websiteName}
+            onChange={(e) => onChange("websiteName", e.target.value)}
+            placeholder="My Awesome Site"
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.websiteName && "border-red-500",
+            )}
+          />
+          {errors.websiteName && (
+            <p className="text-xs text-red-500">{errors.websiteName}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            Slogan
+          </label>
+          <input
+            type="text"
+            value={formData.slogan}
+            onChange={(e) => onChange("slogan", e.target.value)}
+            placeholder="Your tagline here…"
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.slogan && "border-red-500",
+            )}
+          />
+          {errors.slogan && (
+            <p className="text-xs text-red-500">{errors.slogan}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

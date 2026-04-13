@@ -9,8 +9,18 @@ interface VideoItem {
   isActive: boolean;
 }
 
+interface PartnerItem {
+  id: string;
+  name: string;
+  description: string;
+  logo: string;
+  website: string;
+}
+
 interface SiteSettingsFormData {
   /* Step 1 – Branding & Media */
+  websiteName: string;
+  slogan: string;
   logoUrl: string;
   faviconUrl: string;
   splashLogoUrl: string;
@@ -24,6 +34,7 @@ interface SiteSettingsFormData {
   secondaryColor: string;
   backgroundColor: string;
   fontFamily: string;
+  fontSourceUrl: string;
   buttonStyle: "rounded" | "square" | "custom";
   buttonRadius: string;
   darkModeEnabled: boolean;
@@ -75,6 +86,9 @@ interface SiteSettingsFormData {
   timezone: string;
   currency: string;
   dateFormat: string;
+
+  /* Step 9 – Partners */
+  partners: PartnerItem[];
 }
 
 type SiteSettingsErrors = Partial<Record<keyof SiteSettingsFormData, string>>;

@@ -118,25 +118,45 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
       </div>
 
       {/* Font */}
-      <div className="flex flex-col gap-2">
-        <label className={clsx("text-sm font-medium", textPrimary)}>
-          Font Family
-        </label>
-        <select
-          value={formData.fontFamily}
-          onChange={(e) => onChange("fontFamily", e.target.value)}
-          className={clsx(
-            "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20",
-            inputClasses,
-          )}
-        >
-          <option value="">Select font…</option>
-          {FONT_OPTIONS.map((f) => (
-            <option key={f} value={f} style={{ fontFamily: f }}>
-              {f}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            Font Family
+          </label>
+          <select
+            value={formData.fontFamily}
+            onChange={(e) => onChange("fontFamily", e.target.value)}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20",
+              inputClasses,
+            )}
+          >
+            <option value="">Select font…</option>
+            {FONT_OPTIONS.map((f) => (
+              <option key={f} value={f} style={{ fontFamily: f }}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            Font Source URL
+          </label>
+          <input
+            type="url"
+            value={formData.fontSourceUrl}
+            onChange={(e) => onChange("fontSourceUrl", e.target.value)}
+            placeholder="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+            )}
+          />
+          <p className={clsx("text-xs", textSecondary)}>
+            Optional — paste a Google Fonts or custom CDN stylesheet URL
+          </p>
+        </div>
       </div>
 
       {/* Button Style */}

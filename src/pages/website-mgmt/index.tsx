@@ -7,7 +7,7 @@ export default function WebsiteMgmtPage() {
   const { textPrimary, textSecondary } = useThemeClasses();
 
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full h-full">
+    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
       {/* Page Header */}
       <div className="flex items-center gap-3 shrink-0">
         <div className="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center">

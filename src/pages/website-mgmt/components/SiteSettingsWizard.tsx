@@ -11,6 +11,7 @@ import {
   Globe,
   CheckCircle,
   Video,
+  Handshake,
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -24,6 +25,7 @@ import {
   Step05SeoMeta,
   Step06Analytics,
   Step07Localization,
+  Step08Partners,
   Step12SavePublish,
 } from "./steps";
 
@@ -31,7 +33,7 @@ import {
 /*  Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 const STEP_META: { icon: React.FC<{ className?: string }>; label: string }[] = [
   { icon: ImageIcon, label: "Branding" },
@@ -42,22 +44,40 @@ const STEP_META: { icon: React.FC<{ className?: string }>; label: string }[] = [
   { icon: Search, label: "SEO" },
   { icon: BarChart2, label: "Analytics" },
   { icon: Globe, label: "Language" },
+  { icon: Handshake, label: "Partners" },
   { icon: CheckCircle, label: "Publish" },
 ];
 
 const DEFAULT_FORM: SiteSettingsFormData = {
   /* Step 1 */
+  websiteName: "",
+  slogan: "",
   logoUrl: "",
   faviconUrl: "",
   splashLogoUrl: "",
   /* Step 2 */
-  desktopVideos: [],
-  mobileVideos: [],
+  desktopVideos: [
+    {
+      id: "",
+      url: "",
+      name: "",
+      isActive: false,
+    },
+  ],
+  mobileVideos: [
+    {
+      id: "",
+      url: "",
+      name: "",
+      isActive: false,
+    },
+  ],
   /* Step 3 */
   primaryColor: "#0d9488",
   secondaryColor: "#6366f1",
   backgroundColor: "#ffffff",
   fontFamily: "Inter",
+  fontSourceUrl: "",
   buttonStyle: "rounded",
   buttonRadius: "8",
   darkModeEnabled: false,
@@ -104,6 +124,16 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   timezone: "UTC",
   currency: "USD",
   dateFormat: "",
+  /* Step 9 */
+  partners: [
+    {
+      id: "",
+      name: "",
+      description: "",
+      logo: "",
+      website: "",
+    },
+  ],
 };
 
 /* ------------------------------------------------------------------ */
@@ -224,6 +254,43 @@ export default function SiteSettingsWizard() {
     [],
   );
 
+  /* ---------------- Partner Handlers ---------------- */
+
+  const handlePartnerAdd = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      partners: [
+        ...prev.partners,
+        {
+          id: crypto.randomUUID(),
+          name: "",
+          description: "",
+          logo: "",
+          website: "",
+        },
+      ],
+    }));
+  }, []);
+
+  const handlePartnerRemove = useCallback((id: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      partners: prev.partners.filter((p) => p.id !== id),
+    }));
+  }, []);
+
+  const handlePartnerChange = useCallback(
+    (id: string, field: keyof PartnerItem, value: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        partners: prev.partners.map((p) =>
+          p.id === id ? { ...p, [field]: value } : p,
+        ),
+      }));
+    },
+    [],
+  );
+
   /* ---------------- Navigation ---------------- */
 
   const goToStep = (step: number) => {
@@ -296,6 +363,15 @@ export default function SiteSettingsWizard() {
       case 8:
         return <Step07Localization {...stepProps} />;
       case 9:
+        return (
+          <Step08Partners
+            partners={formData.partners}
+            onPartnerAdd={handlePartnerAdd}
+            onPartnerRemove={handlePartnerRemove}
+            onPartnerChange={handlePartnerChange}
+          />
+        );
+      case 10:
         return <Step12SavePublish formData={formData} />;
       default:
         return null;
