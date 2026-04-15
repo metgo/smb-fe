@@ -65,7 +65,7 @@ const BlogListView = ({
       label: t("externalApi") || "External Api",
       render: (blog: any) => (
         <div className={`${textPrimary} font-medium `}>
-          {blog.externalApi || t("externalApi")}
+          {blog?.externalApi?.name || "-"}
         </div>
       ),
     },
