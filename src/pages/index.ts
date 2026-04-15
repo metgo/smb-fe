@@ -15,6 +15,7 @@ import AnalyticsDashboardPage from "./analytics-dashboard";
 import VouchersMgmtPage from "./vouchers-mgmt";
 import VoucherDetailsPage from "./vouchers-mgmt/details";
 import WebsiteMgmtPage from "./website-mgmt";
+import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 
 export {
   AuthPage,
@@ -34,4 +35,5 @@ export {
   VouchersMgmtPage,
   VoucherDetailsPage,
   WebsiteMgmtPage,
+  DynamicPageMgmtPage,
 };

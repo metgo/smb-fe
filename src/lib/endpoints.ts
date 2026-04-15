@@ -20,7 +20,7 @@ export const endpoints = {
   onlineOrderStats: "/stats/orders",
   offlineOrderStats: "/home-stats/offline-order",
   purchaseReportsStats: "/home-stats/purchase-reports",
-
+  icons: "/admin/icons?isCategories=true",
   googleAnalyticsViews: "/google-analytics-views",
 
   categories: "/admin/buss-category",
@@ -92,6 +92,9 @@ export const endpoints = {
   vouchers: "",
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
+
+  // Admin endpoints
+  dynamicPage: "/settings",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
