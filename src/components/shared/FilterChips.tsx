@@ -12,7 +12,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   removable = true,
 }) => {
   return (
-    <div className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
+    <div className="flex w-fit items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
       <span>{label}</span>
 
       {removable && (

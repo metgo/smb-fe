@@ -93,6 +93,9 @@ export const endpoints = {
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
 
+  // Blog Articles
+  blogs: "/blogs",
+  blogGenerateSeo: "/blogs/generate-seo",
   // Admin endpoints
   dynamicPage: "/settings",
 

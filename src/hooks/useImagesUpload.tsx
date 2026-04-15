@@ -116,12 +116,50 @@ export const useImagesUpload = ({
   };
 
   /* ---------------- Upload all ---------------- */
-  const uploadAll = async () => {
-    for (const img of images) {
-      if (img.status !== "success") {
-        await uploadImage(img.id);
+  const uploadAll = async (): Promise<IImageUpload[]> => {
+    let current = [...images];
+
+    for (const img of current) {
+      if (img.status === "success" || !img.file) continue;
+
+      try {
+        setImages((prev) =>
+          prev.map((m) =>
+            m.id === img.id ? { ...m, status: "uploading", progress: 0 } : m,
+          ),
+        );
+
+        const webpFile = await convertToWebP(img.file);
+        const { signedUrl, gcsURL } = await generateSignedUrl(webpFile);
+
+        await uploadWithProgress(webpFile, signedUrl, (progress) => {
+          setImages((prev) =>
+            prev.map((m) => (m.id === img.id ? { ...m, progress } : m)),
+          );
+        });
+
+        const uploaded: IImageUpload = {
+          ...img,
+          status: "success",
+          progress: 100,
+          gcsURL,
+        };
+        current = current.map((m) => (m.id === img.id ? uploaded : m));
+        setImages((prev) => prev.map((m) => (m.id === img.id ? uploaded : m)));
+
+        toast.success(t("image_upload_success"));
+      } catch {
+        toast.error(t("image_upload_failed"));
+        current = current.map((m) =>
+          m.id === img.id ? { ...m, status: "error" } : m,
+        );
+        setImages((prev) =>
+          prev.map((m) => (m.id === img.id ? { ...m, status: "error" } : m)),
+        );
       }
     }
+
+    return current;
   };
 
   /* ---------------- Primary image ---------------- */

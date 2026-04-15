@@ -6,6 +6,8 @@ export const routes = {
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
 
+  articleMgmt: "/articles-management",
+  articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
 

@@ -59,7 +59,6 @@ const VoucherConfigure = ({
             assigneePhone: Number(row.AssigneePhone) || 0,
           }),
         );
-        console.log("🚀 ~ handleFileUpload ~ formattedData:", formattedData);
 
         setXlsValidation({
           valid: formattedData.length,
