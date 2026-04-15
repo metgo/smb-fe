@@ -23,7 +23,7 @@ const DraftButton: React.FC<DraftButtonProps> = ({ isLoading, onClick }) => {
       {isLoading ? (
         <>
           <Loader className="w-4 h-4 animate-spin" />
-          {t("saving_draft")}
+          {t("saving")}
         </>
       ) : (
         <>

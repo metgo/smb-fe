@@ -31,6 +31,7 @@ import { tripQueryApi } from "./api/tripsQueryApi";
 import { poiQueryApi } from "./api/poiQueryApi";
 import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
+import { dynamicPageApi } from "./api/dynamicPageApi";
 
 export const store = configureStore({
   reducer: {
@@ -73,6 +74,7 @@ export const store = configureStore({
     [poiQueryApi.reducerPath]: poiQueryApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
+    [dynamicPageApi.reducerPath]: dynamicPageApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -98,6 +100,7 @@ export const store = configureStore({
       voucherMutationApi.middleware,
       voucherQueryApi.middleware,
       notificationApi.middleware,
+      dynamicPageApi.middleware,
       tripQueryApi.middleware,
       blogMutationApi.middleware,
       blogQueryApi.middleware,

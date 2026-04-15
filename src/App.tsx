@@ -27,10 +27,11 @@ import {
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
   WebsiteMgmtPage,
+  DynamicPageMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { IdleLogout } from "./components/shared";
+import { IdleLogout, SplashLoader } from "./components/shared";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
 import {
@@ -190,7 +191,7 @@ function App() {
   const router = createBrowserRouter([
     {
       element: (
-        <Suspense fallback={null}>
+        <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute>
             <IdleLogout />
             <RootLayout />
@@ -226,13 +227,14 @@ function App() {
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
         { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+        { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
     },
     {
       element: (
-        <Suspense fallback={null}>
+        <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
             <Outlet />
           </ProtectedRoute>

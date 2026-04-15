@@ -27,6 +27,7 @@ import {
   UserCircle,
   BellIcon,
   Layers2,
+  BookOpen,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -53,7 +54,7 @@ export default function Sidebar() {
   const dispatch = useAppDispatch();
 
   const { isDark, isRTL } = useThemeClasses();
-  const { isTraveller } = useUserRoles();
+  const { isTraveller, isSuperadmin } = useUserRoles();
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -167,6 +168,13 @@ export default function Sidebar() {
           path: routes.contentMgmt,
           label: t("content_mgmt") || "Content Management",
           icon: Layers2,
+          isEnabled: true,
+        },
+        {
+          id: "dynamic-pages",
+          path: routes.dynamicPages,
+          label: t("dynamic_pages") || "Dynamic Pages",
+          icon: BookOpen,
           isEnabled: true,
         },
         {
@@ -407,7 +415,9 @@ export default function Sidebar() {
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(
-                (sub) => !(isTraveller && sub.id === "content-mgmt"),
+                (sub) =>
+                  !(isTraveller && sub.id === "content-mgmt") &&
+                  !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}

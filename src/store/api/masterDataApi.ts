@@ -31,6 +31,15 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+    getAllIcons: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.icons,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
 
     getAllTags: builder.query<TAllTags, void>({
       query: () => ({
@@ -131,6 +140,7 @@ export const {
   usePatchBusinessOwnerMutation,
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
+  useGetAllIconsQuery,
   useGetDmosQuery,
   usePostUserAdminMutation,
   useLazyGetUserByEmailQuery,
