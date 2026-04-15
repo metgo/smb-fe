@@ -48,6 +48,15 @@ import {
   BusinessesAudit,
   BusinessesAuditSchema,
 } from '../business/shared/schema/businesses-audit.schema';
+import { GetSiteStatsHandler } from './queries/handler/get-site-stats.handler';
+import { GAModule } from 'src/services/google-analytics/ga.module';
+import { Order, OrderSchema } from '../orders/schema/orders.schema';
+import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
+import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
 import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.module';
 
 @Module({
@@ -63,9 +72,14 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
       { name: EventsAudit.name, schema: EventsAuditSchema },
       { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: Trip.name, schema: TripSchema },
+      { name: Order.name, schema: OrderSchema },
+      { name: Voucher.name, schema: VoucherSchema },
+      { name: Business.name, schema: BusinessSchema },
+      { name: Campaign.name, schema: CampaignSchema },
     ]),
     ExternalApiModule,
     CampaignModule,
+    GAModule,
     GoogleSheetsModule,
   ],
   controllers: [DashboardController],
@@ -79,6 +93,7 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
     GetEventRawQueryHandler,
     GetTripRawQueryHandler,
     GetProductRawQueryHandler,
+    GetSiteStatsHandler,
   ],
 })
 export class DashboardModule {}

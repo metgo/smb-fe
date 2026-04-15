@@ -2,25 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { BlogStatus } from '../blog.type';
-
-@Schema({ _id: false })
-export class SubCoordinates {
-  @Prop({ required: true })
-    xMax: number;
-
-  @Prop({ required: true })
-    xMin: number;
-
-  @Prop({ required: true })
-    yMax: number;
-
-  @Prop({ required: true })
-    yMin: number;
-}
-
-export const SubCoordinatesSchema
-  = SchemaFactory.createForClass(SubCoordinates);
+import { CommonStatus } from 'src/common/enum';
 
 @Schema({ _id: false })
 export class Image {
@@ -28,16 +10,10 @@ export class Image {
     image: string;
 
   @Prop({ required: true })
-    caption: string;
-
-  @Prop({ required: true })
     alt: string;
 
   @Prop({ default: false })
     isPrimary: boolean;
-
-  @Prop({ type: SubCoordinatesSchema, required: false })
-    subCoordinates?: SubCoordinates;
 }
 const ImageSchema = SchemaFactory.createForClass(Image);
 
@@ -51,8 +27,8 @@ export class Blog extends AuditableSchema {
   })
     _id: mongoose.Types.ObjectId;
 
-  @Prop({ enum: BlogStatus, required: true, default: BlogStatus.DRAFT })
-    status: BlogStatus;
+  @Prop({ enum: CommonStatus, required: true, default: CommonStatus.DRAFT })
+    status: CommonStatus;
 
   @Prop({ required: true })
     title: string;
@@ -61,7 +37,25 @@ export class Blog extends AuditableSchema {
     subTitle: string;
 
   @Prop({ required: true })
+    shortDescription: string;
+
+  @Prop({ required: true })
     content: string;
+
+  @Prop()
+    summary: string;
+
+  @Prop()
+    slug: string;
+
+  @Prop()
+    metaTitle: string;
+
+  @Prop()
+    metaDescription: string;
+
+  @Prop({ type: [String], default: [] })
+    tags: string[];
 
   @Prop({ type: [ImageSchema], default: [] })
     images: Image[];

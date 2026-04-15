@@ -40,6 +40,15 @@ export enum ItemStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+export enum CommonStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  CLOSED = 'CLOSED',
+  REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED',
+}
+
 export enum ItemType {
   ALL = 'ALL',
   BUSINESS = 'BUSINESS',

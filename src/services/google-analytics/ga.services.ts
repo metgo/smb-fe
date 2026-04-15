@@ -323,6 +323,35 @@ export class GoogleAnalyticsService {
     }
   }
 
+  async activeUsersLastMonth(propertyId: string): Promise<number> {
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+
+      const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        '0',
+      )}-${String(d.getDate()).padStart(2, '0')}`;
+
+      const [response] = await this.analyticsDataClient.runReport({
+        property: `properties/${propertyId}`,
+        dateRanges: [{ startDate: fmt(startDate), endDate: fmt(endDate) }],
+        metrics: [{ name: 'activeUsers' }],
+      });
+
+      return (
+        response?.rows?.reduce(
+          (sum, row) => sum + Number(row.metricValues?.[0]?.value ?? 0),
+          0,
+        ) ?? 0
+      );
+    } catch (err) {
+      exceptionHandling(err);
+      return 0;
+    }
+  }
+
   private async googleAnalyticsUserEngagementDuration(
     startDate: string,
     endDate: string,

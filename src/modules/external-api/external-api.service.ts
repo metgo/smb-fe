@@ -169,7 +169,7 @@ export class ExternalApiServices {
         identifierId,
       }).populate<{ blogIds: Blog[] }>(
         'blogIds',
-        '_id status title subTitle content images',
+        '_id status title subTitle shortDescription content summary slug metaTitle metaDescription tags images createdAt updatedAt createdBy updatedBy',
       );
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);

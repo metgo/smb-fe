@@ -11,7 +11,7 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { GetBlogByIdQuery } from '../queries/get-blog-by-id.query';
+import { GetBlogBySlugQuery } from '../queries/get-blog-by-slug.query';
 import { GetAllBlogsQuery } from '../queries/get-all-blogs.query';
 import { ExternalApiPostQuery } from 'src/common/query-handler/external-api.query';
 
@@ -28,12 +28,9 @@ export class BlogController {
     softBlockExtraDtoFields: true,
   })
   @HttpCode(HttpStatus.OK)
-  @Get('/:blogId')
-  async getBlogById(
-    @Param('blogId') blogId: string,
-    @Query() query: ExternalApiPostQuery,
-  ) {
-    return this.queryBus.execute(new GetBlogByIdQuery(blogId, query));
+  @Get('/:slug')
+  async getBlogById(@Param('slug') slug: string) {
+    return this.queryBus.execute(new GetBlogBySlugQuery(slug));
   }
 
   @ApiEndpoint({

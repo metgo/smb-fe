@@ -5,16 +5,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
 import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { Blog, BlogSchema } from './schema/blog.schema';
 import { BlogController } from './controlller/blog.controller';
-import { GetBlogByIdHandler } from './queries/handler/get-blog-by-id.handler';
+import { GetBlogBySlugHandler } from './queries/handler/get-blog-by-slug.handler';
 import { GetAllBlogsHandler } from './queries/handler/get-all-blogs.handler';
 import {
   ExternalApi,
   ExternalApiSchema,
 } from '../external-api/schema/external-api.schema';
 import { ExternalApiModule } from '../external-api/external-api.module';
+import { User, UserSchema } from '../users/schema/users.schema';
 
 @Module({
   imports: [
@@ -22,14 +22,14 @@ import { ExternalApiModule } from '../external-api/external-api.module';
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
       { name: ExternalApi.name, schema: ExternalApiSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     AuthorityModule,
     DMOModule,
     UsersModule,
-    GcpBucketModule,
     ExternalApiModule,
   ],
-  providers: [GetAllBlogsHandler, GetBlogByIdHandler],
+  providers: [GetAllBlogsHandler, GetBlogBySlugHandler],
   controllers: [BlogController],
 })
 export class BlogModule {}

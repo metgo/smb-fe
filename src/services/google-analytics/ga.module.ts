@@ -7,5 +7,6 @@ import { GoogleAnalyticsService } from 'src/services/google-analytics/ga.service
   imports: [ConfigModule],
   providers: [GoogleAnalyticsService],
   controllers: [GAController],
+  exports: [GoogleAnalyticsService],
 })
 export class GAModule {}

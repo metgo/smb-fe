@@ -4,7 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
+  HttpStatus, Param,
   Post,
   Query,
 } from '@nestjs/common';
@@ -18,6 +18,7 @@ import { GetAllFeedItemsQuery } from './queries/get-all-feed-items.query';
 import { GetDefaultFiltersQuery } from './queries/get-default-filters.query';
 import { GetFiltersQuery } from './queries/get-filters.query';
 import { GetAllFiltersRequest } from './request/get-all-filters.request';
+import { GetSiteStatsQuery } from './queries/get-site-stats.query';
 import { SubmitBusinessRegistrationRequest } from './request/submit-business-registration.request';
 import { SubmitBusinessRegistrationCommand } from './commands/submit-business-registration.command';
 
@@ -93,6 +94,20 @@ export class DashboardController {
   })
   async getFilterItems(@Query() query: GetAllFiltersRequest) {
     return this.queryBus.execute(new GetFiltersQuery(query));
+  }
+
+  @ApiEndpoint({
+    tags: ['Site Configs'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EXTERNAL_API.LISTED,
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('stats/:identifierId')
+  async getSiteStats(@Param('identifierId') identifierId: string) {
+    return await this.queryBus.execute(new GetSiteStatsQuery(identifierId));
   }
 
   @HttpCode(HttpStatus.CREATED)

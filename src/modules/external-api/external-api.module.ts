@@ -29,6 +29,10 @@ import {
   EventsAudit,
   EventsAuditSchema,
 } from '../events/schema/events-audit.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 
 @Module({
   imports: [
@@ -39,6 +43,7 @@ import {
       { name: Campaign.name, schema: CampaignSchema },
       { name: EventsAudit.name, schema: EventsAuditSchema },
       { name: Trip.name, schema: TripSchema },
+      { name: Business.name, schema: BusinessSchema },
     ]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => DMOModule),
