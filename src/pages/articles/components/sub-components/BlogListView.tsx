@@ -7,6 +7,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 export const defaultBlogColumns = {
+  externalApi: true,
   title: true,
   subTitle: true,
   status: true,
@@ -58,6 +59,16 @@ const BlogListView = ({
       ),
     },
 
+    columnVisibility.externalApi && {
+      key: "externalApi",
+      sortable: false,
+      label: t("externalApi") || "External Api",
+      render: (blog: any) => (
+        <div className={`${textPrimary} font-medium `}>
+          {blog.externalApi || t("externalApi")}
+        </div>
+      ),
+    },
     // Subtitle
     columnVisibility.subTitle && {
       key: "subTitle",
@@ -150,6 +161,7 @@ const BlogListView = ({
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
+  console.log("🚀 ~ BlogListView ~ columns:", columns);
 
   return (
     <div className="flex flex-col overflow-hidden h-[85vh]">

@@ -153,14 +153,6 @@ const BlogGridView = ({
                       <Image className="w-16 h-16 text-white/50" />
                     </div>
                   )}
-
-                  {/* Image Count Badge */}
-                  {blog.images && blog.images.length > 1 && (
-                    <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Image className="w-3 h-3" />
-                      {blog.images.length}
-                    </div>
-                  )}
                 </div>
 
                 {/* Content Section */}
@@ -172,7 +164,13 @@ const BlogGridView = ({
                   >
                     {blog.title}
                   </h3>
-
+                  <h3
+                    className={`font-medum text-md mb-2 line-clamp-1 leading-tight ${
+                      isDark ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    {blog.shortDescription}
+                  </h3>
                   {/* Preview Text */}
                   {contentPreview && (
                     <p
@@ -185,20 +183,11 @@ const BlogGridView = ({
                   {/* Meta Information */}
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-1 text-gray-500">
-                      <Calendar className="w-3.5 h-3.5" />
+                      {t("created_at")}
                       <span>
                         {new Date(blog.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-
-                    {blog.images?.length > 0 && (
-                      <div className="flex items-center gap-1 text-purple-600">
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>
-                          {blog.images.length} {t("photos")}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
