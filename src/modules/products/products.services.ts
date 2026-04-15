@@ -13,15 +13,14 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
+import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { GetProductsQuery } from 'src/modules/products/queries';
 import { Business } from '../business/shared/schema/business.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
-import { Locale } from 'src/common/enum';
 
 @Injectable()
 export class ProductsService {
@@ -30,7 +29,6 @@ export class ProductsService {
     private readonly logger: Logger,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
-    private campaignService: CampaignService,
   ) {}
 
   async findOne(
@@ -84,27 +82,22 @@ export class ProductsService {
 
   async getOne(slug: string, query: GetProductsQuery) {
     try {
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        query.campCode,
-      );
-
-      if (
-        !campDetails?.productIds?.length
-        && !campDetails?.dmoIds?.length
-        && !campDetails?.authorityIds?.length
-        && !campDetails?.businessIds?.length
-        && !campDetails?.category?.length
-      ) {
-        return {};
-      }
-
       const select
         = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
 
       const populate = {
         path: 'categories subCategories',
         select: '_id name hebrewName',
+      };
+
+      const businessPopulate = {
+        path: 'businessId',
+        select:
+          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
+        populate: {
+          path: 'tagsId',
+          select: '_id name nameHe nameAr',
+        },
       };
 
       let product = await this.ProductsAuditModel.findOne({
@@ -117,15 +110,12 @@ export class ProductsService {
           { 'quantity.isUnlimited': true },
         ],
       })
-        .populate<{ businessId: Business }>(
-          'businessId',
-          '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
-        )
+        .populate<{ businessId: Business }>(businessPopulate)
         .populate(populate)
         .select(select)
         .lean();
 
-      if (!product) {
+      if (!product && mongoose.Types.ObjectId.isValid(slug)) {
         product = await this.ProductsAuditModel.findOne({
           productId: slug,
           isActive: true,
@@ -136,33 +126,13 @@ export class ProductsService {
             { 'quantity.isUnlimited': true },
           ],
         })
-          .populate<{ businessId: Business }>(
-            'businessId',
-            '_id logo name nameHe nameAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
-          )
+          .populate<{ businessId: Business }>(businessPopulate)
           .populate(populate)
           .select(select)
           .lean();
       }
 
       if (!product) {
-        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-      }
-
-      if (
-        !campDetails.dmoIds.includes(
-          new mongoose.Types.ObjectId(product.dmoId),
-        )
-        && !campDetails.productIds.includes(
-          new mongoose.Types.ObjectId(product._id),
-        )
-        && !campDetails.authorityIds.includes(
-          new mongoose.Types.ObjectId(product.authorityId),
-        )
-        && !campDetails.businessIds.includes(
-          new mongoose.Types.ObjectId(product?.businessId?._id),
-        )
-      ) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
@@ -178,6 +148,10 @@ export class ProductsService {
 
       const response = await this.localizeProduct(product, query.locale);
 
+      const localizedBusiness = response?.businessId
+        ? this.localizeBusinessFields(response.businessId, query.locale)
+        : undefined;
+
       return {
         _id: response?.productId,
         name: response?.name,
@@ -186,7 +160,7 @@ export class ProductsService {
         images: response?.images,
         price: response?.price,
         quantity: response?.quantity,
-        businessId: response?.businessId,
+        businessId: localizedBusiness,
         deliveryArea: response?.deliveryArea?.length
           ? product.deliveryArea
           : useBusinessInfo?.deliveryArea,
@@ -366,6 +340,50 @@ export class ProductsService {
       throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
     return products;
+  }
+
+  localizeBusinessFields(business: any, locale: Locale) {
+    const {
+      name,
+      nameHe,
+      nameAr,
+      shortDescription,
+      shortDescriptionHe,
+      shortDescriptionAr,
+      tagsId,
+      ...rest
+    } = business;
+
+    const localizedName
+      = locale === Locale.HEBREW
+        ? nameHe || name || nameAr
+        : locale === Locale.ARABIC
+          ? nameAr || name || nameHe
+          : name || nameHe || nameAr;
+
+    const localizedShortDescription
+      = locale === Locale.HEBREW
+        ? shortDescriptionHe || shortDescription || shortDescriptionAr
+        : locale === Locale.ARABIC
+          ? shortDescriptionAr || shortDescription || shortDescriptionHe
+          : shortDescription || shortDescriptionHe || shortDescriptionAr;
+
+    const localizedTags = (tagsId || []).map((tag: any) => ({
+      _id: tag._id,
+      name:
+        locale === Locale.HEBREW
+          ? tag.nameHe || tag.name || tag.nameAr
+          : locale === Locale.ARABIC
+            ? tag.nameAr || tag.name || tag.nameHe
+            : tag.name || tag.nameHe || tag.nameAr,
+    }));
+
+    return {
+      ...rest,
+      name: localizedName,
+      shortDescription: localizedShortDescription,
+      tagsId: localizedTags,
+    };
   }
 
   async localizeProduct(product: any, locale: Locale) {

@@ -1,13 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Locale } from 'src/common/enum';
 
 export class GetProductsQuery {
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     campCode: string;
 
   @ApiProperty({
