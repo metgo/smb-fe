@@ -1,13 +1,16 @@
 import { useRef } from "react";
-import { X, Image as ImageIcon, Loader } from "lucide-react";
+import { X, Image as ImageIcon } from "lucide-react";
 import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
+import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
   formData: SiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (field: keyof SiteSettingsFormData, value: string) => void;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
+  uploadProgress: Record<string, number>;
   onFileSelect: (field: keyof SiteSettingsFormData, file: File) => void;
   onFileClear: (field: keyof SiteSettingsFormData) => void;
 }
@@ -15,9 +18,11 @@ interface Props {
 function UploadBox({
   label,
   hint,
+  clickToUpload,
   accept,
   value,
   uploadState,
+  uploadProgress,
   onSelect,
   onClear,
   icon: Icon,
@@ -29,9 +34,11 @@ function UploadBox({
 }: {
   label: string;
   hint: string;
+  clickToUpload: string;
   accept: string;
   value: string;
   uploadState: "idle" | "uploading" | "done" | "error";
+  uploadProgress: number;
   onSelect: (f: File) => void;
   onClear: () => void;
   icon: React.FC<{ className?: string }>;
@@ -60,12 +67,18 @@ function UploadBox({
             alt={label}
             className="w-full h-40 object-contain p-2"
           />
-          <button
-            onClick={onClear}
-            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-          >
-            <X className="w-3 h-3" />
-          </button>
+          {uploadState === "uploading" ? (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+              <CircularProgress progress={uploadProgress} />
+            </div>
+          ) : (
+            <button
+              onClick={onClear}
+              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
       ) : (
         <button
@@ -79,13 +92,9 @@ function UploadBox({
             uploadState === "uploading" && "opacity-60 cursor-not-allowed",
           )}
         >
-          {uploadState === "uploading" ? (
-            <Loader className="w-6 h-6 animate-spin text-teal-500" />
-          ) : (
-            <Icon className="w-6 h-6 text-gray-400" />
-          )}
+          <Icon className="w-6 h-6 text-gray-400" />
           <span className={clsx("text-sm", textSecondary)}>
-            {uploadState === "uploading" ? "Uploading…" : "Click to upload"}
+            {clickToUpload}
           </span>
           <span className={clsx("text-xs", textSecondary)}>{hint}</span>
         </button>
@@ -107,9 +116,11 @@ export default function Step01BrandingMedia({
   errors,
   onChange,
   uploadStates,
+  uploadProgress,
   onFileSelect,
   onFileClear,
 }: Props) {
+  const { t } = useTranslation("website_settings");
   const { inputClasses, borderColor, textPrimary, textSecondary, isDark } =
     useThemeClasses();
 
@@ -119,6 +130,7 @@ export default function Step01BrandingMedia({
     textPrimary,
     textSecondary,
     isDark,
+    clickToUpload: t("click_to_upload"),
   };
 
   return (
@@ -126,7 +138,7 @@ export default function Step01BrandingMedia({
       <div className="flex items-center gap-3">
         <ImageIcon className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Branding & Media Assets
+          {t("branding_title")}
         </h2>
       </div>
 
@@ -134,13 +146,13 @@ export default function Step01BrandingMedia({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Website Name
+            {t("website_name")}
           </label>
           <input
             type="text"
             value={formData.websiteName}
             onChange={(e) => onChange("websiteName", e.target.value)}
-            placeholder="My Awesome Site"
+            placeholder={t("website_name_placeholder")}
             className={clsx(
               "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
               inputClasses,
@@ -154,13 +166,13 @@ export default function Step01BrandingMedia({
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Slogan
+            {t("slogan")}
           </label>
           <input
             type="text"
             value={formData.slogan}
             onChange={(e) => onChange("slogan", e.target.value)}
-            placeholder="Your tagline here…"
+            placeholder={t("slogan_placeholder")}
             className={clsx(
               "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
               inputClasses,
@@ -176,11 +188,12 @@ export default function Step01BrandingMedia({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <UploadBox
           {...shared}
-          label="Website Logo"
-          hint="PNG / SVG • Recommended 200×60px"
+          label={t("website_logo")}
+          hint={t("logo_hint")}
           accept="image/png,image/svg+xml,image/webp"
           value={formData.logoUrl}
           uploadState={uploadStates["logoUrl"] ?? "idle"}
+          uploadProgress={uploadProgress["logoUrl"] ?? 0}
           onSelect={(f) => onFileSelect("logoUrl", f)}
           onClear={() => onFileClear("logoUrl")}
           icon={ImageIcon}
@@ -188,11 +201,12 @@ export default function Step01BrandingMedia({
 
         <UploadBox
           {...shared}
-          label="Favicon"
-          hint=".ico / PNG • 32×32px"
+          label={t("favicon")}
+          hint={t("favicon_hint")}
           accept="image/x-icon,image/png"
           value={formData.faviconUrl}
           uploadState={uploadStates["faviconUrl"] ?? "idle"}
+          uploadProgress={uploadProgress["faviconUrl"] ?? 0}
           onSelect={(f) => onFileSelect("faviconUrl", f)}
           onClear={() => onFileClear("faviconUrl")}
           icon={ImageIcon}
@@ -200,11 +214,12 @@ export default function Step01BrandingMedia({
 
         <UploadBox
           {...shared}
-          label="Loader / Splash Screen Logo"
-          hint="PNG / SVG (optional)"
+          label={t("splash_logo")}
+          hint={t("splash_logo_hint")}
           accept="image/png,image/svg+xml"
           value={formData.splashLogoUrl}
           uploadState={uploadStates["splashLogoUrl"] ?? "idle"}
+          uploadProgress={uploadProgress["splashLogoUrl"] ?? 0}
           onSelect={(f) => onFileSelect("splashLogoUrl", f)}
           onClear={() => onFileClear("splashLogoUrl")}
           icon={ImageIcon}

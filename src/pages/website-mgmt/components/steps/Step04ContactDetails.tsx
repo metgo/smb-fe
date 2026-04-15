@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Phone } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -59,6 +60,7 @@ export default function Step04ContactDetails({
   errors,
   onChange,
 }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
 
@@ -71,38 +73,38 @@ export default function Step04ContactDetails({
   }[] = [
     {
       field: "phoneNumber",
-      label: "Phone Number",
+      label: t("phone_number"),
       placeholder: "+1 (555) 000-0000",
       type: "tel",
       required: true,
     },
     {
       field: "whatsappNumber",
-      label: "WhatsApp Number (with country code)",
+      label: t("whatsapp_number"),
       placeholder: "+1234567890",
       type: "tel",
     },
     {
       field: "email",
-      label: "Email Address",
+      label: t("email_address"),
       placeholder: "contact@example.com",
       type: "email",
       required: true,
     },
     {
       field: "supportEmail",
-      label: "Support Email (optional)",
+      label: t("support_email"),
       placeholder: "support@example.com",
       type: "email",
     },
     {
       field: "physicalAddress",
-      label: "Physical Address",
+      label: t("physical_address"),
       placeholder: "123 Main St, City, Country",
     },
     {
       field: "googleMapsEmbed",
-      label: "Google Maps Embed URL",
+      label: t("google_maps_embed"),
       placeholder: "https://maps.google.com/embed?...",
     },
   ];
@@ -112,7 +114,7 @@ export default function Step04ContactDetails({
       <div className="flex items-center gap-3">
         <Phone className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Contact Information
+          {t("contact_title")}
         </h2>
       </div>
 
@@ -145,8 +147,8 @@ export default function Step04ContactDetails({
 
       <div className={clsx("flex flex-col gap-4 pt-4 border-t", borderColor)}>
         <Toggle
-          label="Enable Click-to-Call"
-          description="Make phone numbers clickable for mobile users"
+          label={t("enable_click_to_call")}
+          description={t("enable_click_to_call_desc")}
           checked={formData.enableClickToCall}
           onChange={(v) => onChange("enableClickToCall", v)}
           textPrimary={textPrimary}
@@ -154,8 +156,8 @@ export default function Step04ContactDetails({
           isDark={isDark}
         />
         <Toggle
-          label="Enable WhatsApp Chat Button"
-          description="Show floating WhatsApp button on website"
+          label={t("enable_whatsapp_chat")}
+          description={t("enable_whatsapp_chat_desc")}
           checked={formData.enableWhatsappChat}
           onChange={(v) => onChange("enableWhatsappChat", v)}
           textPrimary={textPrimary}

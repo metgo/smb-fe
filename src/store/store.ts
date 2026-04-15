@@ -29,6 +29,7 @@ import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
 import { tripQueryApi } from "./api/tripsQueryApi";
 import { poiQueryApi } from "./api/poiQueryApi";
+import { websiteSettingsApi } from "./api/websiteSettingsApi";
 
 export const store = configureStore({
   reducer: {
@@ -68,6 +69,7 @@ export const store = configureStore({
     [poiQueryApi.reducerPath]: poiQueryApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
+    [websiteSettingsApi.reducerPath]: websiteSettingsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -95,6 +97,7 @@ export const store = configureStore({
       notificationApi.middleware,
       tripQueryApi.middleware,
       poiQueryApi.middleware,
+      websiteSettingsApi.middleware,
     ),
 });
 
