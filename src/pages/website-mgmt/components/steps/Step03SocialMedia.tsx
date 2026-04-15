@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Share2 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -11,49 +12,7 @@ interface Props {
   ) => void;
 }
 
-const SOCIAL_FIELDS: {
-  field: keyof SiteSettingsFormData;
-  label: string;
-  placeholder: string;
-  color: string;
-}[] = [
-  {
-    field: "facebookUrl",
-    label: "Facebook URL",
-    placeholder: "https://facebook.com/yourpage",
-    color: "text-blue-500",
-  },
-  {
-    field: "instagramUrl",
-    label: "Instagram URL",
-    placeholder: "https://instagram.com/yourhandle",
-    color: "text-pink-500",
-  },
-  {
-    field: "twitterUrl",
-    label: "X (Twitter) URL",
-    placeholder: "https://x.com/yourhandle",
-    color: "text-sky-500",
-  },
-  {
-    field: "youtubeUrl",
-    label: "YouTube Channel URL",
-    placeholder: "https://youtube.com/@yourchannel",
-    color: "text-red-500",
-  },
-  {
-    field: "linkedinUrl",
-    label: "LinkedIn URL",
-    placeholder: "https://linkedin.com/company/yourcompany",
-    color: "text-blue-600",
-  },
-  {
-    field: "tiktokUrl",
-    label: "TikTok URL (optional)",
-    placeholder: "https://tiktok.com/@yourhandle",
-    color: "text-gray-800",
-  },
-];
+// Social fields are built inside the component using t()
 
 function Toggle({
   label,
@@ -103,15 +62,53 @@ export default function Step03SocialMedia({
   errors,
   onChange,
 }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
+
+  const SOCIAL_FIELDS: {
+    field: keyof SiteSettingsFormData;
+    label: string;
+    placeholder: string;
+  }[] = [
+    {
+      field: "facebookUrl",
+      label: t("facebook_url"),
+      placeholder: "https://facebook.com/yourpage",
+    },
+    {
+      field: "instagramUrl",
+      label: t("instagram_url"),
+      placeholder: "https://instagram.com/yourhandle",
+    },
+    {
+      field: "twitterUrl",
+      label: t("twitter_url"),
+      placeholder: "https://x.com/yourhandle",
+    },
+    {
+      field: "youtubeUrl",
+      label: t("youtube_url"),
+      placeholder: "https://youtube.com/@yourchannel",
+    },
+    {
+      field: "linkedinUrl",
+      label: t("linkedin_url"),
+      placeholder: "https://linkedin.com/company/yourcompany",
+    },
+    {
+      field: "tiktokUrl",
+      label: t("tiktok_url"),
+      placeholder: "https://tiktok.com/@yourhandle",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-3">
         <Share2 className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Social Media Integration
+          {t("social_title")}
         </h2>
       </div>
 

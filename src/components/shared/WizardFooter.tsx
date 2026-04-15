@@ -12,7 +12,7 @@ type WizardFooterProps = {
   isPublishing: boolean;
   onPrevious: () => void;
   onNext: () => void;
-  onSaveDraft: () => void;
+  onSaveDraft?: () => void;
   onPublish: () => void;
   onDone?: () => void;
   isPublishButton?: boolean;
@@ -69,27 +69,29 @@ export default function WizardFooter({
 
       {/* Right */}
       <div className={clsx("flex items-center gap-3")}>
-        <button
-          onClick={onSaveDraft}
-          disabled={isSaving}
-          className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
-            isDark
-              ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-              : "border-gray-300 hover:bg-gray-100"
-          }`}
-        >
-          {isSaving ? (
-            <span className="flex items-center gap-2">
-              <Loader className="w-4 h-4 animate-spin" />
-              {t("saving")}
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Save className="w-4 h-4" />
-              {t("save_draft")}
-            </span>
-          )}
-        </button>
+        {onSaveDraft && (
+          <button
+            onClick={onSaveDraft}
+            disabled={isSaving}
+            className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+              isDark
+                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <Loader className="w-4 h-4 animate-spin" />
+                {t("saving")}
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Save className="w-4 h-4" />
+                {t("save_draft")}
+              </span>
+            )}
+          </button>
+        )}
 
         {currentStep < totalSteps ? (
           <button

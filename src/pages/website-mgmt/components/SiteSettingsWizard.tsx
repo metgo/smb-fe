@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
   Palette,
@@ -11,6 +12,7 @@ import {
   Globe,
   CheckCircle,
   Video,
+  Handshake,
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -24,29 +26,41 @@ import {
   Step05SeoMeta,
   Step06Analytics,
   Step07Localization,
+  Step08Partners,
   Step12SavePublish,
 } from "./steps";
+import {
+  useCreateWebsiteSettingMutation,
+  useUpdateWebsiteSettingMutation,
+  useGetWebsiteSettingDetailsQuery,
+} from "@/store/api/websiteSettingsApi";
+import { Spinner } from "@/components/shared";
+import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
+import { convertToWebP, uploadWithProgress } from "@/helpers";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
-const STEP_META: { icon: React.FC<{ className?: string }>; label: string }[] = [
-  { icon: ImageIcon, label: "Branding" },
-  { icon: Video, label: "Videos" },
-  { icon: Palette, label: "Theme" },
-  { icon: Share2, label: "Social" },
-  { icon: Phone, label: "Contact" },
-  { icon: Search, label: "SEO" },
-  { icon: BarChart2, label: "Analytics" },
-  { icon: Globe, label: "Language" },
-  { icon: CheckCircle, label: "Publish" },
+const STEP_ICONS: React.FC<{ className?: string }>[] = [
+  ImageIcon,
+  Video,
+  Palette,
+  Share2,
+  Phone,
+  Search,
+  BarChart2,
+  Globe,
+  Handshake,
+  CheckCircle,
 ];
 
 const DEFAULT_FORM: SiteSettingsFormData = {
   /* Step 1 */
+  websiteName: "",
+  slogan: "",
   logoUrl: "",
   faviconUrl: "",
   splashLogoUrl: "",
@@ -58,6 +72,7 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   secondaryColor: "#6366f1",
   backgroundColor: "#ffffff",
   fontFamily: "Inter",
+  fontSourceUrl: "",
   buttonStyle: "rounded",
   buttonRadius: "8",
   darkModeEnabled: false,
@@ -104,27 +119,191 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   timezone: "UTC",
   currency: "USD",
   dateFormat: "",
+  /* Step 9 */
+  partners: [],
 };
+
+/* ------------------------------------------------------------------ */
+/*  Payload builder                                                     */
+/* ------------------------------------------------------------------ */
+
+const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
+  externalApiId,
+  websiteName: data.websiteName,
+  slogan: data.slogan,
+  logoUrl: data.logoUrl,
+  faviconUrl: data.faviconUrl,
+  splashLogoUrl: data.splashLogoUrl,
+  desktopVideos: data.desktopVideos,
+  mobileVideos: data.mobileVideos,
+  primaryColor: data.primaryColor,
+  secondaryColor: data.secondaryColor,
+  backgroundColor: data.backgroundColor,
+  fontFamily: data.fontFamily,
+  fontSourceUrl: data.fontSourceUrl,
+  buttonStyle: data.buttonStyle,
+  buttonRadius: data.buttonRadius,
+  darkModeEnabled: data.darkModeEnabled,
+  facebookUrl: data.facebookUrl,
+  instagramUrl: data.instagramUrl,
+  twitterUrl: data.twitterUrl,
+  youtubeUrl: data.youtubeUrl,
+  linkedinUrl: data.linkedinUrl,
+  tiktokUrl: data.tiktokUrl,
+  showSocialIcons: data.showSocialIcons,
+  socialLinksNewTab: data.socialLinksNewTab,
+  phoneNumber: data.phoneNumber,
+  whatsappNumber: data.whatsappNumber,
+  email: data.email,
+  supportEmail: data.supportEmail,
+  physicalAddress: data.physicalAddress,
+  googleMapsEmbed: data.googleMapsEmbed,
+  enableClickToCall: data.enableClickToCall,
+  enableWhatsappChat: data.enableWhatsappChat,
+  metaTitle: data.metaTitle,
+  metaDescription: data.metaDescription,
+  metaKeywords: data.metaKeywords,
+  ogTitle: data.ogTitle,
+  ogDescription: data.ogDescription,
+  ogImageUrl: data.ogImageUrl,
+  twitterCardTitle: data.twitterCardTitle,
+  twitterCardDescription: data.twitterCardDescription,
+  twitterCardImageUrl: data.twitterCardImageUrl,
+  canonicalUrl: data.canonicalUrl,
+  robotsTxt: data.robotsTxt,
+  sitemapUrl: data.sitemapUrl,
+  googleAnalyticsId: data.googleAnalyticsId,
+  googleTagManagerId: data.googleTagManagerId,
+  facebookPixelId: data.facebookPixelId,
+  headerScripts: data.headerScripts,
+  footerScripts: data.footerScripts,
+  defaultLanguage: data.defaultLanguage,
+  multiLanguageEnabled: data.multiLanguageEnabled,
+  timezone: data.timezone,
+  currency: data.currency,
+  dateFormat: data.dateFormat,
+  partners: data.partners,
+});
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function SiteSettingsWizard() {
+interface Props {
+  externalApiId: string;
+}
+
+export default function SiteSettingsWizard({ externalApiId }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textSecondary, borderColor, cardClasses, isDark } = useThemeClasses();
+
+  const STEP_META = [
+    t("step_branding"),
+    t("step_videos"),
+    t("step_theme"),
+    t("step_social"),
+    t("step_contact"),
+    t("step_seo"),
+    t("step_analytics"),
+    t("step_language"),
+    t("step_partners"),
+    t("step_publish"),
+  ].map((label, i) => ({ icon: STEP_ICONS[i], label }));
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<SiteSettingsFormData>(DEFAULT_FORM);
   const [errors, setErrors] = useState<SiteSettingsErrors>({});
-  const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [uploadStates, setUploadStates] = useState<
     Record<string, "idle" | "uploading" | "done" | "error">
   >({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  );
 
   const stepContentRef = useRef<HTMLDivElement>(null);
 
-  /* ---------------- Helpers ----------------  */
+  /* ---------------- API Hooks ---------------- */
+
+  const [createWebsiteSetting, { isLoading: isSaving }] =
+    useCreateWebsiteSettingMutation();
+  const [updateWebsiteSetting] = useUpdateWebsiteSettingMutation();
+  const [createSignedUrl] = useCreateSignedUrlMutation();
+
+  const { data: existingSettings, isLoading } =
+    useGetWebsiteSettingDetailsQuery(externalApiId, { skip: !externalApiId });
+
+  /* ---------------- Hydrate form from fetched settings ---------------- */
+
+  useEffect(() => {
+    setFormData(DEFAULT_FORM);
+    setUploadStates({});
+    setErrors({});
+  }, [externalApiId]);
+
+  useEffect(() => {
+    if (!existingSettings) return;
+    const d = existingSettings;
+    setFormData({
+      websiteName: d.websiteName ?? "",
+      slogan: d.slogan ?? "",
+      logoUrl: d.logoUrl ?? "",
+      faviconUrl: d.faviconUrl ?? "",
+      splashLogoUrl: d.splashLogoUrl ?? "",
+      desktopVideos: d.desktopVideos ?? [],
+      mobileVideos: d.mobileVideos ?? [],
+      primaryColor: d.primaryColor ?? "#0d9488",
+      secondaryColor: d.secondaryColor ?? "#6366f1",
+      backgroundColor: d.backgroundColor ?? "#ffffff",
+      fontFamily: d.fontFamily ?? "Inter",
+      fontSourceUrl: d.fontSourceUrl ?? "",
+      buttonStyle: d.buttonStyle ?? "rounded",
+      buttonRadius: d.buttonRadius ?? "8",
+      darkModeEnabled: d.darkModeEnabled ?? false,
+      facebookUrl: d.facebookUrl ?? "",
+      instagramUrl: d.instagramUrl ?? "",
+      twitterUrl: d.twitterUrl ?? "",
+      youtubeUrl: d.youtubeUrl ?? "",
+      linkedinUrl: d.linkedinUrl ?? "",
+      tiktokUrl: d.tiktokUrl ?? "",
+      showSocialIcons: d.showSocialIcons ?? true,
+      socialLinksNewTab: d.socialLinksNewTab ?? true,
+      phoneNumber: d.phoneNumber ?? "",
+      whatsappNumber: d.whatsappNumber ?? "",
+      email: d.email ?? "",
+      supportEmail: d.supportEmail ?? "",
+      physicalAddress: d.physicalAddress ?? "",
+      googleMapsEmbed: d.googleMapsEmbed ?? "",
+      enableClickToCall: d.enableClickToCall ?? true,
+      enableWhatsappChat: d.enableWhatsappChat ?? false,
+      metaTitle: d.metaTitle ?? "",
+      metaDescription: d.metaDescription ?? "",
+      metaKeywords: d.metaKeywords ?? "",
+      ogTitle: d.ogTitle ?? "",
+      ogDescription: d.ogDescription ?? "",
+      ogImageUrl: d.ogImageUrl ?? "",
+      twitterCardTitle: d.twitterCardTitle ?? "",
+      twitterCardDescription: d.twitterCardDescription ?? "",
+      twitterCardImageUrl: d.twitterCardImageUrl ?? "",
+      canonicalUrl: d.canonicalUrl ?? "",
+      robotsTxt: d.robotsTxt ?? "User-agent: *\nAllow: /",
+      sitemapUrl: d.sitemapUrl ?? "",
+      googleAnalyticsId: d.googleAnalyticsId ?? "",
+      googleTagManagerId: d.googleTagManagerId ?? "",
+      facebookPixelId: d.facebookPixelId ?? "",
+      headerScripts: d.headerScripts ?? "",
+      footerScripts: d.footerScripts ?? "",
+      defaultLanguage: d.defaultLanguage ?? "English",
+      multiLanguageEnabled: d.multiLanguageEnabled ?? false,
+      timezone: d.timezone ?? "UTC",
+      currency: d.currency ?? "USD",
+      dateFormat: d.dateFormat ?? "",
+      partners: d.partners ?? [],
+    });
+    setUploadStates({});
+  }, [existingSettings]);
+
+  /* ---------------- Helpers ---------------- */
 
   const scrollToTop = () => {
     stepContentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -142,18 +321,46 @@ export default function SiteSettingsWizard() {
     [],
   );
 
+  /* ---------------- Image Upload (logo, favicon, splash, OG) ---------------- */
+
   const handleFileSelect = useCallback(
     async (field: keyof SiteSettingsFormData, file: File) => {
       const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, [field]: previewUrl }));
       setUploadStates((prev) => ({ ...prev, [field]: "uploading" }));
 
-      // TODO: replace with actual signed-url upload
-      await new Promise((r) => setTimeout(r, 1000));
-      setUploadStates((prev) => ({ ...prev, [field]: "done" }));
-      toast.success("File uploaded successfully");
+      try {
+        const skipConversion = field === "logoUrl" || field === "faviconUrl";
+        const fileToUpload = skipConversion ? file : await convertToWebP(file);
+        const res = await createSignedUrl([
+          { originalName: fileToUpload.name, mimeType: fileToUpload.type },
+        ]);
+        const { signedUrl, gcsURL } = res.data[0];
+
+        await uploadWithProgress(fileToUpload, signedUrl, (p) =>
+          setUploadProgress((prev) => ({ ...prev, [field]: p })),
+        );
+
+        URL.revokeObjectURL(previewUrl);
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[field as string];
+          return next;
+        });
+        setFormData((prev) => ({ ...prev, [field]: gcsURL }));
+        setUploadStates((prev) => ({ ...prev, [field]: "done" }));
+        toast.success(t("file_uploaded"));
+      } catch {
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[field as string];
+          return next;
+        });
+        setUploadStates((prev) => ({ ...prev, [field]: "error" }));
+        toast.error(t("upload_failed"));
+      }
     },
-    [],
+    [createSignedUrl],
   );
 
   const handleFileClear = useCallback((field: keyof SiteSettingsFormData) => {
@@ -165,18 +372,18 @@ export default function SiteSettingsWizard() {
     setUploadStates((prev) => ({ ...prev, [field]: "idle" }));
   }, []);
 
-  /* ---------------- Video Handlers ---------------- */
+  /* ---------------- Video Upload ---------------- */
 
   const handleVideoAdd = useCallback(
     async (field: "desktopVideos" | "mobileVideos", file: File) => {
       const id = crypto.randomUUID();
-      const url = URL.createObjectURL(file);
+      const previewUrl = URL.createObjectURL(file);
 
       setFormData((prev) => {
         const existing = prev[field];
         const newItem: VideoItem = {
           id,
-          url,
+          url: previewUrl,
           name: file.name,
           isActive: existing.length === 0,
         };
@@ -184,12 +391,41 @@ export default function SiteSettingsWizard() {
       });
       setUploadStates((prev) => ({ ...prev, [id]: "uploading" }));
 
-      // TODO: replace with actual signed-url upload
-      await new Promise((r) => setTimeout(r, 1000));
-      setUploadStates((prev) => ({ ...prev, [id]: "done" }));
-      toast.success("Video uploaded successfully");
+      try {
+        const res = await createSignedUrl([
+          { originalName: file.name, mimeType: file.type },
+        ]);
+        const { signedUrl, gcsURL } = res.data[0];
+
+        await uploadWithProgress(file, signedUrl, (p) =>
+          setUploadProgress((prev) => ({ ...prev, [id]: p })),
+        );
+
+        URL.revokeObjectURL(previewUrl);
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setFormData((prev) => ({
+          ...prev,
+          [field]: prev[field].map((v) =>
+            v.id === id ? { ...v, url: gcsURL } : v,
+          ),
+        }));
+        setUploadStates((prev) => ({ ...prev, [id]: "done" }));
+        toast.success(t("video_uploaded"));
+      } catch {
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setUploadStates((prev) => ({ ...prev, [id]: "error" }));
+        toast.error(t("video_upload_failed"));
+      }
     },
-    [],
+    [createSignedUrl],
   );
 
   const handleVideoRemove = useCallback(
@@ -224,6 +460,91 @@ export default function SiteSettingsWizard() {
     [],
   );
 
+  /* ---------------- Partner Handlers ---------------- */
+
+  const handlePartnerAdd = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      partners: [
+        ...prev.partners,
+        {
+          id: crypto.randomUUID(),
+          name: "",
+          description: "",
+          logo: "",
+          website: "",
+        },
+      ],
+    }));
+  }, []);
+
+  const handlePartnerRemove = useCallback((id: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      partners: prev.partners.filter((p) => p.id !== id),
+    }));
+  }, []);
+
+  const handlePartnerChange = useCallback(
+    (id: string, field: keyof PartnerItem, value: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        partners: prev.partners.map((p) =>
+          p.id === id ? { ...p, [field]: value } : p,
+        ),
+      }));
+    },
+    [],
+  );
+
+  /* ---------------- Partner Logo Upload ---------------- */
+
+  const handlePartnerLogoUpload = useCallback(
+    async (partnerId: string, file: File) => {
+      const previewUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        partners: prev.partners.map((p) =>
+          p.id === partnerId ? { ...p, logo: previewUrl } : p,
+        ),
+      }));
+
+      try {
+        const webpFile = await convertToWebP(file);
+        const res = await createSignedUrl([
+          { originalName: webpFile.name, mimeType: webpFile.type },
+        ]);
+        const { signedUrl, gcsURL } = res.data[0];
+
+        await uploadWithProgress(webpFile, signedUrl, (p) =>
+          setUploadProgress((prev) => ({ ...prev, [partnerId]: p })),
+        );
+
+        URL.revokeObjectURL(previewUrl);
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[partnerId];
+          return next;
+        });
+        setFormData((prev) => ({
+          ...prev,
+          partners: prev.partners.map((p) =>
+            p.id === partnerId ? { ...p, logo: gcsURL } : p,
+          ),
+        }));
+        toast.success(t("logo_uploaded"));
+      } catch {
+        setUploadProgress((prev) => {
+          const next = { ...prev };
+          delete next[partnerId];
+          return next;
+        });
+        toast.error(t("logo_upload_failed"));
+      }
+    },
+    [createSignedUrl],
+  );
+
   /* ---------------- Navigation ---------------- */
 
   const goToStep = (step: number) => {
@@ -236,20 +557,29 @@ export default function SiteSettingsWizard() {
 
   /* ---------------- Save / Publish ---------------- */
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    // TODO: call API mutation
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSaving(false);
-    toast.success("Draft saved");
-  };
-
   const handlePublish = async () => {
+    if (!externalApiId) {
+      toast.error(t("select_website_first"));
+      return;
+    }
+
     setIsPublishing(true);
-    // TODO: call API mutation
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsPublishing(false);
-    toast.success("Settings published successfully!");
+    try {
+      const payload = buildPayload(formData, externalApiId);
+      if (existingSettings) {
+        await updateWebsiteSetting({
+          id: existingSettings._id,
+          body: payload,
+        }).unwrap();
+      } else {
+        await createWebsiteSetting(payload).unwrap();
+      }
+      toast.success(t("settings_published"));
+    } catch {
+      toast.error(t("settings_publish_failed"));
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   /* ---------------- Step Rendering ---------------- */
@@ -266,12 +596,15 @@ export default function SiteSettingsWizard() {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <Step01BrandingMedia {...stepProps} />;
+        return (
+          <Step01BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
+        );
       case 2:
         return (
           <Step02HomeVideo
             formData={formData}
             uploadStates={uploadStates}
+            uploadProgress={uploadProgress}
             onVideoAdd={handleVideoAdd}
             onVideoRemove={handleVideoRemove}
             onVideoActivate={handleVideoActivate}
@@ -284,7 +617,7 @@ export default function SiteSettingsWizard() {
       case 5:
         return <Step04ContactDetails {...stepProps} />;
       case 6:
-        return <Step05SeoMeta {...stepProps} />;
+        return <Step05SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
       case 7:
         return (
           <Step06Analytics
@@ -296,6 +629,17 @@ export default function SiteSettingsWizard() {
       case 8:
         return <Step07Localization {...stepProps} />;
       case 9:
+        return (
+          <Step08Partners
+            partners={formData.partners}
+            onPartnerAdd={handlePartnerAdd}
+            onPartnerRemove={handlePartnerRemove}
+            onPartnerChange={handlePartnerChange}
+            onLogoUpload={handlePartnerLogoUpload}
+            uploadProgress={uploadProgress}
+          />
+        );
+      case 10:
         return <Step12SavePublish formData={formData} />;
       default:
         return null;
@@ -309,11 +653,12 @@ export default function SiteSettingsWizard() {
   return (
     <div
       className={clsx(
-        "flex flex-col h-full rounded-2xl border overflow-hidden",
+        "flex flex-col h-full rounded-2xl border overflow-hidden relative",
         cardClasses,
         borderColor,
       )}
     >
+      <Spinner isLoading={isLoading} />
       {/* Step indicator */}
       <div
         className={clsx(
@@ -404,7 +749,6 @@ export default function SiteSettingsWizard() {
         isPublishing={isPublishing}
         onPrevious={handlePrevious}
         onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         isPublishButton={currentStep === TOTAL_STEPS}
       />

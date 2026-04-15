@@ -93,6 +93,8 @@ export const endpoints = {
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
 
+  // Website settgins
+  websiteSettings: "/site-settings",
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",

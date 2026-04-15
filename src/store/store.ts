@@ -29,6 +29,7 @@ import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
 import { tripQueryApi } from "./api/tripsQueryApi";
 import { poiQueryApi } from "./api/poiQueryApi";
+import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
 import { dynamicPageApi } from "./api/dynamicPageApi";
@@ -74,6 +75,7 @@ export const store = configureStore({
     [poiQueryApi.reducerPath]: poiQueryApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
+    [websiteSettingsApi.reducerPath]: websiteSettingsApi.reducer,
     [dynamicPageApi.reducerPath]: dynamicPageApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -105,6 +107,7 @@ export const store = configureStore({
       blogMutationApi.middleware,
       blogQueryApi.middleware,
       poiQueryApi.middleware,
+      websiteSettingsApi.middleware,
     ),
 });
 
