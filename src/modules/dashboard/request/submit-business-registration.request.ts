@@ -6,7 +6,6 @@ import {
   IsString,
   ArrayNotEmpty,
   IsOptional,
-  IsNumber,
   IsBoolean,
 } from 'class-validator';
 import { ToBoolean } from 'src/core/decorators/to-boolean.decorator';
@@ -30,17 +29,12 @@ export class SubmitBusinessRegistrationRequest {
   @ApiProperty({ type: String })
   @IsString()
   @IsNotEmpty()
-    address: string;
+    cluster: string;
 
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-    landlinePhone: number;
-
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @IsString()
-  @IsOptional()
-    fax: string;
+  @IsNotEmpty()
+    address: string;
 
   @ApiProperty({ type: String })
   @IsEmail()
@@ -52,10 +46,10 @@ export class SubmitBusinessRegistrationRequest {
   @IsNotEmpty()
     contactName: string;
 
-  @ApiProperty({ type: Number })
-  @IsNumber()
+  @ApiProperty({ type: String })
+  @IsString()
   @IsNotEmpty()
-    contactPhone: number;
+    contactPhone: string;
 
   @ApiProperty({ type: Boolean })
   @IsBoolean()
@@ -68,4 +62,84 @@ export class SubmitBusinessRegistrationRequest {
   @ArrayNotEmpty()
   @IsString({ each: true })
     categories: string[];
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+    marketingDescription: string;
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+    targetAudience: string[];
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+    operatingHours: string;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    hasImmediateAvailability: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    interestedInOnlineSales: boolean;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+    revenueImpact: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    revenueImpactOther: string;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationReadDocs: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationNoRestrictions: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationHasPermits: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationHasFirstAid: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationNoLegalProceedings: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationTaxCompliant: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @ToBoolean()
+  @IsNotEmpty()
+    declarationAcceptsTerms: boolean;
 }
