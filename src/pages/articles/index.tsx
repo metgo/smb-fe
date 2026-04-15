@@ -31,7 +31,7 @@ const COLUMNS_STORAGE_KEY = "blogsTableColumns";
 const SEARCH_STORAGE_KEY = "blogSearchTerm";
 
 type ColumnVisibility = {
-  externalApi: boolean;
+  externalApiId: boolean;
   title: boolean;
   subTitle: boolean;
   status: boolean;
@@ -43,7 +43,7 @@ type ColumnVisibility = {
 };
 
 const defaultColumns: ColumnVisibility = {
-  externalApi: true,
+  externalApiId: true,
   title: true,
   subTitle: true,
   status: true,

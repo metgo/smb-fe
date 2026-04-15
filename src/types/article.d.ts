@@ -36,7 +36,12 @@ interface IArticleImage {
 }
 
 interface IArticleFormData {
-  externalApiId: string;
+  externalApiId: {
+    id: string;
+    name: string;
+    logo: string;
+    url: string;
+  };
   // Content — EN / HE / AR
   title: string;
   titleHe: string;

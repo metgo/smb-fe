@@ -37,6 +37,12 @@ interface BlogDetails {
   updatedAt: string | null;
   createdBy: string;
   updatedBy: string | null;
+  externalApiId: {
+    id: string;
+    name: string;
+    logo: string;
+    url: string;
+  };
 }
 
 // ─── Mapper ───────────────────────────────────────────────────────────────────
@@ -58,6 +64,7 @@ function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
     updatedAt: blogDetails?.updatedAt ?? null,
     createdBy: blogDetails?.createdBy ?? "",
     updatedBy: blogDetails?.updatedBy ?? null,
+    externalApiId: blogDetails?.externalApiId ?? null,
   };
 }
 
@@ -376,6 +383,26 @@ export default function ArticleDetails() {
                 <span className={clsx("", textTertiary)}>
                   {formatDateTime(blogDetails?.updatedAt, language)}
                 </span>
+                {/* Website */}
+                {blogDetails?.externalApiId ? (
+                  <a
+                    href={blogDetails.externalApiId.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 ml-2 text-sm text-gray-700 w-fit"
+                  >
+                    <img
+                      src={blogDetails.externalApiId.logo}
+                      alt={blogDetails.externalApiId.name}
+                      className="w-6 h-6 object-contain rounded"
+                    />
+                    <span className="font-medium hover:underline">
+                      {blogDetails.externalApiId.name}
+                    </span>
+                  </a>
+                ) : (
+                  <span>-</span>
+                )}{" "}
               </div>
             )}
           </div>

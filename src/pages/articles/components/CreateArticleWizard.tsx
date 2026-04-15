@@ -129,6 +129,7 @@ const CreateArticleWizard = ({
   const [formData, setFormData] = useState<IArticleFormData>(
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
+  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
   const [editingLanguage, setEditingLanguage] = useState<Language>("en");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -334,7 +335,7 @@ const CreateArticleWizard = ({
 
           <ReactSelect
             minWidth={180}
-            value={formData.externalApiId}
+            value={formData.externalApiId.id}
             onChange={(value) => handleChange({ externalApiId: value })}
             items={associatedWebsite}
             placeholder={t("select_website")}
