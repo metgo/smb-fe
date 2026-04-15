@@ -61,11 +61,13 @@ function VideoModal({
   onClose,
   textPrimary,
   isDark,
+  labels,
 }: {
   video: VideoItem;
   onClose: () => void;
   textPrimary: string;
   isDark: boolean;
+  labels: { active: string };
 }) {
   return (
     <div
@@ -127,7 +129,6 @@ function VideoCard({
   onRemove,
   borderColor,
   textPrimary,
-  textSecondary,
   isDark,
   labels,
 }: {
@@ -139,7 +140,6 @@ function VideoCard({
   onRemove: () => void;
   borderColor: string;
   textPrimary: string;
-  textSecondary: string;
   isDark: boolean;
   labels: { active: string; setActive: string; uploadFailed: string };
 }) {
@@ -323,7 +323,6 @@ function VideoSection({
               onRemove={() => onRemove(video.id)}
               borderColor={borderColor}
               textPrimary={textPrimary}
-              textSecondary={textSecondary}
               isDark={isDark}
               labels={labels}
             />
@@ -418,14 +417,13 @@ export default function Step02HomeVideo({
           labels={videoLabels}
         />
       </div>
-
-      {/* Video preview modal */}
       {previewVideo && (
         <VideoModal
           video={previewVideo}
           onClose={() => setPreviewVideo(null)}
           textPrimary={textPrimary}
           isDark={isDark}
+          labels={{ active: videoLabels.active }}
         />
       )}
     </>
