@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ExternalLink, Image, Link, Loader } from "lucide-react";
+import { ExternalLink, Image, Loader } from "lucide-react";
 
 import { DeleteIconBtn } from "@/components/btns";
 import { getPlainTextFromRichText } from "@/helpers";
