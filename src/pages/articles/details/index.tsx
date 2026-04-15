@@ -3,7 +3,13 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { Edit, FileText, Globe, Image as ImageIcon } from "lucide-react";
+import {
+  Edit,
+  ExternalLink,
+  FileText,
+  Globe,
+  Image as ImageIcon,
+} from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { CreateArticleWizard } from "../components";
@@ -160,7 +166,7 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("short_description")}
         </h3>
-        <p className={textPrimary}>{blogDetails?.shortDescription}</p>
+        <p className={textPrimary}>{blogDetails?.shortDescription || "-"}</p>
       </div>
 
       {/* Subtitle */}
@@ -350,12 +356,10 @@ export default function ArticleDetails() {
                 </span>
               </div>
             )}
-
             <div
               className={clsx("w-px h-3 shrink-0", textTertiary, "opacity-30")}
               style={{ background: "currentColor" }}
             />
-
             {blogDetails?.updatedAt && (
               <div className="flex items-center gap-1.5">
                 <svg
@@ -383,28 +387,29 @@ export default function ArticleDetails() {
                 <span className={clsx("", textTertiary)}>
                   {formatDateTime(blogDetails?.updatedAt, language)}
                 </span>
-                {/* Website */}
-                {blogDetails?.externalApiId ? (
-                  <a
-                    href={blogDetails.externalApiId.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 ml-2 text-sm text-gray-700 w-fit"
-                  >
-                    <img
-                      src={blogDetails.externalApiId.logo}
-                      alt={blogDetails.externalApiId.name}
-                      className="w-6 h-6 object-contain rounded"
-                    />
-                    <span className="font-medium hover:underline">
-                      {blogDetails.externalApiId.name}
-                    </span>
-                  </a>
-                ) : (
-                  <span>-</span>
-                )}{" "}
               </div>
             )}
+            {/* Website */}
+            {blogDetails?.externalApiId ? (
+              <a
+                href={blogDetails?.externalApiId?.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 ml-2 text-sm text-gray-700 w-fit"
+              >
+                <img
+                  src={blogDetails?.externalApiId?.logo}
+                  alt={blogDetails?.externalApiId?.name}
+                  className="w-6 h-6 object-contain rounded"
+                />
+                <span className="font-medium hover:underline">
+                  {blogDetails?.externalApiId?.name}
+                </span>
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            ) : (
+              <span>-</span>
+            )}{" "}
           </div>
         </div>
 

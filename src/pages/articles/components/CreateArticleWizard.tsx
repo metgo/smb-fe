@@ -57,7 +57,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
   const arr = (v: any) => (Array.isArray(v) ? v : []);
 
   return {
-    externalApiId: article.externalApiId.id || "",
+    externalApiId: article?.externalApiId?.id || "",
     title: str(article.title),
     titleHe: article.titleHe || "",
     titleAr: article.titleAr || "",
@@ -342,8 +342,8 @@ const CreateArticleWizard = ({
             minWidth={180}
             value={
               typeof formData.externalApiId === "string"
-                ? formData.externalApiId
-                : formData.externalApiId?.id || undefined
+                ? formData?.externalApiId
+                : formData?.externalApiId?.id || undefined
             }
             onChange={(value) => handleChange({ externalApiId: value })} // value here is probably the full object from items
             items={associatedWebsite}

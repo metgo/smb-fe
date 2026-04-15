@@ -93,13 +93,13 @@ export const endpoints = {
   bulkVouchersUpdate: "",
   voucherStatDashboard: "",
 
-  // Website settgins
-  websiteSettings: "/site-settings",
+  // Admin endpoints
+  dynamicPage: "/settings",
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
-  // Admin endpoints
-  dynamicPage: "/settings",
+  // Website settgins
+  websiteSettings: "/site-settings",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

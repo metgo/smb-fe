@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Image, Loader } from "lucide-react";
+import { ExternalLink, Image, Loader } from "lucide-react";
 
 import { DeleteIconBtn } from "@/components/btns";
 import { getPlainTextFromRichText } from "@/helpers";
@@ -158,7 +158,7 @@ const BlogGridView = ({
                 {/* Content Section */}
                 <div className={`p-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
                   <h3
-                    className={`font-semibold text-lg mb-2 line-clamp-2 leading-tight ${
+                    className={`font-semibold text-lg mb-2 line-clamp-1 leading-tight ${
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                   >
@@ -171,6 +171,30 @@ const BlogGridView = ({
                   >
                     {blog.shortDescription}
                   </h3>
+                  <div className="mb-2">
+                    {blog?.externalApiId ? (
+                      <a
+                        href={blog?.externalApiId?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 ml-2 text-sm text-gray-700 w-fit"
+                      >
+                        <img
+                          src={blog?.externalApiId?.logo}
+                          alt={blog?.externalApiId?.name}
+                          className="w-6 h-6 object-contain rounded"
+                        />
+                        <span className="font-medium hover:underline">
+                          {blog?.externalApiId?.name}
+                        </span>
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </a>
+                    ) : (
+                      <span className=""></span>
+                    )}{" "}
+                  </div>
+
                   {/* Preview Text */}
                   {contentPreview && (
                     <p
