@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
@@ -15,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useTranslation } from "react-i18next";
 import WizardFooter from "@/components/shared/WizardFooter";
 import {
   Step01BrandingMedia,
@@ -34,9 +34,9 @@ import {
   useUpdateWebsiteSettingMutation,
   useGetWebsiteSettingDetailsQuery,
 } from "@/store/api/websiteSettingsApi";
+import { Spinner } from "@/components/shared";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { convertToWebP, uploadWithProgress } from "@/helpers";
-import { Spinner } from "@/components/shared";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                           */
@@ -236,12 +236,9 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   /* ---------------- Hydrate form from fetched settings ---------------- */
 
   useEffect(() => {
-    if (!externalApiId) {
-      setFormData(DEFAULT_FORM);
-      setUploadStates({});
-      setErrors({});
-      return;
-    }
+    setFormData(DEFAULT_FORM);
+    setUploadStates({});
+    setErrors({});
   }, [externalApiId]);
 
   useEffect(() => {
