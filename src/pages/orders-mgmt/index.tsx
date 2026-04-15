@@ -667,11 +667,15 @@ export default function OrdersMgmtPage() {
       key: "totalAmount",
       label: t("total_amount"),
       sortable: true,
-      render: (row: any) => (
-        <div className="text-sm font-medium">
-          {row.totalAmount ? `₪${row.totalAmount.toLocaleString()}` : "-"}
-        </div>
-      ),
+      render: (row: any) => {
+        const total = (row.totalAmount || 0) + (row.totalDeliveryFee || 0);
+
+        return (
+          <div className="text-sm font-medium">
+            {total ? `₪${total.toLocaleString()}` : "-"}
+          </div>
+        );
+      },
     },
 
     {
