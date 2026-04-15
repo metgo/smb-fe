@@ -95,6 +95,9 @@ export const endpoints = {
 
   // Website settgins
   websiteSettings: "/site-settings",
+  // Blog Articles
+  blogs: "/blogs",
+  blogGenerateSeo: "/blogs/generate-seo",
   // Admin endpoints
   dynamicPage: "/settings",
 

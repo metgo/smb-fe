@@ -17,7 +17,6 @@ import {
   X,
   Ticket,
   Receipt,
-  Home,
   Megaphone,
   FileText,
   Rss,
@@ -165,13 +164,6 @@ export default function Sidebar() {
       isEnabled: true,
       subItems: [
         {
-          id: "home",
-          path: routes.home,
-          label: t("home") || "Home",
-          icon: Home,
-          isEnabled: false,
-        },
-        {
           id: "content-mgmt",
           path: routes.contentMgmt,
           label: t("content_mgmt") || "Content Management",
@@ -193,11 +185,11 @@ export default function Sidebar() {
           isEnabled: false,
         },
         {
-          id: "blog",
-          path: routes.dashboard,
-          label: t("blog") || "Blog",
+          id: "article",
+          path: routes.articleMgmt,
+          label: t("article") || "Article",
           icon: FileText,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "news-feed",

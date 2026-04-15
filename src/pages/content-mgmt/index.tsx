@@ -2,10 +2,10 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { DndProvider } from "react-dnd";
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import {
   X,
   Send,
@@ -205,7 +205,6 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
