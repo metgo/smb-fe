@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import {
   Video,
-  Loader,
   CheckCircle2,
   Monitor,
   Smartphone,
@@ -11,10 +10,13 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
+import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
   formData: SiteSettingsFormData;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
+  uploadProgress: Record<string, number>;
   onVideoAdd: (
     field: "desktopVideos" | "mobileVideos",
     file: File,
@@ -31,6 +33,7 @@ interface SectionProps {
   icon: React.FC<{ className?: string }>;
   videos: VideoItem[];
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
+  uploadProgress: Record<string, number>;
   onAdd: (file: File) => void;
   onRemove: (id: string) => void;
   onActivate: (id: string) => void;
@@ -39,6 +42,14 @@ interface SectionProps {
   textPrimary: string;
   textSecondary: string;
   isDark: boolean;
+  labels: {
+    active: string;
+    setActive: string;
+    uploadVideo: string;
+    uploadFailed: string;
+    uploadFirstVideo: string;
+    videoFormats: string;
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -82,7 +93,7 @@ function VideoModal({
             {video.isActive && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-500 text-white text-xs font-medium shrink-0">
                 <CheckCircle2 className="w-3 h-3" />
-                Active
+                {labels.active}
               </span>
             )}
           </div>
@@ -110,6 +121,7 @@ function VideoModal({
 function VideoCard({
   video,
   uploadState,
+  uploadProgress,
   onPreview,
   onActivate,
   onRemove,
@@ -117,9 +129,11 @@ function VideoCard({
   textPrimary,
   textSecondary,
   isDark,
+  labels,
 }: {
   video: VideoItem;
   uploadState: "idle" | "uploading" | "done" | "error";
+  uploadProgress: number;
   onPreview: () => void;
   onActivate: () => void;
   onRemove: () => void;
@@ -127,6 +141,7 @@ function VideoCard({
   textPrimary: string;
   textSecondary: string;
   isDark: boolean;
+  labels: { active: string; setActive: string; uploadFailed: string };
 }) {
   return (
     <div
@@ -154,8 +169,7 @@ function VideoCard({
       >
         {uploadState === "uploading" ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader className="w-6 h-6 animate-spin text-teal-500" />
-            <span className={clsx("text-xs", textSecondary)}>Uploading…</span>
+            <CircularProgress progress={uploadProgress} size={56} />
           </div>
         ) : (
           <>
@@ -177,7 +191,7 @@ function VideoCard({
         {video.isActive && uploadState !== "uploading" && (
           <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-500 text-white text-xs font-medium">
             <CheckCircle2 className="w-3 h-3" />
-            Active
+            {labels.active}
           </div>
         )}
       </button>
@@ -195,7 +209,7 @@ function VideoCard({
             {video.name}
           </p>
           {uploadState === "error" && (
-            <p className="text-xs text-red-400">Upload failed</p>
+            <p className="text-xs text-red-400">{labels.uploadFailed}</p>
           )}
         </div>
 
@@ -210,7 +224,7 @@ function VideoCard({
                 : "border-gray-200 text-gray-500 hover:border-teal-400 hover:text-teal-600",
             )}
           >
-            Set Active
+            {labels.setActive}
           </button>
         )}
 
@@ -235,6 +249,7 @@ function VideoSection({
   icon: Icon,
   videos,
   uploadStates,
+  uploadProgress,
   onAdd,
   onRemove,
   onActivate,
@@ -243,6 +258,7 @@ function VideoSection({
   textPrimary,
   textSecondary,
   isDark,
+  labels,
 }: SectionProps) {
   const ref = useRef<HTMLInputElement>(null);
 
@@ -271,7 +287,7 @@ function VideoSection({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-xs font-medium transition-colors"
         >
           <Upload className="w-3.5 h-3.5" />
-          Upload Video
+          {labels.uploadVideo}
         </button>
       </div>
 
@@ -288,9 +304,11 @@ function VideoSection({
         >
           <Video className="w-6 h-6 text-gray-400" />
           <span className={clsx("text-sm", textSecondary)}>
-            Click to upload your first video
+            {labels.uploadFirstVideo}
           </span>
-          <span className={clsx("text-xs", textSecondary)}>MP4 / WebM</span>
+          <span className={clsx("text-xs", textSecondary)}>
+            {labels.videoFormats}
+          </span>
         </button>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -299,6 +317,7 @@ function VideoSection({
               key={video.id}
               video={video}
               uploadState={uploadStates[video.id] ?? "done"}
+              uploadProgress={uploadProgress[video.id] ?? 0}
               onPreview={() => onPreview(video)}
               onActivate={() => onActivate(video.id)}
               onRemove={() => onRemove(video.id)}
@@ -306,6 +325,7 @@ function VideoSection({
               textPrimary={textPrimary}
               textSecondary={textSecondary}
               isDark={isDark}
+              labels={labels}
             />
           ))}
         </div>
@@ -333,14 +353,25 @@ function VideoSection({
 export default function Step02HomeVideo({
   formData,
   uploadStates,
+  uploadProgress,
   onVideoAdd,
   onVideoRemove,
   onVideoActivate,
 }: Props) {
+  const { t } = useTranslation("website_settings");
   const { borderColor, textPrimary, textSecondary, isDark } = useThemeClasses();
   const theme = { borderColor, textPrimary, textSecondary, isDark };
 
   const [previewVideo, setPreviewVideo] = useState<VideoItem | null>(null);
+
+  const videoLabels = {
+    active: t("active"),
+    setActive: t("set_active"),
+    uploadVideo: t("upload_video"),
+    uploadFailed: t("upload_failed_label"),
+    uploadFirstVideo: t("upload_first_video"),
+    videoFormats: t("video_formats"),
+  };
 
   return (
     <>
@@ -349,39 +380,42 @@ export default function Step02HomeVideo({
           <Video className="w-5 h-5 text-teal-500" />
           <div>
             <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-              Home Page Videos
+              {t("videos_title")}
             </h2>
             <p className={clsx("text-sm mt-0.5", textSecondary)}>
-              Upload multiple videos per device. Only the active video will be
-              shown on your home page.
+              {t("videos_subtitle")}
             </p>
           </div>
         </div>
 
         <VideoSection
           {...theme}
-          label="Desktop Videos"
+          label={t("desktop_videos")}
           icon={Monitor}
           videos={formData.desktopVideos}
           uploadStates={uploadStates}
+          uploadProgress={uploadProgress}
           onAdd={(f) => onVideoAdd("desktopVideos", f)}
           onRemove={(id) => onVideoRemove("desktopVideos", id)}
           onActivate={(id) => onVideoActivate("desktopVideos", id)}
           onPreview={setPreviewVideo}
+          labels={videoLabels}
         />
 
         <div className={clsx("border-t", borderColor)} />
 
         <VideoSection
           {...theme}
-          label="Mobile Videos"
+          label={t("mobile_videos")}
           icon={Smartphone}
           videos={formData.mobileVideos}
           uploadStates={uploadStates}
+          uploadProgress={uploadProgress}
           onAdd={(f) => onVideoAdd("mobileVideos", f)}
           onRemove={(id) => onVideoRemove("mobileVideos", id)}
           onActivate={(id) => onVideoActivate("mobileVideos", id)}
           onPreview={setPreviewVideo}
+          labels={videoLabels}
         />
       </div>
 

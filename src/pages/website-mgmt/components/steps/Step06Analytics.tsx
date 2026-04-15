@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { BarChart2 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function Step06Analytics({ formData, errors, onChange }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor } =
     useThemeClasses();
 
@@ -25,18 +27,18 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
   }[] = [
     {
       field: "googleAnalyticsId",
-      label: "Google Analytics ID (GA4)",
+      label: t("google_analytics_id"),
       placeholder: "G-XXXXXXXXXX",
-      hint: "Found in Google Analytics → Admin → Data Streams",
+      hint: t("google_analytics_hint"),
     },
     {
       field: "googleTagManagerId",
-      label: "Google Tag Manager ID",
+      label: t("google_tag_manager_id"),
       placeholder: "GTM-XXXXXXX",
     },
     {
       field: "facebookPixelId",
-      label: "Facebook Pixel ID",
+      label: t("facebook_pixel_id"),
       placeholder: "123456789012345",
     },
   ];
@@ -46,7 +48,7 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
       <div className="flex items-center gap-3">
         <BarChart2 className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Tracking & Scripts
+          {t("analytics_title")}
         </h2>
       </div>
 
@@ -80,15 +82,15 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
             textSecondary,
           )}
         >
-          Custom Scripts
+          {t("custom_scripts")}
         </h3>
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Header Scripts
+            {t("header_scripts")}
           </label>
           <p className={clsx("text-xs", textSecondary)}>
-            Injected inside &lt;head&gt; — avoid render-blocking scripts
+            {t("header_scripts_hint")}
           </p>
           <textarea
             rows={6}
@@ -101,10 +103,10 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Footer Scripts
+            {t("footer_scripts")}
           </label>
           <p className={clsx("text-xs", textSecondary)}>
-            Injected before &lt;/body&gt;
+            {t("footer_scripts_hint")}
           </p>
           <textarea
             rows={6}

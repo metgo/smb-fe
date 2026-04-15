@@ -2,12 +2,15 @@ import { useRef } from "react";
 import clsx from "clsx";
 import { Search, Upload, X } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
+import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
   formData: SiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (field: keyof SiteSettingsFormData, value: string) => void;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
+  uploadProgress: Record<string, number>;
   onFileSelect: (field: keyof SiteSettingsFormData, file: File) => void;
   onFileClear: (field: keyof SiteSettingsFormData) => void;
 }
@@ -41,9 +44,12 @@ export default function Step05SeoMeta({
   formData,
   errors,
   onChange,
+  uploadStates,
+  uploadProgress,
   onFileSelect,
   onFileClear,
 }: Props) {
+  const { t } = useTranslation("website_settings");
   const ogImageRef = useRef<HTMLInputElement>(null);
   const twitterImageRef = useRef<HTMLInputElement>(null);
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
@@ -59,7 +65,7 @@ export default function Step05SeoMeta({
       <div className="flex items-center gap-3">
         <Search className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          SEO & Meta Information
+          {t("seo_title")}
         </h2>
       </div>
 
@@ -71,10 +77,10 @@ export default function Step05SeoMeta({
             textSecondary,
           )}
         >
-          Basic Meta
+          {t("basic_meta")}
         </h3>
         <Field
-          label="Meta Title"
+          label={t("meta_title")}
           required
           textPrimary={textPrimary}
           error={errors.metaTitle}
@@ -83,7 +89,7 @@ export default function Step05SeoMeta({
             type="text"
             value={formData.metaTitle}
             onChange={(e) => onChange("metaTitle", e.target.value)}
-            placeholder="Your Site Title"
+            placeholder={t("meta_title_placeholder")}
             className={clsx(inputCls, errors.metaTitle && "border-red-500")}
             maxLength={60}
           />
@@ -92,7 +98,7 @@ export default function Step05SeoMeta({
           </span>
         </Field>
         <Field
-          label="Meta Description"
+          label={t("meta_description")}
           required
           textPrimary={textPrimary}
           error={errors.metaDescription}
@@ -101,7 +107,7 @@ export default function Step05SeoMeta({
             rows={3}
             value={formData.metaDescription}
             onChange={(e) => onChange("metaDescription", e.target.value)}
-            placeholder="Brief description of your site…"
+            placeholder={t("meta_description_placeholder")}
             className={clsx(
               inputCls,
               "resize-none",
@@ -113,7 +119,7 @@ export default function Step05SeoMeta({
             {formData.metaDescription.length}/160
           </span>
         </Field>
-        <Field label="Meta Keywords" textPrimary={textPrimary}>
+        <Field label={t("meta_keywords")} textPrimary={textPrimary}>
           <input
             type="text"
             value={formData.metaKeywords}
@@ -122,7 +128,7 @@ export default function Step05SeoMeta({
             className={inputCls}
           />
         </Field>
-        <Field label="Canonical URL" textPrimary={textPrimary}>
+        <Field label={t("canonical_url")} textPrimary={textPrimary}>
           <input
             type="url"
             value={formData.canonicalUrl}
@@ -141,29 +147,29 @@ export default function Step05SeoMeta({
             textSecondary,
           )}
         >
-          Open Graph (OG)
+          {t("open_graph")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Field label="OG Title" textPrimary={textPrimary}>
+          <Field label={t("og_title")} textPrimary={textPrimary}>
             <input
               type="text"
               value={formData.ogTitle}
               onChange={(e) => onChange("ogTitle", e.target.value)}
-              placeholder="OG Title"
+              placeholder={t("og_title_placeholder")}
               className={inputCls}
             />
           </Field>
-          <Field label="OG Description" textPrimary={textPrimary}>
+          <Field label={t("og_description")} textPrimary={textPrimary}>
             <input
               type="text"
               value={formData.ogDescription}
               onChange={(e) => onChange("ogDescription", e.target.value)}
-              placeholder="OG Description"
+              placeholder={t("og_description_placeholder")}
               className={inputCls}
             />
           </Field>
         </div>
-        <Field label="OG Image" textPrimary={textPrimary}>
+        <Field label={t("og_image")} textPrimary={textPrimary}>
           {formData.ogImageUrl ? (
             <div className="relative w-full max-w-xs">
               <img
@@ -174,12 +180,20 @@ export default function Step05SeoMeta({
                   borderColor,
                 )}
               />
-              <button
-                onClick={() => onFileClear("ogImageUrl")}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              {uploadStates["ogImageUrl"] === "uploading" ? (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                  <CircularProgress
+                    progress={uploadProgress["ogImageUrl"] ?? 0}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => onFileClear("ogImageUrl")}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
           ) : (
             <button
@@ -192,7 +206,7 @@ export default function Step05SeoMeta({
               )}
             >
               <Upload className="w-4 h-4" />
-              Upload OG Image (1200×630px)
+              {t("upload_og_image")}
             </button>
           )}
           <input
@@ -216,31 +230,34 @@ export default function Step05SeoMeta({
             textSecondary,
           )}
         >
-          Twitter Card
+          {t("twitter_card")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Field label="Twitter Card Title" textPrimary={textPrimary}>
+          <Field label={t("twitter_card_title")} textPrimary={textPrimary}>
             <input
               type="text"
               value={formData.twitterCardTitle}
               onChange={(e) => onChange("twitterCardTitle", e.target.value)}
-              placeholder="Twitter Title"
+              placeholder={t("twitter_card_title_placeholder")}
               className={inputCls}
             />
           </Field>
-          <Field label="Twitter Card Description" textPrimary={textPrimary}>
+          <Field
+            label={t("twitter_card_description")}
+            textPrimary={textPrimary}
+          >
             <input
               type="text"
               value={formData.twitterCardDescription}
               onChange={(e) =>
                 onChange("twitterCardDescription", e.target.value)
               }
-              placeholder="Twitter Description"
+              placeholder={t("twitter_card_description_placeholder")}
               className={inputCls}
             />
           </Field>
         </div>
-        <Field label="Twitter Card Image" textPrimary={textPrimary}>
+        <Field label={t("twitter_card_image")} textPrimary={textPrimary}>
           {formData.twitterCardImageUrl ? (
             <div className="relative w-full max-w-xs">
               <img
@@ -251,12 +268,20 @@ export default function Step05SeoMeta({
                   borderColor,
                 )}
               />
-              <button
-                onClick={() => onFileClear("twitterCardImageUrl")}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              {uploadStates["twitterCardImageUrl"] === "uploading" ? (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                  <CircularProgress
+                    progress={uploadProgress["twitterCardImageUrl"] ?? 0}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => onFileClear("twitterCardImageUrl")}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
           ) : (
             <button
@@ -269,7 +294,7 @@ export default function Step05SeoMeta({
               )}
             >
               <Upload className="w-4 h-4" />
-              Upload Twitter Image (1200×600px)
+              {t("upload_twitter_image")}
             </button>
           )}
           <input
@@ -293,9 +318,9 @@ export default function Step05SeoMeta({
             textSecondary,
           )}
         >
-          Robots & Sitemap
+          {t("robots_sitemap")}
         </h3>
-        <Field label="Robots.txt" textPrimary={textPrimary}>
+        <Field label={t("robots_txt")} textPrimary={textPrimary}>
           <textarea
             rows={5}
             value={formData.robotsTxt}
@@ -304,7 +329,7 @@ export default function Step05SeoMeta({
             className={clsx(inputCls, "resize-y font-mono text-xs")}
           />
         </Field>
-        <Field label="Sitemap URL" textPrimary={textPrimary}>
+        <Field label={t("sitemap_url")} textPrimary={textPrimary}>
           <input
             type="url"
             value={formData.sitemapUrl}

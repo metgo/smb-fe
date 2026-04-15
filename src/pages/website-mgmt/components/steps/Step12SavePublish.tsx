@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Globe } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -40,6 +41,7 @@ function SummaryRow({
 }
 
 export default function Step12SavePublish({ formData }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, borderColor, cardClasses } =
     useThemeClasses();
 
@@ -48,7 +50,7 @@ export default function Step12SavePublish({ formData }: Props) {
       <div className="flex items-center gap-3">
         <Globe className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Save & Publish
+          {t("save_publish_title")}
         </h2>
       </div>
 
@@ -60,59 +62,61 @@ export default function Step12SavePublish({ formData }: Props) {
             textSecondary,
           )}
         >
-          Configuration Summary
+          {t("config_summary")}
         </h3>
         <SummaryRow
-          label="Website Logo"
-          value={formData.logoUrl ? "Uploaded" : "Not set"}
+          label={t("summary_website_logo")}
+          value={
+            formData.logoUrl ? t("logo_uploaded_value") : t("logo_not_set")
+          }
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Primary Color"
+          label={t("summary_primary_color")}
           value={formData.primaryColor}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Secondary Color"
+          label={t("summary_secondary_color")}
           value={formData.secondaryColor}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Font Family"
+          label={t("summary_font_family")}
           value={formData.fontFamily}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Meta Title"
+          label={t("summary_meta_title")}
           value={formData.metaTitle}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Default Language"
+          label={t("summary_default_language")}
           value={formData.defaultLanguage}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Timezone"
+          label={t("summary_timezone")}
           value={formData.timezone}
           textPrimary={textPrimary}
           textSecondary={textSecondary}
           borderColor={borderColor}
         />
         <SummaryRow
-          label="Google Analytics"
+          label={t("summary_google_analytics")}
           value={formData.googleAnalyticsId}
           textPrimary={textPrimary}
           textSecondary={textSecondary}

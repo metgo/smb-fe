@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Globe } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -57,6 +58,7 @@ const DATE_FORMATS = [
 ];
 
 export default function Step07Localization({ formData, onChange }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
 
@@ -70,21 +72,21 @@ export default function Step07Localization({ formData, onChange }: Props) {
       <div className="flex items-center gap-3">
         <Globe className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Regional Settings
+          {t("localization_title")}
         </h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Default Language
+            {t("default_language")}
           </label>
           <select
             value={formData.defaultLanguage}
             onChange={(e) => onChange("defaultLanguage", e.target.value)}
             className={selectCls}
           >
-            <option value="">Select language…</option>
+            <option value="">{t("select_language")}</option>
             {LANGUAGES.map((l) => (
               <option key={l} value={l}>
                 {l}
@@ -95,14 +97,14 @@ export default function Step07Localization({ formData, onChange }: Props) {
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Timezone
+            {t("timezone")}
           </label>
           <select
             value={formData.timezone}
             onChange={(e) => onChange("timezone", e.target.value)}
             className={selectCls}
           >
-            <option value="">Select timezone…</option>
+            <option value="">{t("select_timezone")}</option>
             {TIMEZONES.map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
@@ -113,14 +115,14 @@ export default function Step07Localization({ formData, onChange }: Props) {
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Currency
+            {t("currency")}
           </label>
           <select
             value={formData.currency}
             onChange={(e) => onChange("currency", e.target.value)}
             className={selectCls}
           >
-            <option value="">Select currency…</option>
+            <option value="">{t("select_currency")}</option>
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -131,14 +133,14 @@ export default function Step07Localization({ formData, onChange }: Props) {
 
         <div className="flex flex-col gap-2">
           <label className={clsx("text-sm font-medium", textPrimary)}>
-            Date Format
+            {t("date_format")}
           </label>
           <select
             value={formData.dateFormat}
             onChange={(e) => onChange("dateFormat", e.target.value)}
             className={selectCls}
           >
-            <option value="">Select format…</option>
+            <option value="">{t("select_format")}</option>
             {DATE_FORMATS.map((f) => (
               <option key={f} value={f}>
                 {f}
@@ -152,10 +154,10 @@ export default function Step07Localization({ formData, onChange }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <p className={clsx("text-sm font-medium", textPrimary)}>
-            Multi-Language Support
+            {t("multi_language_support")}
           </p>
           <p className={clsx("text-xs mt-0.5", textSecondary)}>
-            Enable multiple languages on the public-facing website
+            {t("multi_language_desc")}
           </p>
         </div>
         <button

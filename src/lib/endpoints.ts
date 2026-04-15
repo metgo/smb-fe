@@ -98,6 +98,8 @@ export const endpoints = {
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
+  // Website settgins
+  websiteSettings: "/site-settings",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

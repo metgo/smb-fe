@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Palette } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   formData: SiteSettingsFormData;
@@ -22,14 +23,7 @@ const FONT_OPTIONS = [
   "Raleway",
 ];
 
-const BUTTON_STYLES: {
-  value: SiteSettingsFormData["buttonStyle"];
-  label: string;
-}[] = [
-  { value: "rounded", label: "Rounded" },
-  { value: "square", label: "Square" },
-  { value: "custom", label: "Custom Radius" },
-];
+// Button style labels are built inside the component using t()
 
 function ColorField({
   label,
@@ -77,22 +71,32 @@ function ColorField({
 }
 
 export default function Step02ThemeAppearance({ formData, onChange }: Props) {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
+
+  const BUTTON_STYLES: {
+    value: SiteSettingsFormData["buttonStyle"];
+    label: string;
+  }[] = [
+    { value: "rounded", label: t("btn_rounded") },
+    { value: "square", label: t("btn_square") },
+    { value: "custom", label: t("btn_custom") },
+  ];
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-3">
         <Palette className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          Theme Customization
+          {t("theme_title")}
         </h2>
       </div>
 
       {/* Colors */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <ColorField
-          label="Primary Color"
+          label={t("primary_color")}
           field="primaryColor"
           value={formData.primaryColor}
           onChange={onChange}
@@ -100,7 +104,7 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
           inputClasses={inputClasses}
         />
         <ColorField
-          label="Secondary Color"
+          label={t("secondary_color")}
           field="secondaryColor"
           value={formData.secondaryColor}
           onChange={onChange}
@@ -108,7 +112,7 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
           inputClasses={inputClasses}
         />
         <ColorField
-          label="Background Color"
+          label={t("background_color")}
           field="backgroundColor"
           value={formData.backgroundColor}
           onChange={onChange}
@@ -118,31 +122,51 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
       </div>
 
       {/* Font */}
-      <div className="flex flex-col gap-2">
-        <label className={clsx("text-sm font-medium", textPrimary)}>
-          Font Family
-        </label>
-        <select
-          value={formData.fontFamily}
-          onChange={(e) => onChange("fontFamily", e.target.value)}
-          className={clsx(
-            "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20",
-            inputClasses,
-          )}
-        >
-          <option value="">Select font…</option>
-          {FONT_OPTIONS.map((f) => (
-            <option key={f} value={f} style={{ fontFamily: f }}>
-              {f}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            {t("font_family")}
+          </label>
+          <select
+            value={formData.fontFamily}
+            onChange={(e) => onChange("fontFamily", e.target.value)}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20",
+              inputClasses,
+            )}
+          >
+            <option value="">{t("select_font")}</option>
+            {FONT_OPTIONS.map((f) => (
+              <option key={f} value={f} style={{ fontFamily: f }}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            {t("font_source_url")}
+          </label>
+          <input
+            type="url"
+            value={formData.fontSourceUrl}
+            onChange={(e) => onChange("fontSourceUrl", e.target.value)}
+            placeholder="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+            )}
+          />
+          <p className={clsx("text-xs", textSecondary)}>
+            {t("font_source_hint")}
+          </p>
+        </div>
       </div>
 
       {/* Button Style */}
       <div className="flex flex-col gap-3">
         <label className={clsx("text-sm font-medium", textPrimary)}>
-          Button Style
+          {t("button_style")}
         </label>
         <div className="flex flex-wrap gap-3">
           {BUTTON_STYLES.map(({ value, label }) => (
@@ -185,9 +209,11 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
       {/* Dark Mode Toggle */}
       <div className="flex items-center justify-between">
         <div>
-          <p className={clsx("text-sm font-medium", textPrimary)}>Dark Mode</p>
+          <p className={clsx("text-sm font-medium", textPrimary)}>
+            {t("dark_mode")}
+          </p>
           <p className={clsx("text-xs mt-0.5", textSecondary)}>
-            Allow visitors to switch between light and dark
+            {t("dark_mode_desc")}
           </p>
         </div>
         <button
