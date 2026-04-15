@@ -27,12 +27,7 @@ export default function Header() {
   const location = useLocation();
   const { t, i18n } = useTranslation("common");
 
-  const {
-    allWebsites,
-    dateRanges: timeframes,
-    dmosAuthorities,
-    allIcons,
-  } = useCommon();
+  const { allWebsites, dateRanges: timeframes, dmosAuthorities } = useCommon();
   const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
   );
