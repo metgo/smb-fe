@@ -7,6 +7,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 export const defaultBlogColumns = {
+  externalApiId: true,
   title: true,
   subTitle: true,
   status: true,
@@ -58,6 +59,34 @@ const BlogListView = ({
       ),
     },
 
+    columnVisibility.externalApiId && {
+      key: "externalApi",
+      sortable: false,
+      label: t("externalApi") || "External Api",
+      render: (blog: any) => {
+        const api = blog?.externalApiId;
+        if (!api) return <div className={`${textPrimary} font-medium`}>-</div>;
+
+        return (
+          <a
+            href={api.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 w-44"
+          >
+            <img
+              src={api.logo}
+              alt={api.name}
+              className="w-6 h-6 object-contain rounded"
+            />
+            <span className={`${textPrimary} font-medium hover:underline`}>
+              {api.name}
+            </span>
+          </a>
+        );
+      },
+    },
     // Subtitle
     columnVisibility.subTitle && {
       key: "subTitle",
