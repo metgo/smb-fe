@@ -179,7 +179,6 @@ const BlogListView = ({
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
-  console.log("🚀 ~ BlogListView ~ columns:", columns);
 
   return (
     <div className="flex flex-col overflow-hidden h-[85vh]">

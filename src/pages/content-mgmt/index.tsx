@@ -205,7 +205,6 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),

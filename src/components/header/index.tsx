@@ -33,7 +33,6 @@ export default function Header() {
     dmosAuthorities,
     allIcons,
   } = useCommon();
-  console.log("🚀 ~ Header ~ allIcons:", allIcons);
   const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
   );
