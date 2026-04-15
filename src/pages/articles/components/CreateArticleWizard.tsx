@@ -21,7 +21,12 @@ import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import { getLngWiseStr } from "@/helpers";
 
 const EMPTY_FORM: IArticleFormData = {
-  externalApiId: "",
+  externalApiId: {
+    id: "",
+    name: "",
+    logo: "",
+    url: "",
+  },
   title: "",
   titleHe: "",
   titleAr: "",
@@ -52,7 +57,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
   const arr = (v: any) => (Array.isArray(v) ? v : []);
 
   return {
-    externalApiId: article.externalApiId || "",
+    externalApiId: article.externalApiId.id || "",
     title: str(article.title),
     titleHe: article.titleHe || "",
     titleAr: article.titleAr || "",
@@ -129,7 +134,7 @@ const CreateArticleWizard = ({
   const [formData, setFormData] = useState<IArticleFormData>(
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
-  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
+
   const [editingLanguage, setEditingLanguage] = useState<Language>("en");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -335,8 +340,12 @@ const CreateArticleWizard = ({
 
           <ReactSelect
             minWidth={180}
-            value={formData.externalApiId.id}
-            onChange={(value) => handleChange({ externalApiId: value })}
+            value={
+              typeof formData.externalApiId === "string"
+                ? formData.externalApiId
+                : formData.externalApiId?.id || undefined
+            }
+            onChange={(value) => handleChange({ externalApiId: value })} // value here is probably the full object from items
             items={associatedWebsite}
             placeholder={t("select_website")}
           />
