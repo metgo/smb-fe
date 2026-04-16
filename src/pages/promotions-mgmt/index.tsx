@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { CreatePromotionWizard, DraggablePromotionCard } from "./components";
 import { ModalWrapper } from "@/components/wrapper";
+import { ReactSelect } from "@/components/form-fields";
+import { useAppSelector } from "@/hooks/hooks";
 
 export default function PromotionsMgmtPage() {
   const { t } = useTranslation("promotions");
@@ -21,13 +23,13 @@ export default function PromotionsMgmtPage() {
     // textTertiary,
     borderColor,
   } = useThemeClasses();
-  const [selectedWebsite, setSelectedWebsite] = useState("visitnegev");
+  const [selectedWebsite, _setSelectedWebsite] = useState("visitnegev");
+  const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const [externalApiId, setExternalApiId] = useState<string | undefined>("");
   const [promotions, setPromotions] = useState(mockPromotions);
-  console.log("🚀 ~ PromotionsMgmtPage ~ promotions:", promotions);
   const [settings, setSettings] = useState<IPromotionSettings>(
     mockPromotionSettings[selectedWebsite],
   );
-  console.log("🚀 ~ PromotionsMgmtPage ~ settings:", settings);
   const [selectedPlacement, setSelectedPlacement] = useState(
     settings.placements?.[0] ?? null,
   );
@@ -56,17 +58,17 @@ export default function PromotionsMgmtPage() {
       return a.order - b.order;
     });
 
-  const handleWebsiteChange = (websiteId: string) => {
-    setSelectedWebsite(websiteId);
-    setSettings(
-      mockPromotionSettings[websiteId] || {
-        websiteId,
-        rotationType: "automatic",
-        timeInterval: 5,
-        placements: [],
-      },
-    );
-  };
+  // const handleWebsiteChange = (websiteId: string) => {
+  //   setSelectedWebsite(websiteId);
+  //   setSettings(
+  //     mockPromotionSettings[websiteId] || {
+  //       websiteId,
+  //       rotationType: "automatic",
+  //       timeInterval: 5,
+  //       placements: [],
+  //     },
+  //   );
+  // };
 
   const handleMovePromotion = useCallback(
     (dragIndex: number, hoverIndex: number) => {
@@ -211,8 +213,15 @@ export default function PromotionsMgmtPage() {
               </div>
 
               <div className="flex items-center gap-3">
+                <ReactSelect
+                  minWidth={180}
+                  value={externalApiId}
+                  items={associatedWebsite}
+                  onChange={(value) => setExternalApiId(value)}
+                  placeholder={t("select_website")}
+                />
                 {/* Website & Language Selector */}
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                   <div className="flex-1 max-w-xs">
                     <select
                       value={selectedWebsite}
@@ -226,7 +235,7 @@ export default function PromotionsMgmtPage() {
                       <option value="arad">{t("arad_city")}</option>
                     </select>
                   </div>
-                </div>
+                </div> */}
 
                 <button
                   onClick={() => setShowSettings(!showSettings)}

@@ -93,7 +93,6 @@
   "website": "Website",
   "placement": "Placement",
   "status": "Status",
-  "media_type": "Media type",
   "title_en": "Title (EN)",
   "link": "Link",
 
@@ -107,5 +106,6 @@
   "ready_to_publish": "Ready to publish!",
   "publish_instruction": "Click \"Save Promotion\" below to add this to your website. You can edit or deactivate it any time.",
   "edit_promotion": "Edit Promotion",
-  "new_promotion": "New Promotion"
+  "new_promotion": "New Promotion",
+  "select_website": "Select Website"
 }
