@@ -28,6 +28,7 @@ import {
   AnalyticsDashboardPage,
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
+  PromotionsMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -228,6 +229,8 @@ function App() {
         { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
         { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
+
+        { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
