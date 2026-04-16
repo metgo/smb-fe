@@ -13,7 +13,6 @@ import {
   Smartphone,
   Layers,
   ExternalLink,
-  AlertCircle,
   CheckCircle2,
   Sparkles,
 } from "lucide-react";
@@ -56,6 +55,7 @@ export default function CreatePromotionWizard({
 }: CreatePromotionWizardProps) {
   const { t } = useTranslation("promotions");
   const [isPublishing, _setIsPublishing] = useState(false);
+
   const STEPS = [
     {
       key: "placement",
@@ -63,12 +63,7 @@ export default function CreatePromotionWizard({
       sublabel: t("step_placement_sublabel"),
       icon: Layers,
     },
-    {
-      key: "media",
-      label: t("step_media"),
-      sublabel: t("step_media_sublabel"),
-      icon: ImageIcon,
-    },
+
     {
       key: "content",
       label: t("step_content"),
@@ -82,9 +77,10 @@ export default function CreatePromotionWizard({
       icon: Eye,
     },
   ];
+  const totalSteps = STEPS.length;
   const { isDark } = useThemeClasses();
   const {
-    isRTL,
+    // isRTL,
     bgPrimary,
     bgSecondary,
     textPrimary,
@@ -101,6 +97,7 @@ export default function CreatePromotionWizard({
   const [mobileDragOver, setMobileDragOver] = useState(false);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const footerStep = currentStep + 1;
 
   const [formData, setFormData] = useState({
     placement: existingPromotion?.placement || availablePlacements[0] || "",
@@ -135,11 +132,12 @@ export default function CreatePromotionWizard({
       ? patch({ desktopMedia: { url } })
       : patch({ mobileMedia: { url } });
   };
-  const handleNext = async () => {
-    setCurrentStep((prev) => prev + 1);
+  const handleNext = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
   };
+
   const handlePrevious = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
   const handleFileInput = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -182,7 +180,7 @@ export default function CreatePromotionWizard({
         return (
           <div
             key={step.key}
-            className="flex items-center flex-1 min-w-0"
+            className="flex items-center justify-center w-full"
             onClick={() => setCurrentStep(idx)}
           >
             {/* Node */}
@@ -290,7 +288,7 @@ export default function CreatePromotionWizard({
 
                     selected && [
                       "border-green-600",
-                      "bg-green-50 dark:bg-green-900/30",
+                      "bg-gray-50 dark:bg-green-900/20",
                       "text-green-700 dark:text-green-300 shadow-sm",
                     ],
 
@@ -341,73 +339,80 @@ export default function CreatePromotionWizard({
           {t("placement_help_text")}
         </p>
       </div>
+      {/* Media type toggle */}
+      <div>
+        <label className={`block text-sm font-semibold ${textPrimary} mb-2`}>
+          {t("media_type")} <span className="text-red-500">*</span>
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          {(["image", "video"] as const).map((type) => (
+            <button
+              key={type}
+              onClick={() => patch({ mediaType: type })}
+              className={clsx(
+                "flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 font-medium text-sm transition-all",
 
-      {/* Active toggle */}
-      <div
-        className={clsx(
-          "flex items-center justify-between p-4 rounded-xl border",
-          borderColor,
-          isDark ? "bg-gray-900" : bgSecondary,
-        )}
-      >
-        <div>
-          <p className={clsx("text-sm font-semibold", textPrimary)}>
-            {t("publish_immediately")}
-          </p>
-
-          <p className={clsx("text-xs mt-0.5", textTertiary)}>
-            {formData.active
-              ? t("publish_active_desc")
-              : t("publish_draft_desc")}
-          </p>
+                formData.mediaType === type
+                  ? [
+                      "border-green-600",
+                      isDark
+                        ? "bg-green-950/30 text-green-300"
+                        : "bg-green-50 text-green-700",
+                    ]
+                  : [
+                      isDark ? "border-gray-700" : "border-gray-200",
+                      textSecondary,
+                      isDark
+                        ? "hover:border-green-700"
+                        : "hover:border-green-300",
+                    ],
+              )}
+            >
+              {type === "image" ? (
+                <ImageIcon className="w-4 h-4" />
+              ) : (
+                <Video className="w-4 h-4" />
+              )}
+              {type === "image" ? t("image") : t("video")}{" "}
+            </button>
+          ))}
         </div>
-
-        <button
-          role="switch"
-          aria-checked={formData.active}
-          onClick={() => patch({ active: !formData.active })}
-          className={clsx(
-            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
-            formData.active ? "bg-green-600" : "bg-gray-300 dark:bg-gray-600",
-          )}
-        >
-          <span
-            className={clsx(
-              "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200",
-              formData.active
-                ? isRTL
-                  ? "-translate-x-5"
-                  : "translate-x-5"
-                : "translate-x-0",
-            )}
-          />
-        </button>
       </div>
-
-      {/* Info callout */}
-      <div
-        className={clsx(
-          "flex gap-3 p-4 rounded-xl border",
-          isDark
-            ? "bg-gray-900 border-gray-600"
-            : "bg-green-50 border-green-100",
-        )}
-      >
-        <AlertCircle
-          className={clsx(
-            "w-4 h-4 mt-0.5 shrink-0",
-            isDark ? "text-green-400" : "text-green-500",
-          )}
+      <div className="grid sm:grid-cols-2 gap-5">
+        <UploadZone
+          side="desktop"
+          label={t("desktop")}
+          hint="Recommended: 1920×800 (16:7)"
+          icon={Monitor}
+          mediaUrl={formData.desktopMedia.url}
+          source={desktopSource}
+          setSource={setDesktopSource}
+          dragOver={desktopDragOver}
+          onDragOver={() => setDesktopDragOver(true)}
+          onDragLeave={() => setDesktopDragOver(false)}
+          onDrop={(e) => handleDrop(e, "desktop")}
+          inputRef={desktopInputRef}
+          onClear={() => patch({ desktopMedia: { url: "" } })}
+          urlValue={desktopSource === "url" ? formData.desktopMedia.url : ""}
+          onUrlChange={(v) => patch({ desktopMedia: { url: v } })}
         />
-
-        <p
-          className={clsx(
-            "text-xs leading-relaxed",
-            isDark ? "text-gray-200" : "text-green-800",
-          )}
-        >
-          {t("placement_info_text")}
-        </p>
+        <UploadZone
+          side="mobile"
+          label={t("mobile")}
+          hint="Recommended: 800×600 (4:3)"
+          icon={Smartphone}
+          mediaUrl={formData.mobileMedia.url}
+          source={mobileSource}
+          setSource={setMobileSource}
+          dragOver={mobileDragOver}
+          onDragOver={() => setMobileDragOver(true)}
+          onDragLeave={() => setMobileDragOver(false)}
+          onDrop={(e) => handleDrop(e, "mobile")}
+          inputRef={mobileInputRef}
+          onClear={() => patch({ mobileMedia: { url: "" } })}
+          urlValue={mobileSource === "url" ? formData.mobileMedia.url : ""}
+          onUrlChange={(v) => patch({ mobileMedia: { url: v } })}
+        />
       </div>
     </div>
   );
@@ -581,87 +586,17 @@ export default function CreatePromotionWizard({
       )}
     >
       {" "}
-      {/* Media type toggle */}
-      <div>
-        <label className={`block text-sm font-semibold ${textPrimary} mb-2`}>
-          {t("media_type")} <span className="text-red-500">*</span>
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {(["image", "video"] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => patch({ mediaType: type })}
-              className={clsx(
-                "flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 font-medium text-sm transition-all",
-
-                formData.mediaType === type
-                  ? [
-                      "border-green-600",
-                      isDark
-                        ? "bg-green-950/30 text-green-300"
-                        : "bg-green-50 text-green-700",
-                    ]
-                  : [
-                      isDark ? "border-gray-700" : "border-gray-200",
-                      textSecondary,
-                      isDark
-                        ? "hover:border-green-700"
-                        : "hover:border-green-300",
-                    ],
-              )}
-            >
-              {type === "image" ? (
-                <ImageIcon className="w-4 h-4" />
-              ) : (
-                <Video className="w-4 h-4" />
-              )}
-              {type === "image" ? t("image") : t("video")}{" "}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-5">
-        <UploadZone
-          side="desktop"
-          label={t("desktop")}
-          hint="Recommended: 1920×800 (16:7)"
-          icon={Monitor}
-          mediaUrl={formData.desktopMedia.url}
-          source={desktopSource}
-          setSource={setDesktopSource}
-          dragOver={desktopDragOver}
-          onDragOver={() => setDesktopDragOver(true)}
-          onDragLeave={() => setDesktopDragOver(false)}
-          onDrop={(e) => handleDrop(e, "desktop")}
-          inputRef={desktopInputRef}
-          onClear={() => patch({ desktopMedia: { url: "" } })}
-          urlValue={desktopSource === "url" ? formData.desktopMedia.url : ""}
-          onUrlChange={(v) => patch({ desktopMedia: { url: v } })}
-        />
-        <UploadZone
-          side="mobile"
-          label={t("mobile")}
-          hint="Recommended: 800×600 (4:3)"
-          icon={Smartphone}
-          mediaUrl={formData.mobileMedia.url}
-          source={mobileSource}
-          setSource={setMobileSource}
-          dragOver={mobileDragOver}
-          onDragOver={() => setMobileDragOver(true)}
-          onDragLeave={() => setMobileDragOver(false)}
-          onDrop={(e) => handleDrop(e, "mobile")}
-          inputRef={mobileInputRef}
-          onClear={() => patch({ mobileMedia: { url: "" } })}
-          urlValue={mobileSource === "url" ? formData.mobileMedia.url : ""}
-          onUrlChange={(v) => patch({ mobileMedia: { url: v } })}
-        />
-      </div>
     </div>
   );
 
   // ── STEP 3: content ──────────────────────────────────────────────────────
   const ContentStep = () => {
     const isRTLLang = editingLang === "he" || editingLang === "ar";
+
+    // True if ANY language has both title + content filled
+    const anyLangComplete = (Object.keys(LANG_META) as Lang[]).some((lang) =>
+      langComplete(lang),
+    );
 
     return (
       <div
@@ -670,7 +605,6 @@ export default function CreatePromotionWizard({
           isDark ? "bg-gray-900" : "bg-white",
         )}
       >
-        {" "}
         {/* Language selector */}
         <div
           className={`flex items-center gap-3 p-3 rounded-xl ${bgSecondary} border ${borderColor}`}
@@ -693,12 +627,13 @@ export default function CreatePromotionWizard({
                   className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     editingLang === lang
                       ? "bg-green-600 text-white shadow-sm"
-                      : `${bgPrimary} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-700 border ${borderColor}`
+                      : `${bgPrimary} ${textSecondary} dark:hover:bg-gray-700 border ${borderColor}`
                   }`}
                 >
                   <span>{m.flag}</span>
                   <span>{m.native}</span>
 
+                  {/* Green dot when this lang is complete */}
                   {complete && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
@@ -707,37 +642,28 @@ export default function CreatePromotionWizard({
                     />
                   )}
 
-                  {lang === "en" && !complete && (
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                        editingLang === lang ? "bg-red-300" : "bg-red-400"
-                      }`}
-                    />
+                  {/* Red dot on active tab when incomplete and nothing is filled yet */}
+                  {!complete && !anyLangComplete && editingLang === lang && (
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-300" />
+                  )}
+
+                  {/* Red dot on inactive tabs when nothing is filled yet */}
+                  {!complete && !anyLangComplete && editingLang !== lang && (
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-400" />
                   )}
                 </button>
               );
             })}
           </div>
-
-          {editingLang === "en" ? (
-            <span className="text-xs text-red-500 font-medium ml-auto">
-              {t("required")}
-            </span>
-          ) : (
-            <span className={`text-xs ${textTertiary} ml-auto`}>
-              {t("optional")}
-            </span>
-          )}
         </div>
+
         {/* Title + Description */}
         <div dir={isRTLLang ? "rtl" : "ltr"} className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className={`text-sm font-semibold ${textPrimary}`}>
                 {t("title")}{" "}
-                {editingLang === "en" && (
-                  <span className="text-red-500">*</span>
-                )}
+                {!anyLangComplete && <span className="text-red-500">*</span>}
               </label>
 
               <span className={`text-xs ${textTertiary}`}>
@@ -768,9 +694,7 @@ export default function CreatePromotionWizard({
             <div className="flex items-center justify-between mb-1.5">
               <label className={`text-sm font-semibold ${textPrimary}`}>
                 {t("description")}{" "}
-                {editingLang === "en" && (
-                  <span className="text-red-500">*</span>
-                )}
+                {!anyLangComplete && <span className="text-red-500">*</span>}
               </label>
 
               <span className={`text-xs ${textTertiary}`}>
@@ -797,6 +721,7 @@ export default function CreatePromotionWizard({
             />
           </div>
         </div>
+
         {/* URL */}
         <div>
           <label
@@ -827,31 +752,9 @@ export default function CreatePromotionWizard({
             {t("destination_hint")}
           </p>
         </div>
-        {/* Warning */}
-        <div
-          className={clsx(
-            "flex gap-3 p-3.5 rounded-xl border",
-            isDark
-              ? "bg-amber-950/20 border-amber-800"
-              : "bg-amber-50 border-amber-200",
-          )}
-        >
-          <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-
-          <p
-            className={clsx(
-              "text-xs leading-relaxed",
-              isDark ? "text-amber-200" : "text-amber-800",
-            )}
-          >
-            <strong>{t("english_required")}</strong>{" "}
-            {t("language_requirement_note")}
-          </p>
-        </div>
       </div>
     );
   };
-
   // ── STEP 4: review ───────────────────────────────────────────────────────
   const ReviewStep = () => {
     const missingLangs = (["he", "ar"] as Lang[]).filter(
@@ -1021,7 +924,7 @@ export default function CreatePromotionWizard({
   // const valid = isStepValid();
 
   return (
-    <ModalWrapper onClose={() => onClose}>
+    <ModalWrapper onClose={onClose}>
       <div className="overflow-y-auto">
         {/* Header */}
         <div
@@ -1055,12 +958,13 @@ export default function CreatePromotionWizard({
 
         {/* Footer */}
         <WizardFooter
-          currentStep={currentStep}
-          totalSteps={STEPS.length}
+          currentStep={footerStep}
+          totalSteps={totalSteps}
           onPrevious={handlePrevious}
           onNext={handleNext}
           isSaving={isPublishing}
           isPublishing={isPublishing}
+          onSaveDraft={() => {}}
           onPublish={() =>
             onSave({
               websiteId,

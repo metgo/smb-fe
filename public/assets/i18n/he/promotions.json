@@ -105,5 +105,9 @@
   "ready_to_publish": "מוכן לפרסום!",
   "publish_instruction": "לחץ על \"שמור פרומו\" כדי להוסיף לאתר. ניתן לערוך או לבטל בכל זמן.",
   "edit_promotion": "עריכת קידום",
-  "new_promotion": "קידום חדש"
+  "new_promotion": "קידום חדש",
+  "select_website": "בחר אתר",
+  "Homepage Hero": "באנר ראשי בדף הבית",
+  "Secondary Banner": "באנר משני",
+  "Footer Spotlight": "הדגשת כותרת תחתונה"
 }

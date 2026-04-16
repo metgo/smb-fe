@@ -119,7 +119,7 @@ const DraggablePromotionCard = ({
         </div>
 
         {/* Placement badge — bottom-right */}
-        <span className="absolute bottom-3 right-3 px-2 py-0.5 bg-blue-600/80 text-white text-xs font-medium rounded-md">
+        <span className="absolute bottom-3 right-3 px-2 py-0.5 bg-green-600/80 text-white text-xs font-medium rounded-md">
           {promotion.placement}
         </span>
 

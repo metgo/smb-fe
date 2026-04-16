@@ -106,5 +106,9 @@
   "ready_to_publish": "جاهز للنشر!",
   "publish_instruction": "انقر \"حفظ العرض\" لإضافته إلى الموقع. يمكنك تعديله أو تعطيله في أي وقت.",
   "edit_promotion": "تعديل الحملة",
-  "new_promotion": "حملة جديدة"
+  "new_promotion": "حملة جديدة",
+  "select_website": "اختر الموقع الإلكتروني",
+  "Homepage Hero": "البانر الرئيسي للصفحة الرئيسية",
+  "Secondary Banner": "بانر ثانوي",
+  "Footer Spotlight": "تمييز التذييل"
 }

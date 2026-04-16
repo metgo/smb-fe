@@ -10,6 +10,7 @@ import { CreatePromotionWizard, DraggablePromotionCard } from "./components";
 import { ModalWrapper } from "@/components/wrapper";
 import { ReactSelect } from "@/components/form-fields";
 import { useAppSelector } from "@/hooks/hooks";
+import { PublishButton } from "@/components/btns";
 
 export default function PromotionsMgmtPage() {
   const { t } = useTranslation("promotions");
@@ -30,8 +31,9 @@ export default function PromotionsMgmtPage() {
   const [settings, setSettings] = useState<IPromotionSettings>(
     mockPromotionSettings[selectedWebsite],
   );
+  const placements = ["Homepage Hero", "Secondary Banner", "Footer Spotlight"];
   const [selectedPlacement, setSelectedPlacement] = useState(
-    settings.placements?.[0] ?? null,
+    placements?.[0] ?? null,
   );
   const [showWizard, setShowWizard] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<
@@ -253,7 +255,7 @@ export default function PromotionsMgmtPage() {
                     setEditingPromotion(undefined);
                     setShowWizard(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   {t("add_promotion")}
@@ -289,7 +291,7 @@ export default function PromotionsMgmtPage() {
                               | "manual",
                           })
                         }
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-blue-500`}
+                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
                       >
                         <option value="automatic">{t("automatic")}</option>
                         <option value="manual">{t("manual")}</option>
@@ -314,7 +316,7 @@ export default function PromotionsMgmtPage() {
                         }
                         min="1"
                         max="60"
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-blue-500`}
+                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
                       />
                     </div>
                   </div>
@@ -344,59 +346,69 @@ export default function PromotionsMgmtPage() {
                     className={clsx(
                       "mt-4 p-3 rounded-lg border",
                       isDark
-                        ? "bg-blue-950/20 border-blue-800"
-                        : "bg-blue-50 border-blue-200",
+                        ? "bg-green-950/20 border-green-800"
+                        : "bg-green-50 border-green-200",
                     )}
                   >
                     <p
                       className={clsx(
                         "text-xs",
-                        isDark ? "text-blue-100" : "text-blue-900",
+                        isDark ? "text-green-100" : "text-green-900",
                       )}
                     >
                       <strong>{t("note")}:</strong> {t("rotation_note_text")}
                     </p>
                   </div>
+                  <div className="mt-3 flex justify-end">
+                    <PublishButton isLoading={false} onClick={() => {}} />
+                  </div>
                 </div>
               </ModalWrapper>
             )}
 
-            <div className="flex border-b gap-4">
-              {settings.placements.map((placement, idx) => {
-                const active = selectedPlacement === placement;
+            <div className="flex  gap-4 items-center justify-between ">
+              <div className="flex justify-start">
+                {placements.map((placement, idx) => {
+                  const active = selectedPlacement === placement;
 
-                return (
-                  <button
-                    key={idx}
-                    onClick={() =>
-                      setSelectedPlacement((prev) =>
-                        prev === placement ? "" : placement,
-                      )
-                    }
-                    className={clsx(
-                      "relative px-3 py-2 text-sm font-medium transition-all",
-
-                      isDark ? "text-gray-300" : "text-gray-600",
-
-                      active && (isDark ? "text-blue-400" : "text-blue-600"),
-                    )}
-                  >
-                    {placement}
-
-                    {/* active underline */}
-                    <span
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() =>
+                        setSelectedPlacement((prev) =>
+                          prev === placement ? "" : placement,
+                        )
+                      }
                       className={clsx(
-                        "absolute left-0 -bottom-[1px] h-[2px] w-full transition-all",
-                        active
-                          ? isDark
-                            ? "bg-blue-500"
-                            : "bg-blue-600"
-                          : "bg-transparent",
+                        "relative px-3 py-2 text-sm font-medium transition-all",
+
+                        isDark ? "text-gray-300" : "text-gray-600",
+
+                        active &&
+                          (isDark ? "text-green-400" : "text-green-600"),
                       )}
-                    />
-                  </button>
-                );
-              })}
+                    >
+                      {t(placement)}
+
+                      {/* active underline */}
+                      <span
+                        className={clsx(
+                          "absolute left-0 -bottom-[1px] h-[2px] w-full transition-all",
+                          active
+                            ? isDark
+                              ? "bg-green-500"
+                              : "bg-green-600"
+                            : "bg-transparent",
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div>
+                <PublishButton isLoading={false} onClick={() => {}} />
+              </div>
             </div>
 
             {selectedPromotions.length > 0 && (
@@ -404,14 +416,14 @@ export default function PromotionsMgmtPage() {
                 className={clsx(
                   "mt-4 flex items-center justify-between p-4 rounded-lg border",
                   isDark
-                    ? "bg-blue-950/20 border-blue-800"
-                    : "bg-blue-50 border-blue-200",
+                    ? "bg-green-950/20 border-green-800"
+                    : "bg-green-50 border-green-200",
                 )}
               >
                 <span
                   className={clsx(
                     "text-sm font-medium",
-                    isDark ? "text-blue-100" : "text-blue-900",
+                    isDark ? "text-green-100" : "text-green-900",
                   )}
                 >
                   {t("bulk_selected_count", {
@@ -466,7 +478,7 @@ export default function PromotionsMgmtPage() {
                   setEditingPromotion(undefined);
                   setShowWizard(true);
                 }}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
               >
                 <Plus className="w-5 h-5" />
                 {t("add_first_promotion")}

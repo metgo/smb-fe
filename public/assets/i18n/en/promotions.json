@@ -107,5 +107,8 @@
   "publish_instruction": "Click \"Save Promotion\" below to add this to your website. You can edit or deactivate it any time.",
   "edit_promotion": "Edit Promotion",
   "new_promotion": "New Promotion",
-  "select_website": "Select Website"
+  "select_website": "Select Website",
+  "Homepage Hero": "Homepage Hero",
+  "Secondary Banner": "Secondary Banner",
+  "Footer Spotlight": "Footer Spotlight"
 }
