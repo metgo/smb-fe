@@ -1,0 +1,111 @@
+{
+  "promotions": "Promotions",
+  "promotions_subtitle": "Manage promotional content displayed on your websites",
+
+  "visit_negev": "Visit Negev",
+  "beer_sheva_tourism": "Be'er Sheva Tourism",
+  "arad_city": "Arad City",
+
+  "settings": "Settings",
+  "add_promotion": "Add Promotion",
+
+  "rotation_settings": "Rotation Settings",
+  "rotation_type": "Rotation Type",
+  "automatic": "Automatic",
+  "manual": "Manual",
+  "time_interval_seconds": "Time Interval (seconds)",
+
+  "active_placements": "Active Placements",
+
+  "note": "Note",
+  "rotation_note_text": "Promotions can appear in multiple placements, but each promotion belongs to one placement only. The rotation settings apply globally across all placements.",
+
+  "bulk_selected_count": "{{count}} promotion(s) selected",
+  "activate": "Activate",
+  "deactivate": "Deactivate",
+  "delete": "Delete",
+  "cancel": "Cancel",
+
+  "no_promotions_title": "No promotions yet",
+  "no_promotions_description": "Create your first promotion to start showcasing content on your website",
+  "add_first_promotion": "Add your first promotion",
+
+  "placement_selector": "Placement Selector",
+
+  "select_website_visit_negev": "Visit Negev",
+  "select_website_beer_sheva": "Be'er Sheva Tourism",
+  "select_website_arad": "Arad City",
+  "step_placement": "Placement",
+  "step_placement_sublabel": "Where & status",
+
+  "step_media": "Media",
+  "step_media_sublabel": "Images & videos",
+
+  "step_content": "Content",
+  "step_content_sublabel": "Text & links",
+
+  "step_review": "Review",
+  "step_review_sublabel": "Confirm & save",
+  "placement_label": "Placement",
+  "placement_help_text": "Select where this promotion appears on the website.",
+
+  "publish_immediately": "Publish immediately",
+  "publish_active_desc": "Promotion will be visible on the website right away.",
+  "publish_draft_desc": "Saved as draft — activate it later from the dashboard.",
+
+  "placement_info_text": "Multiple promotions in the same placement rotate automatically based on your global rotation settings.",
+  "upload_file": "Upload file",
+  "paste_url": "Paste URL",
+
+  "media_url_placeholder": "https://example.com/image.jpg",
+
+  "remove": "Remove",
+
+  "desktop_recommendation": "1920×800 recommended",
+  "mobile_recommendation": "800×600 recommended",
+
+  "drop_to_upload": "Drop to upload",
+  "drag_or_click_upload": "Drag & drop or click to browse",
+  "media_type": "Media Type",
+  "image": "Image",
+  "video": "Video",
+  "desktop": "Desktop",
+  "mobile": "Mobile",
+  "language": "Language",
+  "required": "Required",
+  "optional": "Optional",
+
+  "title": "Title",
+  "description": "Description",
+
+  "destination_url": "Destination URL",
+  "destination_hint": "Where users land when they click this promotion.",
+
+  "english_required": "English content is required",
+  "language_requirement_note": "for promotion approval. Hebrew and Arabic are optional but improve reach.",
+
+  "title_placeholder": "Enter title in {{lang}}...",
+  "description_placeholder": "Describe this promotion in {{lang}}...",
+
+  "url_placeholder": "/attractions/example or https://...",
+
+  "promotion_summary": "Promotion summary",
+  "website": "Website",
+  "placement": "Placement",
+  "status": "Status",
+  "media_type": "Media type",
+  "title_en": "Title (EN)",
+  "link": "Link",
+
+  "live_preview": "Live preview",
+  "untitled_promotion": "Untitled Promotion",
+  "draft": "DRAFT",
+
+  "missing_translations_prefix": "No content added for",
+  "missing_translations_suffix": "You can go back and add translations to reach more visitors.",
+
+  "ready_to_publish": "Ready to publish!",
+  "publish_instruction": "Click \"Save Promotion\" below to add this to your website. You can edit or deactivate it any time.",
+  "edit_promotion": "Edit Promotion",
+  "new_promotion": "New Promotion"
+}

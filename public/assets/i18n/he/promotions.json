@@ -1,0 +1,109 @@
+{
+  "promotions": "קידומים",
+  "promotions_subtitle": "ניהול תוכן קידומי המוצג באתרים שלך",
+
+  "visit_negev": "ביקור בנגב",
+  "beer_sheva_tourism": "תיירות באר שבע",
+  "arad_city": "עיר ערד",
+
+  "settings": "הגדרות",
+  "add_promotion": "הוספת קידום",
+
+  "rotation_settings": "הגדרות רוטציה",
+  "rotation_type": "סוג רוטציה",
+  "automatic": "אוטומטי",
+  "manual": "ידני",
+  "time_interval_seconds": "מרווח זמן (שניות)",
+
+  "active_placements": "מיקומים פעילים",
+
+  "note": "הערה",
+  "rotation_note_text": "קידומים יכולים להופיע במספר מיקומים, אך כל קידום שייך למיקום אחד בלבד. הגדרות הרוטציה חלות באופן גלובלי על כל המיקומים.",
+
+  "bulk_selected_count": "{{count}} קידומים נבחרו",
+  "activate": "הפעל",
+  "deactivate": "השבת",
+  "delete": "מחק",
+  "cancel": "ביטול",
+
+  "no_promotions_title": "אין קידומים עדיין",
+  "no_promotions_description": "צור את הקידום הראשון שלך כדי להתחיל להציג תוכן באתר",
+  "add_first_promotion": "הוסף קידום ראשון",
+
+  "placement_selector": "בחירת מיקום",
+
+  "select_website_visit_negev": "ביקור בנגב",
+  "select_website_beer_sheva": "תיירות באר שבע",
+  "select_website_arad": "עיר ערד",
+  "step_placement": "מיקום",
+  "step_placement_sublabel": "איפה והגדרות מצב",
+
+  "step_media": "מדיה",
+  "step_media_sublabel": "תמונות וסרטונים",
+
+  "step_content": "תוכן",
+  "step_content_sublabel": "טקסט וקישורים",
+
+  "step_review": "סקירה",
+  "step_review_sublabel": "אישור ושמירה",
+  "placement_label": "מיקום",
+  "placement_help_text": "בחר היכן הקידום יוצג באתר.",
+
+  "publish_immediately": "פרסום מיידי",
+  "publish_active_desc": "הקידום יוצג באתר באופן מיידי.",
+  "publish_draft_desc": "נשמר כטיוטה — ניתן להפעיל מאוחר יותר מהדשבורד.",
+
+  "placement_info_text": "מספר קידומים באותו מיקום יסתובבו אוטומטית לפי הגדרות הרוטציה הגלובליות.",
+  "upload_file": "העלאת קובץ",
+  "paste_url": "הדבקת קישור",
+
+  "media_url_placeholder": "https://example.com/image.jpg",
+
+  "remove": "הסר",
+
+  "desktop_recommendation": "מומלץ 1920×800",
+  "mobile_recommendation": "מומלץ 800×600",
+
+  "drop_to_upload": "שחרר להעלאה",
+  "drag_or_click_upload": "גרור ושחרר או לחץ לבחירה",
+  "media_type": "סוג מדיה",
+  "image": "תמונה",
+  "video": "וידאו",
+  "desktop": "שולחן עבודה",
+  "mobile": "נייד",
+  "language": "שפה",
+  "required": "נדרש",
+  "optional": "אופציונלי",
+
+  "title": "כותרת",
+  "description": "תיאור",
+
+  "destination_url": "כתובת יעד",
+  "destination_hint": "לאן המשתמשים מגיעים כשהם לוחצים על הפרומו.",
+
+  "english_required": "תוכן באנגלית חובה",
+  "language_requirement_note": "לאישור הפרומו. עברית וערבית הן אופציונליות אך משפרות חשיפה.",
+
+  "title_placeholder": "הכנס כותרת ב{{lang}}...",
+  "description_placeholder": "תאר את הפרומו ב{{lang}}...",
+
+  "url_placeholder": "/אטרקציות/דוגמה או https://...",
+  "promotion_summary": "סיכום פרומו",
+  "website": "אתר",
+  "placement": "מיקום",
+  "status": "סטטוס",
+  "title_en": "כותרת (אנגלית)",
+  "link": "קישור",
+
+  "live_preview": "תצוגה מקדימה",
+  "untitled_promotion": "פרומו ללא כותרת",
+  "draft": "טיוטה",
+
+  "missing_translations_prefix": "לא נוסף תוכן עבור",
+  "missing_translations_suffix": "ניתן לחזור אחורה ולהוסיף תרגומים כדי להגיע ליותר משתמשים.",
+
+  "ready_to_publish": "מוכן לפרסום!",
+  "publish_instruction": "לחץ על \"שמור פרומו\" כדי להוסיף לאתר. ניתן לערוך או לבטל בכל זמן.",
+  "edit_promotion": "עריכת קידום",
+  "new_promotion": "קידום חדש"
+}

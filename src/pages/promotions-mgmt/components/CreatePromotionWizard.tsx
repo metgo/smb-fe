@@ -2,8 +2,6 @@ import { useState, useRef } from "react";
 import {
   X,
   Check,
-  ArrowRight,
-  ArrowLeft,
   Image as ImageIcon,
   FileText,
   Eye,
@@ -21,6 +19,9 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import { WizardFooter } from "@/components/shared";
+import { ModalWrapper } from "@/components/wrapper";
 
 interface CreatePromotionWizardProps {
   onClose: () => void;
@@ -35,28 +36,6 @@ interface CreatePromotionWizardProps {
   websiteName: string;
   availablePlacements: string[];
 }
-
-const STEPS = [
-  {
-    key: "placement",
-    label: "Placement",
-    sublabel: "Where & status",
-    icon: Layers,
-  },
-  {
-    key: "media",
-    label: "Media",
-    sublabel: "Images & videos",
-    icon: ImageIcon,
-  },
-  {
-    key: "content",
-    label: "Content",
-    sublabel: "Text & links",
-    icon: FileText,
-  },
-  { key: "review", label: "Review", sublabel: "Confirm & save", icon: Eye },
-];
 
 const LANG_META = {
   en: { label: "English", native: "EN", dir: "ltr" as const, flag: "🇺🇸" },
@@ -75,7 +54,35 @@ export default function CreatePromotionWizard({
   websiteName,
   availablePlacements,
 }: CreatePromotionWizardProps) {
-  const { t } = useTranslation("promotion");
+  const { t } = useTranslation("promotions");
+  const [isPublishing, _setIsPublishing] = useState(false);
+  const STEPS = [
+    {
+      key: "placement",
+      label: t("step_placement"),
+      sublabel: t("step_placement_sublabel"),
+      icon: Layers,
+    },
+    {
+      key: "media",
+      label: t("step_media"),
+      sublabel: t("step_media_sublabel"),
+      icon: ImageIcon,
+    },
+    {
+      key: "content",
+      label: t("step_content"),
+      sublabel: t("step_content_sublabel"),
+      icon: FileText,
+    },
+    {
+      key: "review",
+      label: t("step_review"),
+      sublabel: t("step_review_sublabel"),
+      icon: Eye,
+    },
+  ];
+  const { isDark } = useThemeClasses();
   const {
     isRTL,
     bgPrimary,
@@ -128,7 +135,12 @@ export default function CreatePromotionWizard({
       ? patch({ desktopMedia: { url } })
       : patch({ mobileMedia: { url } });
   };
-
+  const handleNext = async () => {
+    setCurrentStep((prev) => prev + 1);
+  };
+  const handlePrevious = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
   const handleFileInput = async (
     e: React.ChangeEvent<HTMLInputElement>,
     side: "desktop" | "mobile",
@@ -141,20 +153,20 @@ export default function CreatePromotionWizard({
       : patch({ mobileMedia: { url } });
   };
 
-  const isStepValid = (idx = currentStep) => {
-    switch (STEPS[idx].key) {
-      case "placement":
-        return formData.placement.length > 0;
-      case "media":
-        return !!(formData.desktopMedia.url && formData.mobileMedia.url);
-      case "content":
-        return formData.title.en.length > 0 && formData.content.en.length > 0;
-      case "review":
-        return true;
-      default:
-        return false;
-    }
-  };
+  // const isStepValid = (idx = currentStep) => {
+  //   switch (STEPS[idx]?.key) {
+  //     case "placement":
+  //       return formData.placement.length > 0;
+  //     case "media":
+  //       return !!(formData.desktopMedia.url && formData.mobileMedia.url);
+  //     case "content":
+  //       return formData.title.en.length > 0 && formData.content.en.length > 0;
+  //     case "review":
+  //       return true;
+  //     default:
+  //       return false;
+  //   }
+  // };
 
   const langComplete = (lang: Lang) =>
     formData.title[lang].length > 0 && formData.content[lang].length > 0;
@@ -168,17 +180,38 @@ export default function CreatePromotionWizard({
         const active = idx === currentStep;
         const future = idx > currentStep;
         return (
-          <div key={step.key} className="flex items-center flex-1 min-w-0">
+          <div
+            key={step.key}
+            className="flex items-center flex-1 min-w-0"
+            onClick={() => setCurrentStep(idx)}
+          >
             {/* Node */}
             <div className="flex flex-col items-center shrink-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                className={clsx(
+                  "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+
                   done
-                    ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900"
+                    ? [
+                        "bg-green-600 border-green-600 text-white",
+                        isDark
+                          ? "shadow-green-900"
+                          : "shadow-md shadow-green-200",
+                      ]
                     : active
-                      ? "bg-white dark:bg-gray-900 border-blue-600 text-blue-600 shadow-md shadow-blue-100 dark:shadow-blue-900/40"
-                      : `border-gray-200 dark:border-gray-700 ${textTertiary} bg-transparent`
-                }`}
+                      ? [
+                          isDark ? "bg-gray-900" : "bg-white",
+                          "border-green-600 text-green-600",
+                          isDark
+                            ? "shadow-green-900/40"
+                            : "shadow-md shadow-green-100",
+                        ]
+                      : [
+                          isDark ? "border-gray-700" : "border-gray-200",
+                          textTertiary,
+                          "bg-transparent",
+                        ],
+                )}
               >
                 {done ? (
                   <Check className="w-4 h-4 stroke-[2.5]" />
@@ -188,14 +221,23 @@ export default function CreatePromotionWizard({
               </div>
               <div className="mt-1.5 text-center">
                 <p
-                  className={`text-xs font-semibold leading-tight ${active ? "text-blue-600" : done ? textPrimary : textTertiary}`}
+                  className={`text-xs font-semibold leading-tight ${
+                    active
+                      ? "text-green-600"
+                      : done
+                        ? textPrimary
+                        : textTertiary
+                  }`}
                 >
-                  {step.label}
+                  {step?.label}
                 </p>
+
                 <p
-                  className={`text-[10px] leading-tight hidden sm:block ${future ? textTertiary : textSecondary}`}
+                  className={`text-[10px] leading-tight hidden sm:block ${
+                    future ? textTertiary : textSecondary
+                  }`}
                 >
-                  {step.sublabel}
+                  {step?.sublabel}
                 </p>
               </div>
             </div>
@@ -203,7 +245,7 @@ export default function CreatePromotionWizard({
             {idx < STEPS.length - 1 && (
               <div className="flex-1 mx-2 mb-5 relative h-0.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                 <div
-                  className="absolute inset-y-0 left-0 bg-blue-600 transition-all duration-500"
+                  className="absolute inset-y-0 left-0 bg-green-600 transition-all duration-500"
                   style={{ width: done ? "100%" : "0%" }}
                 />
               </div>
@@ -216,39 +258,76 @@ export default function CreatePromotionWizard({
 
   // ── STEP 1: placement ────────────────────────────────────────────────────
   const PlacementStep = () => (
-    <div className="space-y-6">
+    <div
+      className={clsx(
+        "space-y-6 rounded-md p-4",
+        isDark ? "bg-gray-900" : "bg-white",
+      )}
+    >
       {/* Placement cards */}
       <div>
-        <label className={`block text-sm font-semibold ${textPrimary} mb-3`}>
-          Placement <span className="text-red-500">*</span>
+        <label
+          className={clsx("block text-sm font-semibold mb-3", textPrimary)}
+        >
+          {t("placement_label")} <span className="text-red-500">*</span>
         </label>
+
         {availablePlacements.length <= 6 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {availablePlacements.map((p) => (
-              <button
-                key={p}
-                onClick={() => patch({ placement: p })}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all text-left ${
-                  formData.placement === p
-                    ? "border-blue-600 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 shadow-sm"
-                    : `border-gray-200 dark:border-gray-700 ${textSecondary} hover:border-blue-300 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-800`
-                }`}
-              >
-                <Layers
-                  className={`w-4 h-4 shrink-0 ${formData.placement === p ? "text-blue-600" : textTertiary}`}
-                />
-                <span className="truncate">{p}</span>
-                {formData.placement === p && (
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 ml-auto shrink-0" />
-                )}
-              </button>
-            ))}
+            {availablePlacements.map((p) => {
+              const selected = formData.placement === p;
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => patch({ placement: p })}
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all duration-200 text-left",
+
+                    isDark
+                      ? "text-gray-300 bg-gray-900"
+                      : "text-gray-700 bg-white",
+
+                    selected && [
+                      "border-green-600",
+                      "bg-green-50 dark:bg-green-900/30",
+                      "text-green-700 dark:text-green-300 shadow-sm",
+                    ],
+
+                    !selected && [
+                      "border-gray-200 dark:border-gray-900",
+                      "hover:border-green-300 dark:hover:border-green-600",
+                      "dark:hover:bg-gray-700",
+                      "hover:text-green-600 dark:hover:text-green-400",
+                    ],
+                  )}
+                >
+                  <Layers
+                    className={clsx(
+                      "w-4 h-4 shrink-0",
+                      selected ? "text-green-600" : textTertiary,
+                    )}
+                  />
+
+                  <span className="truncate">{p}</span>
+
+                  {selected && (
+                    <CheckCircle2 className="w-4 h-4 text-green-600 ml-auto shrink-0" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <select
             value={formData.placement}
             onChange={(e) => patch({ placement: e.target.value })}
-            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition`}
+            className={clsx(
+              "w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-transparent transition",
+              borderColor,
+              isDark ? "bg-gray-700" : bgPrimary,
+              textPrimary,
+            )}
           >
             {availablePlacements.map((p) => (
               <option key={p} value={p}>
@@ -257,49 +336,77 @@ export default function CreatePromotionWizard({
             ))}
           </select>
         )}
-        <p className={`text-xs ${textTertiary} mt-2`}>
-          Select where this promotion appears on the website.
+
+        <p className={clsx("text-xs mt-2", textTertiary)}>
+          {t("placement_help_text")}
         </p>
       </div>
 
       {/* Active toggle */}
       <div
-        className={`flex items-center justify-between p-4 rounded-xl border ${borderColor} ${bgSecondary}`}
+        className={clsx(
+          "flex items-center justify-between p-4 rounded-xl border",
+          borderColor,
+          isDark ? "bg-gray-900" : bgSecondary,
+        )}
       >
         <div>
-          <p className={`text-sm font-semibold ${textPrimary}`}>
-            Publish immediately
+          <p className={clsx("text-sm font-semibold", textPrimary)}>
+            {t("publish_immediately")}
           </p>
-          <p className={`text-xs ${textTertiary} mt-0.5`}>
+
+          <p className={clsx("text-xs mt-0.5", textTertiary)}>
             {formData.active
-              ? "Promotion will be visible on the website right away."
-              : "Saved as draft — activate it later from the dashboard."}
+              ? t("publish_active_desc")
+              : t("publish_draft_desc")}
           </p>
         </div>
+
         <button
           role="switch"
           aria-checked={formData.active}
           onClick={() => patch({ active: !formData.active })}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-            formData.active ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
-          }`}
+          className={clsx(
+            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
+            formData.active ? "bg-green-600" : "bg-gray-300 dark:bg-gray-600",
+          )}
         >
           <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ${
-              formData.active ? "translate-x-5" : "translate-x-0"
-            }`}
+            className={clsx(
+              "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200",
+              formData.active
+                ? isRTL
+                  ? "-translate-x-5"
+                  : "translate-x-5"
+                : "translate-x-0",
+            )}
           />
         </button>
       </div>
 
       {/* Info callout */}
       <div
-        className={`flex gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900`}
+        className={clsx(
+          "flex gap-3 p-4 rounded-xl border",
+          isDark
+            ? "bg-gray-900 border-gray-600"
+            : "bg-green-50 border-green-100",
+        )}
       >
-        <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
-          Multiple promotions in the same placement rotate automatically based
-          on your global rotation settings.
+        <AlertCircle
+          className={clsx(
+            "w-4 h-4 mt-0.5 shrink-0",
+            isDark ? "text-green-400" : "text-green-500",
+          )}
+        />
+
+        <p
+          className={clsx(
+            "text-xs leading-relaxed",
+            isDark ? "text-gray-200" : "text-green-800",
+          )}
+        >
+          {t("placement_info_text")}
         </p>
       </div>
     </div>
@@ -339,7 +446,12 @@ export default function CreatePromotionWizard({
     urlValue: string;
     onUrlChange: (v: string) => void;
   }) => (
-    <div>
+    <div
+      className={clsx(
+        "space-y-6 rounded-md p-4",
+        isDark ? "bg-gray-900" : "bg-white",
+      )}
+    >
       <div className={`flex items-center gap-2 mb-2`}>
         <Icon className={`w-4 h-4 ${textSecondary}`} />
         <span className={`text-sm font-semibold ${textPrimary}`}>{label}</span>
@@ -356,7 +468,7 @@ export default function CreatePromotionWizard({
             onClick={() => setSource(src)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               source === src
-                ? `bg-white dark:bg-gray-700 ${textPrimary} shadow-sm`
+                ? `${isDark ? "bg-gray-700" : "bg-white"} ${textPrimary} shadow-sm`
                 : `${textTertiary} hover:${textSecondary}`
             }`}
           >
@@ -365,7 +477,8 @@ export default function CreatePromotionWizard({
             ) : (
               <LinkIcon className="w-3.5 h-3.5" />
             )}
-            {src === "upload" ? "Upload file" : "Paste URL"}
+
+            {src === "upload" ? t("upload_file") : t("paste_url")}
           </button>
         ))}
       </div>
@@ -375,33 +488,41 @@ export default function CreatePromotionWizard({
           <LinkIcon
             className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
           />
+
           <input
             type="url"
             value={urlValue}
             onChange={(e) => onUrlChange(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className={`w-full pl-9 pr-4 py-2.5 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition`}
+            placeholder={t("media_url_placeholder")}
+            className={`w-full pl-9 pr-4 py-2.5 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition`}
           />
         </div>
       ) : mediaUrl ? (
-        <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm group">
+        <div
+          className={`relative rounded-xl overflow-hidden border ${
+            isDark ? "border-gray-700" : "border-gray-200"
+          } shadow-sm group`}
+        >
           <img
             src={mediaUrl}
             alt={`${side} preview`}
             className="w-full h-44 object-cover"
           />
+
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
             <button
               onClick={onClear}
               className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 px-3 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-all shadow-lg"
             >
-              <X className="w-3.5 h-3.5" /> Remove
+              <X className="w-3.5 h-3.5" />
+              {t("remove")}
             </button>
           </div>
+
           <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-medium backdrop-blur-sm">
             {side === "desktop"
-              ? "1920×800 recommended"
-              : "800×600 recommended"}
+              ? t("desktop_recommendation")
+              : t("mobile_recommendation")}
           </div>
         </div>
       ) : (
@@ -415,27 +536,32 @@ export default function CreatePromotionWizard({
           onClick={() => inputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all select-none ${
             dragOver
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 scale-[1.01]"
-              : `${borderColor} hover:border-blue-400 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800/50`
+              ? "border-green-500 bg-green-50 dark:bg-gray-700 scale-[1.01]"
+              : `${borderColor} hover:border-green-400 dark:hover:border-green-600 dark:hover:bg-gray-700`
           }`}
         >
           <div className="flex flex-col items-center gap-2">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                dragOver ? "bg-blue-100 dark:bg-blue-900/40" : `${bgSecondary}`
+                dragOver ? "bg-green-100 dark:bg-gray-700" : `${bgSecondary}`
               }`}
             >
               <Upload
-                className={`w-5 h-5 ${dragOver ? "text-blue-500" : textTertiary}`}
+                className={`w-5 h-5 ${
+                  dragOver ? "text-green-500" : textTertiary
+                }`}
               />
             </div>
+
             <div>
               <p className={`text-sm font-medium ${textPrimary}`}>
-                {dragOver ? "Drop to upload" : "Drag & drop or click to browse"}
+                {dragOver ? t("drop_to_upload") : t("drag_or_click_upload")}
               </p>
+
               <p className={`text-xs ${textTertiary} mt-0.5`}>{hint}</p>
             </div>
           </div>
+
           <input
             ref={inputRef}
             type="file"
@@ -447,40 +573,57 @@ export default function CreatePromotionWizard({
       )}
     </div>
   );
-
   const MediaStep = () => (
-    <div className="space-y-5">
+    <div
+      className={clsx(
+        "space-y-6 rounded-md p-4",
+        isDark ? "bg-gray-900" : "bg-white",
+      )}
+    >
+      {" "}
       {/* Media type toggle */}
       <div>
         <label className={`block text-sm font-semibold ${textPrimary} mb-2`}>
-          Media Type <span className="text-red-500">*</span>
+          {t("media_type")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 gap-3">
           {(["image", "video"] as const).map((type) => (
             <button
               key={type}
               onClick={() => patch({ mediaType: type })}
-              className={`flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 font-medium text-sm transition-all ${
+              className={clsx(
+                "flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 font-medium text-sm transition-all",
+
                 formData.mediaType === type
-                  ? "border-blue-600 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300"
-                  : `border-gray-200 dark:border-gray-700 ${textSecondary} hover:border-blue-300 dark:hover:border-blue-700`
-              }`}
+                  ? [
+                      "border-green-600",
+                      isDark
+                        ? "bg-green-950/30 text-green-300"
+                        : "bg-green-50 text-green-700",
+                    ]
+                  : [
+                      isDark ? "border-gray-700" : "border-gray-200",
+                      textSecondary,
+                      isDark
+                        ? "hover:border-green-700"
+                        : "hover:border-green-300",
+                    ],
+              )}
             >
               {type === "image" ? (
                 <ImageIcon className="w-4 h-4" />
               ) : (
                 <Video className="w-4 h-4" />
               )}
-              {type === "image" ? "Image" : "Video"}
+              {type === "image" ? t("image") : t("video")}{" "}
             </button>
           ))}
         </div>
       </div>
-
       <div className="grid sm:grid-cols-2 gap-5">
         <UploadZone
           side="desktop"
-          label="Desktop"
+          label={t("desktop")}
           hint="Recommended: 1920×800 (16:7)"
           icon={Monitor}
           mediaUrl={formData.desktopMedia.url}
@@ -497,7 +640,7 @@ export default function CreatePromotionWizard({
         />
         <UploadZone
           side="mobile"
-          label="Mobile"
+          label={t("mobile")}
           hint="Recommended: 800×600 (4:3)"
           icon={Smartphone}
           mediaUrl={formData.mobileMedia.url}
@@ -519,95 +662,122 @@ export default function CreatePromotionWizard({
   // ── STEP 3: content ──────────────────────────────────────────────────────
   const ContentStep = () => {
     const isRTLLang = editingLang === "he" || editingLang === "ar";
+
     return (
-      <div className="space-y-5">
+      <div
+        className={clsx(
+          "space-y-6 rounded-md p-4",
+          isDark ? "bg-gray-900" : "bg-white",
+        )}
+      >
+        {" "}
         {/* Language selector */}
         <div
           className={`flex items-center gap-3 p-3 rounded-xl ${bgSecondary} border ${borderColor}`}
         >
           <Globe className={`w-4 h-4 ${textTertiary} shrink-0`} />
+
           <span className={`text-xs font-medium ${textSecondary}`}>
-            Language:
+            {t("language")}
           </span>
+
           <div className="flex gap-1.5">
             {(Object.keys(LANG_META) as Lang[]).map((lang) => {
               const m = LANG_META[lang];
               const complete = langComplete(lang);
+
               return (
                 <button
                   key={lang}
                   onClick={() => setEditingLang(lang)}
                   className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     editingLang === lang
-                      ? "bg-blue-600 text-white shadow-sm"
+                      ? "bg-green-600 text-white shadow-sm"
                       : `${bgPrimary} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-700 border ${borderColor}`
                   }`}
                 >
                   <span>{m.flag}</span>
                   <span>{m.native}</span>
+
                   {complete && (
                     <span
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${editingLang === lang ? "bg-green-300" : "bg-green-500"}`}
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        editingLang === lang ? "bg-green-300" : "bg-green-500"
+                      }`}
                     />
                   )}
+
                   {lang === "en" && !complete && (
                     <span
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${editingLang === lang ? "bg-red-300" : "bg-red-400"}`}
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        editingLang === lang ? "bg-red-300" : "bg-red-400"
+                      }`}
                     />
                   )}
                 </button>
               );
             })}
           </div>
-          {editingLang === "en" && (
+
+          {editingLang === "en" ? (
             <span className="text-xs text-red-500 font-medium ml-auto">
-              Required
+              {t("required")}
+            </span>
+          ) : (
+            <span className={`text-xs ${textTertiary} ml-auto`}>
+              {t("optional")}
             </span>
           )}
-          {editingLang !== "en" && (
-            <span className={`text-xs ${textTertiary} ml-auto`}>Optional</span>
-          )}
         </div>
-
+        {/* Title + Description */}
         <div dir={isRTLLang ? "rtl" : "ltr"} className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className={`text-sm font-semibold ${textPrimary}`}>
-                Title{" "}
+                {t("title")}{" "}
                 {editingLang === "en" && (
                   <span className="text-red-500">*</span>
                 )}
               </label>
+
               <span className={`text-xs ${textTertiary}`}>
                 {formData.title[editingLang].length}/80
               </span>
             </div>
+
             <input
               type="text"
               maxLength={80}
               value={formData.title[editingLang]}
               onChange={(e) =>
                 patch({
-                  title: { ...formData.title, [editingLang]: e.target.value },
+                  title: {
+                    ...formData.title,
+                    [editingLang]: e.target.value,
+                  },
                 })
               }
-              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition`}
-              placeholder={`Enter title in ${LANG_META[editingLang].label}...`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition`}
+              placeholder={t("title_placeholder", {
+                lang: LANG_META[editingLang].label,
+              })}
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className={`text-sm font-semibold ${textPrimary}`}>
-                Description{" "}
+                {t("description")}{" "}
                 {editingLang === "en" && (
                   <span className="text-red-500">*</span>
                 )}
               </label>
+
               <span className={`text-xs ${textTertiary}`}>
                 {formData.content[editingLang].length}/300
               </span>
             </div>
+
             <textarea
               rows={4}
               maxLength={300}
@@ -620,44 +790,62 @@ export default function CreatePromotionWizard({
                   },
                 })
               }
-              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none`}
-              placeholder={`Describe this promotion in ${LANG_META[editingLang].label}...`}
+              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition resize-none`}
+              placeholder={t("description_placeholder", {
+                lang: LANG_META[editingLang].label,
+              })}
             />
           </div>
         </div>
-
+        {/* URL */}
         <div>
           <label
             className={`flex items-center gap-2 text-sm font-semibold ${textPrimary} mb-1.5`}
           >
             <LinkIcon className="w-4 h-4" />
-            Destination URL
+            {t("destination_url")}
             <span className={`text-xs font-normal ${textTertiary}`}>
-              (optional)
+              ({t("optional")})
             </span>
           </label>
+
           <div className="relative">
             <ExternalLink
               className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
             />
+
             <input
               type="url"
               value={formData.linkUrl}
               onChange={(e) => patch({ linkUrl: e.target.value })}
-              className={`w-full pl-10 pr-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition`}
-              placeholder="/attractions/ramon-crater  or  https://..."
+              className={`w-full pl-10 pr-4 py-3 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition`}
+              placeholder={t("url_placeholder")}
             />
           </div>
+
           <p className={`text-xs ${textTertiary} mt-1.5`}>
-            Where users land when they click this promotion.
+            {t("destination_hint")}
           </p>
         </div>
+        {/* Warning */}
+        <div
+          className={clsx(
+            "flex gap-3 p-3.5 rounded-xl border",
+            isDark
+              ? "bg-amber-950/20 border-amber-800"
+              : "bg-amber-50 border-amber-200",
+          )}
+        >
+          <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
 
-        <div className="flex gap-3 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
-            <strong>English content is required</strong> for promotion approval.
-            Hebrew and Arabic are optional but improve reach.
+          <p
+            className={clsx(
+              "text-xs leading-relaxed",
+              isDark ? "text-amber-200" : "text-amber-800",
+            )}
+          >
+            <strong>{t("english_required")}</strong>{" "}
+            {t("language_requirement_note")}
           </p>
         </div>
       </div>
@@ -669,30 +857,32 @@ export default function CreatePromotionWizard({
     const missingLangs = (["he", "ar"] as Lang[]).filter(
       (l) => !langComplete(l),
     );
+
     return (
       <div className="space-y-5">
         {/* Summary grid */}
         <div className={`rounded-xl border ${borderColor} overflow-hidden`}>
           <div className={`px-4 py-3 ${bgSecondary} border-b ${borderColor}`}>
             <h4 className={`text-sm font-semibold ${textPrimary}`}>
-              Promotion summary
+              {t("promotion_summary")}
             </h4>
           </div>
+
           <div className={`${bgPrimary} divide-y ${borderColor}`}>
             {[
-              { label: "Website", value: websiteName },
-              { label: "Placement", value: formData.placement },
+              { label: t("website"), value: websiteName },
+              { label: t("placement"), value: formData.placement },
               {
-                label: "Status",
+                label: t("status"),
                 value: formData.active ? "🟢 Active" : "⚫ Draft",
               },
               {
-                label: "Media type",
+                label: t("media_type"),
                 value: formData.mediaType === "image" ? "🖼 Image" : "🎥 Video",
               },
-              { label: "Title (EN)", value: formData.title.en || "—" },
+              { label: t("title_en"), value: formData.title.en || "—" },
               ...(formData.linkUrl
-                ? [{ label: "Link", value: formData.linkUrl }]
+                ? [{ label: t("link"), value: formData.linkUrl }]
                 : []),
             ].map(({ label, value }) => (
               <div
@@ -702,6 +892,7 @@ export default function CreatePromotionWizard({
                 <span className={`text-sm ${textSecondary} shrink-0`}>
                   {label}
                 </span>
+
                 <span
                   className={`text-sm font-medium ${textPrimary} text-right truncate`}
                 >
@@ -716,28 +907,34 @@ export default function CreatePromotionWizard({
         {formData.desktopMedia.url && (
           <div>
             <h4 className={`text-sm font-semibold ${textPrimary} mb-2`}>
-              Live preview
+              {t("live_preview")}
             </h4>
+
             <div className="relative rounded-xl overflow-hidden shadow-lg">
               <img
                 src={formData.desktopMedia.url}
                 alt="Preview"
                 className="w-full h-52 object-cover"
               />
+
               <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent" />
+
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 rounded-full text-[10px] font-semibold mb-2 uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-600 rounded-full text-[10px] font-semibold mb-2 uppercase tracking-wider">
                   <Layers className="w-3 h-3" />
                   {formData.placement}
                 </div>
+
                 <h3 className="text-xl font-bold leading-tight drop-shadow">
-                  {formData.title.en || "Untitled Promotion"}
+                  {formData.title.en || t("untitled_promotion")}
                 </h3>
+
                 {formData.content.en && (
                   <p className="text-sm mt-1 opacity-90 line-clamp-2 drop-shadow-sm">
                     {formData.content.en}
                   </p>
                 )}
+
                 {formData.linkUrl && (
                   <div className="mt-2 flex items-center gap-1 text-xs text-blue-200">
                     <ExternalLink className="w-3 h-3" />
@@ -745,9 +942,10 @@ export default function CreatePromotionWizard({
                   </div>
                 )}
               </div>
+
               {!formData.active && (
                 <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-gray-900/70 text-white text-[10px] font-semibold backdrop-blur-sm">
-                  DRAFT
+                  {t("draft")}
                 </div>
               )}
             </div>
@@ -757,22 +955,46 @@ export default function CreatePromotionWizard({
         {/* Missing translations notice */}
         {missingLangs.length > 0 && (
           <div
-            className={`flex gap-3 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border ${borderColor}`}
+            className={clsx(
+              "flex gap-3 p-3.5 rounded-xl border",
+              isDark
+                ? "bg-gray-800/60 border-gray-700"
+                : "bg-gray-50 border-gray-200",
+            )}
           >
-            <Globe className={`w-4 h-4 ${textTertiary} mt-0.5 shrink-0`} />
-            <p className={`text-xs ${textSecondary} leading-relaxed`}>
-              No content added for{" "}
-              {missingLangs.map((l) => LANG_META[l].label).join(" and ")}. You
-              can go back and add translations to reach more visitors.
+            <Globe className={clsx("w-4 h-4 mt-0.5 shrink-0", textTertiary)} />
+
+            <p className={clsx("text-xs leading-relaxed", textSecondary)}>
+              {t("missing_translations_prefix")}{" "}
+              {missingLangs.map((l) => LANG_META[l].label).join(" and ")}.{" "}
+              {t("missing_translations_suffix")}
             </p>
           </div>
         )}
 
-        <div className="flex gap-3 p-3.5 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-          <Sparkles className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-green-800 dark:text-green-200 leading-relaxed">
-            <strong>Ready to publish!</strong> Click "Save Promotion" below to
-            add this to your website. You can edit or deactivate it any time.
+        {/* Success message */}
+        <div
+          className={clsx(
+            "flex gap-3 p-3.5 rounded-xl border",
+            isDark
+              ? "bg-green-950/20 border-green-800"
+              : "bg-green-50 border-green-200",
+          )}
+        >
+          <Sparkles
+            className={clsx(
+              "w-4 h-4 mt-0.5 shrink-0",
+              isDark ? "text-green-400" : "text-green-600",
+            )}
+          />
+
+          <p
+            className={clsx(
+              "text-xs leading-relaxed",
+              isDark ? "text-green-200" : "text-green-800",
+            )}
+          >
+            <strong>{t("ready_to_publish")}</strong> {t("publish_instruction")}
           </p>
         </div>
       </div>
@@ -781,7 +1003,7 @@ export default function CreatePromotionWizard({
 
   // ── render ───────────────────────────────────────────────────────────────
   const renderStep = () => {
-    switch (STEPS[currentStep].key) {
+    switch (STEPS[currentStep]?.key) {
       case "placement":
         return <PlacementStep />;
       case "media":
@@ -796,33 +1018,26 @@ export default function CreatePromotionWizard({
   };
 
   const step = STEPS[currentStep];
-  const valid = isStepValid();
+  // const valid = isStepValid();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div
-        className={`${bgPrimary} rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden`}
-        style={{ boxShadow: "0 25px 60px -10px rgba(0,0,0,0.35)" }}
-      >
+    <ModalWrapper onClose={() => onClose}>
+      <div className="overflow-y-auto">
         {/* Header */}
         <div
           className={`flex items-center justify-between px-6 py-4 border-b ${borderColor}`}
         >
           <div>
             <h2 className={`text-lg font-bold ${textPrimary}`}>
-              {existingPromotion ? "Edit Promotion" : "New Promotion"}
+              {existingPromotion
+                ? t("edit_promotion")
+                : t("new_promotion")}{" "}
             </h2>
             <p className={`text-xs ${textSecondary} mt-0.5`}>
               {websiteName} · Step {currentStep + 1} of {STEPS.length} —{" "}
-              {step.sublabel}
+              {step?.sublabel}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-xl ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Step indicator */}
@@ -831,7 +1046,7 @@ export default function CreatePromotionWizard({
         {/* Step title */}
         <div className={`px-6 pb-3 border-b ${borderColor}`}>
           <h3 className={`text-base font-semibold ${textPrimary}`}>
-            {step.label}
+            {step?.label}
           </h3>
         </div>
 
@@ -839,77 +1054,30 @@ export default function CreatePromotionWizard({
         <div className="flex-1 overflow-y-auto px-6 py-5">{renderStep()}</div>
 
         {/* Footer */}
-        <div
-          className={`flex items-center justify-between gap-3 px-6 py-4 border-t ${borderColor}`}
-        >
-          <button
-            onClick={() => setCurrentStep((s) => s - 1)}
-            disabled={currentStep === 0}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              currentStep === 0
-                ? "opacity-40 cursor-not-allowed"
-                : `${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800`
-            }`}
-          >
-            {isRTL ? (
-              <ArrowRight className="w-4 h-4" />
-            ) : (
-              <ArrowLeft className="w-4 h-4" />
-            )}
-            Back
-          </button>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className={`px-4 py-2.5 rounded-xl border ${borderColor} ${textSecondary} text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-            >
-              Cancel
-            </button>
-
-            {currentStep < STEPS.length - 1 ? (
-              <button
-                onClick={() => setCurrentStep((s) => s + 1)}
-                disabled={!valid}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  valid
-                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-200 dark:shadow-blue-900"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Next
-                {isRTL ? (
-                  <ArrowLeft className="w-4 h-4" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  onSave({
-                    websiteId,
-                    websiteName,
-                    placement: formData.placement,
-                    title: formData.title,
-                    content: formData.content,
-                    linkUrl: formData.linkUrl,
-                    mediaType: formData.mediaType,
-                    desktopMedia: formData.desktopMedia,
-                    mobileMedia: formData.mobileMedia,
-                    active: formData.active,
-                    order: formData.order,
-                  })
-                }
-                className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-green-200 dark:shadow-green-900"
-              >
-                <Check className="w-4 h-4 stroke-[2.5]" />
-                Save Promotion
-              </button>
-            )}
-          </div>
-        </div>
+        <WizardFooter
+          currentStep={currentStep}
+          totalSteps={STEPS.length}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          isSaving={isPublishing}
+          isPublishing={isPublishing}
+          onPublish={() =>
+            onSave({
+              websiteId,
+              websiteName,
+              placement: formData.placement,
+              title: formData.title,
+              content: formData.content,
+              linkUrl: formData.linkUrl,
+              mediaType: formData.mediaType,
+              desktopMedia: formData.desktopMedia,
+              mobileMedia: formData.mobileMedia,
+              active: formData.active,
+              order: formData.order,
+            })
+          }
+        />
       </div>
-    </div>
+    </ModalWrapper>
   );
 }
