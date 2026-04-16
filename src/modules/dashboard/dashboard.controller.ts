@@ -150,6 +150,7 @@ export class DashboardController {
         body.declarationNoLegalProceedings,
         body.declarationTaxCompliant,
         body.declarationAcceptsTerms,
+        body.products ?? [],
       ),
     );
   }

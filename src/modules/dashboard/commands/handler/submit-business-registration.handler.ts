@@ -10,6 +10,19 @@ import { SubmitBusinessRegistrationCommand } from '../submit-business-registrati
 const SPREADSHEET_ID = '1MtXzz8Kpf9fZAGWPq-DTyB27tjK-8Y_Ldc-bRY3N6BU';
 const SHEET_RANGE = 'Sheet1';
 
+function formatProducts(
+  products: SubmitBusinessRegistrationCommand['products'],
+): string {
+  if (products.length === 0) return '';
+  return products
+    .map(
+      (p, i) => `#${i + 1} | שירות: ${p.service} | מחיר קופה: ${
+        p.cashPrice
+      } | מחיר אונליין: ${p.onlinePrice} | מחיר וואוצ'ר: ${p.voucherPrice}`,
+    )
+    .join('\n');
+}
+
 @CommandHandler(SubmitBusinessRegistrationCommand)
 export class SubmitBusinessRegistrationHandler
 implements ICommandHandler<SubmitBusinessRegistrationCommand> {
@@ -46,6 +59,7 @@ implements ICommandHandler<SubmitBusinessRegistrationCommand> {
         declarationNoLegalProceedings,
         declarationTaxCompliant,
         declarationAcceptsTerms,
+        products,
       } = command;
 
       const yesNo = (val: boolean) => (val ? 'כן' : 'לא');
@@ -75,6 +89,7 @@ implements ICommandHandler<SubmitBusinessRegistrationCommand> {
         yesNo(declarationNoLegalProceedings),
         yesNo(declarationTaxCompliant),
         yesNo(declarationAcceptsTerms),
+        formatProducts(products),
         new Date().toLocaleString('he-IL'),
       ];
 

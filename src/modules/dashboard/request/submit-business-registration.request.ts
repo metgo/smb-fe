@@ -7,8 +7,37 @@ import {
   ArrayNotEmpty,
   IsOptional,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ToBoolean } from 'src/core/decorators/to-boolean.decorator';
+
+export class ProductItemRequest {
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    id: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    service: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    cashPrice: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    onlinePrice: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+    voucherPrice: string;
+}
 
 export class SubmitBusinessRegistrationRequest {
   @ApiProperty({ type: String })
@@ -142,4 +171,11 @@ export class SubmitBusinessRegistrationRequest {
   @ToBoolean()
   @IsNotEmpty()
     declarationAcceptsTerms: boolean;
+
+  @ApiProperty({ type: [ProductItemRequest] })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ProductItemRequest)
+    products: ProductItemRequest[];
 }

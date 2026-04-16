@@ -1,3 +1,10 @@
+export interface ProductItem {
+  service: string;
+  cashPrice: string;
+  onlinePrice: string;
+  voucherPrice: string;
+}
+
 export class SubmitBusinessRegistrationCommand {
   constructor(
     public readonly businessName: string,
@@ -24,5 +31,6 @@ export class SubmitBusinessRegistrationCommand {
     public readonly declarationNoLegalProceedings: boolean,
     public readonly declarationTaxCompliant: boolean,
     public readonly declarationAcceptsTerms: boolean,
+    public readonly products: ProductItem[],
   ) {}
 }
