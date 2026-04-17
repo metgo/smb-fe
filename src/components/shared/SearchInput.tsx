@@ -17,16 +17,17 @@ const SearchInput: React.FC<SearchInputProps> = ({
   const [inputValue, setInputValue] = useState(searchTerm);
   const { isDark, rowDir } = useThemeClasses();
   const isRTL = rowDir === "flex-row-reverse";
-  // Track the last value we pushed up so we can distinguish external resets
-  // (e.g. clearFilter) from the echo-back that follows our own debounce.
+  const inputRef = useRef<HTMLInputElement>(null);
   const lastPushedRef = useRef(searchTerm);
 
-  // Sync from parent only when the change is external (e.g. clearFilter sets
-  // searchTerm to ""). Without this guard, the debounce echo-back would
-  // overwrite whatever the user typed after the debounce fired — causing
-  // characters to vanish on slow devices / browsers.
+  // Sync from parent only when the input is NOT focused and the change is
+  // external (e.g. clearFilter, or a saved search loaded on mount). Skipping
+  // the sync while the user is actively typing prevents the parent's async
+  // state update from clobbering keystrokes mid-type — the root cause of
+  // characters disappearing on slow devices / browsers.
   useEffect(() => {
-    if (searchTerm !== lastPushedRef.current) {
+    const isFocused = document.activeElement === inputRef.current;
+    if (!isFocused && searchTerm !== lastPushedRef.current) {
       setInputValue(searchTerm);
       lastPushedRef.current = searchTerm;
     }
@@ -56,6 +57,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       />
 
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={inputValue}
