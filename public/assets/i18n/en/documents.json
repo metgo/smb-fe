@@ -15,6 +15,7 @@
   "file_type": "File Type",
   "file": "Uploaded File",
   "document_file": "Document File",
+  "website": "Website",
   "enter_document_title": "Enter document title",
   "enter_document_subtitle_optional": "Enter subtitle (optional)",
   "drag_drop_or_click": "Drag & drop or click to upload",
@@ -22,7 +23,7 @@
   "remove_file": "Remove File",
   "cancel": "Cancel",
   "uploading": "Uploading...",
-
+  "select_website": "Select Website",
   "title_required": "Title is required",
   "file_required": "Please upload a document",
   "invalid_file_type": "Only PDF, DOC, DOCX, and TXT files are allowed",

@@ -15,6 +15,7 @@
   "file_type": "نوع الملف",
   "file": "الملف المرفوع",
   "document_file": "ملف المستند",
+  "website": "الموقع الإلكتروني",
   "enter_document_title": "أدخل عنوان المستند",
   "enter_document_subtitle_optional": "أدخل العنوان الفرعي (اختياري)",
   "drag_drop_or_click": "اسحب وأسقط أو انقر للرفع",
@@ -22,7 +23,7 @@
   "remove_file": "إزالة الملف",
   "cancel": "إلغاء",
   "uploading": "جاري الرفع...",
-
+  "select_website": "اختر الموقع الإلكتروني",
   "title_required": "العنوان مطلوب",
   "file_required": "يرجى رفع مستند",
   "invalid_file_type": "يُسمح فقط بملفات PDF و DOC و DOCX و TXT",

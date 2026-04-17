@@ -26,7 +26,6 @@ export const CreateDocumentWizard = ({
 }: CreateDocumentWizardProps) => {
   const { t } = useTranslation("documents");
   const { isDark, borderColor, textPrimary } = useThemeClasses();
-  const { websiteId } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState<DocumentFormData>({
     title: "",
@@ -128,11 +127,7 @@ export const CreateDocumentWizard = ({
   return (
     <ModalWrapper onClose={onClose}>
       {/* Header */}
-      <div
-        className={`flex items-center justify-between p-6 border-b ${
-          isDark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"
-        }`}
-      >
+      <div className="p-4">
         <div>
           <h2
             className={`text-2xl mt-1 ${isDark ? "text-gray-300" : "text-black"}`}
@@ -151,14 +146,14 @@ export const CreateDocumentWizard = ({
 
       <form
         onSubmit={handleSubmit}
-        className={`p-6 space-y-6 ${
-          isDark ? "bg-gray-900 text-white" : "bg-white text-black"
+        className={`p-6 space-y-6 overflow-y-auto ${
+          isDark ? "bg-gray-900 text-white" : " text-black"
         }`}
       >
         <div className="flex flex-col overflow-y-auto space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium mb-1.5">
+            <label className="block text-sm font-medium ">
               {t("title")} <span className="text-red-500">*</span>
             </label>
             <input
@@ -176,6 +171,9 @@ export const CreateDocumentWizard = ({
               disabled={isSubmitting}
             />
           </div>
+          <label className="block text-sm font-medium mb-1.5">
+            {t("website")} <span className="text-red-500">*</span>
+          </label>
           <ReactSelect
             minWidth={180}
             value={externalApiId}
@@ -311,7 +309,12 @@ export const CreateDocumentWizard = ({
 
           <button
             type="submit"
-            disabled={isSubmitting || !formData.title.trim() || !docState.file}
+            disabled={
+              isSubmitting ||
+              !formData.title.trim() ||
+              !docState.file ||
+              !externalApiId
+            }
             className="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:brightness-105"
           >
             {isSubmitting ? (

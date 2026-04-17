@@ -70,7 +70,7 @@ export default function DocumentsManagement() {
       label: t("subtitle") || "Subtitle",
       sortable: false,
       render: (doc: any) => {
-        const subtitle = doc.subTitle || doc.subtitle; // handle both camelCase & snake_case if needed
+        const subtitle = doc.subTitle || doc.subtitle;
         return subtitle && subtitle.trim() !== "" ? subtitle : "-";
       },
     },
