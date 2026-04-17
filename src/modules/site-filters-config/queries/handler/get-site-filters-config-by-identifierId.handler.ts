@@ -98,7 +98,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
           isActive: true,
         })
           .select(
-            'productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price groupTypesId accessibilitiesId tagsId',
+            'productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price groupTypesId accessibilitiesId tagsId deliveryArea',
           )
           .lean();
         const productAuditMap = new Map<string, any>(
@@ -379,6 +379,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
             productAudit.shortDescriptionAr ?? product.shortDescriptionAr,
         images: productAudit.images ?? product.images,
         price: productAudit.price ?? product.price,
+        deliveryArea: productAudit.deliveryArea ?? product.deliveryArea,
       }
       : product;
 
@@ -431,8 +432,11 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
       shortDescriptionHe,
       businessId,
       images,
+      deliveryArea,
       ...rest
     } = item;
+
+    const hasDelivery = Array.isArray(deliveryArea) && deliveryArea.length > 0;
 
     const primaryImage
       = images?.find((img: any) => img.isPrimary) ?? images?.[0] ?? null;
@@ -451,6 +455,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
             shortDescriptionAr || shortDescription || shortDescriptionHe,
           businessId: localizedBusiness,
           image: primaryImage,
+          hasDelivery,
         };
       case Locale.HEBREW:
         return {
@@ -461,6 +466,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
             shortDescriptionHe || shortDescription || shortDescriptionAr,
           businessId: localizedBusiness,
           image: primaryImage,
+          hasDelivery,
         };
       case Locale.ENGLISH:
         return {
@@ -471,6 +477,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
             shortDescription || shortDescriptionHe || shortDescriptionAr,
           businessId: localizedBusiness,
           image: primaryImage,
+          hasDelivery,
         };
       default:
         return item;
