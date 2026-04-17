@@ -28,6 +28,7 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
+  LayoutList,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -211,6 +212,13 @@ export default function Sidebar() {
           label: t("mini_site") || "Mini-site",
           icon: Layout,
           isEnabled: false,
+        },
+        {
+          id: "document-settings",
+          path: routes.documentMgmt,
+          label: t("documents") || "Documents",
+          icon: LayoutList,
+          isEnabled: true,
         },
         {
           id: "website-settings",

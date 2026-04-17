@@ -10,7 +10,7 @@ export const routes = {
   articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
-
+  documentMgmt: "/documents-management",
   productsMgmt: "/products-management",
   productDetails: "/product-details",
 
