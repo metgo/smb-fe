@@ -15,6 +15,7 @@ import { MailModule } from 'src/services/mail/mail.module';
 import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { SmsModule } from 'src/services/sms/sms.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
     HashModule,
     JwtAuthModule,
     MailChimpModule,
+    SmsModule,
     VoucherModule,
   ],
   controllers: [UsersController],

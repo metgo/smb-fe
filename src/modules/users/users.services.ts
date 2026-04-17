@@ -12,9 +12,14 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { nanoid } from 'nanoid';
 import { Logger } from 'winston';
 
-import { ServerErrors, ServerSuccess } from 'src/common/constant';
+import {
+  emailDefaultTemplate,
+  ServerErrors,
+  ServerSuccess,
+} from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import {
+  DynamicHebrewTemplate,
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
@@ -59,6 +64,8 @@ import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
 import { GetAllUsersQuery } from 'src/modules/users/queries/get-all-users.query';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { SmsService } from 'src/services/sms/sms.service';
+import { CreateUserByWebsiteRequest } from './requests/create-user-by-website.request';
 
 @Injectable()
 export class UsersService {
@@ -79,6 +86,7 @@ export class UsersService {
     private readonly jwtAuthService: JwtAuthService,
     private mailchimpService: MailChimpService,
     private voucherService: VoucherService,
+    private readonly smsService: SmsService,
   ) {
     const configService = new ConfigService();
 
@@ -778,6 +786,93 @@ export class UsersService {
   //     exceptionHandling(err);
   //   }
   // }
+
+  async createUserThroughWebsite(dto: CreateUserByWebsiteRequest) {
+    try {
+      const user = await this.UserModel.findOne({ email: dto.email }).lean();
+
+      if (user) {
+        return user;
+      }
+
+      const password = nanoid(8);
+      const hashedPassword = await this.hashService.create(password);
+
+      const body = {
+        ...dto,
+        role: UserType.TRAVELLER,
+        hasBusiness: true,
+        password: hashedPassword,
+        createdAt: new Date(),
+      };
+
+      const newUser = new this.UserModel(body);
+      const entity: string = 'METGO';
+
+      await newUser.save();
+
+      this.logger.info('[USER]: CREATED BY ADMIN', { message: newUser });
+
+      await Promise.all([
+        this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
+        this.voucherService.updateVoucherAssignedDetails(
+          body.email,
+          newUser.id,
+        ),
+        this.mailchimpService.subscribe(
+          newUser.firstName,
+          newUser.lastName,
+          newUser.email,
+        ),
+        this.mailchimpService.sendTransactionalEmail({
+          to: newUser?.email,
+          templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
+          mergeVars: {
+            FNAME: newUser?.firstName,
+            ENTITY: entity,
+            website: 'https://workspace.metgo.app/',
+            USERNAME: newUser?.email,
+            PASSWORD: password,
+            LOGO1: emailDefaultTemplate.SIDE_LOGO,
+            LOGO2: emailDefaultTemplate.MAIN_LOGO,
+            LOGO3: emailDefaultTemplate.SIDE_LOGO,
+            PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+            PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+            IMAGE1: emailDefaultTemplate.IMAGE1,
+            IMAGE2: emailDefaultTemplate.IMAGE2,
+            IMAGE3: emailDefaultTemplate.IMAGE3,
+          },
+        }),
+      ]);
+
+      if (dto.phoneNumber) {
+        const siteName = dto.siteName ?? 'MetGo';
+        const businessName = dto.businessName ?? '';
+        const smsMessage = `היי ${
+          dto.firstName ?? ''
+        }, ברוכים הבאים ל-${siteName}!\nבואו נשפר את הנראות של ${businessName} באתר. היכנסו לעדכון פרופיל העסק כאן:\nhttps://workspace.metgo.app/\nשם משתמש: המייל שהזנת בטופס\nסיסמה: ${password}\nצוות MetGo  מאחל לכם המון בהצלחה!\n\nלכל עזרה, אנחנו כאן: support@mego.app`;
+
+        await this.smsService.sendSms({
+          firstName: dto.firstName ?? '',
+          lastName: dto.lastName ?? '',
+          phone: dto.phoneNumber,
+          message: smsMessage,
+          sender: 'MetGo',
+          subject: 'Business Registration',
+        });
+      }
+
+      return newUser;
+    } catch (err) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE BY ADMIN ------ ERROR: ${err.message}`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
 
   async findDMOUser(id: string) {
     const dmoUser = await findOneById<User>(this.UserModel, id);

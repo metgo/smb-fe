@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { BusinessMarketplaceController } from 'src/modules/business/marketplace/business-marketplace.controller';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
-import { BusinessSchema } from './shared/schema/business.schema';
+import { Business, BusinessSchema } from './shared/schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { HashModule } from 'src/services/hash/hash.module';
@@ -33,16 +33,27 @@ import {
 } from '../products/schema/products-audit.schema';
 import { BusinessSharedController } from './shared/controllers/business.controller';
 import { Tags, TagsSchema } from 'src/modules/tags/schema/tags.schema';
+import {
+  ExternalApi,
+  ExternalApiSchema,
+} from 'src/modules/external-api/schema/external-api.schema';
+import {
+  Campaign,
+  CampaignSchema,
+} from 'src/modules/campaign/schema/campaign.schema';
+import { CreateBusinessHandler } from './command/handler/create-business.handler';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
-      { name: 'Business', schema: BusinessSchema },
+      { name: Business.name, schema: BusinessSchema },
       { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: 'BusinessAudit', schema: BusinessAuditSchema },
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: Tags.name, schema: TagsSchema },
+      { name: ExternalApi.name, schema: ExternalApiSchema },
+      { name: Campaign.name, schema: CampaignSchema },
     ]),
     ConfigModule,
     HashModule,
@@ -61,6 +72,7 @@ import { Tags, TagsSchema } from 'src/modules/tags/schema/tags.schema';
   ],
   providers: [
     BusinessService,
+    CreateBusinessHandler,
     GetAllBusinessForMapHandler,
     GetAllApprovedBusinessesHandler,
     GetAllBusinessForMapTourismHandler,

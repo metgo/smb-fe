@@ -2,23 +2,44 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Query,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { GetByCampCodeQueryRequest } from '../request/get-by-campcode.request';
+import { CreateBusinessRequest } from '../request/create-business.request';
 import { GetBusinessDetailForTourismQuery } from '../../tourism/queries/get-business-detail.query';
+import { CreateBusinessCommand } from '../../command/create-business.command';
 
 @Controller()
 export class BusinessSharedController {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
+
+  @ApiEndpoint({
+    tags: ['Shared'],
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.BUSINESS_CREATED,
+    },
+    operation: 'Create a new business f',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('businesses')
+  async createBusiness(@Body() body: CreateBusinessRequest) {
+    return await this.commandBus.execute(new CreateBusinessCommand(body));
+  }
 
   @ApiEndpoint({
     tags: ['Shared'],
