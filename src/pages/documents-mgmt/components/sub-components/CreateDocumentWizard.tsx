@@ -1,12 +1,16 @@
+"use client";
+
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback } from "react";
 import { Upload, FileText, Loader2 } from "lucide-react";
+import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
-import clsx from "clsx";
 import { ModalWrapper } from "@/components/wrapper";
+import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import { ReactSelect } from "@/components/form-fields";
 
 interface CreateDocumentWizardProps {
   onClose: () => void;
@@ -15,7 +19,6 @@ interface CreateDocumentWizardProps {
 type DocumentFormData = {
   title: string;
   subTitle: string;
-  file: File | null;
 };
 
 export const CreateDocumentWizard = ({
@@ -28,12 +31,14 @@ export const CreateDocumentWizard = ({
   const [formData, setFormData] = useState<DocumentFormData>({
     title: "",
     subTitle: "",
-    file: null,
   });
+  const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const [externalApiId, setExternalApiId] = useState("");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [previewFileName, setPreviewFileName] = useState<string>("");
+
+  const { docState, isLoading, handleFileSelect, removeFile, upload } =
+    useDocumentUpload({ onSuccess: onClose });
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -67,10 +72,9 @@ export const CreateDocumentWizard = ({
         return;
       }
 
-      setFormData((prev) => ({ ...prev, file }));
-      setPreviewFileName(file.name);
+      handleFileSelect(file);
     },
-    [t],
+    [t, handleFileSelect],
   );
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,39 +107,23 @@ export const CreateDocumentWizard = ({
       return;
     }
 
-    if (!formData.file) {
+    if (!docState.file) {
       toast.error(t("file_required"));
       return;
     }
 
-    setIsSubmitting(true);
-    const toastId = toast.loading(t("uploading_document"));
-
-    try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("title", formData.title.trim());
-      uploadFormData.append("subTitle", formData.subTitle.trim());
-      uploadFormData.append("file", formData.file);
-      uploadFormData.append("externalApiId", websiteId || "");
-
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      toast.success(t("document_uploaded_success"), { id: toastId });
-
-      setFormData({ title: "", subTitle: "", file: null });
-      setPreviewFileName("");
-      onClose();
-    } catch (error: any) {
-      toast.error(error?.message || t("upload_failed"), { id: toastId });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await upload({
+      title: formData.title.trim(),
+      subTitle: formData.subTitle.trim(),
+      externalApiId: externalApiId || "",
+      docUrl: docState.url ?? "",
+      docType: docState.file.type,
+      docSize: String(docState.file.size),
+    });
   };
 
-  const removeFile = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
-    setPreviewFileName("");
-  };
+  const isSubmitting = isLoading || docState.status === "uploading";
+  const isUploading = docState.status === "uploading";
 
   return (
     <ModalWrapper onClose={onClose}>
@@ -167,7 +155,7 @@ export const CreateDocumentWizard = ({
           isDark ? "bg-gray-900 text-white" : "bg-white text-black"
         }`}
       >
-        <div className="flex flex-col overflow-y-auto">
+        <div className="flex flex-col overflow-y-auto space-y-4">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
@@ -188,7 +176,13 @@ export const CreateDocumentWizard = ({
               disabled={isSubmitting}
             />
           </div>
-
+          <ReactSelect
+            minWidth={180}
+            value={externalApiId}
+            items={associatedWebsite}
+            onChange={(value) => setExternalApiId(value)}
+            placeholder={t("select_website")}
+          />
           {/* Subtitle */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
@@ -228,20 +222,45 @@ export const CreateDocumentWizard = ({
                     : "border-gray-300 hover:border-gray-400",
               )}
             >
-              {formData.file ? (
-                <div className="flex flex-col items-center">
-                  <FileText className="w-12 h-12 text-violet-600 mb-3" />
+              {docState.file ? (
+                <div className="flex flex-col items-center gap-2">
+                  <FileText className="w-12 h-12 text-violet-600 mb-1" />
                   <p className="font-medium text-sm break-all">
-                    {previewFileName}
+                    {docState.file.name}
                   </p>
-                  <button
-                    type="button"
-                    onClick={removeFile}
-                    className="mt-3 text-xs text-red-500 hover:underline"
-                    disabled={isSubmitting}
-                  >
-                    {t("remove_file")}
-                  </button>
+
+                  {/* Progress bar */}
+                  {isUploading && (
+                    <div className="w-full mt-2">
+                      <div
+                        className={`w-full h-1.5 rounded-full ${
+                          isDark ? "bg-gray-700" : "bg-gray-200"
+                        }`}
+                      >
+                        <div
+                          className="h-1.5 rounded-full bg-violet-600 transition-all duration-300"
+                          style={{ width: `${docState.progress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-violet-500 mt-1">
+                        {docState.progress < 50
+                          ? t("uploading_to_storage")
+                          : t("saving_document")}{" "}
+                        {docState.progress}%
+                      </p>
+                    </div>
+                  )}
+
+                  {!isUploading && (
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="mt-1 text-xs text-red-500 hover:underline"
+                      disabled={isSubmitting}
+                    >
+                      {t("remove_file")}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
@@ -292,7 +311,7 @@ export const CreateDocumentWizard = ({
 
           <button
             type="submit"
-            disabled={isSubmitting || !formData.title.trim() || !formData.file}
+            disabled={isSubmitting || !formData.title.trim() || !docState.file}
             className="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:brightness-105"
           >
             {isSubmitting ? (

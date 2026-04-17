@@ -11,62 +11,9 @@ import { PageHeader } from "@/components/shared";
 import EmptyState from "@/components/shared/EmptyState";
 import { CreateDocumentWizard } from "./components/sub-components/CreateDocumentWizard";
 import { ReordableDataTable } from "@/components/shared";
+import { useGetDocumentQuery } from "@/store/api/doumentMutationApi";
 
 const STORAGE_KEY = "document_query_state";
-
-// Dummy Data
-const dummyDocuments = [
-  {
-    _id: "doc1",
-    title: "Employee Handbook 2025",
-    subTitle: "Complete guidelines for company policies and procedures",
-    status: "ACTIVE",
-    createdAt: "2025-03-15T10:30:00Z",
-    updatedAt: "2025-04-10T14:20:00Z",
-    fileSize: 2457600, // 2.45 MB
-    fileType: "PDF",
-  },
-  {
-    _id: "doc2",
-    title: "Q1 Financial Report",
-    subTitle: "Quarterly financial summary and projections",
-    status: "APPROVED",
-    createdAt: "2025-04-01T09:15:00Z",
-    updatedAt: "2025-04-05T16:45:00Z",
-    fileSize: 1843200, // 1.84 MB
-    fileType: "PDF",
-  },
-  {
-    _id: "doc3",
-    title: "Product Launch Presentation",
-    subTitle: "Slides for upcoming product launch event",
-    status: "DRAFT",
-    createdAt: "2025-04-12T11:00:00Z",
-    updatedAt: "2025-04-16T08:30:00Z",
-    fileSize: 5120000, // 5.12 MB
-    fileType: "PPTX",
-  },
-  {
-    _id: "doc4",
-    title: "Client Contract - Acme Corp",
-    subTitle: "Service agreement and terms",
-    status: "ACTIVE",
-    createdAt: "2025-02-20T14:00:00Z",
-    updatedAt: "2025-03-25T10:10:00Z",
-    fileSize: 768000, // 0.768 MB
-    fileType: "DOCX",
-  },
-  {
-    _id: "doc5",
-    title: "Marketing Strategy 2026",
-    subTitle: "Long-term marketing goals and campaigns",
-    status: "DRAFT",
-    createdAt: "2025-04-10T13:45:00Z",
-    updatedAt: "2025-04-17T09:20:00Z",
-    fileSize: 1536000, // 1.536 MB
-    fileType: "PDF",
-  },
-];
 
 export default function DocumentsManagement() {
   const { t } = useTranslation("documents");
@@ -82,20 +29,17 @@ export default function DocumentsManagement() {
   const [combinedDocuments, setCombinedDocuments] = useState<any[]>([]);
   const [page, setPage] = useState(1);
 
-  // Load dummy data (simulating API behavior)
-  useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      if (page === 1) {
-        setCombinedDocuments(dummyDocuments);
-      } else {
-        // For demo purposes, no more data after first page
-        setCombinedDocuments((prev) => [...prev]);
-      }
-    }, 400);
+  const { data, isLoading, isFetching } = useGetDocumentQuery({});
 
-    return () => clearTimeout(timer);
-  }, [page]);
+  useEffect(() => {
+    if (data?.data) {
+      // Adjust this path if your API returns documents differently (e.g., data.documents)
+      setCombinedDocuments(Array.isArray(data.data) ? data.data : []);
+    } else if (data) {
+      // Fallback in case API returns flat array
+      setCombinedDocuments(Array.isArray(data) ? data : []);
+    }
+  }, [data]);
 
   // Persist page state
   useEffect(() => {
@@ -107,15 +51,14 @@ export default function DocumentsManagement() {
     setPage(1);
   }, [websiteId]);
 
-  const hasMore = false; // No more pages in dummy data
-  const totalData = dummyDocuments.length;
-  const isLoading = false;
+  const hasMore = false; // Keep as-is (you can enhance later with pagination from API)
+  const totalData = combinedDocuments.length;
 
   const fetchNextPage = useCallback(() => {
     toast.info("No more documents to load");
   }, []);
 
-  // Table Columns Definition
+  // Table Columns Definition (unchanged)
   const columns = [
     {
       key: "title",
@@ -126,46 +69,21 @@ export default function DocumentsManagement() {
       key: "subTitle",
       label: t("subtitle") || "Subtitle",
       sortable: false,
+      render: (doc: any) => {
+        const subtitle = doc.subTitle || doc.subtitle; // handle both camelCase & snake_case if needed
+        return subtitle && subtitle.trim() !== "" ? subtitle : "-";
+      },
     },
-    {
-      key: "status",
-      label: t("status") || "Status",
-      sortable: true,
-      render: (doc: any) => (
-        <span
-          className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-            doc.status === "ACTIVE" || doc.status === "APPROVED"
-              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-              : doc.status === "DRAFT"
-                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-          }`}
-        >
-          {doc.status || "DRAFT"}
-        </span>
-      ),
-    },
+
     {
       key: "createdAt",
       label: t("created_at") || "Created At",
       sortable: true,
       render: (doc: any) => new Date(doc.createdAt).toLocaleDateString(),
     },
+
     {
-      key: "updatedAt",
-      label: t("updated_at") || "Updated At",
-      sortable: true,
-      render: (doc: any) => new Date(doc.updatedAt).toLocaleDateString(),
-    },
-    {
-      key: "fileSize",
-      label: t("file_size") || "File Size",
-      sortable: true,
-      render: (doc: any) =>
-        doc.fileSize ? `${(doc.fileSize / 1024 / 1024).toFixed(2)} MB` : "—",
-    },
-    {
-      key: "fileType",
+      key: "docType",
       label: t("file_type") || "File Type",
       sortable: false,
     },
@@ -210,9 +128,9 @@ export default function DocumentsManagement() {
           <div className="py-4 flex justify-end gap-3"></div>
         </div>
 
-        {/* Content Area - Direct ReordableDataTable */}
+        {/* Content Area */}
         <div className="flex-1 overflow-hidden mt-2">
-          {combinedDocuments.length === 0 && !isLoading ? (
+          {combinedDocuments.length === 0 && !isLoading && !isFetching ? (
             <EmptyState searchQuery="" />
           ) : (
             <div
@@ -221,7 +139,7 @@ export default function DocumentsManagement() {
               <ReordableDataTable
                 rowKey="_id"
                 data={combinedDocuments}
-                isDataLoading={isLoading}
+                isDataLoading={isLoading || isFetching}
                 selectedItems={selectedDocuments}
                 onSelectionChange={setSelectedDocuments}
                 storageKey="documentsTableColumnOrder"
