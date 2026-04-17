@@ -9,6 +9,7 @@
   "title": "כותרת",
   "subtitle": "כתובית",
   "status": "סטטוס",
+  "saving_document": "שומר את המסמך...",
   "created_at": "נוצר בתאריך",
   "updated_at": "עודכן בתאריך",
   "file_size": "גודל קובץ",

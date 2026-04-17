@@ -14,6 +14,7 @@ import { ReactSelect } from "@/components/form-fields";
 
 interface CreateDocumentWizardProps {
   onClose: () => void;
+  refetch: () => void;
 }
 
 type DocumentFormData = {
@@ -23,6 +24,7 @@ type DocumentFormData = {
 
 export const CreateDocumentWizard = ({
   onClose,
+  refetch,
 }: CreateDocumentWizardProps) => {
   const { t } = useTranslation("documents");
   const { isDark, borderColor, textPrimary } = useThemeClasses();
@@ -119,6 +121,7 @@ export const CreateDocumentWizard = ({
       docType: docState.file.type,
       docSize: String(docState.file.size),
     });
+    refetch();
   };
 
   const isSubmitting = isLoading || docState.status === "uploading";

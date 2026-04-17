@@ -8,6 +8,7 @@
   "fill_document_details": "Fill in the document details below",
   "title": "Title",
   "subtitle": "Subtitle",
+  "saving_document": "Saving document...",
   "status": "Status",
   "created_at": "Created At",
   "updated_at": "Updated At",

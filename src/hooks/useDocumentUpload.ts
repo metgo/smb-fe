@@ -14,6 +14,7 @@ type DocumentUploadState = {
   file: File | null;
   progress: number;
   status: "idle" | "uploading" | "success" | "error";
+  url: string;
 };
 
 export const useDocumentUpload = ({ onSuccess }: UseDocumentUploadProps) => {
@@ -26,14 +27,15 @@ export const useDocumentUpload = ({ onSuccess }: UseDocumentUploadProps) => {
     file: null,
     progress: 0,
     status: "idle",
+    url: "",
   });
 
   const handleFileSelect = (file: File) => {
-    setDocState({ file, progress: 0, status: "idle" });
+    setDocState({ file, progress: 0, status: "idle", url: "" });
   };
 
   const removeFile = () => {
-    setDocState({ file: null, progress: 0, status: "idle" });
+    setDocState({ file: null, progress: 0, status: "idle", url: "" });
   };
 
   const generateSignedUrl = async (file: File) => {
@@ -51,7 +53,8 @@ export const useDocumentUpload = ({ onSuccess }: UseDocumentUploadProps) => {
     subTitle: string;
     externalApiId: string;
     docUrl: string;
-    // Remove docUrl, docType, docSize from here if you want to handle them inside the hook
+    docType: string;
+    docSize: string;
   }) => {
     if (!docState.file) return;
 
@@ -72,8 +75,7 @@ export const useDocumentUpload = ({ onSuccess }: UseDocumentUploadProps) => {
       formData.append("subTitle", payload.subTitle);
       formData.append("externalApiId", payload.externalApiId);
 
-      // ✅ Correct fields expected by backend
-      formData.append("docUrl", gcsURL); // was "fileUrl"
+      formData.append("docUrl", gcsURL);
       formData.append("docType", docState.file.type);
       formData.append("docSize", String(docState.file.size));
 

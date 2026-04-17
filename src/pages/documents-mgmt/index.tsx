@@ -32,7 +32,7 @@ export default function DocumentsManagement() {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFile, _setSelectedFile] = useState<any>(null);
 
-  const { data, isLoading, isFetching } = useGetDocumentQuery();
+  const { data, isLoading, isFetching, refetch } = useGetDocumentQuery();
 
   useEffect(() => {
     if (data?.data) {
@@ -194,7 +194,10 @@ export default function DocumentsManagement() {
 
         {/* Upload Modal */}
         {isCreateModalOpen && (
-          <CreateDocumentWizard onClose={() => setIsCreateModalOpen(false)} />
+          <CreateDocumentWizard
+            onClose={() => setIsCreateModalOpen(false)}
+            refetch={refetch}
+          />
         )}
 
         {/* File Viewer Popup */}

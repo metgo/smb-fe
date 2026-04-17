@@ -9,6 +9,7 @@
   "title": "العنوان",
   "subtitle": "العنوان الفرعي",
   "status": "الحالة",
+  "saving_document": "جارٍ حفظ المستند...",
   "created_at": "تاريخ الإنشاء",
   "updated_at": "تاريخ التحديث",
   "file_size": "حجم الملف",
