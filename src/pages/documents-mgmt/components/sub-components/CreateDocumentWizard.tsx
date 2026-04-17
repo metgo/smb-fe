@@ -125,7 +125,7 @@ export const CreateDocumentWizard = ({
   const isUploading = docState.status === "uploading";
 
   return (
-    <ModalWrapper onClose={onClose}>
+    <ModalWrapper onClose={onClose} height="" maxWidth="max-w-3xl">
       {/* Header */}
       <div className="p-4">
         <div>
@@ -151,36 +151,41 @@ export const CreateDocumentWizard = ({
         }`}
       >
         <div className="flex flex-col overflow-y-auto space-y-4">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium ">
-              {t("title")} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              placeholder={t("enter_document_title")}
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
-                isDark
-                  ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
-                  : "bg-white border-gray-200"
-              }`}
-              required
-              disabled={isSubmitting}
-            />
+          <div className="grid grid-cols-2 gap-3 items-center">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium ">
+                {t("title")} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder={t("enter_document_title")}
+                className={`w-full mt-1 px-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                  isDark
+                    ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
+                    : "bg-white border-gray-300"
+                }`}
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">
+                {t("website")} <span className="text-red-500">*</span>
+              </label>
+              <ReactSelect
+                minWidth={180}
+                value={externalApiId}
+                items={associatedWebsite}
+                onChange={(value) => setExternalApiId(value)}
+                placeholder={t("select_website")}
+              />
+            </div>
           </div>
-          <label className="block text-sm font-medium mb-1.5">
-            {t("website")} <span className="text-red-500">*</span>
-          </label>
-          <ReactSelect
-            minWidth={180}
-            value={externalApiId}
-            items={associatedWebsite}
-            onChange={(value) => setExternalApiId(value)}
-            placeholder={t("select_website")}
-          />
+
           {/* Subtitle */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
@@ -191,8 +196,8 @@ export const CreateDocumentWizard = ({
               value={formData.subTitle}
               onChange={handleInputChange}
               placeholder={t("enter_document_subtitle_optional")}
-              rows={3}
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y min-h-[80px] ${
+              rows={1}
+              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y min-h-[30px] ${
                 isDark
                   ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
                   : "bg-white border-gray-200"
