@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 
 import { FileText, X } from "lucide-react";
-import FileViewer from "react-file-viewer";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -31,9 +30,9 @@ export default function DocumentsManagement() {
 
   // popup state
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [selectedFile, _setSelectedFile] = useState<any>(null);
 
-  const { data, isLoading, isFetching } = useGetDocumentQuery({});
+  const { data, isLoading, isFetching } = useGetDocumentQuery();
 
   useEffect(() => {
     if (data?.data) {
@@ -68,11 +67,40 @@ export default function DocumentsManagement() {
     return "pdf";
   };
 
-  const openViewer = (doc: any) => {
-    setSelectedFile(doc);
-    setIsViewerOpen(true);
-  };
+  const openDocumentInNewTab = (file: any) => {
+    const url = file.docUrl;
+    const type = file.docType?.toLowerCase() || "";
 
+    // PDF
+    if (type.includes("pdf")) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    // CSV / TXT
+    if (type.includes("csv") || type.includes("text")) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    // Word / Excel / PowerPoint
+    if (
+      type.includes("word") ||
+      type.includes("officedocument") ||
+      type.includes("excel") ||
+      type.includes("spreadsheet") ||
+      type.includes("presentation")
+    ) {
+      const officeViewer = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(
+        url,
+      )}`;
+      window.open(officeViewer, "_blank");
+      return;
+    }
+
+    // Fallback
+    window.open(url, "_blank");
+  };
   const columns = [
     {
       key: "title",
@@ -109,7 +137,7 @@ export default function DocumentsManagement() {
 
         return (
           <div
-            onClick={() => openViewer(doc)}
+            onClick={() => openDocumentInNewTab(doc)}
             className="flex items-center gap-2 cursor-pointer hover:text-violet-600"
           >
             <FileText className="w-4 h-4 text-violet-600 flex-shrink-0" />

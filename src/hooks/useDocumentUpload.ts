@@ -50,6 +50,7 @@ export const useDocumentUpload = ({ onSuccess }: UseDocumentUploadProps) => {
     title: string;
     subTitle: string;
     externalApiId: string;
+    docUrl: string;
     // Remove docUrl, docType, docSize from here if you want to handle them inside the hook
   }) => {
     if (!docState.file) return;
