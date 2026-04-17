@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -13,28 +13,39 @@ const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
-  storageKey = "",
 }) => {
-  const STORAGE_KEY = storageKey; // localStorage key
-
-  const [inputValue, setInputValue] = useState(() => {
-    // Initialize from localStorage if available
-    return localStorage.getItem(STORAGE_KEY) ?? searchTerm;
-  });
+  const [inputValue, setInputValue] = useState(searchTerm);
   const { isDark, rowDir } = useThemeClasses();
   const isRTL = rowDir === "flex-row-reverse";
+  // Track the last value we pushed up so we can distinguish external resets
+  // (e.g. clearFilter) from the echo-back that follows our own debounce.
+  const lastPushedRef = useRef(searchTerm);
 
+  // Sync from parent only when the change is external (e.g. clearFilter sets
+  // searchTerm to ""). Without this guard, the debounce echo-back would
+  // overwrite whatever the user typed after the debounce fired — causing
+  // characters to vanish on slow devices / browsers.
   useEffect(() => {
-    setInputValue(localStorage.getItem(STORAGE_KEY) ?? searchTerm); // Sync if external searchTerm changes
+    if (searchTerm !== lastPushedRef.current) {
+      setInputValue(searchTerm);
+      lastPushedRef.current = searchTerm;
+    }
   }, [searchTerm]);
 
+  // Debounce: propagate local input up to parent after 300 ms of inactivity.
   useEffect(() => {
     const handler = setTimeout(() => {
+      lastPushedRef.current = inputValue;
       setSearchTerm(inputValue);
-    }, 300); // 3 seconds debounce
-
+    }, 300);
     return () => clearTimeout(handler);
   }, [inputValue, setSearchTerm]);
+
+  const handleClear = () => {
+    lastPushedRef.current = "";
+    setInputValue("");
+    setSearchTerm("");
+  };
 
   return (
     <div>
@@ -63,10 +74,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
               ? "text-gray-400 hover:text-gray-200"
               : "text-gray-500 hover:text-black"
           }`}
-          onClick={() => {
-            setInputValue("");
-            localStorage.removeItem(STORAGE_KEY);
-          }}
+          onClick={handleClear}
           size={20}
         />
       )}
