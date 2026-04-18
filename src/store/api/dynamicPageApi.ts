@@ -5,10 +5,17 @@ import { endpoints } from "@/lib/endpoints";
 interface IDynamicPageBody {
   status: "DRAFT" | "APPROVED";
   externalApiId: string;
-  type: "terms_and_condition" | "privacy" | "business_regulation";
+  type:
+    | "terms_and_condition"
+    | "privacy"
+    | "business_regulation"
+    | "document_upload";
   title: string;
   subTitle?: string;
-  description: string;
+  description?: string;
+  docUrl?: string;
+  docType?: string;
+  docSize?: string;
 }
 
 interface IDynamicPageRes {
@@ -19,10 +26,17 @@ interface IDynamicPageRes {
 interface IDynamicPageData {
   data: {
     _id: string;
-    type: "terms_and_condition" | "privacy" | "business_regulation";
+    type:
+      | "terms_and_condition"
+      | "privacy"
+      | "business_regulation"
+      | "document_upload";
     title: string;
     subTitle?: string;
-    description: string;
+    description?: string;
+    docUrl?: string;
+    docType?: string;
+    docSize?: string;
     status: "DRAFT" | "APPROVED";
   }[];
   totalData: number;

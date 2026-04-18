@@ -301,7 +301,8 @@ function OrderDetailsModal({
             </div>
           </div>
         </div>
-
+      </div>
+      <div className="p-4">
         {/* Actions */}
         {userRole === UserRole.AUTHORITY ||
           (userRole === UserRole.SUPERADMIN && (
@@ -358,7 +359,6 @@ function OrderDetailsModal({
             </div>
           ))}
       </div>
-
       {/* Cancellation Dialog */}
       {showCancelDialog && (
         <CancellationDialog
