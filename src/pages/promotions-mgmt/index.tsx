@@ -1,469 +1,399 @@
-import { useState, useCallback } from "react";
 import clsx from "clsx";
-import { Plus, Settings, Clock, Info } from "lucide-react";
+import { toast } from "sonner";
 import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { mockPromotions, mockPromotionSettings } from "@/constants/data";
+import { Plus, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CreatePromotionWizard, DraggablePromotionCard } from "./components";
-import { ModalWrapper } from "@/components/wrapper";
-import { ReactSelect } from "@/components/form-fields";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useState, useCallback, useEffect } from "react";
+
 import { useAppSelector } from "@/hooks/hooks";
 import { PublishButton } from "@/components/btns";
+import { ReactSelect } from "@/components/form-fields";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  useGetPromotionsByExtApiIdQuery,
+  useCreatePromotionGroupMutation,
+  useDeletePromotionMutation,
+  useDuplicatePromotionMutation,
+  useTogglePromotionStatusMutation,
+} from "@/store/api/promotionsApi";
+import {
+  CreatePromotionWizard,
+  DraggablePromotionCard,
+  PlacementSettingsDrawer,
+} from "./components";
+import { ConfirmDialog } from "@/components/shared";
+
+const placements = ["home_page_hero", "secondary_banner", "footer_spotlight"];
+
+type TPlacementConfig = {
+  rotationType: "automatic" | "manual";
+  timeInterval: number;
+};
+
+const defaultPlacementConfig = (): TPlacementConfig => ({
+  rotationType: "automatic",
+  timeInterval: 5,
+});
+
+const buildDefaultPlacementSettings = (): Record<string, TPlacementConfig> =>
+  Object.fromEntries(placements.map((p) => [p, defaultPlacementConfig()]));
 
 export default function PromotionsMgmtPage() {
   const { t } = useTranslation("promotions");
-  const {
-    isDark,
-    // language,
-    bgPrimary,
-    // bgSecondary,
-    textPrimary,
-    textSecondary,
-    // textTertiary,
-    borderColor,
-  } = useThemeClasses();
-  const [selectedWebsite, _setSelectedWebsite] = useState("visitnegev");
+  const { t: tToast } = useTranslation("toast");
+  const { isDark, bgPrimary, textPrimary, textSecondary, borderColor } =
+    useThemeClasses();
   const { associatedWebsite } = useAppSelector((state) => state.auth);
+
   const [externalApiId, setExternalApiId] = useState<string | undefined>("");
-  const [promotions, setPromotions] = useState(mockPromotions);
-  const [settings, setSettings] = useState<IPromotionSettings>(
-    mockPromotionSettings[selectedWebsite],
+  const [deletePromoId, setDeletePromoId] = useState<string>("");
+  const [orderedPromotions, setOrderedPromotions] = useState<IPromotionsRes[]>(
+    [],
   );
-  const placements = ["Homepage Hero", "Secondary Banner", "Footer Spotlight"];
+  const [placementSettings, setPlacementSettings] = useState<
+    Record<string, TPlacementConfig>
+  >(buildDefaultPlacementSettings());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const { data, isLoading } = useGetPromotionsByExtApiIdQuery(
+    externalApiId ? externalApiId : skipToken,
+  );
+
+  const [createPromotionGroup, { isLoading: isPublishing }] =
+    useCreatePromotionGroupMutation();
+  const [deletePromotion, { isLoading: isDeleting }] =
+    useDeletePromotionMutation();
+  const [duplicatePromotion] = useDuplicatePromotionMutation();
+  const [togglePromotion] = useTogglePromotionStatusMutation();
+
+  // Sync ordered list whenever fresh data arrives from the API
+  useEffect(() => {
+    if (data) setOrderedPromotions(data);
+  }, [data]);
+
   const [selectedPlacement, setSelectedPlacement] = useState(
-    placements?.[0] ?? null,
+    placements[0] ?? null,
   );
   const [showWizard, setShowWizard] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<
-    IPromotion | undefined
+    IPromotionsRes | undefined
   >();
   const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
-  const [showSettings, setShowSettings] = useState(false);
 
-  const filteredPromotions = promotions
-    .filter((p) => {
-      const matchesWebsite = p.websiteId === selectedWebsite;
-      const matchesPlacement =
-        !selectedPlacement || p.placement === selectedPlacement;
-
-      return matchesWebsite && matchesPlacement;
-    })
+  const filteredPromotions = orderedPromotions
+    .filter((p) => !selectedPlacement || p.placement === selectedPlacement)
     .sort((a, b) => {
-      // active first
-      if (a.active !== b.active) {
-        return a.active ? -1 : 1;
-      }
-
-      // then by order
-      return a.order - b.order;
+      // active items first; preserve drag order within each group
+      if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
+      return 0;
     });
-
-  // const handleWebsiteChange = (websiteId: string) => {
-  //   setSelectedWebsite(websiteId);
-  //   setSettings(
-  //     mockPromotionSettings[websiteId] || {
-  //       websiteId,
-  //       rotationType: "automatic",
-  //       timeInterval: 5,
-  //       placements: [],
-  //     },
-  //   );
-  // };
 
   const handleMovePromotion = useCallback(
     (dragIndex: number, hoverIndex: number) => {
-      const filtered = filteredPromotions;
-      const dragPromotion = filtered[dragIndex];
-      const hoverPromotion = filtered[hoverIndex];
-
-      setPromotions((prev) => {
-        return prev.map((p) => {
-          if (p.id === dragPromotion.id) {
-            return { ...p, order: hoverPromotion.order };
-          }
-          if (p.id === hoverPromotion.id) {
-            return { ...p, order: dragPromotion.order };
-          }
-          return p;
-        });
+      setOrderedPromotions((prev) => {
+        const next = [...prev];
+        const dragItem = filteredPromotions[dragIndex];
+        const hoverItem = filteredPromotions[hoverIndex];
+        const dragPos = next.findIndex((p) => p._id === dragItem._id);
+        const hoverPos = next.findIndex((p) => p._id === hoverItem._id);
+        next.splice(dragPos, 1);
+        next.splice(hoverPos, 0, dragItem);
+        return next;
       });
     },
     [filteredPromotions],
   );
 
-  const handleToggleActive = (id: string) => {
-    setPromotions((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)),
-    );
+  const handleToggleActive = async (promotionId: string, status: boolean) => {
+    const res = await togglePromotion({ promotionId, status });
+    if (res.data) {
+      toast.success(tToast("promotion_status_update_success"));
+    } else {
+      toast.error(tToast("promotion_status_update_failed"));
+    }
   };
 
-  const handleEdit = (promotion: IPromotion) => {
+  const handleEdit = (promotion: IPromotionsRes) => {
     setEditingPromotion(promotion);
     setShowWizard(true);
   };
 
-  const handleDuplicate = (promotion: IPromotion) => {
-    const newPromotion: IPromotion = {
-      ...promotion,
-      id: `promo-${Date.now()}`,
-      title: {
-        en: `${promotion.title.en} (Copy)`,
-        he: `${promotion.title.he} (עותק)`,
-        ar: `${promotion.title.ar} (نسخة)`,
-      },
-      order: filteredPromotions.length + 1,
-      views: 0,
-      clicks: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setPromotions((prev) => [...prev, newPromotion]);
-  };
-
-  const handleDelete = (id: string) => {
-    setPromotions((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const handleSavePromotion = (
-    promotionData: Omit<
-      IPromotion,
-      "id" | "createdAt" | "updatedAt" | "createdBy" | "views" | "clicks"
-    >,
-  ) => {
-    if (editingPromotion) {
-      setPromotions((prev) =>
-        prev.map((p) =>
-          p.id === editingPromotion.id
-            ? { ...p, ...promotionData, updatedAt: new Date() }
-            : p,
-        ),
-      );
+  const handleDelete = async (id: string) => {
+    const res = await deletePromotion(id);
+    if (res.data) {
+      toast.success(tToast("promotion_deleted_success"));
     } else {
-      const newPromotion: IPromotion = {
-        ...promotionData,
-        id: `promo-${Date.now()}`,
-        views: 0,
-        clicks: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        createdBy: "Current User",
-      };
-      setPromotions((prev) => [...prev, newPromotion]);
+      toast.error(tToast("promotion_delete_failed"));
     }
-    setShowWizard(false);
-    setEditingPromotion(undefined);
   };
 
-  // const handleBulkActivate = () => {
-  //   setPromotions((prev) =>
-  //     prev.map((p) =>
-  //       selectedPromotions.includes(p.id) ? { ...p, active: true } : p,
-  //     ),
-  //   );
-  //   setSelectedPromotions([]);
-  // };
+  const handleDuplicate = async (promotion: IPromotionsRes) => {
+    const res = await duplicatePromotion(promotion._id);
+    if (res.data) {
+      toast.success(tToast("promotion_created_success"));
+    } else {
+      toast.error(tToast("promotion_create_failed"));
+    }
+  };
 
-  // const handleBulkDeactivate = () => {
-  //   setPromotions((prev) =>
-  //     prev.map((p) =>
-  //       selectedPromotions.includes(p.id) ? { ...p, active: false } : p,
-  //     ),
-  //   );
-  //   setSelectedPromotions([]);
-  // };
+  /** Build IPromotionGroupFormData from current ordered state + per-placement settings. */
+  const buildGroupPayload = (): IPromotionGroupFormData => ({
+    externalApiId: externalApiId!,
+    placementGroup: placements.map((placement) => {
+      const cfg = placementSettings[placement] ?? defaultPlacementConfig();
+      return {
+        placement,
+        rotationType: cfg.rotationType,
+        timeInterval: cfg.timeInterval,
+        promotions: orderedPromotions
+          .filter((p) => p.placement === placement && p.isActive)
+          .map((p, idx) => ({ promoId: p._id, order: idx + 1 })),
+      };
+    }),
+  });
 
-  // const handleBulkDelete = () => {
-  //   if (
-  //     confirm(
-  //       `Are you sure you want to delete ${selectedPromotions.length} promotion(s)?`,
-  //     )
-  //   ) {
-  //     setPromotions((prev) =>
-  //       prev.filter((p) => !selectedPromotions.includes(p.id)),
-  //     );
-  //     setSelectedPromotions([]);
-  //   }
-  // };
-
-  const handleUpdateSettings = (newSettings: Partial<IPromotionSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+  const handlePublish = async () => {
+    if (!externalApiId) return;
+    const payload = buildGroupPayload();
+    const filteredPlacementGroup = payload.placementGroup.filter(
+      (item) => item.promotions.length > 0,
+    );
+    const res = await createPromotionGroup({
+      externalApiId,
+      placementGroup: filteredPlacementGroup,
+    });
+    if (res.data) {
+      toast.success(tToast("promotion_group_publish_success"));
+    } else {
+      toast.error(tToast("promotion_group_publish_failed"));
+    }
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div
         className={clsx(
-          "min-h-screen transition-colors flex flex-col",
+          "max-h-screen transition-colors flex flex-col relative gap-4",
           isDark ? "bg-gray-950" : "bg-gray-50",
         )}
       >
         <div
-          className={`${bgPrimary} border-b ${borderColor} sticky top-0 z-10`}
+          className={`${bgPrimary} border-b ${borderColor} sticky top-0 z-10 rounded-xl p-4`}
         >
-          <div className="px-8 py-6">
-            {/* Title Bar */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className={`text-3xl font-bold ${textPrimary}`}>
-                  {t("promotions")}
-                </h1>
-                <p className={`text-sm ${textSecondary} mt-1`}>
-                  {t("promotions_subtitle")}
-                </p>
-              </div>
+          {/* Title Bar */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className={`text-3xl font-bold ${textPrimary}`}>
+                {t("promotions")}
+              </h1>
+              <p className={`text-sm ${textSecondary} mt-1`}>
+                {t("promotions_subtitle")}
+              </p>
+            </div>
 
-              <div className="flex items-center gap-3">
-                <ReactSelect
-                  minWidth={180}
-                  value={externalApiId}
-                  items={associatedWebsite}
-                  onChange={(value) => setExternalApiId(value)}
-                  placeholder={t("select_website")}
-                />
-                {/* Website & Language Selector */}
-                {/* <div className="flex items-center gap-4">
-                  <div className="flex-1 max-w-xs">
-                    <select
-                      value={selectedWebsite}
-                      onChange={(e) => handleWebsiteChange(e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    >
-                      <option value="visitnegev">{t("visit_negev")}</option>
-                      <option value="beersheva">
-                        {t("beer_sheva_tourism")}
-                      </option>
-                      <option value="arad">{t("arad_city")}</option>
-                    </select>
-                  </div>
-                </div> */}
+            <div className="flex items-center gap-3">
+              <ReactSelect
+                minWidth={180}
+                value={externalApiId}
+                items={associatedWebsite}
+                onChange={(value) => setExternalApiId(value)}
+                placeholder={t("select_website")}
+              />
+              <button
+                onClick={() => {
+                  setShowWizard(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                {t("add_promotion")}
+              </button>
+            </div>
+          </div>
 
+          <div className="flex gap-4 items-center justify-between">
+            <div className="flex justify-start">
+              {placements.map((placement, idx) => {
+                const active = selectedPlacement === placement;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedPlacement((prev) =>
+                        prev === placement ? "" : placement,
+                      );
+                      setSettingsOpen(false);
+                    }}
+                    className={clsx(
+                      "relative px-3 py-2 text-sm font-medium transition-all",
+                      isDark ? "text-gray-300" : "text-gray-600",
+                      active && (isDark ? "text-green-400" : "text-green-600"),
+                    )}
+                  >
+                    {t(placement)}
+
+                    <span
+                      className={clsx(
+                        "absolute left-0 -bottom-px h-0.5 w-full transition-all",
+                        active
+                          ? isDark
+                            ? "bg-green-500"
+                            : "bg-green-600"
+                          : "bg-transparent",
+                      )}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div>
+              <PublishButton isLoading={isPublishing} onClick={handlePublish} />
+            </div>
+          </div>
+
+          {selectedPromotions.length > 0 && (
+            <div
+              className={clsx(
+                "mt-4 flex items-center justify-between rounded-lg border",
+                isDark
+                  ? "bg-green-950/20 border-green-800"
+                  : "bg-green-50 border-green-200",
+              )}
+            >
+              <span
+                className={clsx(
+                  "text-sm font-medium",
+                  isDark ? "text-green-100" : "text-green-900",
+                )}
+              >
+                {t("bulk_selected_count", {
+                  count: selectedPromotions.length,
+                })}
+              </span>
+
+              <div className="flex gap-2">
+                <button className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                  {t("activate")}
+                </button>
+                <button className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                  {t("deactivate")}
+                </button>
+                <button className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                  {t("delete")}
+                </button>
                 <button
-                  onClick={() => setShowSettings(!showSettings)}
+                  onClick={() => setSelectedPromotions([])}
                   className={clsx(
-                    `flex items-center gap-2 px-4 py-2 rounded-lg border ${borderColor} ${textPrimary} transition-colors`,
+                    `px-3 py-1.5 text-sm border ${borderColor} ${textPrimary} rounded-lg transition-colors`,
                     isDark ? "hover:bg-gray-800" : "hover:bg-gray-100",
                   )}
                 >
-                  <Settings className="w-4 h-4" />
-                  {t("settings")}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setEditingPromotion(undefined);
-                    setShowWizard(true);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  {t("add_promotion")}
+                  {t("cancel")}
                 </button>
               </div>
             </div>
-
-            {showSettings && (
-              <ModalWrapper
-                onClose={() => setShowSettings(false)}
-                maxWidth="max-w-lg"
-                height=""
-              >
-                <div className="p-5 ">
-                  <h3 className={`text-lg font-semibold ${textPrimary} mb-4`}>
-                    {t("rotation_settings")}
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label
-                        className={`block text-sm font-medium ${textPrimary} mb-2`}
-                      >
-                        {t("rotation_type")}
-                      </label>
-
-                      <select
-                        value={settings.rotationType}
-                        onChange={(e) =>
-                          handleUpdateSettings({
-                            rotationType: e.target.value as
-                              | "automatic"
-                              | "manual",
-                          })
-                        }
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
-                      >
-                        <option value="automatic">{t("automatic")}</option>
-                        <option value="manual">{t("manual")}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label
-                        className={`flex items-center gap-2 text-sm font-medium ${textPrimary} mb-2`}
-                      >
-                        <Clock className="w-4 h-4" />
-                        {t("time_interval_seconds")}
-                      </label>
-
-                      <input
-                        type="number"
-                        value={settings.timeInterval}
-                        onChange={(e) =>
-                          handleUpdateSettings({
-                            timeInterval: parseInt(e.target.value),
-                          })
-                        }
-                        min="1"
-                        max="60"
-                        className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="my-3">
-                    <label
-                      className={`flex items-center gap-2 text-sm font-medium ${textPrimary} mb-2`}
-                    >
-                      <Info className="w-4 h-4" />
-                      {t("active_placements")}
-                    </label>
-
-                    <div
-                      className={`p-3 rounded-lg border ${borderColor} ${bgPrimary}`}
-                    >
-                      <div className="space-y-1">
-                        {settings.placements.map((placement, idx) => (
-                          <div key={idx} className={`text-sm ${textSecondary}`}>
-                            • {placement}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={clsx(
-                      "mt-4 p-3 rounded-lg border",
-                      isDark
-                        ? "bg-green-950/20 border-green-800"
-                        : "bg-green-50 border-green-200",
-                    )}
-                  >
-                    <p
-                      className={clsx(
-                        "text-xs",
-                        isDark ? "text-green-100" : "text-green-900",
-                      )}
-                    >
-                      <strong>{t("note")}:</strong> {t("rotation_note_text")}
-                    </p>
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <PublishButton isLoading={false} onClick={() => {}} />
-                  </div>
-                </div>
-              </ModalWrapper>
-            )}
-
-            <div className="flex  gap-4 items-center justify-between ">
-              <div className="flex justify-start">
-                {placements.map((placement, idx) => {
-                  const active = selectedPlacement === placement;
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() =>
-                        setSelectedPlacement((prev) =>
-                          prev === placement ? "" : placement,
-                        )
-                      }
-                      className={clsx(
-                        "relative px-3 py-2 text-sm font-medium transition-all",
-
-                        isDark ? "text-gray-300" : "text-gray-600",
-
-                        active &&
-                          (isDark ? "text-green-400" : "text-green-600"),
-                      )}
-                    >
-                      {t(placement)}
-
-                      {/* active underline */}
-                      <span
-                        className={clsx(
-                          "absolute left-0 -bottom-[1px] h-[2px] w-full transition-all",
-                          active
-                            ? isDark
-                              ? "bg-green-500"
-                              : "bg-green-600"
-                            : "bg-transparent",
-                        )}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div>
-                <PublishButton isLoading={false} onClick={() => {}} />
-              </div>
-            </div>
-
-            {selectedPromotions.length > 0 && (
-              <div
-                className={clsx(
-                  "mt-4 flex items-center justify-between p-4 rounded-lg border",
-                  isDark
-                    ? "bg-green-950/20 border-green-800"
-                    : "bg-green-50 border-green-200",
-                )}
-              >
-                <span
-                  className={clsx(
-                    "text-sm font-medium",
-                    isDark ? "text-green-100" : "text-green-900",
-                  )}
-                >
-                  {t("bulk_selected_count", {
-                    count: selectedPromotions.length,
-                  })}
-                </span>
-
-                <div className="flex gap-2">
-                  <button className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
-                    {t("activate")}
-                  </button>
-                  <button className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
-                    {t("deactivate")}
-                  </button>
-                  <button className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-                    {t("delete")}
-                  </button>
-                  <button
-                    onClick={() => setSelectedPromotions([])}
-                    className={clsx(
-                      `px-3 py-1.5 text-sm border ${borderColor} ${textPrimary} rounded-lg transition-colors`,
-                      isDark ? "hover:bg-gray-800" : "hover:bg-gray-100",
-                    )}
-                  >
-                    {t("cancel")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          {filteredPromotions.length === 0 ? (
+        <div
+          className={clsx(
+            "flex-1 overflow-y-auto p-3  border rounded-xl",
+            borderColor,
+          )}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filteredPromotions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <img
-                src="https://images.unsplash.com/photo-1641381616914-bd619dc703c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbXB0eSUyMHN0YXRlJTIwaWxsdXN0cmF0aW9ufGVufDF8fHx8MTc2ODE0MzgzN3ww&ixlib=rb-4.1.0&q=80&w=400"
-                alt="No promotions"
-                className="w-64 h-64 object-contain opacity-50 mb-6"
-              />
+              <svg
+                width="160"
+                height="160"
+                viewBox="0 0 160 160"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="mb-6 opacity-60"
+              >
+                {/* Megaphone body */}
+                <rect
+                  x="20"
+                  y="58"
+                  width="36"
+                  height="44"
+                  rx="6"
+                  fill={isDark ? "#374151" : "#e5e7eb"}
+                />
+                <path
+                  d="M56 62 L108 34 L108 126 L56 98 Z"
+                  fill={isDark ? "#4b5563" : "#d1d5db"}
+                />
+                {/* Bell mouth */}
+                <ellipse
+                  cx="108"
+                  cy="80"
+                  rx="16"
+                  ry="46"
+                  fill={isDark ? "#6b7280" : "#9ca3af"}
+                />
+                {/* Sound waves */}
+                <path
+                  d="M128 56 Q142 68 142 80 Q142 92 128 104"
+                  stroke={isDark ? "#22c55e" : "#16a34a"}
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <path
+                  d="M134 46 Q152 62 152 80 Q152 98 134 114"
+                  stroke={isDark ? "#22c55e" : "#16a34a"}
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  fill="none"
+                  opacity="0.5"
+                />
+                {/* Handle / cord */}
+                <path
+                  d="M38 102 Q38 120 52 120 Q66 120 66 102"
+                  stroke={isDark ? "#4b5563" : "#9ca3af"}
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                {/* Star sparkle top-right */}
+                <path
+                  d="M130 24 L132 30 L138 32 L132 34 L130 40 L128 34 L122 32 L128 30 Z"
+                  fill={isDark ? "#22c55e" : "#16a34a"}
+                  opacity="0.7"
+                />
+                {/* Dot sparkles */}
+                <circle
+                  cx="26"
+                  cy="44"
+                  r="3"
+                  fill={isDark ? "#22c55e" : "#16a34a"}
+                  opacity="0.5"
+                />
+                <circle
+                  cx="148"
+                  cy="44"
+                  r="2.5"
+                  fill={isDark ? "#22c55e" : "#16a34a"}
+                  opacity="0.4"
+                />
+                <circle
+                  cx="14"
+                  cy="90"
+                  r="2"
+                  fill={isDark ? "#4b5563" : "#9ca3af"}
+                  opacity="0.5"
+                />
+              </svg>
 
               <h3 className={`text-xl font-semibold ${textPrimary} mb-2`}>
                 {t("no_promotions_title")}
@@ -485,17 +415,23 @@ export default function PromotionsMgmtPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div
+              className={clsx(
+                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3",
+              )}
+            >
               {filteredPromotions.map((promotion, index) => (
                 <DraggablePromotionCard
-                  key={promotion.id}
-                  promotion={promotion}
+                  t={t}
                   index={index}
+                  key={promotion._id}
+                  promotion={promotion}
                   onMove={handleMovePromotion}
                   onToggleActive={handleToggleActive}
                   onEdit={handleEdit}
                   onDuplicate={handleDuplicate}
-                  onDelete={handleDelete}
+                  setConfirmOpen={setConfirmOpen}
+                  setDeletePromoId={setDeletePromoId}
                 />
               ))}
             </div>
@@ -508,19 +444,54 @@ export default function PromotionsMgmtPage() {
               setShowWizard(false);
               setEditingPromotion(undefined);
             }}
-            onSave={handleSavePromotion}
             existingPromotion={editingPromotion}
-            websiteId={selectedWebsite}
-            websiteName={
-              selectedWebsite === "visitnegev"
-                ? t("visit_negev")
-                : selectedWebsite === "beersheva"
-                  ? t("beer_sheva_tourism")
-                  : t("arad_city")
-            }
-            availablePlacements={settings.placements}
           />
         )}
+
+        {/* Fixed FAB — bottom-right */}
+        {selectedPlacement && (
+          <button
+            onClick={() => setSettingsOpen((prev) => !prev)}
+            title={t("placement_settings")}
+            className={clsx(
+              "fixed bottom-6 right-6 z-50 p-3 rounded-full shadow-lg transition-colors",
+              isDark
+                ? "bg-gray-800 border border-gray-700 text-green-400 hover:bg-gray-700"
+                : "bg-white border border-gray-200 text-green-600 hover:bg-gray-50",
+            )}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* Compact bottom drawer for active placement */}
+        {settingsOpen && (
+          <PlacementSettingsDrawer
+            selectedPlacement={selectedPlacement}
+            settingsOpen={settingsOpen}
+            setSettingsOpen={setSettingsOpen}
+            placementSettings={placementSettings}
+            setPlacementSettings={setPlacementSettings}
+            defaultPlacementConfig={defaultPlacementConfig}
+          />
+        )}
+
+        <ConfirmDialog
+          open={confirmOpen}
+          title={t("delete_promotion")}
+          message={t("delete_promotion_confirm")}
+          confirmText="delete"
+          variant="danger"
+          loading={isDeleting}
+          onCancel={() => {
+            setConfirmOpen(false);
+            setDeletePromoId("");
+          }}
+          onConfirm={() => {
+            handleDelete(deletePromoId);
+            setConfirmOpen(false);
+          }}
+        />
       </div>
     </DndProvider>
   );
