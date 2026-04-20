@@ -38,6 +38,15 @@ export class Setting extends AuditableSchema {
   @Prop()
     slug: string;
 
+  @Prop()
+    docUrl: string;
+
+  @Prop()
+    docType: string;
+
+  @Prop()
+    docSize: string;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: ExternalApi.name,

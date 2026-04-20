@@ -3,4 +3,5 @@ export enum SettingType {
   PRIVACY = 'privacy',
   TERMS_AND_CONDITION = 'terms_and_condition',
   BUSINESS_REGULATION = 'business_regulation',
+  DOCUMENT_UPLOAD = 'document_upload',
 }
