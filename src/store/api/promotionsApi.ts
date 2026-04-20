@@ -122,7 +122,7 @@ export const promotionsApi = createApi({
       invalidatesTags: ["PromotionGroup"],
     }),
 
-    getPromotionGroup: builder.query<IPromotionGroup, string>({
+    getPromotionGroup: builder.query<IPromotionGroupRes, string>({
       query: (externalApiId) => ({
         url: `${endpoints.promotionGroups}/${externalApiId}`,
         method: "GET",

@@ -5,7 +5,8 @@ import { Plus, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { PublishButton } from "@/components/btns";
@@ -17,20 +18,17 @@ import {
   useDeletePromotionMutation,
   useDuplicatePromotionMutation,
   useTogglePromotionStatusMutation,
+  useGetPromotionGroupQuery,
 } from "@/store/api/promotionsApi";
 import {
   CreatePromotionWizard,
   DraggablePromotionCard,
   PlacementSettingsDrawer,
+  PromoEmptyState,
 } from "./components";
-import { ConfirmDialog } from "@/components/shared";
+import { ConfirmDialog, Spinner } from "@/components/shared";
 
 const placements = ["home_page_hero", "secondary_banner", "footer_spotlight"];
-
-type TPlacementConfig = {
-  rotationType: "automatic" | "manual";
-  timeInterval: number;
-};
 
 const defaultPlacementConfig = (): TPlacementConfig => ({
   rotationType: "automatic",
@@ -61,6 +59,8 @@ export default function PromotionsMgmtPage() {
   const { data, isLoading } = useGetPromotionsByExtApiIdQuery(
     externalApiId ? externalApiId : skipToken,
   );
+  const { data: groupConfig, isLoading: isCofigLoading } =
+    useGetPromotionGroupQuery(externalApiId ? externalApiId : skipToken);
 
   const [createPromotionGroup, { isLoading: isPublishing }] =
     useCreatePromotionGroupMutation();
@@ -69,10 +69,66 @@ export default function PromotionsMgmtPage() {
   const [duplicatePromotion] = useDuplicatePromotionMutation();
   const [togglePromotion] = useTogglePromotionStatusMutation();
 
-  // Sync ordered list whenever fresh data arrives from the API
+  const isInitialized = useRef(false);
+
+  // Reset initialization flag when the selected website changes
   useEffect(() => {
-    if (data) setOrderedPromotions(data);
-  }, [data]);
+    isInitialized.current = false;
+  }, [externalApiId]);
+
+  // Sync ordered list, applying groupConfig order on first load
+  useEffect(() => {
+    if (!data) return;
+
+    if (!isInitialized.current) {
+      if (isCofigLoading) return; // wait for groupConfig before sorting
+      isInitialized.current = true;
+
+      if (groupConfig) {
+        const orderMap = new Map<string, number>();
+        groupConfig.placementGroup.forEach(({ promotions }) => {
+          promotions.forEach(({ promoId, order }) =>
+            orderMap.set(promoId, order),
+          );
+        });
+        setOrderedPromotions(
+          [...data].sort(
+            (a, b) =>
+              (orderMap.get(a._id) ?? Infinity) -
+              (orderMap.get(b._id) ?? Infinity),
+          ),
+        );
+      } else {
+        setOrderedPromotions(data);
+      }
+      return;
+    }
+
+    // Subsequent refreshes (toggle/delete/duplicate): preserve drag order
+    setOrderedPromotions((prev) => {
+      const dataMap = new Map(data.map((d) => [d._id, d]));
+      const dataIds = new Set(data.map((d) => d._id));
+      const updated = prev
+        .filter((p) => dataIds.has(p._id))
+        .map((p) => dataMap.get(p._id)!);
+      const newItems = data.filter((d) => !prev.some((p) => p._id === d._id));
+      return [...updated, ...newItems];
+    });
+  }, [data, groupConfig, isCofigLoading]);
+
+  // Hydrate placement settings from the saved group config
+  useEffect(() => {
+    if (!groupConfig) return;
+    const mapped = Object.fromEntries(
+      groupConfig.placementGroup.map(
+        ({ placement, rotationType, timeInterval }) => [
+          placement,
+          { rotationType: rotationType as TRotationType, timeInterval },
+        ],
+      ),
+    );
+    setPlacementSettings((prev) => ({ ...prev, ...mapped }));
+  }, [groupConfig]);
 
   const [selectedPlacement, setSelectedPlacement] = useState(
     placements[0] ?? null,
@@ -180,6 +236,8 @@ export default function PromotionsMgmtPage() {
           isDark ? "bg-gray-950" : "bg-gray-50",
         )}
       >
+        <Spinner isLoading={isCofigLoading || isLoading || isPublishing} />
+
         <div
           className={`${bgPrimary} border-b ${borderColor} sticky top-0 z-10 rounded-xl p-4`}
         >
@@ -311,130 +369,33 @@ export default function PromotionsMgmtPage() {
               <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredPromotions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <svg
-                width="160"
-                height="160"
-                viewBox="0 0 160 160"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mb-6 opacity-60"
-              >
-                {/* Megaphone body */}
-                <rect
-                  x="20"
-                  y="58"
-                  width="36"
-                  height="44"
-                  rx="6"
-                  fill={isDark ? "#374151" : "#e5e7eb"}
-                />
-                <path
-                  d="M56 62 L108 34 L108 126 L56 98 Z"
-                  fill={isDark ? "#4b5563" : "#d1d5db"}
-                />
-                {/* Bell mouth */}
-                <ellipse
-                  cx="108"
-                  cy="80"
-                  rx="16"
-                  ry="46"
-                  fill={isDark ? "#6b7280" : "#9ca3af"}
-                />
-                {/* Sound waves */}
-                <path
-                  d="M128 56 Q142 68 142 80 Q142 92 128 104"
-                  stroke={isDark ? "#22c55e" : "#16a34a"}
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <path
-                  d="M134 46 Q152 62 152 80 Q152 98 134 114"
-                  stroke={isDark ? "#22c55e" : "#16a34a"}
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  fill="none"
-                  opacity="0.5"
-                />
-                {/* Handle / cord */}
-                <path
-                  d="M38 102 Q38 120 52 120 Q66 120 66 102"
-                  stroke={isDark ? "#4b5563" : "#9ca3af"}
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                {/* Star sparkle top-right */}
-                <path
-                  d="M130 24 L132 30 L138 32 L132 34 L130 40 L128 34 L122 32 L128 30 Z"
-                  fill={isDark ? "#22c55e" : "#16a34a"}
-                  opacity="0.7"
-                />
-                {/* Dot sparkles */}
-                <circle
-                  cx="26"
-                  cy="44"
-                  r="3"
-                  fill={isDark ? "#22c55e" : "#16a34a"}
-                  opacity="0.5"
-                />
-                <circle
-                  cx="148"
-                  cy="44"
-                  r="2.5"
-                  fill={isDark ? "#22c55e" : "#16a34a"}
-                  opacity="0.4"
-                />
-                <circle
-                  cx="14"
-                  cy="90"
-                  r="2"
-                  fill={isDark ? "#4b5563" : "#9ca3af"}
-                  opacity="0.5"
-                />
-              </svg>
-
-              <h3 className={`text-xl font-semibold ${textPrimary} mb-2`}>
-                {t("no_promotions_title")}
-              </h3>
-
-              <p className={`text-sm ${textSecondary} mb-6`}>
-                {t("no_promotions_description")}
-              </p>
-
-              <button
-                onClick={() => {
-                  setEditingPromotion(undefined);
-                  setShowWizard(true);
-                }}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                {t("add_first_promotion")}
-              </button>
-            </div>
+            <PromoEmptyState
+              setEditingPromotion={setEditingPromotion}
+              setShowWizard={setShowWizard}
+            />
           ) : (
-            <div
-              className={clsx(
-                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3",
-              )}
-            >
-              {filteredPromotions.map((promotion, index) => (
-                <DraggablePromotionCard
-                  t={t}
-                  index={index}
-                  key={promotion._id}
-                  promotion={promotion}
-                  onMove={handleMovePromotion}
-                  onToggleActive={handleToggleActive}
-                  onEdit={handleEdit}
-                  onDuplicate={handleDuplicate}
-                  setConfirmOpen={setConfirmOpen}
-                  setDeletePromoId={setDeletePromoId}
-                />
-              ))}
-            </div>
+            <AnimatePresence>
+              <div
+                className={clsx(
+                  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3",
+                )}
+              >
+                {filteredPromotions.map((promotion, index) => (
+                  <DraggablePromotionCard
+                    t={t}
+                    index={index}
+                    key={promotion._id}
+                    promotion={promotion}
+                    onMove={handleMovePromotion}
+                    onToggleActive={handleToggleActive}
+                    onEdit={handleEdit}
+                    onDuplicate={handleDuplicate}
+                    setConfirmOpen={setConfirmOpen}
+                    setDeletePromoId={setDeletePromoId}
+                  />
+                ))}
+              </div>
+            </AnimatePresence>
           )}
         </div>
 

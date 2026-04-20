@@ -120,15 +120,22 @@ const DraggablePromotionCard = ({
   return (
     <motion.div
       ref={cardRef}
+      layout
+      layoutId={promotion._id}
       initial={false}
       animate={{
-        opacity: isDragging ? 0.4 : promotion.isActive ? 1 : 0.6,
-        scale: isDragging ? 0.95 : 1,
+        opacity: isDragging ? 0.35 : promotion.isActive ? 1 : 0.6,
+        scale: isDragging ? 0.97 : 1,
         boxShadow: isDragging
-          ? "0 25px 50px -12px rgba(0,0,0,0.4)"
+          ? "0 30px 60px -10px rgba(0,0,0,0.45)"
           : "0 1px 3px 0 rgba(0,0,0,0.1)",
+        zIndex: isDragging ? 50 : "auto",
       }}
-      transition={{ type: "spring", stiffness: 500, damping: 50 }}
+      transition={{
+        layout: { type: "spring", stiffness: 280, damping: 28 },
+        opacity: { duration: 0.15 },
+        scale: { type: "spring", stiffness: 380, damping: 32 },
+      }}
       className={`group relative ${bgPrimary} rounded-2xl border ${borderColor} overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 transition-transform duration-200`}
     >
       {/* Media */}

@@ -1,3 +1,12 @@
+type TMediaType = "image" | "video";
+type TRotationType = "automatic" | "manual";
+type TPlacement = "home_page_hero" | "sidebar" | "footer";
+
+type TPlacementConfig = {
+  rotationType: TRotationType;
+  timeInterval: number;
+};
+
 interface IPromotionFromData {
   externalApiId: string;
 
@@ -37,9 +46,6 @@ interface IPromotionGroupFormData {
   }[];
 }
 
-type TPlacement = "home_page_hero" | "sidebar" | "footer";
-type TMediaType = "image" | "video";
-
 interface IPromotionsRes {
   _id: string;
   createdAt: string;
@@ -69,6 +75,20 @@ interface IPromotionsRes {
   clicks: number;
 }
 
+interface IPromotionGroupRes {
+  _id: string;
+  externalApiId: string;
+  placementGroup: {
+    placement: TPlacement;
+    rotationType: TRotationType;
+    timeInterval: number;
+    promotions: {
+      promoId: string;
+      order: number;
+    }[];
+  }[];
+}
+
 interface IPromotion {
   id: string;
   websiteId: string;
@@ -85,7 +105,7 @@ interface IPromotion {
     ar: string;
   };
   linkUrl: string;
-  mediaType: "image" | "video";
+  mediaType: TMediaType;
   desktopMedia: {
     url: string;
   };
@@ -103,7 +123,7 @@ interface IPromotion {
 
 interface IPromotionSettings {
   websiteId: string;
-  rotationType: "automatic" | "manual";
+  rotationType: TRotationType;
   timeInterval: number; // seconds
   placements: string[];
 }

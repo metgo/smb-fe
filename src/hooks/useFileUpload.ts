@@ -37,13 +37,13 @@ interface UseFileUploadOptions {
   mediaType?: "image" | "video";
 }
 
-const IDLE_STATE: FileUploadState = {
-  previewUrl: "",
-  gcsUrl: "",
-  progress: 0,
-  status: "idle",
-  isDeleting: false,
-};
+// const IDLE_STATE: FileUploadState = {
+//   previewUrl: "",
+//   gcsUrl: "",
+//   progress: 0,
+//   status: "idle",
+//   isDeleting: false,
+// };
 
 /**
  * Reusable hook for single-file upload via GCP presigned URL.
