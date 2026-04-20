@@ -58,10 +58,10 @@ export default function ArticleContentForm({
   // Auto-detect language when user types in title or short description
   const handleAutoDetect = useCallback(
     (text: string) => {
-      if (!text || text.length < 3) return; 
+      if (!text || text.length < 3) return;
 
       const detected = detectLanguage(text);
-      console.log("🚀 ~ ArticleContentForm ~ detected:", detected)
+      console.log("🚀 ~ ArticleContentForm ~ detected:", detected);
       setEditingLanguage(detected);
       if (detected !== editingLanguage) {
         // You need to pass a callback or use a prop to change editingLanguage
@@ -77,12 +77,13 @@ export default function ArticleContentForm({
     handleAutoDetect(titleText);
   }, [formData[titleField], handleAutoDetect, titleField]);
 
-  // Detect on short description change
-  useEffect(() => {
-    const descText = formData[shortDescField] || "";
-    handleAutoDetect(descText);
-  }, [formData[shortDescField], handleAutoDetect, shortDescField]);
+  // // Detect on short description change
+  // useEffect(() => {
+  //   const descText = formData[shortDescField] || "";
+  //   handleAutoDetect(descText);
+  // }, [formData[shortDescField], handleAutoDetect, shortDescField]);
 
+  console.log("🚀 ~ ArticleContentForm ~ formData:", formData);
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Title */}
@@ -117,7 +118,6 @@ export default function ArticleContentForm({
           value={formData[shortDescField] || ""}
           onChange={(e) => {
             onChange({ [shortDescField]: e.target.value });
-            handleAutoDetect(e.target.value);
           }}
           placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
