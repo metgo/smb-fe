@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import Header from "./header";
 import Sidebar from "./sidebar";
 import { useAppSelector } from "@/hooks/hooks";
+import FloatingTranslate from "./shared/FloatingTranslate";
 
 const RootLayout = () => {
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
@@ -35,6 +36,7 @@ const RootLayout = () => {
           )}
         >
           <Outlet />
+          {/* <FloatingTranslate />{" "} */}
         </div>
       </div>
     </main>

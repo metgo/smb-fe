@@ -1,12 +1,11 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
-import { FileText, Globe } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
-
 import {
   useCreateBlogMutation,
   useUpdateBlogMutation,
@@ -92,11 +91,11 @@ interface CreateArticleWizardProps {
   existingArticle?: any;
 }
 
-const LANG_OPTIONS: { key: Language; label: string }[] = [
-  { key: "en", label: "EN" },
-  { key: "he", label: "HE" },
-  { key: "ar", label: "AR" },
-];
+// const LANG_OPTIONS: { key: Language; label: string }[] = [
+//   { key: "en", label: "EN" },
+//   { key: "he", label: "HE" },
+//   { key: "ar", label: "AR" },
+// ];
 
 function getTagsField(lang: Language): keyof IArticleFormData {
   if (lang === "en") return "tags";
@@ -135,7 +134,7 @@ const CreateArticleWizard = ({
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
 
-  const [editingLanguage, setEditingLanguage] = useState<Language>("en");
+  const [editingLanguage, setEditingLanguage] = useState<Language>("he");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -352,7 +351,7 @@ const CreateArticleWizard = ({
         </div>
 
         {/* Language selector */}
-        <div className="flex items-center gap-1.5">
+        {/* <div className="flex items-center gap-1.5">
           <Globe className={`w-4 h-4 ${textSecondary}`} />
           <div
             className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}
@@ -371,7 +370,7 @@ const CreateArticleWizard = ({
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────────── */}
@@ -388,6 +387,7 @@ const CreateArticleWizard = ({
             onImageDelete={handleDeleteImage}
             onSetPrimaryImage={setPrimaryImage}
             syncKey={existingArticle?._id}
+            setEditingLanguage={setEditingLanguage}
           />
         </div>
 
