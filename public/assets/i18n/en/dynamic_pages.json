@@ -31,5 +31,7 @@
   "btn_preview": "Preview",
   "btn_open": "Open",
   "btn_download": "Download",
-  "btn_remove": "Remove"
+  "btn_remove": "Remove",
+  "label_primary_file": "Primary File",
+  "label_secondary_file": "Secondary File"
 }

@@ -379,7 +379,7 @@ function OrderDetailsModal({
                   orderId: order?._id,
                   body: {
                     status: "canceled",
-                    canceled_reason: reason,
+                    canceled_reason: t(reason),
                     isQrScan: true,
                     externalApiId: order?.externalApiId || "",
                   },

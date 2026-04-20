@@ -31,5 +31,7 @@
   "btn_preview": "معاينة",
   "btn_open": "فتح",
   "btn_download": "تحميل",
-  "btn_remove": "إزالة"
+  "btn_remove": "إزالة",
+  "label_primary_file": "الملف الأساسي",
+  "label_secondary_file": "الملف الثانوي"
 }
