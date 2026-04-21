@@ -99,6 +99,7 @@ function OrderDetailsModal({
         <OrderStatusChangeBtn
           status={order?.status}
           handleStatusChange={onStatusChangeHandler}
+          setShowCancelDialog={setShowCancelDialog}
         />
       </div>
 
@@ -381,7 +382,6 @@ function OrderDetailsModal({
                     status: "canceled",
                     canceled_reason: t(reason),
                     isQrScan: true,
-                    externalApiId: order?.externalApiId || "",
                   },
                 }).unwrap();
                 refetch();

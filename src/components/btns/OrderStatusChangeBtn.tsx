@@ -10,6 +10,7 @@ import { UserRole } from "@/enums/user.types";
 interface StatusChangeBtnProps {
   status: TOrderStatus;
   handleStatusChange: (status: TOrderStatus) => void;
+  setShowCancelDialog: (show: boolean) => void;
 }
 
 type StatusOption = {
@@ -22,6 +23,7 @@ type StatusOption = {
 const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   status,
   handleStatusChange,
+  setShowCancelDialog,
 }) => {
   const { t } = useTranslation("orders");
   const { isDark, isRTL } = useThemeClasses();
@@ -93,9 +95,13 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
   /* -------------------- Handlers -------------------- */
   const handleChange = (newStatus: TOrderStatus) => {
-    setCurrentStatus(newStatus);
-    handleStatusChange(newStatus);
     setIsOpen(false);
+    if (newStatus === "canceled") {
+      setShowCancelDialog(true);
+    } else {
+      setCurrentStatus(newStatus);
+      handleStatusChange(newStatus);
+    }
   };
 
   /* -------------------- Render -------------------- */
