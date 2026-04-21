@@ -18,6 +18,7 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import { detectLanguage } from "@/helpers";
+// import { useGenerateBlogNameMutation } from "@/store/api/blogQueryApi";
 
 const EMPTY_FORM: IArticleFormData = {
   externalApiId: {
@@ -104,6 +105,7 @@ const CreateArticleWizard = ({
   const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
   const { bgSecondary, textPrimary, borderColor } = useThemeClasses();
+  const { language } = useThemeClasses();
 
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const {
@@ -151,6 +153,9 @@ const CreateArticleWizard = ({
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
   const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
     useGenerateBlogSeoMutation();
+
+  // const [generateBlogName, { isLoading: isGeneratingName }] =
+  //   useGenerateBlogNameMutation();
 
   const isEditMode = !!existingArticle;
   const isLoading = isCreating || isUpdating;
@@ -352,7 +357,12 @@ const CreateArticleWizard = ({
     try {
       // Step 1: Detect language and assign to correct fields
       const processedFormData = detectAndAssignLanguageFields(formData);
-
+      // generateBlogName({
+      //   title:
+      //     processedFormData.title ||
+      //     processedFormData.titleHe ||
+      //     processedFormData.titleAr,
+      // });
       // Step 2: Save with processed data
       await saveArticle(true, processedFormData);
     } finally {
@@ -405,6 +415,7 @@ const CreateArticleWizard = ({
             onImageDelete={handleDeleteImage}
             onSetPrimaryImage={setPrimaryImage}
             syncKey={existingArticle?._id}
+            editingLanguage={language}
           />
         </div>
 
@@ -424,7 +435,7 @@ const CreateArticleWizard = ({
             showPreview={false}
             onTogglePreview={() => {}}
             existingArticle={existingArticle}
-            editingLanguage="he"
+            editingLanguage={language}
           />
         </div>
       </div>

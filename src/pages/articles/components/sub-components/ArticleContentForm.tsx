@@ -12,6 +12,7 @@ interface ArticleContentFormProps {
   onImageDelete: (img: any, idx: number) => void;
   onSetPrimaryImage: (idx: number) => void;
   syncKey?: string | number;
+  editingLanguage: "en" | "he" | "ar";
 }
 
 export default function ArticleContentForm({
@@ -23,6 +24,7 @@ export default function ArticleContentForm({
   onImageDelete,
   onSetPrimaryImage,
   syncKey,
+  editingLanguage,
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
   const {
@@ -103,7 +105,7 @@ export default function ArticleContentForm({
         textTertiary={textTertiary}
         borderColor={borderColor}
         syncKey={syncKey}
-        editingLanguage="he"
+        editingLanguage={editingLanguage}
       />
 
       {/* Image Gallery */}
