@@ -17,7 +17,7 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
-import { getLngWiseStr } from "@/helpers";
+import { detectLanguage } from "@/helpers";
 
 const EMPTY_FORM: IArticleFormData = {
   externalApiId: {
@@ -80,7 +80,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
     metaDescriptionAr: article.metaDescriptionAr || "",
     slug: article.slug || "",
     status:
-      (article.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
+      (article?.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
 }
 
@@ -90,12 +90,6 @@ interface CreateArticleWizardProps {
   onClose: () => void;
   existingArticle?: any;
 }
-
-// const LANG_OPTIONS: { key: Language; label: string }[] = [
-//   { key: "en", label: "EN" },
-//   { key: "he", label: "HE" },
-//   { key: "ar", label: "AR" },
-// ];
 
 function getTagsField(lang: Language): keyof IArticleFormData {
   if (lang === "en") return "tags";
@@ -109,8 +103,7 @@ const CreateArticleWizard = ({
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
-  const { bgSecondary, textPrimary, textSecondary, borderColor } =
-    useThemeClasses();
+  const { bgSecondary, textPrimary, borderColor } = useThemeClasses();
 
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const {
@@ -134,7 +127,6 @@ const CreateArticleWizard = ({
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
 
-  const [editingLanguage, setEditingLanguage] = useState<Language>("he");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -143,7 +135,7 @@ const CreateArticleWizard = ({
       setFormData(buildFormFromArticle(existingArticle));
       const arr = (v: any) => (Array.isArray(v) ? v : []);
       const images = arr(existingArticle.images)
-        .filter((img: any) => img?.image) // only keep items with image
+        .filter((img: any) => img?.image)
         .map((img: any) => ({
           image: img.image,
           alt: img.alt || "",
@@ -171,16 +163,27 @@ const CreateArticleWizard = ({
   const addTag = () => {
     const tag = tagInput.trim();
     if (!tag) return;
-    const field = getTagsField(editingLanguage);
-    const current = formData[field] as string[];
-    if (!current.includes(tag)) {
-      setFormData((prev) => ({ ...prev, [field]: [...current, tag] }));
-    }
+    // Tags are added to all languages for SEO purposes
+    const allTagsFields: Array<keyof IArticleFormData> = [
+      "tags",
+      "tagsHe",
+      "tagsAr",
+    ];
+    setFormData((prev) => {
+      const updated = { ...prev };
+      allTagsFields.forEach((field) => {
+        const current = updated[field] as string[];
+        if (!current.includes(tag)) {
+          updated[field] = [...current, tag];
+        }
+      });
+      return updated;
+    });
     setTagInput("");
   };
 
-  const removeTag = (tag: string) => {
-    const field = getTagsField(editingLanguage);
+  const removeTag = (tag: string, lang: Language) => {
+    const field = getTagsField(lang);
     setFormData((prev) => ({
       ...prev,
       [field]: (prev[field] as string[]).filter((t) => t !== tag),
@@ -211,25 +214,19 @@ const CreateArticleWizard = ({
   // ─── SEO generation ───────────────────────────────────────────────────────────
   const handleGenerateSeo = async () => {
     try {
+      // Get the first available language content
+      const titleText = formData.title || formData.titleHe || formData.titleAr;
+      const descText =
+        formData.shortDescription ||
+        formData.shortDescriptionHe ||
+        formData.shortDescriptionAr;
+      const contentText =
+        formData.content || formData.contentHe || formData.contentAr;
+
       const result = await generateBlogSeo({
-        title: getLngWiseStr(
-          editingLanguage,
-          formData.title,
-          formData.titleHe,
-          formData.titleAr,
-        ),
-        shortDescription: getLngWiseStr(
-          editingLanguage,
-          formData.shortDescription,
-          formData.shortDescriptionHe,
-          formData.shortDescriptionAr,
-        ),
-        content: getLngWiseStr(
-          editingLanguage,
-          formData.content,
-          formData.contentHe,
-          formData.contentAr,
-        ),
+        title: titleText,
+        shortDescription: descText,
+        content: contentText,
       }).unwrap();
 
       setFormData((prev) => ({
@@ -246,11 +243,10 @@ const CreateArticleWizard = ({
         metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
         metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
         tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
-        // Auto-fill slug from title if empty
         slug:
           prev.slug ||
           result.slug ||
-          formData.title.toLowerCase().replace(/\s+/g, "-"),
+          titleText.toLowerCase().replace(/\s+/g, "-"),
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -258,24 +254,69 @@ const CreateArticleWizard = ({
     }
   };
 
+  /**
+   * Detects the language of non-empty fields and assigns them to the correct language-specific fields
+   * Priority: title > shortDescription > content
+   */
+  const detectAndAssignLanguageFields = (
+    data: IArticleFormData,
+  ): IArticleFormData => {
+    const title = data.title?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const content = data.content?.trim() || "";
+
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = title || shortDescription || content;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.titleHe = title || data.titleHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.contentHe = content || data.contentHe;
+
+      // Clear English fields
+      updated.title = "";
+      updated.shortDescription = "";
+      updated.content = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.titleAr = title || data.titleAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.contentAr = content || data.contentAr;
+
+      // Clear English fields
+      updated.title = "";
+      updated.shortDescription = "";
+      updated.content = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
+
   const saveArticle = useCallback(
-    async (isPublish: boolean = false) => {
+    async (isPublish: boolean = false, processedData?: IArticleFormData) => {
       if (!formData?.externalApiId) {
         toast.error(t("please_select_website"));
         return;
       }
       if (!validateArticle()) return;
 
+      const dataToSave = processedData || formData;
       const uploadedImages = await uploadAll();
 
       const mapped = uploadedImages.map((img, idx) => ({
         image: img?.gcsURL,
-        alt: formData.title || "",
+        alt: dataToSave.title || dataToSave.titleHe || dataToSave.titleAr || "",
         isPrimary: idx === primaryImageIndex,
       }));
 
       const payload = {
-        ...formData,
+        ...dataToSave,
         status: isPublish ? "APPROVED" : "PENDING",
         images: mapped,
       };
@@ -313,10 +354,18 @@ const CreateArticleWizard = ({
   );
 
   const handleSaveDraft = () => saveArticle(false);
+
   const handlePublish = async () => {
     setIsPublishing(true);
-    await saveArticle(true);
-    setIsPublishing(false);
+    try {
+      // Step 1: Detect language and assign to correct fields
+      const processedFormData = detectAndAssignLanguageFields(formData);
+
+      // Step 2: Save with processed data
+      await saveArticle(true, processedFormData);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────────
@@ -344,33 +393,11 @@ const CreateArticleWizard = ({
                 ? formData?.externalApiId
                 : formData?.externalApiId?.id || undefined
             }
-            onChange={(value) => handleChange({ externalApiId: value })} // value here is probably the full object from items
+            onChange={(value) => handleChange({ externalApiId: value })}
             items={associatedWebsite}
             placeholder={t("select_website")}
           />
         </div>
-
-        {/* Language selector */}
-        {/* <div className="flex items-center gap-1.5">
-          <Globe className={`w-4 h-4 ${textSecondary}`} />
-          <div
-            className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}
-          >
-            {LANG_OPTIONS.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setEditingLanguage(key)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-                  editingLanguage === key
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : `${textSecondary} hover:bg-blue-50 dark:hover:bg-gray-700`
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div> */}
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────────── */}
@@ -379,7 +406,6 @@ const CreateArticleWizard = ({
         <div className="flex-1 overflow-y-auto p-6">
           <ArticleContentForm
             formData={formData}
-            editingLanguage={editingLanguage}
             onChange={handleChange}
             images={images}
             primaryImageIndex={primaryImageIndex}
@@ -387,7 +413,6 @@ const CreateArticleWizard = ({
             onImageDelete={handleDeleteImage}
             onSetPrimaryImage={setPrimaryImage}
             syncKey={existingArticle?._id}
-            setEditingLanguage={setEditingLanguage}
           />
         </div>
 
@@ -397,7 +422,6 @@ const CreateArticleWizard = ({
         >
           <ArticleSeoSettings
             formData={formData}
-            editingLanguage={editingLanguage}
             onChange={handleChange}
             tagInput={tagInput}
             onTagInputChange={setTagInput}
@@ -408,6 +432,7 @@ const CreateArticleWizard = ({
             showPreview={false}
             onTogglePreview={() => {}}
             existingArticle={existingArticle}
+            editingLanguage="he"
           />
         </div>
       </div>
