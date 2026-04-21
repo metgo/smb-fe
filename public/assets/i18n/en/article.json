@@ -8,7 +8,7 @@
   "reset": "Reset",
   "export": "Export",
   "no_blogs_to_export": "No blogs to export",
-
+  "please_select_website_before_publishing": "Please select a website before publishing.",
   "title": "Title",
   "subTitle": "Subtitle",
   "subtitle": "Subtitle",

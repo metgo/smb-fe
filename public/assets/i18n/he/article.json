@@ -8,7 +8,7 @@
   "reset": "איפוס",
   "export": "ייצוא",
   "no_blogs_to_export": "אין מאמרים לייצוא",
-
+  "please_select_website_before_publishing": "אנא בחר אתר לפני הפרסום.",
   "translation": "תרגום",
   "translate_hint": "הזן טקסט לתרגום",
   "content": "תוכן",

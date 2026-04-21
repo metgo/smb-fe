@@ -416,6 +416,15 @@ const CreateArticleWizard = ({
   const handleSaveDraft = () => saveArticle(false);
 
   const handlePublish = async () => {
+    const externalId =
+      typeof formData?.externalApiId === "string"
+        ? formData.externalApiId
+        : formData?.externalApiId?.id;
+
+    if (!externalId) {
+      toast.error(t("please_select_website_before_publishing"));
+      return;
+    }
     setIsPublishing(true);
     try {
       // Step 1: Detect language and assign to correct fields
@@ -438,6 +447,7 @@ const CreateArticleWizard = ({
       <div
         className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} flex-wrap gap-3`}
       >
+        {/* Left Side */}
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
@@ -454,7 +464,10 @@ const CreateArticleWizard = ({
               {steps[currentStep - 1]?.title}
             </p>
           </div>
+        </div>
 
+        {/* Right Side */}
+        <div className="ml-auto">
           <ReactSelect
             minWidth={180}
             value={
