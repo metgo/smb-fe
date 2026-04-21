@@ -9,6 +9,13 @@
   "export": "تصدير",
   "no_blogs_to_export": "لا توجد مقالات للتصدير",
 
+  "translation": "الترجمة",
+  "translate_hint": "أدخل النص للترجمة",
+  "content": "المحتوى",
+  "form": "نموذج",
+  "seo": "تحسين محركات البحث",
+  "review": "مراجعة",
+  "auto_translate": "الترجمة التلقائية",
   "title": "العنوان",
   "subTitle": "العنوان الفرعي",
   "subtitle": "العنوان الفرعي",

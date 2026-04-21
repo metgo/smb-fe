@@ -58,7 +58,7 @@ export default function ArticleContentForm({
   const descDir = getContentDirection(formData[shortDescField] || "");
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Title - Single Field */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>

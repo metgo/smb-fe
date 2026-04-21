@@ -9,6 +9,13 @@
   "export": "ייצוא",
   "no_blogs_to_export": "אין מאמרים לייצוא",
 
+  "translation": "תרגום",
+  "translate_hint": "הזן טקסט לתרגום",
+  "content": "תוכן",
+  "form": "טופס",
+  "seo": "קידום אתרים",
+  "review": "ביקורת",
+  "auto_translate": "תרגום אוטומטי",
   "title": "כותרת",
   "subTitle": "כותרת משנה",
   "subtitle": "כותרת משנה",
