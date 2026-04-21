@@ -273,8 +273,8 @@ export default function DynamicPageMgmt() {
       try {
         await deleteMedia({ imageUrl: file.gcsUrl }).unwrap();
       } catch {
-        toast.error(t("error_file_upload_failed"));
-        return;
+        // Silently ignore delete errors — the file may no longer exist on the server.
+        // We still clear the slot so the user can upload a new file.
       }
     }
     setUploadedFiles((prev) => ({ ...prev, [slot]: null }));
