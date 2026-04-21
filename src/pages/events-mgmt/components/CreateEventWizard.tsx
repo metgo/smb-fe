@@ -750,8 +750,6 @@ export default function CreateEventWizard({
             setFullDescriptionHe={setFullDescriptionHe}
             fullDescriptionAr={fullDescriptionAr}
             setFullDescriptionAr={setFullDescriptionAr}
-            eventStatus={eventStatus}
-            setEventStatus={setEventStatus}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
