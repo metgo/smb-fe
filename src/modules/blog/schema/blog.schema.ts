@@ -34,16 +34,46 @@ export class Blog extends AuditableSchema {
     title: string;
 
   @Prop()
+    titleHe: string;
+
+  @Prop()
+    titleAr: string;
+
+  @Prop()
     subTitle: string;
+
+  @Prop()
+    subTitleHe: string;
+
+  @Prop()
+    subTitleAr: string;
 
   @Prop({ required: true })
     shortDescription: string;
+
+  @Prop()
+    shortDescriptionHe: string;
+
+  @Prop()
+    shortDescriptionAr: string;
 
   @Prop({ required: true })
     content: string;
 
   @Prop()
+    contentHe: string;
+
+  @Prop()
+    contentAr: string;
+
+  @Prop()
     summary: string;
+
+  @Prop()
+    summaryHe: string;
+
+  @Prop()
+    summaryAr: string;
 
   @Prop()
     slug: string;
@@ -52,10 +82,28 @@ export class Blog extends AuditableSchema {
     metaTitle: string;
 
   @Prop()
+    metaTitleHe: string;
+
+  @Prop()
+    metaTitleAr: string;
+
+  @Prop()
     metaDescription: string;
+
+  @Prop()
+    metaDescriptionHe: string;
+
+  @Prop()
+    metaDescriptionAr: string;
 
   @Prop({ type: [String], default: [] })
     tags: string[];
+
+  @Prop({ type: [String], default: [] })
+    tagsHe: string[];
+
+  @Prop({ type: [String], default: [] })
+    tagsAr: string[];
 
   @Prop({ type: [ImageSchema], default: [] })
     images: Image[];

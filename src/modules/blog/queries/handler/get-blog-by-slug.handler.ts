@@ -1,9 +1,10 @@
+/* eslint-disable no-nested-ternary */
 import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { CommonStatus } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetBlogBySlugQuery } from '../get-blog-by-slug.query';
 import { Blog } from '../../schema/blog.schema';
@@ -26,7 +27,7 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
         isDeleted: { $ne: true },
       })
         .select(
-          '_id slug title subTitle shortDescription content summary metaTitle metaDescription tags images createdAt updatedAt createdBy updatedBy',
+          '_id slug title titleHe titleAr subTitle subTitleHe subTitleAr shortDescription shortDescriptionHe shortDescriptionAr content contentHe contentAr summary summaryHe summaryAr metaTitle metaTitleHe metaTitleAr metaDescription metaDescriptionHe metaDescriptionAr tags tagsHe tagsAr images createdAt updatedAt createdBy updatedBy',
         )
         .lean()
         .exec();
@@ -39,14 +40,90 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
       const user = userId
         ? await this.UserModel.findById(userId).select('firstName lastName')
         : null;
+
+      const localized = this.localizeBlog(blog, query.locale);
+
       return {
-        ...blog,
-        readTime: Math.ceil(blog.content.trim().split(/\s+/).length / 200),
+        _id: blog._id,
+        slug: blog.slug,
+        images: blog.images,
+        createdAt: blog.createdAt,
         updatedAt: blog.updatedAt || blog.createdAt,
         updatedBy: user ? `${user?.firstName} ${user?.lastName}` : null,
+        readTime: Math.ceil(localized.content.trim().split(/\s+/).length / 200),
+        ...localized,
       };
     } catch (error) {
       exceptionHandling(error);
+    }
+  }
+
+  private localizeBlog(blog: any, locale: Locale) {
+    switch (locale) {
+      case Locale.ARABIC:
+        return {
+          title: blog.titleAr || blog.title || blog.titleHe,
+          subTitle: blog.subTitleAr || blog.subTitle || blog.subTitleHe,
+          shortDescription:
+            blog.shortDescriptionAr
+            || blog.shortDescription
+            || blog.shortDescriptionHe,
+          content: blog.contentAr || blog.content || blog.contentHe,
+          summary: blog.summaryAr || blog.summary || blog.summaryHe,
+          metaTitle: blog.metaTitleAr || blog.metaTitle || blog.metaTitleHe,
+          metaDescription:
+            blog.metaDescriptionAr
+            || blog.metaDescription
+            || blog.metaDescriptionHe,
+          tags: blog.tagsAr?.length
+            ? blog.tagsAr
+            : blog.tags?.length
+              ? blog.tags
+              : blog.tagsHe,
+        };
+      case Locale.ENGLISH:
+        return {
+          title: blog.title || blog.titleHe || blog.titleAr,
+          subTitle: blog.subTitle || blog.subTitleHe || blog.subTitleAr,
+          shortDescription:
+            blog.shortDescription
+            || blog.shortDescriptionHe
+            || blog.shortDescriptionAr,
+          content: blog.content || blog.contentHe || blog.contentAr,
+          summary: blog.summary || blog.summaryHe || blog.summaryAr,
+          metaTitle: blog.metaTitle || blog.metaTitleHe || blog.metaTitleAr,
+          metaDescription:
+            blog.metaDescription
+            || blog.metaDescriptionHe
+            || blog.metaDescriptionAr,
+          tags: blog.tags?.length
+            ? blog.tags
+            : blog.tagsHe?.length
+              ? blog.tagsHe
+              : blog.tagsAr,
+        };
+      case Locale.HEBREW:
+      default:
+        return {
+          title: blog.titleHe || blog.title || blog.titleAr,
+          subTitle: blog.subTitleHe || blog.subTitle || blog.subTitleAr,
+          shortDescription:
+            blog.shortDescriptionHe
+            || blog.shortDescription
+            || blog.shortDescriptionAr,
+          content: blog.contentHe || blog.content || blog.contentAr,
+          summary: blog.summaryHe || blog.summary || blog.summaryAr,
+          metaTitle: blog.metaTitleHe || blog.metaTitle || blog.metaTitleAr,
+          metaDescription:
+            blog.metaDescriptionHe
+            || blog.metaDescription
+            || blog.metaDescriptionAr,
+          tags: blog.tagsHe?.length
+            ? blog.tagsHe
+            : blog.tags?.length
+              ? blog.tags
+              : blog.tagsAr,
+        };
     }
   }
 }

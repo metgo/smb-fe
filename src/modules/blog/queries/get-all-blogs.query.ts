@@ -1,5 +1,5 @@
-import { ExternalApiPostQuery } from 'src/common/query-handler/external-api.query';
+import { GetAllBlogsRequest } from './get-all-blogs.request';
 
 export class GetAllBlogsQuery {
-  constructor(public readonly request: ExternalApiPostQuery) {}
+  constructor(public readonly request: GetAllBlogsRequest) {}
 }
