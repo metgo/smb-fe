@@ -272,7 +272,8 @@ export default function DynamicPageMgmt() {
     if (file?.gcsUrl) {
       try {
         await deleteMedia({ imageUrl: file.gcsUrl }).unwrap();
-      } catch {
+      } catch (error) {
+        console.log(error);
         // Silently ignore delete errors — the file may no longer exist on the server.
         // We still clear the slot so the user can upload a new file.
       }
