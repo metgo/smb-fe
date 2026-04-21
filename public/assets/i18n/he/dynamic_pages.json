@@ -31,5 +31,7 @@
   "btn_preview": "תצוגה מקדימה",
   "btn_open": "פתח",
   "btn_download": "הורד",
-  "btn_remove": "הסר"
+  "btn_remove": "הסר",
+  "label_primary_file": "קובץ ראשי",
+  "label_secondary_file": "קובץ משני"
 }

@@ -2,6 +2,13 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
+interface IDocFile {
+  file: "primary" | "secondary";
+  docUrl?: string;
+  docType?: string;
+  docSize?: string;
+}
+
 interface IDynamicPageBody {
   status: "DRAFT" | "APPROVED";
   externalApiId: string;
@@ -13,9 +20,7 @@ interface IDynamicPageBody {
   title: string;
   subTitle?: string;
   description?: string;
-  docUrl?: string;
-  docType?: string;
-  docSize?: string;
+  files?: IDocFile[];
 }
 
 interface IDynamicPageRes {
@@ -34,6 +39,7 @@ interface IDynamicPageData {
     title: string;
     subTitle?: string;
     description?: string;
+    files?: IDocFile[];
     docUrl?: string;
     docType?: string;
     docSize?: string;
