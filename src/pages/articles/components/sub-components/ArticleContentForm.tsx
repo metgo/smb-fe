@@ -3,12 +3,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
 import ArticleImageGallery from "./ArticleImageGallery";
 
-const LANG_DIR: Record<Language, "ltr" | "rtl"> = {
-  en: "ltr",
-  he: "rtl",
-  ar: "rtl",
-};
-
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;

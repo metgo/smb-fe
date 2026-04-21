@@ -163,22 +163,14 @@ const CreateArticleWizard = ({
   const addTag = () => {
     const tag = tagInput.trim();
     if (!tag) return;
-    // Tags are added to all languages for SEO purposes
-    const allTagsFields: Array<keyof IArticleFormData> = [
-      "tags",
-      "tagsHe",
-      "tagsAr",
-    ];
-    setFormData((prev) => {
-      const updated = { ...prev };
-      allTagsFields.forEach((field) => {
-        const current = updated[field] as string[];
-        if (!current.includes(tag)) {
-          updated[field] = [...current, tag];
-        }
-      });
-      return updated;
-    });
+
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag) ? prev.tags : [...prev.tags, tag],
+      tagsHe: prev.tagsHe.includes(tag) ? prev.tagsHe : [...prev.tagsHe, tag],
+      tagsAr: prev.tagsAr.includes(tag) ? prev.tagsAr : [...prev.tagsAr, tag],
+    }));
+
     setTagInput("");
   };
 
