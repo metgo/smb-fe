@@ -6,6 +6,23 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { SettingType } from '../settings.type';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
+@Schema({ _id: false })
+export class File {
+  @Prop()
+    file: string;
+
+  @Prop()
+    docUrl: string;
+
+  @Prop()
+    docType: string;
+
+  @Prop()
+    docSize: string;
+}
+
+export const FileSchema = SchemaFactory.createForClass(File);
+
 @Schema()
 export class Setting extends AuditableSchema {
   @Prop()
@@ -38,14 +55,8 @@ export class Setting extends AuditableSchema {
   @Prop()
     slug: string;
 
-  @Prop()
-    docUrl: string;
-
-  @Prop()
-    docType: string;
-
-  @Prop()
-    docSize: string;
+  @Prop({ type: [FileSchema], default: [] })
+    files: File[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

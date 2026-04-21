@@ -78,9 +78,7 @@ implements IQueryHandler<GetSettingByIdentifierIdQuery> {
         type: doc.type,
         status: doc.status,
         slug: doc.slug,
-        docUrl: doc.docUrl,
-        docType: doc.docType,
-        docSize: doc.docSize,
+        files: doc.files,
       };
     } catch (err) {
       this.logger.error('[SETTING]: FAILED TO GET SETTINGS BY IDENTIFIER ID', {
