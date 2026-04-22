@@ -15,6 +15,8 @@ import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterByStatus } from "@/components/filter-fields";
 
+const STORAGE_KEY = "event_query_state";
+
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
@@ -31,8 +33,6 @@ export default function EventsMgmtPage() {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
-
-  const STORAGE_KEY = "event_query_state";
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
@@ -442,7 +442,7 @@ export default function EventsMgmtPage() {
         {/* Events with different View */}
         <EventsWithViewMode
           isLoading={isLoading}
-          events={(events?.data as any) || []}
+          events={[...(events?.data || [])]?.reverse()}
           refetch={refetch}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}

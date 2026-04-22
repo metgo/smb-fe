@@ -30,7 +30,7 @@ import {
   LocationDetails,
   MediaDetails,
 } from "@/components/details-sections";
-import { PageStats, TabsSection } from "@/components/shared";
+import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
 
 const findEventType = (type: string) => {
@@ -62,9 +62,12 @@ export default function EventDetailsPage() {
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
   ]);
 
-  const { data: eventDetails, refetch } = useGetEventByIdQuery(
-    eventId ? { eventId } : skipToken,
-  );
+  const {
+    data: eventDetails,
+    refetch,
+    isLoading,
+    isFetching,
+  } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
@@ -219,6 +222,7 @@ export default function EventDetailsPage() {
 
   return (
     <div className="flex flex-col overflow-hidden relative">
+      <Spinner isLoading={isLoading || isFetching} />
       {/* Sticky Header */}
       <div
         className={clsx(

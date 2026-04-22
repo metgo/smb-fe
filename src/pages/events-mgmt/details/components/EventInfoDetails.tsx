@@ -1,7 +1,9 @@
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConnectedWebsites } from "@/components/shared";
 import { FileText, AlignLeft, StickyNote, AlertTriangle } from "lucide-react";
+
+import { getLngWiseStr } from "@/helpers";
+import { ConnectedWebsites } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 
 interface EventInfoDetailsProps {
@@ -13,15 +15,18 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
   t,
   eventDetails,
 }) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
   return (
     <div className="space-y-6">
       <DescriptionCard
         title={t("short_description")}
-        content={
-          eventDetails?.shortDescription ? eventDetails.shortDescription : "-"
-        }
+        content={getLngWiseStr(
+          language,
+          eventDetails?.shortDescription,
+          eventDetails?.shortDescriptionHe,
+          eventDetails?.shortDescriptionAr,
+        )}
         icon={
           <FileText
             className={clsx(
@@ -37,7 +42,12 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
       <DescriptionCard
         isEvent
         title={t("full_description")}
-        content={eventDetails?.description ? eventDetails?.description : "-"}
+        content={getLngWiseStr(
+          language,
+          eventDetails?.description,
+          eventDetails?.descriptionHe,
+          eventDetails?.descriptionAr,
+        )}
         icon={
           <AlignLeft
             className={clsx(

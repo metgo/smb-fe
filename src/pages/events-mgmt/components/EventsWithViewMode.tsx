@@ -97,13 +97,18 @@ export default function EventsWithViewMode({
   statusFilter,
   searchQuery,
 }: EventsWithViewModeProps) {
-  const { t, i18n } = useTranslation("events");
+  const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
-  const language = i18n.language || "en";
   const navigate = useNavigate();
-  const { bgPrimary, bgSecondary, borderColor, textTertiary, textPrimary } =
-    useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    borderColor,
+    textTertiary,
+    textPrimary,
+    language,
+  } = useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
