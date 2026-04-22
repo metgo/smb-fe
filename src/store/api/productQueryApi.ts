@@ -9,7 +9,7 @@ export const productQueryApi = createApi({
   endpoints: (builder) => ({
     getAllProducts: builder.query<any, any>({
       query: (params) => ({
-        url: endpoints.products,
+        url: `${endpoints.products}?sortBy=DESC`,
         method: "GET",
         params,
       }),

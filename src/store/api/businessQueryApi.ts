@@ -47,7 +47,7 @@ export const businessQueryApi = createApi({
   endpoints: (builder) => ({
     getAllbusinesses: builder.query<any, BusinessListParams>({
       query: (params) => ({
-        url: endpoints.businesses,
+        url: `${endpoints.businesses}?sortBy=DESC`,
         method: "GET",
         params,
       }),
