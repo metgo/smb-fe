@@ -95,3 +95,19 @@ export enum SortByTimePeriod {
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
 }
+
+export enum PromotionPlacementType {
+  HOME_PAGE_HERO = 'home_page_hero',
+  SECONDARY_BANNER = 'secondary_banner',
+  FOOTER_SPOTLIGHT = 'footer_spotlight',
+}
+
+export enum PromotionRotationType {
+  MANUAL = 'manual',
+  AUTOMATIC = 'automatic',
+}
+
+export enum PromotionMediaType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+}

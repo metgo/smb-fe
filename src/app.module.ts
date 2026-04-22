@@ -57,6 +57,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SiteFiltersConfigModule } from './modules/site-filters-config/site-filters-config.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SiteSettingsModule } from './modules/site-settings/siteSettings.module';
+import { PromotionsModule } from './modules/promotions/promotions.module';
 // import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
@@ -115,6 +116,7 @@ import { SiteSettingsModule } from './modules/site-settings/siteSettings.module'
     SiteFiltersConfigModule,
     SettingsModule,
     SiteSettingsModule,
+    PromotionsModule,
   ],
   providers: [
     {

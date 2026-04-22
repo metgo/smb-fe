@@ -179,6 +179,10 @@ export const ServerErrors = {
   PAYMENT: {
     FAILED: 'Your payment was failed',
   },
+  PROMOTION_GROUP: {
+    NOT_FOUND: 'Promotion group not found',
+    EXISTS: 'Promotion group already exists for this externalApiId',
+  },
 };
 
 export const ServerSuccess = {
@@ -377,5 +381,10 @@ export const ServerSuccess = {
     CREATED: 'Ticket for event was created successfully',
     DELETED: 'Ticket for event was deleted successfully',
     LISTED: 'Ticket for event was listed successfully',
+  },
+  PROMOTION_GROUP: {
+    CREATED: 'Promotion group was created successfully',
+    UPDATED: 'Promotion group was updated successfully',
+    LISTED: 'Promotion group was listed successfully',
   },
 };
