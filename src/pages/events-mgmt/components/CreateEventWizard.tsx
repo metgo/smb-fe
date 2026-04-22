@@ -362,10 +362,21 @@ export default function CreateEventWizard({
     switch (step) {
       case 1:
         if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-        if (!eventName?.trim()) newErrors.eventName = t("required_field");
-        if (!shortDescription?.trim())
+        if (
+          !eventName?.trim() &&
+          !eventNameHe?.trim() &&
+          !eventNameAr?.trim()
+        ) {
+          newErrors.eventName = t("required_field");
+        }
+
+        if (
+          !shortDescription?.trim() &&
+          !shortDescriptionHe?.trim() &&
+          !shortDescriptionAr?.trim()
+        ) {
           newErrors.shortDescription = t("required_field");
-        if (eventName?.length < 3) newErrors.eventName = t("field_too_short");
+        }
         break;
       case 2:
         if (!isMultiDay && !startDate)
@@ -542,6 +553,9 @@ export default function CreateEventWizard({
         body: websiteAccessItemPayload,
         itemId: eventId,
       });
+    }
+    if (refetch) {
+      refetch();
     }
   };
 

@@ -598,7 +598,9 @@ export default function EventsWithViewMode({
                 {event.isMultiDay && (
                   <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
                 )}
-                <span className="text-sm line-clamp-2">{event.name}</span>
+                <span className="text-sm line-clamp-2">
+                  {event.name || event.nameHe || event.nameAr}
+                </span>
               </div>
             ),
           },
