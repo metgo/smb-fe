@@ -20,7 +20,7 @@ export const routes = {
   contentMgmt: "/content-management",
   voucherMgmt: "/voucher-management",
   voucherDetails: "/voucher-details",
-
+  vendorReconciliationMgmt: "/vendor-reconciliation",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
   notificationMgmt: "/notifications-management",

@@ -106,6 +106,13 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "vendor-reconciliation",
+      path: routes.vendorReconciliationMgmt,
+      label: t("vendor_reconciliation") || "Vendor Reconciliation",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+    {
       id: "poi",
       path: routes.pointOfInterest,
       label: t("pois") || "Points of Interest",
