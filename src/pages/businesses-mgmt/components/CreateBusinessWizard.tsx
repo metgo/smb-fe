@@ -30,8 +30,8 @@ import {
 } from "./sub-components";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { modelTitle, parseAddress, removeNulls } from "@/helpers";
@@ -87,10 +87,7 @@ export default function CreateBusinessWizard({
 
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [logoGcsUrl, setLogoGcsUrl] = useState<string>("");
-  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
-    null,
-  );
+  const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
     allBlacklistIds: [] as string[],
     selectedBlacklistIds: [] as string[],
@@ -171,32 +168,52 @@ export default function CreateBusinessWizard({
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
 
   const {
-    image: logoImage,
-    handleImageSelect: handleLogoImageSelect,
-    uploadImage: uploadLogoImage,
-    confirmDelete: confirmDeleteLogo,
-    deleteTarget: deleteTargetLogo,
-    setDeleteTarget: setDeleteTargetLogo,
-    isImageDeleting: isLogoImageDeleting,
-    handleDeleteImage: handleDeleteLogoImage,
-  } = useSingleImageUpload({
-    initialImage: businessLogoImage?.image,
-    onChange: setBusinessLogoImage,
+    previewUrl: logoPreviewUrl,
+    gcsUrl: logoGcsUrl,
+    progress: logoProgress,
+    status: logoStatus,
+    isDeleting: isLogoImageDeleting,
+    handleFileSelect: handleLogoImageSelect,
+    deleteFile: deleteLogoFile,
+    reset: resetLogo,
+  } = useFileUpload({
+    initialUrl: opMode === IOpMode.EDIT ? editData?.logo?.image : undefined,
   });
+
+  const logoImage: IImageUpload | null = logoPreviewUrl
+    ? {
+        id: 0,
+        previewUrl: logoPreviewUrl,
+        gcsURL: logoGcsUrl,
+        progress: logoProgress,
+        status: logoStatus as IImageUpload["status"],
+      }
+    : null;
+
+  const handleDeleteLogoImage = (img: IImageUpload) => {
+    if (img.status !== "success") {
+      resetLogo();
+      return;
+    }
+    if (img.gcsURL) setDeleteTargetLogo(img.gcsURL);
+  };
+
+  const confirmDeleteLogo = async () => {
+    await deleteLogoFile();
+    setDeleteTargetLogo(null);
+  };
 
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
   const [initBusinessCreate, { isLoading: isCreating }] =
@@ -242,7 +259,7 @@ export default function CreateBusinessWizard({
       { weight: 10, filled: !!formData.primaryCategory?.trim() },
       { weight: 5, filled: formData.tags?.length > 0 },
       // Media (10%)
-      { weight: 5, filled: !!(logoImage || businessLogoImage) },
+      { weight: 5, filled: !!logoPreviewUrl },
       { weight: 5, filled: (images?.length ?? 0) > 0 },
       // Operating Hours (5%)
       { weight: 5, filled: formData.operatingHours?.length > 0 },
@@ -258,7 +275,7 @@ export default function CreateBusinessWizard({
       0,
     );
     return Math.round((earned / total) * 100);
-  }, [formData, address, images, logoImage, businessLogoImage]);
+  }, [formData, address, images, logoPreviewUrl]);
 
   useEffect(() => {
     if (userRole === "authority") {
@@ -382,10 +399,8 @@ export default function CreateBusinessWizard({
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
-        setBusinessLogoImage({ image: editData?.logo?.image });
       } else {
         setGalleryImages([]);
-        setBusinessLogoImage(null);
       }
     }
   }, [editData, opMode, businessId]);
@@ -450,7 +465,7 @@ export default function CreateBusinessWizard({
     // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
-    logo: editData ? businessLogoImage : { image: logoGcsUrl },
+    logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
     openingHrs: formData.operatingHours,
@@ -543,12 +558,6 @@ export default function CreateBusinessWizard({
     onClose();
   };
   const handleNext = async () => {
-    // if (!validateStep(currentStep) && isPublishBtnClicked) return;
-    if (currentStep === 5) {
-      const logoUrl = await uploadLogoImage();
-      setLogoGcsUrl(logoUrl);
-      await uploadAll();
-    }
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -558,9 +567,6 @@ export default function CreateBusinessWizard({
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-    const logoUrl = await uploadLogoImage();
-    setLogoGcsUrl(logoUrl);
-    await uploadAll();
     await saveDraft(false);
     if (businessId) {
       await createWebsiteAccessItem({

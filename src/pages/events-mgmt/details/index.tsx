@@ -20,7 +20,6 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
@@ -57,7 +56,6 @@ export default function EventDetailsPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
   ]);
@@ -78,25 +76,9 @@ export default function EventDetailsPage() {
 
   useEffect(() => {
     if (eventDetails) {
-      setGalleryImages(eventDetails?.images ?? []);
       setEventDays(eventDetails?.dayDescription ?? []);
     }
   }, [eventDetails]);
-
-  const {
-    images,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
 
   const handleClose = () => {
     setIsEditOpen(false);
@@ -160,16 +142,10 @@ export default function EventDetailsPage() {
   const renderContent = () => {
     const commonProps = { t, eventDetails };
     const mediaProps = {
-      t,
-      images,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
+      images: (eventDetails?.images ?? []).map((img: IImage) => ({
+        previewUrl: img.image,
+      })),
+      primaryImageIndex: 0,
     };
 
     switch (activeTab) {

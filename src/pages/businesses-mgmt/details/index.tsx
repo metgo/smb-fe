@@ -27,10 +27,8 @@ import {
 } from "./components";
 import { routes } from "@/lib/routes";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
@@ -125,50 +123,10 @@ export default function BusinessDetailsPage() {
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
-  const [errors, _setErrors] = useState<Record<string, string>>({});
-  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
-    null,
-  );
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
   const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditClicked, setIsEditClicked] = useState(false);
   const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
-
-  const {
-    images,
-    imagesRef,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-  const {
-    image: logoImage,
-    handleImageSelect: handleLogoImageSelect,
-    uploadImage: uploadLogoImage,
-    confirmDelete: confirmDeleteLogo,
-    deleteTarget: deleteTargetLogo,
-    setDeleteTarget: setDeleteTargetLogo,
-    isImageDeleting: isLogoImageDeleting,
-    handleDeleteImage: handleDeleteLogoImage,
-  } = useSingleImageUpload({
-    initialImage: businessLogoImage?.image,
-    onChange: setBusinessLogoImage,
-  });
-
-  useEffect(() => {
-    setGalleryImages(business?.images);
-    setBusinessLogoImage({ image: business?.logo?.image });
-  }, [business]);
 
   useEffect(() => {
     if (!isEditClicked) {
@@ -210,28 +168,11 @@ export default function BusinessDetailsPage() {
   const renderContent = () => {
     const commonProps = { t, isDark, business };
     const mediaProps = {
-      t,
-      isDark,
-      errors,
-      uploadLogoImage,
-      business,
-      logoImage,
-      handleLogoImageSelect,
-      deleteTargetLogo,
-      setDeleteTargetLogo,
-      isLogoImageDeleting,
-      confirmDeleteLogo,
-      handleDeleteLogoImage,
-      images,
-      imagesRef,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
+      logoImage: business?.logo?.image ?? null,
+      images: (business?.images ?? []).map((img: IImage) => ({
+        previewUrl: img.image,
+      })),
+      primaryImageIndex: 0,
     };
 
     switch (activeTab) {

@@ -26,7 +26,7 @@ import {
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
 
-import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
 import {
@@ -157,14 +157,13 @@ export default function CreateProductWizard({
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
@@ -429,15 +428,10 @@ export default function CreateProductWizard({
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-
-    await uploadAll();
     await saveDraft(false);
   };
 
   const handleNext = async () => {
-    if (currentStep === 4) {
-      await uploadAll();
-    }
     setCurrentStep((prev) => prev + 1);
   };
 
