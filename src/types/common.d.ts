@@ -89,6 +89,15 @@ interface IDmo {
   authorities: Authority[];
 }
 
+type EnrichedAuthority = {
+  _id: string;
+  name: string;
+  logoPath?: string;
+  dmoId: string;
+  dmoName: string;
+  dmoLogo?: string;
+};
+
 interface IDeleteTarget {
   imageUrl: string;
   index: number;

@@ -28,6 +28,9 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
+  LocateFixed,
+  Wrench,
+  UserRoundCog,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -212,18 +215,11 @@ export default function Sidebar() {
           icon: Layout,
           isEnabled: false,
         },
-        {
-          id: "website-settings",
-          path: routes.websiteMgmt,
-          label: t("website_settings") || "Website Settings",
-          icon: Settings,
-          isEnabled: true,
-        },
       ],
     },
     {
       id: "settings",
-      path: routes.profile,
+      path: "#settings",
       label: t("settings") || "Settings",
       icon: Settings,
       isEnabled: true,
@@ -233,6 +229,27 @@ export default function Sidebar() {
           path: routes.profile,
           label: t("my_profile") || "My Profile",
           icon: UserCircle,
+          isEnabled: true,
+        },
+        {
+          id: "dmo",
+          path: routes.dmoMgmt,
+          label: t("dmos") || "DMOs",
+          icon: UserRoundCog,
+          isEnabled: true,
+        },
+        {
+          id: "authority",
+          path: routes.authorityMgmt,
+          label: t("authorities") || "Authorities",
+          icon: LocateFixed,
+          isEnabled: true,
+        },
+        {
+          id: "website",
+          path: routes.websiteMgmt,
+          label: t("websites") || "Websites",
+          icon: Wrench,
           isEnabled: true,
         },
         {

@@ -29,6 +29,9 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  DmosMgmtPage,
+  AuthoritiesMgmtPage,
+  WebsiteConfigPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -224,10 +227,15 @@ function App() {
         { path: routes.contentMgmt, element: <ContentMgmtPage /> },
         { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
         { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+
         { path: routes.profile, element: <ProfilePage /> },
+        { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+        { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
+        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+        { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
+
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
-        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },

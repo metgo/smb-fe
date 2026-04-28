@@ -17,11 +17,16 @@ import VoucherDetailsPage from "./vouchers-mgmt/details";
 import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 import PromotionsMgmtPage from "./promotions-mgmt";
+import DmosMgmtPage from "./dmos-mgmt";
+import AuthoritiesMgmtPage from "./authorities-mgmt";
+import WebsiteConfigPage from "./website-mgmt/website-config";
 
 export {
   AuthPage,
   ErrorUiPage,
   ProfilePage,
+  DmosMgmtPage,
+  AuthoritiesMgmtPage,
   BusinessesMgmtPage,
   BusinessDetailsPage,
   ProductsMgmtPage,
@@ -37,5 +42,6 @@ export {
   VouchersMgmtPage,
   VoucherDetailsPage,
   WebsiteMgmtPage,
+  WebsiteConfigPage,
   DynamicPageMgmtPage,
 };

@@ -317,5 +317,21 @@
   "address_placeholder": "Address",
 
   "max_length_reached": "Max length reached.",
-  "select_options_placeholder": "Select options"
+  "select_options_placeholder": "Select options",
+
+  "delete_authority": "Delete Authority",
+  "delete_authority_confirm": "Are you sure you want to delete this authority? This action cannot be undone.",
+  "migrate_authority_to_prod": "Migrate Authority to Production",
+  "migrate_authority_to_prod_confirm": "You are about to migrate this authority to the production environment. This will make it live for all users. Are you sure you want to continue?",
+  "migrate_to_prod": "Migrate to Production",
+
+  "delete_dmo": "Delete DMO",
+  "delete_dmo_confirm": "Are you sure you want to delete this DMO? This action cannot be undone.",
+  "migrate_dmo_to_prod": "Migrate DMO to Production",
+  "migrate_dmo_to_prod_confirm": "You are about to migrate this DMO to the production environment. This will make it live for all users. Are you sure you want to continue?",
+
+  "migrate_website_to_prod": "Migrate Website to Production",
+  "migrate_website_to_prod_confirm": "You are about to migrate this website to the production environment. This will make it live for all users. Are you sure you want to continue?",
+  "delete_website": "Delete Website",
+  "delete_website_confirm": "Are you sure you want to delete this website? This action cannot be undone."
 }

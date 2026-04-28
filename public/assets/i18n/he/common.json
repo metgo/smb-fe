@@ -319,5 +319,21 @@
   "address_placeholder": "כתובת",
 
   "max_length_reached": "הגעת לאורך המקסימלי.",
-  "select_options_placeholder": "בחר אפשרויות"
+  "select_options_placeholder": "בחר אפשרויות",
+
+  "delete_authority": "מחיקת רשות",
+  "delete_authority_confirm": "האם אתה בטוח שברצונך למחוק רשות זו? פעולה זו אינה ניתנת לביטול.",
+  "migrate_authority_to_prod": "העברת רשות לסביבת ייצור",
+  "migrate_authority_to_prod_confirm": "אתה עומד להעביר את הרשות לסביבת הייצור. פעולה זו תפרסם אותה לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+  "migrate_to_prod": "העבר לייצור",
+
+  "delete_dmo": "מחיקת DMO",
+  "delete_dmo_confirm": "האם אתה בטוח שברצונך למחוק DMO זה? פעולה זו אינה ניתנת לביטול.",
+  "migrate_dmo_to_prod": "העברת DMO לסביבת ייצור",
+  "migrate_dmo_to_prod_confirm": "אתה עומד להעביר את ה-DMO לסביבת הייצור. פעולה זו תפרסם אותו לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+
+  "migrate_website_to_prod": "העברת אתר לסביבת ייצור",
+  "migrate_website_to_prod_confirm": "אתה עומד להעביר את האתר לסביבת הייצור. פעולה זו תפרסם אותו לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+  "delete_website": "מחיקת אתר",
+  "delete_website_confirm": "האם אתה בטוח שברצונך למחוק אתר זה? פעולה זו אינה ניתנת לביטול."
 }
