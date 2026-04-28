@@ -345,10 +345,7 @@ export default function BusinessDetailsPage() {
           </div>
         </div>
 
-        <DetailTitleSection
-          {...business}
-          imageSrc={business?.images?.[0]?.image}
-        />
+        <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
