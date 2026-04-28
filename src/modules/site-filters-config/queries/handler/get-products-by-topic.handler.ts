@@ -240,7 +240,13 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         )
       ).filter(Boolean);
 
-      const paginatedData = await paginateData(page, limit, flatList);
+      const uniqueFlatList = Array.from(
+        new Map(
+          flatList.map(item => [item._id.toString(), item]),
+        ).values(),
+      );
+
+      const paginatedData = paginateData(page, limit, uniqueFlatList);
       return paginatedData;
     } catch (error) {
       this.logger.error('[SITE SETTINGS]: FAILED TO GET PRODUCTS BY TOPIC', {
