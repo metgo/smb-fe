@@ -57,6 +57,11 @@ import {
   BusinessSchema,
 } from '../business/shared/schema/business.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
+import {
+  SiteFiltersConfig,
+  SiteFiltersConfigSchema,
+} from '../site-filters-config/schema/site-filters-config.schema';
+import { Tags, TagsSchema } from '../tags/schema/tags.schema';
 import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.module';
 
 @Module({
@@ -76,6 +81,8 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
       { name: Voucher.name, schema: VoucherSchema },
       { name: Business.name, schema: BusinessSchema },
       { name: Campaign.name, schema: CampaignSchema },
+      { name: SiteFiltersConfig.name, schema: SiteFiltersConfigSchema },
+      { name: Tags.name, schema: TagsSchema },
     ]),
     ExternalApiModule,
     CampaignModule,

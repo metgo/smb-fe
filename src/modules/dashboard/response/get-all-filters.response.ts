@@ -13,6 +13,14 @@ export class SubCategoryResponse extends ModelResponse {
     categoryId: string;
 }
 
+export class TopicWithCategories {
+  @ApiProperty({ type: String })
+    name: string;
+
+  @ApiProperty({ type: [String] })
+    categories: string[];
+}
+
 export class GetAllFilterResponse {
   @ApiProperty({ type: ModelResponse, required: true })
     categories: ModelResponse[];
@@ -24,7 +32,10 @@ export class GetAllFilterResponse {
     groupTypes: ModelResponse[];
 
   @ApiProperty({ type: ModelResponse, required: true })
-    subCategories: SubCategoryResponse[];
+    tags: ModelResponse[];
+
+  @ApiProperty({ type: [TopicWithCategories], required: false })
+    topics?: TopicWithCategories[];
 }
 
 export class GetRawQueryResponse {

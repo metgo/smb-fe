@@ -41,7 +41,11 @@ export class Promotion extends AuditableSchema {
   })
     placement: PromotionPlacementType;
 
-  @Prop({ enum: PromotionMediaType, default: PromotionMediaType.IMAGE, required: true })
+  @Prop({
+    enum: PromotionMediaType,
+    default: PromotionMediaType.IMAGE,
+    required: true,
+  })
     mediaType: PromotionMediaType;
 
   @Prop({ type: { desktop: String, mobile: String }, required: true })

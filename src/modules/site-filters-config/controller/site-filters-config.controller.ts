@@ -12,6 +12,10 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { QueryBus } from '@nestjs/cqrs';
 import { GetSiteFiltersConfigByIdentifierIdQuery } from '../queries/get-site-filters-config-by-identifierId.query';
 import { GetSiteFiltersConfigByIdentifierIdRequest } from '../requests/get-site-filters-config-by-identifierId.request';
+import { GetProductsByTopicQuery } from '../queries/get-products-by-topic.query';
+import { GetProductsByTopicRequest } from '../requests/get-products-by-topic.request';
+import { GetProductsGroupedByTopicQuery } from '../queries/get-products-grouped-by-topic.query';
+import { GetProductsGroupedByTopicRequest } from '../requests/get-products-grouped-by-topic.request';
 
 @Controller('')
 export class SiteSettingsController {
@@ -37,5 +41,45 @@ export class SiteSettingsController {
     );
 
     return siteSetting;
+  }
+
+  @ApiEndpoint({
+    tags: ['Site Configs'],
+    response: {
+      status: HttpStatus.OK,
+      description: `Topic Products ${ServerSuccess.LISTED}`,
+    },
+    softBlockExtraDtoFields: true,
+    params: [{ name: 'externalApiId', type: 'string', required: true }],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('site-filter-config/topic-products/:externalApiId')
+  async getProductsByTopic(
+    @Param('externalApiId') externalApiId: string,
+    @Query() query: GetProductsByTopicRequest,
+  ) {
+    return this.queryBus.execute(
+      new GetProductsByTopicQuery(externalApiId, query),
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Site Configs'],
+    response: {
+      status: HttpStatus.OK,
+      description: `Products grouped by topic ${ServerSuccess.LISTED}`,
+    },
+    softBlockExtraDtoFields: true,
+    params: [{ name: 'externalApiId', type: 'string', required: true }],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('site-filter-config/products-grouped-by-topic/:externalApiId')
+  async getProductsGroupedByTopic(
+    @Param('externalApiId') externalApiId: string,
+    @Query() query: GetProductsGroupedByTopicRequest,
+  ) {
+    return this.queryBus.execute(
+      new GetProductsGroupedByTopicQuery(externalApiId, query),
+    );
   }
 }

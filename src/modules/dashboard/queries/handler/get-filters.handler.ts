@@ -8,15 +8,17 @@ import { GetFiltersQuery } from '../get-filters.query';
 import { ServicesTypes } from '../../dashboard.type';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
-import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import {
   GetAllFilterResponse,
   GetRawQueryResponse,
   ModelResponse,
-  SubCategoryResponse,
+  TopicWithCategories,
 } from '../../response/get-all-filters.response';
+import { Tags } from 'src/modules/tags/schema/tags.schema';
+import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
+import { GetProductRawQuery } from '../get-product-raw-query.query';
 import { GetBusinessRawQuery } from '../get-business-raw-query.query';
 import { GetEventRawQuery } from '../get-event-raw-query.query';
 import { GetTripRawQuery } from '../get-trip-raw-query.query';
@@ -27,6 +29,8 @@ import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema
 import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
+import { SiteFiltersConfig } from 'src/modules/site-filters-config/schema/site-filters-config.schema';
+import { SiteFiltersConfigStatus } from 'src/modules/site-filters-config/site-filters-config.type';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
@@ -45,9 +49,6 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
 
-    @InjectModel(BussSubCategory.name)
-    private SubCategoryModel: Model<BussSubCategory>,
-
     @InjectModel(Accessibility.name)
     private AccessibilityModel: Model<Accessibility>,
 
@@ -58,6 +59,15 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
 
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
+
+    @InjectModel(SiteFiltersConfig.name)
+    private SiteFiltersConfigModel: Model<SiteFiltersConfig>,
+
+    @InjectModel(Tags.name)
+    private TagsModel: Model<Tags>,
+
+    @InjectModel(ProductsAudit.name)
+    private ProductsAuditModel: Model<ProductsAudit>,
   ) {}
 
   async execute(queries: GetFiltersQuery): Promise<GetAllFilterResponse> {
@@ -77,11 +87,12 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
       }
 
       let campDetails;
+      let topics: TopicWithCategories[] = [];
 
       if (identifierId) {
         const externalApi = await this.ExternalApiModel.findOne({
           identifierId,
-        }).select('primaryCampIds');
+        }).select('_id primaryCampIds');
 
         if (!externalApi) {
           throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
@@ -91,6 +102,24 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         campDetails = await this.queryBus.execute(
           new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
         );
+
+        const siteSettings = await this.SiteFiltersConfigModel.findOne({
+          externalApiId: externalApi._id,
+          status: SiteFiltersConfigStatus.APPROVED,
+        })
+          .select('siteTopics')
+          .lean();
+
+        topics = (siteSettings?.siteTopics || [])
+          .filter(t => !t.isArchived)
+          .map(t => ({
+            name: t.titleHe || t.title || t.titleAr,
+            categories: (t.siteCategories || [])
+              .filter(cat => !cat.isArchived)
+              .map(cat => cat.titleHe || cat.title || cat.titleAr)
+              .filter(Boolean),
+          }))
+          .filter(t => Boolean(t.name));
       }
 
       if (campCode) {
@@ -182,33 +211,45 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
       }
 
       const cleanedCategories = this.cleanIds(listOfCategoriesIds);
-      const cleanedSubCategories = this.cleanIds(listOfSubCategoriesIds);
       const cleanedAccessibilities = this.cleanIds(listOfAccessibilityIds);
       const cleanedGroupTypes = this.cleanIds(listOfGroupTypeIds);
 
-      const [categories, subCategories, accessibilities, groupTypes]
-        = await Promise.all([
-          this.getCategories({
-            _id: { $in: cleanedCategories },
-          }),
-          this.getSubCategories({
-            _id: { $in: cleanedSubCategories },
-          }),
+      const productRawQuery = await this.queryBus.execute(
+        new GetProductRawQuery({
+          categoriesId,
+          subCategoriesId,
+          groupTypesId,
+          accessibilitiesId,
+          campDetails,
+          search: queries.body.search,
+        }),
+      );
 
-          this.getAccessibilities({
-            _id: { $in: cleanedAccessibilities },
-          }),
+      const distinctTagIds: any[] = productRawQuery
+        ? await this.getDistincts(
+          this.ProductsAuditModel,
+          'tagsId',
+          productRawQuery.findQuery,
+        )
+        : [];
 
-          this.getGroupTypes({
-            _id: { $in: cleanedGroupTypes },
-          }),
-        ]);
+      const cleanedTagIds = this.cleanIds(distinctTagIds);
+
+      const [categories, accessibilities, groupTypes, tags] = await Promise.all(
+        [
+          this.getCategories({ _id: { $in: cleanedCategories } }),
+          this.getAccessibilities({ _id: { $in: cleanedAccessibilities } }),
+          this.getGroupTypes({ _id: { $in: cleanedGroupTypes } }),
+          this.getTags({ _id: { $in: cleanedTagIds } }),
+        ],
+      );
 
       return {
         accessibilities,
         categories,
-        subCategories,
         groupTypes,
+        tags,
+        topics,
       };
     } catch (err) {
       exceptionHandling(err);
@@ -460,6 +501,10 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     return this.fetchCollection(this.GroupTypeModel, findQuery);
   }
 
+  private async getTags(findQuery: any): Promise<ModelResponse[]> {
+    return this.fetchTags(this.TagsModel, findQuery);
+  }
+
   private async fetchCollection(
     model: any,
     findQuery: any,
@@ -467,15 +512,13 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     return await model.find(findQuery).select('_id hebrewName').lean();
   }
 
-  private async getSubCategories(findQuery): Promise<SubCategoryResponse[]> {
-    return (
-      await this.SubCategoryModel.find(findQuery)
-        .select('_id hebrewName bussCategoryId')
-        .lean()
-    ).map(item => ({
-      _id: item._id.toString(),
-      hebrewName: item.hebrewName,
-      categoryId: item.bussCategoryId[0].toString(),
-    }));
+  private async fetchTags(
+    model: any,
+    findQuery: any,
+  ): Promise<ModelResponse[]> {
+    return await model
+      .find(findQuery)
+      .select({ _id: 1, hebrewName: '$nameHe' })
+      .lean();
   }
 }

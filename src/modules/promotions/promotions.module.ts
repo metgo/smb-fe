@@ -10,7 +10,10 @@ import { PromotionsService } from './promotions.service';
 import { PromotionsController } from './promotions.controller';
 
 import { GetPromotionsByIdentifierIdHandler } from './queries/handler/get-promotions-by-identifier-id.handler';
-import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-api.schema';
+import {
+  ExternalApi,
+  ExternalApiSchema,
+} from '../external-api/schema/external-api.schema';
 
 @Module({
   imports: [
@@ -20,11 +23,8 @@ import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-
       { name: ExternalApi.name, schema: ExternalApiSchema },
     ]),
   ],
-  providers: [
-    PromotionsService,
-    GetPromotionsByIdentifierIdHandler,
-  ],
+  providers: [PromotionsService, GetPromotionsByIdentifierIdHandler],
   controllers: [PromotionsController],
   exports: [PromotionsService],
 })
-export class PromotionsModule { }
+export class PromotionsModule {}

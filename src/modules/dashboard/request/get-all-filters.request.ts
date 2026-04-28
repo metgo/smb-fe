@@ -46,6 +46,11 @@ export class GetAllFiltersRequest {
   @IsOptional()
     groupTypesId: string[];
 
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    topic: string;
+
   @ApiProperty({
     isArray: true,
     required: false,

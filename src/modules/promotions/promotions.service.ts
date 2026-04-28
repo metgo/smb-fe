@@ -3,7 +3,10 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import {
-  Injectable, Inject, NotFoundException, ForbiddenException,
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
@@ -23,7 +26,7 @@ export class PromotionsService {
     private readonly ExternalApiModel: Model<ExternalApi>,
     @InjectModel(PromotionGroup.name)
     private readonly PromotionGroupModel: Model<PromotionGroupDocument>,
-  ) { }
+  ) {}
 
   async getPromotionsByIdentifierId(
     identifierId: string,
@@ -59,7 +62,9 @@ export class PromotionsService {
       // Step 1: filter placement
       let placementGroups = group.placementGroup;
       if (placement) {
-        placementGroups = placementGroups.filter(p => p.placement === placement);
+        placementGroups = placementGroups.filter(
+          p => p.placement === placement,
+        );
       }
 
       // Step 2: map locale fields

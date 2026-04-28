@@ -40,7 +40,10 @@ export class PromotionGroup extends AuditableSchema {
   })
     externalApiId: mongoose.Types.ObjectId;
 
-  @Prop({ type: [SchemaFactory.createForClass(PlacementGroupItem)], default: [] })
+  @Prop({
+    type: [SchemaFactory.createForClass(PlacementGroupItem)],
+    default: [],
+  })
     placementGroup: PlacementGroupItem[];
 }
 

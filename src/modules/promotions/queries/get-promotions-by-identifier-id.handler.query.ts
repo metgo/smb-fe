@@ -3,5 +3,5 @@ export class GetPromotionsByIdentifierIdQuery {
     public readonly identifierId: string,
     public readonly locale?: string,
     public readonly placement?: string,
-  ) { }
+  ) {}
 }

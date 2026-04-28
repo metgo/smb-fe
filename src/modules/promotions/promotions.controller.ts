@@ -15,9 +15,7 @@ import { GetPromotionsByIdentifierIdQuery } from './queries/get-promotions-by-id
 
 @Controller('promotions')
 export class PromotionsController {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) { }
+  constructor(private readonly queryBus: QueryBus) {}
 
   // ─── Promotions ────────────────────────────────────────────────────────────
   @ApiEndpoint({
