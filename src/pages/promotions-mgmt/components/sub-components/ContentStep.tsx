@@ -43,9 +43,6 @@ export default function ContentStep({
   } = useThemeClasses();
 
   const isRTLLang = editingLang === "he" || editingLang === "ar";
-  const anyLangComplete = (Object.keys(LANG_META) as Language[]).some((lang) =>
-    langComplete(lang),
-  );
 
   return (
     <div
@@ -82,12 +79,6 @@ export default function ContentStep({
                     }`}
                   />
                 )}
-                {!complete && !anyLangComplete && editingLang === lang && (
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-300" />
-                )}
-                {!complete && !anyLangComplete && editingLang !== lang && (
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-400" />
-                )}
               </button>
             );
           })}
@@ -99,8 +90,7 @@ export default function ContentStep({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className={`text-sm font-semibold ${textPrimary}`}>
-              {t("title")}{" "}
-              {!anyLangComplete && <span className="text-red-500">*</span>}
+              {t("title")}
             </label>
             <span className={`text-xs ${textTertiary}`}>
               {title[editingLang].length}/80
@@ -121,8 +111,7 @@ export default function ContentStep({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className={`text-sm font-semibold ${textPrimary}`}>
-              {t("description")}{" "}
-              {!anyLangComplete && <span className="text-red-500">*</span>}
+              {t("description")}
             </label>
             <span className={`text-xs ${textTertiary}`}>
               {content[editingLang].length}/300
