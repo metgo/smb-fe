@@ -31,6 +31,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 import { SiteFiltersConfig } from 'src/modules/site-filters-config/schema/site-filters-config.schema';
 import { SiteFiltersConfigStatus } from 'src/modules/site-filters-config/site-filters-config.type';
+import { ProductStatus } from 'src/modules/products/products.type';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
@@ -120,6 +121,60 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
               .filter(Boolean),
           }))
           .filter(t => Boolean(t.name));
+
+        if (!topics.length) {
+          const campOrConditions: any[] = [];
+          if (campDetails?.productIds?.length) {
+            campOrConditions.push({ productId: { $in: campDetails.productIds } });
+          }
+          if (campDetails?.dmoIds?.length) {
+            campOrConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+          }
+          if (campDetails?.authorityIds?.length) {
+            campOrConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+          }
+          if (campDetails?.businessIds?.length) {
+            campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
+          }
+
+          const productFilter: any = {
+            status: ProductStatus.APPROVED,
+            isActive: true,
+            isDeleted: { $ne: true },
+            $and: [
+              {
+                $or: [
+                  { 'quantity.remaining': { $gt: 0 } },
+                  { 'quantity.isUnlimited': true },
+                ],
+              },
+            ],
+          };
+
+          if (campOrConditions.length) {
+            productFilter.$and.push({ $or: campOrConditions });
+          }
+
+          const distinctCategoryIds = await this.ProductsAuditModel.distinct(
+            'primaryCategoryId',
+            productFilter,
+          );
+
+          if (distinctCategoryIds.length) {
+            const primaryCategories = await this.CategoryModel.find({
+              _id: { $in: distinctCategoryIds },
+            })
+              .select('name hebrewName')
+              .lean();
+
+            topics = primaryCategories
+              .map(cat => ({
+                name: cat.hebrewName || cat.name,
+                categories: [],
+              }))
+              .filter(t => Boolean(t.name));
+          }
+        }
       }
 
       if (campCode) {

@@ -67,9 +67,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       let siteCategories: any[] = [];
 
-      if (siteSettings) {
+      if (siteSettings && siteSettings?.siteTopics?.length) {
         if (query.topic?.length) {
-          const matchedTopics = (siteSettings.siteTopics || []).filter(t => query.topic.some(
+          const matchedTopics = (siteSettings?.siteTopics || []).filter(t => query.topic.some(
             tp => t.title === tp || t.titleHe === tp || t.titleAr === tp,
           ));
           this.logger.debug(
@@ -77,24 +77,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               ', ',
             )}"`,
           );
-
-          if (!matchedTopics.length) {
-            return this.fallbackByPrimaryCategory(
-              {
-                groupTypesId,
-                accessibilitiesId,
-                tagsId,
-                page,
-                limit,
-                locale: locale as Locale,
-                search,
-              },
-              query.topic,
-              query.category,
-              externalApiId,
-              hasDelivery,
-            );
-          }
 
           siteCategories = matchedTopics.flatMap(t => t.siteCategories || []);
         } else {
@@ -206,7 +188,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               ...rest
             } = product as any;
 
-            // ✅ Pick single image
             let selectedImage = null;
             if (rest.images?.length) {
               const primary = rest.images.find(img => img.isPrimary);
@@ -220,7 +201,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
             delete rest.images;
 
-            // ✅ Clean & localize business
             if (rest.businessId) {
               if (rest.businessId.logo) {
                 const { subCoordinates, ...cleanLogo } = rest.businessId.logo;
@@ -237,13 +217,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               delete rest.businessId.nameAr;
             }
 
-            // ✅ Localize product fields (name, description)
             const localizedBase = localizeFields(
               { ...rest, _id: pid },
               locale as Locale,
             );
 
-            // ✅ Localize category
             const localizedCategory = getLocalizedValue(
               category,
               'title',
