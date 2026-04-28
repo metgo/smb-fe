@@ -9,6 +9,10 @@ import {
 import { SiteSettingsController } from './siteSettings.controller';
 import { SiteSetting, SiteSettingSchema } from './schema/site-settings.schema';
 import { GetSiteSettingByExternalApiIdHandler } from './queries/handler/get-site-setting-by-external-api-id.handler';
+import { GetSiteSettingSeoHandler } from './queries/handler/get-site-setting-seo.handler';
+import { GetSiteSettingPartnersHandler } from './queries/handler/get-site-setting-partners.handler';
+import { GetSiteSettingSocialContactHandler } from './queries/handler/get-site-setting-social-contact.handler';
+import { GetSiteSettingIdentityThemeHandler } from './queries/handler/get-site-setting-identity-theme.handler';
 
 @Module({
   imports: [
@@ -24,7 +28,13 @@ import { GetSiteSettingByExternalApiIdHandler } from './queries/handler/get-site
       },
     ]),
   ],
-  providers: [GetSiteSettingByExternalApiIdHandler],
+  providers: [
+    GetSiteSettingByExternalApiIdHandler,
+    GetSiteSettingPartnersHandler,
+    GetSiteSettingSeoHandler,
+    GetSiteSettingSocialContactHandler,
+    GetSiteSettingIdentityThemeHandler,
+  ],
   controllers: [SiteSettingsController],
 })
 export class SiteSettingsModule {}

@@ -1,9 +1,9 @@
+import { Model } from 'mongoose';
+import { Logger } from 'winston';
+import { InjectModel } from '@nestjs/mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -55,7 +55,7 @@ implements IQueryHandler<GetSiteSettingByExternalApiIdQuery> {
           siteSetting.desktopVideos.find(v => v.isActive) ?? null,
         mobileVideos: siteSetting.mobileVideos.find(v => v.isActive) ?? null,
       };
-    } catch (err) {
+    } catch (err:any) {
       this.logger.error(
         '[SITE_SETTING]: FAILED TO GET SITE SETTING BY EXTERNAL API ID',
         {
