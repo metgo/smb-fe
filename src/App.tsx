@@ -66,12 +66,8 @@ const handleGoogleOAuthCallback = (): boolean => {
         );
       }
 
-      // Clean up URL by removing userData param
-      urlParams.delete("userData");
-      const newUrl = urlParams.toString()
-        ? `${window.location.pathname}?${urlParams.toString()}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      // Redirect to auth route so ProtectedRoute handles role-based redirects (traveller → business)
+      window.history.replaceState({}, "", routes.auth);
 
       return true;
     } catch (error) {
@@ -157,8 +153,14 @@ function App() {
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
+          console.log("🚀 ~ App ~ user:", user);
           if (user) {
             dispatch(loginSuccess(user));
+          }
+          if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
+            window.location.href = routes.businessMgmt;
+          } else {
+            window.location.href = routes.dashboard;
           }
         } catch (error) {
           console.error(
