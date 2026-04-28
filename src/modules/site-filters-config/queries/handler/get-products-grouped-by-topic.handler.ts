@@ -153,7 +153,9 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .select('categoryIds primaryCampIds')
       .lean();
 
-    const campDetails = await this.CampaignModel.findById(externalApi.primaryCampIds[0])
+    const campDetails = await this.CampaignModel.findById(
+      externalApi.primaryCampIds[0],
+    )
       .select('productIds dmoIds authorityIds businessIds')
       .lean();
 

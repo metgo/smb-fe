@@ -124,21 +124,27 @@ export class BusinessService {
     const {
       name,
       shortDescription,
+      description,
       nameAr,
       shortDescriptionAr,
+      descriptionAr,
       nameHe,
       shortDescriptionHe,
+      descriptionHe,
       ...rest
     } = business;
     let nameField = 'nameHe';
     let shortDescField = 'shortDescriptionHe';
+    let descField = 'descriptionHe';
 
     if (locale === Locale.ARABIC) {
       nameField = 'nameAr';
       shortDescField = 'shortDescriptionAr';
+      descField = 'descriptionAr';
     } else if (locale === Locale.ENGLISH) {
       nameField = 'name';
       shortDescField = 'shortDescription';
+      descField = 'description';
     }
 
     return {
@@ -156,6 +162,11 @@ export class BusinessService {
               || business.shortDescriptionHe
               || business.shortDescription
               || business.shortDescriptionAr,
+          description:
+              business[descField]
+              || business.descriptionHe
+              || business.description
+              || business.descriptionAr,
         }),
     };
   }

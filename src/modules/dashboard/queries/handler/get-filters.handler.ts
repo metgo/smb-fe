@@ -125,16 +125,22 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         if (!topics.length) {
           const campOrConditions: any[] = [];
           if (campDetails?.productIds?.length) {
-            campOrConditions.push({ productId: { $in: campDetails.productIds } });
+            campOrConditions.push({
+              productId: { $in: campDetails.productIds },
+            });
           }
           if (campDetails?.dmoIds?.length) {
             campOrConditions.push({ dmoId: { $in: campDetails.dmoIds } });
           }
           if (campDetails?.authorityIds?.length) {
-            campOrConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+            campOrConditions.push({
+              authorityId: { $in: campDetails.authorityIds },
+            });
           }
           if (campDetails?.businessIds?.length) {
-            campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
+            campOrConditions.push({
+              businessId: { $in: campDetails.businessIds },
+            });
           }
 
           const productFilter: any = {
