@@ -17,6 +17,7 @@ import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 
 const PRODUCTS_PER_TOPIC = 4;
 
@@ -32,6 +33,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     private ProductsAuditModel: Model<ProductsAudit>,
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
+    @InjectModel(Campaign.name)
+    private CampaignModel: Model<Campaign>,
   ) {}
 
   async execute({
@@ -147,22 +150,55 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
   private async groupByPrimaryCategory(externalApiId: string, locale: Locale) {
     const externalApi = await this.ExternalApiModel.findById(externalApiId)
-      .select('categoryIds')
+      .select('categoryIds primaryCampIds')
       .lean();
 
-    if (!externalApi?.categoryIds?.length) {
+    const campDetails = await this.CampaignModel.findById(externalApi.primaryCampIds[0])
+      .select('productIds dmoIds authorityIds businessIds')
+      .lean();
+
+    if (
+      campDetails !== null
+      && !campDetails?.productIds?.length
+      && !campDetails?.dmoIds?.length
+      && !campDetails?.authorityIds?.length
+      && !campDetails?.businessIds?.length
+    ) {
       return [];
     }
 
+    const campOrConditions: any[] = [];
+    if (campDetails?.productIds?.length) {
+      campOrConditions.push({ productId: { $in: campDetails.productIds } });
+    }
+    if (campDetails?.dmoIds?.length) {
+      campOrConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+    }
+    if (campDetails?.authorityIds?.length) {
+      campOrConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+    }
+    if (campDetails?.businessIds?.length) {
+      campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
+    }
+
+    const andConditions: any[] = [
+      {
+        $or: [
+          { 'quantity.remaining': { $gt: 0 } },
+          { 'quantity.isUnlimited': true },
+        ],
+      },
+    ];
+
+    if (campOrConditions.length) {
+      andConditions.push({ $or: campOrConditions });
+    }
+
     const products = await this.ProductsAuditModel.find({
-      primaryCategoryId: { $in: externalApi.categoryIds },
       status: ProductStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
-      $or: [
-        { 'quantity.remaining': { $gt: 0 } },
-        { 'quantity.isUnlimited': true },
-      ],
+      $and: andConditions,
     })
       .select(
         '_id productId name nameHe nameAr slug shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
