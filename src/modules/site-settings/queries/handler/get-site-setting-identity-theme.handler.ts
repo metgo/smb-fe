@@ -76,7 +76,8 @@ implements IQueryHandler<GetSiteSettingIdentityThemeQuery> {
       return {
         ...siteSetting,
         externalApiId: externalApi._id,
-        desktopVideos: siteSetting.desktopVideos.find(v => v.isActive) ?? null,
+        desktopVideos:
+          siteSetting.desktopVideos.find(v => v.isActive) ?? null,
         mobileVideos: siteSetting.mobileVideos.find(v => v.isActive) ?? null,
       };
     } catch (err) {

@@ -30,6 +30,7 @@ import {
   BussCategorySchema,
 } from '../buss-categories/schema/buss.category.schema';
 import { Tags, TagsSchema } from '../tags/schema/tags.schema';
+import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { Tags, TagsSchema } from '../tags/schema/tags.schema';
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: Tags.name, schema: TagsSchema },
+      { name: Campaign.name, schema: CampaignSchema },
     ]),
     UsersModule,
     AuthorityModule,

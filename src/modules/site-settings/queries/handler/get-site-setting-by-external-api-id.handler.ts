@@ -55,7 +55,7 @@ implements IQueryHandler<GetSiteSettingByExternalApiIdQuery> {
           siteSetting.desktopVideos.find(v => v.isActive) ?? null,
         mobileVideos: siteSetting.mobileVideos.find(v => v.isActive) ?? null,
       };
-    } catch (err:any) {
+    } catch (err: any) {
       this.logger.error(
         '[SITE_SETTING]: FAILED TO GET SITE SETTING BY EXTERNAL API ID',
         {

@@ -71,7 +71,7 @@ implements IQueryHandler<GetSiteSettingSeoQuery> {
         siteSetting,
         externalApiId: externalApi._id,
       };
-    } catch (err:any) {
+    } catch (err: any) {
       this.logger.error('[SITE_SETTING]: FAILED TO GET SEO DATA', {
         err: err.message,
       });

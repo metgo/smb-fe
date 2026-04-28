@@ -19,6 +19,8 @@ import { ProductStatus } from 'src/modules/products/products.type';
 import { Model } from 'mongoose';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -34,6 +36,10 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(Tags.name)
     private TagsModel: Model<Tags>,
+    @InjectModel(Campaign.name)
+    private CampaignModel: Model<Campaign>,
+    @InjectModel(ExternalApi.name)
+    private ExternalApiModel: Model<ExternalApi>,
   ) {}
 
   async execute({
@@ -85,6 +91,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               },
               query.topic,
               query.category,
+              externalApiId,
               hasDelivery,
             );
           }
@@ -95,7 +102,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             t => t.siteCategories || [],
           );
         }
-      } else if (query.topic?.length) {
+      } else {
         return this.fallbackByPrimaryCategory(
           {
             groupTypesId,
@@ -108,6 +115,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           },
           query.topic,
           query.category,
+          externalApiId,
+          hasDelivery,
         );
       }
 
@@ -275,6 +284,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     },
     topicNames: string[],
     categoryNames: string[],
+    externalApiId: string,
     hasDelivery?: boolean,
   ): Promise<any> {
     const {
@@ -287,17 +297,39 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       search,
     } = filters;
 
-    const bussCats = await this.BussCategoryModel.find({
-      $or: topicNames.flatMap(name => [{ name }, { hebrewName: name }]),
+    const externalApi = await this.ExternalApiModel.findById(externalApiId)
+      .select('name primaryCampIds')
+      .lean();
+    const campDetails = await this.CampaignModel.findOne({
+      _id: externalApi.primaryCampIds[0],
     })
-      .select('_id')
+      .select('productIds dmoIds authorityIds businessIds')
       .lean();
 
-    if (!bussCats.length) {
-      return [];
+    if (
+      campDetails !== null
+      && !campDetails?.productIds?.length
+      && !campDetails?.dmoIds?.length
+      && !campDetails?.authorityIds?.length
+      && !campDetails?.businessIds?.length
+    ) {
+      return { data: [] };
     }
 
-    const bussCatIds = bussCats.map(c => c._id);
+    let bussCatIds: any[] = [];
+    if (topicNames?.length) {
+      const bussCats = await this.BussCategoryModel.find({
+        $or: topicNames.flatMap(name => [{ name }, { hebrewName: name }]),
+      })
+        .select('_id')
+        .lean();
+
+      if (!bussCats.length) {
+        return [];
+      }
+
+      bussCatIds = bussCats.map(c => c._id);
+    }
 
     let tagIds: string[] = [];
     if (categoryNames?.length) {
@@ -316,30 +348,53 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
     const fallbackSearchRegex = search ? new RegExp(search, 'i') : null;
 
+    const campOrConditions: any[] = [];
+    if (campDetails?.productIds?.length) {
+      campOrConditions.push({ productId: { $in: campDetails.productIds } });
+    }
+    if (campDetails?.dmoIds?.length) {
+      campOrConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+    }
+    if (campDetails?.authorityIds?.length) {
+      campOrConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+    }
+    if (campDetails?.businessIds?.length) {
+      campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
+    }
+
+    const andConditions: any[] = [
+      {
+        $or: [
+          { 'quantity.remaining': { $gt: 0 } },
+          { 'quantity.isUnlimited': true },
+        ],
+      },
+    ];
+
+    if (fallbackSearchRegex) {
+      andConditions.push({
+        $or: [
+          { name: fallbackSearchRegex },
+          { nameHe: fallbackSearchRegex },
+          { nameAr: fallbackSearchRegex },
+          { description: fallbackSearchRegex },
+          { descriptionHe: fallbackSearchRegex },
+          { descriptionAr: fallbackSearchRegex },
+          { slug: fallbackSearchRegex },
+        ],
+      });
+    }
+
+    if (campOrConditions.length) {
+      andConditions.push({ $or: campOrConditions });
+    }
+
     const products = await this.ProductsAuditModel.find({
-      primaryCategoryId: { $in: bussCatIds },
+      ...(bussCatIds.length && { primaryCategoryId: { $in: bussCatIds } }),
       status: ProductStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
-      $or: [
-        { 'quantity.remaining': { $gt: 0 } },
-        { 'quantity.isUnlimited': true },
-      ],
-      ...(fallbackSearchRegex && {
-        $and: [
-          {
-            $or: [
-              { name: fallbackSearchRegex },
-              { nameHe: fallbackSearchRegex },
-              { nameAr: fallbackSearchRegex },
-              { description: fallbackSearchRegex },
-              { descriptionHe: fallbackSearchRegex },
-              { descriptionAr: fallbackSearchRegex },
-              { slug: fallbackSearchRegex },
-            ],
-          },
-        ],
-      }),
+      $and: andConditions,
       ...(tagIds.length && { tagsId: { $in: tagIds } }),
       ...(groupTypesId?.length && { groupTypesId: { $in: groupTypesId } }),
       ...(accessibilitiesId?.length && {
