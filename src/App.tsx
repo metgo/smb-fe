@@ -42,6 +42,7 @@ import {
 import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
+import { UserRole } from "./enums/user.types";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -174,14 +175,29 @@ function App() {
     isLoginPage = false,
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
+    const userInfo = sessionStorage.getItem("user_info");
 
+    let user: any = null;
+    if (userInfo) {
+      try {
+        user = JSON.parse(userInfo).user;
+      } catch (e) {
+        console.error("Failed to parse user_info");
+      }
+    }
+
+    // If user is on login page
     if (isLoginPage) {
-      if (isLoggedIn) {
+      if (isLoggedIn && user) {
+        if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
+          return <Navigate to={routes.businessMgmt} replace />;
+        }
         return <Navigate to={routes.dashboard} replace />;
       }
       return children;
     }
 
+    // Normal protected routes
     if (!isLoggedIn) {
       return <Navigate to={routes.auth} replace />;
     }
