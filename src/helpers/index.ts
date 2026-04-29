@@ -32,6 +32,24 @@ export function uploadWithProgress(
     xhr.send(file);
   });
 }
+export function detectLanguage(text: string): Language {
+  if (!text || typeof text !== "string") return "en";
+
+  const sample = text.trim().slice(0, 500);
+
+  const patterns: Record<any, RegExp> = {
+    he: /[\u0590-\u05FF]/, // Hebrew
+    ar: /[\u0600-\u06FF]/, // Arabic
+  };
+
+  for (const [lang, pattern] of Object.entries(patterns)) {
+    if (pattern.test(sample)) {
+      return lang as Language;
+    }
+  }
+
+  return "en"; // default for Latin scripts
+}
 
 export const convertToWebP = async (file: File): Promise<File> => {
   const bitmap = await createImageBitmap(file);

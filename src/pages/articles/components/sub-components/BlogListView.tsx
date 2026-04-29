@@ -93,8 +93,8 @@ const BlogListView = ({
       sortable: true,
       label: t("subtitle") || "Subtitle",
       render: (blog: any) => (
-        <div className={`${textSecondary} line-clamp-2 text-sm`}>
-          {blog.subTitle || "-"}
+        <div className={`${textSecondary} line-clamp-1 text-sm`}>
+          {blog.shortDescription || "-"}
         </div>
       ),
     },

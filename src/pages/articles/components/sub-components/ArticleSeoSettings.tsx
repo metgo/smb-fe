@@ -33,7 +33,7 @@ interface ArticleSeoSettingsProps {
   tagInput: string;
   onTagInputChange: (val: string) => void;
   onAddTag: () => void;
-  onRemoveTag: (tag: string) => void;
+  onRemoveTag: any;
   isGeneratingSeo: boolean;
   onGenerateSeo: () => void;
   showPreview: boolean;
@@ -67,7 +67,7 @@ export default function ArticleSeoSettings({
   const suffix = LANG_SUFFIX[editingLanguage];
   const dir = LANG_DIR[editingLanguage];
   const langLabel =
-    editingLanguage !== "en" ? ` (${editingLanguage.toUpperCase()})` : "";
+    editingLanguage !== "en" ? ` (${editingLanguage?.toUpperCase()})` : "";
 
   const summaryField = `summary${suffix}`;
   const metaTitleField = `metaTitle${suffix}`;

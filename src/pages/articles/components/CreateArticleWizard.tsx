@@ -1,12 +1,19 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
-import { FileText, Globe } from "lucide-react";
+import {
+  Check,
+  Eye,
+  FileText,
+  Image as ImageIcon,
+  LanguagesIcon,
+  Section,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
-
 import {
   useCreateBlogMutation,
   useUpdateBlogMutation,
@@ -14,11 +21,14 @@ import {
 } from "@/store/api/blogMutationApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
-import { getLngWiseStr } from "@/helpers";
+import { detectLanguage } from "@/helpers";
+import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
+import ArticleReviewSection from "./sub-components/ArticleReviewSection";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
+import Media from "@/components/details-sections/Media";
 
 const EMPTY_FORM: IArticleFormData = {
   externalApiId: {
@@ -81,7 +91,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
     metaDescriptionAr: article.metaDescriptionAr || "",
     slug: article.slug || "",
     status:
-      (article.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
+      (article?.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
 }
 
@@ -91,12 +101,6 @@ interface CreateArticleWizardProps {
   onClose: () => void;
   existingArticle?: any;
 }
-
-const LANG_OPTIONS: { key: Language; label: string }[] = [
-  { key: "en", label: "EN" },
-  { key: "he", label: "HE" },
-  { key: "ar", label: "AR" },
-];
 
 function getTagsField(lang: Language): keyof IArticleFormData {
   if (lang === "en") return "tags";
@@ -110,22 +114,32 @@ const CreateArticleWizard = ({
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
-  const { bgSecondary, textPrimary, textSecondary, borderColor } =
+  const { textPrimary, borderColor, bgTertiary, textSecondary } =
     useThemeClasses();
-
+  const { language, textTertiary } = useThemeClasses();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [_detecedLanguage, setDetectedLanguage] = useState("");
+  const steps = [
+    { number: 1, title: t("form"), icon: FileText },
+    { number: 2, title: t("translation"), icon: LanguagesIcon },
+    { number: 3, title: t("media"), icon: ImageIcon },
+    { number: 4, title: t("seo"), icon: Section },
+    { number: 5, title: t("review"), icon: Eye },
+  ];
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
+
   const {
     images,
+    imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
@@ -135,7 +149,6 @@ const CreateArticleWizard = ({
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
 
-  const [editingLanguage, setEditingLanguage] = useState<Language>("en");
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -144,7 +157,7 @@ const CreateArticleWizard = ({
       setFormData(buildFormFromArticle(existingArticle));
       const arr = (v: any) => (Array.isArray(v) ? v : []);
       const images = arr(existingArticle.images)
-        .filter((img: any) => img?.image) // only keep items with image
+        .filter((img: any) => img?.image)
         .map((img: any) => ({
           image: img.image,
           alt: img.alt || "",
@@ -172,22 +185,32 @@ const CreateArticleWizard = ({
   const addTag = () => {
     const tag = tagInput.trim();
     if (!tag) return;
-    const field = getTagsField(editingLanguage);
-    const current = formData[field] as string[];
-    if (!current.includes(tag)) {
-      setFormData((prev) => ({ ...prev, [field]: [...current, tag] }));
-    }
+
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag) ? prev.tags : [...prev.tags, tag],
+      tagsHe: prev.tagsHe.includes(tag) ? prev.tagsHe : [...prev.tagsHe, tag],
+      tagsAr: prev.tagsAr.includes(tag) ? prev.tagsAr : [...prev.tagsAr, tag],
+    }));
+
     setTagInput("");
   };
 
-  const removeTag = (tag: string) => {
-    const field = getTagsField(editingLanguage);
+  const removeTag = (tag: string, lang: Language) => {
+    const field = getTagsField(lang);
     setFormData((prev) => ({
       ...prev,
       [field]: (prev[field] as string[]).filter((t) => t !== tag),
     }));
   };
 
+  const handleNext = async () => {
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
   // ─── Validation ───────────────────────────────────────────────────────────────
   const validateArticle = () => {
     const hasTitle =
@@ -212,25 +235,19 @@ const CreateArticleWizard = ({
   // ─── SEO generation ───────────────────────────────────────────────────────────
   const handleGenerateSeo = async () => {
     try {
+      // Get the first available language content
+      const titleText = formData.title || formData.titleHe || formData.titleAr;
+      const descText =
+        formData.shortDescription ||
+        formData.shortDescriptionHe ||
+        formData.shortDescriptionAr;
+      const contentText =
+        formData.content || formData.contentHe || formData.contentAr;
+
       const result = await generateBlogSeo({
-        title: getLngWiseStr(
-          editingLanguage,
-          formData.title,
-          formData.titleHe,
-          formData.titleAr,
-        ),
-        shortDescription: getLngWiseStr(
-          editingLanguage,
-          formData.shortDescription,
-          formData.shortDescriptionHe,
-          formData.shortDescriptionAr,
-        ),
-        content: getLngWiseStr(
-          editingLanguage,
-          formData.content,
-          formData.contentHe,
-          formData.contentAr,
-        ),
+        title: titleText,
+        shortDescription: descText,
+        content: contentText,
       }).unwrap();
 
       setFormData((prev) => ({
@@ -247,11 +264,10 @@ const CreateArticleWizard = ({
         metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
         metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
         tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
-        // Auto-fill slug from title if empty
         slug:
           prev.slug ||
           result.slug ||
-          formData.title.toLowerCase().replace(/\s+/g, "-"),
+          titleText.toLowerCase().replace(/\s+/g, "-"),
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -259,24 +275,68 @@ const CreateArticleWizard = ({
     }
   };
 
+  /**
+   * Detects the language of non-empty fields and assigns them to the correct language-specific fields
+   * Priority: title > shortDescription > content
+   */
+  const detectAndAssignLanguageFields = (
+    data: IArticleFormData,
+  ): IArticleFormData => {
+    const title = data.title?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const content = data.content?.trim() || "";
+
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = title || shortDescription || content;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    setDetectedLanguage(detectedLang);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.titleHe = title || data.titleHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.contentHe = content || data.contentHe;
+
+      // Clear English fields
+      updated.title = "";
+      updated.shortDescription = "";
+      updated.content = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.titleAr = title || data.titleAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.contentAr = content || data.contentAr;
+
+      // Clear English fields
+      updated.title = "";
+      updated.shortDescription = "";
+      updated.content = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
+
   const saveArticle = useCallback(
-    async (isPublish: boolean = false) => {
+    async (isPublish: boolean = false, processedData?: IArticleFormData) => {
       if (!formData?.externalApiId) {
         toast.error(t("please_select_website"));
         return;
       }
       if (!validateArticle()) return;
 
-      const uploadedImages = await uploadAll();
-
-      const mapped = uploadedImages.map((img, idx) => ({
-        image: img?.gcsURL,
-        alt: formData.title || "",
-        isPrimary: idx === primaryImageIndex,
+      const dataToSave = processedData || formData;
+      const mapped = galleryImages.map((img) => ({
+        image: img.image,
+        alt: dataToSave.title || dataToSave.titleHe || dataToSave.titleAr || "",
+        isPrimary: img.isPrimary,
       }));
 
       const payload = {
-        ...formData,
+        ...dataToSave,
         status: isPublish ? "APPROVED" : "PENDING",
         images: mapped,
       };
@@ -301,23 +361,105 @@ const CreateArticleWizard = ({
     },
     [
       formData,
+      galleryImages,
       isEditMode,
       existingArticle,
       t,
       createBlog,
       updateBlog,
       onClose,
-      uploadAll,
-      primaryImageIndex,
       validateArticle,
     ],
   );
 
+  const renderStepContent = () => {
+    const mediaProps = {
+      t,
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
+
+    const commonProps = {
+      t,
+      formData,
+      images,
+      handleImageUpload,
+      setCurrentStep,
+    };
+
+    switch (currentStep) {
+      case 1:
+        return (
+          <div>
+            <ArticleContentForm
+              formData={formData}
+              onChange={handleChange}
+              syncKey={existingArticle?._id}
+              editingLanguage={language}
+            />
+          </div>
+        );
+      case 2:
+        return (
+          <ArticleTranslateButton formData={formData} onChange={handleChange} />
+        );
+      case 3:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 4:
+        return (
+          <ArticleSeoSettings
+            formData={formData}
+            onChange={handleChange}
+            tagInput={tagInput}
+            onTagInputChange={setTagInput}
+            onAddTag={addTag}
+            onRemoveTag={removeTag}
+            isGeneratingSeo={isGeneratingSeo}
+            onGenerateSeo={handleGenerateSeo}
+            showPreview={false}
+            onTogglePreview={() => {}}
+            existingArticle={existingArticle}
+            editingLanguage={language}
+          />
+        );
+      case 5:
+        return (
+          <ArticleReviewSection formData={formData} onEdit={setCurrentStep} />
+        );
+      default:
+        return null;
+    }
+  };
   const handleSaveDraft = () => saveArticle(false);
+
   const handlePublish = async () => {
+    const externalId =
+      typeof formData?.externalApiId === "string"
+        ? formData.externalApiId
+        : formData?.externalApiId?.id;
+
+    if (!externalId) {
+      toast.error(t("please_select_website_before_publishing"));
+      return;
+    }
     setIsPublishing(true);
-    await saveArticle(true);
-    setIsPublishing(false);
+    try {
+      // Step 1: Detect language and assign to correct fields
+      const processedFormData = detectAndAssignLanguageFields(formData);
+
+      // Step 2: Save with processed data
+      await saveArticle(true, processedFormData);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────────
@@ -330,14 +472,27 @@ const CreateArticleWizard = ({
       <div
         className={`px-6 py-4 flex items-center justify-between border-b ${borderColor} flex-wrap gap-3`}
       >
+        {/* Left Side */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-500" />
-            <h2 className={`text-xl font-bold ${textPrimary}`}>
-              {isEditMode ? t("edit_article") : t("create_article")}
-            </h2>
-          </div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-500" />
+              <h2 className={`text-xl font-bold ${textPrimary}`}>
+                {isEditMode ? t("edit_article") : t("create_article")}
+              </h2>
+            </div>
 
+            <p
+              className={`text-sm ${textTertiary} flex justify-center items-center gap-1`}
+            >
+              {t("step")} {currentStep} {t("of")} {steps.length}:{" "}
+              {steps[currentStep - 1]?.title}
+            </p>
+          </div>
+        </div>
+
+        {/* Right Side */}
+        <div className="ml-auto">
           <ReactSelect
             minWidth={180}
             value={
@@ -345,72 +500,67 @@ const CreateArticleWizard = ({
                 ? formData?.externalApiId
                 : formData?.externalApiId?.id || undefined
             }
-            onChange={(value) => handleChange({ externalApiId: value })} // value here is probably the full object from items
+            onChange={(value) => handleChange({ externalApiId: value })}
             items={associatedWebsite}
             placeholder={t("select_website")}
           />
         </div>
+      </div>
 
-        {/* Language selector */}
-        <div className="flex items-center gap-1.5">
-          <Globe className={`w-4 h-4 ${textSecondary}`} />
-          <div
-            className={`flex items-center rounded-xl border ${borderColor} ${bgSecondary} p-1 gap-1`}
-          >
-            {LANG_OPTIONS.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setEditingLanguage(key)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-                  editingLanguage === key
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : `${textSecondary} hover:bg-blue-50 dark:hover:bg-gray-700`
-                }`}
+      {/* ── Step Tracker ────────────────────────────────────────────────────── */}
+      <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
+        <div className="flex items-start justify-between">
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            const isActive = currentStep === step.number;
+            const isCompleted = currentStep > step.number;
+
+            return (
+              <div
+                key={step.number}
+                className="flex-1  cursor-pointer"
+                onClick={() => setCurrentStep(step.number)}
               >
-                {label}
-              </button>
-            ))}
-          </div>
+                <div className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                        isActive
+                          ? "bg-teal-500 text-white"
+                          : isCompleted
+                            ? "bg-green-500 text-white"
+                            : `${bgTertiary} ${textTertiary}`
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                    </div>
+                    <span
+                      className={clsx(
+                        "mt-2 text-sm text-center",
+                        textSecondary,
+                      )}
+                    >
+                      {step.title}
+                    </span>
+                  </div>
+                  {idx < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-2 ${isCompleted ? "bg-green-500" : bgTertiary}`}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-hidden flex">
-        {/* Main editor */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <ArticleContentForm
-            formData={formData}
-            editingLanguage={editingLanguage}
-            onChange={handleChange}
-            images={images}
-            primaryImageIndex={primaryImageIndex}
-            onImageUpload={handleImageUpload}
-            onImageDelete={handleDeleteImage}
-            onSetPrimaryImage={setPrimaryImage}
-            syncKey={existingArticle?._id}
-          />
-        </div>
-
-        {/* Settings sidebar */}
-        <div
-          className={`w-80 xl:w-96 border-l ${borderColor} ${bgSecondary} overflow-y-auto p-5 shrink-0`}
-        >
-          <ArticleSeoSettings
-            formData={formData}
-            editingLanguage={editingLanguage}
-            onChange={handleChange}
-            tagInput={tagInput}
-            onTagInputChange={setTagInput}
-            onAddTag={addTag}
-            onRemoveTag={removeTag}
-            isGeneratingSeo={isGeneratingSeo}
-            onGenerateSeo={handleGenerateSeo}
-            showPreview={false}
-            onTogglePreview={() => {}}
-            existingArticle={existingArticle}
-          />
-        </div>
-      </div>
+      <div className="flex-1 overflow-y-auto p-4">{renderStepContent()}</div>
 
       {/* ── Image delete confirm ─────────────────────────────────────────────── */}
       <ConfirmDialog
@@ -426,12 +576,12 @@ const CreateArticleWizard = ({
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <WizardFooter
-        currentStep={1}
-        totalSteps={1}
+        currentStep={currentStep}
+        totalSteps={steps.length}
         isSaving={isLoading}
         isPublishing={isPublishing}
-        onPrevious={() => {}}
-        onNext={handlePublish}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         isPublishButton={true}
