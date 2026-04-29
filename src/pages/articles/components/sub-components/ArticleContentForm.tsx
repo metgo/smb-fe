@@ -1,16 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
-import ArticleImageGallery from "./ArticleImageGallery";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
-  images: any[];
-  primaryImageIndex: number;
-  onImageUpload: (files: FileList) => void;
-  onImageDelete: (img: any, idx: number) => void;
-  onSetPrimaryImage: (idx: number) => void;
   syncKey?: string | number;
   editingLanguage: "en" | "he" | "ar";
 }
@@ -18,11 +12,6 @@ interface ArticleContentFormProps {
 export default function ArticleContentForm({
   formData,
   onChange,
-  images,
-  primaryImageIndex,
-  onImageUpload,
-  onImageDelete,
-  onSetPrimaryImage,
   syncKey,
   editingLanguage,
 }: ArticleContentFormProps) {
@@ -106,15 +95,6 @@ export default function ArticleContentForm({
         borderColor={borderColor}
         syncKey={syncKey}
         editingLanguage={editingLanguage}
-      />
-
-      {/* Image Gallery */}
-      <ArticleImageGallery
-        images={images}
-        primaryImageIndex={primaryImageIndex}
-        onImageUpload={onImageUpload}
-        onImageDelete={onImageDelete}
-        onSetPrimaryImage={onSetPrimaryImage}
       />
     </div>
   );

@@ -2,7 +2,14 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
-import { Check, Eye, FileText, LanguagesIcon, Section } from "lucide-react";
+import {
+  Check,
+  Eye,
+  FileText,
+  Image as ImageIcon,
+  LanguagesIcon,
+  Section,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
@@ -14,13 +21,14 @@ import {
 } from "@/store/api/blogMutationApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import { detectLanguage } from "@/helpers";
 import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
+import Media from "@/components/details-sections/Media";
 
 const EMPTY_FORM: IArticleFormData = {
   externalApiId: {
@@ -114,22 +122,24 @@ const CreateArticleWizard = ({
   const steps = [
     { number: 1, title: t("form"), icon: FileText },
     { number: 2, title: t("translation"), icon: LanguagesIcon },
-    { number: 3, title: t("seo"), icon: Section },
-    { number: 4, title: t("review"), icon: Eye },
+    { number: 3, title: t("media"), icon: ImageIcon },
+    { number: 4, title: t("seo"), icon: Section },
+    { number: 5, title: t("review"), icon: Eye },
   ];
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
+
   const {
     images,
+    imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
@@ -319,12 +329,10 @@ const CreateArticleWizard = ({
       if (!validateArticle()) return;
 
       const dataToSave = processedData || formData;
-      const uploadedImages = await uploadAll();
-
-      const mapped = uploadedImages.map((img, idx) => ({
-        image: img?.gcsURL,
+      const mapped = galleryImages.map((img) => ({
+        image: img.image,
         alt: dataToSave.title || dataToSave.titleHe || dataToSave.titleAr || "",
-        isPrimary: idx === primaryImageIndex,
+        isPrimary: img.isPrimary,
       }));
 
       const payload = {
@@ -353,19 +361,40 @@ const CreateArticleWizard = ({
     },
     [
       formData,
+      galleryImages,
       isEditMode,
       existingArticle,
       t,
       createBlog,
       updateBlog,
       onClose,
-      uploadAll,
-      primaryImageIndex,
       validateArticle,
     ],
   );
 
   const renderStepContent = () => {
+    const mediaProps = {
+      t,
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
+
+    const commonProps = {
+      t,
+      formData,
+      images,
+      handleImageUpload,
+      setCurrentStep,
+    };
+
     switch (currentStep) {
       case 1:
         return (
@@ -373,11 +402,6 @@ const CreateArticleWizard = ({
             <ArticleContentForm
               formData={formData}
               onChange={handleChange}
-              images={images}
-              primaryImageIndex={primaryImageIndex}
-              onImageUpload={handleImageUpload}
-              onImageDelete={handleDeleteImage}
-              onSetPrimaryImage={setPrimaryImage}
               syncKey={existingArticle?._id}
               editingLanguage={language}
             />
@@ -388,6 +412,8 @@ const CreateArticleWizard = ({
           <ArticleTranslateButton formData={formData} onChange={handleChange} />
         );
       case 3:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 4:
         return (
           <ArticleSeoSettings
             formData={formData}
@@ -404,11 +430,10 @@ const CreateArticleWizard = ({
             editingLanguage={language}
           />
         );
-      case 4:
+      case 5:
         return (
           <ArticleReviewSection formData={formData} onEdit={setCurrentStep} />
         );
-
       default:
         return null;
     }
@@ -460,7 +485,7 @@ const CreateArticleWizard = ({
             <p
               className={`text-sm ${textTertiary} flex justify-center items-center gap-1`}
             >
-              {t("step")} {currentStep} {t("of")} 4:{" "}
+              {t("step")} {currentStep} {t("of")} {steps.length}:{" "}
               {steps[currentStep - 1]?.title}
             </p>
           </div>
@@ -552,7 +577,7 @@ const CreateArticleWizard = ({
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <WizardFooter
         currentStep={currentStep}
-        totalSteps={steps?.length || 4}
+        totalSteps={steps.length}
         isSaving={isLoading}
         isPublishing={isPublishing}
         onPrevious={handlePrevious}
