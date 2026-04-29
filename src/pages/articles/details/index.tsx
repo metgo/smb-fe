@@ -308,7 +308,6 @@ export default function ArticleDetails() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <BackToListBtn navPath={routes.articleMgmt} />
-
             <div className="flex items-center gap-4">
               <StatusChangeBtn
                 handleStatusChange={onStatusChangeHandler}
