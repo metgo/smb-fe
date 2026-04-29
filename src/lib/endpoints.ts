@@ -98,6 +98,7 @@ export const endpoints = {
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
+  bloggenerateName: "/generate-blog-name",
   // Website settgins
   websiteSettings: "/site-settings",
 

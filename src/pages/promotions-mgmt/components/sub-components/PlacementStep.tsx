@@ -226,6 +226,7 @@ export default function PlacementStep({
         <UploadZone
           side="mobile"
           label={t("mobile")}
+          required={false}
           hint="Recommended: 800×600 (4:3)"
           icon={Smartphone}
           mediaType={mediaType}

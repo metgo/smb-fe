@@ -158,5 +158,18 @@ export function formatILS(amount: string | number): string {
 
   if (Number.isNaN(value)) return "₪0.00";
 
+  const scales = [
+    { threshold: 1_000_000_000_000, suffix: "T" },
+    { threshold: 1_000_000_000, suffix: "B" },
+    { threshold: 1_000_000, suffix: "M" },
+    { threshold: 1_000, suffix: "K" },
+  ];
+
+  for (const { threshold, suffix } of scales) {
+    if (value >= threshold) {
+      return `₪${(value / threshold).toFixed(2)}${suffix}`;
+    }
+  }
+
   return `₪${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 }

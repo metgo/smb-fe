@@ -7,7 +7,7 @@ import { Plus, Trash2, Upload, X } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
 import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import {
   useCreateTicketMutation,
@@ -65,7 +65,6 @@ const CreateTicketWizard = ({
   } = useThemeClasses();
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [isDelete, setIsDelete] = useState(false);
 
   // ─── ERROR STATES ───────────────────────────────────────────────
   const [errors, setErrors] = useState<{
@@ -81,16 +80,15 @@ const CreateTicketWizard = ({
   );
 
   const {
-    image,
-    handleImageSelect,
-    uploadImage,
+    images,
+    handleImageUpload,
     confirmDelete,
     deleteTarget,
     setDeleteTarget,
     isImageDeleting,
     handleDeleteImage,
-  } = useSingleImageUpload({
-    initialImage: isDelete ? undefined : editData?.imageUrl,
+  } = useFilesUpload({
+    initialImages: editData?.imageUrl ? [{ image: editData.imageUrl }] : [],
     onChange: () => {},
   });
 
@@ -227,8 +225,6 @@ const CreateTicketWizard = ({
       return;
     }
 
-    const uploadImageUrl = await uploadImage();
-
     const payload: ITicketPayload = {
       eventId,
       name: editData?.name.trim(),
@@ -251,7 +247,7 @@ const CreateTicketWizard = ({
         startTime: item.startTime,
         endTime: item.endTime,
       })),
-      images: [{ image: uploadImageUrl ?? image?.gcsURL }],
+      images: [{ image: images[0]?.gcsURL ?? "" }],
       status: editData?.status,
       type: editData?.type.toUpperCase(),
     };
@@ -317,7 +313,7 @@ const CreateTicketWizard = ({
       onClose={handleClose}
       height="max-h"
       maxWidth="max-w-3xl"
-      showSpinner={isSaving || isUpdating || image?.status === "uploading"}
+      showSpinner={isSaving || isUpdating || images[0]?.status === "uploading"}
     >
       <div className="p-4 space-y-4 relative">
         <h3 className={`text-xl ${textPrimary}`}>{modelTitle(opMode, t)}</h3>
@@ -768,18 +764,18 @@ const CreateTicketWizard = ({
               <label className={`block text-sm mb-2 ${textSecondary}`}>
                 {t("ticket_image")}
               </label>
-              {image?.progress !== undefined &&
-                image.progress > 0 &&
-                image.status === "uploading" && (
+              {images[0]?.progress !== undefined &&
+                images[0].progress > 0 &&
+                images[0].status === "uploading" && (
                   <div className="flex items-center gap-2 w-32">
                     <div className="w-full bg-gray-200 rounded h-2">
                       <div
                         className="bg-teal-600 h-2 rounded transition-all"
-                        style={{ width: `${image.progress}%` }}
+                        style={{ width: `${images[0].progress}%` }}
                       />
                     </div>
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {image.progress}%
+                      {images[0].progress}%
                     </span>
                   </div>
                 )}
@@ -793,19 +789,16 @@ const CreateTicketWizard = ({
                   : "border-gray-300 bg-gray-50",
               )}
             >
-              {image?.previewUrl ? (
+              {images[0]?.previewUrl ? (
                 <div className="relative">
                   <ImageWithFallback
-                    src={image.previewUrl}
+                    src={images[0].previewUrl}
                     alt="Ticket preview"
                     className="w-full h-40 object-cover rounded-lg"
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      handleDeleteImage(image, opMode);
-                      setIsDelete(true);
-                    }}
+                    onClick={() => handleDeleteImage(images[0], 0)}
                     className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   >
                     <X className="w-6 h-6" />
@@ -823,8 +816,8 @@ const CreateTicketWizard = ({
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImageSelect(file);
+                      if (e.target.files?.length)
+                        handleImageUpload(e.target.files);
                     }}
                     className="hidden"
                     id="ticket-image-upload"
@@ -861,17 +854,15 @@ const CreateTicketWizard = ({
 
           <button
             onClick={saveTicket}
-            disabled={isSaving || isUpdating || image?.status === "uploading"}
+            disabled={isSaving || isUpdating}
             className={clsx(
               "px-6 py-2.5 rounded-lg text-white transition-colors min-w-30",
-              isSaving || isUpdating || image?.status === "uploading"
+              isSaving || isUpdating
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-teal-600 hover:bg-teal-700 cursor-pointer",
             )}
           >
-            {isSaving || isUpdating || image?.status === "uploading"
-              ? "Saving..."
-              : t("save_ticket")}
+            {isSaving || isUpdating ? "Saving..." : t("save_ticket")}
           </button>
         </div>
       </div>

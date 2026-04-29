@@ -192,7 +192,7 @@ const RichTextEditor = ({
   return (
     <div>
       <label className={`block text-sm font-medium ${textTertiary} mb-2`}>
-        Content *
+        Content <span className="text-red-500">*</span>
       </label>
 
       {/* Toolbar */}

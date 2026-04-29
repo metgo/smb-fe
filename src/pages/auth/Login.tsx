@@ -2,14 +2,11 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { routes } from "@/lib/routes";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
-import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
-import { UserRole } from "@/enums/user.types";
 
 import AuthInputField from "./AuthInputField";
 import AuthHeader from "./AuthHeader";
@@ -19,7 +16,6 @@ interface LoginProps {
 }
 
 export function Login({ setCurrentTab }: LoginProps) {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation("login");
   const { t: tt } = useTranslation("toast");
@@ -28,12 +24,12 @@ export function Login({ setCurrentTab }: LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [login, { isLoading }] = useLoginMutation();
-
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       const data = await login({ email: username, password }).unwrap();
+
       if (typeof window !== "undefined") {
         sessionStorage.setItem(
           "user_info",
@@ -42,13 +38,9 @@ export function Login({ setCurrentTab }: LoginProps) {
         sessionStorage.setItem("access_token", data.accessToken);
         window.dispatchEvent(new Event("session:updated"));
       }
+
       dispatch(loginSuccess(data.user));
 
-      if (data?.user?.role === UserRole.TRAVELLER && !data?.user?.hasBusiness) {
-        navigate(routes.businessMgmt, { replace: true });
-      } else {
-        navigate(routes.dashboard, { replace: true });
-      }
       toast.success(
         t("welcome_message", {
           firstName: data.user.firstName,
@@ -59,7 +51,6 @@ export function Login({ setCurrentTab }: LoginProps) {
       toast.error(tt("login_failed"));
     }
   };
-
   return (
     <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8 relative">
       <div className="w-full max-w-xl">
