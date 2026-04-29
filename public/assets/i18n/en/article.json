@@ -8,7 +8,7 @@
   "reset": "Reset",
   "export": "Export",
   "no_blogs_to_export": "No blogs to export",
-
+  "please_select_website_before_publishing": "Please select a website before publishing.",
   "title": "Title",
   "subTitle": "Subtitle",
   "subtitle": "Subtitle",
@@ -22,6 +22,13 @@
   "preview": "Preview",
   "externalApi": "Website",
 
+  "translation": "Translation",
+  "translate_hint": "Enter text to translate",
+  "content": "Content",
+  "form": "Form",
+  "seo": "SEO",
+  "review": "Review",
+  "auto_translate": "Auto Translate",
   "loading_article": "Loading article...",
   "article_not_found": "Article not found.",
   "back_to_articles": "Back to Articles",
