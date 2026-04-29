@@ -8,7 +8,7 @@ import {
   Compass,
   ShoppingBag,
   UtensilsCrossed,
-  Plane,
+  TentTree,
   Landmark,
   MapPin,
   Package,
@@ -120,7 +120,7 @@ const CATEGORY_ICONS = {
   attraction: Compass,
   local: ShoppingBag,
   eat: UtensilsCrossed,
-  travel: Plane,
+  travel: TentTree,
   culture: Landmark,
 };
 
