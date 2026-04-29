@@ -423,7 +423,7 @@ export default function OrdersMgmtPage() {
   useEffect(() => {
     if (!ordersSummariess?.length) return;
 
-    if (page === 1) {
+    if (pageSummary === 1) {
       setCombinedOrdersSummary(ordersSummariess);
     } else {
       setCombinedOrdersSummary((prev) => {
@@ -1383,7 +1383,9 @@ export default function OrdersMgmtPage() {
               {
                 <OrderListView
                   isLoading={
-                    orderSummaryClick ? isLoadingOrderSummary : isLoading
+                    orderSummaryClick
+                      ? isLoadingOrderSummary || isFetchingOrderSummary
+                      : isLoading || isFetching
                   }
                   storageKey={
                     orderSummaryClick

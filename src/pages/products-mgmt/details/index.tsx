@@ -33,7 +33,6 @@ import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { CreateProductWizard } from "../components";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
@@ -85,7 +84,6 @@ export default function ProductDetailsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -127,27 +125,6 @@ export default function ProductDetailsPage() {
     setOpMode(mode);
   };
 
-  const {
-    images,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-
-  useEffect(() => {
-    if (product) {
-      setGalleryImages(product?.images ?? []);
-    }
-  }, [product]);
-
   const onStatusChangeHandler = async (status: string) => {
     if (productId)
       try {
@@ -167,16 +144,11 @@ export default function ProductDetailsPage() {
   const renderContent = () => {
     const commonProps = { t, language, product };
     const mediaProps = {
-      t,
-      images,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
+      logoImage: null,
+      images: (product?.images ?? []).map((img: IImage) => ({
+        previewUrl: img.image,
+      })),
+      primaryImageIndex: 0,
     };
     switch (activeTab) {
       case "overview":

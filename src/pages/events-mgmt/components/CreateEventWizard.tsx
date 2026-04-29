@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Check,
   Calendar,
@@ -32,7 +32,7 @@ import {
 } from "./sub-components";
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
@@ -81,6 +81,8 @@ export default function CreateEventWizard({
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
+  const [hasFormChanges, setHasFormChanges] = useState(false);
+  const initialImagesCountRef = useRef(0);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>(
@@ -167,18 +169,17 @@ export default function CreateEventWizard({
   const [eventImages, setEventImages] = useState<TImages>([]);
   const {
     images,
+    setImages,
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll: eventImageUploadAll,
     setPrimaryImage,
-    setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({ initialImages: eventImages, onChange: setEventImages });
+  } = useFilesUpload({ initialImages: eventImages, onChange: setEventImages });
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -253,11 +254,16 @@ export default function CreateEventWizard({
       setEventImages([]);
       setNotifications([]);
       setLocalTickets([]);
+      setHasFormChanges(false);
+      initialImagesCountRef.current = 0;
     }
   }, [isOpen, editId, setImages]);
 
   useEffect(() => {
     if (editData && editId) {
+      setHasFormChanges(false);
+      initialImagesCountRef.current = editData?.images?.length ?? 0;
+
       // Basic information
       setEventName(editData?.name);
       setEventNameHe(editData?.nameHe);
@@ -362,10 +368,21 @@ export default function CreateEventWizard({
     switch (step) {
       case 1:
         if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-        if (!eventName?.trim()) newErrors.eventName = t("required_field");
-        if (!shortDescription?.trim())
+        if (
+          !eventName?.trim() &&
+          !eventNameHe?.trim() &&
+          !eventNameAr?.trim()
+        ) {
+          newErrors.eventName = t("required_field");
+        }
+
+        if (
+          !shortDescription?.trim() &&
+          !shortDescriptionHe?.trim() &&
+          !shortDescriptionAr?.trim()
+        ) {
           newErrors.shortDescription = t("required_field");
-        if (eventName?.length < 3) newErrors.eventName = t("field_too_short");
+        }
         break;
       case 2:
         if (!isMultiDay && !startDate)
@@ -406,18 +423,18 @@ export default function CreateEventWizard({
 
   const eventBasicInfoPayload = {
     name: eventName,
-    // nameHe: eventNameHe,
-    // nameAr: eventNameAr,
+    nameHe: eventNameHe,
+    nameAr: eventNameAr,
 
     // Short Description
     shortDescription: shortDescription,
-    // shortDescriptionHe: shortDescriptionHe,
-    // shortDescriptionAr: shortDescriptionAr,
+    shortDescriptionHe: shortDescriptionHe,
+    shortDescriptionAr: shortDescriptionAr,
 
     // Full Description
     description: fullDescription,
-    // descriptionHe: fullDescriptionHe,
-    // descriptionAr: fullDescriptionAr,
+    descriptionHe: fullDescriptionHe,
+    descriptionAr: fullDescriptionAr,
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
     status: eventStatus?.toUpperCase(),
@@ -507,11 +524,7 @@ export default function CreateEventWizard({
     5: () => eventMsgSchedulePayload,
     6: () => eventMediaPayload,
   };
-  const {
-    markDirty,
-    saveDraft,
-    // hasUnsavedChanges,
-  } = useEventDraftSaver({
+  const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
     eventId,
     setEventId,
@@ -519,8 +532,22 @@ export default function CreateEventWizard({
     updateEvent,
     stepPayloadMap,
   });
+
+  const handleMarkDirty = useCallback(
+    (step: number) => {
+      setHasFormChanges(true);
+      markDirty(step);
+    },
+    [markDirty],
+  );
+
   const handleClose = () => {
-    if (!isPublishBtnClicked && !isDraftBtnClicked) {
+    const hasImageChanges = images.length !== initialImagesCountRef.current;
+    if (
+      (hasFormChanges || hasImageChanges) &&
+      !isPublishBtnClicked &&
+      !isDraftBtnClicked
+    ) {
       setShowClosePopup(true);
       return;
     }
@@ -529,19 +556,20 @@ export default function CreateEventWizard({
   };
   const handleNext = async () => {
     if (!validateStep(currentStep) && isPublishBtnClicked) return;
-    if (currentStep === 6) await eventImageUploadAll();
     setCurrentStep((prev) => prev + 1);
   };
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-    await eventImageUploadAll();
     await saveDraft(false);
     if (eventId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
         itemId: eventId,
       });
+    }
+    if (refetch) {
+      refetch();
     }
   };
 
@@ -552,7 +580,6 @@ export default function CreateEventWizard({
   const handlePublish = async () => {
     let allValid = true;
     setIsPublishBtnClicked(true);
-    await eventImageUploadAll();
     for (let i = 1; i <= 7; i++) {
       if (!validateStep(i)) {
         allValid = false;
@@ -729,7 +756,7 @@ export default function CreateEventWizard({
         {currentStep === 1 && (
           <EventBasicInformation
             eventId={eventId}
-            markDirty={markDirty}
+            markDirty={handleMarkDirty}
             eventName={eventName}
             setEventName={setEventName}
             eventNameHe={eventNameHe}
@@ -750,8 +777,6 @@ export default function CreateEventWizard({
             setFullDescriptionHe={setFullDescriptionHe}
             fullDescriptionAr={fullDescriptionAr}
             setFullDescriptionAr={setFullDescriptionAr}
-            eventStatus={eventStatus}
-            setEventStatus={setEventStatus}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
@@ -813,13 +838,13 @@ export default function CreateEventWizard({
             setCustomInterval={setCustomInterval}
             customUnit={customUnit}
             setCustomUnit={setCustomUnit}
-            markDirty={markDirty}
+            markDirty={handleMarkDirty}
           />
         )}
 
         {currentStep === 3 && (
           <EventRegistrationCapacity
-            markDirty={markDirty}
+            markDirty={handleMarkDirty}
             currentStep={currentStep}
             registrationRequired={registrationRequired}
             setRegistrationRequired={setRegistrationRequired}
@@ -849,7 +874,7 @@ export default function CreateEventWizard({
 
         {currentStep === 5 && (
           <NotificationsTimeline
-            markDirty={markDirty}
+            markDirty={handleMarkDirty}
             notifications={notifications}
             setNotifications={setNotifications}
             editingNotification={editingNotification}
@@ -866,7 +891,7 @@ export default function CreateEventWizard({
         )}
         {currentStep === 6 && (
           <Media
-            markDirty={markDirty}
+            markDirty={handleMarkDirty}
             images={images}
             imagesRef={imagesRef}
             setPrimaryImage={setPrimaryImage}

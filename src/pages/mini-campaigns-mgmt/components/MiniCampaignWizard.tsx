@@ -20,7 +20,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { websites } from "@/constants/data";
 
 interface MiniCampaignWizardProps {
   theme: Theme;
@@ -521,7 +520,7 @@ export default function MiniCampaignWizard({
                     <div
                       className={`absolute top-full left-0 right-0 mt-2 ${bgPrimary} shadow-lg border ${borderColor} rounded-lg max-h-60 overflow-y-auto z-20`}
                     >
-                      <div className="p-2 space-y-1">
+                      {/* <div className="p-2 space-y-1">
                         {websites.map((site) => (
                           <label
                             key={site}
@@ -545,7 +544,7 @@ export default function MiniCampaignWizard({
                             <span className={textPrimary}>{site}</span>
                           </label>
                         ))}
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </div>

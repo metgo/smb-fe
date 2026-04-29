@@ -179,10 +179,10 @@ export default function Sidebar() {
         },
         {
           id: "promotions",
-          path: routes.dashboard,
+          path: routes.promotionMgmt,
           label: t("promotions") || "Promotions",
           icon: Megaphone,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "article",

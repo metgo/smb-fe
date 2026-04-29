@@ -102,6 +102,10 @@ export const endpoints = {
   // Website settgins
   websiteSettings: "/site-settings",
 
+  // Promotions
+  promotions: "/promotions",
+  promotionGroups: "/promotion-groups",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
   googleMapRouteDirection:

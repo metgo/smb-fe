@@ -5,6 +5,7 @@
   "tab_terms": "Terms & Conditions",
   "tab_privacy": "Privacy Policy",
   "tab_business_regulation": "Business Regulation",
+  "tab_document_upload": "Document Upload",
 
   "field_title": "Title",
   "field_title_placeholder_terms": "e.g. Terms and Conditions",
@@ -19,5 +20,18 @@
   "field_content_placeholder": "Write your page content here…",
   "field_content_required": "Content is required",
 
-  "btn_save": "Save"
+  "upload_drag_drop": "Drag & drop files here, or click to browse",
+  "upload_supported_formats": "Supported: PDF, Word (.doc/.docx), Excel (.xls/.xlsx), PowerPoint (.ppt/.pptx), TXT",
+  "error_no_document": "Please upload at least one document",
+  "error_upload_in_progress": "Please wait for all files to finish uploading",
+  "error_upload_failed_files": "Please remove or retry failed uploads before saving",
+  "error_file_upload_failed": "File upload failed. Please try again",
+
+  "btn_save": "Save",
+  "btn_preview": "Preview",
+  "btn_open": "Open",
+  "btn_download": "Download",
+  "btn_remove": "Remove",
+  "label_primary_file": "Primary File",
+  "label_secondary_file": "Secondary File"
 }

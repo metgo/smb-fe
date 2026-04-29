@@ -39,9 +39,9 @@ interface AttributesProps {
   editData?: any;
   selectedFormLanguage: Language;
   errors: FormErrors;
-  selectedGroupTypesId: string[];
+  selectedGroupTypesId?: string[];
   setGroupTypesId: (v: string[]) => void;
-  selectedAccessiblitiesId: string[];
+  selectedAccessiblitiesId?: string[];
   setAccessiblitiesId: (v: string[]) => void;
   opMode?: string;
 }
@@ -53,8 +53,8 @@ const Attributes: FC<AttributesProps> = ({
   formData,
   setFormData,
   setGroupTypesId,
-  selectedGroupTypesId,
-  selectedAccessiblitiesId,
+  selectedGroupTypesId = [],
+  selectedAccessiblitiesId = [],
   setAccessiblitiesId,
   editData,
   selectedFormLanguage,

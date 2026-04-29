@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
-import { availableProducts } from "@/constants/data";
 import {
   Box,
   CheckCircle,
@@ -158,7 +157,7 @@ export default function CreateOrderWizard({
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const handleAddProduct = (product: (typeof availableProducts)[0]) => {
+  const handleAddProduct = (product: any) => {
     setFormData((prev) => ({
       ...prev,
       products: [

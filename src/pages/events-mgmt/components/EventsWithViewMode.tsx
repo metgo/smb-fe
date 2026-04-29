@@ -97,13 +97,18 @@ export default function EventsWithViewMode({
   statusFilter,
   searchQuery,
 }: EventsWithViewModeProps) {
-  const { t, i18n } = useTranslation("events");
+  const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
-  const language = i18n.language || "en";
   const navigate = useNavigate();
-  const { bgPrimary, bgSecondary, borderColor, textTertiary, textPrimary } =
-    useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    borderColor,
+    textTertiary,
+    textPrimary,
+    language,
+  } = useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
@@ -598,7 +603,9 @@ export default function EventsWithViewMode({
                 {event.isMultiDay && (
                   <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
                 )}
-                <span className="text-sm line-clamp-2">{event.name}</span>
+                <span className="text-sm line-clamp-2">
+                  {event.name || event.nameHe || event.nameAr}
+                </span>
               </div>
             ),
           },

@@ -35,7 +35,7 @@ const TooltipWrapper: FC<TooltipWrapperProps> = ({
             side={side}
             align={align}
             className={clsx(
-              "px-6 py-3 shadow-md border border-teal-500 font-semibold",
+              "px-6 py-3 shadow-md border border-teal-500 font-semibold z-100",
               theme === "dark"
                 ? "text-white bg-black/60"
                 : "text-black bg-white/80",

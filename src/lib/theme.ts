@@ -10,7 +10,7 @@ export const getThemeClasses = (isDark: boolean): ThemeClasses => ({
   textSecondary: isDark ? "text-gray-300" : "text-gray-700",
   textTertiary: isDark ? "text-gray-400" : "text-gray-600",
 
-  borderColor: isDark ? "border-gray-800" : "border-gray-200",
+  borderColor: isDark ? "border-gray-500" : "border-gray-200",
   hoverBg: isDark ? "hover:bg-gray-800" : "hover:bg-gray-50",
 
   cardClasses: isDark

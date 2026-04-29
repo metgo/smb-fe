@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -11,7 +11,6 @@ import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   InputField,
-  RadioGroupField,
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
@@ -50,8 +49,6 @@ interface EventBasicInformationProps {
   setFullDescriptionHe: React.Dispatch<React.SetStateAction<string>>;
   setFullDescriptionAr: React.Dispatch<React.SetStateAction<string>>;
 
-  eventStatus: EventStatus;
-  setEventStatus: React.Dispatch<React.SetStateAction<EventStatus>>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -92,8 +89,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setFullDescriptionAr,
   fullDescriptionHe,
   setFullDescriptionHe,
-  eventStatus,
-  setEventStatus,
   internalNotes,
   setInternalNotes,
   selectedSubCategoriesId,
@@ -109,7 +104,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 }) => {
   const { t, i18n } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
-  const { textSecondary, inputClasses, isDark } = useThemeClasses();
+  const { inputClasses, isDark } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({
@@ -362,17 +357,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           />
         </FormFieldWrapper>
       </div>
-
-      {/* Event Status */}
-      <FormFieldWrapper label={t("event_status")}>
-        <RadioGroupField
-          value={eventStatus}
-          options={["draft", "pending", "approved"]}
-          onChange={setEventStatus}
-          labelMapper={(v) => t(v)}
-          textSecondary={textSecondary}
-        />
-      </FormFieldWrapper>
 
       {/* Chips */}
       <SelectableChips

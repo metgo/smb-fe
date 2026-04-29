@@ -5,6 +5,7 @@
   "tab_terms": "תנאי שימוש",
   "tab_privacy": "מדיניות פרטיות",
   "tab_business_regulation": "תקנון עסקים",
+  "tab_document_upload": "העלאת מסמכים",
 
   "field_title": "כותרת",
   "field_title_placeholder_terms": "לדוגמה: תנאי שימוש",
@@ -19,5 +20,18 @@
   "field_content_placeholder": "כתוב את תוכן הדף כאן…",
   "field_content_required": "שדה תוכן הוא חובה",
 
-  "btn_save": "שמור"
+  "upload_drag_drop": "גרור ושחרר קבצים כאן, או לחץ לעיון",
+  "upload_supported_formats": "נתמך: PDF, Word, Excel, PowerPoint, TXT",
+  "error_no_document": "אנא העלה לפחות מסמך אחד",
+  "error_upload_in_progress": "אנא המתן עד שכל הקבצים יסיימו להיטען",
+  "error_upload_failed_files": "אנא הסר או נסה שוב את ההעלאות שנכשלו לפני השמירה",
+  "error_file_upload_failed": "העלאת הקובץ נכשלה. אנא נסה שוב",
+
+  "btn_save": "שמור",
+  "btn_preview": "תצוגה מקדימה",
+  "btn_open": "פתח",
+  "btn_download": "הורד",
+  "btn_remove": "הסר",
+  "label_primary_file": "קובץ ראשי",
+  "label_secondary_file": "קובץ משני"
 }
