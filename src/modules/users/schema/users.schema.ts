@@ -64,12 +64,11 @@ export class User extends AuditableSchema {
     hasBusiness: boolean;
 
   @Prop({
-    default: null,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: ExternalApi.name,
+    default: [],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: ExternalApi.name }],
     required: false,
   })
-    externalApiId: mongoose.Types.ObjectId;
+    externalApiIds: mongoose.Types.ObjectId[];
 
   @Prop({
     default: null,
@@ -83,7 +82,9 @@ export class User extends AuditableSchema {
 export type Users = HydratedDocument<User>;
 
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.index({ email: 1, externalApiId: 1 }, { unique: true });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ isDeleted: 1, role: 1 });
+UserSchema.index({ isDeleted: 1, createdAt: -1 });
 
 UserSchema.pre('save', function (next) {
   if (this?.phoneNumber) {

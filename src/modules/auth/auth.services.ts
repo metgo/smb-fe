@@ -134,12 +134,12 @@ export class AuthService {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
 
-    if (!user.externalApiId) {
+    if (!user.externalApiIds) {
       throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
     }
 
     const validExternalApi = await this.externalApiServices.getById(
-      user.externalApiId?.toString(),
+      user.externalApiIds?.toString(),
     );
 
     if (!validExternalApi) {
@@ -168,7 +168,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       hasBusiness: user.hasBusiness,
-      externalApiId: user.externalApiId,
+      externalApiId: user.externalApiIds,
     };
     const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
 

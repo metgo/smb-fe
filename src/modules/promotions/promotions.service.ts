@@ -13,7 +13,6 @@ import {
   PromotionGroup,
   PromotionGroupDocument,
 } from './schema/promotion-group.schema';
-import type { Promotion } from './schema/promotion.schema';
 import { ServerErrors } from 'src/common/constant';
 import { ExternalApi } from '../external-api/schema/external-api.schema';
 
@@ -78,7 +77,7 @@ export class PromotionsService {
         rotationType: pg.rotationType,
         timeInterval: pg.timeInterval,
         promotions: pg.promotions.map(p => {
-          const promo = p.promoId as Promotion;
+          const promo: any = p.promoId;
 
           return {
             order: p.order,

@@ -107,9 +107,6 @@ export class ExternalApi extends AuditableSchema {
   @Prop({ default: null })
     gaPropertyId: string;
 
-  @Prop({ default: null })
-    privacyPolicy: string;
-
   @Prop({ default: ExternalApiPurpose.MARKETPLACE })
     purpose: ExternalApiPurpose;
 

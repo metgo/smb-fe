@@ -284,3 +284,7 @@ export type Products = HydratedDocument<Product>;
 export const ProductSchema = SchemaFactory.createForClass(Product);
 
 ProductSchema.index({ subCategories: 1, status: 1 });
+ProductSchema.index({ slug: 1 });
+ProductSchema.index({ isDeleted: 1, status: 1 });
+ProductSchema.index({ businessId: 1, isDeleted: 1, status: 1 });
+ProductSchema.index({ isDeleted: 1, status: 1, createdAt: -1 });

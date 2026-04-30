@@ -21,9 +21,9 @@ export class ProductsAudit extends Product {
 
 export const ProductsAuditSchema = SchemaFactory.createForClass(ProductsAudit);
 
-// Compound index: fast lookup of the active snapshot for a product
 ProductsAuditSchema.index({ productId: 1, isActive: 1 });
 ProductsAuditSchema.index({ productId: 1, version: -1 });
+ProductsAuditSchema.index({ slug: 1 });
 ProductsAuditSchema.index({ name: 'text', description: 'text' });
 
 export type ProductsAuditDocument = HydratedDocument<ProductsAudit>;

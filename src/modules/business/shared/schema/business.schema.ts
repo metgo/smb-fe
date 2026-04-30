@@ -283,7 +283,7 @@ export class Business extends AuditableSchema {
   @Prop()
     slug: string;
 
-  @Prop({ enum: GeoServicesTypes, required: false })
+  @Prop({ enum: GeoServicesTypes, default: GeoServicesTypes.BUSINESS })
     serviceType: GeoServicesTypes;
 
   @Prop({ required: false })
@@ -318,6 +318,9 @@ export class Business extends AuditableSchema {
 export const BusinessSchema = SchemaFactory.createForClass(Business);
 BusinessSchema.index({ name: 'text', description: 'text', tags: 'text' });
 BusinessSchema.index({ location: '2dsphere' });
+BusinessSchema.index({ isDeleted: 1, status: 1 });
+BusinessSchema.index({ userId: 1, isDeleted: 1 });
+BusinessSchema.index({ isDeleted: 1, status: 1, createdAt: -1 });
 
 export type BusinessDocument = HydratedDocument<Business>;
 

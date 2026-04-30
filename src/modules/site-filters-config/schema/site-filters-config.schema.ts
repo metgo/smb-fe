@@ -35,7 +35,7 @@ export class SiteCategoriesItem {
     businessIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Event.name }],
     required: false,
   })
     eventIds: mongoose.Types.ObjectId[];
@@ -102,6 +102,9 @@ export class SiteTopicItem {
 
   @Prop({ required: false })
     order: number;
+
+  @Prop({ type: Boolean, default: false })
+    isPrimary: boolean;
 
   @Prop({ type: Boolean, default: false })
     isArchived: boolean;

@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { shuffleArray } from 'src/common/utils/shuffle';
 import {
   getLocalizedValue,
   localizeFields,
@@ -18,8 +19,10 @@ import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema
 import { ProductStatus } from 'src/modules/products/products.type';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
+import { CacheService } from 'src/services/cache/cache.service';
 
 const PRODUCTS_PER_TOPIC = 4;
+const CACHE_TTL = 20;
 
 @QueryHandler(GetProductsGroupedByTopicQuery)
 export class GetProductsGroupedByTopicHandler
@@ -35,6 +38,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     private ExternalApiModel: Model<ExternalApi>,
     @InjectModel(Campaign.name)
     private CampaignModel: Model<Campaign>,
+    private readonly cacheService: CacheService,
   ) {}
 
   async execute({
@@ -42,6 +46,11 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     query,
   }: GetProductsGroupedByTopicQuery): Promise<any> {
     const { locale } = query;
+
+    const cacheKey = `products-grouped:${externalApiId}:${locale || 'default'}`;
+
+    const cached = this.cacheService.get<any>(cacheKey);
+    if (cached) return cached;
 
     try {
       const siteSettings = await this.SiteFiltersConfigModel.findOne({
@@ -55,11 +64,20 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         t => !t.isArchived,
       );
 
+      let result;
+
       if (activeTopics.length) {
-        return this.groupByTopics(activeTopics, locale as Locale);
+        result = await this.groupByTopics(activeTopics, locale as Locale);
+      } else {
+        result = await this.groupByPrimaryCategory(
+          externalApiId,
+          locale as Locale,
+        );
       }
 
-      return this.groupByPrimaryCategory(externalApiId, locale as Locale);
+      this.cacheService.set(cacheKey, result, CACHE_TTL);
+
+      return result;
     } catch (error) {
       this.logger.error(
         '[SITE SETTINGS]: FAILED TO GET PRODUCTS GROUPED BY TOPIC',
@@ -70,39 +88,25 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
   }
 
   private async groupByTopics(activeTopics: any[], locale: Locale) {
-    type ProductEntry = {
-      topicIndex: number;
-      productId: string;
-      category: { title: string; titleHe: string; titleAr: string };
-    };
-
-    const productEntries: ProductEntry[] = [];
-    const topicProductCount = new Array(activeTopics.length).fill(0);
+    const productEntries: any[] = [];
 
     activeTopics.forEach((topic, topicIndex) => {
       (topic.siteCategories || [])
         .filter(cat => !cat.isArchived)
         .forEach(cat => {
           (cat.productIds || []).forEach(pid => {
-            if (topicProductCount[topicIndex] < PRODUCTS_PER_TOPIC) {
-              productEntries.push({
-                topicIndex,
-                productId: pid.toString(),
-                category: {
-                  title: cat.title,
-                  titleHe: cat.titleHe,
-                  titleAr: cat.titleAr,
-                },
-              });
-              topicProductCount[topicIndex]++;
-            }
+            productEntries.push({
+              topicIndex,
+              productId: pid.toString(),
+              category: cat,
+            });
           });
         });
     });
 
     if (!productEntries.length) {
       return activeTopics.map(topic => ({
-        topic: getLocalizedValue(topic, 'title', locale),
+        topics: getLocalizedValue(topic, 'title', locale),
         products: [],
       }));
     }
@@ -131,15 +135,23 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       products.map(p => [p.productId.toString(), p]),
     );
 
-    const topicProductsMap = new Map<number, any[]>();
-    activeTopics.forEach((_, i) => topicProductsMap.set(i, []));
+    const tempMap = new Map<number, any[]>();
+    activeTopics.forEach((_, i) => tempMap.set(i, []));
 
     productEntries.forEach(({ topicIndex, productId, category }) => {
       const product = productMap.get(productId);
       if (!product) return;
-      topicProductsMap
+
+      tempMap
         .get(topicIndex)
         .push(this.formatProduct(product, category, locale));
+    });
+
+    const topicProductsMap = new Map<number, any[]>();
+
+    tempMap.forEach((items, topicIndex) => {
+      const shuffled = shuffleArray(items);
+      topicProductsMap.set(topicIndex, shuffled.slice(0, PRODUCTS_PER_TOPIC));
     });
 
     return activeTopics.map((topic, i) => ({
@@ -150,7 +162,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
   private async groupByPrimaryCategory(externalApiId: string, locale: Locale) {
     const externalApi = await this.ExternalApiModel.findById(externalApiId)
-      .select('categoryIds primaryCampIds')
+      .select('primaryCampIds')
       .lean();
 
     const campDetails = await this.CampaignModel.findById(
@@ -160,11 +172,11 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .lean();
 
     if (
-      campDetails !== null
-      && !campDetails?.productIds?.length
-      && !campDetails?.dmoIds?.length
-      && !campDetails?.authorityIds?.length
-      && !campDetails?.businessIds?.length
+      campDetails
+      && !campDetails.productIds?.length
+      && !campDetails.dmoIds?.length
+      && !campDetails.authorityIds?.length
+      && !campDetails.businessIds?.length
     ) {
       return [];
     }
@@ -183,24 +195,15 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
     }
 
-    const andConditions: any[] = [
-      {
-        $or: [
-          { 'quantity.remaining': { $gt: 0 } },
-          { 'quantity.isUnlimited': true },
-        ],
-      },
-    ];
-
-    if (campOrConditions.length) {
-      andConditions.push({ $or: campOrConditions });
-    }
-
     const products = await this.ProductsAuditModel.find({
       status: ProductStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
-      $and: andConditions,
+      ...(campOrConditions.length && { $or: campOrConditions }),
+      $or: [
+        { 'quantity.remaining': { $gt: 0 } },
+        { 'quantity.isUnlimited': true },
+      ],
     })
       .select(
         '_id productId name nameHe nameAr slug shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
@@ -211,7 +214,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       ])
       .lean();
 
-    const groupMap = new Map<string, { categoryName: string; items: any[] }>();
+    const groupMap = new Map<string, any[]>();
 
     products.forEach(product => {
       const cat = product.primaryCategoryId as any;
@@ -220,42 +223,42 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       const catId = cat._id.toString();
 
       if (!groupMap.has(catId)) {
-        const categoryName
-          = locale === Locale.HEBREW ? cat.hebrewName || cat.name : cat.name;
-        groupMap.set(catId, { categoryName, items: [] });
+        groupMap.set(catId, []);
       }
 
-      const group = groupMap.get(catId);
-      if (group.items.length >= PRODUCTS_PER_TOPIC) return;
-
-      group.items.push(this.formatProduct(product, null, locale));
+      groupMap.get(catId).push(product);
     });
 
-    return [...groupMap.values()].map(({ categoryName, items }) => ({
-      topics: categoryName,
-      products: items,
-    }));
+    // eslint-disable-next-line no-unused-vars
+    return [...groupMap.entries()].map(([_, items]) => {
+      const shuffled = shuffleArray(items).slice(0, PRODUCTS_PER_TOPIC);
+
+      return {
+        topics:
+          locale === Locale.HEBREW
+            ? items[0].primaryCategoryId?.hebrewName
+              || items[0].primaryCategoryId?.name
+            : items[0].primaryCategoryId?.name,
+        products: shuffled.map(p => this.formatProduct(p, null, locale)),
+      };
+    });
   }
 
   private formatProduct(product: any, category: any, locale: Locale) {
-    const {
-      _id,
-      productId: pid,
-      categories,
-      subCategories,
-      primaryCategoryId,
-      ...rest
-    } = product as any;
+    const { productId: pid, ...rest } = product;
 
     let selectedImage = null;
+
     if (rest.images?.length) {
       const primary = rest.images.find(img => img.isPrimary);
       const img = primary || rest.images[0];
+
       if (img) {
         const { subCoordinates, ...cleanImage } = img;
         selectedImage = cleanImage;
       }
     }
+
     delete rest.images;
 
     if (rest.businessId) {
@@ -263,7 +266,9 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         const { subCoordinates, ...cleanLogo } = rest.businessId.logo;
         rest.businessId.logo = cleanLogo;
       }
+
       rest.businessId.name = getLocalizedValue(rest.businessId, 'name', locale);
+
       delete rest.businessId.nameHe;
       delete rest.businessId.nameAr;
     }

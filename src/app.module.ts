@@ -58,6 +58,7 @@ import { SiteFiltersConfigModule } from './modules/site-filters-config/site-filt
 import { SettingsModule } from './modules/settings/settings.module';
 import { SiteSettingsModule } from './modules/site-settings/siteSettings.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { AppCacheModule } from './services/cache/cache.module';
 // import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
@@ -66,6 +67,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(dbConfig.uri),
     WinstonModule.forRoot(winstonConfig),
+    AppCacheModule,
     AuthModule,
     AuthorityModule,
     JwtAuthModule,

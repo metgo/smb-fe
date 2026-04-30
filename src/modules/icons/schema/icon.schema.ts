@@ -12,6 +12,9 @@ export class Icons extends AuditableSchema {
 
   @Prop({ required: false })
     iconAlt: string;
+
+  @Prop({ required: false, default: false })
+    isCategories: boolean;
 }
 
 export type IconsDocument = HydratedDocument<Icons>;

@@ -9,7 +9,7 @@ export class Image {
   @Prop({ required: true })
     image: string;
 
-  @Prop({ required: true })
+  @Prop()
     alt: string;
 
   @Prop({ default: false })
@@ -30,7 +30,7 @@ export class Blog extends AuditableSchema {
   @Prop({ enum: CommonStatus, required: true, default: CommonStatus.DRAFT })
     status: CommonStatus;
 
-  @Prop({ required: true })
+  @Prop()
     title: string;
 
   @Prop()
@@ -48,7 +48,7 @@ export class Blog extends AuditableSchema {
   @Prop()
     subTitleAr: string;
 
-  @Prop({ required: true })
+  @Prop()
     shortDescription: string;
 
   @Prop()
@@ -57,7 +57,7 @@ export class Blog extends AuditableSchema {
   @Prop()
     shortDescriptionAr: string;
 
-  @Prop({ required: true })
+  @Prop()
     content: string;
 
   @Prop()

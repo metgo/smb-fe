@@ -61,6 +61,12 @@ export class Event extends AuditableSchema {
   @Prop({ required: false, default: null })
     name: string;
 
+  @Prop()
+    nameHe: string;
+
+  @Prop()
+    nameAr: string;
+
   @Prop({
     type: {
       country: String,
@@ -82,7 +88,19 @@ export class Event extends AuditableSchema {
     shortDescription: string;
 
   @Prop()
+    shortDescriptionHe: string;
+
+  @Prop()
+    shortDescriptionAr: string;
+
+  @Prop()
     description: string;
+
+  @Prop()
+    descriptionHe: string;
+
+  @Prop()
+    descriptionAr: string;
 
   @Prop()
     internalNotes: string;
@@ -230,5 +248,8 @@ export class Event extends AuditableSchema {
 
 export const EventSchema = SchemaFactory.createForClass(Event);
 EventSchema.index({ name: 'text', description: 'text' });
+EventSchema.index({ isDeleted: 1, status: 1 });
+EventSchema.index({ userId: 1, isDeleted: 1 });
+EventSchema.index({ isDeleted: 1, status: 1, createdAt: -1 });
 
 export type EventDocument = HydratedDocument<Event>;
