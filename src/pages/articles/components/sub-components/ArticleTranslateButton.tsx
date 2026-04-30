@@ -119,7 +119,7 @@ const ArticleTranslateButton = ({
       if (Object.keys(updates).length > 0) onChange(updates);
     }
     // No migration needed if content is already in the right language bucket
-  }, [formData]); // depend on formData to re-run when prod data arrives
+  }, [formData]);
 
   const handleTranslate = async () => {
     const srcFields = LANG_FIELDS[sourceLang];
