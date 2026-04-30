@@ -25,11 +25,10 @@ const SEO_FIELDS = {
   robotsTxt: 1,
   sitemapUrl: 1,
   // Analytics
-  googleAnalyticsId: 1,
-  googleTagManagerId: 1,
-  facebookPixelId: 1,
-  headerScripts: 1,
-  footerScripts: 1,
+  logoUrl: 1,
+  faviconUrl: 1,
+  slogan: 1,
+  externalApiId: 1,
 } as const;
 
 @QueryHandler(GetSiteSettingSeoQuery)
@@ -67,10 +66,7 @@ implements IQueryHandler<GetSiteSettingSeoQuery> {
         externalApiId: externalApi._id,
       });
 
-      return {
-        siteSetting,
-        externalApiId: externalApi._id,
-      };
+      return { ...siteSetting };
     } catch (err: any) {
       this.logger.error('[SITE_SETTING]: FAILED TO GET SEO DATA', {
         err: err.message,

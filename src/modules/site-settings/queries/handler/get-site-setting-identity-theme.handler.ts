@@ -36,6 +36,13 @@ const IDENTITY_THEME_FIELDS = {
   timezone: 1,
   currency: 1,
   dateFormat: 1,
+
+  headerScripts: 1,
+  footerScripts: 1,
+  googleAnalyticsId: 1,
+  googleTagManagerId: 1,
+  facebookPixelId: 1,
+  externalApiId: 1,
 } as const;
 
 @QueryHandler(GetSiteSettingIdentityThemeQuery)

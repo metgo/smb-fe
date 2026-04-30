@@ -241,9 +241,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       ).filter(Boolean);
 
       const uniqueFlatList = Array.from(
-        new Map(
-          flatList.map(item => [item._id.toString(), item]),
-        ).values(),
+        new Map(flatList.map(item => [item._id.toString(), item])).values(),
       );
 
       const paginatedData = paginateData(page, limit, uniqueFlatList);

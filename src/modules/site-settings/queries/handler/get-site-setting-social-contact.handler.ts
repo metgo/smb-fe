@@ -31,6 +31,7 @@ const SOCIAL_CONTACT_FIELDS = {
   googleMapsEmbed: 1,
   enableClickToCall: 1,
   enableWhatsappChat: 1,
+  externalApiId: 1,
 } as const;
 
 @QueryHandler(GetSiteSettingSocialContactQuery)

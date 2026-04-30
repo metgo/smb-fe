@@ -1,4 +1,3 @@
-// queries/handlers/get-site-setting-partners.handler.ts
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
@@ -47,7 +46,7 @@ implements IQueryHandler<GetSiteSettingPartnersQuery> {
         externalApiId: externalApi._id,
       });
 
-      return { partners: siteSetting.partners };
+      return { partners: siteSetting.partners, externalApiId: externalApi._id };
     } catch (err) {
       this.logger.error('[SITE_SETTING]: FAILED TO GET PARTNERS', {
         err: err.message,
