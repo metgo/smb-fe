@@ -24,31 +24,54 @@ export default function ArticleContentForm({
     textTertiary,
     borderColor,
   } = useThemeClasses();
-
-  // Single field mode - always use base fields (title, shortDescription, content)
-  const titleField = "title";
-  const shortDescField = "shortDescription";
-  const contentField = "content";
-
-  // Determine direction based on current content (for RTL support)
-  const getContentDirection = (text: string): "ltr" | "rtl" => {
-    if (!text) return "ltr";
-    // Simple heuristic: check first character
-    const firstChar = text.trim().charAt(0);
-    const hebrewRange = /[\u0590-\u05FF]/;
-    const arabicRange = /[\u0600-\u06FF]/;
-    if (hebrewRange.test(firstChar) || arabicRange.test(firstChar)) {
-      return "rtl";
-    }
-    return "ltr";
+  // Detect which language actually has content, prioritize that
+  const detectPrimaryLang = (): "en" | "he" | "ar" => {
+    if (
+      formData.title?.trim() ||
+      formData.shortDescription?.trim() ||
+      formData.content?.trim()
+    )
+      return "en";
+    if (
+      formData.titleHe?.trim() ||
+      formData.shortDescriptionHe?.trim() ||
+      formData.contentHe?.trim()
+    )
+      return "he";
+    if (
+      formData.titleAr?.trim() ||
+      formData.shortDescriptionAr?.trim() ||
+      formData.contentAr?.trim()
+    )
+      return "ar";
+    return "en";
   };
 
-  const titleDir = getContentDirection(formData[titleField] || "");
-  const descDir = getContentDirection(formData[shortDescField] || "");
+  const primaryLang = detectPrimaryLang();
+
+  const FIELD_MAP = {
+    en: { title: "title", shortDesc: "shortDescription", content: "content" },
+    he: {
+      title: "titleHe",
+      shortDesc: "shortDescriptionHe",
+      content: "contentHe",
+    },
+    ar: {
+      title: "titleAr",
+      shortDesc: "shortDescriptionAr",
+      content: "contentAr",
+    },
+  };
+
+  const fields = FIELD_MAP[primaryLang];
+  const titleField = fields.title;
+  const shortDescField = fields.shortDesc;
+  const contentField = fields.content;
+
+  const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Title - Single Field */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("title")} <span className="text-red-500">*</span>
@@ -59,14 +82,13 @@ export default function ArticleContentForm({
           onChange={(e) => onChange({ [titleField]: e.target.value })}
           placeholder={t("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
-          dir={titleDir}
+          dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
           {(formData[titleField] || "").length} {t("characters")}
         </p>
       </div>
 
-      {/* Short Description - Single Field */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("short_description")} <span className="text-red-500">*</span>
@@ -77,14 +99,13 @@ export default function ArticleContentForm({
           placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
-          dir={descDir}
+          dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
           {(formData[shortDescField] || "").length} {t("characters")}
         </p>
       </div>
 
-      {/* Rich Text Content - Single Field */}
       <RichTextEditor
         content={formData[contentField] || ""}
         onChange={(html) => onChange({ [contentField]: html })}
