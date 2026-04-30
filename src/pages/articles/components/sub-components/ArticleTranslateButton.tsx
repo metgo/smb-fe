@@ -59,6 +59,8 @@ const ArticleTranslateButton = ({
 
   const [sourceLang, setSourceLang] = useState<LangKey>("en");
   const initialFormData = useRef(formData);
+  initialFormData.current = formData;
+
   const normalizedRef = useRef(false);
 
   // On first render: detect source language from base fields.
@@ -74,6 +76,8 @@ const ArticleTranslateButton = ({
     const baseContent = data.content?.trim() || "";
 
     const sample = baseTitle || baseDesc || baseContent;
+    if (!sample) return; //  wait until data actually arrives before normalizing
+    normalizedRef.current = true;
     const detected = (sample ? detectLanguage(sample) : "en") as LangKey;
     setSourceLang(detected);
 
@@ -95,7 +99,7 @@ const ArticleTranslateButton = ({
       if (Object.keys(updates).length > 0) onChange(updates);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [formData]);
 
   const handleTranslate = async () => {
     const srcFields = LANG_FIELDS[sourceLang];
