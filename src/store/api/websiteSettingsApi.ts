@@ -28,7 +28,7 @@ export const websiteSettingsApi = createApi({
       }),
     }),
 
-    getWebsiteSettingDetails: builder.query<IWebsiteConfigRes, string>({
+    getWebsiteSettingDetails: builder.query<IWebsiteConfigRes, string | null>({
       query: (externalApiId) => ({
         url: `${endpoints.websiteSettings}/external-api/${externalApiId}`,
         method: "GET",

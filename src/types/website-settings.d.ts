@@ -2,6 +2,32 @@
 /*  Website / Site-Settings – shared TypeScript types                  */
 /* ------------------------------------------------------------------ */
 
+/*---------------------------------- Dmo Setting ----------------------------------*/
+interface IDMOPayload {
+  name: string;
+  description: string;
+  userId: string;
+  isActive: boolean;
+  boundary: GeoJsonPolygon | null;
+  center: GeoJsonPoint | null;
+  logoPath: string;
+}
+
+/*---------------------------------- Authority Setting ----------------------------------*/
+
+interface IAuthorityPayload {
+  name: string;
+  dmoId: string;
+  description: string;
+  userId: string;
+  isActive: boolean;
+  boundary: GeoJsonPolygon | null;
+  center: GeoJsonPoint | null;
+  logoPath: string;
+}
+
+/*---------------------------------- Website config ----------------------------------*/
+
 interface VideoItem {
   id: string;
   url: string;
@@ -17,17 +43,29 @@ interface PartnerItem {
   website: string;
 }
 
+interface ThumnailItem {
+  id: string;
+  url: string;
+  name: string;
+  isActive: boolean;
+}
+
 interface SiteSettingsFormData {
   /* Step 1 – Branding & Media */
   websiteName: string;
+  websiteUrl: string;
   slogan: string;
+  identifierId: string;
+  campCode: string;
+  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   logoUrl: string;
   faviconUrl: string;
-  splashLogoUrl: string;
 
   /* Step 2 – Home Page Videos */
   desktopVideos: VideoItem[];
   mobileVideos: VideoItem[];
+  desktopVideoThumbnails: ThumnailItem[];
+  mobileVideoThumbnails: ThumnailItem[];
 
   /* Step 3 – Theme & Appearance */
   primaryColor: string;
@@ -86,9 +124,6 @@ interface SiteSettingsFormData {
   timezone: string;
   currency: string;
   dateFormat: string;
-
-  /* Step 9 – Partners */
-  partners: PartnerItem[];
 }
 
 type SiteSettingsErrors = Partial<Record<keyof SiteSettingsFormData, string>>;
@@ -105,14 +140,20 @@ interface IWebsiteConfigRes {
   externalApiId: string;
 
   websiteName: string;
+  websiteUrl: string;
   slogan: string;
+  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  identifierId: string;
+  campCode: string;
 
   logoUrl: string;
   faviconUrl: string;
   splashLogoUrl: string;
 
-  desktopVideos: any[];
-  mobileVideos: any[];
+  desktopVideos: VideoItem[];
+  mobileVideos: VideoItem[];
+  desktopVideoThumbnails: ThumnailItem[];
+  mobileVideoThumbnails: ThumnailItem[];
 
   primaryColor: string;
   secondaryColor: string;

@@ -1,15 +1,25 @@
+import clsx from "clsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2 } from "lucide-react";
+import {
+  Building2,
+  Edit,
+  Trash2,
+  ArrowRight,
+  UploadCloud,
+  Users,
+} from "lucide-react";
 
 import { useGetDmosQuery } from "@/store/api/masterDataApi";
-import { ConfirmDialog, PageHeader } from "@/components/shared";
+import { ConfirmDialog, PageHeader, EntityCard } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { routes } from "@/lib/routes";
-import { CreateDmoWizardModal, DmoCard } from "./components";
+import { CreateDmoWizardModal } from "./components";
 
 const DmosMgmtPage = () => {
   const navigate = useNavigate();
-  const { data, refetch, isFetching } = useGetDmosQuery();
+  const { data, isFetching } = useGetDmosQuery();
+  const { textTertiary } = useThemeClasses();
 
   const [deleteTarget, setDeleteTarget] = useState<IDmo | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -20,7 +30,7 @@ const DmosMgmtPage = () => {
   const dmos: IDmo[] = data?.data ?? [];
 
   const handleEdit = (dmo: IDmo) => {
-    // TODO: open edit modal
+    setIsCreateModalOpen(true);
     console.log("edit", dmo._id);
   };
 
@@ -44,6 +54,11 @@ const DmosMgmtPage = () => {
     setMigrateTarget(dmo);
   };
 
+  const handleToggleActive = (dmo: IDmo) => {
+    // TODO: call toggle active mutation
+    console.log("toggle active", dmo._id, !dmo.isActive);
+  };
+
   const handleMigrateConfirm = async () => {
     if (!migrateTarget) return;
     setIsMigrating(true);
@@ -64,8 +79,6 @@ const DmosMgmtPage = () => {
         totalCount={dmos.length}
         btnLabel="Add DMO"
         onClick={() => setIsCreateModalOpen(true)}
-        onRefreshClick={refetch}
-        isRefreshing={isFetching}
       />
 
       {dmos.length === 0 && !isFetching ? (
@@ -76,16 +89,57 @@ const DmosMgmtPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
-          {dmos.map((dmo) => (
-            <DmoCard
-              key={dmo._id}
-              dmo={dmo}
-              onEdit={() => handleEdit(dmo)}
-              onDelete={() => setDeleteTarget(dmo)}
-              onGoToAuthorities={() => handleGoToAuthorities(dmo)}
-              onMigrateToProd={() => handleMigrateToProd(dmo)}
-            />
-          ))}
+          {dmos.map((dmo) => {
+            const authorityCount = dmo.authorities?.length ?? 0;
+            return (
+              <EntityCard
+                key={dmo._id}
+                logo={dmo.logoPath}
+                name={dmo.name}
+                fallbackIcon={<Building2 className="w-12 h-12 text-gray-400" />}
+                isActive={dmo.isActive ?? false}
+                onToggleActive={() => handleToggleActive(dmo)}
+                actions={[
+                  {
+                    title: "Edit",
+                    colorClass:
+                      "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
+                    onClick: () => handleEdit(dmo),
+                    icon: <Edit size={14} />,
+                  },
+                  {
+                    title: "Delete",
+                    colorClass:
+                      "text-red-400 bg-red-500/10 hover:bg-red-500/20",
+                    onClick: () => setDeleteTarget(dmo),
+                    icon: <Trash2 size={14} />,
+                  },
+                  {
+                    title: "Migrate to Prod",
+                    colorClass:
+                      "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
+                    onClick: () => handleMigrateToProd(dmo),
+                    icon: <UploadCloud size={14} />,
+                  },
+                ]}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-teal-500" />
+                  <span className={clsx("text-xs font-medium", textTertiary)}>
+                    {authorityCount}{" "}
+                    {authorityCount === 1 ? "Authority" : "Authorities"}
+                  </span>
+                  <button
+                    title="View Authorities"
+                    onClick={() => handleGoToAuthorities(dmo)}
+                    className="p-1 rounded-md text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors cursor-pointer"
+                  >
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </EntityCard>
+            );
+          })}
         </div>
       )}
 

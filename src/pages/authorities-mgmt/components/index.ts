@@ -1,4 +1,4 @@
-import AuthorityCard from "./AuthorityCard";
 import AuthorityTabs from "./AuthorityTabs";
+import CreateAuthorityWizardModal from "./CreateAuthorityWizardModal";
 
-export { AuthorityCard, AuthorityTabs };
+export { AuthorityTabs, CreateAuthorityWizardModal };

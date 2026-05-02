@@ -1,6 +1,8 @@
 import ConnectedWebsites from "../details-sections/ConnectedWebsites";
 import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
+import EntityCard from "./EntityCard";
+export type { EntityCardAction } from "./EntityCard";
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
 import FilterChips from "./FilterChips";
@@ -34,6 +36,7 @@ export {
   FilterChips,
   ConfirmDialog,
   BulkActionBar,
+  EntityCard,
   ViewModeToggle,
   SelectableChips,
   ItemStatusBadge,

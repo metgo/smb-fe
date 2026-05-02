@@ -32,6 +32,7 @@ interface IWebsite {
   logo: string;
   dmoIds: string[];
   authorityIds: string[];
+  isActive?: boolean;
 }
 
 interface ITag {
@@ -87,6 +88,7 @@ interface IDmo {
   imagePath?: string;
   logoPath?: string;
   authorities: Authority[];
+  isActive?: boolean;
 }
 
 type EnrichedAuthority = {
@@ -96,6 +98,7 @@ type EnrichedAuthority = {
   dmoId: string;
   dmoName: string;
   dmoLogo?: string;
+  isActive?: boolean;
 };
 
 interface IDeleteTarget {

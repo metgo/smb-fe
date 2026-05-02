@@ -33,6 +33,7 @@ export const routes = {
   miniSite: "/mini-site",
 
   profile: "/profile",
+  partners: "/partners",
   dmoMgmt: "/dmo-management",
   authorityMgmt: "/authority-management",
   websiteMgmt: "/website-management",

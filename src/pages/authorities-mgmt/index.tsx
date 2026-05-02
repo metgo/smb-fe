@@ -1,19 +1,17 @@
+import clsx from "clsx";
+import { Landmark, Building2, Edit, Trash2, UploadCloud } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Landmark } from "lucide-react";
 
 import { useGetDmosQuery } from "@/store/api/masterDataApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConfirmDialog, PageHeader } from "@/components/shared";
-import { AuthorityCard, AuthorityTabs } from "./components";
-
-// ─── Page ────────────────────────────────────────────────────────────────────
+import { ConfirmDialog, PageHeader, EntityCard } from "@/components/shared";
+import { AuthorityTabs, CreateAuthorityWizardModal } from "./components";
 
 const AuthoritiesMgmtPage = () => {
   const [searchParams] = useSearchParams();
-  const { data, refetch, isFetching } = useGetDmosQuery();
-  const { cardClasses, textPrimary, textTertiary, bgPrimary, isDark } =
-    useThemeClasses();
+  const { data, isFetching } = useGetDmosQuery();
+  const { bgPrimary, isDark, textTertiary } = useThemeClasses();
 
   const [activeTab, setActiveTab] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState<EnrichedAuthority | null>(
@@ -23,6 +21,7 @@ const AuthoritiesMgmtPage = () => {
   const [migrateTarget, setMigrateTarget] = useState<EnrichedAuthority | null>(
     null,
   );
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
 
   const dmos: IDmo[] = data?.data ?? [];
@@ -50,7 +49,7 @@ const AuthoritiesMgmtPage = () => {
       : allAuthorities.filter((a) => a.dmoId === activeTab);
 
   const handleEdit = (auth: EnrichedAuthority) => {
-    // TODO: open edit modal
+    setCreateModalOpen(true);
     console.log("edit authority", auth._id);
   };
 
@@ -68,6 +67,11 @@ const AuthoritiesMgmtPage = () => {
 
   const handleMigrateToProd = (auth: EnrichedAuthority) => {
     setMigrateTarget(auth);
+  };
+
+  const handleToggleActive = (auth: EnrichedAuthority) => {
+    // TODO: call toggle active mutation
+    console.log("toggle active", auth._id, !auth.isActive);
   };
 
   const handleMigrateConfirm = async () => {
@@ -90,12 +94,9 @@ const AuthoritiesMgmtPage = () => {
           h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
           totalCount={allAuthorities.length}
           btnLabel="Add Authority"
-          onClick={() => console.log("add authority")}
-          onRefreshClick={refetch}
-          isRefreshing={isFetching}
+          onClick={() => setCreateModalOpen(true)}
         />
 
-        {/* ── Tabs ── */}
         <AuthorityTabs
           dmos={dmos}
           activeTab={activeTab}
@@ -105,7 +106,6 @@ const AuthoritiesMgmtPage = () => {
         />
       </div>
 
-      {/* ── Content ── */}
       <div className="mt-4 flex-1">
         {visibleAuthorities.length === 0 && !isFetching ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
@@ -120,17 +120,57 @@ const AuthoritiesMgmtPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
             {visibleAuthorities.map((auth) => (
-              <AuthorityCard
+              <EntityCard
                 key={auth._id}
-                authority={auth}
-                cardClasses={cardClasses}
-                textPrimary={textPrimary}
-                textTertiary={textTertiary}
-                isDark={isDark}
-                onEdit={() => handleEdit(auth)}
-                onDelete={() => setDeleteTarget(auth)}
-                onMigrateToProd={() => handleMigrateToProd(auth)}
-              />
+                logo={auth.logoPath}
+                name={auth.name}
+                fallbackIcon={<Landmark className="w-12 h-12 text-gray-400" />}
+                isActive={auth.isActive ?? false}
+                onToggleActive={() => handleToggleActive(auth)}
+                actions={[
+                  {
+                    title: "Edit",
+                    colorClass:
+                      "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
+                    onClick: () => handleEdit(auth),
+                    icon: <Edit size={14} />,
+                  },
+                  {
+                    title: "Delete",
+                    colorClass:
+                      "text-red-400 bg-red-500/10 hover:bg-red-500/20",
+                    onClick: () => setDeleteTarget(auth),
+                    icon: <Trash2 size={14} />,
+                  },
+                  {
+                    title: "Migrate to Prod",
+                    colorClass:
+                      "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
+                    onClick: () => handleMigrateToProd(auth),
+                    icon: <UploadCloud size={14} />,
+                  },
+                ]}
+              >
+                <div className="flex items-center gap-1.5">
+                  {auth.dmoLogo ? (
+                    <img
+                      src={auth.dmoLogo}
+                      alt={auth.dmoName}
+                      className="w-6 h-6 object-contain"
+                    />
+                  ) : (
+                    <Building2 className="w-3.5 h-3.5 text-violet-500" />
+                  )}
+                  <span
+                    className={clsx(
+                      "text-xs font-medium truncate",
+                      textTertiary,
+                    )}
+                  >
+                    {auth.dmoName}
+                  </span>
+                </div>
+              </EntityCard>
             ))}
           </div>
         )}
@@ -157,6 +197,10 @@ const AuthoritiesMgmtPage = () => {
         onConfirm={handleMigrateConfirm}
         onCancel={() => setMigrateTarget(null)}
       />
+
+      {createModalOpen && (
+        <CreateAuthorityWizardModal setIsOpen={setCreateModalOpen} />
+      )}
     </div>
   );
 };

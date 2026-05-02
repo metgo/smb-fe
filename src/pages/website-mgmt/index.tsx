@@ -1,15 +1,17 @@
+import clsx from "clsx";
 import { useState } from "react";
-import { Globe } from "lucide-react";
+import { Globe, Trash2, ExternalLink, UploadCloud, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
-import { ConfirmDialog, PageHeader } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ConfirmDialog, PageHeader, EntityCard } from "@/components/shared";
 import { routes } from "@/lib/routes";
-import WebsiteCard from "./components/WebsiteCard";
 
 export default function WebsiteMgmtPage() {
   const navigate = useNavigate();
   const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const { textTertiary } = useThemeClasses();
 
   const [deleteTarget, setDeleteTarget] = useState<IWebsite | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -18,6 +20,11 @@ export default function WebsiteMgmtPage() {
 
   const handleMigrateToProd = (website: IWebsite) => {
     setMigrateTarget(website);
+  };
+
+  const handleToggleActive = (website: IWebsite) => {
+    // TODO: call toggle active mutation
+    console.log("toggle active", website._id, !website.isActive);
   };
 
   const handleMigrateConfirm = async () => {
@@ -56,6 +63,8 @@ export default function WebsiteMgmtPage() {
         title="Website Management"
         h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-500"
         totalCount={associatedWebsite.length}
+        btnLabel="Register new website"
+        onClick={() => navigate(routes.websiteConfig)}
       />
 
       {associatedWebsite.length === 0 ? (
@@ -69,13 +78,52 @@ export default function WebsiteMgmtPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
           {associatedWebsite.map((website) => (
-            <WebsiteCard
+            <EntityCard
               key={website._id}
-              website={website}
-              onConfigure={() => handleConfigure(website)}
-              onDelete={() => setDeleteTarget(website)}
-              onMigrateToProd={() => handleMigrateToProd(website)}
-            />
+              logo={website.logo}
+              name={website.name}
+              fallbackIcon={<Globe className="w-12 h-12 text-gray-400" />}
+              isActive={website.isActive ?? false}
+              onToggleActive={() => handleToggleActive(website)}
+              actions={[
+                {
+                  title: "Configure",
+                  colorClass:
+                    "text-teal-400 bg-teal-500/10 hover:bg-teal-500/20",
+                  onClick: () => handleConfigure(website),
+                  icon: <Edit size={14} />,
+                },
+                {
+                  title: "Migrate to Prod",
+                  colorClass:
+                    "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
+                  onClick: () => handleMigrateToProd(website),
+                  icon: <UploadCloud size={14} />,
+                },
+                {
+                  title: "Delete",
+                  colorClass: "text-red-400 bg-red-500/10 hover:bg-red-500/20",
+                  onClick: () => setDeleteTarget(website),
+                  icon: <Trash2 size={14} />,
+                },
+              ]}
+            >
+              {website.websiteUrl && (
+                <a
+                  href={website.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={clsx(
+                    "flex items-center gap-1 text-xs truncate hover:underline",
+                    textTertiary,
+                  )}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink size={11} />
+                  {website.websiteUrl}
+                </a>
+              )}
+            </EntityCard>
           ))}
         </div>
       )}

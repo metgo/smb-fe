@@ -12,7 +12,6 @@ import {
   Globe,
   CheckCircle,
   Video,
-  Handshake,
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -26,8 +25,6 @@ import {
   Step05SeoMeta,
   Step06Analytics,
   Step07Localization,
-  Step08Partners,
-  Step12SavePublish,
 } from "./steps";
 import {
   useCreateWebsiteSettingMutation,
@@ -42,7 +39,7 @@ import { convertToWebP, uploadWithProgress } from "@/helpers";
 /*  Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 8;
 
 const STEP_ICONS: React.FC<{ className?: string }>[] = [
   ImageIcon,
@@ -53,20 +50,25 @@ const STEP_ICONS: React.FC<{ className?: string }>[] = [
   Search,
   BarChart2,
   Globe,
-  Handshake,
-  CheckCircle,
 ];
 
 const DEFAULT_FORM: SiteSettingsFormData = {
   /* Step 1 */
   websiteName: "",
+  websiteUrl: "",
   slogan: "",
+  purpose: "MARKETPLACE",
+  identifierId: "",
+  campCode: "",
   logoUrl: "",
   faviconUrl: "",
-  splashLogoUrl: "",
+
   /* Step 2 */
   desktopVideos: [],
   mobileVideos: [],
+  desktopVideoThumbnails: [],
+  mobileVideoThumbnails: [],
+
   /* Step 3 */
   primaryColor: "#0d9488",
   secondaryColor: "#6366f1",
@@ -119,8 +121,6 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   timezone: "UTC",
   currency: "USD",
   dateFormat: "",
-  /* Step 9 */
-  partners: [],
 };
 
 /* ------------------------------------------------------------------ */
@@ -130,12 +130,17 @@ const DEFAULT_FORM: SiteSettingsFormData = {
 const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   externalApiId,
   websiteName: data.websiteName,
+  websiteUrl: data.websiteUrl,
   slogan: data.slogan,
+  purpose: data.purpose,
+  identifierId: data.identifierId,
+  campCode: data.campCode,
   logoUrl: data.logoUrl,
   faviconUrl: data.faviconUrl,
-  splashLogoUrl: data.splashLogoUrl,
   desktopVideos: data.desktopVideos,
   mobileVideos: data.mobileVideos,
+  desktopVideoThumbnails: data.desktopVideoThumbnails,
+  mobileVideoThumbnails: data.mobileVideoThumbnails,
   primaryColor: data.primaryColor,
   secondaryColor: data.secondaryColor,
   backgroundColor: data.backgroundColor,
@@ -182,7 +187,6 @@ const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   timezone: data.timezone,
   currency: data.currency,
   dateFormat: data.dateFormat,
-  partners: data.partners,
 });
 
 /* ------------------------------------------------------------------ */
@@ -206,8 +210,6 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     t("step_seo"),
     t("step_analytics"),
     t("step_language"),
-    t("step_partners"),
-    t("step_publish"),
   ].map((label, i) => ({ icon: STEP_ICONS[i], label }));
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -246,12 +248,17 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     const d = existingSettings;
     setFormData({
       websiteName: d.websiteName ?? "",
+      websiteUrl: d.websiteUrl ?? "",
       slogan: d.slogan ?? "",
+      purpose: d.purpose ?? "MARKETPLACE",
+      identifierId: d.identifierId ?? "",
+      campCode: d.campCode ?? "",
       logoUrl: d.logoUrl ?? "",
       faviconUrl: d.faviconUrl ?? "",
-      splashLogoUrl: d.splashLogoUrl ?? "",
       desktopVideos: d.desktopVideos ?? [],
       mobileVideos: d.mobileVideos ?? [],
+      desktopVideoThumbnails: d.desktopVideoThumbnails ?? [],
+      mobileVideoThumbnails: d.mobileVideoThumbnails ?? [],
       primaryColor: d.primaryColor ?? "#0d9488",
       secondaryColor: d.secondaryColor ?? "#6366f1",
       backgroundColor: d.backgroundColor ?? "#ffffff",
@@ -298,7 +305,6 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       timezone: d.timezone ?? "UTC",
       currency: d.currency ?? "USD",
       dateFormat: d.dateFormat ?? "",
-      partners: d.partners ?? [],
     });
     setUploadStates({});
   }, [existingSettings]);
@@ -460,89 +466,96 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     [],
   );
 
-  /* ---------------- Partner Handlers ---------------- */
+  /* ---------------- Thumbnail Upload ---------------- */
 
-  const handlePartnerAdd = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      partners: [
-        ...prev.partners,
-        {
-          id: crypto.randomUUID(),
-          name: "",
-          description: "",
-          logo: "",
-          website: "",
-        },
-      ],
-    }));
-  }, []);
-
-  const handlePartnerRemove = useCallback((id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      partners: prev.partners.filter((p) => p.id !== id),
-    }));
-  }, []);
-
-  const handlePartnerChange = useCallback(
-    (id: string, field: keyof PartnerItem, value: string) => {
-      setFormData((prev) => ({
-        ...prev,
-        partners: prev.partners.map((p) =>
-          p.id === id ? { ...p, [field]: value } : p,
-        ),
-      }));
-    },
-    [],
-  );
-
-  /* ---------------- Partner Logo Upload ---------------- */
-
-  const handlePartnerLogoUpload = useCallback(
-    async (partnerId: string, file: File) => {
+  const handleThumbnailAdd = useCallback(
+    async (
+      field: "desktopVideoThumbnails" | "mobileVideoThumbnails",
+      file: File,
+    ) => {
+      const id = crypto.randomUUID();
       const previewUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        partners: prev.partners.map((p) =>
-          p.id === partnerId ? { ...p, logo: previewUrl } : p,
-        ),
-      }));
+
+      setFormData((prev) => {
+        const existing = prev[field];
+        const newItem: ThumnailItem = {
+          id,
+          url: previewUrl,
+          name: file.name,
+          isActive: existing.length === 0,
+        };
+        return { ...prev, [field]: [...existing, newItem] };
+      });
+      setUploadStates((prev) => ({ ...prev, [id]: "uploading" }));
 
       try {
-        const webpFile = await convertToWebP(file);
+        const fileToUpload = await convertToWebP(file);
         const res = await createSignedUrl([
-          { originalName: webpFile.name, mimeType: webpFile.type },
+          { originalName: fileToUpload.name, mimeType: fileToUpload.type },
         ]);
         const { signedUrl, gcsURL } = res.data[0];
 
-        await uploadWithProgress(webpFile, signedUrl, (p) =>
-          setUploadProgress((prev) => ({ ...prev, [partnerId]: p })),
+        await uploadWithProgress(fileToUpload, signedUrl, (p) =>
+          setUploadProgress((prev) => ({ ...prev, [id]: p })),
         );
 
         URL.revokeObjectURL(previewUrl);
         setUploadProgress((prev) => {
           const next = { ...prev };
-          delete next[partnerId];
+          delete next[id];
           return next;
         });
         setFormData((prev) => ({
           ...prev,
-          partners: prev.partners.map((p) =>
-            p.id === partnerId ? { ...p, logo: gcsURL } : p,
+          [field]: prev[field].map((th) =>
+            th.id === id ? { ...th, url: gcsURL } : th,
           ),
         }));
-        toast.success(t("logo_uploaded"));
+        setUploadStates((prev) => ({ ...prev, [id]: "done" }));
+        toast.success(t("file_uploaded"));
       } catch {
         setUploadProgress((prev) => {
           const next = { ...prev };
-          delete next[partnerId];
+          delete next[id];
           return next;
         });
-        toast.error(t("logo_upload_failed"));
+        setUploadStates((prev) => ({ ...prev, [id]: "error" }));
+        toast.error(t("upload_failed"));
       }
     },
     [createSignedUrl],
+  );
+
+  const handleThumbnailRemove = useCallback(
+    (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
+      setFormData((prev) => {
+        const removedWasActive =
+          prev[field].find((th) => th.id === id)?.isActive ?? false;
+        const remaining = prev[field].filter((th) => th.id !== id);
+        if (removedWasActive && remaining.length > 0) {
+          remaining[0] = { ...remaining[0], isActive: true };
+        }
+        const url = prev[field].find((th) => th.id === id)?.url;
+        if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+        return { ...prev, [field]: remaining };
+      });
+      setUploadStates((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    },
+    [],
+  );
+
+  const handleThumbnailActivate = useCallback(
+    (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: prev[field].map((th) => ({ ...th, isActive: th.id === id })),
+      }));
+    },
+    [],
   );
 
   /* ---------------- Navigation ---------------- */
@@ -553,7 +566,23 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   };
 
   const handlePrevious = () => goToStep(Math.max(1, currentStep - 1));
-  const handleNext = () => goToStep(Math.min(TOTAL_STEPS, currentStep + 1));
+
+  const validateStep1 = (): boolean => {
+    const newErrors: SiteSettingsErrors = {};
+    if (!formData.websiteName.trim())
+      newErrors.websiteName = t("field_required");
+    if (!formData.slogan.trim()) newErrors.slogan = t("field_required");
+    if (!formData.identifierId.trim())
+      newErrors.identifierId = t("field_required");
+    if (!formData.campCode.trim()) newErrors.campCode = t("field_required");
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (currentStep === 1 && !validateStep1()) return;
+    goToStep(Math.min(TOTAL_STEPS, currentStep + 1));
+  };
 
   /* ---------------- Save / Publish ---------------- */
 
@@ -608,6 +637,9 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
             onVideoAdd={handleVideoAdd}
             onVideoRemove={handleVideoRemove}
             onVideoActivate={handleVideoActivate}
+            onThumbnailAdd={handleThumbnailAdd}
+            onThumbnailRemove={handleThumbnailRemove}
+            onThumbnailActivate={handleThumbnailActivate}
           />
         );
       case 3:
@@ -628,19 +660,6 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
         );
       case 8:
         return <Step07Localization {...stepProps} />;
-      case 9:
-        return (
-          <Step08Partners
-            partners={formData.partners}
-            onPartnerAdd={handlePartnerAdd}
-            onPartnerRemove={handlePartnerRemove}
-            onPartnerChange={handlePartnerChange}
-            onLogoUpload={handlePartnerLogoUpload}
-            uploadProgress={uploadProgress}
-          />
-        );
-      case 10:
-        return <Step12SavePublish formData={formData} />;
       default:
         return null;
     }
@@ -662,7 +681,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       {/* Step indicator */}
       <div
         className={clsx(
-          "flex items-center justify-between px-6 py-4 border-b overflow-x-auto shrink-0",
+          "flex items-center justify-between px-6 py-1 border-b overflow-x-auto shrink-0",
           borderColor,
         )}
       >
@@ -737,7 +756,10 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       </div>
 
       {/* Step content */}
-      <div ref={stepContentRef} className="flex-1 overflow-y-auto px-6 py-8">
+      <div
+        ref={stepContentRef}
+        className="flex-1 overflow-y-auto px-6 py-8 relative"
+      >
         {renderStep()}
       </div>
 

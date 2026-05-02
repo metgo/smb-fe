@@ -31,6 +31,7 @@ import {
   LocateFixed,
   Wrench,
   UserRoundCog,
+  Handshake,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -159,6 +160,7 @@ export default function Sidebar() {
         },
       ],
     },
+
     {
       id: "site-management",
       path: "#site_management",
@@ -218,17 +220,17 @@ export default function Sidebar() {
       ],
     },
     {
-      id: "settings",
-      path: "#settings",
-      label: t("settings") || "Settings",
+      id: "website_config",
+      path: "#website_config",
+      label: t("website_config") || "Website Config",
       icon: Settings,
       isEnabled: true,
       subItems: [
         {
-          id: "profile",
-          path: routes.profile,
-          label: t("my_profile") || "My Profile",
-          icon: UserCircle,
+          id: "partners",
+          path: routes.partners,
+          label: t("partners") || "Partners",
+          icon: Handshake,
           isEnabled: true,
         },
         {
@@ -250,6 +252,22 @@ export default function Sidebar() {
           path: routes.websiteMgmt,
           label: t("websites") || "Websites",
           icon: Wrench,
+          isEnabled: true,
+        },
+      ],
+    },
+    {
+      id: "settings",
+      path: "#settings",
+      label: t("settings") || "Settings",
+      icon: Settings,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "profile",
+          path: routes.profile,
+          label: t("my_profile") || "My Profile",
+          icon: UserCircle,
           isEnabled: true,
         },
         {
