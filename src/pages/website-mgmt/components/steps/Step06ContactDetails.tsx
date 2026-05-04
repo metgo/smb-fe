@@ -55,11 +55,11 @@ function Toggle({
   );
 }
 
-export default function Step04ContactDetails({
+const Step06ContactDetails=({
   formData,
   errors,
   onChange,
-}: Props) {
+}: Props) =>{
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
@@ -168,3 +168,4 @@ export default function Step04ContactDetails({
     </div>
   );
 }
+export default Step06ContactDetails

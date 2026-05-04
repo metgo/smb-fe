@@ -40,7 +40,7 @@ function Field({
   );
 }
 
-export default function Step05SeoMeta({
+const Step07SeoMeta=({
   formData,
   errors,
   onChange,
@@ -48,7 +48,7 @@ export default function Step05SeoMeta({
   uploadProgress,
   onFileSelect,
   onFileClear,
-}: Props) {
+}: Props) =>{
   const { t } = useTranslation("website_settings");
   const ogImageRef = useRef<HTMLInputElement>(null);
   const twitterImageRef = useRef<HTMLInputElement>(null);
@@ -342,3 +342,5 @@ export default function Step05SeoMeta({
     </div>
   );
 }
+
+export default Step07SeoMeta

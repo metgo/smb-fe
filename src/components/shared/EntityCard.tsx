@@ -1,14 +1,8 @@
 import clsx from "clsx";
-import { Eye, EyeOff } from "lucide-react";
+import { Edit, Eye, EyeOff, Trash2, UploadCloud } from "lucide-react";
 import ImageWithFallback from "./ImageWithFallback";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-export interface EntityCardAction {
-  title: string;
-  colorClass: string;
-  onClick: () => void;
-  icon: React.ReactNode;
-}
 
 interface EntityCardProps {
   logo?: string;
@@ -16,7 +10,9 @@ interface EntityCardProps {
   fallbackIcon: React.ReactNode;
   isActive: boolean;
   onToggleActive: () => void;
-  actions: EntityCardAction[];
+  onEdit: () => void;
+  onDelete: () => void;
+  onMigrateToProd: () => void;
   children?: React.ReactNode;
 }
 
@@ -26,11 +22,36 @@ const EntityCard: React.FC<EntityCardProps> = ({
   fallbackIcon,
   isActive,
   onToggleActive,
-  actions,
+  onDelete,
+  onEdit,
+  onMigrateToProd,
   children,
 }) => {
   const { cardClasses, textPrimary, isDark } = useThemeClasses();
 
+  const actions = [
+    {
+      title: "Edit",
+      colorClass:
+        "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
+      onClick: onEdit,
+      icon: <Edit size={14} />,
+    },
+    {
+      title: "Delete",
+      colorClass:
+        "text-red-400 bg-red-500/10 hover:bg-red-500/20",
+      onClick: onDelete,
+      icon: <Trash2 size={14} />,
+    },
+    {
+      title: "Migrate to Prod",
+      colorClass:
+        "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
+      onClick: onMigrateToProd,
+      icon: <UploadCloud size={14} />,
+    },
+  ]
   return (
     <div
       className={clsx("rounded-xl overflow-hidden group relative", cardClasses)}
@@ -78,6 +99,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
             {isActive ? <Eye size={14} /> : <EyeOff size={14} />}
           </ActionBtn>
         </div>
+
+
 
         {actions.map((action, i) => (
           <div

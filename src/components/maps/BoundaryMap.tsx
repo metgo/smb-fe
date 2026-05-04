@@ -4,15 +4,6 @@ import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
 import { googlePointOfInterest } from "@/lib/utils";
 
-export interface GeoJsonPoint {
-  type: "Point";
-  coordinates: [number, number]; // [lng, lat]
-}
-
-export interface GeoJsonPolygon {
-  type: "Polygon";
-  coordinates: [number, number][][]; // [ [[lng,lat], ...] ]
-}
 
 interface BoundaryMapProps {
   center: GeoJsonPoint | null;
@@ -81,7 +72,7 @@ const BoundaryMap = ({
     const g = (window as any).google;
     if (!mapRef.current || !g?.maps?.drawing) return;
 
-    const initialCenter = center
+    const initialCenter = center?.coordinates?.length
       ? { lat: center.coordinates[1], lng: center.coordinates[0] }
       : DEFAULT_CENTER;
 

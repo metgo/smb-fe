@@ -19,7 +19,7 @@ export const websiteSettingsApi = createApi({
 
     updateWebsiteSetting: builder.mutation<
       any,
-      { id: string; body: SiteSettingsFormData }
+      { id: string; body: Partial<SiteSettingsFormData> }
     >({
       query: ({ id, body }) => ({
         url: `${endpoints.websiteSettings}/${id}`,

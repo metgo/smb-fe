@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LinkIcon, MapPin, Settings2, Upload, X } from "lucide-react";
 
@@ -10,23 +10,14 @@ import { ReactSelect } from "@/components/form-fields";
 import BoundaryMap from "@/components/maps/BoundaryMap";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
-import type {
-  GeoJsonPoint,
-  GeoJsonPolygon,
-} from "@/components/maps/BoundaryMap";
+import { useCreateAuthorityMutation, useGetAuthorityByIdQuery, useUpdateAuthorityMutation } from "@/store/api/websiteConfigApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { Spinner } from "@/components/shared";
+import { toast } from "sonner";
 
 interface CreateAuthorityWizardModalProps {
   setIsOpen: (v: boolean) => void;
-  existingAuthority?: {
-    name?: string;
-    dmoId?: string;
-    description?: string;
-    userId?: string;
-    isActive?: boolean;
-    boundary?: GeoJsonPolygon;
-    center?: GeoJsonPoint;
-    logoPath?: string;
-  };
+  authorityId?: string;
 }
 
 type Tab = "general" | "boundary";
@@ -46,7 +37,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 const CreateAuthorityWizardModal = ({
   setIsOpen,
-  existingAuthority,
+  authorityId,
 }: CreateAuthorityWizardModalProps) => {
   const { t } = useTranslation("system_mgmt");
   const {
@@ -64,25 +55,30 @@ const CreateAuthorityWizardModal = ({
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [dragOver, setDragOver] = useState(false);
 
+  const { data: authorityEditData, isLoading } = useGetAuthorityByIdQuery(authorityId ?? skipToken);
+  const [createAuthority, { isLoading: isCreating }] = useCreateAuthorityMutation();
+  const [updateAuthority, { isLoading: isUpdating }] = useUpdateAuthorityMutation();
+
   // ── Form state ────────────────────────────────────────────────────────────
-  const [name, setName] = useState(existingAuthority?.name ?? "");
+  const [name, setName] = useState("");
   const [urlValue, setUrlValue] = useState("");
+  const [dmoId, setDmoId] = useState("");
+  const [description, setDescription] = useState("");
+  const [boundary, setBoundary] = useState<GeoJsonPolygon | null>(null);
+  const [center, setCenter] = useState<GeoJsonPoint | null>(null);
 
-  const [dmoId, setDmoId] = useState(existingAuthority?.dmoId ?? "");
-  const [description, setDescription] = useState(
-    existingAuthority?.description ?? "",
-  );
-  const [boundary, setBoundary] = useState<GeoJsonPolygon | null>(
-    existingAuthority?.boundary ?? null,
-  );
-  const [center, setCenter] = useState<GeoJsonPoint | null>(
-    existingAuthority?.center ?? null,
-  );
+  const fileUpload = useFileUpload({ mediaType: "image" });
 
-  const fileUpload = useFileUpload({
-    initialUrl: existingAuthority?.logoPath,
-    mediaType: "image",
-  });
+  useEffect(() => {
+    if (!authorityEditData) return;
+    setName(authorityEditData.name ?? "");
+    setDescription(authorityEditData.description ?? "");
+    setDmoId(authorityEditData.dmoId ?? "");
+    setBoundary(authorityEditData.boundary?.coordinates?.[0]?.length ? authorityEditData.boundary : null);
+    setCenter(authorityEditData.center?.coordinates?.length ? authorityEditData.center : null);
+    if (authorityEditData.logoPath) fileUpload.setExternalUrl(authorityEditData.logoPath);
+  }, [authorityEditData]);
+
   const isUploading = fileUpload.status === "uploading";
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -99,18 +95,30 @@ const CreateAuthorityWizardModal = ({
     if (file) fileUpload.handleFileSelect(file);
   };
 
-  const handleSave = () => {
-    const payload: IAuthorityPayload = {
+  const handleSave = async () => {
+    const payload = {
       name,
       dmoId,
       description,
-      userId: user?._id || "",
+      userId: user?.id || "",
       isActive: true,
-      boundary,
-      center,
-      logoPath: fileUpload.gcsUrl,
+      logoPath: fileUpload.gcsUrl || "",
+      ...(boundary?.coordinates?.[0]?.length && { boundary }),
+      ...(center?.coordinates?.length && { center }),
     };
-    console.log("🚀 ~ handleSave ~ payload:", payload);
+
+    try {
+      if (authorityId) {
+        await updateAuthority({ id: authorityId, body: payload }).unwrap();
+        toast.success("Authority updated successfully");
+      } else {
+        await createAuthority(payload).unwrap();
+        toast.success("Authority created successfully");
+      }
+      setIsOpen(false);
+    } catch {
+      toast.error(authorityId ? "Failed to update Authority" : "Failed to create Authority");
+    }
   };
 
   // ── Shared classes ────────────────────────────────────────────────────────
@@ -122,11 +130,12 @@ const CreateAuthorityWizardModal = ({
       maxWidth="max-w-3xl"
       height="max-content"
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col relative">
+        <Spinner isLoading={isLoading} />
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className={`px-5 pt-5 pb-0 border-b ${borderColor}`}>
           <h2 className={`text-base font-bold ${textPrimary} mb-3`}>
-            {existingAuthority ? "Edit Authority" : "Create Authority"}
+            {authorityId ? "Edit Authority" : "Create Authority"}
           </h2>
 
           {/* Tabs */}
@@ -138,11 +147,10 @@ const CreateAuthorityWizardModal = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
-                    isSelected
-                      ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
-                      : `border-transparent ${textTertiary} hover:text-violet-500`
-                  }`}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${isSelected
+                    ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
+                    : `border-transparent ${textTertiary} hover:text-violet-500`
+                    }`}
                 >
                   {tab.icon}
                   {tab.label}
@@ -186,6 +194,7 @@ const CreateAuthorityWizardModal = ({
                 </label>
                 <ReactSelect
                   value={dmoId}
+                  isDisabled={!!authorityId}
                   onChange={(value) => setDmoId(value)}
                   placeholder={t("select_dmo")}
                   items={dmosAuthorities?.map((item) => ({
@@ -249,12 +258,12 @@ const CreateAuthorityWizardModal = ({
 
               {fileUpload.previewUrl ? (
                 <div
-                  className={`relative rounded-xl overflow-hidden border ${isDark ? "border-gray-700" : "border-gray-200"} shadow-sm group`}
+                  className={`relative rounded-xl overflow-hidden border py-4 ${isDark ? "border-gray-700" : "border-gray-200"} shadow-sm group`}
                 >
                   <img
                     src={fileUpload.previewUrl}
                     alt="logo preview"
-                    className="w-full h-36 object-cover"
+                    className="w-full h-36 object-contain"
                   />
                   {isUploading ? (
                     <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2">
@@ -287,11 +296,10 @@ const CreateAuthorityWizardModal = ({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${
-                    dragOver
-                      ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
-                      : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
-                  }`}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${dragOver
+                    ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
+                    : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
+                    }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div
@@ -340,23 +348,23 @@ const CreateAuthorityWizardModal = ({
               <div
                 className={`grid grid-cols-2 gap-2 text-[11px] font-mono ${textTertiary}`}
               >
-                {center && (
+                {center?.coordinates?.length && (
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
                     <span className="font-sans font-semibold">Center</span>
                     <br />
-                    {center.coordinates[1].toFixed(5)},{" "}
-                    {center.coordinates[0].toFixed(5)}
+                    {center?.coordinates?.[1]?.toFixed(5)},{" "}
+                    {center?.coordinates?.[0]?.toFixed(5)}
                   </div>
                 )}
-                {boundary && (
+                {boundary?.coordinates?.length && (
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
                     <span className="font-sans font-semibold">Boundary</span>
                     <br />
-                    {boundary.coordinates[0].length - 1} vertices
+                    {boundary?.coordinates?.[0]?.length - 1} vertices
                   </div>
                 )}
               </div>
@@ -378,10 +386,10 @@ const CreateAuthorityWizardModal = ({
           <button
             type="button"
             onClick={handleSave}
-            disabled={!name.trim() || !dmoId.trim()}
+            disabled={!name.trim() || !dmoId.trim() || isCreating || isUpdating || isUploading}
             className="px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-            {existingAuthority ? "Save Changes" : "Create Authority"}
+            {isCreating || isUpdating ? "Saving..." : authorityId ? "Save Changes" : "Create Authority"}
           </button>
         </div>
       </div>

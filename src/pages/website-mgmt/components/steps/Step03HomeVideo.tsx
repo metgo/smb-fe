@@ -559,7 +559,7 @@ function ThumbnailSection({
 /*  Main Step                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function Step02HomeVideo({
+const Step03HomeVideo = ({
   formData,
   uploadStates,
   uploadProgress,
@@ -569,7 +569,7 @@ export default function Step02HomeVideo({
   onThumbnailAdd,
   onThumbnailRemove,
   onThumbnailActivate,
-}: Props) {
+}: Props) => {
   const { t } = useTranslation("website_settings");
   const { borderColor, textPrimary, textSecondary, isDark } = useThemeClasses();
   const theme = { borderColor, textPrimary, textSecondary, isDark };
@@ -714,3 +714,4 @@ export default function Step02HomeVideo({
     </>
   );
 }
+export default Step03HomeVideo

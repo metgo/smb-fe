@@ -1,77 +1,80 @@
 import clsx from "clsx";
-import { Landmark, Building2, Edit, Trash2, UploadCloud } from "lucide-react";
 import { useState, useEffect } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { Landmark, Building2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
-import { useGetDmosQuery } from "@/store/api/masterDataApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConfirmDialog, PageHeader, EntityCard } from "@/components/shared";
+import { ConfirmDialog, PageHeader, EntityCard, Spinner } from "@/components/shared";
 import { AuthorityTabs, CreateAuthorityWizardModal } from "./components";
+import { useGetAllDmosQuery, useGetAuthoritiesByDmoIdQuery, useUpdateAuthorityMutation } from "@/store/api/websiteConfigApi";
+import { toast } from "sonner";
 
 const AuthoritiesMgmtPage = () => {
-  const [searchParams] = useSearchParams();
-  const { data, isFetching } = useGetDmosQuery();
-  const { bgPrimary, isDark, textTertiary } = useThemeClasses();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data: dmos } = useGetAllDmosQuery();
 
-  const [activeTab, setActiveTab] = useState("all");
-  const [deleteTarget, setDeleteTarget] = useState<EnrichedAuthority | null>(
-    null,
-  );
+  const { bgPrimary, isDark, textTertiary } = useThemeClasses();
+  const [updateAuthority, { isLoading: isUpdating }] = useUpdateAuthorityMutation();
+
+  const [activeDmoId, setActiveDmoId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [migrateTarget, setMigrateTarget] = useState<EnrichedAuthority | null>(
-    null,
-  );
+  const [migrateTarget, setMigrateTarget] = useState<IAuthorityRes | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editAuthorityId, setEditAuthorityId] = useState<string | undefined>();
   const [isMigrating, setIsMigrating] = useState(false);
 
-  const dmos: IDmo[] = data?.data ?? [];
 
-  // Seed active tab from ?dmoId= navigation (e.g. from DMO card redirect)
+  const { data: authorities, refetch, isLoading, isFetching } = useGetAuthoritiesByDmoIdQuery(activeDmoId ? activeDmoId : skipToken)
+
   useEffect(() => {
-    const dmoId = searchParams.get("dmoId");
-    if (dmoId) setActiveTab(dmoId);
-  }, [searchParams]);
+    if (!dmos?.length) return;
+    const paramId = searchParams.get("dmoId");
+    if (paramId) {
+      setActiveDmoId(paramId);
+    } else {
+      setActiveDmoId(dmos[0]._id);
+      setSearchParams((prev) => { prev.set("dmoId", dmos[0]._id); return prev; }, { replace: true });
+    }
+  }, [dmos, searchParams]);
 
-  const allAuthorities: EnrichedAuthority[] = dmos.flatMap((dmo) =>
-    (dmo.authorities ?? []).map((auth) => ({
-      _id: auth._id,
-      name: auth.name,
-      logoPath: auth.logoPath,
-      dmoId: dmo._id,
-      dmoName: dmo.name,
-      dmoLogo: dmo.logoPath,
-    })),
-  );
+  const handleTabChange = (dmoId: string) => {
+    setActiveDmoId(dmoId);
+    setSearchParams((prev) => { prev.set("dmoId", dmoId); return prev; }, { replace: true });
+  };
 
-  const visibleAuthorities =
-    activeTab === "all"
-      ? allAuthorities
-      : allAuthorities.filter((a) => a.dmoId === activeTab);
+  const activeDmo: IDmoRes | undefined = dmos?.find(item => item._id === activeDmoId);
 
-  const handleEdit = (auth: EnrichedAuthority) => {
+  const handleEdit = (authorityId: string) => {
+    setEditAuthorityId(authorityId);
     setCreateModalOpen(true);
-    console.log("edit authority", auth._id);
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      // TODO: call delete mutation
-      console.log("delete authority", deleteTarget._id);
+      console.log("delete authority", deleteTarget);
     } finally {
       setIsDeleting(false);
       setDeleteTarget(null);
     }
   };
 
-  const handleMigrateToProd = (auth: EnrichedAuthority) => {
-    setMigrateTarget(auth);
+  const handleMigrateToProd = (authorityId: string) => {
+    console.log("🚀 ~ handleMigrateToProd ~ authorityId:", authorityId)
+    // setMigrateTarget(authorityId);
   };
 
-  const handleToggleActive = (auth: EnrichedAuthority) => {
-    // TODO: call toggle active mutation
-    console.log("toggle active", auth._id, !auth.isActive);
+  const handleToggleActive = async (authorityId: string, isActive: boolean=false) => {
+    try {
+      await updateAuthority({ id: authorityId, body: { isActive } }).unwrap();
+      toast.success("Authority updated successfully");
+      refetch()
+    } catch {
+      toast.error(authorityId ? "Failed to update Authority" : "Failed to create Authority");
+    }
   };
 
   const handleMigrateConfirm = async () => {
@@ -92,70 +95,51 @@ const AuthoritiesMgmtPage = () => {
         <PageHeader
           title="Authority Management"
           h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
-          totalCount={allAuthorities.length}
+          totalCount={dmos?.reduce((sum, d) => sum + (d.authorityCount ?? 0), 0) ?? 0}
           btnLabel="Add Authority"
           onClick={() => setCreateModalOpen(true)}
         />
 
         <AuthorityTabs
-          dmos={dmos}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          allAuthorities={allAuthorities}
+          dmos={dmos || []}
+          activeTab={activeDmoId}
+          onTabChange={handleTabChange}
           isDark={isDark}
         />
       </div>
 
+      <Spinner isLoading={isUpdating || isLoading || isFetching} />
+
       <div className="mt-4 flex-1">
-        {visibleAuthorities.length === 0 && !isFetching ? (
+        {(authorities?.length ?? 0) === 0 && !isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <Landmark className="w-12 h-12 mb-4 text-gray-300" />
             <p className="text-lg font-medium mb-1">No authorities found</p>
             <p className="text-sm text-gray-400">
-              {activeTab === "all"
+              {!activeDmoId
                 ? "Add an authority to get started."
                 : "This DMO has no authorities yet."}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
-            {visibleAuthorities.map((auth) => (
+            {authorities?.map((auth) => (
               <EntityCard
                 key={auth._id}
                 logo={auth.logoPath}
                 name={auth.name}
                 fallbackIcon={<Landmark className="w-12 h-12 text-gray-400" />}
                 isActive={auth.isActive ?? false}
-                onToggleActive={() => handleToggleActive(auth)}
-                actions={[
-                  {
-                    title: "Edit",
-                    colorClass:
-                      "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
-                    onClick: () => handleEdit(auth),
-                    icon: <Edit size={14} />,
-                  },
-                  {
-                    title: "Delete",
-                    colorClass:
-                      "text-red-400 bg-red-500/10 hover:bg-red-500/20",
-                    onClick: () => setDeleteTarget(auth),
-                    icon: <Trash2 size={14} />,
-                  },
-                  {
-                    title: "Migrate to Prod",
-                    colorClass:
-                      "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
-                    onClick: () => handleMigrateToProd(auth),
-                    icon: <UploadCloud size={14} />,
-                  },
-                ]}
+                onToggleActive={() => handleToggleActive(auth?._id, !auth?.isActive)}
+                onEdit={() => handleEdit(auth?._id)}
+                onDelete={() => setDeleteTarget(auth?._id)}
+                onMigrateToProd={() => handleMigrateToProd(auth?._id)}
               >
                 <div className="flex items-center gap-1.5">
-                  {auth.dmoLogo ? (
+                  {activeDmo?.logoPath ? (
                     <img
-                      src={auth.dmoLogo}
-                      alt={auth.dmoName}
+                      src={activeDmo.logoPath}
+                      alt={activeDmo.name}
                       className="w-6 h-6 object-contain"
                     />
                   ) : (
@@ -167,7 +151,7 @@ const AuthoritiesMgmtPage = () => {
                       textTertiary,
                     )}
                   >
-                    {auth.dmoName}
+                    {activeDmo?.name}
                   </span>
                 </div>
               </EntityCard>
@@ -199,7 +183,10 @@ const AuthoritiesMgmtPage = () => {
       />
 
       {createModalOpen && (
-        <CreateAuthorityWizardModal setIsOpen={setCreateModalOpen} />
+        <CreateAuthorityWizardModal
+          setIsOpen={(v) => { setCreateModalOpen(v); if (!v) setEditAuthorityId(undefined); }}
+          authorityId={editAuthorityId}
+        />
       )}
     </div>
   );

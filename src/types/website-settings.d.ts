@@ -2,30 +2,61 @@
 /*  Website / Site-Settings – shared TypeScript types                  */
 /* ------------------------------------------------------------------ */
 
-/*---------------------------------- Dmo Setting ----------------------------------*/
-interface IDMOPayload {
-  name: string;
-  description: string;
-  userId: string;
-  isActive: boolean;
-  boundary: GeoJsonPolygon | null;
-  center: GeoJsonPoint | null;
-  logoPath: string;
+interface GeoJsonPoint {
+  type: "Point";
+  coordinates: [number, number]; // [lng, lat]
 }
+
+interface GeoJsonPolygon {
+  type: "Polygon";
+  coordinates: [number, number][][]; // [ [[lng,lat], ...] ]
+}
+
+
+/*---------------------------------- Dmo Setting ----------------------------------*/
+
+interface IDmoProp {
+  name: string;
+  description?: string;
+  userId: string;
+  logoPath?: string;
+  isActive: boolean;
+  boundary?: GeoJsonPolygon | null;
+  center?: GeoJsonPoint | null;
+}
+type TDmoReqPayload = IDmoProp;
+type TDmoEditData = IDmoProp;
+
+interface IDmoRes {
+  _id: string;
+  name: string;
+  isActive: boolean;
+  logoPath: string;
+  authorityCount: number;
+}
+
+
 
 /*---------------------------------- Authority Setting ----------------------------------*/
 
-interface IAuthorityPayload {
+interface IAuthorityProp {
   name: string;
   dmoId: string;
-  description: string;
+  description?: string;
   userId: string;
   isActive: boolean;
-  boundary: GeoJsonPolygon | null;
-  center: GeoJsonPoint | null;
+  boundary?: GeoJsonPolygon | null;
+  center?: GeoJsonPoint | null;
+  logoPath?: string;
+}
+type IAuthorityReqPayload = IAuthorityProp;
+
+interface IAuthorityRes {
+  _id: string;
+  name: string;
+  isActive: boolean;
   logoPath: string;
 }
-
 /*---------------------------------- Website config ----------------------------------*/
 
 interface VideoItem {
@@ -51,15 +82,22 @@ interface ThumnailItem {
 }
 
 interface SiteSettingsFormData {
-  /* Step 1 – Branding & Media */
+
+  /* Step 1 - General Config */
+  dmoId: string;
+  authorityId: string;
   websiteName: string;
   websiteUrl: string;
   slogan: string;
   identifierId: string;
   campCode: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+
+  /* Step 2 – Branding & Media */
   logoUrl: string;
   faviconUrl: string;
+  specialSymbolUrl: string;
+  bgImageUrl: string;
 
   /* Step 2 – Home Page Videos */
   desktopVideos: VideoItem[];
@@ -139,6 +177,8 @@ interface IWebsiteConfigRes {
   isDeleted: boolean;
   externalApiId: string;
 
+  dmoId: string;
+  authorityId: string;
   websiteName: string;
   websiteUrl: string;
   slogan: string;
@@ -148,7 +188,8 @@ interface IWebsiteConfigRes {
 
   logoUrl: string;
   faviconUrl: string;
-  splashLogoUrl: string;
+  specialSymbolUrl: string;
+  bgImageUrl: string;
 
   desktopVideos: VideoItem[];
   mobileVideos: VideoItem[];

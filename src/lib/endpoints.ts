@@ -29,7 +29,7 @@ export const endpoints = {
 
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
-  dmos: "/dmos",
+  dmosAuthorities: "/dmos-authorities",
   changeOwner: "/admin/businesses/assign-user/",
 
   // business
@@ -99,7 +99,11 @@ export const endpoints = {
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
   bloggenerateName: "/generate-blog-name",
-  // Website settgins
+
+
+  // Website settgins & Config
+  dmos: "/dmos",
+  authorities: "/authorities",
   websiteSettings: "/site-settings",
 
   // Promotions

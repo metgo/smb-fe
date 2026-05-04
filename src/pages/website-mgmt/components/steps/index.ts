@@ -1,10 +1,21 @@
-export { default as Step01BrandingMedia } from "./Step01BrandingMedia";
-export { default as Step02HomeVideo } from "./Step02HomeVideo";
-export { default as Step02ThemeAppearance } from "./Step02ThemeAppearance";
-export { default as Step03SocialMedia } from "./Step03SocialMedia";
-export { default as Step04ContactDetails } from "./Step04ContactDetails";
-export { default as Step05SeoMeta } from "./Step05SeoMeta";
-export { default as Step06Analytics } from "./Step06Analytics";
-export { default as Step07Localization } from "./Step07Localization";
-export { default as Step08Partners } from "./Step08Partners";
-export { default as Step12SavePublish } from "./Step12SavePublish";
+import Step01Generals from "./Step01Generals";
+import Step02BrandingMedia from "./Step02BrandingMedia";
+import Step03HomeVideo from "./Step03HomeVideo";
+import Step04ThemeAppearance from "./Step04ThemeAppearance";
+import Step05SocialMedia from "./Step05SocialMedia";
+import Step06ContactDetails from "./Step06ContactDetails";
+import Step07SeoMeta from "./Step07SeoMeta";
+import Step08Analytics from "./Step08Analytics";
+import Step09Localization from "./Step09Localization";
+
+export {
+  Step01Generals,
+  Step02BrandingMedia,
+  Step03HomeVideo,
+  Step04ThemeAppearance,
+  Step05SocialMedia,
+  Step06ContactDetails,
+  Step07SeoMeta,
+  Step08Analytics,
+  Step09Localization
+}

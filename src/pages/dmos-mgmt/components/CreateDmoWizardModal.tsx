@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LinkIcon, MapPin, Settings2, Upload, X } from "lucide-react";
 
@@ -8,23 +8,14 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import BoundaryMap from "@/components/maps/BoundaryMap";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
-import type {
-  GeoJsonPoint,
-  GeoJsonPolygon,
-} from "@/components/maps/BoundaryMap";
+import { useCreateDmoMutation, useGetDmoByIdQuery, useUpdateDmoMutation } from "@/store/api/websiteConfigApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { Spinner } from "@/components/shared";
+import { toast } from "sonner";
 
 interface CreateDmoWizardModalProps {
   setIsOpen: (v: boolean) => void;
-  existingAuthority?: {
-    name?: string;
-    dmoId?: string;
-    description?: string;
-    userId?: string;
-    isActive?: boolean;
-    boundary?: GeoJsonPolygon;
-    center?: GeoJsonPoint;
-    logoPath?: string;
-  };
+  dmoId?: string;
 }
 
 type Tab = "general" | "boundary";
@@ -44,7 +35,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 const CreateDmoWizardModal = ({
   setIsOpen,
-  existingAuthority,
+  dmoId,
 }: CreateDmoWizardModalProps) => {
   const { t } = useTranslation("system_mgmt");
   const {
@@ -61,24 +52,28 @@ const CreateDmoWizardModal = ({
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [dragOver, setDragOver] = useState(false);
 
+
+  const { data: dmoEditData, isLoading } = useGetDmoByIdQuery(dmoId ?? skipToken);
+  const [createDmo, { isLoading: isCreating }] = useCreateDmoMutation();
+  const [updateDmo, { isLoading: isUpdating }] = useUpdateDmoMutation();
+
   // ── Form state ────────────────────────────────────────────────────────────
-  const [name, setName] = useState(existingAuthority?.name ?? "");
+  const [name, setName] = useState("");
   const [urlValue, setUrlValue] = useState("");
+  const [description, setDescription] = useState("");
+  const [boundary, setBoundary] = useState<GeoJsonPolygon | null>(null);
+  const [center, setCenter] = useState<GeoJsonPoint | null>(null);
 
-  const [description, setDescription] = useState(
-    existingAuthority?.description ?? "",
-  );
-  const [boundary, setBoundary] = useState<GeoJsonPolygon | null>(
-    existingAuthority?.boundary ?? null,
-  );
-  const [center, setCenter] = useState<GeoJsonPoint | null>(
-    existingAuthority?.center ?? null,
-  );
+  const fileUpload = useFileUpload({ mediaType: "image" });
 
-  const fileUpload = useFileUpload({
-    initialUrl: existingAuthority?.logoPath,
-    mediaType: "image",
-  });
+  useEffect(() => {
+    if (!dmoEditData) return;
+    setName(dmoEditData.name ?? "");
+    setDescription(dmoEditData.description ?? "");
+    setBoundary(dmoEditData.boundary?.coordinates?.[0]?.length ? dmoEditData.boundary : null);
+    setCenter(dmoEditData.center?.coordinates?.length ? dmoEditData.center : null);
+    if (dmoEditData.logoPath) fileUpload.setExternalUrl(dmoEditData.logoPath);
+  }, [dmoEditData]);
   const isUploading = fileUpload.status === "uploading";
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -95,17 +90,29 @@ const CreateDmoWizardModal = ({
     if (file) fileUpload.handleFileSelect(file);
   };
 
-  const handleSave = () => {
-    const payload: IDMOPayload = {
+  const handleSave = async () => {
+    const payload = {
       name,
       description,
-      userId: user?._id || "",
+      userId: user?.id || "",
       isActive: true,
-      boundary,
-      center,
-      logoPath: fileUpload.gcsUrl,
+      logoPath: fileUpload.gcsUrl || undefined,
+      ...(boundary?.coordinates?.[0]?.length && { boundary }),
+      ...(center?.coordinates?.length && { center }),
     };
-    console.log("🚀 ~ handleSave ~ payload:", payload);
+
+    try {
+      if (dmoId) {
+        await updateDmo({ id: dmoId, body: payload }).unwrap();
+        toast.success("DMO updated successfully");
+      } else {
+        await createDmo(payload).unwrap();
+        toast.success("DMO created successfully");
+      }
+      setIsOpen(false);
+    } catch {
+      toast.error(dmoId ? "Failed to update DMO" : "Failed to create DMO");
+    }
   };
 
   // ── Shared classes ────────────────────────────────────────────────────────
@@ -117,11 +124,12 @@ const CreateDmoWizardModal = ({
       maxWidth="max-w-3xl"
       height="max-content"
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col relative">
+        <Spinner isLoading={isLoading} />
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className={`px-5 pt-5 pb-0 border-b ${borderColor}`}>
           <h2 className={`text-base font-bold ${textPrimary} mb-3`}>
-            {existingAuthority ? "Edit DMO" : "Create DMO"}
+            {dmoId ? "Edit DMO" : "Create DMO"}
           </h2>
 
           {/* Tabs */}
@@ -133,11 +141,10 @@ const CreateDmoWizardModal = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
-                    isSelected
-                      ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
-                      : `border-transparent ${textTertiary} hover:text-violet-500`
-                  }`}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${isSelected
+                    ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
+                    : `border-transparent ${textTertiary} hover:text-violet-500`
+                    }`}
                 >
                   {tab.icon}
                   {tab.label}
@@ -223,12 +230,12 @@ const CreateDmoWizardModal = ({
 
               {fileUpload.previewUrl ? (
                 <div
-                  className={`relative rounded-xl overflow-hidden border ${isDark ? "border-gray-700" : "border-gray-200"} shadow-sm group`}
+                  className={`relative rounded-xl overflow-hidden border py-4 ${isDark ? "border-gray-700" : "border-gray-200"} shadow-sm group`}
                 >
                   <img
                     src={fileUpload.previewUrl}
                     alt="logo preview"
-                    className="w-full h-36 object-cover"
+                    className="w-full h-36 object-contain"
                   />
                   {isUploading ? (
                     <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center gap-2">
@@ -261,11 +268,10 @@ const CreateDmoWizardModal = ({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${
-                    dragOver
-                      ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
-                      : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
-                  }`}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${dragOver
+                    ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
+                    : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
+                    }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div
@@ -314,23 +320,23 @@ const CreateDmoWizardModal = ({
               <div
                 className={`grid grid-cols-2 gap-2 text-[11px] font-mono ${textTertiary}`}
               >
-                {center && (
+                {center?.coordinates?.length && (
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
                     <span className="font-sans font-semibold">Center</span>
                     <br />
-                    {center.coordinates[1].toFixed(5)},{" "}
-                    {center.coordinates[0].toFixed(5)}
+                    {center?.coordinates?.[1]?.toFixed(5)},{" "}
+                    {center?.coordinates?.[0]?.toFixed(5)}
                   </div>
                 )}
-                {boundary && (
+                {boundary?.coordinates?.length && (
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
                     <span className="font-sans font-semibold">Boundary</span>
                     <br />
-                    {boundary.coordinates[0].length - 1} vertices
+                    {boundary?.coordinates?.[0]?.length - 1} vertices
                   </div>
                 )}
               </div>
@@ -352,10 +358,10 @@ const CreateDmoWizardModal = ({
           <button
             type="button"
             onClick={handleSave}
-            disabled={!name.trim()}
+            disabled={!name.trim() || isCreating || isUpdating || isUploading}
             className="px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-            {existingAuthority ? "Save Changes" : "Create DMO"}
+            {isCreating || isUpdating ? "Saving..." : dmoId ? "Save Changes" : "Create DMO"}
           </button>
         </div>
       </div>

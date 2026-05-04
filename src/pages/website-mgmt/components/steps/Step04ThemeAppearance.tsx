@@ -70,7 +70,7 @@ function ColorField({
   );
 }
 
-export default function Step02ThemeAppearance({ formData, onChange }: Props) {
+const Step04ThemeAppearance=({ formData, onChange }: Props) =>{
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
@@ -238,3 +238,5 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
     </div>
   );
 }
+
+export default Step04ThemeAppearance

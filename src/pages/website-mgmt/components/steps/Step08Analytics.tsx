@@ -9,7 +9,7 @@ interface Props {
   onChange: (field: keyof SiteSettingsFormData, value: string) => void;
 }
 
-export default function Step06Analytics({ formData, errors, onChange }: Props) {
+const Step08Analytics = ({ formData, errors, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor } =
     useThemeClasses();
@@ -25,23 +25,23 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
     placeholder: string;
     hint?: string;
   }[] = [
-    {
-      field: "googleAnalyticsId",
-      label: t("google_analytics_id"),
-      placeholder: "G-XXXXXXXXXX",
-      hint: t("google_analytics_hint"),
-    },
-    {
-      field: "googleTagManagerId",
-      label: t("google_tag_manager_id"),
-      placeholder: "GTM-XXXXXXX",
-    },
-    {
-      field: "facebookPixelId",
-      label: t("facebook_pixel_id"),
-      placeholder: "123456789012345",
-    },
-  ];
+      {
+        field: "googleAnalyticsId",
+        label: t("google_analytics_id"),
+        placeholder: "G-XXXXXXXXXX",
+        hint: t("google_analytics_hint"),
+      },
+      {
+        field: "googleTagManagerId",
+        label: t("google_tag_manager_id"),
+        placeholder: "GTM-XXXXXXX",
+      },
+      {
+        field: "facebookPixelId",
+        label: t("facebook_pixel_id"),
+        placeholder: "123456789012345",
+      },
+    ];
 
   return (
     <div className="flex flex-col gap-8">
@@ -120,3 +120,4 @@ export default function Step06Analytics({ formData, errors, onChange }: Props) {
     </div>
   );
 }
+export default Step08Analytics

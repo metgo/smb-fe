@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 import { Moon, Sun, ChevronDown, Settings, Check, Monitor } from "lucide-react";
@@ -97,6 +97,21 @@ export default function Header() {
     );
   }, [timeFrame, dispatch]);
 
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const activeLang = locales.find((l) => l.value === language);
+
   const handleLanguageChange = (lng: Language) => {
     dispatch(setLanguage(lng));
     i18n.changeLanguage(lng);
@@ -182,24 +197,60 @@ export default function Header() {
             </div>
 
             {/* Language Toggle */}
-            <div className="relative">
-              <select
-                value={language}
-                onChange={(e) =>
-                  handleLanguageChange(e.target.value as Language)
-                }
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen((o) => !o)}
                 className={clsx(
-                  "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
+                  "flex items-center justify-center border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-teal-500",
                   selectInputClasses,
                 )}
               >
-                {locales.map((lang) => (
-                  <option key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                {activeLang?.flag && (
+                  <img
+                    src={activeLang.flag}
+                    alt={activeLang.label}
+                    className="w-5 h-4 object-contain"
+                  />
+                )}
+              </button>
+              {langOpen && (
+                <div
+                  className={clsx(
+                    "absolute top-full mt-1 ltr:right-0 rtl:left-0 z-50 rounded-lg border shadow-lg min-w-37.5",
+                    isDark
+                      ? "bg-gray-800 border-gray-700"
+                      : "bg-white border-gray-200",
+                  )}
+                >
+                  {locales.map((lang) => (
+                    <button
+                      key={lang.value}
+                      onClick={() => {
+                        handleLanguageChange(lang.value);
+                        setLangOpen(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-start first:rounded-t-lg last:rounded-b-lg",
+                        isDark
+                          ? "hover:bg-gray-700"
+                          : "hover:bg-teal-50",
+                        language === lang.value &&
+                          (isDark ? "bg-gray-700" : "bg-teal-50"),
+                        textPrimary,
+                      )}
+                    >
+                      {lang.flag && (
+                        <img
+                          src={lang.flag}
+                          alt={lang.label}
+                          className="w-5 h-4 object-contain shrink-0"
+                        />
+                      )}
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Theme Toggle */}

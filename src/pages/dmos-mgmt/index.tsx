@@ -1,37 +1,37 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
-  Edit,
-  Trash2,
   ArrowRight,
-  UploadCloud,
   Users,
 } from "lucide-react";
 
-import { useGetDmosQuery } from "@/store/api/masterDataApi";
-import { ConfirmDialog, PageHeader, EntityCard } from "@/components/shared";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { routes } from "@/lib/routes";
 import { CreateDmoWizardModal } from "./components";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ConfirmDialog, PageHeader, EntityCard, Spinner } from "@/components/shared";
+import { useGetAllDmosQuery, useUpdateDmoMutation } from "@/store/api/websiteConfigApi";
 
 const DmosMgmtPage = () => {
   const navigate = useNavigate();
-  const { data, isFetching } = useGetDmosQuery();
   const { textTertiary } = useThemeClasses();
+  const [updateDmo, { isLoading: isUpdating }] = useUpdateDmoMutation();
 
-  const [deleteTarget, setDeleteTarget] = useState<IDmo | null>(null);
+  const { data: dmos, refetch, isFetching, isLoading } = useGetAllDmosQuery();
+
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [migrateTarget, setMigrateTarget] = useState<IDmo | null>(null);
   const [isMigrating, setIsMigrating] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editDmoId, setEditDmoId] = useState<string | undefined>()
 
-  const dmos: IDmo[] = data?.data ?? [];
 
-  const handleEdit = (dmo: IDmo) => {
+  const handleEdit = (dmoId: string) => {
+    setEditDmoId(dmoId)
     setIsCreateModalOpen(true);
-    console.log("edit", dmo._id);
   };
 
   const handleDelete = async () => {
@@ -39,24 +39,30 @@ const DmosMgmtPage = () => {
     setIsDeleting(true);
     try {
       // TODO: call delete mutation
-      console.log("delete", deleteTarget._id);
+      console.log("delete", deleteTarget);
     } finally {
       setIsDeleting(false);
       setDeleteTarget(null);
     }
   };
 
-  const handleGoToAuthorities = (dmo: IDmo) => {
-    navigate(`${routes.authorityMgmt}?dmoId=${dmo._id}`);
+  const handleGoToAuthorities = (dmoId: string) => {
+    navigate(`${routes.authorityMgmt}?dmoId=${dmoId}`);
   };
 
-  const handleMigrateToProd = (dmo: IDmo) => {
-    setMigrateTarget(dmo);
+  const handleMigrateToProd = (dmoId: string) => {
+    console.log("🚀 ~ handleMigrateToProd ~ dmoId:", dmoId)
+    // setMigrateTarget(dmo);
   };
 
-  const handleToggleActive = (dmo: IDmo) => {
-    // TODO: call toggle active mutation
-    console.log("toggle active", dmo._id, !dmo.isActive);
+  const handleToggleActive = async (dmoId: string, isActive: boolean = false) => {
+    try {
+      await updateDmo({ id: dmoId, body: { isActive: isActive } }).unwrap();
+      toast.success("DMO updated successfully");
+      refetch()
+    } catch {
+      toast.error(dmoId ? "Failed to update DMO" : "Failed to create DMO");
+    }
   };
 
   const handleMigrateConfirm = async () => {
@@ -76,12 +82,13 @@ const DmosMgmtPage = () => {
       <PageHeader
         title="DMO Management"
         h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-500"
-        totalCount={dmos.length}
+        totalCount={dmos?.length}
         btnLabel="Add DMO"
         onClick={() => setIsCreateModalOpen(true)}
       />
+      <Spinner isLoading={isLoading || isFetching || isUpdating} />
 
-      {dmos.length === 0 && !isFetching ? (
+      {dmos?.length === 0 && !isFetching ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <Building2 className="w-12 h-12 mb-4 text-gray-300" />
           <p className="text-lg font-medium mb-1">No DMOs found</p>
@@ -89,49 +96,28 @@ const DmosMgmtPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
-          {dmos.map((dmo) => {
-            const authorityCount = dmo.authorities?.length ?? 0;
+          {dmos?.map((dmo) => {
             return (
               <EntityCard
                 key={dmo._id}
                 logo={dmo.logoPath}
                 name={dmo.name}
                 fallbackIcon={<Building2 className="w-12 h-12 text-gray-400" />}
-                isActive={dmo.isActive ?? false}
-                onToggleActive={() => handleToggleActive(dmo)}
-                actions={[
-                  {
-                    title: "Edit",
-                    colorClass:
-                      "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
-                    onClick: () => handleEdit(dmo),
-                    icon: <Edit size={14} />,
-                  },
-                  {
-                    title: "Delete",
-                    colorClass:
-                      "text-red-400 bg-red-500/10 hover:bg-red-500/20",
-                    onClick: () => setDeleteTarget(dmo),
-                    icon: <Trash2 size={14} />,
-                  },
-                  {
-                    title: "Migrate to Prod",
-                    colorClass:
-                      "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
-                    onClick: () => handleMigrateToProd(dmo),
-                    icon: <UploadCloud size={14} />,
-                  },
-                ]}
+                isActive={dmo?.isActive ?? false}
+                onToggleActive={() => handleToggleActive(dmo?._id, !dmo?.isActive)}
+                onEdit={() => handleEdit(dmo?._id)}
+                onDelete={() => setDeleteTarget(dmo?._id)}
+                onMigrateToProd={() => handleMigrateToProd(dmo?._id)}
               >
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-teal-500" />
                   <span className={clsx("text-xs font-medium", textTertiary)}>
-                    {authorityCount}{" "}
-                    {authorityCount === 1 ? "Authority" : "Authorities"}
+                    {dmo?.authorityCount}{" "}
+                    {dmo?.authorityCount === 1 ? "Authority" : "Authorities"}
                   </span>
                   <button
                     title="View Authorities"
-                    onClick={() => handleGoToAuthorities(dmo)}
+                    onClick={() => handleGoToAuthorities(dmo?._id)}
                     className="p-1 rounded-md text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors cursor-pointer"
                   >
                     <ArrowRight size={14} />
@@ -166,7 +152,7 @@ const DmosMgmtPage = () => {
       />
 
       {isCreateModalOpen && (
-        <CreateDmoWizardModal setIsOpen={setIsCreateModalOpen} />
+        <CreateDmoWizardModal setIsOpen={setIsCreateModalOpen} dmoId={editDmoId} />
       )}
     </div>
   );

@@ -1,11 +1,10 @@
 import clsx from "clsx";
-import { Building2, LayoutGrid } from "lucide-react";
+import { Building2 } from "lucide-react";
 
 interface AuthorityTabsProps {
-  dmos: IDmo[];
-  activeTab: string;
+  dmos: IDmoRes[];
+  activeTab: string | null;
   onTabChange: (id: string) => void;
-  allAuthorities: EnrichedAuthority[];
   isDark: boolean;
 }
 
@@ -13,20 +12,13 @@ const AuthorityTabs: React.FC<AuthorityTabsProps> = ({
   dmos,
   activeTab,
   onTabChange,
-  allAuthorities,
   isDark,
 }) => {
   const tabs = [
-    {
-      id: "all",
-      label: "All",
-      count: allAuthorities.length,
-      icon: <LayoutGrid className="w-3.5 h-3.5" />,
-    },
     ...dmos.map((dmo) => ({
       id: dmo._id,
       label: dmo.name,
-      count: dmo.authorities?.length ?? 0,
+      count: dmo.authorityCount ?? 0,
       icon: dmo.logoPath ? (
         <img
           src={dmo.logoPath}

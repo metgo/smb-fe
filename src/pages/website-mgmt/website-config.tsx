@@ -23,14 +23,15 @@ import {
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import WizardFooter from "@/components/shared/WizardFooter";
 import {
-  Step01BrandingMedia,
-  Step02HomeVideo,
-  Step02ThemeAppearance,
-  Step03SocialMedia,
-  Step04ContactDetails,
-  Step05SeoMeta,
-  Step06Analytics,
-  Step07Localization,
+  Step01Generals,
+  Step02BrandingMedia,
+  Step03HomeVideo,
+  Step04ThemeAppearance,
+  Step05SocialMedia,
+  Step06ContactDetails,
+  Step07SeoMeta,
+  Step08Analytics,
+  Step09Localization
 } from "./components/steps";
 import {
   useCreateWebsiteSettingMutation,
@@ -45,9 +46,10 @@ import { convertToWebP, uploadWithProgress } from "@/helpers";
 /*  Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 const STEP_ICONS: React.FC<{ className?: string }>[] = [
+  Settings,
   ImageIcon,
   Video,
   Palette,
@@ -60,14 +62,20 @@ const STEP_ICONS: React.FC<{ className?: string }>[] = [
 
 const DEFAULT_FORM: SiteSettingsFormData = {
   /* Step 1 */
+  dmoId: "",
+  authorityId: "",
   websiteName: "",
   websiteUrl: "",
   slogan: "",
   purpose: "MARKETPLACE",
   identifierId: "",
   campCode: "",
+
+  /* Step 2 */
   logoUrl: "",
   faviconUrl: "",
+  bgImageUrl: "",
+  specialSymbolUrl: "",
 
   /* Step 2 */
   desktopVideos: [],
@@ -207,6 +215,7 @@ export default function WebsiteConfigPage() {
     useThemeClasses();
 
   const STEP_META = [
+    t("general"),
     t("step_branding"),
     t("step_videos"),
     t("step_theme"),
@@ -252,14 +261,20 @@ export default function WebsiteConfigPage() {
     if (!existingSettings) return;
     const d = existingSettings;
     setFormData({
+      dmoId: d.dmoId ?? "",
+      authorityId: d.authorityId ?? "",
       websiteName: d.websiteName ?? "",
       websiteUrl: d.websiteUrl ?? "",
       slogan: d.slogan ?? "",
       purpose: d.purpose ?? "MARKETPLACE",
       identifierId: d.identifierId ?? "",
       campCode: d.campCode ?? "",
+
       logoUrl: d.logoUrl ?? "",
       faviconUrl: d.faviconUrl ?? "",
+      specialSymbolUrl: d.specialSymbolUrl ?? "",
+      bgImageUrl: d.bgImageUrl ?? "",
+
       desktopVideos: d.desktopVideos ?? [],
       mobileVideos: d.mobileVideos ?? [],
       desktopVideoThumbnails: d.desktopVideoThumbnails ?? [],
@@ -619,6 +634,7 @@ export default function WebsiteConfigPage() {
   /* ---------------- Step Rendering ---------------- */
 
   const stepProps = {
+    isEdit: !!existingSettings,
     formData,
     errors,
     onChange,
@@ -630,12 +646,14 @@ export default function WebsiteConfigPage() {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <Step01BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
-        );
+        return <Step01Generals {...stepProps} />;
       case 2:
         return (
-          <Step02HomeVideo
+          <Step02BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
+        );
+      case 3:
+        return (
+          <Step03HomeVideo
             formData={formData}
             uploadStates={uploadStates}
             uploadProgress={uploadProgress}
@@ -647,24 +665,24 @@ export default function WebsiteConfigPage() {
             onThumbnailActivate={handleThumbnailActivate}
           />
         );
-      case 3:
-        return <Step02ThemeAppearance {...stepProps} />;
       case 4:
-        return <Step03SocialMedia {...stepProps} />;
+        return <Step04ThemeAppearance {...stepProps} />;
       case 5:
-        return <Step04ContactDetails {...stepProps} />;
+        return <Step05SocialMedia {...stepProps} />;
       case 6:
-        return <Step05SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+        return <Step06ContactDetails {...stepProps} />;
       case 7:
+        return <Step07SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+      case 8:
         return (
-          <Step06Analytics
+          <Step08Analytics
             formData={formData}
             errors={errors}
             onChange={onChange}
           />
         );
-      case 8:
-        return <Step07Localization {...stepProps} />;
+      case 9:
+        return <Step09Localization {...stepProps} />;
       default:
         return null;
     }

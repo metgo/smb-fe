@@ -57,11 +57,11 @@ function Toggle({
   );
 }
 
-export default function Step03SocialMedia({
+const Step05SocialMedia=({
   formData,
   errors,
   onChange,
-}: Props) {
+}: Props) =>{
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
@@ -158,3 +158,4 @@ export default function Step03SocialMedia({
     </div>
   );
 }
+export default Step05SocialMedia;
