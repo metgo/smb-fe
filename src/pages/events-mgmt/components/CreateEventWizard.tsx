@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Check,
   Calendar,
@@ -70,33 +70,32 @@ export default function CreateEventWizard({
   );
 
   const editId = searchParams.get("eventId");
-  const bzId = searchParams.get("businessId");
   const [eventId, setEventId] = useState<string>(editId || "");
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string>(
-    bzId || editData?.businessId?._id || "",
-  );
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string>("");
 
   const { data: initialBusinessData, isLoading: isBusinessesLoading } =
-    useGetBusinessForProductQuery(
-      !(editData?.businessId || bzId)
-        ? { locale: language, limit: 20, dmoId, authorityId }
-        : skipToken,
-    );
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      dmoId,
+      authorityId,
+    });
 
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
-  const initialBusinesses = useMemo(() => {
-    if (editData?.businessId || bzId) {
-      return [
-        {
-          _id: editData?.businessId?._id ?? bzId,
-          name: editData?.businessId?.name ?? "",
-          slug: "",
-        },
-      ];
+  const list = initialBusinessData?.data || [];
+  const initialBusinesses = (() => {
+    if (editData?.businessId) {
+      const editBiz = {
+        _id: editData.businessId._id,
+        name: editData.businessId.name ?? "",
+        slug: "",
+      };
+      const alreadyInList = list.some((b: any) => b._id === editBiz._id);
+      return alreadyInList ? list : [editBiz, ...list];
     }
-    return initialBusinessData?.data || [];
-  }, [editData?.businessId, bzId, initialBusinessData?.data]);
+    return list;
+  })();
 
   const {
     items: businesses,
@@ -322,7 +321,7 @@ export default function CreateEventWizard({
       setFullDescription(editData?.description);
       setFullDescriptionHe(editData?.descriptionHe);
       setFullDescriptionAr(editData?.descriptionAr);
-
+      setSelectedBusinessId(editData?.businessId?._id);
       setEventStatus(editData?.status.toLowerCase());
       setAccessiblitiesId(editData?.accessibilitiesId);
       setGroupTypesId(editData?.groupTypesId);
@@ -851,7 +850,6 @@ export default function CreateEventWizard({
             businesses={businesses}
             searchBusiness={searchBusiness}
             isBusinessLoading={isBusinessesLoading || isBusinessSearching}
-            presetBusinessId={bzId ?? undefined}
           />
         )}
         {currentStep === 2 && (

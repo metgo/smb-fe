@@ -113,7 +113,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   businesses,
   searchBusiness,
   isBusinessLoading,
-  presetBusinessId,
 }) => {
   const { t, i18n } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
@@ -294,7 +293,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       {/* Select Business */}
       <FormFieldWrapper label={t("select_business")}>
         <ReactSelect
-          isDisabled={!!presetBusinessId}
           value={selectedBusinessId}
           onChange={(id: string) => setSelectedBusinessId(id)}
           placeholder={t("select_business")}
