@@ -851,7 +851,7 @@ export default function CreateEventWizard({
             businesses={businesses}
             searchBusiness={searchBusiness}
             isBusinessLoading={isBusinessesLoading || isBusinessSearching}
-            presetBusinessId={bzId }
+            presetBusinessId={bzId ?? undefined}
           />
         )}
         {currentStep === 2 && (
