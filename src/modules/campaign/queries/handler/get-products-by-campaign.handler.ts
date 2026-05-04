@@ -60,7 +60,7 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
 
       if (page) productsQuery.page = page;
       if (limit) productsQuery.limit = limit;
-      const customSelect = '_id name description images price';
+      const customSelect = '_id productId name description images price';
 
       const products = await this.queryBus.execute(
         new GetAllProductsQuery(productsQuery, customSelect),

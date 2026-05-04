@@ -137,7 +137,10 @@ export class Product {
 export class GetProductsByCampaignResponse {
   constructor(products: any[], camp: any, voucher?: any) {
     this._id = camp?._id?.toString();
-    this.products = products || [];
+    this.products = (products || []).map(product => ({
+      ...product,
+      images: (product.images || []).map(({ subCoordinates, ...img }: any) => img),
+    }));
 
     this.miniSite = new MiniSite({
       title: camp?.miniSite?.title,
