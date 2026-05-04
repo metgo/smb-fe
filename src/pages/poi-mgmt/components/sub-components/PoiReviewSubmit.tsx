@@ -1,5 +1,11 @@
 import { type FC } from "react";
-import { CheckCircle, MapPin, Image as ImageIcon, Tag } from "lucide-react";
+import {
+  CheckCircle,
+  MapPin,
+  Image as ImageIcon,
+  Tag,
+  Users,
+} from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PoiReviewSubmitProps {
@@ -31,7 +37,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
     "-";
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6  mx-auto">
       <div className="flex items-center gap-3 mb-2">
         <CheckCircle className="w-6 h-6 text-teal-500" />
         <h3
@@ -109,9 +115,54 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
           </button>
         </div>
         <div>
-          <p className={labelClass}>{t("primary_category")}</p>
-          <p className={valueClass}>{formData.primaryCategory || "-"}</p>
+          <p className={labelClass}>{t("tags")}</p>
+          <p className={valueClass}>
+            {formData.tags?.length > 0
+              ? `${formData.tags.length} ${t("tags_added")}`
+              : "-"}
+          </p>
         </div>
+      </div>
+
+      {/* Contact Info */}
+      <div className={sectionClass}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-teal-500" />
+            <span
+              className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("contact_info")}
+            </span>
+          </div>
+          <button
+            onClick={() => setCurrentStep(4)}
+            className="text-xs text-teal-500 hover:underline"
+          >
+            {t("edit")}
+          </button>
+        </div>
+        {formData.email && (
+          <div>
+            <p className={labelClass}>{t("email")}</p>
+            <p className={valueClass}>{formData.email}</p>
+          </div>
+        )}
+        {formData.phone && (
+          <div>
+            <p className={labelClass}>{t("phone")}</p>
+            <p className={valueClass}>{formData.phone}</p>
+          </div>
+        )}
+        {formData.website && (
+          <div>
+            <p className={labelClass}>{t("website")}</p>
+            <p className={valueClass}>{formData.website}</p>
+          </div>
+        )}
+        {!formData.email && !formData.phone && !formData.website && (
+          <p className={valueClass}>-</p>
+        )}
       </div>
 
       {/* Media */}
@@ -126,7 +177,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(4)}
+            onClick={() => setCurrentStep(5)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}

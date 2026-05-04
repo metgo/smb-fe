@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Tag,
   FileText,
+  Users,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -16,18 +17,24 @@ import {
   useUpdatePoiMutation,
 } from "@/store/api/poiMutationApi";
 
-import { PoiBasicInfo, PoiLocation, PoiReviewSubmit } from "./sub-components";
+import {
+  PoiBasicInfo,
+  PoiLocation,
+  PoiReviewSubmit,
+  PoiAttributes,
+  PoiContactInfo,
+  PoiMedia,
+} from "./sub-components";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
-import { parseAddress, removeNulls } from "@/helpers";
+import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
-import { Attributes } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
-import Media from "@/components/details-sections/Media";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -44,9 +51,6 @@ export default function CreatePoiWizard({
 }: CreatePoiWizardProps) {
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
-  const { t: tc } = useTranslation("common");
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
   const { theme } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
@@ -58,13 +62,11 @@ export default function CreatePoiWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("he");
   const [selectedDmoId, setSelectedDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
-  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
-  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
-    [],
-  );
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
@@ -74,6 +76,7 @@ export default function CreatePoiWizard({
     allWhitelistIds: [] as string[],
     selectedWhitelistIds: [] as string[],
   });
+  const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
@@ -90,20 +93,41 @@ export default function CreatePoiWizard({
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     internalNotes: "",
-    primaryCategory: "",
     tags: [],
+    email: "",
+    phone: "",
+    website: "",
+    videoUrl: "",
+    virtualTourUrl: "",
   });
 
   const initialFormData = useRef(formData);
-  const initialAccessibilitiesId = useRef<string[]>([]);
-  const initialGroupTypesId = useRef<string[]>([]);
 
   const isFormDirty = () =>
-    JSON.stringify(formData) !== JSON.stringify(initialFormData.current) ||
-    JSON.stringify(selectedAccessiblitiesId) !==
-      JSON.stringify(initialAccessibilitiesId.current) ||
-    JSON.stringify(selectedGroupTypesId) !==
-      JSON.stringify(initialGroupTypesId.current);
+    JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
+
+  const logoUpload = useFileUpload({
+    initialUrl: opMode !== IOpMode.CREATE ? editData?.logo || "" : "",
+  });
+
+  const logoImage: IImageUpload | null = logoUpload.previewUrl
+    ? {
+        id: 0,
+        previewUrl: logoUpload.previewUrl,
+        gcsURL: logoUpload.gcsUrl,
+        progress: logoUpload.progress,
+        status: logoUpload.status as any,
+      }
+    : null;
+
+  const handleDeleteLogoImage = (img: IImageUpload) => {
+    setDeleteTargetLogo(img.previewUrl);
+  };
+
+  const confirmDeleteLogo = async () => {
+    await logoUpload.deleteFile();
+    setDeleteTargetLogo(null);
+  };
 
   const {
     images,
@@ -124,7 +148,7 @@ export default function CreatePoiWizard({
   const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
   const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -153,7 +177,7 @@ export default function CreatePoiWizard({
         ),
       },
       { weight: 20, filled: !!address?.trim() },
-      { weight: 15, filled: !!formData.primaryCategory?.trim() },
+      { weight: 15, filled: !!logoUpload.gcsUrl },
       { weight: 20, filled: (images?.length ?? 0) > 0 },
     ];
     const total = checks.reduce((sum, c) => sum + c.weight, 0);
@@ -162,7 +186,7 @@ export default function CreatePoiWizard({
       0,
     );
     return Math.round((earned / total) * 100);
-  }, [formData, address, images]);
+  }, [formData, address, images, logoUpload.gcsUrl]);
 
   useEffect(() => {
     if (userRole === "authority") {
@@ -194,18 +218,15 @@ export default function CreatePoiWizard({
         fullDescriptionHe: editData?.descriptionHe || "",
         fullDescriptionAr: editData?.descriptionAr || "",
         internalNotes: editData?.internalNotes || "",
-        primaryCategory: editData?.primaryCategoryId || "",
         tags: editData?.tagsId || [],
+        email: editData?.email || "",
+        phone: editData?.phone || "",
+        website: editData?.website || "",
+        videoUrl: editData?.videoUrl || "",
+        virtualTourUrl: editData?.virtualTourUrl || "",
       };
       setFormData(loaded);
       initialFormData.current = loaded;
-
-      const loadedAccessibilities = removeNulls(editData?.accessibilitiesId);
-      const loadedGroupTypes = removeNulls(editData?.groupTypesId);
-      setAccessiblitiesId(loadedAccessibilities);
-      setGroupTypesId(loadedGroupTypes);
-      initialAccessibilitiesId.current = loadedAccessibilities;
-      initialGroupTypesId.current = loadedGroupTypes;
 
       if (editData?.geoLocation) {
         setGeo({
@@ -240,10 +261,13 @@ export default function CreatePoiWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: t("step_location"), icon: MapPin },
-    { number: 3, title: t("step_attributes"), icon: Tag },
-    { number: 4, title: t("step_media"), icon: ImageIcon },
-    { number: 5, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 2, title: t("step_contact_info"), icon: Users },
+    { number: 3, title: t("step_media"), icon: ImageIcon },
+
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_location"), icon: MapPin },
+
+    { number: 6, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   const addr = parseAddress(address);
@@ -267,14 +291,17 @@ export default function CreatePoiWizard({
       location: addr.location,
     },
     geoLocation: geo,
-    primaryCategoryId: formData.primaryCategory,
     tagsId: formData.tags?.map((tag: any) => ({
       en: tag.en,
       he: tag.he,
       ar: tag.ar,
     })),
-    accessibilitiesId: removeNulls(selectedAccessiblitiesId),
-    groupTypesId: removeNulls(selectedGroupTypesId),
+    email: formData.email,
+    phone: formData.phone,
+    website: formData.website,
+    videoUrl: formData.videoUrl,
+    virtualTourUrl: formData.virtualTourUrl,
+    logo: logoUpload.gcsUrl,
     images: galleryImages,
     completionPercent,
   };
@@ -329,10 +356,6 @@ export default function CreatePoiWizard({
       case 2:
         if (!addr.location) newErrors.address = t("required_field");
         break;
-      case 3:
-        if (!formData.primaryCategory?.trim())
-          newErrors.primaryCategory = t("primary_category_required");
-        break;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -368,7 +391,7 @@ export default function CreatePoiWizard({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
     let allValid = true;
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -400,21 +423,6 @@ export default function CreatePoiWizard({
       geo,
       markDirty,
     };
-    const mediaProps = {
-      theme,
-      errors,
-      markDirty,
-      images,
-      imagesRef,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
-    };
 
     switch (currentStep) {
       case 1:
@@ -435,6 +443,60 @@ export default function CreatePoiWizard({
         );
       case 2:
         return (
+          <PoiContactInfo
+            t={t}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            markDirty={markDirty}
+          />
+        );
+      case 3:
+        return (
+          <PoiMedia
+            markDirty={markDirty}
+            logoImage={logoImage}
+            handleLogoImageSelect={logoUpload.handleFileSelect}
+            deleteTargetLogo={deleteTargetLogo}
+            setDeleteTargetLogo={setDeleteTargetLogo}
+            isLogoImageDeleting={logoUpload.isDeleting}
+            handleDeleteLogoImage={handleDeleteLogoImage}
+            confirmDeleteLogo={confirmDeleteLogo}
+            images={images}
+            imagesRef={imagesRef}
+            primaryImageIndex={primaryImageIndex}
+            setPrimaryImage={setPrimaryImage}
+            handleImageUpload={handleImageUpload}
+            deleteTarget={deleteTarget}
+            setDeleteTarget={setDeleteTarget}
+            confirmDelete={confirmDelete}
+            isImageDeleting={isImageDeleting}
+            handleDeleteImage={handleDeleteImage}
+            videoUrl={formData.videoUrl}
+            setVideoUrl={(v: string) =>
+              setFormData((prev: any) => ({ ...prev, videoUrl: v }))
+            }
+            virtualTourUrl={formData.virtualTourUrl}
+            setVirtualTourUrl={(v: string) =>
+              setFormData((prev: any) => ({ ...prev, virtualTourUrl: v }))
+            }
+          />
+        );
+      case 4:
+        return (
+          <PoiAttributes
+            formData={formData}
+            setFormData={setFormData}
+            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            description={
+              formData.shortDescriptionEn ||
+              formData.shortDescriptionHe ||
+              formData.shortDescriptionAr
+            }
+          />
+        );
+      case 5:
+        return (
           <PoiLocation
             t={t}
             geo={geo}
@@ -443,28 +505,7 @@ export default function CreatePoiWizard({
             setAddress={setAddress}
           />
         );
-      case 3:
-        return (
-          <Attributes
-            selectedFormLanguage={selectedFormLanguage}
-            editData={editData}
-            {...commonProps}
-            name={formData.nameEn || formData.nameHe || formData.nameAr}
-            description={
-              formData.fullDescriptionHe ||
-              formData.fullDescriptionEn ||
-              formData.fullDescriptionAr
-            }
-            opMode={opMode}
-            selectedAccessiblitiesId={selectedAccessiblitiesId}
-            setAccessiblitiesId={setAccessiblitiesId}
-            selectedGroupTypesId={selectedGroupTypesId}
-            setGroupTypesId={setGroupTypesId}
-          />
-        );
-      case 4:
-        return <Media {...mediaProps} />;
-      case 5:
+      case 6:
         return (
           <PoiReviewSubmit
             t={t}

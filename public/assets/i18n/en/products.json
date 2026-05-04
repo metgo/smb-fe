@@ -17,6 +17,8 @@
   "rejected": "Rejected",
   "archived": "Archived",
   "available_stock": "Available Stock",
+  "location_address": "Location Address",
+
   "units_sold": "Units Sold",
   "back": "Back",
   "duplicate": "Duplicate",

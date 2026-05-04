@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import { PoiInfoDetails } from "./components";
 import { routes } from "@/lib/routes";
@@ -38,7 +38,6 @@ import { poiTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 
 export default function PoiDetailsPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const { t } = useTranslation("poi");
