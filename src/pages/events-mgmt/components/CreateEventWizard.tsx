@@ -37,8 +37,13 @@ import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import Media from "@/components/details-sections/Media";
 
 interface CreateEventWizardProps {
@@ -58,13 +63,53 @@ export default function CreateEventWizard({
   const { t: tc } = useTranslation("toast");
 
   const [searchParams] = useSearchParams();
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { textPrimary, textTertiary, isDark, language } = useThemeClasses();
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
 
   const editId = searchParams.get("eventId");
+  const bzId = searchParams.get("businessId");
   const [eventId, setEventId] = useState<string>(editId || "");
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string>(
+    bzId || "",
+  );
+
+  const { data: initialBusinessData, isLoading: isBusinessesLoading } =
+    useGetBusinessForProductQuery(
+      !(editData?.businessId || bzId)
+        ? { locale: language, limit: 20, dmoId, authorityId }
+        : skipToken,
+    );
+
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const initialBusinesses = (() => {
+    if (editData?.businessId || bzId) {
+      return [
+        {
+          _id: editData?.businessId?._id ?? bzId,
+          name: editData?.businessId?.name ?? "",
+          slug: "",
+        },
+      ];
+    }
+    return initialBusinessData?.data || [];
+  })();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching: isBusinessSearching,
+  } = useRemoteSelectData({
+    initialData: initialBusinesses,
+    debounceMs: 400,
+    searchParams: { dmoId, locale: language, authorityId },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res.data };
+    },
+  });
 
   const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
@@ -284,6 +329,7 @@ export default function CreateEventWizard({
       setInternalNotes(editData?.internalNotes);
       setSelectAuthorityId(editData?.authorityId || "");
       setSelectDmoId(editData?.dmoId || "");
+      setSelectedBusinessId(editData?.businessId || "");
 
       // Date & Time
       setIsMultiDay(editData?.dayDescription?.length > 1);
@@ -437,6 +483,7 @@ export default function CreateEventWizard({
     descriptionAr: fullDescriptionAr,
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    businessId: selectedBusinessId,
     status: eventStatus?.toUpperCase(),
     groupTypesId: selectedGroupTypesId,
     accessibilitiesId: selectedAccessiblitiesId,
@@ -531,6 +578,7 @@ export default function CreateEventWizard({
     initEventCreate,
     updateEvent,
     stepPayloadMap,
+    businessId: selectedBusinessId,
   });
 
   const handleMarkDirty = useCallback(
@@ -793,6 +841,12 @@ export default function CreateEventWizard({
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
             eventAssociatedWebsites={editData?.associatedWebsites ?? []}
+            selectedBusinessId={selectedBusinessId}
+            setSelectedBusinessId={setSelectedBusinessId}
+            businesses={businesses}
+            searchBusiness={searchBusiness}
+            isBusinessLoading={isBusinessesLoading || isBusinessSearching}
+            presetBusinessId={bzId || editData?.businessId?._id}
           />
         )}
         {currentStep === 2 && (
@@ -863,7 +917,9 @@ export default function CreateEventWizard({
             tickets={localTickets}
             eventId={eventId}
             setEventId={setEventId}
-            initEventCreate={initEventCreate}
+            initEventCreate={() =>
+              initEventCreate({ businessId: selectedBusinessId })
+            }
             showTicketModal={showTicketModal}
             setShowTicketModal={setShowTicketModal}
             errors={errors}

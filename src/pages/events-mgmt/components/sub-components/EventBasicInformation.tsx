@@ -11,6 +11,7 @@ import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
   InputField,
+  ReactSelect,
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
@@ -62,6 +63,12 @@ interface EventBasicInformationProps {
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   eventAssociatedWebsites?: IAssociatedWebsiteIds[];
+  selectedBusinessId: string;
+  setSelectedBusinessId: (id: string) => void;
+  businesses: ISearchBusiness[];
+  searchBusiness: (keyword: string) => void;
+  isBusinessLoading: boolean;
+  presetBusinessId?: string;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -101,6 +108,12 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   eventAssociatedWebsites = [],
+  selectedBusinessId,
+  setSelectedBusinessId,
+  businesses,
+  searchBusiness,
+  isBusinessLoading,
+  presetBusinessId,
 }) => {
   const { t, i18n } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
@@ -216,6 +229,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     selectedGroupTypesId,
     selectedSubCategoriesId,
     internalNotes,
+    selectedBusinessId,
     markDirty,
   ]);
 
@@ -277,6 +291,21 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         setWebsiteVisibilityIds={setWebsiteVisibilityIds}
         itemAssociatedWebsites={eventAssociatedWebsites}
       />
+      {/* Select Business */}
+      <FormFieldWrapper label={t("select_business")}>
+        <ReactSelect
+          isDisabled={!!presetBusinessId}
+          value={selectedBusinessId}
+          onChange={(id: string) => setSelectedBusinessId(id)}
+          placeholder={t("select_business")}
+          items={
+            businesses?.map((biz) => ({ _id: biz._id, name: biz.name })) || []
+          }
+          onSearch={searchBusiness}
+          isLoading={isBusinessLoading}
+        />
+      </FormFieldWrapper>
+
       <div className="flex items-center justify-between gap-2">
         <div className="font-semibold text-md text-gray-700">
           {t("step_1_basic_information")}
