@@ -3,7 +3,7 @@ import { endpoints } from "@/lib/endpoints";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 
 interface IBulkUpdateParams {
-  poisId: string[];
+  poiIds: string[];
   status?: string;
   isDeleted?: boolean;
 }

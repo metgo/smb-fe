@@ -163,13 +163,9 @@ export default function PoiMgmtPage() {
     return params;
   }, [page, searchTerm, filters, language, dmoId, authorityId, websiteId]);
 
-  const statsQueryParams = useMemo(() => {
-    const { page: _p, limit: _l, locale: _loc, ...rest } = queryParams;
-    return rest;
-  }, [queryParams]);
-
-  const { data: poiStatsData, isLoading: isStatsLoading } =
-    useGetPoiStatsQuery(statsQueryParams);
+  const { data: poiStatsData, isLoading: isStatsLoading } = useGetPoiStatsQuery(
+    {},
+  );
   const {
     data: poiData,
     isLoading,
@@ -233,7 +229,7 @@ export default function PoiMgmtPage() {
     const toastId = toast.loading(tc("poi_delete_loading"));
     try {
       const results = await bulkPoisUpdate({
-        poisId: Array.from(selectedPois),
+        poiIds: Array.from(selectedPois),
         isDeleted: true,
       });
       if (results?.data) {
@@ -255,7 +251,7 @@ export default function PoiMgmtPage() {
       const toastId = toast.loading(tc("poi_status_change_loading"));
       try {
         const results = await bulkPoisUpdate({
-          poisId: Array.from(selectedPois),
+          poiIds: Array.from(selectedPois),
           status: status?.toLocaleUpperCase(),
         });
         if (results?.data) {
@@ -320,14 +316,14 @@ export default function PoiMgmtPage() {
       {
         id: 1,
         title: t("total_pois"),
-        value: poiStatsData?.totalPois,
+        value: poiStatsData?.totalPOIs,
         label: t("registered"),
         icon: <MapPin className="w-5 h-5 text-purple-600" />,
       },
       {
         id: 2,
         title: t("active_pois"),
-        value: poiStatsData?.activePois,
+        value: poiStatsData?.activePOIs,
         label: t("approved"),
         icon: <CheckCircle className="w-5 h-5 text-green-600" />,
       },

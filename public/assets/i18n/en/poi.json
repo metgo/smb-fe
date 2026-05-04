@@ -16,7 +16,8 @@
   "profile_data": "Profile Data",
   "pending_approval": "Pending Approval",
   "location_address": "Location Address",
-
+  "status": "Status",
+  "impact": "Impact",
   "avg_completion": "Avg. Completion",
   "export": "Export",
   "show_columns": "Show Columns",

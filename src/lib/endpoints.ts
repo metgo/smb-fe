@@ -35,8 +35,8 @@ export const endpoints = {
   // poi
   poi: "/point-of-interests",
   pois: "/point-of-interests",
-  poisStatDashboard: "/pois-stat",
-  bulkPoisUpdate: "/bulk-pois-update",
+  poisStatDashboard: "/point-of-interests-stat",
+  bulkPoisUpdate: "/bulk-point-of-interests-update",
 
   // business
   business: "/businesses",

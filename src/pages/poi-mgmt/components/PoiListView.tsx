@@ -88,7 +88,7 @@ export default function PoiListView({
     columnVisibility.impact && {
       key: "impact",
       sortable: true,
-      label: t("impact_score"),
+      label: t("impact"),
       width: "110px",
       render: (poi: any) => <ScorePill score={poi.impact ?? 0} />,
     },
