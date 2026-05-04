@@ -454,7 +454,7 @@ export default function CreateBusinessWizard({
     },
     geoLocation: geo,
     //  step 4
-    primaryCategoryId: "6566fd7fa77d2a477266d3ca",
+    primaryCategoryId: formData.primaryCategory,
     tagsId: formData.tags.map((tag: any) => ({
       en: tag.en,
       he: tag.he,
@@ -540,9 +540,9 @@ export default function CreateBusinessWizard({
         break;
 
       case 4:
-        // if (formData.primaryCategory?.trim() === "") {
-        //   newErrors.primaryCategory = t("primary_category_required");
-        // }
+        if (formData.primaryCategory?.trim() === "") {
+          newErrors.primaryCategory = t("primary_category_required");
+        }
         break;
     }
     setErrors(newErrors);

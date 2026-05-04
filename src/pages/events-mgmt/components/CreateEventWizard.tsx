@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Check,
   Calendar,
@@ -59,6 +59,7 @@ export default function CreateEventWizard({
   editData,
   refetch,
 }: CreateEventWizardProps) {
+  console.log("🚀 ~ CreateEventWizard ~ editData:", editData);
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
@@ -72,7 +73,7 @@ export default function CreateEventWizard({
   const bzId = searchParams.get("businessId");
   const [eventId, setEventId] = useState<string>(editId || "");
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>(
-    bzId || "",
+    bzId || editData?.businessId?._id || "",
   );
 
   const { data: initialBusinessData, isLoading: isBusinessesLoading } =
@@ -84,7 +85,7 @@ export default function CreateEventWizard({
 
   const [getBusinessList] = useLazyGetBusinessForProductQuery();
 
-  const initialBusinesses = (() => {
+  const initialBusinesses = useMemo(() => {
     if (editData?.businessId || bzId) {
       return [
         {
@@ -95,7 +96,7 @@ export default function CreateEventWizard({
       ];
     }
     return initialBusinessData?.data || [];
-  })();
+  }, [editData?.businessId, bzId, initialBusinessData?.data]);
 
   const {
     items: businesses,
@@ -267,6 +268,7 @@ export default function CreateEventWizard({
       setFullDescription("");
       setFullDescriptionHe("");
       setFullDescriptionAr("");
+      setSelectedBusinessId("");
       setEventLanguage("en");
       setEventStatus("draft");
       setInternalNotes("");
@@ -313,7 +315,6 @@ export default function CreateEventWizard({
       setEventName(editData?.name);
       setEventNameHe(editData?.nameHe);
       setEventNameAr(editData?.nameAr);
-
       setShortDescription(editData?.shortDescription);
       setShortDescriptionHe(editData?.shortDescriptionHe);
       setShortDescriptionAr(editData?.shortDescriptionAr);
@@ -329,7 +330,7 @@ export default function CreateEventWizard({
       setInternalNotes(editData?.internalNotes);
       setSelectAuthorityId(editData?.authorityId || "");
       setSelectDmoId(editData?.dmoId || "");
-      setSelectedBusinessId(editData?.businessId || "");
+      setSelectedBusinessId(editData?.businessId?._id || "");
 
       // Date & Time
       setIsMultiDay(editData?.dayDescription?.length > 1);
@@ -467,6 +468,10 @@ export default function CreateEventWizard({
     purpose: "event",
   };
 
+  console.log(
+    "🚀 ~ CreateEventWizard ~ selectedBusinessId:",
+    selectedBusinessId,
+  );
   const eventBasicInfoPayload = {
     name: eventName,
     nameHe: eventNameHe,
