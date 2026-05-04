@@ -29,6 +29,8 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -249,6 +251,8 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+        { path: routes.poiDetails, element: <PoiDetailsPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
