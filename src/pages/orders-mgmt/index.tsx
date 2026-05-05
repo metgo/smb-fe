@@ -806,7 +806,7 @@ export default function OrdersMgmtPage() {
       "\n",
     );
 
-    const blob = new Blob([csvContent], {
+    const blob = new Blob(["﻿", csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
@@ -899,7 +899,7 @@ export default function OrdersMgmtPage() {
       "\n",
     );
 
-    const blob = new Blob([csvContent], {
+    const blob = new Blob(["﻿", csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
