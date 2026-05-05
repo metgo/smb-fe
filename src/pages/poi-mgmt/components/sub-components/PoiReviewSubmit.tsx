@@ -29,9 +29,9 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
   const labelClass = `text-xs uppercase tracking-wide ${isDark ? "text-gray-400" : "text-gray-500"}`;
   const valueClass = `text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`;
 
-  const name = formData.nameEn || formData.nameHe || formData.nameAr || "-";
+  const name = formData.title || formData.titleHe || formData.titleAr || "-";
   const shortDesc =
-    formData.shortDescriptionEn ||
+    formData.shortDescription ||
     formData.shortDescriptionHe ||
     formData.shortDescriptionAr ||
     "-";

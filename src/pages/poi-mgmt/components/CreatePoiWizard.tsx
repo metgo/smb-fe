@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   MapPin,
@@ -37,6 +37,7 @@ import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
+import PoiContentForm from "./sub-components/PoiContentForm";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -54,7 +55,7 @@ export default function CreatePoiWizard({
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
   const { theme } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary } = useThemeClasses();
+  const { textPrimary, textTertiary, language } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -80,20 +81,16 @@ export default function CreatePoiWizard({
   });
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
 
-  const { userRole, dmoId, authorityId } = useAppSelector(
-    (state) => state.auth,
-  );
-
   const [formData, setFormData] = useState<any>({
-    nameEn: "",
-    nameHe: "",
-    nameAr: "",
-    shortDescriptionEn: "",
+    title: "",
+    titleHe: "",
+    titleAr: "",
+    shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescriptionEn: "",
-    fullDescriptionHe: "",
-    fullDescriptionAr: "",
+    content: "",
+    contentHe: "",
+    contentAr: "",
     internalNotes: "",
     tags: [],
     email: "",
@@ -102,6 +99,14 @@ export default function CreatePoiWizard({
     videoUrl: "",
     virtualTourUrl: "",
   });
+
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
+
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const initialFormData = useRef(formData);
 
@@ -157,15 +162,15 @@ export default function CreatePoiWizard({
       {
         weight: 15,
         filled: !!(
-          formData.nameEn?.trim() ||
-          formData.nameHe?.trim() ||
-          formData.nameAr?.trim()
+          formData.title?.trim() ||
+          formData.titleHe?.trim() ||
+          formData.titleAr?.trim()
         ),
       },
       {
         weight: 15,
         filled: !!(
-          formData.shortDescriptionEn?.trim() ||
+          formData.shortDescription?.trim() ||
           formData.shortDescriptionHe?.trim() ||
           formData.shortDescriptionAr?.trim()
         ),
@@ -173,9 +178,9 @@ export default function CreatePoiWizard({
       {
         weight: 15,
         filled: !!(
-          formData.fullDescriptionEn?.trim() ||
-          formData.fullDescriptionHe?.trim() ||
-          formData.fullDescriptionAr?.trim()
+          formData.content?.trim() ||
+          formData.contentHe?.trim() ||
+          formData.contentAr?.trim()
         ),
       },
       { weight: 20, filled: !!address?.trim() },
@@ -201,24 +206,24 @@ export default function CreatePoiWizard({
     if (poiId === "" || opMode === IOpMode.CREATE) return;
     if (editData && poiId) {
       const loaded = {
-        nameEn:
+        title:
           opMode === IOpMode.DUPLICATE
             ? `${editData?.name || ""} (Duplicate)`
             : editData?.name || "",
-        nameHe:
+        titleHe:
           opMode === IOpMode.DUPLICATE
             ? `${editData?.nameHe || ""} (שכפל)`
             : editData?.nameHe || "",
-        nameAr:
+        titleAr:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || ""} (نسخ)`
+            ? `${editData?.nameAr || ""} (נسخ)`
             : editData?.nameAr || "",
-        shortDescriptionEn: editData?.shortDescription || "",
+        shortDescription: editData?.shortDescription || "",
         shortDescriptionHe: editData?.shortDescriptionHe || "",
         shortDescriptionAr: editData?.shortDescriptionAr || "",
-        fullDescriptionEn: editData?.description || "",
-        fullDescriptionHe: editData?.descriptionHe || "",
-        fullDescriptionAr: editData?.descriptionAr || "",
+        content: editData?.description || "",
+        contentHe: editData?.descriptionHe || "",
+        contentAr: editData?.descriptionAr || "",
         internalNotes: editData?.internalNotes || "",
         tags: editData?.tagsId || [],
         email: editData?.busiEmail || "",
@@ -265,6 +270,7 @@ export default function CreatePoiWizard({
       } else {
         setSelectedFormLanguage("en");
       }
+
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images || []);
       }
@@ -292,15 +298,15 @@ export default function CreatePoiWizard({
   const stepPayloadMap = {
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
-    name: formData.nameEn,
-    nameHe: formData.nameHe,
-    nameAr: formData.nameAr,
-    shortDescription: formData.shortDescriptionEn,
+    name: formData.title,
+    nameHe: formData.titleHe,
+    nameAr: formData.titleAr,
+    shortDescription: formData.shortDescription,
     shortDescriptionHe: formData.shortDescriptionHe,
     shortDescriptionAr: formData.shortDescriptionAr,
-    description: formData.fullDescriptionEn,
-    descriptionHe: formData.fullDescriptionHe,
-    descriptionAr: formData.fullDescriptionAr,
+    description: formData.content,
+    descriptionHe: formData.contentHe,
+    descriptionAr: formData.contentAr,
     internalNotes: formData.internalNotes,
     address: {
       country: addr.country,
@@ -352,21 +358,21 @@ export default function CreatePoiWizard({
     switch (step) {
       case 1:
         if (
-          !formData.nameEn?.trim() &&
-          !formData.nameAr?.trim() &&
-          !formData.nameHe?.trim()
+          !formData.title?.trim() &&
+          !formData.titleAr?.trim() &&
+          !formData.titleHe?.trim()
         )
           newErrors.name = t("required_field");
         if (
-          !formData.shortDescriptionEn?.trim() &&
+          !formData.shortDescription?.trim() &&
           !formData.shortDescriptionAr?.trim() &&
           !formData.shortDescriptionHe?.trim()
         )
           newErrors.shortDescription = t("required_field");
         if (
-          !formData.fullDescriptionEn?.trim() &&
-          !formData.fullDescriptionAr?.trim() &&
-          !formData.fullDescriptionHe?.trim()
+          !formData.content?.trim() &&
+          !formData.contentAr?.trim() &&
+          !formData.contentHe?.trim()
         )
           newErrors.fullDescription = t("required_field");
         break;
@@ -444,27 +450,33 @@ export default function CreatePoiWizard({
     switch (currentStep) {
       case 1:
         return (
-          <PoiBasicInfo
-            {...commonProps}
-            poiId={poiId}
-            selectedDmoId={selectedDmoId}
-            setSelectDmoId={setSelectedDmoId}
-            selectedAuthorityId={selectedAuthorityId}
-            setSelectAuthorityId={setSelectAuthorityId}
-            websiteVisibilityIds={websiteVisibilityIds}
-            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            poiAssociatedWebsites={editData?.associatedWebsites ?? []}
-            selectedFormLanguage={selectedFormLanguage}
-            setSelectedFormLanguage={setSelectedFormLanguage}
-          />
+          <div>
+            <PoiBasicInfo
+              {...commonProps}
+              poiId={poiId}
+              selectedDmoId={selectedDmoId}
+              setSelectDmoId={setSelectedDmoId}
+              selectedAuthorityId={selectedAuthorityId}
+              setSelectAuthorityId={setSelectAuthorityId}
+              websiteVisibilityIds={websiteVisibilityIds}
+              setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+              poiAssociatedWebsites={editData?.associatedWebsites ?? []}
+              selectedFormLanguage={selectedFormLanguage}
+              setSelectedFormLanguage={setSelectedFormLanguage}
+            />
+            <PoiContentForm
+              formData={formData}
+              onChange={handleChange}
+              syncKey={editData?._id}
+              editingLanguage={language}
+            />
+          </div>
         );
       case 2:
         return (
-          <PoiTranslateButton
-            formData={formData}
-            setFormData={setFormData}
-            sourceLang={selectedFormLanguage}
-          />
+          <div className="space-y-6">
+            <PoiTranslateButton formData={formData} onChange={handleChange} />
+          </div>
         );
       case 3:
         return (
@@ -512,9 +524,9 @@ export default function CreatePoiWizard({
           <PoiAttributes
             formData={formData}
             setFormData={setFormData}
-            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            name={formData.title || formData.titleHe || formData.titleAr}
             description={
-              formData.shortDescriptionEn ||
+              formData.shortDescription ||
               formData.shortDescriptionHe ||
               formData.shortDescriptionAr
             }

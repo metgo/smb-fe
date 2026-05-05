@@ -20,6 +20,7 @@
   "name": "שם",
   "shortDescription": "תיאור קצר",
   "status": "סטטוס",
+  "content": "תוכן",
   "page_views": "צפיות בדף",
   "active_users": "משתמשים פעילים",
   "unique_visitors": "מבקרים ייחודיים",
