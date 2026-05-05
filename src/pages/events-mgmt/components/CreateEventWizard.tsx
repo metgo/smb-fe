@@ -37,8 +37,13 @@ import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
+import {
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
+} from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import Media from "@/components/details-sections/Media";
 
 interface CreateEventWizardProps {
@@ -54,17 +59,57 @@ export default function CreateEventWizard({
   editData,
   refetch,
 }: CreateEventWizardProps) {
+  console.log("🚀 ~ CreateEventWizard ~ editData:", editData);
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
   const [searchParams] = useSearchParams();
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { textPrimary, textTertiary, isDark, language } = useThemeClasses();
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
 
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>(editId || "");
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string>("");
+
+  const { data: initialBusinessData, isLoading: isBusinessesLoading } =
+    useGetBusinessForProductQuery({
+      locale: language,
+      limit: 20,
+      dmoId,
+      authorityId,
+    });
+
+  const [getBusinessList] = useLazyGetBusinessForProductQuery();
+
+  const list = initialBusinessData?.data || [];
+  const initialBusinesses = (() => {
+    if (editData?.businessId) {
+      const editBiz = {
+        _id: editData.businessId._id,
+        name: editData.businessId.name ?? "",
+        slug: "",
+      };
+      const alreadyInList = list.some((b: any) => b._id === editBiz._id);
+      return alreadyInList ? list : [editBiz, ...list];
+    }
+    return list;
+  })();
+
+  const {
+    items: businesses,
+    search: searchBusiness,
+    isSearching: isBusinessSearching,
+  } = useRemoteSelectData({
+    initialData: initialBusinesses,
+    debounceMs: 400,
+    searchParams: { dmoId, locale: language, authorityId },
+    lazySearch: async (params) => {
+      const res = await getBusinessList(params).unwrap();
+      return { data: res.data };
+    },
+  });
 
   const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
@@ -222,6 +267,7 @@ export default function CreateEventWizard({
       setFullDescription("");
       setFullDescriptionHe("");
       setFullDescriptionAr("");
+      setSelectedBusinessId("");
       setEventLanguage("en");
       setEventStatus("draft");
       setInternalNotes("");
@@ -268,7 +314,6 @@ export default function CreateEventWizard({
       setEventName(editData?.name);
       setEventNameHe(editData?.nameHe);
       setEventNameAr(editData?.nameAr);
-
       setShortDescription(editData?.shortDescription);
       setShortDescriptionHe(editData?.shortDescriptionHe);
       setShortDescriptionAr(editData?.shortDescriptionAr);
@@ -276,7 +321,7 @@ export default function CreateEventWizard({
       setFullDescription(editData?.description);
       setFullDescriptionHe(editData?.descriptionHe);
       setFullDescriptionAr(editData?.descriptionAr);
-
+      setSelectedBusinessId(editData?.businessId?._id);
       setEventStatus(editData?.status.toLowerCase());
       setAccessiblitiesId(editData?.accessibilitiesId);
       setGroupTypesId(editData?.groupTypesId);
@@ -284,6 +329,7 @@ export default function CreateEventWizard({
       setInternalNotes(editData?.internalNotes);
       setSelectAuthorityId(editData?.authorityId || "");
       setSelectDmoId(editData?.dmoId || "");
+      setSelectedBusinessId(editData?.businessId?._id || "");
 
       // Date & Time
       setIsMultiDay(editData?.dayDescription?.length > 1);
@@ -421,6 +467,10 @@ export default function CreateEventWizard({
     purpose: "event",
   };
 
+  console.log(
+    "🚀 ~ CreateEventWizard ~ selectedBusinessId:",
+    selectedBusinessId,
+  );
   const eventBasicInfoPayload = {
     name: eventName,
     nameHe: eventNameHe,
@@ -437,6 +487,7 @@ export default function CreateEventWizard({
     descriptionAr: fullDescriptionAr,
     authorityId: selectedAuthorityId,
     dmoId: selectedDmoId,
+    businessId: selectedBusinessId,
     status: eventStatus?.toUpperCase(),
     groupTypesId: selectedGroupTypesId,
     accessibilitiesId: selectedAccessiblitiesId,
@@ -531,6 +582,7 @@ export default function CreateEventWizard({
     initEventCreate,
     updateEvent,
     stepPayloadMap,
+    businessId: selectedBusinessId,
   });
 
   const handleMarkDirty = useCallback(
@@ -793,6 +845,11 @@ export default function CreateEventWizard({
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
             eventAssociatedWebsites={editData?.associatedWebsites ?? []}
+            selectedBusinessId={selectedBusinessId}
+            setSelectedBusinessId={setSelectedBusinessId}
+            businesses={businesses}
+            searchBusiness={searchBusiness}
+            isBusinessLoading={isBusinessesLoading || isBusinessSearching}
           />
         )}
         {currentStep === 2 && (
@@ -863,7 +920,9 @@ export default function CreateEventWizard({
             tickets={localTickets}
             eventId={eventId}
             setEventId={setEventId}
-            initEventCreate={initEventCreate}
+            initEventCreate={() =>
+              initEventCreate({ businessId: selectedBusinessId })
+            }
             showTicketModal={showTicketModal}
             setShowTicketModal={setShowTicketModal}
             errors={errors}

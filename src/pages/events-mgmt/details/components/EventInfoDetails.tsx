@@ -1,10 +1,17 @@
 import clsx from "clsx";
-import { FileText, AlignLeft, StickyNote, AlertTriangle } from "lucide-react";
+import {
+  FileText,
+  AlignLeft,
+  StickyNote,
+  AlertTriangle,
+  BriefcaseBusinessIcon,
+} from "lucide-react";
 
 import { getLngWiseStr } from "@/helpers";
 import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
+import { useTranslation } from "react-i18next";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -16,6 +23,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
   eventDetails,
 }) => {
   const { isDark, language } = useThemeClasses();
+  const { t: tp } = useTranslation("products");
 
   return (
     <div className="space-y-6">
@@ -60,7 +68,23 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         isDark={isDark}
         preWrap={true}
       />
-
+      <DescriptionCard
+        title={tp("business_name")}
+        content={
+          eventDetails?.businessId?.name ? eventDetails?.businessId?.name : "-"
+        }
+        icon={
+          <BriefcaseBusinessIcon
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-purple-400" : "text-purple-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+        isDark={isDark}
+        preWrap={true} // preserves line breaks
+      />
       {/* Website Connections */}
       {eventDetails?.associatedWebsites &&
         eventDetails?.associatedWebsites?.length > 0 && (
