@@ -69,5 +69,9 @@
   "images_uploaded": "images uploaded",
   "review_submit": "Review & Submit",
   "edit": "Edit",
-  "primary_category": "Primary Category"
+  "primary_category": "Primary Category",
+  "step_translation": "Translation",
+  "auto_translate": "Auto Translate",
+  "translate_hint": "Enter text to translate",
+  "translating": "Translating..."
 }

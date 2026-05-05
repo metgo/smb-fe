@@ -87,6 +87,12 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
     markDirty(1);
   }, [formData, selectedDmoId]);
 
+  const activeNameField = getFieldName("name") as keyof PoiFormData;
+  const activeShortField = getFieldName(
+    "shortDescription",
+  ) as keyof PoiFormData;
+  const activeFullField = getFieldName("fullDescription") as keyof PoiFormData;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
@@ -133,78 +139,68 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
         className="space-y-4"
         dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
       >
-        <div>
-          <FormFieldWrapper
-            required
-            label={t("poi_name")}
-            error={errors?.name}
-            inputHintText={`${formData.nameEn?.length ?? 0}/50 ${tc("max_characters")}`}
-          >
-            <input
-              type="text"
-              maxLength={50}
-              value={formData[getFieldName("name") as keyof PoiFormData]}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [getFieldName("name")]: e.target.value,
-                })
-              }
-              placeholder={getPlaceholder("name")}
-              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-            />
-          </FormFieldWrapper>
-        </div>
+        <FormFieldWrapper
+          required
+          label={t("poi_name")}
+          error={errors?.name}
+          inputHintText={`${(formData[activeNameField] as string)?.length ?? 0}/50 ${tc("max_characters")}`}
+        >
+          <input
+            type="text"
+            maxLength={50}
+            value={formData[activeNameField] as string}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("name")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("name")}
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+          />
+        </FormFieldWrapper>
 
-        <div>
-          <FormFieldWrapper
-            required
-            label={t("short_description")}
-            error={errors?.shortDescription}
-            inputHintText={`${formData.shortDescriptionEn?.length ?? 0}/50 ${tc("max_characters")}`}
-          >
-            <textarea
-              rows={3}
-              maxLength={50}
-              value={
-                formData[getFieldName("shortDescription") as keyof PoiFormData]
-              }
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [getFieldName("shortDescription")]: e.target.value,
-                })
-              }
-              placeholder={getPlaceholder("short")}
-              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-            />
-          </FormFieldWrapper>
-        </div>
+        <FormFieldWrapper
+          required
+          label={t("short_description")}
+          error={errors?.shortDescription}
+          inputHintText={`${(formData[activeShortField] as string)?.length ?? 0}/50 ${tc("max_characters")}`}
+        >
+          <textarea
+            rows={3}
+            maxLength={50}
+            value={formData[activeShortField] as string}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("shortDescription")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("short")}
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+          />
+        </FormFieldWrapper>
 
-        <div>
-          <FormFieldWrapper
-            required
-            label={t("full_description")}
-            error={errors?.fullDescription}
-            inputHintText={`${formData.fullDescriptionEn?.length ?? 0}/500 ${tc("max_characters")}`}
-          >
-            <textarea
-              rows={6}
-              maxLength={500}
-              value={
-                formData[getFieldName("fullDescription") as keyof PoiFormData]
-              }
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [getFieldName("fullDescription")]: e.target.value,
-                })
-              }
-              placeholder={getPlaceholder("full")}
-              className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
-            />
-          </FormFieldWrapper>
-        </div>
+        <FormFieldWrapper
+          required
+          label={t("full_description")}
+          error={errors?.fullDescription}
+          inputHintText={`${(formData[activeFullField] as string)?.length ?? 0}/500 ${tc("max_characters")}`}
+        >
+          <textarea
+            rows={6}
+            maxLength={500}
+            value={formData[activeFullField] as string}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                [getFieldName("fullDescription")]: e.target.value,
+              })
+            }
+            placeholder={getPlaceholder("full")}
+            className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
+          />
+        </FormFieldWrapper>
       </div>
 
       {isSuperadmin && (

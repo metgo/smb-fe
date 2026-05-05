@@ -71,5 +71,9 @@
   "images_uploaded": "صور تم رفعها",
   "review_submit": "مراجعة وإرسال",
   "edit": "تعديل",
-  "primary_category": "الفئة الرئيسية"
+  "primary_category": "الفئة الرئيسية",
+  "step_translation": "الترجمة",
+  "auto_translate": "ترجمة تلقائية",
+  "translate_hint": "أدخل النص للترجمة",
+  "translating": "جارٍ الترجمة..."
 }

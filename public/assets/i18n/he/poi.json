@@ -71,5 +71,9 @@
   "images_uploaded": "תמונות הועלו",
   "review_submit": "סקירה ושליחה",
   "edit": "ערוך",
-  "primary_category": "קטגוריה ראשית"
+  "primary_category": "קטגוריה ראשית",
+  "step_translation": "תרגום",
+  "auto_translate": "תרגום אוטומטי",
+  "translate_hint": "הזן טקסט לתרגום",
+  "translating": "מתרגם..."
 }

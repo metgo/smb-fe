@@ -3,13 +3,11 @@ import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Bookmark,
   ChevronDown,
   Edit,
   Eye,
   MoreHorizontal,
   MousePointer,
-  Share2,
   Timer,
   TrendingUp,
   Users,
