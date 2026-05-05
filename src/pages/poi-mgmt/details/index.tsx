@@ -72,37 +72,32 @@ export default function PoiDetailsPage() {
     {
       icon: <Eye className="w-5 h-5 text-green-600" />,
       title: t("page_views"),
-      value: data?.pageViews?.toLocaleString() || 0,
+      value: data?.pageViews?.toLocaleString() || "0",
+    },
+    {
+      icon: <Users className="w-5 h-5 text-green-600" />,
+      title: t("active_users"),
+      value: data?.activeUsers?.toLocaleString() || "0",
     },
     {
       icon: <Users className="w-5 h-5 text-green-600" />,
       title: t("unique_visitors"),
-      value: data?.uniqueVisitors?.toLocaleString() || 0,
+      value: data?.totalUniqueVisitors?.toLocaleString() || "0",
     },
     {
       icon: <MousePointer className="w-5 h-5 text-green-600" />,
       title: t("clicks"),
-      value: data?.clicks?.toLocaleString() || 0,
+      value: data?.clicks?.toLocaleString() || "0",
     },
     {
-      icon: <Bookmark className="w-5 h-5 text-green-600" />,
-      title: t("bookmarks"),
-      value: data?.bookmarks?.toLocaleString() || 0,
-    },
-    {
-      icon: <Share2 className="w-5 h-5 text-green-600" />,
-      title: t("shares"),
-      value: data?.shares?.toLocaleString() || 0,
+      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
+      title: t("views_per_user"),
+      value: data?.viewsPerUser || "0",
     },
     {
       icon: <Timer className="w-5 h-5 text-green-600" />,
       title: t("avg_time_on_page"),
-      value: `${data?.averageEngagementTime || 0}`,
-    },
-    {
-      icon: <TrendingUp className="w-5 h-5 text-green-600" />,
-      title: t("conversion_rate"),
-      value: `${data?.conversionRate || 0}%`,
+      value: data?.averageEngagementTime || "0s",
     },
   ];
 
