@@ -117,8 +117,8 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
         <div>
           <p className={labelClass}>{t("tags")}</p>
           <p className={valueClass}>
-            {formData.tags?.length > 0
-              ? `${formData.tags.length} ${t("tags_added")}`
+            {formData?.tags?.length > 0
+              ? `${formData?.tags?.length} ${t("tags_added")}`
               : "-"}
           </p>
         </div>

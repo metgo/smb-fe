@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import RichTextEditor from "@/pages/articles/components/sub-components/RichTextEditor";
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
@@ -11,36 +10,29 @@ interface ArticleContentFormProps {
 export default function PoiContentForm({
   formData,
   onChange,
-  syncKey,
-  editingLanguage,
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
-  const {
-    bgSecondary,
-    bgPrimary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-  } = useThemeClasses();
+  const { t: tPoi } = useTranslation("poi");
+  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
   // Detect which language actually has content, prioritize that
   const detectPrimaryLang = (): "en" | "he" | "ar" => {
     if (
-      formData.title?.trim() ||
-      formData.shortDescription?.trim() ||
-      formData.content?.trim()
+      formData?.title?.trim() ||
+      formData?.shortDescription?.trim() ||
+      formData?.content?.trim()
     )
       return "en";
     if (
-      formData.titleHe?.trim() ||
-      formData.shortDescriptionHe?.trim() ||
-      formData.contentHe?.trim()
+      formData?.titleHe?.trim() ||
+      formData?.shortDescriptionHe?.trim() ||
+      formData?.contentHe?.trim()
     )
       return "he";
     if (
-      formData.titleAr?.trim() ||
-      formData.shortDescriptionAr?.trim() ||
-      formData.contentAr?.trim()
+      formData?.titleAr?.trim() ||
+      formData?.shortDescriptionAr?.trim() ||
+      formData?.contentAr?.trim()
     )
       return "ar";
     return "en";
@@ -104,18 +96,22 @@ export default function PoiContentForm({
           {(formData[shortDescField] || "").length} {t("characters")}
         </p>
       </div>
-
-      <RichTextEditor
-        content={formData[contentField] || ""}
-        onChange={(html) => onChange({ [contentField]: html })}
-        bgPrimary={bgPrimary}
-        bgSecondary={bgSecondary}
-        textPrimary={textPrimary}
-        textTertiary={textTertiary}
-        borderColor={borderColor}
-        syncKey={syncKey}
-        editingLanguage={editingLanguage}
-      />
+      <div>
+        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
+          {tPoi("description")} <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          value={formData[contentField] || ""}
+          onChange={(e) => onChange({ [contentField]: e.target.value })}
+          placeholder={tPoi("description_placeholder")}
+          className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
+          rows={3}
+          dir={dir}
+        />
+        <p className={`text-xs ${textTertiary} mt-1`}>
+          {(formData[contentField] || "").length} {t("characters")}
+        </p>
+      </div>
     </div>
   );
 }

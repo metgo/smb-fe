@@ -27,7 +27,7 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { allTags } = useCommon();
-  const [getGeneratedTags] = useGenerateTagsMutation();
+  const [getGeneratedTags, { isLoading }] = useGenerateTagsMutation();
 
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
@@ -39,7 +39,7 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
       .then((res: any) => {
         if (!res?.data?.length) return;
         const newTags: Tag[] = res.data
-          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
+          .filter((tag: Tag) => !formData?.tags?.some((t) => t.en === tag.en))
           .map((tag: Tag) => ({
             en: tag.en || "",
             he: tag.he || "",
@@ -74,7 +74,7 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
       const value = getValueByLanguage(item);
       return (
         typeof value === "string" &&
-        value.trim().toLowerCase().includes(tagInput.toLowerCase()) &&
+        value?.trim()?.toLowerCase()?.includes(tagInput.toLowerCase()) &&
         !isDuplicateTag(value)
       );
     }) ?? [];
@@ -93,7 +93,7 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
   const handleRemoveTag = (index: number) => {
     setFormData({
       ...formData,
-      tags: formData.tags.filter((_, i) => i !== index),
+      tags: formData?.tags?.filter((_, i) => i !== index),
     });
   };
 
@@ -110,8 +110,8 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
           className={`relative p-3 rounded-lg border min-h-14 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300"}`}
         >
           <div className="flex flex-wrap gap-2 items-center">
-            {formData.tags
-              .filter((tag) => tag?.[language]?.trim())
+            {formData?.tags
+              ?.filter((tag) => tag?.[language]?.trim())
               .map((tag, idx) => (
                 <span
                   key={`${tag.en}-${idx}`}
@@ -127,6 +127,32 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
                   </button>
                 </span>
               ))}
+            {isLoading && (
+              <span
+                className={`text-xs flex items-center gap-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+              >
+                <svg
+                  className="w-3 h-3 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                {t("generating_tags")}
+              </span>
+            )}
 
             <input
               type="text"

@@ -73,17 +73,17 @@ const PoiTranslateButton = ({
 
     // Check which language bucket actually has content
     const enSample =
-      data.title?.trim() ||
-      data.shortDescription?.trim() ||
-      data.content?.trim();
+      data?.title?.trim() ||
+      data?.shortDescription?.trim() ||
+      data?.content?.trim();
     const heSample =
-      data.titleHe?.trim() ||
-      data.shortDescriptionHe?.trim() ||
-      data.contentHe?.trim();
+      data?.titleHe?.trim() ||
+      data?.shortDescriptionHe?.trim() ||
+      data?.contentHe?.trim();
     const arSample =
-      data.titleAr?.trim() ||
-      data.shortDescriptionAr?.trim() ||
-      data.contentAr?.trim();
+      data?.titleAr?.trim() ||
+      data?.shortDescriptionAr?.trim() ||
+      data?.contentAr?.trim();
 
     // If no content at all, wait (prod latency guard)
     if (!enSample && !heSample && !arSample) return;
@@ -104,15 +104,15 @@ const PoiTranslateButton = ({
     if ((detected === "he" || detected === "ar") && enSample) {
       const f = LANG_FIELDS[detected];
       const updates: Record<string, any> = {};
-      if (data.title?.trim()) {
+      if (data?.title?.trim()) {
         updates[f.title] = data.title;
         updates.title = "";
       }
-      if (data.shortDescription?.trim()) {
+      if (data?.shortDescription?.trim()) {
         updates[f.shortDescription] = data.shortDescription;
         updates.shortDescription = "";
       }
-      if (data.content?.trim()) {
+      if (data?.content?.trim()) {
         updates[f.content] = data.content;
         updates.content = "";
       }
@@ -221,7 +221,7 @@ const PoiTranslateButton = ({
                 <label
                   className={`block text-sm font-medium ${textSecondary} mb-1`}
                 >
-                  {t("content")}
+                  {t("description")}
                 </label>
                 <textarea
                   dir={dir}
