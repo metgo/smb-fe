@@ -70,7 +70,7 @@ export default function PoiContentForm({
   const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 mt-6">
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("title")} <span className="text-red-500">*</span>

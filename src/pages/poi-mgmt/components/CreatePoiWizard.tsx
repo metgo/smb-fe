@@ -375,6 +375,12 @@ export default function CreatePoiWizard({
           !formData.contentHe?.trim()
         )
           newErrors.fullDescription = t("required_field");
+        if (!selectedDmoId) newErrors.dmo = t("required_field");
+        if (!selectedAuthorityId) newErrors.authority = t("required_field");
+        break;
+
+      case 2:
+        if (!formData?.email) newErrors.email = t("required_field");
         break;
       case 6:
         if (!addr.location) newErrors.address = t("required_field");
