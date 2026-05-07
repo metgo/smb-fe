@@ -10,7 +10,7 @@ interface ProductBasicInfoProps {
   formData: {
     businessId: string;
 
-    name: string;
+    nameEn: string;
     nameHe: string;
     nameAr: string;
 
@@ -18,7 +18,7 @@ interface ProductBasicInfoProps {
     shortDescriptionHe: string;
     shortDescriptionAr: string;
 
-    fullDescription: string;
+    fullDescriptionEn: string;
     fullDescriptionHe: string;
     fullDescriptionAr: string;
   };
@@ -48,22 +48,61 @@ const ProductBasicInfo = ({
   searchBusiness,
   presetBusinessId,
 }: ProductBasicInfoProps) => {
+  console.log("🚀 ~ ProductBasicInfo ~ formData:", formData);
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
 
   const { t: tc } = useTranslation("common");
-
-  //  Dynamic key resolver
-  const getFieldKey = (
-    base: "name" | "shortDescription" | "fullDescription",
-  ) => {
-    if (selectedFormLanguage === "en") return base;
-    if (selectedFormLanguage === "he")
-      return `${base}He` as keyof typeof formData;
-    if (selectedFormLanguage === "ar")
-      return `${base}Ar` as keyof typeof formData;
-    return base;
+  const detectPrimaryLang = (): "en" | "he" | "ar" => {
+    if (
+      formData.nameEn?.trim() ||
+      formData.shortDescription?.trim() ||
+      formData.fullDescriptionEn?.trim()
+    )
+      return "en";
+    if (
+      formData.nameHe?.trim() ||
+      formData.shortDescriptionHe?.trim() ||
+      formData.fullDescriptionHe?.trim()
+    )
+      return "he";
+    if (
+      formData.nameAr?.trim() ||
+      formData.shortDescriptionAr?.trim() ||
+      formData.fullDescriptionAr?.trim()
+    )
+      return "ar";
+    return "en";
   };
+  const primaryLang = detectPrimaryLang();
+  const FIELD_MAP = {
+    en: {
+      name: "nameEn",
+      shortDesc: "shortDescription",
+      fullDesc: "fullDescriptionEn",
+    },
+    he: {
+      name: "nameHe",
+      shortDesc: "shortDescriptionHe",
+      fullDesc: "fullDescriptionHe",
+    },
+    ar: {
+      name: "nameAr",
+      shortDesc: "shortDescriptionAr",
+      fullDesc: "fullDescriptionAr",
+    },
+  } as const;
+  //  Dynamic key resolver
+  // const getFieldKey = (
+  //   base: "name" | "shortDescription" | "fullDescription",
+  // ) => {
+  //   if (selectedFormLanguage === "en") return base;
+  //   if (selectedFormLanguage === "he")
+  //     return `${base}He` as keyof typeof formData;
+  //   if (selectedFormLanguage === "ar")
+  //     return `${base}Ar` as keyof typeof formData;
+  //   return base;
+  // };
 
   const getPlaceholder = (type: "name" | "short" | "full") => {
     const placeholders: Record<string, Record<string, string>> = {
@@ -85,10 +124,11 @@ const ProductBasicInfo = ({
     };
     return placeholders[selectedFormLanguage][type];
   };
+  const fields = FIELD_MAP[primaryLang];
 
-  const currentNameKey = getFieldKey("name");
-  const currentShortKey = getFieldKey("shortDescription");
-  const currentFullKey = getFieldKey("fullDescription");
+  const currentNameKey = fields.name;
+  const currentShortKey = fields.shortDesc;
+  const currentFullKey = fields.fullDesc;
 
   return (
     <div className="space-y-6">

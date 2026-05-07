@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -13,6 +13,7 @@ import {
   Eye,
   CreditCard,
   FileText,
+  LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
@@ -46,6 +47,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
+import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -173,7 +175,7 @@ export default function CreateProductWizard({
     nameEn: "",
     nameHe: "",
     nameAr: "",
-    shortDescription: "",
+    shortDescriptionEn: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
     fullDescriptionEn: "",
@@ -204,7 +206,9 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }));
+  }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -248,7 +252,7 @@ export default function CreateProductWizard({
     const loadedFormData = {
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
-      name:
+      nameEn:
         opMode === IOpMode.DUPLICATE
           ? `${product?.name || ""} (Duplicate)`
           : product?.name || "",
@@ -261,11 +265,11 @@ export default function CreateProductWizard({
           ? `${product?.nameAr || ""} (نسخ)`
           : product?.nameAr || "",
 
-      shortDescription: product?.shortDescription || "",
+      shortDescriptionEn: product?.shortDescription || "",
       shortDescriptionHe: product?.shortDescriptionHe || "",
       shortDescriptionAr: product?.shortDescriptionAr || "",
 
-      fullDescription: product?.description || "",
+      fullDescriptionEn: product?.description || "",
       fullDescriptionHe: product?.descriptionHe || "",
       fullDescriptionAr: product?.descriptionAr || "",
 
@@ -382,11 +386,13 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: t("product_segmentation"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: CreditCard },
-    { number: 4, title: t("product_media"), icon: ImageIcon },
-    { number: 5, title: t("product_delivery_service"), icon: Truck },
-    { number: 6, title: t("product_review"), icon: Eye },
+    { number: 2, title: t("translation"), icon: LanguagesIcon },
+
+    { number: 3, title: t("product_segmentation"), icon: Package },
+    { number: 4, title: t("product_pricing"), icon: CreditCard },
+    { number: 5, title: t("product_media"), icon: ImageIcon },
+    { number: 6, title: t("product_delivery_service"), icon: Truck },
+    { number: 7, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -600,6 +606,10 @@ export default function CreateProductWizard({
         );
       case 2:
         return (
+          <ProductTranslateButton formData={formData} onChange={handleChange} />
+        );
+      case 3:
+        return (
           <Attributes
             name={formData.nameHe || formData.nameEn || formData.nameAr}
             description={
@@ -616,11 +626,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 3:
-        return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <Media {...mediaProps} {...commonProps} />;
+        return <ProductPricingAvailability {...commonProps} />;
       case 5:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 6:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -630,7 +640,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={setIsSameAsBusiness}
           />
         );
-      case 6:
+      case 7:
         return (
           <ProductReviewSubmit
             {...commonProps}
