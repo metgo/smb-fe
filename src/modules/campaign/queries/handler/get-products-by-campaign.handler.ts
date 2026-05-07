@@ -62,9 +62,14 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
       if (page) productsQuery.page = page;
       if (limit) productsQuery.limit = limit;
       const customSelect = '_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug';
-
+      const customPopulate = [
+        {
+          path: 'businessId',
+          select: '_id logo name nameHe nameAr slug geoLocation',
+        },
+      ];
       const products = await this.queryBus.execute(
-        new GetAllProductsQuery(productsQuery, customSelect),
+        new GetAllProductsQuery(productsQuery, customSelect, customPopulate),
       );
 
       if (voucherId) {
@@ -110,12 +115,15 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
           products.data,
           campaignDetail,
           voucher,
+          locale,
         );
       }
 
       return new GetProductsByCampaignResponse(
         products.data,
         campaignDetail,
+        undefined,
+        locale,
       );
     } catch (err) {
       exceptionHandling(err);

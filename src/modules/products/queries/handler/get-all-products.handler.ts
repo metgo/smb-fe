@@ -58,7 +58,7 @@ implements IQueryHandler<GetAllProductsQuery> {
       let select
         = '_id slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId groupTypesId accessibilitiesId tagsId categories subCategories productId deliveryArea isPickUpAvailable deliveryAdditionalInfo deliverySpecificSellerInfo deliveryReturnExchange';
 
-      let populate = [
+      let populate: any = [
         {
           path: 'businessId',
           select: '_id logo name nameHe nameAr isAlwaysOpen slug',
@@ -73,9 +73,12 @@ implements IQueryHandler<GetAllProductsQuery> {
         },
       ];
 
-      if (queries.customSelect) {
+      if (queries?.customSelect) {
         select = queries.customSelect;
-        populate = [];
+      }
+
+      if (queries?.customPopulate) {
+        populate = queries.customPopulate;
       }
 
       const productsList = await queryhandler<ProductsAudit>(

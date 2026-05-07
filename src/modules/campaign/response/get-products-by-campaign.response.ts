@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Locale } from 'src/common/enum';
 
 export class MiniSite {
   constructor(data?: Partial<MiniSite>) {
@@ -132,15 +133,96 @@ export class Product {
   @ApiProperty()
   @IsOptional()
     price: any;
+
+  @ApiProperty()
+  @IsOptional()
+    businessId: any;
 }
 
 export class GetProductsByCampaignResponse {
-  constructor(products: any[], camp: any, voucher?: any) {
+  constructor(
+    products: any[],
+    camp: any,
+    voucher?: any,
+    locale?: string,
+  ) {
     this._id = camp?._id?.toString();
-    this.products = (products || []).map(product => ({
-      ...product,
-      images: (product.images || []).map(({ subCoordinates, ...img }: any) => img),
-    }));
+
+    this.products = (products || []).map(product => {
+      let localizedName = product.name;
+      let localizedDescription = product.description;
+
+      if (locale === Locale.HEBREW) {
+        localizedName
+          = product.nameHe || product.name || product.nameAr;
+
+        localizedDescription
+          = product.descriptionHe
+          || product.description
+          || product.descriptionAr;
+      }
+
+      if (locale === Locale.ARABIC) {
+        localizedName
+          = product.nameAr || product.name || product.nameHe;
+
+        localizedDescription
+          = product.descriptionAr
+          || product.description
+          || product.descriptionHe;
+      }
+
+      let localizedBusiness = product.businessId;
+
+      if (product.businessId) {
+        let localizedBusinessName = product.businessId.name;
+
+        if (locale === Locale.HEBREW) {
+          localizedBusinessName
+            = product.businessId.nameHe
+            || product.businessId.name
+            || product.businessId.nameAr;
+        }
+
+        if (locale === Locale.ARABIC) {
+          localizedBusinessName
+            = product.businessId.nameAr
+            || product.businessId.name
+            || product.businessId.nameHe;
+        }
+
+        const {
+          nameHe,
+          nameAr,
+          ...businessData
+        } = product.businessId.toObject
+          ? product.businessId.toObject()
+          : product.businessId;
+
+        localizedBusiness = {
+          ...businessData,
+          name: localizedBusinessName,
+        };
+      }
+
+      const {
+        nameHe,
+        nameAr,
+        descriptionHe,
+        descriptionAr,
+        ...productData
+      } = product.toObject ? product.toObject() : product;
+
+      return {
+        ...productData,
+        name: localizedName,
+        description: localizedDescription,
+        businessId: localizedBusiness,
+        images: (product.images || []).map(
+          ({ subCoordinates, ...img }: any) => img,
+        ),
+      };
+    });
 
     this.miniSite = new MiniSite({
       title: camp?.miniSite?.title,
@@ -150,6 +232,7 @@ export class GetProductsByCampaignResponse {
       isDeliveredToHome: camp?.miniSite?.isDeliveredToHome,
       logoPath: camp?.logoPath,
     });
+
     this.companyInfo = new CompanyInfo(camp?.companyInfo);
 
     if (voucher) {
@@ -174,6 +257,6 @@ export class GetProductsByCampaignResponse {
   @ApiProperty({ required: true, type: CompanyInfo })
     companyInfo: CompanyInfo;
 
-  @ApiProperty({ required: true, type: VoucherInfo })
+  @ApiProperty({ required: false, type: VoucherInfo })
     voucher: VoucherInfo;
 }

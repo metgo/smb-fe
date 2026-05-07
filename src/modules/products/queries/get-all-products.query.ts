@@ -4,5 +4,6 @@ export class GetAllProductsQuery {
   constructor(
     public readonly query: GetAllProductsRequest,
     public readonly customSelect?: string,
+    public readonly customPopulate?: any[],
   ) {}
 }
