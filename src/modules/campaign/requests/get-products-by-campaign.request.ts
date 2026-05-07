@@ -20,7 +20,7 @@ export class GetProductsByCampaignRequest extends PaginationFilterQuery {
     required: false,
     default: Locale.HEBREW,
   })
-    @IsOptional()
-    @IsEnum(Locale)
+  @IsOptional()
+  @IsEnum(Locale)
     locale: Locale = Locale.HEBREW;
 }

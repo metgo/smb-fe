@@ -140,12 +140,7 @@ export class Product {
 }
 
 export class GetProductsByCampaignResponse {
-  constructor(
-    products: any[],
-    camp: any,
-    voucher?: any,
-    locale?: string,
-  ) {
+  constructor(products: any[], camp: any, voucher?: any, locale?: string) {
     this._id = camp?._id?.toString();
 
     this.products = (products || []).map(product => {
@@ -153,23 +148,17 @@ export class GetProductsByCampaignResponse {
       let localizedDescription = product.description;
 
       if (locale === Locale.HEBREW) {
-        localizedName
-          = product.nameHe || product.name || product.nameAr;
+        localizedName = product.nameHe || product.name || product.nameAr;
 
         localizedDescription
-          = product.descriptionHe
-          || product.description
-          || product.descriptionAr;
+          = product.descriptionHe || product.description || product.descriptionAr;
       }
 
       if (locale === Locale.ARABIC) {
-        localizedName
-          = product.nameAr || product.name || product.nameHe;
+        localizedName = product.nameAr || product.name || product.nameHe;
 
         localizedDescription
-          = product.descriptionAr
-          || product.description
-          || product.descriptionHe;
+          = product.descriptionAr || product.description || product.descriptionHe;
       }
 
       let localizedBusiness = product.businessId;
@@ -191,11 +180,7 @@ export class GetProductsByCampaignResponse {
             || product.businessId.nameHe;
         }
 
-        const {
-          nameHe,
-          nameAr,
-          ...businessData
-        } = product.businessId.toObject
+        const { nameHe, nameAr, ...businessData } = product.businessId.toObject
           ? product.businessId.toObject()
           : product.businessId;
 
@@ -206,12 +191,9 @@ export class GetProductsByCampaignResponse {
       }
 
       const {
-        nameHe,
-        nameAr,
-        descriptionHe,
-        descriptionAr,
-        ...productData
-      } = product.toObject ? product.toObject() : product;
+        nameHe, nameAr, descriptionHe, descriptionAr, ...productData
+      }
+        = product.toObject ? product.toObject() : product;
 
       return {
         ...productData,

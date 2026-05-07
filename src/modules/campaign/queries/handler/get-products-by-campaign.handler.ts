@@ -61,7 +61,8 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
 
       if (page) productsQuery.page = page;
       if (limit) productsQuery.limit = limit;
-      const customSelect = '_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug';
+      const customSelect
+        = '_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug';
       const customPopulate = [
         {
           path: 'businessId',

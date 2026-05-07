@@ -195,16 +195,24 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       campOrConditions.push({ businessId: { $in: campDetails.businessIds } });
     }
 
-    const products = await this.ProductsAuditModel.find({
+    const findQuery = {
       status: ProductStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
-      ...(campOrConditions.length && { $or: campOrConditions }),
-      $or: [
-        { 'quantity.remaining': { $gt: 0 } },
-        { 'quantity.isUnlimited': true },
+
+      $and: [
+        ...(campOrConditions.length ? [{ $or: campOrConditions }] : []),
+
+        {
+          $or: [
+            { 'quantity.remaining': { $gt: 0 } },
+            { 'quantity.isUnlimited': true },
+          ],
+        },
       ],
-    })
+    };
+
+    const products = await this.ProductsAuditModel.find(findQuery)
       .select(
         '_id productId name nameHe nameAr slug shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
       )
