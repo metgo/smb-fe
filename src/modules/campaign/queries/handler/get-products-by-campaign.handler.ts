@@ -34,7 +34,7 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
       const { queryData, campCode, loggedInUser } = queries;
 
       const {
-        customerEmail, page, limit, voucherId,
+        customerEmail, page, limit, voucherId, locale,
       } = queryData;
 
       const campaignDetail = await this.CampaignModel.findOne({
@@ -57,10 +57,11 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
 
       const productsQuery = new GetAllProductsRequest();
       productsQuery.campCode = campCode;
+      productsQuery.locale = locale;
 
       if (page) productsQuery.page = page;
       if (limit) productsQuery.limit = limit;
-      const customSelect = '_id productId name description images price';
+      const customSelect = '_id productId name description images price nameHe nameAr descriptionHe descriptionAr slug';
 
       const products = await this.queryBus.execute(
         new GetAllProductsQuery(productsQuery, customSelect),
@@ -112,7 +113,10 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
         );
       }
 
-      return new GetProductsByCampaignResponse(products.data, campaignDetail);
+      return new GetProductsByCampaignResponse(
+        products.data,
+        campaignDetail,
+      );
     } catch (err) {
       exceptionHandling(err);
     }
