@@ -23,7 +23,7 @@ implements IQueryHandler<GetAllProductsByBusinessIdQuery> {
       const { businessId, locale } = queries;
 
       const select
-        = '_id name nameHe nameAr description descriptionHe descriptionAr images price businessId productId';
+        = '_id name nameHe nameAr description descriptionHe descriptionAr images price businessId productId slug';
 
       const findQuery = {
         businessId,
