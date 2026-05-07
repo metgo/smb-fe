@@ -41,7 +41,7 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { modelTitle, removeNulls } from "@/helpers";
+import { detectLanguage, modelTitle, removeNulls } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
@@ -66,6 +66,7 @@ export default function CreateProductWizard({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
+  const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
   const { isTraveller } = useUserRoles();
@@ -172,13 +173,13 @@ export default function CreateProductWizard({
 
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
-    nameEn: "",
+    name: "",
     nameHe: "",
     nameAr: "",
-    shortDescriptionEn: "",
+    shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescriptionEn: "",
+    fullDescription: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     type: "",
@@ -207,7 +208,7 @@ export default function CreateProductWizard({
     groupTypes: [] as string[],
   });
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev) => ({ ...prev, ...updates }));
+    setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
@@ -252,7 +253,7 @@ export default function CreateProductWizard({
     const loadedFormData = {
       // setp-1: basic info
       businessId: product?.businessId?._id || "",
-      nameEn:
+      name:
         opMode === IOpMode.DUPLICATE
           ? `${product?.name || ""} (Duplicate)`
           : product?.name || "",
@@ -265,11 +266,11 @@ export default function CreateProductWizard({
           ? `${product?.nameAr || ""} (نسخ)`
           : product?.nameAr || "",
 
-      shortDescriptionEn: product?.shortDescription || "",
+      shortDescription: product?.shortDescription || "",
       shortDescriptionHe: product?.shortDescriptionHe || "",
       shortDescriptionAr: product?.shortDescriptionAr || "",
 
-      fullDescriptionEn: product?.description || "",
+      fullDescription: product?.description || "",
       fullDescriptionHe: product?.descriptionHe || "",
       fullDescriptionAr: product?.descriptionAr || "",
 
@@ -467,12 +468,51 @@ export default function CreateProductWizard({
       toast.error(t("fill_all_fields"));
       return;
     }
-    setIsPublishing(true);
 
-    await saveDraft(true);
+    setIsPublishing(true);
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+
+    await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const name = data.name?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const description = data.description?.trim() || "";
 
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = name || shortDescription || description;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    setDetectedLanguage(detectedLang);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.nameHe = name || data.nameHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.descriptionHe = description || data.descriptionHe;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.nameAr = name || data.nameAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.descriptionAr = description || data.descriptionAr;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
   // Draft Save Payload per Step
   const stepPayloadMap = {
     completionPercent: completionPercent,
@@ -520,7 +560,7 @@ export default function CreateProductWizard({
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
   };
 
-  const saveDraft = async (isPublish = false) => {
+  const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
       let internalProductId;
 
@@ -533,7 +573,7 @@ export default function CreateProductWizard({
       }
 
       // Only send payload for the current step
-      const payload = stepPayloadMap;
+      const payload = processedFormData;
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
@@ -611,10 +651,10 @@ export default function CreateProductWizard({
       case 3:
         return (
           <Attributes
-            name={formData.nameHe || formData.nameEn || formData.nameAr}
+            name={formData.nameHe || formData.name || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
-              formData.fullDescriptionEn ||
+              formData.fullDescription ||
               formData.fullDescriptionAr
             }
             {...commonProps}
