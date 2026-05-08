@@ -4,22 +4,15 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
-
 }
 
 export default function ProductContentForm({
   formData,
   onChange,
- 
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
-  const {
-    bgSecondary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-  } = useThemeClasses();
+  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
   // Detect which language actually has content, prioritize that
   const detectPrimaryLang = (): "en" | "he" | "ar" => {
     if (
@@ -46,7 +39,11 @@ export default function ProductContentForm({
   const primaryLang = detectPrimaryLang();
 
   const FIELD_MAP = {
-    en: { name: "name", shortDesc: "shortDescription", fullDescription: "fullDescription" },
+    en: {
+      name: "name",
+      shortDesc: "shortDescription",
+      fullDescription: "fullDescription",
+    },
     he: {
       name: "nameHe",
       shortDesc: "shortDescriptionHe",

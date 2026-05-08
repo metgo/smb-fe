@@ -1,6 +1,5 @@
 import { ReactSelect } from "@/components/form-fields";
 import ProductContentForm from "./ProductContentForm";
-import { useCallback } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductBasicInfoProps {
