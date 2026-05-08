@@ -214,8 +214,8 @@ export class OrdersService {
 
       const baseUrl
         = this.configService.get('ENV_NAME') === 'prod'
-          ? 'https://console.metgo.app/'
-          : 'https://stg.console.metgo.app/';
+          ? 'https://workspace.metgo.app/'
+          : 'https://stg.workspace.metgo.app/';
 
       const orderUrlWithUTM = `${baseUrl}orders/${newOrder._id.toString()}?utm_source=qr_code&utm_medium=tav8`;
 
