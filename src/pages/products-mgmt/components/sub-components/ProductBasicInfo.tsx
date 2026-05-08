@@ -49,9 +49,9 @@ const ProductBasicInfo = ({
   presetBusinessId,
 }: ProductBasicInfoProps) => {
   const { textSecondary } = useThemeClasses();
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+  const handleChange = (updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+  };
 
   return (
     <div className="space-y-6">
