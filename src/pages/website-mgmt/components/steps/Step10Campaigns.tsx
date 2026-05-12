@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { Check, Megaphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Step10CampaignsProps {
@@ -16,6 +17,7 @@ const Step10Campaigns = ({
   formData,
   onChange,
 }: Step10CampaignsProps) => {
+  const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, cardClasses, borderColor, isDark } =
     useThemeClasses();
 
@@ -33,7 +35,7 @@ const Step10Campaigns = ({
         <div className="flex items-center gap-2">
           <Megaphone className="w-4 h-4 text-teal-500" />
           <h3 className={clsx("text-sm font-semibold", textPrimary)}>
-            Select Primary Campaign
+            {t("campaigns_primary_title")}
           </h3>
         </div>
 
@@ -100,11 +102,11 @@ const Step10Campaigns = ({
         <div className="flex items-center gap-2">
           <Megaphone className="w-4 h-4 text-teal-500" />
           <h3 className={clsx("text-sm font-semibold", textPrimary)}>
-            Select Campaigns
+            {t("campaigns_title")}
           </h3>
           <span className={clsx("text-xs", textSecondary)}>
             {formData.campIds.length > 0 &&
-              `(${formData.campIds.length} selected)`}
+              `(${formData.campIds.length} ${t("selected")})`}
           </span>
         </div>
 

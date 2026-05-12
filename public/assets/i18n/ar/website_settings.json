@@ -27,6 +27,7 @@
   "settings_publish_failed": "فشل نشر الإعدادات",
   "field_required": "هذا الحقل مطلوب",
 
+  "generals_title": "الإعدادات العامة",
   "branding_title": "العلامة التجارية والوسائط",
   "click_to_upload": "انقر للرفع",
   "select_dmo": "اختر مركز الوجهة",
@@ -168,6 +169,9 @@
   "select_format": "اختر تنسيقاً…",
   "multi_language_support": "دعم تعدد اللغات",
   "multi_language_desc": "تفعيل لغات متعددة على الموقع العام",
+
+  "campaigns_title": "الحملات",
+  "campaigns_primary_title": "الحملة الرئيسية",
 
   "partners_title": "الشركاء",
   "add_partner": "إضافة شريك",

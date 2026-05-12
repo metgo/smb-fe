@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { Image as ImageIcon } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Props {
@@ -22,9 +22,9 @@ const Step01Generals = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <ImageIcon className="w-5 h-5 text-teal-500" />
+        <Settings className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
-          {t("branding_title")}
+          {t("generals_title")}
         </h2>
       </div>
 

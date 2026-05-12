@@ -27,6 +27,7 @@
   "settings_publish_failed": "Failed to publish settings",
   "field_required": "This field is required",
 
+  "generals_title": "General Settings",
   "branding_title": "Branding & Media Assets",
   "click_to_upload": "Click to upload",
   "select_dmo": "Select DMO",
@@ -168,6 +169,9 @@
   "select_format": "Select format…",
   "multi_language_support": "Multi-Language Support",
   "multi_language_desc": "Enable multiple languages on the public-facing website",
+
+  "campaigns_title": "Campaigns",
+  "campaigns_primary_title": "Primary Campaign",
 
   "partners_title": "Partners",
   "add_partner": "Add Partner",

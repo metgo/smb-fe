@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
-import { ConfirmDialog, PageHeader, Spinner } from "@/components/shared";
+import { ConfirmDialog, PageHeader } from "@/components/shared";
 import {
   useDeletePartnerMutation,
   useGetAllPartnersQuery,
@@ -13,6 +13,7 @@ import {
 import CreatePartnerWizard from "./CreatePartnerWizard";
 import PartnerCard from "./PartnerCard";
 import { Handshake } from "lucide-react";
+import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 
 const PartnersPage = () => {
   const { t } = useTranslation("website_settings");
@@ -82,29 +83,33 @@ const PartnersPage = () => {
         onClick={handleOpenCreate}
       />
 
-      <Spinner isLoading={isLoading || isFetching} />
-
-      {partners?.length === 0 && !isFetching ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-          <Handshake className="w-12 h-12 mb-4 text-gray-300" />
-          <p className="text-lg font-medium mb-1">{t("no_partners_yet")}</p>
-          <p className="text-sm text-gray-400">{t("add_partner_desc")}</p>
-        </div>
+      {isLoading || isFetching ? (
+        <EntityCardsSkeleton count={7} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
-          {partners?.map((partner) => (
-            <PartnerCard
-              key={partner._id}
-              partner={partner}
-              websiteMap={websiteMap}
-              onEdit={() => handleEdit(partner._id)}
-              onDelete={() => setDeleteTargetId(partner._id)}
-              onToggleActive={() =>
-                handleToggleActive(partner._id, partner.isActive)
-              }
-            />
-          ))}
-        </div>
+        <>
+          {partners?.length === 0 && (!isFetching || !isFetching) ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+              <Handshake className="w-12 h-12 mb-4 text-gray-300" />
+              <p className="text-lg font-medium mb-1">{t("no_partners_yet")}</p>
+              <p className="text-sm text-gray-400">{t("add_partner_desc")}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+              {partners?.map((partner) => (
+                <PartnerCard
+                  key={partner._id}
+                  partner={partner}
+                  websiteMap={websiteMap}
+                  onEdit={() => handleEdit(partner._id)}
+                  onDelete={() => setDeleteTargetId(partner._id)}
+                  onToggleActive={() =>
+                    handleToggleActive(partner._id, partner.isActive)
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <ConfirmDialog
