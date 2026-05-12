@@ -1,4 +1,5 @@
 {
+  "select_business": "Select Business",
   "events_management_dashboard": "Events Management Dashboard",
   "events_management_desc": "Manage and analyze events with detailed metrics and reports",
   "total_events": "Total Events",

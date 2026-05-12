@@ -59,6 +59,8 @@ const ArticleTranslateButton = ({
 
   const [sourceLang, setSourceLang] = useState<LangKey>("en");
   const initialFormData = useRef(formData);
+  initialFormData.current = formData;
+
   const normalizedRef = useRef(false);
 
   // On first render: detect source language from base fields.
@@ -66,36 +68,58 @@ const ArticleTranslateButton = ({
   // language-specific fields so base (English) fields are free for translation.
   useEffect(() => {
     if (normalizedRef.current) return;
-    normalizedRef.current = true;
 
     const data = initialFormData.current;
-    const baseTitle = data.title?.trim() || "";
-    const baseDesc = data.shortDescription?.trim() || "";
-    const baseContent = data.content?.trim() || "";
 
-    const sample = baseTitle || baseDesc || baseContent;
-    const detected = (sample ? detectLanguage(sample) : "en") as LangKey;
+    // Check which language bucket actually has content
+    const enSample =
+      data.title?.trim() ||
+      data.shortDescription?.trim() ||
+      data.content?.trim();
+    const heSample =
+      data.titleHe?.trim() ||
+      data.shortDescriptionHe?.trim() ||
+      data.contentHe?.trim();
+    const arSample =
+      data.titleAr?.trim() ||
+      data.shortDescriptionAr?.trim() ||
+      data.contentAr?.trim();
+
+    // If no content at all, wait (prod latency guard)
+    if (!enSample && !heSample && !arSample) return;
+
+    normalizedRef.current = true;
+
+    // Determine source language by which bucket has content
+    // (don't rely on detectLanguage on base fields alone)
+    let detected: LangKey = "en";
+    if (heSample && !enSample) detected = "he";
+    else if (arSample && !enSample) detected = "ar";
+    else if (enSample) detected = detectLanguage(enSample) as LangKey;
+
     setSourceLang(detected);
 
-    if (detected === "he" || detected === "ar") {
+    // Only migrate if non-english content is sitting in base English fields
+    // (this was the original intent — handle mis-filed content)
+    if ((detected === "he" || detected === "ar") && enSample) {
       const f = LANG_FIELDS[detected];
       const updates: Record<string, any> = {};
-      if (baseTitle) {
-        updates[f.title] = baseTitle;
+      if (data.title?.trim()) {
+        updates[f.title] = data.title;
         updates.title = "";
       }
-      if (baseDesc) {
-        updates[f.shortDescription] = baseDesc;
+      if (data.shortDescription?.trim()) {
+        updates[f.shortDescription] = data.shortDescription;
         updates.shortDescription = "";
       }
-      if (baseContent) {
-        updates[f.content] = baseContent;
+      if (data.content?.trim()) {
+        updates[f.content] = data.content;
         updates.content = "";
       }
       if (Object.keys(updates).length > 0) onChange(updates);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // No migration needed if content is already in the right language bucket
+  }, [formData]);
 
   const handleTranslate = async () => {
     const srcFields = LANG_FIELDS[sourceLang];

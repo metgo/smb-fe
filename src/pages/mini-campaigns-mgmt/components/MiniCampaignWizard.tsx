@@ -221,7 +221,9 @@ export default function MiniCampaignWizard({
   const downloadSampleXLS = () => {
     const csvContent =
       "Name,Email,Phone\nJohn Doe,john@example.com,+972501234567\nJane Smith,jane@example.com,+972501234568";
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob(["﻿", csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "voucher-template.csv";
