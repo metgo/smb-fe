@@ -4,7 +4,6 @@ import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
 import { googlePointOfInterest } from "@/lib/utils";
 
-
 interface BoundaryMapProps {
   center: GeoJsonPoint | null;
   boundary: GeoJsonPolygon | null;
