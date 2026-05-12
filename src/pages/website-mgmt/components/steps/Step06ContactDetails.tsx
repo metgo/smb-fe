@@ -4,10 +4,10 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (
-    field: keyof SiteSettingsFormData,
+    field: keyof ISiteSettingsFormData,
     value: string | boolean,
   ) => void;
 }
@@ -55,17 +55,13 @@ function Toggle({
   );
 }
 
-const Step06ContactDetails=({
-  formData,
-  errors,
-  onChange,
-}: Props) =>{
+const Step06ContactDetails = ({ formData, errors, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
 
   const fields: {
-    field: keyof SiteSettingsFormData;
+    field: keyof ISiteSettingsFormData;
     label: string;
     placeholder: string;
     type?: string;
@@ -145,6 +141,47 @@ const Step06ContactDetails=({
         )}
       </div>
 
+      <div>
+        <label className={clsx("text-sm font-medium", textPrimary)}>
+          {t("whatsapp_message")}
+        </label>
+        <div className="grid grid-cols-3 gap-6">
+          <textarea
+            cols={4}
+            value={formData.whatsappMessageEn}
+            onChange={(e) => onChange("whatsappMessageEn", e.target.value)}
+            placeholder={t("whatsapp_message_en_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.whatsappMessageEn && "border-red-500",
+            )}
+          />
+          <textarea
+            cols={4}
+            value={formData.whatsappMessageHe}
+            onChange={(e) => onChange("whatsappMessageHe", e.target.value)}
+            placeholder={t("whatsapp_message_en_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.whatsappMessageHe && "border-red-500",
+            )}
+          />
+          <textarea
+            cols={4}
+            value={formData.whatsappMessageAr}
+            onChange={(e) => onChange("whatsappMessageAr", e.target.value)}
+            placeholder={t("whatsapp_message_ar_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.whatsappMessageAr && "border-red-500",
+            )}
+          />
+        </div>
+      </div>
+
       <div className={clsx("flex flex-col gap-4 pt-4 border-t", borderColor)}>
         <Toggle
           label={t("enable_click_to_call")}
@@ -167,5 +204,5 @@ const Step06ContactDetails=({
       </div>
     </div>
   );
-}
-export default Step06ContactDetails
+};
+export default Step06ContactDetails;

@@ -16,7 +16,7 @@ import CircularProgress from "@/components/shared/CircularProgress";
 import { ModalWrapper } from "@/components/wrapper";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
   uploadProgress: Record<string, number>;
   onVideoAdd: (
@@ -277,13 +277,13 @@ function VideoSection({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {videos.map((video) => (
           <VideoCard
-            key={video.id}
+            key={video._id}
             video={video}
-            uploadState={uploadStates[video.id] ?? "done"}
-            uploadProgress={uploadProgress[video.id] ?? 0}
+            uploadState={uploadStates[video._id] ?? "done"}
+            uploadProgress={uploadProgress[video._id] ?? 0}
             onPreview={() => onPreview(video)}
-            onActivate={() => onActivate(video.id)}
-            onRemove={() => onRemove(video.id)}
+            onActivate={() => onActivate(video._id)}
+            onRemove={() => onRemove(video._id)}
             borderColor={borderColor}
             textPrimary={textPrimary}
             isDark={isDark}
@@ -497,12 +497,12 @@ function ThumbnailSection({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {thumbnails.map((thumbnail) => (
           <ThumbnailCard
-            key={thumbnail.id}
+            key={thumbnail._id}
             thumbnail={thumbnail}
-            uploadState={uploadStates[thumbnail.id] ?? "done"}
-            uploadProgress={uploadProgress[thumbnail.id] ?? 0}
-            onActivate={() => onActivate(thumbnail.id)}
-            onRemove={() => onRemove(thumbnail.id)}
+            uploadState={uploadStates[thumbnail._id] ?? "done"}
+            uploadProgress={uploadProgress[thumbnail._id] ?? 0}
+            onActivate={() => onActivate(thumbnail._id)}
+            onRemove={() => onRemove(thumbnail._id)}
             borderColor={borderColor}
             textPrimary={textPrimary}
             isDark={isDark}
@@ -713,5 +713,5 @@ const Step03HomeVideo = ({
       )}
     </>
   );
-}
-export default Step03HomeVideo
+};
+export default Step03HomeVideo;

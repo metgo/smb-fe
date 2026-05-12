@@ -32,6 +32,7 @@ import {
   Wrench,
   UserRoundCog,
   Handshake,
+  Gift,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -223,16 +224,9 @@ export default function Sidebar() {
       id: "website_config",
       path: "#website_config",
       label: t("website_config") || "Website Config",
-      icon: Settings,
+      icon: Wrench,
       isEnabled: true,
       subItems: [
-        {
-          id: "partners",
-          path: routes.partners,
-          label: t("partners") || "Partners",
-          icon: Handshake,
-          isEnabled: true,
-        },
         {
           id: "dmo",
           path: routes.dmoMgmt,
@@ -248,10 +242,24 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
+          id: "campaign",
+          path: routes.campaignMgmt,
+          label: t("campaigns") || "Campaigns",
+          icon: Gift,
+          isEnabled: true,
+        },
+        {
           id: "website",
           path: routes.websiteMgmt,
           label: t("websites") || "Websites",
-          icon: Wrench,
+          icon: Globe,
+          isEnabled: true,
+        },
+        {
+          id: "partners",
+          path: routes.partners,
+          label: t("partners") || "Partners",
+          icon: Handshake,
           isEnabled: true,
         },
       ],
@@ -447,6 +455,7 @@ export default function Sidebar() {
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto py-4">
           {menuItems
+            ?.filter((item) => !(item.id === "website_config" && !isSuperadmin))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(

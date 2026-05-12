@@ -1,90 +1,131 @@
+import { toast } from "sonner";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
+import { ConfirmDialog, PageHeader, Spinner } from "@/components/shared";
+import {
+  useDeletePartnerMutation,
+  useGetAllPartnersQuery,
+  useUpdatePartnerMutation,
+} from "@/store/api/websiteConfigApi";
+import CreatePartnerWizard from "./CreatePartnerWizard";
+import PartnerCard from "./PartnerCard";
+import { Handshake } from "lucide-react";
+
 const PartnersPage = () => {
-  /* ---------------- Partner Handlers ---------------- */
+  const { t } = useTranslation("website_settings");
+  const { t: tc } = useTranslation("common");
+  const { language } = useThemeClasses();
+  const { allWebsites } = useCommon();
 
-  // const handlePartnerAdd = useCallback(() => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     partners: [
-  //       ...prev.partners,
-  //       {
-  //         id: crypto.randomUUID(),
-  //         name: "",
-  //         description: "",
-  //         logo: "",
-  //         website: "",
-  //       },
-  //     ],
-  //   }));
-  // }, []);
+  const {
+    data: partners,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetAllPartnersQuery(language);
+  const [deletePartner, { isLoading: isDeleting }] = useDeletePartnerMutation();
+  const [updatePartner] = useUpdatePartnerMutation();
 
-  // const handlePartnerRemove = useCallback((id: string) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     partners: prev.partners.filter((p) => p.id !== id),
-  //   }));
-  // }, []);
+  const handleToggleActive = async (id: string, isActive: boolean) => {
+    try {
+      await updatePartner({ id, body: { isActive: !isActive } }).unwrap();
+      toast.success(
+        isActive ? t("partner_deactivated") : t("partner_activated"),
+      );
+      refetch();
+    } catch {
+      toast.error(t("partner_status_update_failed"));
+    }
+  };
 
-  // const handlePartnerChange = useCallback(
-  //   (id: string, field: keyof PartnerItem, value: string) => {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       partners: prev.partners.map((p) =>
-  //         p.id === id ? { ...p, [field]: value } : p,
-  //       ),
-  //     }));
-  //   },
-  //   [],
-  // );
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [editPartnerId, setEditPartnerId] = useState<string | undefined>();
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  // /* ---------------- Partner Logo Upload ---------------- */
+  const websiteMap = Object.fromEntries(
+    (allWebsites ?? []).map((w) => [w._id, w]),
+  );
 
-  // const handlePartnerLogoUpload = useCallback(
-  //   async (partnerId: string, file: File) => {
-  //     const previewUrl = URL.createObjectURL(file);
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       partners: prev.partners.map((p) =>
-  //         p.id === partnerId ? { ...p, logo: previewUrl } : p,
-  //       ),
-  //     }));
+  const handleEdit = (id: string) => {
+    setEditPartnerId(id);
+    setIsWizardOpen(true);
+  };
 
-  //     try {
-  //       const webpFile = await convertToWebP(file);
-  //       const res = await createSignedUrl([
-  //         { originalName: webpFile.name, mimeType: webpFile.type },
-  //       ]);
-  //       const { signedUrl, gcsURL } = res.data[0];
+  const handleOpenCreate = () => {
+    setEditPartnerId(undefined);
+    setIsWizardOpen(true);
+  };
 
-  //       await uploadWithProgress(webpFile, signedUrl, (p) =>
-  //         setUploadProgress((prev) => ({ ...prev, [partnerId]: p })),
-  //       );
+  const handleDelete = async () => {
+    if (!deleteTargetId) return;
+    try {
+      await deletePartner(deleteTargetId).unwrap();
+      toast.success(tc("partner_deleted"));
+      refetch();
+    } catch {
+      toast.error(tc("partner_delete_failed"));
+    } finally {
+      setDeleteTargetId(null);
+    }
+  };
 
-  //       URL.revokeObjectURL(previewUrl);
-  //       setUploadProgress((prev) => {
-  //         const next = { ...prev };
-  //         delete next[partnerId];
-  //         return next;
-  //       });
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         partners: prev.partners.map((p) =>
-  //           p.id === partnerId ? { ...p, logo: gcsURL } : p,
-  //         ),
-  //       }));
-  //       toast.success(t("logo_uploaded"));
-  //     } catch {
-  //       setUploadProgress((prev) => {
-  //         const next = { ...prev };
-  //         delete next[partnerId];
-  //         return next;
-  //       });
-  //       toast.error(t("logo_upload_failed"));
-  //     }
-  //   },
-  //   [createSignedUrl],
-  // );
+  return (
+    <div className="flex flex-col h-full">
+      <PageHeader
+        title={t("partners_title")}
+        h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
+        totalCount={partners?.length}
+        btnLabel={t("add_partner")}
+        onClick={handleOpenCreate}
+      />
 
-  return <div>PartnersPage</div>;
+      <Spinner isLoading={isLoading || isFetching} />
+
+      {partners?.length === 0 && !isFetching ? (
+        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+          <Handshake className="w-12 h-12 mb-4 text-gray-300" />
+          <p className="text-lg font-medium mb-1">{t("no_partners_yet")}</p>
+          <p className="text-sm text-gray-400">{t("add_partner_desc")}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+          {partners?.map((partner) => (
+            <PartnerCard
+              key={partner._id}
+              partner={partner}
+              websiteMap={websiteMap}
+              onEdit={() => handleEdit(partner._id)}
+              onDelete={() => setDeleteTargetId(partner._id)}
+              onToggleActive={() =>
+                handleToggleActive(partner._id, partner.isActive)
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteTargetId}
+        title="delete_partner"
+        message="delete_partner_confirm"
+        variant="danger"
+        confirmText="delete"
+        loading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTargetId(null)}
+      />
+
+      {isWizardOpen && (
+        <CreatePartnerWizard
+          setIsOpen={setIsWizardOpen}
+          partnerId={editPartnerId}
+        />
+      )}
+    </div>
+  );
 };
 
 export default PartnersPage;

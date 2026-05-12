@@ -13,6 +13,7 @@ type TStatus =
 
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
+type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
 
 interface Geo {
   lat: string;

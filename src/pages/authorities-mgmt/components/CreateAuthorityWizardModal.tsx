@@ -10,7 +10,11 @@ import { ReactSelect } from "@/components/form-fields";
 import BoundaryMap from "@/components/maps/BoundaryMap";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
-import { useCreateAuthorityMutation, useGetAuthorityByIdQuery, useUpdateAuthorityMutation } from "@/store/api/websiteConfigApi";
+import {
+  useCreateAuthorityMutation,
+  useGetAuthorityByIdQuery,
+  useUpdateAuthorityMutation,
+} from "@/store/api/websiteConfigApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Spinner } from "@/components/shared";
 import { toast } from "sonner";
@@ -25,12 +29,12 @@ type Tab = "general" | "boundary";
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   {
     id: "general",
-    label: "General",
+    label: "general_tab",
     icon: <Settings2 className="w-3.5 h-3.5" />,
   },
   {
     id: "boundary",
-    label: "Boundary",
+    label: "boundary_tab",
     icon: <MapPin className="w-3.5 h-3.5" />,
   },
 ];
@@ -55,9 +59,13 @@ const CreateAuthorityWizardModal = ({
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [dragOver, setDragOver] = useState(false);
 
-  const { data: authorityEditData, isLoading } = useGetAuthorityByIdQuery(authorityId ?? skipToken);
-  const [createAuthority, { isLoading: isCreating }] = useCreateAuthorityMutation();
-  const [updateAuthority, { isLoading: isUpdating }] = useUpdateAuthorityMutation();
+  const { data: authorityEditData, isLoading } = useGetAuthorityByIdQuery(
+    authorityId ?? skipToken,
+  );
+  const [createAuthority, { isLoading: isCreating }] =
+    useCreateAuthorityMutation();
+  const [updateAuthority, { isLoading: isUpdating }] =
+    useUpdateAuthorityMutation();
 
   // ── Form state ────────────────────────────────────────────────────────────
   const [name, setName] = useState("");
@@ -74,9 +82,18 @@ const CreateAuthorityWizardModal = ({
     setName(authorityEditData.name ?? "");
     setDescription(authorityEditData.description ?? "");
     setDmoId(authorityEditData.dmoId ?? "");
-    setBoundary(authorityEditData.boundary?.coordinates?.[0]?.length ? authorityEditData.boundary : null);
-    setCenter(authorityEditData.center?.coordinates?.length ? authorityEditData.center : null);
-    if (authorityEditData.logoPath) fileUpload.setExternalUrl(authorityEditData.logoPath);
+    setBoundary(
+      authorityEditData.boundary?.coordinates?.[0]?.length
+        ? authorityEditData.boundary
+        : null,
+    );
+    setCenter(
+      authorityEditData.center?.coordinates?.length
+        ? authorityEditData.center
+        : null,
+    );
+    if (authorityEditData.logoPath)
+      fileUpload.setExternalUrl(authorityEditData.logoPath);
   }, [authorityEditData]);
 
   const isUploading = fileUpload.status === "uploading";
@@ -110,14 +127,18 @@ const CreateAuthorityWizardModal = ({
     try {
       if (authorityId) {
         await updateAuthority({ id: authorityId, body: payload }).unwrap();
-        toast.success("Authority updated successfully");
+        toast.success(t("authority_updated_success"));
       } else {
         await createAuthority(payload).unwrap();
-        toast.success("Authority created successfully");
+        toast.success(t("authority_created_success"));
       }
       setIsOpen(false);
     } catch {
-      toast.error(authorityId ? "Failed to update Authority" : "Failed to create Authority");
+      toast.error(
+        authorityId
+          ? t("authority_update_failed")
+          : t("authority_create_failed"),
+      );
     }
   };
 
@@ -135,7 +156,7 @@ const CreateAuthorityWizardModal = ({
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className={`px-5 pt-5 pb-0 border-b ${borderColor}`}>
           <h2 className={`text-base font-bold ${textPrimary} mb-3`}>
-            {authorityId ? "Edit Authority" : "Create Authority"}
+            {authorityId ? t("edit_authority") : t("create_authority")}
           </h2>
 
           {/* Tabs */}
@@ -147,13 +168,14 @@ const CreateAuthorityWizardModal = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${isSelected
-                    ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
-                    : `border-transparent ${textTertiary} hover:text-violet-500`
-                    }`}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+                    isSelected
+                      ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
+                      : `border-transparent ${textTertiary} hover:text-violet-500`
+                  }`}
                 >
                   {tab.icon}
-                  {tab.label}
+                  {t(tab.label)}
                   {/* Badge for boundary tab when data is set */}
                   {tab.id === "boundary" && (boundary || center) && (
                     <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
@@ -296,10 +318,11 @@ const CreateAuthorityWizardModal = ({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${dragOver
-                    ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
-                    : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
-                    }`}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${
+                    dragOver
+                      ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
+                      : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
+                  }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div
@@ -333,8 +356,7 @@ const CreateAuthorityWizardModal = ({
         {activeTab === "boundary" && (
           <div className="p-5 space-y-3">
             <p className={`text-xs ${textTertiary}`}>
-              Draw the authority boundary polygon on the map. Drag the pin to
-              set the center point.
+              {t("authority_boundary_desc")}
             </p>
 
             <BoundaryMap
@@ -352,7 +374,9 @@ const CreateAuthorityWizardModal = ({
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
-                    <span className="font-sans font-semibold">Center</span>
+                    <span className="font-sans font-semibold">
+                      {t("center")}
+                    </span>
                     <br />
                     {center?.coordinates?.[1]?.toFixed(5)},{" "}
                     {center?.coordinates?.[0]?.toFixed(5)}
@@ -362,9 +386,11 @@ const CreateAuthorityWizardModal = ({
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
-                    <span className="font-sans font-semibold">Boundary</span>
+                    <span className="font-sans font-semibold">
+                      {t("boundary")}
+                    </span>
                     <br />
-                    {boundary?.coordinates?.[0]?.length - 1} vertices
+                    {boundary?.coordinates?.[0]?.length - 1} {t("vertices")}
                   </div>
                 )}
               </div>
@@ -381,15 +407,25 @@ const CreateAuthorityWizardModal = ({
             onClick={() => setIsOpen(false)}
             className={`px-4 py-2 rounded-lg border ${borderColor} text-sm font-medium ${textPrimary} transition`}
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
             onClick={handleSave}
-            disabled={!name.trim() || !dmoId.trim() || isCreating || isUpdating || isUploading}
+            disabled={
+              !name.trim() ||
+              !dmoId.trim() ||
+              isCreating ||
+              isUpdating ||
+              isUploading
+            }
             className="px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-            {isCreating || isUpdating ? "Saving..." : authorityId ? "Save Changes" : "Create Authority"}
+            {isCreating || isUpdating
+              ? t("saving")
+              : authorityId
+                ? t("save_changes")
+                : t("create_authority")}
           </button>
         </div>
       </div>

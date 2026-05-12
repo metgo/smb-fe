@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import { Globe } from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (
-    field: keyof SiteSettingsFormData,
+    field: keyof ISiteSettingsFormData,
     value: string | boolean,
   ) => void;
 }
@@ -57,7 +57,7 @@ const DATE_FORMATS = [
   "MMM DD, YYYY",
 ];
 
-const Step09Localization=({ formData, onChange }: Props) =>{
+const Step09Localization = ({ formData, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
@@ -185,6 +185,6 @@ const Step09Localization=({ formData, onChange }: Props) =>{
       </div>
     </div>
   );
-}
+};
 
-export default Step09Localization
+export default Step09Localization;

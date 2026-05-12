@@ -6,11 +6,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
   uploadProgress: Record<string, number>;
-  onFileSelect: (field: keyof SiteSettingsFormData, file: File) => void;
-  onFileClear: (field: keyof SiteSettingsFormData) => void;
+  onFileSelect: (field: keyof ISiteSettingsFormData, file: File) => void;
+  onFileClear: (field: keyof ISiteSettingsFormData) => void;
 }
 
 function UploadBox({
@@ -109,13 +109,13 @@ function UploadBox({
   );
 }
 
-const Step02BrandingMedia=({
+const Step02BrandingMedia = ({
   formData,
   uploadStates,
   uploadProgress,
   onFileSelect,
   onFileClear,
-}: Props)=> {
+}: Props) => {
   const { t } = useTranslation("website_settings");
   const { inputClasses, borderColor, textPrimary, textSecondary, isDark } =
     useThemeClasses();
@@ -137,7 +137,6 @@ const Step02BrandingMedia=({
           {t("branding_title")}
         </h2>
       </div>
-
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <UploadBox
@@ -196,6 +195,6 @@ const Step02BrandingMedia=({
       </div>
     </div>
   );
-}
+};
 
-export default Step02BrandingMedia
+export default Step02BrandingMedia;

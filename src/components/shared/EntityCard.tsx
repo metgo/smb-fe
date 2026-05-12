@@ -1,8 +1,9 @@
 import clsx from "clsx";
-import { Edit, Eye, EyeOff, Trash2, UploadCloud } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Edit, Eye, EyeOff, Trash2 } from "lucide-react";
+
 import ImageWithFallback from "./ImageWithFallback";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-
 
 interface EntityCardProps {
   logo?: string;
@@ -12,7 +13,7 @@ interface EntityCardProps {
   onToggleActive: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onMigrateToProd: () => void;
+  onMigrateToProd?: () => void;
   children?: React.ReactNode;
 }
 
@@ -24,38 +25,46 @@ const EntityCard: React.FC<EntityCardProps> = ({
   onToggleActive,
   onDelete,
   onEdit,
-  onMigrateToProd,
+  // onMigrateToProd,
   children,
 }) => {
+  const { t } = useTranslation("common");
   const { cardClasses, textPrimary, isDark } = useThemeClasses();
 
   const actions = [
     {
       title: "Edit",
-      colorClass:
-        "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
+      colorClass: "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20",
       onClick: onEdit,
       icon: <Edit size={14} />,
     },
     {
       title: "Delete",
-      colorClass:
-        "text-red-400 bg-red-500/10 hover:bg-red-500/20",
+      colorClass: "text-red-400 bg-red-500/10 hover:bg-red-500/20",
       onClick: onDelete,
       icon: <Trash2 size={14} />,
     },
-    {
-      title: "Migrate to Prod",
-      colorClass:
-        "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
-      onClick: onMigrateToProd,
-      icon: <UploadCloud size={14} />,
-    },
-  ]
+    // {
+    //   title: "Migrate to Prod",
+    //   colorClass:
+    //     "text-amber-400 bg-amber-500/10 hover:bg-amber-500/20",
+    //   onClick: onMigrateToProd,
+    //   icon: <UploadCloud size={14} />,
+    // },
+  ];
   return (
     <div
       className={clsx("rounded-xl overflow-hidden group relative", cardClasses)}
     >
+      <div
+        className={clsx(
+          "absolute top-2 left-0 z-20 shadow-md px-4 py-0.5 text-white rounded-r-xl font-bold text-sm",
+          isActive ? "bg-green-800/60 " : "bg-red-800/60",
+        )}
+      >
+        <span>{isActive ? t("active") : t("inactive")}</span>
+      </div>
+
       {/* Logo area */}
       <div
         className={clsx(
@@ -99,8 +108,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
             {isActive ? <Eye size={14} /> : <EyeOff size={14} />}
           </ActionBtn>
         </div>
-
-
 
         {actions.map((action, i) => (
           <div

@@ -95,16 +95,18 @@ export const endpoints = {
 
   // Admin endpoints
   dynamicPage: "/settings",
+
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
   bloggenerateName: "/generate-blog-name",
 
-
   // Website settgins & Config
   dmos: "/dmos",
   authorities: "/authorities",
   websiteSettings: "/site-settings",
+  partners: "/partners",
+  campaigns: "/campaigns",
 
   // Promotions
   promotions: "/promotions",

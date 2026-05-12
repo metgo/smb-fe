@@ -4,9 +4,9 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
-  onChange: (field: keyof SiteSettingsFormData, value: string) => void;
+  onChange: (field: keyof ISiteSettingsFormData, value: string) => void;
 }
 
 const Step08Analytics = ({ formData, errors, onChange }: Props) => {
@@ -20,28 +20,28 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
   );
 
   const fields: {
-    field: keyof SiteSettingsFormData;
+    field: keyof ISiteSettingsFormData;
     label: string;
     placeholder: string;
     hint?: string;
   }[] = [
-      {
-        field: "googleAnalyticsId",
-        label: t("google_analytics_id"),
-        placeholder: "G-XXXXXXXXXX",
-        hint: t("google_analytics_hint"),
-      },
-      {
-        field: "googleTagManagerId",
-        label: t("google_tag_manager_id"),
-        placeholder: "GTM-XXXXXXX",
-      },
-      {
-        field: "facebookPixelId",
-        label: t("facebook_pixel_id"),
-        placeholder: "123456789012345",
-      },
-    ];
+    {
+      field: "googleAnalyticsId",
+      label: t("google_analytics_id"),
+      placeholder: "G-XXXXXXXXXX",
+      hint: t("google_analytics_hint"),
+    },
+    {
+      field: "googleTagManagerId",
+      label: t("google_tag_manager_id"),
+      placeholder: "GTM-XXXXXXX",
+    },
+    {
+      field: "facebookPixelId",
+      label: t("facebook_pixel_id"),
+      placeholder: "123456789012345",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-8">
@@ -119,5 +119,5 @@ const Step08Analytics = ({ formData, errors, onChange }: Props) => {
       </div>
     </div>
   );
-}
-export default Step08Analytics
+};
+export default Step08Analytics;

@@ -4,10 +4,10 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (
-    field: keyof SiteSettingsFormData,
+    field: keyof ISiteSettingsFormData,
     value: string | boolean,
   ) => void;
 }
@@ -34,9 +34,9 @@ function ColorField({
   inputClasses,
 }: {
   label: string;
-  field: keyof SiteSettingsFormData;
+  field: keyof ISiteSettingsFormData;
   value: string;
-  onChange: (f: keyof SiteSettingsFormData, v: string) => void;
+  onChange: (f: keyof ISiteSettingsFormData, v: string) => void;
   textPrimary: string;
   inputClasses: string;
 }) {
@@ -70,13 +70,13 @@ function ColorField({
   );
 }
 
-const Step04ThemeAppearance=({ formData, onChange }: Props) =>{
+const Step04ThemeAppearance = ({ formData, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
 
   const BUTTON_STYLES: {
-    value: SiteSettingsFormData["buttonStyle"];
+    value: ISiteSettingsFormData["buttonStyle"];
     label: string;
   }[] = [
     { value: "rounded", label: t("btn_rounded") },
@@ -237,6 +237,6 @@ const Step04ThemeAppearance=({ formData, onChange }: Props) =>{
       </div>
     </div>
   );
-}
+};
 
-export default Step04ThemeAppearance
+export default Step04ThemeAppearance;

@@ -7,6 +7,7 @@ import Step06ContactDetails from "./Step06ContactDetails";
 import Step07SeoMeta from "./Step07SeoMeta";
 import Step08Analytics from "./Step08Analytics";
 import Step09Localization from "./Step09Localization";
+import Step10Campaigns from "./Step10Campaigns";
 
 export {
   Step01Generals,
@@ -17,5 +18,6 @@ export {
   Step06ContactDetails,
   Step07SeoMeta,
   Step08Analytics,
-  Step09Localization
-}
+  Step09Localization,
+  Step10Campaigns,
+};

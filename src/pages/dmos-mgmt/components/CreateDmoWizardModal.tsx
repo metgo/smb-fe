@@ -8,7 +8,11 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import BoundaryMap from "@/components/maps/BoundaryMap";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
-import { useCreateDmoMutation, useGetDmoByIdQuery, useUpdateDmoMutation } from "@/store/api/websiteConfigApi";
+import {
+  useCreateDmoMutation,
+  useGetDmoByIdQuery,
+  useUpdateDmoMutation,
+} from "@/store/api/websiteConfigApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Spinner } from "@/components/shared";
 import { toast } from "sonner";
@@ -23,12 +27,12 @@ type Tab = "general" | "boundary";
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   {
     id: "general",
-    label: "General",
+    label: "general_tab",
     icon: <Settings2 className="w-3.5 h-3.5" />,
   },
   {
     id: "boundary",
-    label: "Boundary",
+    label: "boundary_tab",
     icon: <MapPin className="w-3.5 h-3.5" />,
   },
 ];
@@ -52,8 +56,9 @@ const CreateDmoWizardModal = ({
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [dragOver, setDragOver] = useState(false);
 
-
-  const { data: dmoEditData, isLoading } = useGetDmoByIdQuery(dmoId ?? skipToken);
+  const { data: dmoEditData, isLoading } = useGetDmoByIdQuery(
+    dmoId ?? skipToken,
+  );
   const [createDmo, { isLoading: isCreating }] = useCreateDmoMutation();
   const [updateDmo, { isLoading: isUpdating }] = useUpdateDmoMutation();
 
@@ -70,8 +75,14 @@ const CreateDmoWizardModal = ({
     if (!dmoEditData) return;
     setName(dmoEditData.name ?? "");
     setDescription(dmoEditData.description ?? "");
-    setBoundary(dmoEditData.boundary?.coordinates?.[0]?.length ? dmoEditData.boundary : null);
-    setCenter(dmoEditData.center?.coordinates?.length ? dmoEditData.center : null);
+    setBoundary(
+      dmoEditData.boundary?.coordinates?.[0]?.length
+        ? dmoEditData.boundary
+        : null,
+    );
+    setCenter(
+      dmoEditData.center?.coordinates?.length ? dmoEditData.center : null,
+    );
     if (dmoEditData.logoPath) fileUpload.setExternalUrl(dmoEditData.logoPath);
   }, [dmoEditData]);
   const isUploading = fileUpload.status === "uploading";
@@ -104,14 +115,14 @@ const CreateDmoWizardModal = ({
     try {
       if (dmoId) {
         await updateDmo({ id: dmoId, body: payload }).unwrap();
-        toast.success("DMO updated successfully");
+        toast.success(t("dmo_updated_success"));
       } else {
         await createDmo(payload).unwrap();
-        toast.success("DMO created successfully");
+        toast.success(t("dmo_created_success"));
       }
       setIsOpen(false);
     } catch {
-      toast.error(dmoId ? "Failed to update DMO" : "Failed to create DMO");
+      toast.error(dmoId ? t("dmo_update_failed") : t("dmo_create_failed"));
     }
   };
 
@@ -129,7 +140,7 @@ const CreateDmoWizardModal = ({
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div className={`px-5 pt-5 pb-0 border-b ${borderColor}`}>
           <h2 className={`text-base font-bold ${textPrimary} mb-3`}>
-            {dmoId ? "Edit DMO" : "Create DMO"}
+            {dmoId ? t("edit_dmo") : t("create_dmo")}
           </h2>
 
           {/* Tabs */}
@@ -141,13 +152,14 @@ const CreateDmoWizardModal = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${isSelected
-                    ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
-                    : `border-transparent ${textTertiary} hover:text-violet-500`
-                    }`}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+                    isSelected
+                      ? `border-violet-500 text-violet-600 dark:text-violet-400 ${bgPrimary}`
+                      : `border-transparent ${textTertiary} hover:text-violet-500`
+                  }`}
                 >
                   {tab.icon}
-                  {tab.label}
+                  {t(tab.label)}
                   {/* Badge for boundary tab when data is set */}
                   {tab.id === "boundary" && (boundary || center) && (
                     <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
@@ -268,10 +280,11 @@ const CreateDmoWizardModal = ({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${dragOver
-                    ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
-                    : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
-                    }`}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none ${
+                    dragOver
+                      ? "border-violet-500 bg-violet-50 dark:bg-gray-700 scale-[1.01]"
+                      : `${borderColor} hover:border-violet-400 dark:hover:border-violet-600 dark:hover:bg-gray-700`
+                  }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div
@@ -305,8 +318,7 @@ const CreateDmoWizardModal = ({
         {activeTab === "boundary" && (
           <div className="p-5 space-y-3">
             <p className={`text-xs ${textTertiary}`}>
-              Draw the DMO boundary polygon on the map. Drag the pin to set the
-              center point.
+              {t("dmo_boundary_desc")}
             </p>
 
             <BoundaryMap
@@ -324,7 +336,9 @@ const CreateDmoWizardModal = ({
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
-                    <span className="font-sans font-semibold">Center</span>
+                    <span className="font-sans font-semibold">
+                      {t("center")}
+                    </span>
                     <br />
                     {center?.coordinates?.[1]?.toFixed(5)},{" "}
                     {center?.coordinates?.[0]?.toFixed(5)}
@@ -334,9 +348,11 @@ const CreateDmoWizardModal = ({
                   <div
                     className={`px-2 py-1.5 rounded-lg ${bgSecondary} border ${borderColor}`}
                   >
-                    <span className="font-sans font-semibold">Boundary</span>
+                    <span className="font-sans font-semibold">
+                      {t("boundary")}
+                    </span>
                     <br />
-                    {boundary?.coordinates?.[0]?.length - 1} vertices
+                    {boundary?.coordinates?.[0]?.length - 1} {t("vertices")}
                   </div>
                 )}
               </div>
@@ -353,7 +369,7 @@ const CreateDmoWizardModal = ({
             onClick={() => setIsOpen(false)}
             className={`px-4 py-2 rounded-lg border ${borderColor} text-sm font-medium ${textPrimary} transition`}
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -361,7 +377,11 @@ const CreateDmoWizardModal = ({
             disabled={!name.trim() || isCreating || isUpdating || isUploading}
             className="px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-            {isCreating || isUpdating ? "Saving..." : dmoId ? "Save Changes" : "Create DMO"}
+            {isCreating || isUpdating
+              ? t("saving")
+              : dmoId
+                ? t("save_changes")
+                : t("create_dmo")}
           </button>
         </div>
       </div>

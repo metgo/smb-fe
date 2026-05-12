@@ -3,30 +3,52 @@ import { useState, useEffect } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Landmark, Building2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConfirmDialog, PageHeader, EntityCard, Spinner } from "@/components/shared";
+import {
+  ConfirmDialog,
+  PageHeader,
+  EntityCard,
+  Spinner,
+} from "@/components/shared";
 import { AuthorityTabs, CreateAuthorityWizardModal } from "./components";
-import { useGetAllDmosQuery, useGetAuthoritiesByDmoIdQuery, useUpdateAuthorityMutation } from "@/store/api/websiteConfigApi";
+import {
+  useGetAllDmosQuery,
+  useGetAuthoritiesByDmoIdQuery,
+  useUpdateAuthorityMutation,
+  useDeleteAuthorityMutation,
+} from "@/store/api/websiteConfigApi";
 import { toast } from "sonner";
+import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 
 const AuthoritiesMgmtPage = () => {
+  const { t } = useTranslation("website_settings");
+  const { t: tc } = useTranslation("common");
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: dmos } = useGetAllDmosQuery();
 
   const { bgPrimary, isDark, textTertiary } = useThemeClasses();
-  const [updateAuthority, { isLoading: isUpdating }] = useUpdateAuthorityMutation();
+  const [updateAuthority, { isLoading: isUpdating }] =
+    useUpdateAuthorityMutation();
+  const [deleteAuthority, { isLoading: isDeleting }] =
+    useDeleteAuthorityMutation();
 
   const [activeDmoId, setActiveDmoId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [migrateTarget, setMigrateTarget] = useState<IAuthorityRes | null>(null);
+  const [migrateTarget, setMigrateTarget] = useState<IAuthorityRes | null>(
+    null,
+  );
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editAuthorityId, setEditAuthorityId] = useState<string | undefined>();
   const [isMigrating, setIsMigrating] = useState(false);
 
-
-  const { data: authorities, refetch, isLoading, isFetching } = useGetAuthoritiesByDmoIdQuery(activeDmoId ? activeDmoId : skipToken)
+  const {
+    data: authorities,
+    refetch,
+    isLoading,
+    isFetching,
+  } = useGetAuthoritiesByDmoIdQuery(activeDmoId ? activeDmoId : skipToken);
 
   useEffect(() => {
     if (!dmos?.length) return;
@@ -35,16 +57,30 @@ const AuthoritiesMgmtPage = () => {
       setActiveDmoId(paramId);
     } else {
       setActiveDmoId(dmos[0]._id);
-      setSearchParams((prev) => { prev.set("dmoId", dmos[0]._id); return prev; }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          prev.set("dmoId", dmos[0]._id);
+          return prev;
+        },
+        { replace: true },
+      );
     }
   }, [dmos, searchParams]);
 
   const handleTabChange = (dmoId: string) => {
     setActiveDmoId(dmoId);
-    setSearchParams((prev) => { prev.set("dmoId", dmoId); return prev; }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        prev.set("dmoId", dmoId);
+        return prev;
+      },
+      { replace: true },
+    );
   };
 
-  const activeDmo: IDmoRes | undefined = dmos?.find(item => item._id === activeDmoId);
+  const activeDmo: IDmoRes | undefined = dmos?.find(
+    (item) => item._id === activeDmoId,
+  );
 
   const handleEdit = (authorityId: string) => {
     setEditAuthorityId(authorityId);
@@ -53,27 +89,36 @@ const AuthoritiesMgmtPage = () => {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    setIsDeleting(true);
     try {
-      console.log("delete authority", deleteTarget);
+      await deleteAuthority(deleteTarget).unwrap();
+      toast.success(tc("authority_deleted"));
+      refetch();
+    } catch {
+      toast.error(tc("authority_delete_failed"));
     } finally {
-      setIsDeleting(false);
       setDeleteTarget(null);
     }
   };
 
   const handleMigrateToProd = (authorityId: string) => {
-    console.log("🚀 ~ handleMigrateToProd ~ authorityId:", authorityId)
+    console.log("🚀 ~ handleMigrateToProd ~ authorityId:", authorityId);
     // setMigrateTarget(authorityId);
   };
 
-  const handleToggleActive = async (authorityId: string, isActive: boolean=false) => {
+  const handleToggleActive = async (
+    authorityId: string,
+    isActive: boolean = false,
+  ) => {
     try {
       await updateAuthority({ id: authorityId, body: { isActive } }).unwrap();
-      toast.success("Authority updated successfully");
-      refetch()
+      toast.success(t("authority_updated_success"));
+      refetch();
     } catch {
-      toast.error(authorityId ? "Failed to update Authority" : "Failed to create Authority");
+      toast.error(
+        authorityId
+          ? t("authority_update_failed")
+          : t("authority_create_failed"),
+      );
     }
   };
 
@@ -93,10 +138,12 @@ const AuthoritiesMgmtPage = () => {
     <div className="flex flex-col h-full overflow-y-auto">
       <div className={`sticky top-0 z-10 ${bgPrimary}`}>
         <PageHeader
-          title="Authority Management"
+          title={t("authority_management")}
           h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
-          totalCount={dmos?.reduce((sum, d) => sum + (d.authorityCount ?? 0), 0) ?? 0}
-          btnLabel="Add Authority"
+          totalCount={
+            dmos?.reduce((sum, d) => sum + (d.authorityCount ?? 0), 0) ?? 0
+          }
+          btnLabel={t("add_authority")}
           onClick={() => setCreateModalOpen(true)}
         />
 
@@ -108,55 +155,67 @@ const AuthoritiesMgmtPage = () => {
         />
       </div>
 
-      <Spinner isLoading={isUpdating || isLoading || isFetching} />
-
       <div className="mt-4 flex-1">
-        {(authorities?.length ?? 0) === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <Landmark className="w-12 h-12 mb-4 text-gray-300" />
-            <p className="text-lg font-medium mb-1">No authorities found</p>
-            <p className="text-sm text-gray-400">
-              {!activeDmoId
-                ? "Add an authority to get started."
-                : "This DMO has no authorities yet."}
-            </p>
-          </div>
+        <Spinner isLoading={isUpdating} />
+
+        {isLoading || isFetching ? (
+          <EntityCardsSkeleton count={activeDmo?.authorityCount || 9} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
-            {authorities?.map((auth) => (
-              <EntityCard
-                key={auth._id}
-                logo={auth.logoPath}
-                name={auth.name}
-                fallbackIcon={<Landmark className="w-12 h-12 text-gray-400" />}
-                isActive={auth.isActive ?? false}
-                onToggleActive={() => handleToggleActive(auth?._id, !auth?.isActive)}
-                onEdit={() => handleEdit(auth?._id)}
-                onDelete={() => setDeleteTarget(auth?._id)}
-                onMigrateToProd={() => handleMigrateToProd(auth?._id)}
-              >
-                <div className="flex items-center gap-1.5">
-                  {activeDmo?.logoPath ? (
-                    <img
-                      src={activeDmo.logoPath}
-                      alt={activeDmo.name}
-                      className="w-6 h-6 object-contain"
-                    />
-                  ) : (
-                    <Building2 className="w-3.5 h-3.5 text-violet-500" />
-                  )}
-                  <span
-                    className={clsx(
-                      "text-xs font-medium truncate",
-                      textTertiary,
-                    )}
+          <>
+            {(authorities?.length ?? 0) === 0 && (!isLoading || !isFetching) ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <Landmark className="w-12 h-12 mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-1">
+                  {t("no_authorities_found")}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {!activeDmoId
+                    ? t("add_authority_desc")
+                    : t("dmo_no_authorities")}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+                {authorities?.map((auth) => (
+                  <EntityCard
+                    key={auth._id}
+                    logo={auth.logoPath}
+                    name={auth.name}
+                    fallbackIcon={
+                      <Landmark className="w-12 h-12 text-gray-400" />
+                    }
+                    isActive={auth.isActive ?? false}
+                    onToggleActive={() =>
+                      handleToggleActive(auth?._id, !auth?.isActive)
+                    }
+                    onEdit={() => handleEdit(auth?._id)}
+                    onDelete={() => setDeleteTarget(auth?._id)}
+                    onMigrateToProd={() => handleMigrateToProd(auth?._id)}
                   >
-                    {activeDmo?.name}
-                  </span>
-                </div>
-              </EntityCard>
-            ))}
-          </div>
+                    <div className="flex items-center gap-1.5">
+                      {activeDmo?.logoPath ? (
+                        <img
+                          src={activeDmo.logoPath}
+                          alt={activeDmo.name}
+                          className="w-6 h-6 object-contain"
+                        />
+                      ) : (
+                        <Building2 className="w-3.5 h-3.5 text-violet-500" />
+                      )}
+                      <span
+                        className={clsx(
+                          "text-xs font-medium truncate",
+                          textTertiary,
+                        )}
+                      >
+                        {activeDmo?.name}
+                      </span>
+                    </div>
+                  </EntityCard>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -184,7 +243,10 @@ const AuthoritiesMgmtPage = () => {
 
       {createModalOpen && (
         <CreateAuthorityWizardModal
-          setIsOpen={(v) => { setCreateModalOpen(v); if (!v) setEditAuthorityId(undefined); }}
+          setIsOpen={(v) => {
+            setCreateModalOpen(v);
+            if (!v) setEditAuthorityId(undefined);
+          }}
           authorityId={editAuthorityId}
         />
       )}

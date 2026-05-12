@@ -34,6 +34,7 @@ export const routes = {
 
   profile: "/profile",
   partners: "/partners",
+  campaignMgmt: "/campaign-mgmt",
   dmoMgmt: "/dmo-management",
   authorityMgmt: "/authority-management",
   websiteMgmt: "/website-management",

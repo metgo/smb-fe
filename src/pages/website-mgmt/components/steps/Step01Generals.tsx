@@ -2,16 +2,13 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { Image as ImageIcon } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ReactSelect } from "@/components/form-fields";
-import { useCommon } from "@/hooks/useCommon";
 
 interface Props {
   isEdit: boolean;
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
-  onChange: (field: keyof SiteSettingsFormData, value: string) => void;
+  onChange: (field: keyof ISiteSettingsFormData, value: string) => void;
 }
-
 
 const Step01Generals = ({
   isEdit = false,
@@ -20,10 +17,7 @@ const Step01Generals = ({
   onChange,
 }: Props) => {
   const { t } = useTranslation("website_settings");
-  const { dmosAuthorities } = useCommon()
-  const { inputClasses, textPrimary } =
-    useThemeClasses();
-  const selectedParent = dmosAuthorities?.find((item) => item._id === formData.dmoId);
+  const { inputClasses, textPrimary } = useThemeClasses();
 
   return (
     <div className="flex flex-col gap-4">
@@ -34,83 +28,95 @@ const Step01Generals = ({
         </h2>
       </div>
 
-      <div className={clsx("grid grid-cols-2 items-center gap-6")}>
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("select_dmo")}
-          </label>
-          <ReactSelect
-            isDisabled={isEdit}
-            value={formData.dmoId}
-            onChange={(value) => onChange("dmoId", value)}
-            placeholder={t("select_dmo")}
-            items={dmosAuthorities?.map((item) => ({
-              _id: item._id,
-              name: item.name,
-              logo: item?.logoPath || "",
-            }))}
+      {/* Website Name & Slogan */}
+      <div className="flex flex-col gap-2">
+        <label className={clsx("text-sm font-medium", textPrimary)}>
+          {t("website_name")} <span className="text-red-500">*</span>
+        </label>
+
+        <div className="grid grid-cols-3 gap-6">
+          <input
+            type="text"
+            value={formData.websiteNameEn}
+            onChange={(e) => onChange("websiteNameEn", e.target.value)}
+            placeholder={t("website_name_en_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.websiteNameEn && "border-red-500",
+            )}
+          />
+          <input
+            type="text"
+            value={formData.websiteNameHe}
+            onChange={(e) => onChange("websiteNameHe", e.target.value)}
+            placeholder={t("website_name_he_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.websiteNameHe && "border-red-500",
+            )}
+          />
+          <input
+            type="text"
+            value={formData.websiteNameAr}
+            onChange={(e) => onChange("websiteNameAr", e.target.value)}
+            placeholder={t("website_name_ar_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.websiteNameAr && "border-red-500",
+            )}
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("select_authority")} 
-          </label>
-          <ReactSelect
-            isClearable
-            value={formData.authorityId}
-            isDisabled={isEdit}
-            onChange={(value) => onChange("authorityId", value)}
-            placeholder={t("select_authority")}
-            items={selectedParent?.authorities?.map((item) => ({
-              _id: item._id,
-              name: item.name,
-              logo: item?.logoPath,
-            }))}
-          />
-        </div>
+        {errors.websiteNameEn && (
+          <p className="text-xs text-red-500">{errors.websiteNameEn}</p>
+        )}
       </div>
 
-      {/* Website Name & Slogan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("website_name")} <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.websiteName}
-            onChange={(e) => onChange("websiteName", e.target.value)}
-            placeholder={t("website_name_placeholder")}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
-              inputClasses,
-              errors.websiteName && "border-red-500",
-            )}
-          />
-          {errors.websiteName && (
-            <p className="text-xs text-red-500">{errors.websiteName}</p>
-          )}
-        </div>
+      <div className="flex flex-col gap-2">
+        <label className={clsx("text-sm font-medium", textPrimary)}>
+          {t("slogan")} <span className="text-red-500">*</span>
+        </label>
 
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("slogan")} <span className="text-red-500">*</span>
-          </label>
+        <div className="grid grid-cols-3 gap-6">
           <input
             type="text"
-            value={formData.slogan}
-            onChange={(e) => onChange("slogan", e.target.value)}
-            placeholder={t("slogan_placeholder")}
+            value={formData.sloganEn}
+            onChange={(e) => onChange("sloganEn", e.target.value)}
+            placeholder={t("slogan_en_placeholder")}
             className={clsx(
               "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
               inputClasses,
-              errors.slogan && "border-red-500",
+              errors.sloganEn && "border-red-500",
             )}
           />
-          {errors.slogan && (
-            <p className="text-xs text-red-500">{errors.slogan}</p>
-          )}
+          <input
+            type="text"
+            value={formData.sloganHe}
+            onChange={(e) => onChange("sloganHe", e.target.value)}
+            placeholder={t("slogan_he_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.sloganHe && "border-red-500",
+            )}
+          />
+          <input
+            type="text"
+            value={formData.sloganAr}
+            onChange={(e) => onChange("sloganAr", e.target.value)}
+            placeholder={t("slogan_ar_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+              errors.sloganAr && "border-red-500",
+            )}
+          />
         </div>
+        {errors.sloganEn && (
+          <p className="text-xs text-red-500">{errors.sloganEn}</p>
+        )}
       </div>
 
       {/* Purpose & Website Url */}
@@ -162,11 +168,13 @@ const Step01Generals = ({
           </label>
           <input
             type="text"
+            disabled={isEdit}
             value={formData.identifierId}
             onChange={(e) => onChange("identifierId", e.target.value)}
             placeholder={t("identifier_id_placeholder")}
             className={clsx(
               "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              isEdit ? "cursor-not-allowed" : "",
               inputClasses,
               errors.identifierId && "border-red-500",
             )}
@@ -175,29 +183,9 @@ const Step01Generals = ({
             <p className="text-xs text-red-500">{errors.identifierId}</p>
           )}
         </div>
-
-        <div className="flex flex-col gap-2 col-span-4">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("camp_code")} <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.campCode}
-            onChange={(e) => onChange("campCode", e.target.value)}
-            placeholder={t("camp_code_placeholder")}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
-              inputClasses,
-              errors.campCode && "border-red-500",
-            )}
-          />
-          {errors.campCode && (
-            <p className="text-xs text-red-500">{errors.campCode}</p>
-          )}
-        </div>
       </div>
     </div>
   );
-}
+};
 
-export default Step01Generals
+export default Step01Generals;

@@ -12,7 +12,6 @@ interface GeoJsonPolygon {
   coordinates: [number, number][][]; // [ [[lng,lat], ...] ]
 }
 
-
 /*---------------------------------- Dmo Setting ----------------------------------*/
 
 interface IDmoProp {
@@ -35,8 +34,6 @@ interface IDmoRes {
   authorityCount: number;
 }
 
-
-
 /*---------------------------------- Authority Setting ----------------------------------*/
 
 interface IAuthorityProp {
@@ -57,41 +54,85 @@ interface IAuthorityRes {
   isActive: boolean;
   logoPath: string;
 }
+
+/*---------------------------------- Authority Setting ----------------------------------*/
+
+interface ICampaignRes {
+  _id: string;
+  name: string;
+  description: string;
+  code: string;
+  type: string;
+  logoPath: string;
+  imagePath: string;
+  externalApiId: string;
+  isActive?: boolean;
+}
+
+/*---------------------------------- Partners config ----------------------------------*/
+interface IPartnerItem {
+  _id: string;
+  nameEn: string;
+  nameHe: string;
+  nameAr: string;
+
+  descriptionEn: string;
+  descriptionHe: string;
+  descriptionAr: string;
+
+  logo: string;
+  siteUrl: string;
+  websites: string[];
+  isActive: boolean;
+}
+interface IPartnersRes {
+  _id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  logo: string;
+  siteUrl: string;
+  websites: string[];
+}
+
 /*---------------------------------- Website config ----------------------------------*/
 
 interface VideoItem {
-  id: string;
+  _id: string;
   url: string;
   name: string;
   isActive: boolean;
-}
-
-interface PartnerItem {
-  id: string;
-  name: string;
-  description: string;
-  logo: string;
-  website: string;
 }
 
 interface ThumnailItem {
-  id: string;
+  _id: string;
   url: string;
   name: string;
   isActive: boolean;
 }
 
-interface SiteSettingsFormData {
-
-  /* Step 1 - General Config */
+interface IWebsiteRes {
+  _id: string;
   dmoId: string;
   authorityId: string;
   websiteName: string;
+  logoUrl: string;
   websiteUrl: string;
-  slogan: string;
+  isActive: boolean;
+}
+
+interface ISiteSettingsFormData {
+  /* Step 1 - General Config */
+  websiteNameEn: string;
+  websiteNameHe: string;
+  websiteNameAr: string;
+  sloganEn: string;
+  sloganHe: string;
+  sloganAr: string;
+  websiteUrl: string;
   identifierId: string;
-  campCode: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  isActive: boolean;
 
   /* Step 2 – Branding & Media */
   logoUrl: string;
@@ -99,13 +140,13 @@ interface SiteSettingsFormData {
   specialSymbolUrl: string;
   bgImageUrl: string;
 
-  /* Step 2 – Home Page Videos */
+  /* Step 3 – Home Page Videos */
   desktopVideos: VideoItem[];
   mobileVideos: VideoItem[];
   desktopVideoThumbnails: ThumnailItem[];
   mobileVideoThumbnails: ThumnailItem[];
 
-  /* Step 3 – Theme & Appearance */
+  /* Step 4 – Theme & Appearance */
   primaryColor: string;
   secondaryColor: string;
   backgroundColor: string;
@@ -115,7 +156,7 @@ interface SiteSettingsFormData {
   buttonRadius: string;
   darkModeEnabled: boolean;
 
-  /* Step 4 – Social Media */
+  /* Step 5 – Social Media */
   facebookUrl: string;
   instagramUrl: string;
   twitterUrl: string;
@@ -125,9 +166,12 @@ interface SiteSettingsFormData {
   showSocialIcons: boolean;
   socialLinksNewTab: boolean;
 
-  /* Step 4 – Contact Details */
+  /* Step 6 – Contact Details */
   phoneNumber: string;
   whatsappNumber: string;
+  whatsappMessageEn: string;
+  whatsappMessageHe: string;
+  whatsappMessageAr: string;
   email: string;
   supportEmail: string;
   physicalAddress: string;
@@ -135,7 +179,7 @@ interface SiteSettingsFormData {
   enableClickToCall: boolean;
   enableWhatsappChat: boolean;
 
-  /* Step 5 – SEO & Meta */
+  /* Step 7 – SEO & Meta */
   metaTitle: string;
   metaDescription: string;
   metaKeywords: string;
@@ -149,19 +193,23 @@ interface SiteSettingsFormData {
   robotsTxt: string;
   sitemapUrl: string;
 
-  /* Step 6 – Analytics & Tracking */
+  /* Step 8 – Analytics & Tracking */
   googleAnalyticsId: string;
   googleTagManagerId: string;
   facebookPixelId: string;
   headerScripts: string;
   footerScripts: string;
 
-  /* Step 7 – Localization */
+  /* Step 9 – Localization */
   defaultLanguage: string;
   multiLanguageEnabled: boolean;
   timezone: string;
   currency: string;
   dateFormat: string;
+
+  /* Step 10 – Campaigns */
+  primaryCampId: string;
+  campIds: string[];
 }
 
 type SiteSettingsErrors = Partial<Record<keyof SiteSettingsFormData, string>>;
@@ -177,14 +225,16 @@ interface IWebsiteConfigRes {
   isDeleted: boolean;
   externalApiId: string;
 
-  dmoId: string;
-  authorityId: string;
-  websiteName: string;
+  isActive: boolean;
+  websiteNameEn: string;
+  websiteNameHe: string;
+  websiteNameAr: string;
+  sloganEn: string;
+  sloganHe: string;
+  sloganAr: string;
   websiteUrl: string;
-  slogan: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   identifierId: string;
-  campCode: string;
 
   logoUrl: string;
   faviconUrl: string;
@@ -220,6 +270,9 @@ interface IWebsiteConfigRes {
 
   phoneNumber: string;
   whatsappNumber: string;
+  whatsappMessageEn: string;
+  whatsappMessageHe: string;
+  whatsappMessageAr: string;
 
   email: string;
   supportEmail: string;
@@ -258,6 +311,9 @@ interface IWebsiteConfigRes {
   timezone: string;
   currency: string;
   dateFormat: string;
+
+  primaryCampId: string;
+  campIds: string[];
 
   partners: PartnerItem[];
 

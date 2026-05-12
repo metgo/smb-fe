@@ -6,19 +6,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import { ImageWithFallback } from "@/components/shared";
-import { PublishButton } from "@/components/btns";
-
-import {
-  Image as ImageIcon,
-  Palette,
-  Share2,
-  Phone,
-  Search,
-  BarChart2,
-  Globe,
-  CheckCircle,
-  Video,
-} from "lucide-react";
+import { BackToListBtn, PublishButton } from "@/components/btns";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import WizardFooter from "@/components/shared/WizardFooter";
@@ -31,45 +19,39 @@ import {
   Step06ContactDetails,
   Step07SeoMeta,
   Step08Analytics,
-  Step09Localization
+  Step09Localization,
+  Step10Campaigns,
 } from "./components/steps";
 import {
   useCreateWebsiteSettingMutation,
   useUpdateWebsiteSettingMutation,
   useGetWebsiteSettingDetailsQuery,
-} from "@/store/api/websiteSettingsApi";
+  useGetAllCampaignsQuery,
+} from "@/store/api/websiteConfigApi";
 import { Spinner } from "@/components/shared";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { convertToWebP, uploadWithProgress } from "@/helpers";
+import { routes } from "@/lib/routes";
+import { StepIndicator } from "./components/StepIndicator";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
-const STEP_ICONS: React.FC<{ className?: string }>[] = [
-  Settings,
-  ImageIcon,
-  Video,
-  Palette,
-  Share2,
-  Phone,
-  Search,
-  BarChart2,
-  Globe,
-];
-
-const DEFAULT_FORM: SiteSettingsFormData = {
+const DEFAULT_FORM: ISiteSettingsFormData = {
+  isActive: true,
   /* Step 1 */
-  dmoId: "",
-  authorityId: "",
-  websiteName: "",
+  websiteNameEn: "",
+  websiteNameHe: "",
+  websiteNameAr: "",
+  sloganEn: "",
+  sloganHe: "",
+  sloganAr: "",
   websiteUrl: "",
-  slogan: "",
   purpose: "MARKETPLACE",
   identifierId: "",
-  campCode: "",
 
   /* Step 2 */
   logoUrl: "",
@@ -77,13 +59,13 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   bgImageUrl: "",
   specialSymbolUrl: "",
 
-  /* Step 2 */
+  /* Step 3 */
   desktopVideos: [],
   mobileVideos: [],
   desktopVideoThumbnails: [],
   mobileVideoThumbnails: [],
 
-  /* Step 3 */
+  /* Step 4 */
   primaryColor: "#0d9488",
   secondaryColor: "#6366f1",
   backgroundColor: "#ffffff",
@@ -92,7 +74,8 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   buttonStyle: "rounded",
   buttonRadius: "8",
   darkModeEnabled: false,
-  /* Step 4 */
+
+  /* Step 5 */
   facebookUrl: "",
   instagramUrl: "",
   twitterUrl: "",
@@ -101,16 +84,21 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   tiktokUrl: "",
   showSocialIcons: true,
   socialLinksNewTab: true,
-  /* Step 5 */
+
+  /* Step 6 */
   phoneNumber: "",
   whatsappNumber: "",
+  whatsappMessageEn: "",
+  whatsappMessageHe: "",
+  whatsappMessageAr: "",
   email: "",
   supportEmail: "",
   physicalAddress: "",
   googleMapsEmbed: "",
   enableClickToCall: true,
   enableWhatsappChat: false,
-  /* Step 6 */
+
+  /* Step 7 */
   metaTitle: "",
   metaDescription: "",
   metaKeywords: "",
@@ -123,34 +111,125 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   canonicalUrl: "",
   robotsTxt: "User-agent: *\nAllow: /",
   sitemapUrl: "",
-  /* Step 7 */
+
+  /* Step 8 */
   googleAnalyticsId: "",
   googleTagManagerId: "",
   facebookPixelId: "",
   headerScripts: "",
   footerScripts: "",
-  /* Step 8 */
+
+  /* Step 9 */
   defaultLanguage: "English",
   multiLanguageEnabled: false,
   timezone: "UTC",
   currency: "USD",
   dateFormat: "",
+
+  /* Step 10 */
+  primaryCampId: "",
+  campIds: [],
+};
+
+/* ------------------------------------------------------------------ */
+/*  Completion score                                                    */
+/* ------------------------------------------------------------------ */
+
+// Keyed by wizard display step (1–10 as rendered in renderStep)
+const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
+  1: [
+    "websiteNameEn",
+    "websiteNameHe",
+    "websiteNameAr",
+    "sloganEn",
+    "sloganHe",
+    "sloganAr",
+    "websiteUrl",
+    "identifierId",
+  ],
+  2: ["primaryCampId", "campIds"],
+  3: ["logoUrl", "faviconUrl", "bgImageUrl", "specialSymbolUrl"],
+  4: [
+    "desktopVideos",
+    "mobileVideos",
+    "desktopVideoThumbnails",
+    "mobileVideoThumbnails",
+  ],
+  5: ["fontSourceUrl"],
+  6: [
+    "facebookUrl",
+    "instagramUrl",
+    "twitterUrl",
+    "youtubeUrl",
+    "linkedinUrl",
+    "tiktokUrl",
+  ],
+  7: [
+    "phoneNumber",
+    "whatsappNumber",
+    "whatsappMessageEn",
+    "whatsappMessageHe",
+    "whatsappMessageAr",
+    "email",
+    "supportEmail",
+    "physicalAddress",
+    "googleMapsEmbed",
+  ],
+  8: [
+    "metaTitle",
+    "metaDescription",
+    "metaKeywords",
+    "ogTitle",
+    "ogDescription",
+    "ogImageUrl",
+    "twitterCardTitle",
+    "twitterCardDescription",
+    "twitterCardImageUrl",
+    "canonicalUrl",
+    "sitemapUrl",
+  ],
+  9: [
+    "googleAnalyticsId",
+    "googleTagManagerId",
+    "facebookPixelId",
+    "headerScripts",
+    "footerScripts",
+  ],
+  10: ["dateFormat"],
+};
+
+const isFilled = (value: unknown): boolean => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  return true;
+};
+
+const calculateCompletionScore = (data: ISiteSettingsFormData): number => {
+  const allFields = Object.values(STEP_FIELDS).flat();
+  const filled = allFields.filter((field) => isFilled(data[field])).length;
+  return Math.round((filled / allFields.length) * 100);
 };
 
 /* ------------------------------------------------------------------ */
 /*  Payload builder                                                     */
 /* ------------------------------------------------------------------ */
 
-const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
-  externalApiId,
-  websiteName: data.websiteName,
+const buildPayload = (data: ISiteSettingsFormData) => ({
+  isActive: true,
+  score: calculateCompletionScore(data),
+  websiteNameEn: data.websiteNameEn,
+  websiteNameHe: data.websiteNameHe,
+  websiteNameAr: data.websiteNameAr,
+  sloganEn: data.sloganEn,
+  sloganHe: data.sloganHe,
+  sloganAr: data.sloganAr,
   websiteUrl: data.websiteUrl,
-  slogan: data.slogan,
   purpose: data.purpose,
   identifierId: data.identifierId,
-  campCode: data.campCode,
   logoUrl: data.logoUrl,
   faviconUrl: data.faviconUrl,
+  specialSymbolUrl: data.specialSymbolUrl,
+  bgImageUrl: data.bgImageUrl,
   desktopVideos: data.desktopVideos,
   mobileVideos: data.mobileVideos,
   desktopVideoThumbnails: data.desktopVideoThumbnails,
@@ -173,6 +252,9 @@ const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   socialLinksNewTab: data.socialLinksNewTab,
   phoneNumber: data.phoneNumber,
   whatsappNumber: data.whatsappNumber,
+  whatsappMessageEn: data.whatsappMessageEn,
+  whatsappMessageHe: data.whatsappMessageHe,
+  whatsappMessageAr: data.whatsappMessageAr,
   email: data.email,
   supportEmail: data.supportEmail,
   physicalAddress: data.physicalAddress,
@@ -201,8 +283,13 @@ const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   timezone: data.timezone,
   currency: data.currency,
   dateFormat: data.dateFormat,
+  primaryCampId: data.primaryCampId,
+  campIds: data.campIds,
 });
 
+/* ------------------------------------------------------------------ */
+/*  Main Components                                                     */
+/* ------------------------------------------------------------------ */
 export default function WebsiteConfigPage() {
   const { t } = useTranslation("website_settings");
   const [searchParams] = useSearchParams();
@@ -213,21 +300,11 @@ export default function WebsiteConfigPage() {
 
   const { textPrimary, textSecondary, borderColor, cardClasses, isDark } =
     useThemeClasses();
-
-  const STEP_META = [
-    t("general"),
-    t("step_branding"),
-    t("step_videos"),
-    t("step_theme"),
-    t("step_social"),
-    t("step_contact"),
-    t("step_seo"),
-    t("step_analytics"),
-    t("step_language"),
-  ].map((label, i) => ({ icon: STEP_ICONS[i], label }));
+  const { data: allCampaigns } = useGetAllCampaignsQuery();
+  const campaigns = allCampaigns?.filter((c) => c.type !== "MINI_SITE") ?? [];
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<SiteSettingsFormData>(DEFAULT_FORM);
+  const [formData, setFormData] = useState<ISiteSettingsFormData>(DEFAULT_FORM);
   const [errors, setErrors] = useState<SiteSettingsErrors>({});
   const [isPublishing, setIsPublishing] = useState(false);
   const [uploadStates, setUploadStates] = useState<
@@ -246,8 +323,11 @@ export default function WebsiteConfigPage() {
   const [updateWebsiteSetting] = useUpdateWebsiteSettingMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
 
-  const { data: existingSettings, isLoading } =
-    useGetWebsiteSettingDetailsQuery(websiteId, { skip: !websiteId });
+  const {
+    data: existingSettings,
+    isLoading,
+    refetch,
+  } = useGetWebsiteSettingDetailsQuery(websiteId, { skip: !websiteId });
 
   /* ---------------- Hydrate form from fetched settings ---------------- */
 
@@ -261,14 +341,16 @@ export default function WebsiteConfigPage() {
     if (!existingSettings) return;
     const d = existingSettings;
     setFormData({
-      dmoId: d.dmoId ?? "",
-      authorityId: d.authorityId ?? "",
-      websiteName: d.websiteName ?? "",
+      isActive: true,
+      websiteNameEn: d.websiteNameEn ?? "",
+      websiteNameHe: d.websiteNameHe ?? "",
+      websiteNameAr: d.websiteNameAr ?? "",
       websiteUrl: d.websiteUrl ?? "",
-      slogan: d.slogan ?? "",
+      sloganEn: d.sloganEn ?? "",
+      sloganHe: d.sloganHe ?? "",
+      sloganAr: d.sloganAr ?? "",
       purpose: d.purpose ?? "MARKETPLACE",
       identifierId: d.identifierId ?? "",
-      campCode: d.campCode ?? "",
 
       logoUrl: d.logoUrl ?? "",
       faviconUrl: d.faviconUrl ?? "",
@@ -297,6 +379,11 @@ export default function WebsiteConfigPage() {
       socialLinksNewTab: d.socialLinksNewTab ?? true,
       phoneNumber: d.phoneNumber ?? "",
       whatsappNumber: d.whatsappNumber ?? "",
+
+      whatsappMessageEn: d.whatsappMessageEn ?? "",
+      whatsappMessageHe: d.whatsappMessageHe ?? "",
+      whatsappMessageAr: d.whatsappMessageAr ?? "",
+
       email: d.email ?? "",
       supportEmail: d.supportEmail ?? "",
       physicalAddress: d.physicalAddress ?? "",
@@ -325,6 +412,8 @@ export default function WebsiteConfigPage() {
       timezone: d.timezone ?? "UTC",
       currency: d.currency ?? "USD",
       dateFormat: d.dateFormat ?? "",
+      primaryCampId: d.primaryCampId ?? "",
+      campIds: d.campIds ?? [],
     });
     setUploadStates({});
   }, [existingSettings]);
@@ -336,7 +425,10 @@ export default function WebsiteConfigPage() {
   };
 
   const onChange = useCallback(
-    (field: keyof SiteSettingsFormData, value: string | boolean) => {
+    (
+      field: keyof ISiteSettingsFormData,
+      value: string | boolean | string[],
+    ) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => {
         const next = { ...prev };
@@ -350,7 +442,7 @@ export default function WebsiteConfigPage() {
   /* ---------------- Image Upload (logo, favicon, splash, OG) ---------------- */
 
   const handleFileSelect = useCallback(
-    async (field: keyof SiteSettingsFormData, file: File) => {
+    async (field: keyof ISiteSettingsFormData, file: File) => {
       const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, [field]: previewUrl }));
       setUploadStates((prev) => ({ ...prev, [field]: "uploading" }));
@@ -389,7 +481,7 @@ export default function WebsiteConfigPage() {
     [createSignedUrl],
   );
 
-  const handleFileClear = useCallback((field: keyof SiteSettingsFormData) => {
+  const handleFileClear = useCallback((field: keyof ISiteSettingsFormData) => {
     setFormData((prev) => {
       const url = prev[field] as string;
       if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
@@ -408,7 +500,7 @@ export default function WebsiteConfigPage() {
       setFormData((prev) => {
         const existing = prev[field];
         const newItem: VideoItem = {
-          id,
+          _id: id,
           url: previewUrl,
           name: file.name,
           isActive: existing.length === 0,
@@ -436,7 +528,7 @@ export default function WebsiteConfigPage() {
         setFormData((prev) => ({
           ...prev,
           [field]: prev[field].map((v) =>
-            v.id === id ? { ...v, url: gcsURL } : v,
+            v._id === id ? { ...v, url: gcsURL } : v,
           ),
         }));
         setUploadStates((prev) => ({ ...prev, [id]: "done" }));
@@ -458,12 +550,12 @@ export default function WebsiteConfigPage() {
     (field: "desktopVideos" | "mobileVideos", id: string) => {
       setFormData((prev) => {
         const removedWasActive =
-          prev[field].find((v) => v.id === id)?.isActive ?? false;
-        const remaining = prev[field].filter((v) => v.id !== id);
+          prev[field].find((v) => v._id === id)?.isActive ?? false;
+        const remaining = prev[field].filter((v) => v._id !== id);
         if (removedWasActive && remaining.length > 0) {
           remaining[0] = { ...remaining[0], isActive: true };
         }
-        const url = prev[field].find((v) => v.id === id)?.url;
+        const url = prev[field].find((v) => v._id === id)?.url;
         if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
         return { ...prev, [field]: remaining };
       });
@@ -480,7 +572,7 @@ export default function WebsiteConfigPage() {
     (field: "desktopVideos" | "mobileVideos", id: string) => {
       setFormData((prev) => ({
         ...prev,
-        [field]: prev[field].map((v) => ({ ...v, isActive: v.id === id })),
+        [field]: prev[field].map((v) => ({ ...v, isActive: v._id === id })),
       }));
     },
     [],
@@ -499,7 +591,7 @@ export default function WebsiteConfigPage() {
       setFormData((prev) => {
         const existing = prev[field];
         const newItem: ThumnailItem = {
-          id,
+          _id: id,
           url: previewUrl,
           name: file.name,
           isActive: existing.length === 0,
@@ -528,7 +620,7 @@ export default function WebsiteConfigPage() {
         setFormData((prev) => ({
           ...prev,
           [field]: prev[field].map((th) =>
-            th.id === id ? { ...th, url: gcsURL } : th,
+            th._id === id ? { ...th, url: gcsURL } : th,
           ),
         }));
         setUploadStates((prev) => ({ ...prev, [id]: "done" }));
@@ -550,12 +642,12 @@ export default function WebsiteConfigPage() {
     (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
       setFormData((prev) => {
         const removedWasActive =
-          prev[field].find((th) => th.id === id)?.isActive ?? false;
-        const remaining = prev[field].filter((th) => th.id !== id);
+          prev[field].find((th) => th._id === id)?.isActive ?? false;
+        const remaining = prev[field].filter((th) => th._id !== id);
         if (removedWasActive && remaining.length > 0) {
           remaining[0] = { ...remaining[0], isActive: true };
         }
-        const url = prev[field].find((th) => th.id === id)?.url;
+        const url = prev[field].find((th) => th._id === id)?.url;
         if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
         return { ...prev, [field]: remaining };
       });
@@ -572,7 +664,7 @@ export default function WebsiteConfigPage() {
     (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
       setFormData((prev) => ({
         ...prev,
-        [field]: prev[field].map((th) => ({ ...th, isActive: th.id === id })),
+        [field]: prev[field].map((th) => ({ ...th, isActive: th._id === id })),
       }));
     },
     [],
@@ -589,12 +681,11 @@ export default function WebsiteConfigPage() {
 
   const validateStep1 = (): boolean => {
     const newErrors: SiteSettingsErrors = {};
-    if (!formData.websiteName.trim())
-      newErrors.websiteName = t("field_required");
-    if (!formData.slogan.trim()) newErrors.slogan = t("field_required");
+    if (!formData.websiteNameEn.trim())
+      newErrors.websiteNameEn = t("field_required");
+    if (!formData.sloganEn.trim()) newErrors.sloganEn = t("field_required");
     if (!formData.identifierId.trim())
       newErrors.identifierId = t("field_required");
-    if (!formData.campCode.trim()) newErrors.campCode = t("field_required");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -607,14 +698,9 @@ export default function WebsiteConfigPage() {
   /* ---------------- Save / Publish ---------------- */
 
   const handlePublish = async () => {
-    if (!websiteId) {
-      toast.error(t("select_website_first"));
-      return;
-    }
-
     setIsPublishing(true);
     try {
-      const payload = buildPayload(formData, websiteId);
+      const payload = buildPayload(formData);
       if (existingSettings) {
         await updateWebsiteSetting({
           id: existingSettings._id,
@@ -624,6 +710,7 @@ export default function WebsiteConfigPage() {
         await createWebsiteSetting(payload).unwrap();
       }
       toast.success(t("settings_published"));
+      refetch();
     } catch {
       toast.error(t("settings_publish_failed"));
     } finally {
@@ -649,9 +736,17 @@ export default function WebsiteConfigPage() {
         return <Step01Generals {...stepProps} />;
       case 2:
         return (
-          <Step02BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
+          <Step10Campaigns
+            campaigns={campaigns}
+            formData={formData}
+            onChange={onChange}
+          />
         );
       case 3:
+        return (
+          <Step02BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
+        );
+      case 4:
         return (
           <Step03HomeVideo
             formData={formData}
@@ -665,15 +760,15 @@ export default function WebsiteConfigPage() {
             onThumbnailActivate={handleThumbnailActivate}
           />
         );
-      case 4:
-        return <Step04ThemeAppearance {...stepProps} />;
       case 5:
-        return <Step05SocialMedia {...stepProps} />;
+        return <Step04ThemeAppearance {...stepProps} />;
       case 6:
-        return <Step06ContactDetails {...stepProps} />;
+        return <Step05SocialMedia {...stepProps} />;
       case 7:
-        return <Step07SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+        return <Step06ContactDetails {...stepProps} />;
       case 8:
+        return <Step07SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+      case 9:
         return (
           <Step08Analytics
             formData={formData}
@@ -681,8 +776,9 @@ export default function WebsiteConfigPage() {
             onChange={onChange}
           />
         );
-      case 9:
+      case 10:
         return <Step09Localization {...stepProps} />;
+
       default:
         return null;
     }
@@ -690,6 +786,7 @@ export default function WebsiteConfigPage() {
 
   return (
     <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
+      <BackToListBtn navPath={routes.websiteMgmt} />
       {/* Page Header */}
       <section className="flex items-center justify-between gap-6">
         <div className="flex items-center gap-3 shrink-0">
@@ -713,8 +810,53 @@ export default function WebsiteConfigPage() {
             </p>
           </div>
         </div>
-        {/* Publish button */}
-        <PublishButton isLoading={false} onClick={() => handlePublish} />
+        <div className="flex items-center gap-4">
+          {(() => {
+            const score = calculateCompletionScore(formData);
+            const color =
+              score >= 75
+                ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
+                : score >= 40
+                  ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
+                  : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
+            return (
+              <div
+                className={clsx(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
+                  color,
+                )}
+              >
+                <svg
+                  viewBox="0 0 32 32"
+                  className="w-5 h-5 -rotate-90"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeOpacity="0.2"
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeDasharray={`${(score / 100) * 75.4} 75.4`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {score}%
+              </div>
+            );
+          })()}
+          <PublishButton isLoading={isPublishing} onClick={handlePublish} />
+        </div>
       </section>
 
       {/* Wizard — fills remaining height */}
@@ -727,82 +869,12 @@ export default function WebsiteConfigPage() {
           )}
         >
           <Spinner isLoading={isLoading} />
-          {/* Step indicator */}
-          <div
-            className={clsx(
-              "flex items-center justify-between px-6 py-1 border-b overflow-x-auto shrink-0",
-              borderColor,
-            )}
-          >
-            {STEP_META.map(({ icon: Icon, label }, i) => {
-              const step = i + 1;
-              const isActive = step === currentStep;
-              const isCompleted = step < currentStep;
 
-              return (
-                <button
-                  key={step}
-                  onClick={() => goToStep(step)}
-                  className={clsx(
-                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer shrink-0",
-                    isActive
-                      ? "bg-teal-500/15"
-                      : isCompleted
-                        ? isDark
-                          ? "hover:bg-gray-800"
-                          : "hover:bg-gray-100"
-                        : isDark
-                          ? "hover:bg-gray-800 opacity-50"
-                          : "hover:bg-gray-100 opacity-50",
-                  )}
-                >
-                  <div
-                    className={clsx(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                      isActive
-                        ? "bg-teal-500 text-white"
-                        : isCompleted
-                          ? "bg-teal-500/20 text-teal-600"
-                          : isDark
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-400",
-                    )}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                  </div>
-                  <span
-                    className={clsx(
-                      "text-xs font-medium whitespace-nowrap",
-                      isActive
-                        ? "text-teal-600"
-                        : isCompleted
-                          ? textSecondary
-                          : textSecondary,
-                    )}
-                  >
-                    {label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Step progress bar */}
-          <div
-            className={clsx(
-              "h-1 w-full shrink-0",
-              isDark ? "bg-gray-800" : "bg-gray-100",
-            )}
-          >
-            <div
-              className="h-full bg-teal-500 transition-all duration-300"
-              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-            />
-          </div>
+          <StepIndicator
+            isDark={isDark}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+          />
 
           {/* Step content */}
           <div

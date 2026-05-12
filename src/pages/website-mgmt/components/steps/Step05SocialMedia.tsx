@@ -4,10 +4,10 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (
-    field: keyof SiteSettingsFormData,
+    field: keyof ISiteSettingsFormData,
     value: string | boolean,
   ) => void;
 }
@@ -57,17 +57,13 @@ function Toggle({
   );
 }
 
-const Step05SocialMedia=({
-  formData,
-  errors,
-  onChange,
-}: Props) =>{
+const Step05SocialMedia = ({ formData, errors, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, borderColor, isDark } =
     useThemeClasses();
 
   const SOCIAL_FIELDS: {
-    field: keyof SiteSettingsFormData;
+    field: keyof ISiteSettingsFormData;
     label: string;
     placeholder: string;
   }[] = [
@@ -157,5 +153,5 @@ const Step05SocialMedia=({
       </div>
     </div>
   );
-}
+};
 export default Step05SocialMedia;

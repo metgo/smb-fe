@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { Moon, Sun, ChevronDown, Settings, Check, Monitor } from "lucide-react";
+import { Moon, Sun, Settings, Check, Monitor, Languages } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
@@ -14,7 +14,6 @@ import {
   setDmo,
   setTimeFrame,
   setWebsite,
-  setTimeFrameValue,
   setFilteredWebsite,
 } from "@/features/authSlice";
 import { ReactSelect } from "@/components/form-fields";
@@ -27,14 +26,14 @@ export default function Header() {
   const location = useLocation();
   const { t, i18n } = useTranslation("common");
 
-  const { allWebsites, dateRanges: timeframes, dmosAuthorities } = useCommon();
+  const { allWebsites, dmosAuthorities } = useCommon();
   const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
   );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
-  const { textPrimary, selectInputClasses, isDark, language } =
-    useThemeClasses();
+  const { textPrimary, isDark, language } = useThemeClasses();
+
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
 
   const filteredWebsites = useMemo(() => {
@@ -110,8 +109,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const activeLang = locales.find((l) => l.value === language);
-
   const handleLanguageChange = (lng: Language) => {
     dispatch(setLanguage(lng));
     i18n.changeLanguage(lng);
@@ -178,7 +175,7 @@ export default function Header() {
             />
 
             {/* Date Range Selector */}
-            <div className="relative">
+            {/* <div className="relative">
               <select
                 value={timeFrame}
                 onChange={(e) => dispatch(setTimeFrameValue(e.target.value))}
@@ -194,24 +191,25 @@ export default function Header() {
                 ))}
               </select>
               <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+            </div> */}
 
             {/* Language Toggle */}
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setLangOpen((o) => !o)}
                 className={clsx(
-                  "flex items-center justify-center border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-teal-500",
-                  selectInputClasses,
+                  "flex items-center justify-center border rounded-lg p-1  focus:outline-none focus:ring-2 focus:ring-teal-500",
+                  textPrimary,
                 )}
               >
-                {activeLang?.flag && (
-                  <img
-                    src={activeLang.flag}
-                    alt={activeLang.label}
-                    className="w-5 h-4 object-contain"
-                  />
-                )}
+                <div className="relative">
+                  <span className="text-lg absolute -top-3 left-2">
+                    {language === "en" && "🇬🇧"}
+                    {language === "he" && "🇮🇱"}
+                    {language === "ar" && "🇸🇦"}
+                  </span>
+                  <Languages size={20} />
+                </div>
               </button>
               {langOpen && (
                 <div
@@ -231,9 +229,7 @@ export default function Header() {
                       }}
                       className={clsx(
                         "flex items-center gap-2 w-full px-3 py-2 text-sm text-start first:rounded-t-lg last:rounded-b-lg",
-                        isDark
-                          ? "hover:bg-gray-700"
-                          : "hover:bg-teal-50",
+                        isDark ? "hover:bg-gray-700" : "hover:bg-teal-50",
                         language === lang.value &&
                           (isDark ? "bg-gray-700" : "bg-teal-50"),
                         textPrimary,

@@ -20,12 +20,15 @@ import PromotionsMgmtPage from "./promotions-mgmt";
 import DmosMgmtPage from "./dmos-mgmt";
 import AuthoritiesMgmtPage from "./authorities-mgmt";
 import WebsiteConfigPage from "./website-mgmt/website-config";
+import PartnersPage from "./partners";
+import CampaignsMgmtPage from "./campaign-mgmt";
 
 export {
   AuthPage,
   ErrorUiPage,
   ProfilePage,
   DmosMgmtPage,
+  CampaignsMgmtPage,
   AuthoritiesMgmtPage,
   BusinessesMgmtPage,
   BusinessDetailsPage,
@@ -39,6 +42,7 @@ export {
   AnalyticsDashboardPage,
   ContentMgmtPage,
   PromotionsMgmtPage,
+  PartnersPage,
   VouchersMgmtPage,
   VoucherDetailsPage,
   WebsiteMgmtPage,

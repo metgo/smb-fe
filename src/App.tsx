@@ -32,6 +32,8 @@ import {
   DmosMgmtPage,
   AuthoritiesMgmtPage,
   WebsiteConfigPage,
+  PartnersPage,
+  CampaignsMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -248,6 +250,8 @@ function App() {
 
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+        { path: routes.partners, element: <PartnersPage /> },
+        { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
         { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
         { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
         { path: routes.websiteConfig, element: <WebsiteConfigPage /> },

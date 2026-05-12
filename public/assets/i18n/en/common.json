@@ -69,6 +69,12 @@
   "documents": "Documents",
   "version": "Version",
   "max_characters": "Max characters",
+  "website_config": "Website Config",
+  "dmos": "DMOs",
+  "authorities": "Authorities",
+  "campaigns": "Campaigns",
+  "websites": "Websites",
+  "partners": "Partners",
 
   "filters": "Filters",
   "previous": "Previous",
@@ -81,6 +87,7 @@
   "resend": "Resend",
   "csvExport": "CSV Export",
   "delete": "Delete",
+  "processing": "Processing...",
 
   "confirm": "Confirm",
   "details": "Details",
@@ -319,19 +326,33 @@
   "max_length_reached": "Max length reached.",
   "select_options_placeholder": "Select options",
 
+  "delete_partner": "Delete Partner",
+  "delete_partner_confirm": "Are you sure you want to delete this partner? This action cannot be undone.",
+  "partner_deleted": "Partner deleted successfully",
+  "partner_delete_failed": "Failed to delete partner",
+
   "delete_authority": "Delete Authority",
   "delete_authority_confirm": "Are you sure you want to delete this authority? This action cannot be undone.",
+  "authority_deleted": "Authority deleted successfully",
+  "authority_delete_failed": "Failed to delete authority",
   "migrate_authority_to_prod": "Migrate Authority to Production",
   "migrate_authority_to_prod_confirm": "You are about to migrate this authority to the production environment. This will make it live for all users. Are you sure you want to continue?",
   "migrate_to_prod": "Migrate to Production",
 
   "delete_dmo": "Delete DMO",
   "delete_dmo_confirm": "Are you sure you want to delete this DMO? This action cannot be undone.",
+  "dmo_deleted": "DMO deleted successfully",
+  "dmo_delete_failed": "Failed to delete DMO",
   "migrate_dmo_to_prod": "Migrate DMO to Production",
   "migrate_dmo_to_prod_confirm": "You are about to migrate this DMO to the production environment. This will make it live for all users. Are you sure you want to continue?",
 
   "migrate_website_to_prod": "Migrate Website to Production",
   "migrate_website_to_prod_confirm": "You are about to migrate this website to the production environment. This will make it live for all users. Are you sure you want to continue?",
   "delete_website": "Delete Website",
-  "delete_website_confirm": "Are you sure you want to delete this website? This action cannot be undone."
+  "delete_website_confirm": "Are you sure you want to delete this website? This action cannot be undone.",
+  "website_deleted": "Website deleted successfully",
+  "website_delete_failed": "Failed to delete website",
+
+  "deactivate_website": "Deactivate Website",
+  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?"
 }
