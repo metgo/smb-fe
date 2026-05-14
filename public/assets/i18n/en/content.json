@@ -2,6 +2,8 @@
   "expand": "Expand",
   "split": "Split",
 
+  "apply_same": "Apply same",
+
   "create_new_topic": "Create New Topic",
   "placeholder_new_topic": "e.g., Homepage Sections, Featured Content...",
   "button_create": "Create",

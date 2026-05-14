@@ -59,7 +59,6 @@ export default function CreateEventWizard({
   editData,
   refetch,
 }: CreateEventWizardProps) {
-  console.log("🚀 ~ CreateEventWizard ~ editData:", editData);
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 

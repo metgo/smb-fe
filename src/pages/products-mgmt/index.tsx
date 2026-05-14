@@ -349,6 +349,14 @@ export default function ProductsMgmtPage() {
     setPage((prev) => prev + 1);
   }, [hasMore, isFetching]);
 
+  const refetchFromPage1 = useCallback(() => {
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
+
   // ─── Handlers (memoized) ─────────
   const handleCreateNew = useCallback(() => {
     setIsCreateModalOpen(true);
@@ -729,6 +737,7 @@ export default function ProductsMgmtPage() {
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}
+              refetch={refetchFromPage1}
             />
           ) : (
             <ProductGridView

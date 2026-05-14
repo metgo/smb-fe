@@ -19,8 +19,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ProductAvailabilityDetails,
   ProductInfoDetails,
-  ProductInventoryDetails,
-  ProductPricingDetails,
+  ProductPricingInventoryDetails,
 } from "./components";
 import {
   useGetProductbyIdQuery,
@@ -162,10 +161,8 @@ export default function ProductDetailsPage() {
             tags={product?.tagsId}
           />
         );
-      case "pricing":
-        return <ProductPricingDetails {...commonProps} />;
-      case "inventory":
-        return <ProductInventoryDetails {...commonProps} />;
+      case "pricing_inventory":
+        return <ProductPricingInventoryDetails {...commonProps} />;
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
