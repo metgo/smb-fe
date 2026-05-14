@@ -1,12 +1,16 @@
 import { Suspense, useEffect } from "react";
+import axios from "axios";
 import {
   Outlet,
   RouterProvider,
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
+import { envKeys } from "@/lib/envKeys";
+import { endpoints } from "@/lib/endpoints";
 
 import { routes } from "@/lib/routes";
+import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
@@ -171,6 +175,47 @@ function App() {
       }
     }
   }, [dispatch]);
+ 
+  // Handle profile completion token — auto-login the user if token is in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const currentAccessToken = sessionStorage.getItem("access_token");
+ 
+    // Only trigger if we have a token and it's either new or different from the current one
+    if (token && token !== currentAccessToken) {
+      const fetchUserProfile = async () => {
+        try {
+          // Set the token temporarily so /users/me can use it
+          sessionStorage.setItem("access_token", token);
+ 
+          const response = await axios.get(`${envKeys.baseUrl}${endpoints.userInfo}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+ 
+          const userData = response.data;
+          if (userData) {
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/^&/, '?');
+            window.history.replaceState({}, '', newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to auto-login via profile token", error);
+          // If auto-login fails, don't leave a potentially broken token
+          if (sessionStorage.getItem("access_token") === token) {
+            sessionStorage.removeItem("access_token");
+          }
+        }
+      };
+      fetchUserProfile();
+    }
+  }, [dispatch]);
 
   const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
@@ -201,6 +246,15 @@ function App() {
 
     // Normal protected routes
     if (!isLoggedIn) {
+      // Allow business-details with a profile completion token to bypass login
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasToken = urlParams.get('token');
+      const isBusinessDetails = window.location.pathname === routes.businessDetails;
+
+      if (hasToken && isBusinessDetails) {
+        return children;
+      }
+
       return <Navigate to={routes.auth} replace />;
     }
 

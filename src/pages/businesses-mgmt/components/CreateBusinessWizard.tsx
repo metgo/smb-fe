@@ -49,6 +49,7 @@ interface CreateBusinessWizardProps {
   editData?: any;
   refetch?: any;
   opMode?: TOpMode;
+  missingFields?: string[];
 }
 
 export default function CreateBusinessWizard({
@@ -56,6 +57,7 @@ export default function CreateBusinessWizard({
   editData,
   refetch,
   opMode = IOpMode.CREATE,
+  missingFields = [],
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
@@ -71,7 +73,25 @@ export default function CreateBusinessWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState(1);
+  // When opened from email link with missingFields, start on the step of the first missing field
+  const getStepForField = (field: string): number => {
+    const stepMap: Record<string, number> = {
+      name: 1, shortDescription: 1, description: 1,
+      busiEmail: 2, phoneNumber: 2, contactDetails: 2, contactName: 2,
+      address: 3,
+      primaryCategoryId: 4, tags: 4,
+      logo: 5, images: 5,
+      openingHrs: 6,
+      socialMedia: 8,
+    };
+    return stepMap[field] ?? 1;
+  };
+  const initialStep = missingFields.length > 0 ? getStepForField(missingFields[0]) : 1;
+
+  // Set of step numbers that have missing fields — used to highlight them in the step indicator
+  const stepsWithMissingFields = new Set(missingFields.map(getStepForField));
+
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -284,30 +304,33 @@ export default function CreateBusinessWizard({
     }
   }, []);
   useEffect(() => {
-    if (businessId === "" || opMode === IOpMode.CREATE) return;
+    // For CREATE mode, we don't load from editData
+    if (opMode === IOpMode.CREATE) return;
 
-    if (editData && businessId) {
+    // Wait until we have both the data and the ID (either from state or from prop)
+    const effectiveId = businessId || editData?._id;
+    if (editData && effectiveId) {
       const loadedFormData = {
         //basic info
         nameEn:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.name || ""} (Duplicate)`
-            : editData?.name || "",
+            ? `${editData?.nameEn || editData?.name || ""} (Duplicate)`
+            : editData?.nameEn || editData?.name || "",
         nameHe:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameHe || ""} (שכפל)`
-            : editData?.nameHe || "",
+            ? `${editData?.nameHe || editData?.name || ""} (שכפל)`
+            : editData?.nameHe || editData?.name || "",
         nameAr:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || ""} (نسخ)`
-            : editData?.nameAr || "",
+            ? `${editData?.nameAr || editData?.name || ""} (نسخ)`
+            : editData?.nameAr || editData?.name || "",
 
-        shortDescriptionEn: editData?.shortDescription || "",
-        shortDescriptionHe: editData?.shortDescriptionAr || "",
-        shortDescriptionAr: editData?.shortDescriptionHe || "",
-        fullDescriptionEn: editData?.description || "",
-        fullDescriptionHe: editData?.descriptionAr || "",
-        fullDescriptionAr: editData?.descriptionHe || "",
+        shortDescriptionEn: editData?.shortDescriptionEn || editData?.shortDescription || "",
+        shortDescriptionHe: editData?.shortDescriptionHe || editData?.shortDescription || "",
+        shortDescriptionAr: editData?.shortDescriptionAr || editData?.shortDescription || "",
+        fullDescriptionEn: editData?.descriptionEn || editData?.description || "",
+        fullDescriptionHe: editData?.descriptionHe || editData?.description || "",
+        fullDescriptionAr: editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
@@ -394,8 +417,8 @@ export default function CreateBusinessWizard({
         setAddress(formatted);
       }
 
-      setSelectAuthorityId(editData?.authorityId?._id || "");
-      setSelectedDmoId(editData?.dmoId?._id || "");
+      setSelectAuthorityId(editData?.authorityId?._id || editData?.authorityId || "");
+      setSelectedDmoId(editData?.dmoId?._id || editData?.dmoId || "");
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
@@ -604,10 +627,10 @@ export default function CreateBusinessWizard({
   };
 
   useEffect(() => {
-    if (opMode !== IOpMode.CREATE) {
-      setBusinessId(editData?._id);
+    if (opMode !== IOpMode.CREATE && editData?._id && businessId === "") {
+      setBusinessId(editData._id);
     }
-  }, [opMode, businessId]);
+  }, [opMode, editData?._id, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
@@ -824,9 +847,11 @@ export default function CreateBusinessWizard({
                         ? "bg-teal-600 text-white"
                         : step.number < currentStep
                           ? "bg-green-600 text-white"
-                          : theme === "dark"
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-500"
+                          : stepsWithMissingFields.has(step.number)
+                            ? "bg-amber-500 text-white"
+                            : theme === "dark"
+                              ? "bg-gray-800 text-gray-500"
+                              : "bg-gray-200 text-gray-500"
                     }`}
                   >
                     {step.number < currentStep ? (
@@ -863,6 +888,14 @@ export default function CreateBusinessWizard({
           })}
         </div>
       </div>
+
+      {/* Missing fields banner — shown when opened via no-auth email link */}
+      {missingFields.length > 0 && (
+        <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
+          <span className="font-medium">⚠️ Missing fields: </span>
+          {missingFields.join(", ")}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
