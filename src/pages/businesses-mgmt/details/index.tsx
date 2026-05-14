@@ -77,6 +77,14 @@ export default function BusinessDetailsPage() {
   const businessId = searchParams.get("businessId") ?? "";
   const profileToken = searchParams.get("token");
 
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditClicked, setIsEditClicked] = useState(false);
+  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
+  const [missingFieldsFromToken, setMissingFieldsFromToken] = useState<
+    string[]
+  >([]);
+
   // ── No-auth profile completion token handling ──────────────────────────
   // When token is in URL, validate it directly and open Edit modal.
   // ProtectedRoute allows this page through without login when token is present.
@@ -100,9 +108,7 @@ export default function BusinessDetailsPage() {
           );
         } catch {
           // Token expired or invalid — redirect to a clean error page
-          window.location.replace(
-            `${routes.auth}?tokenError=expired`,
-          );
+          window.location.replace(`${routes.auth}?tokenError=expired`);
         }
       };
       validateToken();
@@ -110,20 +116,21 @@ export default function BusinessDetailsPage() {
     }
 
     // Check sessionStorage (post-login redirect flow)
-    const storedToken = sessionStorage.getItem('profile_completion_token');
+    const storedToken = sessionStorage.getItem("profile_completion_token");
     const storedFields: string[] = JSON.parse(
-      sessionStorage.getItem('profile_completion_fields') ?? '[]'
+      sessionStorage.getItem("profile_completion_fields") ?? "[]",
     );
     if (storedToken && storedFields.length) {
-      sessionStorage.removeItem('profile_completion_token');
-      sessionStorage.removeItem('profile_completion_business_id');
-      sessionStorage.removeItem('profile_completion_fields');
+      sessionStorage.removeItem("profile_completion_token");
+      sessionStorage.removeItem("profile_completion_business_id");
+      sessionStorage.removeItem("profile_completion_fields");
       setIsEditClicked(true);
       setOpMode(IOpMode.EDIT);
       setMissingFieldsFromToken(storedFields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [profileToken, businessId]);
+
   ///business detail stats
   const {
     data,
@@ -168,17 +175,13 @@ export default function BusinessDetailsPage() {
       value: `${data?.conversionRate || 0}%`,
     },
   ];
+
   const {
     data: business,
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
-  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEditClicked, setIsEditClicked] = useState(false);
-  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
-  const [missingFieldsFromToken, setMissingFieldsFromToken] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isEditClicked) {
@@ -292,10 +295,11 @@ export default function BusinessDetailsPage() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${isDark
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                  isDark
                     ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
                     : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-                  }`}
+                }`}
               >
                 <MoreHorizontal className="w-4 h-4" />
                 <span className="text-sm font-medium">{t("actions")}</span>
@@ -306,10 +310,11 @@ export default function BusinessDetailsPage() {
 
               {isDropdownOpen && (
                 <div
-                  className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${isDark
+                  className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                    isDark
                       ? "bg-gray-900 border-gray-700"
                       : "bg-white border-gray-200"
-                    }`}
+                  }`}
                 >
                   {/* Edit */}
                   <button
@@ -317,10 +322,11 @@ export default function BusinessDetailsPage() {
                       handleMutateData(IOpMode.EDIT);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
                         ? "text-teal-400 hover:bg-gray-800"
                         : "text-teal-700 hover:bg-gray-50"
-                      }`}
+                    }`}
                   >
                     <Edit className="w-4 h-4 shrink-0" />
                     {t("edit")}
@@ -333,10 +339,11 @@ export default function BusinessDetailsPage() {
                         setIsOwnerChangeModalOpen(true);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
                           ? "text-gray-300 hover:bg-gray-800"
                           : "text-gray-700 hover:bg-gray-50"
-                        }`}
+                      }`}
                     >
                       <UserCog className="w-4 h-4 shrink-0" />
                       {t("change_owner")}
@@ -352,10 +359,11 @@ export default function BusinessDetailsPage() {
                         onCreateProduct();
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark
+                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                        isDark
                           ? "text-indigo-400 hover:bg-gray-800"
                           : "text-indigo-600 hover:bg-gray-50"
-                        }`}
+                      }`}
                     >
                       <Plus className="w-4 h-4 shrink-0" />
                       {t("create_product")}
@@ -366,10 +374,11 @@ export default function BusinessDetailsPage() {
                       onViewProduct();
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
                         ? "text-gray-300 hover:bg-gray-800"
                         : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                    }`}
                   >
                     <Eye className="w-4 h-4 shrink-0" />
                     View Product

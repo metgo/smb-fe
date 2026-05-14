@@ -113,12 +113,6 @@ export default function ProductsMgmtPage() {
   const urlBusinessName = searchParams?.get("businessName");
   const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
 
-  useEffect(() => {
-    if (urlBusinessId && urlBusinessName) {
-      handleCreateNew();
-    }
-  }, [urlBusinessId, urlBusinessName]);
-
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
@@ -157,6 +151,17 @@ export default function ProductsMgmtPage() {
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const hasSavedFilters = filters.businessId !== "" || filters.status !== "all";
+
+  // ─── Handlers (memoized) ─────────
+  const handleCreateNew = useCallback(() => {
+    setIsCreateModalOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (urlBusinessId && urlBusinessName) {
+      handleCreateNew();
+    }
+  }, [urlBusinessId, urlBusinessName, handleCreateNew]);
 
   // ─── Load persisted state on mount ─────────
   useEffect(() => {
@@ -348,11 +353,6 @@ export default function ProductsMgmtPage() {
     if (!hasMore || isFetching) return;
     setPage((prev) => prev + 1);
   }, [hasMore, isFetching]);
-
-  // ─── Handlers (memoized) ─────────
-  const handleCreateNew = useCallback(() => {
-    setIsCreateModalOpen(true);
-  }, []);
 
   const removeQueryParams = useCallback(() => {
     navigate({}, { replace: true });
