@@ -34,7 +34,7 @@ export function usePoiDraftSaver({
   const { isTraveller } = useUserRoles();
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
-  const { t:tp } = useTranslation("poi");
+  const { t: tp } = useTranslation("poi");
 
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -86,6 +86,7 @@ export function usePoiDraftSaver({
     },
     [
       t,
+      tp,
       currentStep,
       stepPayloadMap,
       initPoiCreate,

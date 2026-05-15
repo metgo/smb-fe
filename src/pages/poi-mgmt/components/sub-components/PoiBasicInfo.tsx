@@ -1,4 +1,3 @@
-import { Globe } from "lucide-react";
 import { useEffect, useRef, type FC } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -48,8 +47,6 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   poiAssociatedWebsites = [],
-  selectedFormLanguage,
-  setSelectedFormLanguage,
 }) => {
   const { isDark } = useThemeClasses();
 

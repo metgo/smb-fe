@@ -38,7 +38,6 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import PoiContentForm from "./sub-components/PoiContentForm";
-import { useCommon } from "@/hooks/useCommon";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -72,6 +71,7 @@ export default function CreatePoiWizard({
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  console.log("🚀 ~ CreatePoiWizard ~ geo:", geo);
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
@@ -81,7 +81,6 @@ export default function CreatePoiWizard({
     selectedWhitelistIds: [] as string[],
   });
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
-  const { categories} = useCommon();
 
   const [formData, setFormData] = useState<any>({
     title: "",
@@ -100,7 +99,6 @@ export default function CreatePoiWizard({
     website: "",
     videoUrl: "",
     virtualTourUrl: "",
-    primaryCategory: categories[0]?._id ,
   });
 
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
@@ -243,7 +241,7 @@ export default function CreatePoiWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.lng),
+          lng: String(editData.geoLocation.long),
         });
       }
       if (editData?.address) {
@@ -313,14 +311,14 @@ export default function CreatePoiWizard({
     descriptionHe: formData.contentHe,
     descriptionAr: formData.contentAr,
     internalNotes: formData.internalNotes,
-    primaryCategoryId: formData.primaryCategory,
+    primaryCategoryId: "6566e256a77d2a477266d2c0",
 
     address: {
       country: addr.country,
       city: addr.city,
       location: addr.location,
     },
-    geoLocation: geo,
+    geoLocation: { lat: geo.lat, long: geo.lng },
     tagsId: formData.tags?.map((tag: any) => ({
       en: tag.en,
       he: tag.he,
