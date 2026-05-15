@@ -12,7 +12,8 @@ export default function PoiContentForm({
   onChange,
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
-  const { t: tPoi } = useTranslation("poi");
+  const { t: tc } = useTranslation("common");
+
   const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   // Detect which language actually has content, prioritize that
@@ -65,13 +66,13 @@ export default function PoiContentForm({
     <div className="max-w-7xl mx-auto space-y-6 mt-6">
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("title")} <span className="text-red-500">*</span>
+          {tc("title")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={formData[titleField] || ""}
           onChange={(e) => onChange({ [titleField]: e.target.value })}
-          placeholder={t("title_placeholder")}
+          placeholder={tc("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
           dir={dir}
         />
@@ -82,12 +83,12 @@ export default function PoiContentForm({
 
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("short_description")} <span className="text-red-500">*</span>
+          {tc("short_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData[shortDescField] || ""}
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
-          placeholder={t("short_description_placeholder")}
+          placeholder={tc("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
@@ -98,12 +99,12 @@ export default function PoiContentForm({
       </div>
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {tPoi("description")} <span className="text-red-500">*</span>
+          {tc("full_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData[contentField] || ""}
           onChange={(e) => onChange({ [contentField]: e.target.value })}
-          placeholder={tPoi("description_placeholder")}
+          placeholder={tc("full_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}

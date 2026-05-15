@@ -34,6 +34,7 @@ export function usePoiDraftSaver({
   const { isTraveller } = useUserRoles();
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
+  const { t:tp } = useTranslation("poi");
 
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -78,9 +79,9 @@ export function usePoiDraftSaver({
           refetch();
         }
         onClose();
-        toast.success(isPublish ? t("poi_published") : t("draft_saved"));
+        toast.success(isPublish ? tp("poi_published") : tp("draft_saved"));
       } catch (err: any) {
-        toast.error(err?.data?.message || t("draft_failed"));
+        toast.error(err?.data?.message || tp("draft_failed"));
       }
     },
     [

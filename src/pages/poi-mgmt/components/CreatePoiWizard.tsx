@@ -38,6 +38,7 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
 import PoiContentForm from "./sub-components/PoiContentForm";
+import { useCommon } from "@/hooks/useCommon";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -80,6 +81,7 @@ export default function CreatePoiWizard({
     selectedWhitelistIds: [] as string[],
   });
   const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
+  const { categories} = useCommon();
 
   const [formData, setFormData] = useState<any>({
     title: "",
@@ -98,6 +100,7 @@ export default function CreatePoiWizard({
     website: "",
     videoUrl: "",
     virtualTourUrl: "",
+    primaryCategory: categories[0]?._id ,
   });
 
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
@@ -218,6 +221,8 @@ export default function CreatePoiWizard({
           opMode === IOpMode.DUPLICATE
             ? `${editData?.nameAr || ""} (נسخ)`
             : editData?.nameAr || "",
+        primaryCategory: editData?.primaryCategoryId || "",
+
         shortDescription: editData?.shortDescription || "",
         shortDescriptionHe: editData?.shortDescriptionHe || "",
         shortDescriptionAr: editData?.shortDescriptionAr || "",
@@ -308,6 +313,8 @@ export default function CreatePoiWizard({
     descriptionHe: formData.contentHe,
     descriptionAr: formData.contentAr,
     internalNotes: formData.internalNotes,
+    primaryCategoryId: formData.primaryCategory,
+
     address: {
       country: addr.country,
       city: addr.city,
@@ -379,9 +386,6 @@ export default function CreatePoiWizard({
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
         break;
 
-      case 2:
-        if (!formData?.email) newErrors.email = t("required_field");
-        break;
       case 6:
         if (!addr.location) newErrors.address = t("required_field");
         break;
@@ -480,9 +484,7 @@ export default function CreatePoiWizard({
         );
       case 2:
         return (
-          <div className="space-y-6">
-            <PoiTranslateButton formData={formData} onChange={handleChange} />
-          </div>
+          <PoiTranslateButton formData={formData} onChange={handleChange} />
         );
       case 3:
         return (
@@ -499,7 +501,6 @@ export default function CreatePoiWizard({
           <PoiMedia
             markDirty={markDirty}
             logoImage={logoImage}
-            handleLogoImageSelect={logoUpload.handleFileSelect}
             deleteTargetLogo={deleteTargetLogo}
             setDeleteTargetLogo={setDeleteTargetLogo}
             isLogoImageDeleting={logoUpload.isDeleting}

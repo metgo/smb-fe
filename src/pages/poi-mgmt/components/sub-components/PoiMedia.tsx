@@ -1,5 +1,5 @@
 import { useEffect, type FC } from "react";
-import { Loader2, Plus, Upload, X, Video, Map } from "lucide-react";
+import { Loader2, Plus, X, Video, Map } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
@@ -10,7 +10,6 @@ interface PoiMediaProps {
 
   // Logo
   logoImage?: IImageUpload | null;
-  handleLogoImageSelect?: (file: File) => void;
   confirmDeleteLogo?: () => void;
   deleteTargetLogo?: string | null;
   setDeleteTargetLogo?: (imgUrl: string | null) => void;
@@ -39,11 +38,9 @@ interface PoiMediaProps {
 const PoiMedia: FC<PoiMediaProps> = ({
   markDirty,
   logoImage,
-  handleLogoImageSelect,
   deleteTargetLogo,
   setDeleteTargetLogo,
   isLogoImageDeleting,
-  handleDeleteLogoImage,
   confirmDeleteLogo,
   images,
   imagesRef,
@@ -72,78 +69,7 @@ const PoiMedia: FC<PoiMediaProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Logo Upload */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {tb("logo_required")}
-        </label>
-        <div className="flex items-center gap-4">
-          {logoImage?.previewUrl ? (
-            <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
-              <div
-                className="w-full h-full"
-                onClick={() =>
-                  document.getElementById("poi-logo-upload")?.click()
-                }
-              >
-                <ImageWithFallback
-                  src={logoImage.previewUrl}
-                  alt="Logo"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <button
-                onClick={() => handleDeleteLogoImage?.(logoImage)}
-                className="absolute top-2 right-2 z-50 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              {logoImage?.status === "uploading" && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-40">
-                  <Loader2 className="w-12 h-12 text-white animate-spin" />
-                  <span className="mt-2 text-white font-bold text-xs">
-                    {logoImage.progress}%
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div
-              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer ${
-                isDark
-                  ? "border-gray-700 hover:border-gray-600"
-                  : "border-gray-300 hover:border-gray-400"
-              }`}
-              onClick={() =>
-                document.getElementById("poi-logo-upload")?.click()
-              }
-            >
-              <div className="text-center">
-                <Upload
-                  className={`w-6 h-6 mx-auto mb-1 ${isDark ? "text-gray-600" : "text-gray-400"}`}
-                />
-                <p
-                  className={`text-xs ${isDark ? "text-gray-600" : "text-gray-500"}`}
-                >
-                  {tb("upload_logo")}
-                </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleLogoImageSelect?.(file);
-                  }}
-                  className="hidden"
-                  id="poi-logo-upload"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+ 
 
       {/* Image Gallery */}
       <div>

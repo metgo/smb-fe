@@ -12,7 +12,7 @@ interface Tag {
 }
 
 interface PoiAttributesProps {
-  formData: { tags: Tag[] };
+  formData: { tags: Tag[]; primaryCategory?: string };
   setFormData: (data: any) => void;
   name?: string;
   description?: string;
@@ -26,7 +26,7 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
 }) => {
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
-  const { allTags } = useCommon();
+  const { allTags, categories } = useCommon();
   const [getGeneratedTags, { isLoading }] = useGenerateTagsMutation();
 
   const [tagInput, setTagInput] = useState("");
@@ -99,6 +99,53 @@ const PoiAttributes: FC<PoiAttributesProps> = ({
 
   return (
     <div className="space-y-6  mx-auto">
+      <div>
+        <label
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("primary_category")}
+        </label>
+
+        <div className="grid grid-cols-6 gap-3">
+          {categories?.map((cat: any) => {
+            const isSelected = formData.primaryCategory === cat._id;
+
+            return (
+              <button
+                key={cat._id}
+                type="button"
+                onClick={() =>
+                  setFormData({ ...formData, primaryCategory: cat._id })
+                }
+                className={`
+                w-full h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                ${
+                  isSelected
+                    ? "border-4 border-teal-600 text-teal-600"
+                    : isDark
+                      ? "border border-gray-700 text-gray-300 hover:border-teal-500"
+                      : "border border-gray-300 text-gray-700 hover:border-teal-500"
+                }
+              `}
+              >
+                {/* Icon */}
+                <img
+                  src={cat.icon?.iconPath}
+                  alt={cat.icon?.iconAlt || cat.name}
+                  className={`w-14 h-14 object-contain transition-all ${
+                    isSelected ? "" : "opacity-70"
+                  }`}
+                />
+
+                {/* Text */}
+                <span className="text-sm font-medium text-center">
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <div>
         <label
           className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
