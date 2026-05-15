@@ -73,7 +73,7 @@ const ProductTranslateButton = ({
   formData,
   onChange,
 }: ProductTranslateButtonProps) => {
-  const { t } = useTranslation("products");
+  const { t: tc } = useTranslation("common");
   const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   const [generateBlogName, { isLoading: isTranslating }] =
@@ -172,9 +172,9 @@ const ProductTranslateButton = ({
       <div className="flex items-center justify-between">
         <div>
           <h3 className={`text-lg font-semibold ${textPrimary}`}>
-            {t("translation")}
+            {tc("translation")}
           </h3>
-          <p className={`text-sm ${textTertiary}`}>{t("translate_hint")}</p>
+          <p className={`text-sm ${textTertiary}`}>{tc("translate_hint")}</p>
         </div>
         <button
           onClick={handleTranslate}
@@ -182,7 +182,7 @@ const ProductTranslateButton = ({
           className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-60 transition-colors text-sm font-medium "
         >
           <Languages className="w-4 h-4 animate-pulse" />
-          {isTranslating ? t("translating") : t("auto_translate")}
+          {isTranslating ? tc("translating") : tc("auto_translate")}
         </button>
       </div>
 
@@ -204,7 +204,7 @@ const ProductTranslateButton = ({
                 <label
                   className={`block text-sm font-medium ${textSecondary} mb-1`}
                 >
-                  {t("title")}
+                  {tc("title")}
                 </label>
                 <input
                   type="text"
@@ -218,7 +218,7 @@ const ProductTranslateButton = ({
                 <label
                   className={`block text-sm font-medium ${textSecondary} mb-1`}
                 >
-                  {t("short_description")}
+                  {tc("short_description")}
                 </label>
                 <textarea
                   dir={dir}
@@ -234,7 +234,7 @@ const ProductTranslateButton = ({
                 <label
                   className={`block text-sm font-medium ${textSecondary} mb-1`}
                 >
-                  {t("content")}
+                  {tc("full_description")}
                 </label>
                 <textarea
                   dir={dir}

@@ -66,6 +66,8 @@ export default function CreateProductWizard({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
+
+  const { t: tp } = useTranslation("common");
   const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
@@ -387,7 +389,7 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: t("translation"), icon: LanguagesIcon },
+    { number: 2, title: tp("translation"), icon: LanguagesIcon },
 
     { number: 3, title: t("product_segmentation"), icon: Package },
     { number: 4, title: t("product_pricing"), icon: CreditCard },
