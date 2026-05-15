@@ -28,7 +28,7 @@ const PoiContactInfo: FC<PoiContactInfoProps> = ({
         {t("contact_online_info")}
       </h3>
 
-      <FormFieldWrapper label={t("email")} error={errors?.email} >
+      <FormFieldWrapper label={t("email")} error={errors?.email}>
         <div className="relative">
           <Mail
             className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}

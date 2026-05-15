@@ -69,8 +69,6 @@ const PoiMedia: FC<PoiMediaProps> = ({
 
   return (
     <div className="space-y-8">
- 
-
       {/* Image Gallery */}
       <div>
         <label
