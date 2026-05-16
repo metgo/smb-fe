@@ -12,12 +12,14 @@ import { Download, ChevronDown, ChevronUp, Columns } from "lucide-react";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, ViewModeToggle } from "@/components/shared";
 import {
-  useGetAllBlogsQuery,
-  // useGetBlogStatsQuery,
-} from "@/store/api/blogQueryApi";
-// import { useBulkBlogsUpdateMutation } from "@/store/api/blogMutationApi";
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  ViewModeToggle,
+} from "@/components/shared";
+import { useGetAllBlogsQuery } from "@/store/api/blogQueryApi";
+import { useDeleteBlogMutation } from "@/store/api/blogMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
@@ -77,8 +79,11 @@ export default function ArticlesManagement() {
   );
   const { websiteId } = useAppSelector((state) => state.auth);
 
+  const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
+
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
@@ -191,59 +196,18 @@ export default function ArticlesManagement() {
     }
   }, [page, refetch]);
 
-  // const clearFilter = useCallback(() => {
-  //   localStorage.removeItem(STORAGE_KEY);
-  //   setFilters({ status: "all" });
-  //   setSearchTerm("");
-  //   setPage(1);
-  // }, []);
-
-  // const resetToDefault = useCallback(() => {
-  //   setColumnVisibility(defaultColumns);
-  // }, []);
-
-  // const promptBulkDelete = useCallback(() => {
-  //   if (selectedBlogs.size === 0) return;
-  //   setIsBulkDelete(true);
-  //   setIsConfirmOpen(true);
-  // }, [selectedBlogs.size]);
-
-  // const handleBulkDelete = useCallback(async () => {
-  //   if (!selectedBlogs.size) return;
-
-  //   const toastId = toast.loading(tc("blog_delete_loading"));
-  //   try {
-  //     await bulkBlogsUpdate({
-  //       blogsId: Array.from(selectedBlogs),
-  //       isDeleted: true,
-  //     });
-  //     toast.success(tc("blog_deleted_success"), { id: toastId });
-  //     setSelectedBlogs(new Set());
-  //     refetch();
-  //   } catch (error: any) {
-  //     toast.error(error?.message || tc("blog_delete_failed"), { id: toastId });
-  //   } finally {
-  //     setIsConfirmOpen(false);
-  //     setIsBulkDelete(false);
-  //   }
-  // }, [selectedBlogs, bulkBlogsUpdate, refetch, tc]);
-
-  // const handleBulkStatusChange = useCallback(async (status: string) => {
-  //   if (!selectedBlogs.size) return;
-
-  //   const toastId = toast.loading(tc("blog_status_change_loading"));
-  //   try {
-  //     await bulkBlogsUpdate({
-  //       blogsId: Array.from(selectedBlogs),
-  //       status: status.toUpperCase(),
-  //     });
-  //     toast.success(tc("blog_status_update_success"), { id: toastId });
-  //     setSelectedBlogs(new Set());
-  //     refetch();
-  //   } catch (error: any) {
-  //     toast.error(error?.message || tc("blog_status_update_failed"), { id: toastId });
-  //   }
-  // }, [selectedBlogs, bulkBlogsUpdate, refetch, tc]);
+  const handleBulkDelete = useCallback(async () => {
+    try {
+      await deleteBlog(Array.from(selectedBlogs)).unwrap();
+      toast.success(t("bulk_delete_success"));
+      setSelectedBlogs(new Set());
+      handleRefetch();
+    } catch {
+      toast.error(t("bulk_delete_error"));
+    } finally {
+      setIsBulkDeleteConfirmOpen(false);
+    }
+  }, [deleteBlog, selectedBlogs, t, handleRefetch]);
 
   const handleExport = useCallback(() => {
     const blogsToExport =
@@ -280,42 +244,9 @@ export default function ArticlesManagement() {
     URL.revokeObjectURL(url);
   }, [selectedBlogs, combinedBlogs, t]);
 
-  // Stats
-  // const blogStats = useMemo(() => [
-  //   {
-  //     id: 1,
-  //     title: "Total Articles",
-  //     value: blogStatsData?.totalBlogs,
-  //     label: "Created",
-  //     icon: <FileText className="w-5 h-5 text-blue-600" />,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Active / Approved",
-  //     value: blogStatsData?.activeBlogs,
-  //     label: "Visible",
-  //     icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "With Images",
-  //     value: blogStatsData?.blogsWithImages,
-  //     label: "Media",
-  //     icon: <Eye className="w-5 h-5 text-purple-600" />,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Pending",
-  //     value: blogStatsData?.pendingBlogs,
-  //     label: "Review",
-  //     icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
-  //   },
-  // ], [blogStatsData]);
-
   return (
     <>
       <div className="flex flex-col">
-        {/* Header */}
         <div
           className={`border-b ${isDark ? "border-gray-800" : "border-gray-200"} z-10`}
         >
@@ -327,8 +258,6 @@ export default function ArticlesManagement() {
             h1Gradient="bg-linear-to-r text-transparent from-violet-500 via-fuchsia-600 to-pink-600"
             totalCount={totalData}
           />
-
-          {/* <PageStats stats={blogStats} isLoading={isStatsLoading} /> */}
 
           {/* Search & Controls */}
           <div className="py-4 flex flex-col lg:flex-row gap-3">
@@ -439,6 +368,17 @@ export default function ArticlesManagement() {
           /> */}
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedBlogs.size > 0 && (
+          <div className="mt-2">
+            <BulkActionBar
+              selectedItemCount={selectedBlogs.size}
+              handleBulkDelete={() => setIsBulkDeleteConfirmOpen(true)}
+              hancleClearSelection={() => setSelectedBlogs(new Set())}
+            />
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto mt-2">
           {!isLoading && !isFetching && combinedBlogs.length === 0 ? (
@@ -469,16 +409,16 @@ export default function ArticlesManagement() {
         </div>
 
         {/* Modals */}
-        {/* <ConfirmDialog
-          open={isConfirmOpen}
-          title="Delete Articles"
-          message="Are you sure you want to delete the selected articles?"
-          confirmText="Delete"
+        <ConfirmDialog
+          open={isBulkDeleteConfirmOpen}
+          title={t("delete_articles")}
+          message={t("bulk_delete_confirm_message")}
+          confirmText={t("delete")}
           loading={isDeleting}
           variant="danger"
-          onCancel={() => setIsConfirmOpen(false)}
+          onCancel={() => setIsBulkDeleteConfirmOpen(false)}
           onConfirm={handleBulkDelete}
-        /> */}
+        />
 
         {isCreateModalOpen && (
           <CreateArticleWizard onClose={() => setIsCreateModalOpen(false)} />

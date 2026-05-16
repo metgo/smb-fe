@@ -27,7 +27,7 @@ interface Blog {
   images: {
     image: string;
     caption?: string;
-  }[];
+  };
   slug?: string;
 }
 
@@ -76,7 +76,7 @@ const BlogGridView = ({
 
   const handleBlogDelete = async (blogId: string) => {
     try {
-      const res = await deleteBlog({ blogId });
+      const res = await deleteBlog([blogId]);
       toast.success(res?.data?.message || "Article deleted successfully");
       refetch();
     } catch (error: any) {
@@ -96,7 +96,6 @@ const BlogGridView = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {data?.map((blog) => {
             const isChecked = selectedItems?.has(blog?._id) ?? false;
-            const firstImage = blog?.images?.[0]?.image;
             const contentPreview = blog.content
               ? getPlainTextFromRichText(blog.content).slice(0, 120) + "..."
               : "";
@@ -142,9 +141,9 @@ const BlogGridView = ({
 
                 {/* Image Section */}
                 <div className="relative h-48">
-                  {firstImage ? (
+                  {blog.image ? (
                     <ImageWithFallback
-                      src={firstImage}
+                      src={blog.image.image}
                       alt={blog.title}
                       className="w-full h-full object-cover"
                     />
