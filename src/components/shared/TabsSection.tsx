@@ -46,7 +46,7 @@ const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
   return (
     <div
       ref={tabsContainerRef}
-      className={clsx("flex gap-1 mt-6 overflow-x-auto scrollbar-hide")}
+      className={clsx("flex gap-1 overflow-x-auto scrollbar-hide")}
       style={{
         scrollbarWidth: "none", // Firefox
         msOverflowStyle: "none", // IE and Edge

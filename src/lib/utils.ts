@@ -107,11 +107,11 @@ export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
 ];
 
 export const ROLE_TABS = [
-  { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
-  { id: UserRole.ADMIN, label: "Admins", icon: Shield },
   { id: UserRole.SUPERADMIN, label: "Super Admins", icon: ShieldCheck },
-  { id: UserRole.DMO, label: "DMOs", icon: Map },
+  { id: UserRole.ADMIN, label: "Admins", icon: Shield },
   { id: UserRole.DMOADMIN, label: "DMO Admins", icon: MapPin },
-  { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
+  { id: UserRole.DMO, label: "DMOs", icon: Map },
   { id: UserRole.AUTHORITY_ADMIN, label: "Authority Admins", icon: Building },
+  { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
+  { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
 ];

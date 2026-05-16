@@ -1,26 +1,26 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-
-import { UserRole } from "@/enums/user.types";
-import { useGetUsersQuery } from "@/store/api/userQueryApi";
-import { useDeleteUserMutation } from "@/store/api/userMutationApi";
-
-import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
-
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import SearchInput from "@/components/shared/SearchInput";
-import EmptyState from "@/components/shared/EmptyState";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-
-import { UserCard, UserCardSkeleton, UserListView } from "./components";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { ROLE_TABS } from "@/lib/utils";
+import { UserRole } from "@/enums/user.types";
+import EmptyState from "@/components/shared/EmptyState";
+import SearchInput from "@/components/shared/SearchInput";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useGetUsersQuery } from "@/store/api/userQueryApi";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { useDeleteUserMutation } from "@/store/api/userMutationApi";
+import {
+  UserCard,
+  UserCardSkeleton,
+  UserListView,
+  CreateUserWizard,
+} from "./components";
+import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
 
-const LIMIT = 20;
+const LIMIT = 1000;
 
 const UsersMgmtPage = () => {
-  const [activeRole, setActiveRole] = useState<UserRole>(UserRole.TRAVELLER);
+  const [activeRole, setActiveRole] = useState<UserRole>(UserRole.SUPERADMIN);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -32,6 +32,9 @@ const UsersMgmtPage = () => {
   const [allUsers, setAllUsers] = useState<IUser[]>([]);
 
   const [deleteTarget, setDeleteTarget] = useState<IUser | null>(null);
+  const [wizardUser, setWizardUser] = useState<IUser | null | undefined>(
+    undefined,
+  );
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -124,7 +127,7 @@ const UsersMgmtPage = () => {
   };
 
   const handleEdit = (user: IUser) => {
-    console.log("edit", user);
+    setWizardUser(user);
   };
 
   const handleDelete = (user: IUser) => {
@@ -162,7 +165,7 @@ const UsersMgmtPage = () => {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden ${bgPrimary}`}
+      className={`flex flex-col overflow-hidden rounded-2xl p-2 ${bgPrimary}`}
       style={{
         height: "calc(100vh - 112px)",
       }}
@@ -172,6 +175,8 @@ const UsersMgmtPage = () => {
         title="Users Management"
         h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-400"
         totalCount={totalData || undefined}
+        btnLabel="Create User"
+        onClick={() => setWizardUser(null)}
       />
 
       {/* Tabs */}
@@ -265,6 +270,14 @@ const UsersMgmtPage = () => {
           </div>
         )}
       </div>
+
+      {/* Create / Edit Wizard */}
+      {wizardUser !== undefined && (
+        <CreateUserWizard
+          editUser={wizardUser}
+          onClose={() => setWizardUser(undefined)}
+        />
+      )}
 
       {/* Delete dialog */}
       <ConfirmDialog
