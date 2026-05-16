@@ -307,3 +307,32 @@ export const isExpiringSoon = (date: string) => {
 export const isExpired = (date: string) => {
   return new Date(date) < new Date();
 };
+
+export const AVATAR_COLORS = [
+  "bg-teal-500",
+  "bg-blue-500",
+  "bg-violet-500",
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-indigo-500",
+];
+
+export function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++)
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+export function formatLastLogin(iso: string): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

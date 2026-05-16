@@ -29,6 +29,7 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  UsersMgmtPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -153,7 +154,6 @@ function App() {
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
-          console.log("🚀 ~ App ~ user:", user);
           if (user) {
             dispatch(loginSuccess(user));
           }
@@ -249,6 +249,7 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],

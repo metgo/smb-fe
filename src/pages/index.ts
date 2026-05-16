@@ -17,6 +17,7 @@ import VoucherDetailsPage from "./vouchers-mgmt/details";
 import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 import PromotionsMgmtPage from "./promotions-mgmt";
+import UsersMgmtPage from "./users-mgmt";
 
 export {
   AuthPage,
@@ -38,4 +39,5 @@ export {
   VoucherDetailsPage,
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
+  UsersMgmtPage,
 };

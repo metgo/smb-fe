@@ -223,7 +223,7 @@ export default function Sidebar() {
     },
     {
       id: "settings",
-      path: routes.profile,
+      path: "#settings",
       label: t("settings") || "Settings",
       icon: Settings,
       isEnabled: true,
@@ -237,10 +237,10 @@ export default function Sidebar() {
         },
         {
           id: "users",
-          path: routes.dashboard,
+          path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "documents",
