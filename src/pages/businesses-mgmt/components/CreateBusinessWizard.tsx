@@ -442,6 +442,12 @@ export default function CreateBusinessWizard({
         setAddress(formatted);
       }
 
+      if (editData?.geoLocation) {
+        setGeo({
+          lat: String(editData.geoLocation.lat),
+          lng: String(editData.geoLocation.lng),
+        });
+      }
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
 

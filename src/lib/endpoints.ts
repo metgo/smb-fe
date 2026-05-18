@@ -32,6 +32,12 @@ export const endpoints = {
   dmos: "/dmos",
   changeOwner: "/admin/businesses/assign-user/",
 
+  // poi
+  poi: "/point-of-interests",
+  pois: "/point-of-interests",
+  poisStatDashboard: "/point-of-interests-stat",
+  bulkPoisUpdate: "/bulk-point-of-interests-update",
+
   // business
   business: "/businesses",
   businesses: "/businesses",

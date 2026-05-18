@@ -12,7 +12,9 @@ interface DetailTitleSectionProps {
   nameHe: string;
   nameAr: string;
   impact: number;
-  imageSrc: string;
+  images: {
+    image: string;
+  }[];
   createdAt: string;
   updatedAt: string;
   completionPercent: number;
@@ -23,18 +25,19 @@ const DetailTitleSection = ({
   nameAr,
   nameHe,
   impact,
-  imageSrc,
+  images,
   createdAt,
   updatedAt,
   completionPercent,
 }: DetailTitleSectionProps) => {
+  console.log("🚀 ~ DetailTitleSection ~ images:", images);
   const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
   return (
     <div className="flex gap-2">
       <ImageWithFallback
-        src={imageSrc}
+        src={images?.[0]?.image}
         alt={name || nameHe || nameAr}
         className={clsx(
           "w-24 h-22 rounded-xl object-cover border-2",

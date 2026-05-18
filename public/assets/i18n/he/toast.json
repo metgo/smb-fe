@@ -8,9 +8,13 @@
   "image_upload_info": "העלאת התמונה החלה. אנא המתן…",
   "image_upload_success": "התמונה הועלתה בהצלחה",
   "image_upload_failed": "העלאת התמונה נכשלה",
-  "image_deleted": "התמונה נמחקה בהצלחה",
   "delete_failed": "מחיקת התמונה נכשלה",
   "login_failed": "התחברות נכשלה",
+
+  "poi_delete_loading": "מוחק נקודות עניין...",
+  "poi_deleted_success": "נקודות העניין נמחקו בהצלחה",
+  "poi_delete_failed": "מחיקת נקודות העניין נכשלה",
+
   "business_delete_loading": "אנא המתן. העסקים נמחקים…",
   "business_deleted_success": "העסקים נמחקו בהצלחה",
   "business_delete_failed": "מחיקת העסקים נכשלה",

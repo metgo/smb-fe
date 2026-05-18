@@ -63,6 +63,13 @@ export const productTabs = [
   { id: "media", label: "media", icon: ImageIcon },
 ];
 
+export const poiTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "accessibility", label: "attributes", icon: Accessibility },
+  { id: "location", label: "location_map", icon: MapPin },
+  { id: "media", label: "images", icon: ImageIcon },
+];
+
 export const voucherTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "assignee", label: "assignee_and_creator", icon: Users },
