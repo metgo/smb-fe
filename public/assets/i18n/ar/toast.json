@@ -40,6 +40,9 @@
   "product_status_change_loading": "يرجى الانتظار. جاري تغيير حالة المنتج…",
   "product_status_update_success": "تم تحديث حالة المنتجات بنجاح",
   "product_status_update_failed": "فشل تغيير حالة المنتجات",
+  "product_quantity_change_loading": "يرجى الانتظار. جاري تحديث كمية المنتج…",
+  "product_quantity_update_success": "تم تحديث كمية المنتج بنجاح",
+  "product_quantity_update_failed": "فشل تحديث كمية المنتج",
 
   "promotion_created_success": "تم إنشاء الترويج بنجاح",
   "promotion_create_failed": "فشل إنشاء الترويج",

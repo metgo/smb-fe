@@ -226,7 +226,7 @@ export default function BusinessDetailsPage() {
       <Spinner isLoading={isLoading} />
 
       {/* Header */}
-      <div className={clsx(` shrink-0 border-b px-6 py-4 `, borderColor)}>
+      <div className={clsx(` shrink-0 border-b px-6 `, borderColor)}>
         {/* Top Row */}
         <div className="flex items-center justify-between mb-4">
           <BackToListBtn navPath={routes.businessMgmt} />
@@ -349,7 +349,7 @@ export default function BusinessDetailsPage() {
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-4"
         />
         <TabsSection
           tabs={businessTabs}

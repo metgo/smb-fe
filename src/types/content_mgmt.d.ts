@@ -24,6 +24,7 @@ interface IContentGroup {
   isHideCategory: boolean;
   contents: IContent[];
   icon?: string | null;
+  colors?: string[];
 }
 
 interface IContentTemplate {
@@ -31,6 +32,7 @@ interface IContentTemplate {
   isPrimary?: boolean;
   isHideTopic?: boolean;
   groups: IContentGroup[];
+  colors?: string[];
 }
 
 // -------------------- Response ---------------------
@@ -72,6 +74,7 @@ interface ISiteCategory {
   descriptionHe: string | null;
   descriptionAr: string | null;
   icon: string;
+  colors?: string[];
   businessIds: IContentFeedItem[];
   eventIds: IContentFeedItem[];
   poiIds: IContentFeedItem[];
@@ -90,6 +93,7 @@ interface IContentTopic {
   description: string | null;
   descriptionHe: string | null;
   descriptionAr: string | null;
+  colors?: string[];
 
   siteCategories: ISiteCategory[];
 

@@ -39,6 +39,9 @@
   "product_status_change_loading": "אנא המתן. סטטוס המוצר משתנה…",
   "product_status_update_success": "סטטוס המוצרים עודכן בהצלחה",
   "product_status_update_failed": "כישלון בשינוי סטטוס המוצרים",
+  "product_quantity_change_loading": "אנא המתן. כמות המוצר מתעדכנת…",
+  "product_quantity_update_success": "כמות המוצר עודכנה בהצלחה",
+  "product_quantity_update_failed": "עדכון כמות המוצר נכשל",
 
   "promotion_created_success": "המבצע נוצר בהצלחה",
   "promotion_create_failed": "יצירת המבצע נכשלה",

@@ -19,8 +19,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ProductAvailabilityDetails,
   ProductInfoDetails,
-  ProductInventoryDetails,
-  ProductPricingDetails,
+  ProductPricingInventoryDetails,
 } from "./components";
 import {
   useGetProductbyIdQuery,
@@ -162,10 +161,8 @@ export default function ProductDetailsPage() {
             tags={product?.tagsId}
           />
         );
-      case "pricing":
-        return <ProductPricingDetails {...commonProps} />;
-      case "inventory":
-        return <ProductInventoryDetails {...commonProps} />;
+      case "pricing_inventory":
+        return <ProductPricingInventoryDetails {...commonProps} />;
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
@@ -306,7 +303,7 @@ export default function ProductDetailsPage() {
           <PageStats
             stats={salesStats}
             isLoading={isStatsLoading}
-            className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 mt-4`}
+            className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 my-4`}
           />
 
           <TabsSection

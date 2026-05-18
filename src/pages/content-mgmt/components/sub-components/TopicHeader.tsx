@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import ColorPickerField from "./ColorPickerField";
 
 interface TopicHeaderProps {
   topic: {
@@ -22,10 +24,13 @@ interface TopicHeaderProps {
     name: string;
     isHidden: boolean | undefined;
     isPrimary: boolean | undefined;
+    colors?: string[];
   };
   onRename: (topicIdx: number, newName: string) => void;
   onToggleVisibility: (topicIdx: number) => void;
   onTogglePrimary: (topicIdx: number) => void;
+  onColorChange?: (topicIdx: number, colors: string[]) => void;
+  onApplyColorToChildren?: (topicIdx: number, colors: string[]) => void;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   setTopicToDelete: React.Dispatch<React.SetStateAction<number | null>>;
 }
@@ -35,17 +40,20 @@ const TopicHeader = ({
   onRename,
   onToggleVisibility,
   onTogglePrimary,
+  onColorChange,
+  onApplyColorToChildren,
   setTopicToDelete,
   setShowDeleteConfirm,
 }: TopicHeaderProps) => {
+  const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(topic.name);
   const [showMenu, setShowMenu] = useState(false);
+  const [applyToChildren, setApplyToChildren] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { t } = useTranslation("content");
   // Keep editValue in sync if topic.name changes externally
   useEffect(() => {
     setEditValue(topic.name);
@@ -139,6 +147,42 @@ const TopicHeader = ({
               <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 shrink-0" />
             )}
           </h3>
+
+          <ColorPickerField
+            title={topic.name}
+            colors={topic.colors ?? []}
+            onChange={(colors) => {
+              onColorChange?.(topic.index, colors);
+              if (applyToChildren)
+                onApplyColorToChildren?.(topic.index, colors);
+            }}
+          />
+
+          {onApplyColorToChildren && (
+            <label className="flex items-center gap-1.5 cursor-pointer shrink-0">
+              <Checkbox
+                checked={applyToChildren}
+                onCheckedChange={(checked) => {
+                  const next = checked === true;
+                  setApplyToChildren(next);
+                  if (next)
+                    onApplyColorToChildren(topic.index, topic.colors ?? []);
+                }}
+                className={clsx(
+                  isDark ? " border-white" : " border-black bg-white",
+                  "border",
+                )}
+              />
+              <span
+                className={clsx(
+                  "text-[10px] leading-tight font-bold select-none whitespace-nowrap",
+                  isDark ? "text-gray-200" : "text-gray-800",
+                )}
+              >
+                {t("apply_same")}
+              </span>
+            </label>
+          )}
 
           <div ref={menuRef} className="relative shrink-0">
             <Button

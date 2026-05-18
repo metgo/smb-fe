@@ -2,6 +2,8 @@
   "expand": "توسيع",
   "split": "تقسيم",
 
+  "apply_same": "تطبيق نفس الشيء",
+
   "create_new_topic": "إنشاء موضوع جديد",
   "placeholder_new_topic": "مثال: أقسام الصفحة الرئيسية، المحتوى المميز...",
   "button_create": "إنشاء",

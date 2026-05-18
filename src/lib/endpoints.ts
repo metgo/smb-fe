@@ -90,14 +90,18 @@ export const endpoints = {
   trips: "/trips",
   stations: "/stations",
 
+  //voucher
+  vouchers: "/vouchers",
+  voucher: "/voucher-id",
+  postVoucher: "/vouchers",
+  searchVoucher: "/search-vouchers",
+  voucherStatDashboard: "/vouchers-stats",
+  bulkVouchersUpdate: "/bulk-vouchers-update",
+  sendemail: "/vouchers/send-email",
+  sendsms: "/vouchers/send-sms",
+
   // cmpaings
-  campaign: "",
-  postVoucher: "",
-  sendemail: "",
-  sendsms: "",
-  vouchers: "",
-  bulkVouchersUpdate: "",
-  voucherStatDashboard: "",
+  campaign: "/admin/campaign",
 
   // Admin endpoints
   dynamicPage: "/settings",

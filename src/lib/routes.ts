@@ -37,6 +37,8 @@ export const routes = {
   websiteMgmt: "/website-settings",
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
+
+  users: "/users",
 };
 
 export type RouteKey = keyof typeof routes;

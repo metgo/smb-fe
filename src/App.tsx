@@ -29,6 +29,7 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  UsersMgmtPage,
   PoiMgmtPage,
   PoiDetailsPage,
 } from "@/pages";
@@ -155,7 +156,6 @@ function App() {
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
-          console.log("🚀 ~ App ~ user:", user);
           if (user) {
             dispatch(loginSuccess(user));
           }
@@ -251,6 +251,7 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
         { path: routes.poiMgmt, element: <PoiMgmtPage /> },
         { path: routes.poiDetails, element: <PoiDetailsPage /> },
 
