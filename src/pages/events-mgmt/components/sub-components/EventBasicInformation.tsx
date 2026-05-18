@@ -47,6 +47,7 @@ interface EventBasicInformationProps {
   setSelectedBusinessId: (id: string) => void;
   businesses: ISearchBusiness[];
   isBusinessLoading: boolean;
+  searchBusiness: (key: string) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -78,6 +79,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setSelectedBusinessId,
   businesses,
   isBusinessLoading,
+  searchBusiness,
 }) => {
   const { t, i18n } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
@@ -193,6 +195,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
             businesses?.map((biz) => ({ _id: biz._id, name: biz.name })) || []
           }
           isLoading={isBusinessLoading}
+          onSearch={searchBusiness}
         />
       </FormFieldWrapper>
 

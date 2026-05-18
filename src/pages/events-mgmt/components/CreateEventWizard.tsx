@@ -847,6 +847,7 @@ export default function CreateEventWizard({
         )}
         {currentStep === 1 && (
           <EventBasicInformation
+            searchBusiness={searchBusiness}
             eventId={eventId}
             markDirty={handleMarkDirty}
             eventNameHe={eventNameHe}
