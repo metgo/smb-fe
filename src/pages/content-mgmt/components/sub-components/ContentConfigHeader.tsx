@@ -73,15 +73,6 @@ const ContentConfigHeader = ({
 
   return (
     <div className="mb-4 shrink-0 space-y-2 border rounded-lg">
-      {/* Header */}
-      <div
-        className={clsx(
-          "font-semibold p-2",
-          isDark ? "text-gray-300" : "text-gray-800",
-        )}
-      >
-        {t("feed_header")}
-      </div>
       <div
         className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
       >
