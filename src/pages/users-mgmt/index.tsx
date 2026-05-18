@@ -187,7 +187,7 @@ const UsersMgmtPage = () => {
       />
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex items-center gap-3 mt-4 relative">
         <div className="flex-1">
           <SearchInput
             placeholder="Search users..."

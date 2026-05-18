@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Loader,
   Mail,
+  Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
@@ -24,7 +25,6 @@ import {
 import {
   EventBasicInformation,
   EventDateTimeFormat,
-  // EventMedia,
   EventRegistrationCapacity,
   EventReviewPublish,
   EventTickets,
@@ -32,6 +32,7 @@ import {
 } from "./sub-components";
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
+import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
@@ -59,9 +60,9 @@ export default function CreateEventWizard({
   editData,
   refetch,
 }: CreateEventWizardProps) {
-  console.log("🚀 ~ CreateEventWizard ~ editData:", editData);
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
+  const { t: tp } = useTranslation("common");
 
   const [searchParams] = useSearchParams();
   const { textPrimary, textTertiary, isDark, language } = useThemeClasses();
@@ -110,6 +111,7 @@ export default function CreateEventWizard({
       return { data: res.data };
     },
   });
+  console.log("🚀 ~ CreateEventWizard ~ searchBusiness:", searchBusiness);
 
   const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
@@ -231,12 +233,13 @@ export default function CreateEventWizard({
 
   const steps = [
     { id: 1, icon: FileText, label: t("step_1_basic_information") },
-    { id: 2, icon: Calendar, label: t("step_2_date_time") },
-    { id: 3, icon: Users, label: t("step_3_registration") },
-    { id: 4, icon: Ticket, label: t("step_4_tickets") },
-    { id: 5, icon: Mail, label: t("messaging"), labelKey: "step_5_messaging" },
-    { id: 6, icon: Image, label: t("step_5_media") },
-    { id: 7, icon: CheckCircle, label: t("step_6_review") },
+    { id: 2, icon: Languages, label: tp("translation") },
+    { id: 3, icon: Calendar, label: t("step_2_date_time") },
+    { id: 4, icon: Users, label: t("step_3_registration") },
+    { id: 5, icon: Ticket, label: t("step_4_tickets") },
+    { id: 6, icon: Mail, label: t("messaging"), labelKey: "step_5_messaging" },
+    { id: 7, icon: Image, label: t("step_5_media") },
+    { id: 8, icon: CheckCircle, label: t("step_6_review") },
   ];
 
   useEffect(() => {
@@ -430,7 +433,7 @@ export default function CreateEventWizard({
           newErrors.shortDescription = t("required_field");
         }
         break;
-      case 2:
+      case 3:
         if (!isMultiDay && !startDate)
           newErrors.startDate = t("required_field");
         if (isMultiDay && eventDays?.some((d) => !d.date))
@@ -440,11 +443,11 @@ export default function CreateEventWizard({
         if (eventFormat !== "physical" && !onlineLink)
           newErrors.onlineLink = t("required_field");
         break;
-      case 3:
+      case 4:
         if (capacityType === "limited" && capacity <= 0)
           newErrors.capacity = "Must be greater than 0";
         break;
-      case 4:
+      case 5:
         if (localTickets?.length === 0 && registrationRequired) {
           newErrors.tickets = t("at_least_one_ticket_required");
         }
@@ -467,10 +470,6 @@ export default function CreateEventWizard({
     purpose: "event",
   };
 
-  console.log(
-    "🚀 ~ CreateEventWizard ~ selectedBusinessId:",
-    selectedBusinessId,
-  );
   const eventBasicInfoPayload = {
     name: eventName,
     nameHe: eventNameHe,
@@ -570,10 +569,11 @@ export default function CreateEventWizard({
 
   const stepPayloadMap = {
     1: () => eventBasicInfoPayload,
-    2: () => eventDateTimePayload,
-    3: () => eventRegistrationPayload,
-    5: () => eventMsgSchedulePayload,
-    6: () => eventMediaPayload,
+    2: () => eventBasicInfoPayload,
+    3: () => eventDateTimePayload,
+    4: () => eventRegistrationPayload,
+    6: () => eventMsgSchedulePayload,
+    7: () => eventMediaPayload,
   };
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
@@ -591,6 +591,40 @@ export default function CreateEventWizard({
       markDirty(step);
     },
     [markDirty],
+  );
+
+  const translationFormData = {
+    name: eventName,
+    nameHe: eventNameHe,
+    nameAr: eventNameAr,
+    shortDescription,
+    shortDescriptionHe,
+    shortDescriptionAr,
+    fullDescription,
+    fullDescriptionHe,
+    fullDescriptionAr,
+  };
+
+  const handleTranslateChange = useCallback(
+    (updates: Record<string, any>) => {
+      if ("name" in updates) setEventName(updates.name);
+      if ("nameHe" in updates) setEventNameHe(updates.nameHe);
+      if ("nameAr" in updates) setEventNameAr(updates.nameAr);
+      if ("shortDescription" in updates)
+        setShortDescription(updates.shortDescription);
+      if ("shortDescriptionHe" in updates)
+        setShortDescriptionHe(updates.shortDescriptionHe);
+      if ("shortDescriptionAr" in updates)
+        setShortDescriptionAr(updates.shortDescriptionAr);
+      if ("fullDescription" in updates)
+        setFullDescription(updates.fullDescription);
+      if ("fullDescriptionHe" in updates)
+        setFullDescriptionHe(updates.fullDescriptionHe);
+      if ("fullDescriptionAr" in updates)
+        setFullDescriptionAr(updates.fullDescriptionAr);
+      handleMarkDirty(2);
+    },
+    [handleMarkDirty],
   );
 
   const handleClose = () => {
@@ -632,7 +666,7 @@ export default function CreateEventWizard({
   const handlePublish = async () => {
     let allValid = true;
     setIsPublishBtnClicked(true);
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 8; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -678,7 +712,7 @@ export default function CreateEventWizard({
   };
 
   const handleSpecificStepJump = (stepId: number) => {
-    if (stepId !== 6) {
+    if (stepId !== 7) {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -805,30 +839,22 @@ export default function CreateEventWizard({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {currentStep === 2 && (
+          <ProductTranslateButton
+            formData={translationFormData}
+            onChange={handleTranslateChange}
+          />
+        )}
         {currentStep === 1 && (
           <EventBasicInformation
             eventId={eventId}
             markDirty={handleMarkDirty}
-            eventName={eventName}
-            setEventName={setEventName}
             eventNameHe={eventNameHe}
             setEventNameHe={setEventNameHe}
-            eventNameAr={eventNameAr}
-            setEventNameAr={setEventNameAr}
-            // Short Description
-            shortDescription={shortDescription}
-            setShortDescription={setShortDescription}
             shortDescriptionHe={shortDescriptionHe}
             setShortDescriptionHe={setShortDescriptionHe}
-            shortDescriptionAr={shortDescriptionAr}
-            setShortDescriptionAr={setShortDescriptionAr}
-            // Full Description
-            fullDescription={fullDescription}
-            setFullDescription={setFullDescription}
             fullDescriptionHe={fullDescriptionHe}
             setFullDescriptionHe={setFullDescriptionHe}
-            fullDescriptionAr={fullDescriptionAr}
-            setFullDescriptionAr={setFullDescriptionAr}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
@@ -848,11 +874,10 @@ export default function CreateEventWizard({
             selectedBusinessId={selectedBusinessId}
             setSelectedBusinessId={setSelectedBusinessId}
             businesses={businesses}
-            searchBusiness={searchBusiness}
             isBusinessLoading={isBusinessesLoading || isBusinessSearching}
           />
         )}
-        {currentStep === 2 && (
+        {currentStep === 3 && (
           <EventDateTimeFormat
             geo={geo}
             setGeo={setGeo}
@@ -899,7 +924,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <EventRegistrationCapacity
             markDirty={handleMarkDirty}
             currentStep={currentStep}
@@ -915,7 +940,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 5 && (
           <EventTickets
             tickets={localTickets}
             eventId={eventId}
@@ -931,7 +956,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 5 && (
+        {currentStep === 6 && (
           <NotificationsTimeline
             markDirty={handleMarkDirty}
             notifications={notifications}
@@ -948,7 +973,7 @@ export default function CreateEventWizard({
             capacity={capacity}
           />
         )}
-        {currentStep === 6 && (
+        {currentStep === 7 && (
           <Media
             markDirty={handleMarkDirty}
             images={images}
@@ -964,7 +989,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 7 && (
+        {currentStep === 8 && (
           <EventReviewPublish
             images={images}
             setCurrentStep={setCurrentStep}
