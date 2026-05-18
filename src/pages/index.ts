@@ -18,6 +18,8 @@ import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
 import PromotionsMgmtPage from "./promotions-mgmt";
 import UsersMgmtPage from "./users-mgmt";
+import PoiMgmtPage from "./poi-mgmt";
+import PoiDetailsPage from "./poi-mgmt/details";
 
 export {
   AuthPage,
@@ -40,4 +42,6 @@ export {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 };

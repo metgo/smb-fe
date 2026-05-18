@@ -107,10 +107,10 @@ export default function Sidebar() {
     },
     {
       id: "poi",
-      path: routes.pointOfInterest,
+      path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "trips",

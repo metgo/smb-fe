@@ -11,6 +11,11 @@
   "image_deleted": "تم حذف الصورة بنجاح",
   "delete_failed": "فشل حذف الصورة",
   "login_failed": "فشل تسجيل الدخول",
+
+  "poi_delete_loading": "جاري حذف نقاط الاهتمام...",
+  "poi_deleted_success": "تم حذف نقاط الاهتمام بنجاح",
+  "poi_delete_failed": "فشل في حذف نقاط الاهتمام",
+
   "business_delete_loading": "يرجى الانتظار. جاري حذف الأنشطة التجارية…",
   "business_deleted_success": "تم حذف الأنشطة التجارية بنجاح",
   "business_delete_failed": "فشل حذف الأنشطة التجارية",

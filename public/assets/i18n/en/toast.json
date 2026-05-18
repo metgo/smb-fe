@@ -15,6 +15,10 @@
   "delete_failed": "Failed to delete image",
   "login_failed": "Login failed",
 
+  "poi_delete_loading": "Deleting POIs...",
+  "poi_deleted_success": "POIs deleted successfully",
+  "poi_delete_failed": "Failed to delete POIs",
+
   "business_delete_loading": "Please wait. Businesses are deleting...",
   "business_deleted_success": "Businesses deleted successfully",
   "business_delete_failed": "Failed to delete businesses",
