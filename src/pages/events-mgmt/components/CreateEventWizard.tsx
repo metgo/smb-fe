@@ -111,7 +111,6 @@ export default function CreateEventWizard({
       return { data: res.data };
     },
   });
-  console.log("🚀 ~ CreateEventWizard ~ searchBusiness:", searchBusiness);
 
   const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
@@ -847,6 +846,7 @@ export default function CreateEventWizard({
         )}
         {currentStep === 1 && (
           <EventBasicInformation
+            searchBusiness={searchBusiness}
             eventId={eventId}
             markDirty={handleMarkDirty}
             eventNameHe={eventNameHe}
