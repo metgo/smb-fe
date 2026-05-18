@@ -114,6 +114,22 @@ const TopicBlock = ({
     setTemplateContent(updated);
   };
 
+  const handleColorChange = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, colors } : t)),
+    );
+  };
+
+  const handleApplyColorToChildren = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) =>
+        i === topicIndex
+          ? { ...t, groups: t.groups.map((g) => ({ ...g, colors })) }
+          : t,
+      ),
+    );
+  };
+
   const handleToggleTopic = (templateIndex: number) => {
     setTemplateContent((prev) =>
       prev.map((template, tIndex) =>
@@ -218,10 +234,13 @@ const TopicBlock = ({
                 name: topic.topic,
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
+                colors: topic.colors,
               }}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
+              onColorChange={handleColorChange}
+              onApplyColorToChildren={handleApplyColorToChildren}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />

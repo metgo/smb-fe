@@ -171,6 +171,13 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
+          id: "website-settings",
+          path: routes.websiteMgmt,
+          label: t("website_settings") || "Website Settings",
+          icon: Settings,
+          isEnabled: true,
+        },
+        {
           id: "dynamic-pages",
           path: routes.dynamicPages,
           label: t("dynamic_pages") || "Dynamic Pages",
@@ -211,13 +218,6 @@ export default function Sidebar() {
           label: t("mini_site") || "Mini-site",
           icon: Layout,
           isEnabled: false,
-        },
-        {
-          id: "website-settings",
-          path: routes.websiteMgmt,
-          label: t("website_settings") || "Website Settings",
-          icon: Settings,
-          isEnabled: true,
         },
       ],
     },

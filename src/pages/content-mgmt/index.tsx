@@ -267,6 +267,7 @@ export default function ContentMgmtPage() {
                 isHideCategory: item.isArchived,
                 category: item.title,
                 icon: item.icon,
+                colors: item.colors ?? [],
                 contents: [
                   ...mapContents(item.businessIds, "business"),
                   ...mapContents(item.productIds, "product"),
@@ -277,6 +278,7 @@ export default function ContentMgmtPage() {
               };
             }),
             isPrimary: topic.isPrimary,
+            colors: topic.colors ?? [],
           }),
         );
         setContentStatus(
@@ -737,6 +739,7 @@ export default function ContentMgmtPage() {
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
                   icon: group.icon,
+                  colors: group.colors ?? [],
                   ...idsByType,
                 };
               });
@@ -750,6 +753,7 @@ export default function ContentMgmtPage() {
               isPrimary: template.isPrimary,
               isArchived: template.isHideTopic,
               order: index,
+              colors: template.colors ?? [],
               siteCategories: filteredCategories,
             };
           })
