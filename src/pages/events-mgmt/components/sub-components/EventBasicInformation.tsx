@@ -192,7 +192,10 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onChange={(id: string) => setSelectedBusinessId(id)}
           placeholder={t("select_business")}
           items={
-            businesses?.map((biz) => ({ _id: biz._id, name: biz.name })) || []
+            businesses?.map((biz) => ({
+              _id: biz._id,
+              name: biz.name || biz.nameHe,
+            })) || []
           }
           isLoading={isBusinessLoading}
           onSearch={searchBusiness}

@@ -74,7 +74,7 @@ const ProductBasicInfo = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: biz.name,
+              name: biz.name || biz.nameHe,
             })) || []
           }
           onSearch={searchBusiness}
