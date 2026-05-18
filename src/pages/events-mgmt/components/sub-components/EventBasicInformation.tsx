@@ -17,6 +17,7 @@ import {
 import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { getLngWiseStr } from "@/helpers";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -83,7 +84,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 }) => {
   const { t, i18n } = useTranslation("events");
   const { isSuperadmin } = useUserRoles();
-  const { inputClasses } = useThemeClasses();
+  const { inputClasses, language } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({
@@ -194,7 +195,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: biz.name || biz.nameHe,
+              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
             })) || []
           }
           isLoading={isBusinessLoading}

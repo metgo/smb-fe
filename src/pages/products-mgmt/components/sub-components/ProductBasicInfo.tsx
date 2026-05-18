@@ -1,6 +1,7 @@
 import { ReactSelect } from "@/components/form-fields";
 import ProductContentForm from "./ProductContentForm";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getLngWiseStr } from "@/helpers";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
@@ -47,7 +48,7 @@ const ProductBasicInfo = ({
   searchBusiness,
   presetBusinessId,
 }: ProductBasicInfoProps) => {
-  const { textSecondary } = useThemeClasses();
+  const { textSecondary, language } = useThemeClasses();
   const handleChange = (updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   };
@@ -74,7 +75,7 @@ const ProductBasicInfo = ({
           items={
             businesses?.map((biz) => ({
               _id: biz._id,
-              name: biz.name || biz.nameHe,
+              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
             })) || []
           }
           onSearch={searchBusiness}
