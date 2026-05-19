@@ -3,6 +3,9 @@
   "split": "Split",
 
   "apply_same": "Apply same",
+  "remove_color": "Remove color",
+  "background_color": "Background Color",
+  "select_icon": "Select Icon",
 
   "create_new_topic": "Create New Topic",
   "placeholder_new_topic": "e.g., Homepage Sections, Featured Content...",

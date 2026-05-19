@@ -3,6 +3,9 @@
   "split": "פצל",
 
   "apply_same": "החל אותו",
+  "remove_color": "הסר צבע",
+  "background_color": "צבע רקע",
+  "select_icon": "בחר אייקון",
 
   "create_new_topic": "צור נושא חדש",
   "placeholder_new_topic": "למשל, מדורי בית, תוכן מובלט...",

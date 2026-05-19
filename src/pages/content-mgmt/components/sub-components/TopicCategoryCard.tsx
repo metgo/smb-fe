@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useDrop } from "react-dnd";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import ColorPickerField from "./ColorPickerField";
 import ContentCard from "./ContentCard";
 
 import { ConfirmDialog } from "@/components/shared";
-import { useCommon } from "@/hooks/useCommon";
+import { LUCIDE_ICONS } from "../../utils/lucideIcons";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -53,8 +53,45 @@ const TopicCategoryCard = ({
     categoryIndex: number;
   } | null>(null);
 
-  const { allIcons } = useCommon();
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const iconPickerRef = useRef<HTMLDivElement>(null);
+  const iconPopupId = useRef(Math.random().toString(36));
+
+  // Close icon picker on outside click
+  useEffect(() => {
+    if (!iconPickerOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        iconPickerRef.current &&
+        !iconPickerRef.current.contains(e.target as Node)
+      )
+        setIconPickerOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [iconPickerOpen]);
+
+  // Close icon picker when another popup opens elsewhere
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail.id !== iconPopupId.current)
+        setIconPickerOpen(false);
+    };
+    document.addEventListener("popup-opened", handler);
+    return () => document.removeEventListener("popup-opened", handler);
+  }, []);
+
+  const openIconPicker = () => {
+    setIconPickerOpen((prev) => {
+      if (!prev)
+        document.dispatchEvent(
+          new CustomEvent("popup-opened", {
+            detail: { id: iconPopupId.current },
+          }),
+        );
+      return !prev;
+    });
+  };
 
   const handleColorChange = (colors: string[]) => {
     setTemplateContent((prev) =>
@@ -294,12 +331,12 @@ const TopicCategoryCard = ({
             <>
               {/* Icon selector */}
               <div className="flex items-center gap-1.5">
-                <div className="relative">
+                <div ref={iconPickerRef} className="relative">
                   <button
-                    onClick={() => setIconPickerOpen((prev) => !prev)}
+                    onClick={openIconPicker}
                     title="Change icon"
                     className={clsx(
-                      "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
+                      "w-7 h-7 rounded flex items-center justify-center transition-all duration-200",
                       "hover:scale-105 active:scale-95",
                       iconPickerOpen
                         ? isDark
@@ -310,35 +347,29 @@ const TopicCategoryCard = ({
                           : "border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50",
                     )}
                   >
-                    {group.icon ? (
-                      <img
-                        src={group.icon.iconPath ?? group.icon}
-                        alt={group.icon.iconAlt ?? "icon"}
-                        className={clsx(
-                          "w-12 h-12 object-contain",
-                          !isDark && "invert",
-                        )}
-                      />
-                    ) : (
-                      <span
-                        className={clsx(
-                          "text-lg font-light leading-none",
-                          isDark ? "text-gray-400" : "text-gray-400",
-                        )}
-                      >
-                        +
-                      </span>
-                    )}
+                    {(() => {
+                      const found = LUCIDE_ICONS.find(
+                        ({ name }) => name === group.icon,
+                      );
+                      if (!found)
+                        return (
+                          <span className="text-lg font-light text-gray-400">
+                            +
+                          </span>
+                        );
+                      return (
+                        <found.Icon
+                          className={clsx(
+                            "w-5 h-5",
+                            isDark ? "text-gray-200" : "text-gray-700",
+                          )}
+                        />
+                      );
+                    })()}
                   </button>
 
                   {iconPickerOpen && (
                     <>
-                      {/* Backdrop */}
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIconPickerOpen(false)}
-                      />
-
                       {/* Picker panel */}
                       <div
                         className={clsx(
@@ -365,7 +396,7 @@ const TopicCategoryCard = ({
                               isDark ? "text-gray-400" : "text-gray-500",
                             )}
                           >
-                            Select Icon
+                            {t("select_icon")}
                           </span>
                           <button
                             onClick={() => setIconPickerOpen(false)}
@@ -383,15 +414,13 @@ const TopicCategoryCard = ({
                         {/* Icon grid */}
                         <div className="p-2 max-h-56 overflow-y-auto">
                           <div className="grid grid-cols-7 gap-0.5">
-                            {allIcons?.data?.map((icon: any) => {
-                              const isSelected = group.icon?._id === icon._id;
+                            {LUCIDE_ICONS.map(({ name, Icon }) => {
+                              const isSelected = group.icon === name;
                               return (
                                 <button
-                                  key={icon._id}
-                                  onClick={() =>
-                                    handleSelectIcon(icon?.iconPath)
-                                  }
-                                  title={icon.name}
+                                  key={name}
+                                  onClick={() => handleSelectIcon(name)}
+                                  title={name}
                                   className={clsx(
                                     "relative w-9 h-9 rounded-lg flex items-center justify-center",
                                     "transition-all duration-150",
@@ -405,15 +434,13 @@ const TopicCategoryCard = ({
                                         : "hover:bg-gray-100",
                                   )}
                                 >
-                                  <img
-                                    src={icon.iconPath}
-                                    alt={icon.iconAlt}
+                                  <Icon
                                     className={clsx(
-                                      "w-12 h-12 object-contain transition-opacity",
-                                      !isDark && "invert",
-                                      isSelected
-                                        ? "opacity-100"
-                                        : "opacity-70 group-hover:opacity-100",
+                                      "w-5 h-5 transition-opacity",
+                                      isDark
+                                        ? "text-gray-200"
+                                        : "text-gray-700",
+                                      isSelected ? "opacity-100" : "opacity-60",
                                     )}
                                   />
                                   {isSelected && (
