@@ -45,7 +45,6 @@ import {
   LayersIcon,
   LayoutGrid,
   Leaf,
-  Lightbulb,
   Link,
   List,
   Lock,
