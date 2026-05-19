@@ -159,7 +159,12 @@ function App() {
           if (user) {
             dispatch(loginSuccess(user));
           }
-          if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
+
+          const savedRedirect = sessionStorage.getItem("redirect_after_login");
+          if (savedRedirect) {
+            sessionStorage.removeItem("redirect_after_login");
+            window.location.href = savedRedirect;
+          } else if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
             window.location.href = routes.businessMgmt;
           } else {
             window.location.href = routes.dashboard;
@@ -193,6 +198,12 @@ function App() {
     // If user is on login page
     if (isLoginPage) {
       if (isLoggedIn && user) {
+        const savedRedirect = sessionStorage.getItem("redirect_after_login");
+        if (savedRedirect) {
+          sessionStorage.removeItem("redirect_after_login");
+          return <Navigate to={savedRedirect} replace />;
+        }
+
         if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
           return <Navigate to={routes.businessMgmt} replace />;
         }
@@ -203,6 +214,13 @@ function App() {
 
     // Normal protected routes
     if (!isLoggedIn) {
+      const attemptedPath = window.location.pathname + window.location.search;
+      if (
+        attemptedPath &&
+        attemptedPath.includes("/notifications-management")
+      ) {
+        sessionStorage.setItem("redirect_after_login", attemptedPath);
+      }
       return <Navigate to={routes.auth} replace />;
     }
 

@@ -113,12 +113,6 @@ export default function ProductsMgmtPage() {
   const urlBusinessName = searchParams?.get("businessName");
   const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
 
-  useEffect(() => {
-    if (urlBusinessId && urlBusinessName) {
-      handleCreateNew();
-    }
-  }, [urlBusinessId, urlBusinessName]);
-
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
@@ -361,6 +355,12 @@ export default function ProductsMgmtPage() {
   const handleCreateNew = useCallback(() => {
     setIsCreateModalOpen(true);
   }, []);
+
+  useEffect(() => {
+    if (urlBusinessId && urlBusinessName) {
+      handleCreateNew();
+    }
+  }, [urlBusinessId, urlBusinessName, handleCreateNew]);
 
   const removeQueryParams = useCallback(() => {
     navigate({}, { replace: true });

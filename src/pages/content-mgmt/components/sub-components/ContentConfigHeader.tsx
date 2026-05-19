@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { RichTextEditor } from "@/components/shared";
 
 interface ContentConfigHeaderProps {
   header: string;
@@ -16,6 +17,8 @@ interface ContentConfigHeaderProps {
 }
 
 const ContentConfigHeader = ({
+  header,
+  setHeader,
   isExpanded,
   templateContents,
   setTemplateContent,
@@ -24,6 +27,8 @@ const ContentConfigHeader = ({
   const { t } = useTranslation("content");
   const [newTopicName, setNewTopicName] = useState<string>("");
   const [newCategoryName, setNewCategoryName] = useState<string>("");
+  const [newCategoryDescription, setNewCategoryDescription] =
+    useState<string>("");
   const [selectedTopicForNewCategory, setSelectedTopicForNewCategory] =
     useState<string>("");
 
@@ -55,6 +60,7 @@ const ContentConfigHeader = ({
             ...topic.groups,
             {
               category: newCategoryName,
+              description: newCategoryDescription,
               isPrimary: false,
               contents: [],
               isHideCategory: false,
@@ -68,15 +74,25 @@ const ContentConfigHeader = ({
 
     setTemplateContent(updated);
     setNewCategoryName("");
+    setNewCategoryDescription("");
     setSelectedTopicForNewCategory("");
   };
 
   return (
     <div className="mb-4 shrink-0 space-y-2 border rounded-lg">
+      {/* Header */}
+      <div
+        className={clsx(
+          "font-semibold p-2",
+          isDark ? "text-gray-300" : "text-gray-800",
+        )}
+      >
+        {t("feed_header")}
+      </div>
       <div
         className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
       >
-        {/* <RichTextEditor value={header} onChange={setHeader} /> */}
+        <RichTextEditor value={header} onChange={setHeader} />
         <div className="space-y-2">
           {/* Create Topic */}
           <div
@@ -160,11 +176,25 @@ const ContentConfigHeader = ({
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-3">
               <Input
                 placeholder={t("placeholder_new_category")}
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
+                className={clsx(
+                  "w-full px-3 py-2 rounded-lg outline-none focus:outline-none",
+                  isDark
+                    ? "bg-gray-900 border-teal-600 text-gray-100 placeholder-gray-200 hover:border-teal-500"
+                    : "bg-white border-teal-400 text-gray-900 placeholder-gray-500 hover:border-teal-400",
+                )}
+              />
+              <Input
+                placeholder={
+                  t("placeholder_new_category_desc") ||
+                  "New category description..."
+                }
+                value={newCategoryDescription}
+                onChange={(e) => setNewCategoryDescription(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreateCategory();
                 }}
@@ -181,7 +211,7 @@ const ContentConfigHeader = ({
                 disabled={
                   !newCategoryName.trim() || !selectedTopicForNewCategory
                 }
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white w-full"
               >
                 <Plus className="w-4 h-4" />
                 {t("button_create")}

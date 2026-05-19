@@ -11,6 +11,7 @@
   "select_topic_label": "اختر موضوع",
   "select_topic_placeholder": "اختر موضوعًا...",
   "placeholder_new_category": "اسم الفئة الجديدة...",
+  "placeholder_new_category_desc": "وصف الفئة الجديدة...",
   "info_create_topic_first": "قم بإنشاء موضوع أولاً قبل إضافة الفئات",
   "feed_header": "رأس الخلاصة",
   "rename_topic": "إعادة تسمية الموضوع",

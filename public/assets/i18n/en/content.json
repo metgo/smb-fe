@@ -11,6 +11,7 @@
   "select_topic_label": "Select Topic",
   "select_topic_placeholder": "Choose a topic...",
   "placeholder_new_category": "New category name...",
+  "placeholder_new_category_desc": "New category description...",
   "info_create_topic_first": "Create a topic first before adding categories",
   "feed_header": "Feed Header",
   "rename_topic": "Rename Topic",

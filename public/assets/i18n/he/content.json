@@ -11,6 +11,7 @@
   "select_topic_label": "בחר נושא",
   "select_topic_placeholder": "בחר נושא...",
   "placeholder_new_category": "שם קטגוריה חדשה...",
+  "placeholder_new_category_desc": "תיאור קטגוריה חדשה...",
   "info_create_topic_first": "צור נושא קודם לפני הוספת קטגוריות",
   "feed_header": "כותרת פיד",
   "rename_topic": "שנה שם נושא",
