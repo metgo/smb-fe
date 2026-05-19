@@ -8,12 +8,11 @@ import { Logger } from 'winston';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CreateBusinessCommand } from '../create-business.command';
 import { UsersService } from 'src/modules/users/users.services';
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 
 @CommandHandler(CreateBusinessCommand)
 export class CreateBusinessHandler
@@ -103,7 +102,7 @@ implements ICommandHandler<CreateBusinessCommand> {
         ...(authorityId && {
           authorityId: new mongoose.Types.ObjectId(authorityId),
         }),
-        status: BusinessStatus.DRAFT,
+        status: CommonStatus.DRAFT,
         createdAt: new Date(),
       });
 

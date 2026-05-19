@@ -48,6 +48,10 @@ import {
   BusinessesAudit,
   BusinessesAuditSchema,
 } from '../business/shared/schema/businesses-audit.schema';
+import {
+  PointOfInterestsAudit,
+  PointOfInterestsAuditSchema,
+} from '../point-of-interests/schema/point-of-interest-audit.schema';
 import { GetSiteStatsHandler } from './queries/handler/get-site-stats.handler';
 import { GAModule } from 'src/services/google-analytics/ga.module';
 import { Order, OrderSchema } from '../orders/schema/orders.schema';
@@ -75,6 +79,7 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
       { name: GroupType.name, schema: GroupTypeSchema },
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: EventsAudit.name, schema: EventsAuditSchema },
+      { name: PointOfInterestsAudit.name, schema: PointOfInterestsAuditSchema },
       { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: Trip.name, schema: TripSchema },
       { name: Order.name, schema: OrderSchema },

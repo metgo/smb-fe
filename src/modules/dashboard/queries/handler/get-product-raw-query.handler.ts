@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { GetProductRawQuery } from '../get-product-raw-query.query';
 
 @QueryHandler(GetProductRawQuery)
@@ -30,7 +30,7 @@ implements IQueryHandler<GetProductRawQuery> {
       }
 
       const findQuery: any = {
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
         $and: [

@@ -20,6 +20,7 @@ import { GetEventRawQuery } from '../get-event-raw-query.query';
 import { GetTripRawQuery } from '../get-trip-raw-query.query';
 import { GetPOIRawQuery } from '../get-poi-raw-query.query';
 import { GetProductRawQuery } from '../get-product-raw-query.query';
+import { PointOfInterestsAudit } from 'src/modules/point-of-interests/schema/point-of-interest-audit.schema';
 import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
@@ -34,6 +35,8 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     private BusinessesAuditModel: Model<BusinessesAudit>,
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
+    @InjectModel(PointOfInterestsAudit.name)
+    private PointOfInterestsAuditModel: Model<PointOfInterestsAudit>,
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
 
@@ -276,8 +279,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         }
       }
 
+      const mappedBusinesses = allBusiness.data.map((bus: any) => ({
+        ...bus,
+        serviceType: ServicesTypes.BUSINESS,
+      }));
+
       allBusiness.data = await Promise.all(
-        allBusiness.data.map(p => this.localizeItem(p, locale)),
+        mappedBusinesses.map(p => this.localizeItem(p, locale)),
       );
 
       return allBusiness;
@@ -295,20 +303,21 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         sortBy, sortOrder, search, locale,
       } = queries;
 
-      const { findQuery, whitelist, blacklist } = await this.queryBus.execute(
-        new GetPOIRawQuery({
-          campDetails,
-          search,
-        }),
+      const result = await this.queryBus.execute(
+        new GetPOIRawQuery({ campDetails, search }),
       );
 
-      const select
-        = '_id businessId name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
+      if (!result) return { data: [], totalData: 0 };
 
-      const allPOI = await queryhandler<BusinessesAudit>(
-        this.BusinessesAuditModel,
+      const { findQuery, whitelist, blacklist } = result;
+
+      const select
+        = '_id pointOfInterestId name shortDescription description nameHe shortDescriptionHe descriptionHe nameAr shortDescriptionAr descriptionAr geoLocation images primaryCategoryId address slug groupTypesId accessibilitiesId';
+
+      const allPOI = await queryhandler<PointOfInterestsAudit>(
+        this.PointOfInterestsAuditModel,
         {
-          findQuery,
+          findQuery: { ...findQuery, isActive: true },
           select,
           sort: sortBy || 'createdAt',
           sortOrder: sortOrder || SortOrder.DESC,
@@ -319,16 +328,19 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       if (blacklist?.length) {
         const blacklistSet = new Set(blacklist.map((id: any) => id.toString()));
         allPOI.data = allPOI.data.filter(
-          (item: any) => !blacklistSet.has(item.businessId.toString()),
+          (item: any) => !blacklistSet.has(item.pointOfInterestId.toString()),
         );
         allPOI.totalData = allPOI.data.length;
       }
 
       if (whitelist?.length) {
-        const whitelistedPOI = await queryhandler<BusinessesAudit>(
-          this.BusinessesAuditModel,
+        const whitelistedPOI = await queryhandler<PointOfInterestsAudit>(
+          this.PointOfInterestsAuditModel,
           {
-            findQuery: { businessId: { $in: whitelist }, isActive: true },
+            findQuery: {
+              pointOfInterestId: { $in: whitelist },
+              isActive: true,
+            },
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
@@ -341,6 +353,11 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           allPOI.totalData = allPOI.data.length;
         }
       }
+
+      allPOI.data = allPOI.data.map((item: any) => ({
+        ...item,
+        serviceType: ServicesTypes.POINT_OF_INTEREST,
+      }));
 
       allPOI.data = await Promise.all(
         allPOI.data.map(p => this.localizeItem(p, locale)),

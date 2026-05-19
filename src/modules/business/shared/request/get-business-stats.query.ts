@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { BusinessStatus } from 'src/modules/business/business.type';
+
+import { CommonStatus } from 'src/common/enum';
 
 export class GetBusinessStatsQuery {
   @ApiProperty({ type: String, required: false })
@@ -26,10 +27,10 @@ export class GetBusinessStatsQuery {
 
   @ApiProperty({
     type: 'enum',
-    enum: BusinessStatus,
+    enum: CommonStatus,
     required: false,
   })
-  @IsEnum(BusinessStatus)
+  @IsEnum(CommonStatus)
   @IsOptional()
-    status: BusinessStatus;
+    status: CommonStatus;
 }

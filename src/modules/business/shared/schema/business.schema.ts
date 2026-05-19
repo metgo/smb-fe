@@ -1,15 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
-import {
-  BusinessStatus,
-  GeoServicesTypes,
-} from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
@@ -114,8 +111,8 @@ export class Business extends AuditableSchema {
   @Prop()
     descriptionAr: string;
 
-  @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
-    status: BusinessStatus;
+  @Prop({ enum: CommonStatus, default: CommonStatus.PENDING })
+    status: CommonStatus;
 
   @Prop()
     rejected_reason: string;
@@ -282,9 +279,6 @@ export class Business extends AuditableSchema {
 
   @Prop()
     slug: string;
-
-  @Prop({ enum: GeoServicesTypes, default: GeoServicesTypes.BUSINESS })
-    serviceType: GeoServicesTypes;
 
   @Prop({ required: false })
     deliveryArea: DeliveryArea[];

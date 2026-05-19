@@ -1,9 +1,9 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllBusinessesRawQuery } from '../get-all-businesses-rawquery.query';
-import { BusinessStatus } from 'src/modules/business/business.type';
 
 @QueryHandler(GetAllBusinessesRawQuery)
 export class GetAllBusinessesRawQueryHandler
@@ -36,7 +36,7 @@ implements IQueryHandler<GetAllBusinessesRawQuery> {
       }
 
       let findQuery: any = {
-        status: BusinessStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
       };

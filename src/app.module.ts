@@ -55,6 +55,7 @@ import { BlogModule } from './modules/blog/blog.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SiteFiltersConfigModule } from './modules/site-filters-config/site-filters-config.module';
+import { PointOfInterestsModule } from './modules/point-of-interests/point-of-interests.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SiteSettingsModule } from './modules/site-settings/siteSettings.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
@@ -116,6 +117,7 @@ import { AppCacheModule } from './services/cache/cache.module';
     DashboardModule,
     // TagsModule,
     SiteFiltersConfigModule,
+    PointOfInterestsModule,
     SettingsModule,
     SiteSettingsModule,
     PromotionsModule,

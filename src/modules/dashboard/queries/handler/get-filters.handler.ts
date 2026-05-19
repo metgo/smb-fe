@@ -2,6 +2,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetFiltersQuery } from '../get-filters.query';
@@ -25,13 +26,13 @@ import { GetTripRawQuery } from '../get-trip-raw-query.query';
 import { GetPOIRawQuery } from '../get-poi-raw-query.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
+import { PointOfInterestsAudit } from 'src/modules/point-of-interests/schema/point-of-interest-audit.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 import { SiteFiltersConfig } from 'src/modules/site-filters-config/schema/site-filters-config.schema';
 import { SiteFiltersConfigStatus } from 'src/modules/site-filters-config/site-filters-config.type';
-import { ProductStatus } from 'src/modules/products/products.type';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
@@ -43,6 +44,9 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
 
     @InjectModel(EventsAudit.name)
     private EventsAuditModel: Model<EventsAudit>,
+
+    @InjectModel(PointOfInterestsAudit.name)
+    private PointOfInterestsAuditModel: Model<PointOfInterestsAudit>,
 
     @InjectModel(Trip.name)
     private TripModel: Model<Trip>,
@@ -144,7 +148,7 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
           }
 
           const productFilter: any = {
-            status: ProductStatus.APPROVED,
+            status: CommonStatus.APPROVED,
             isActive: true,
             isDeleted: { $ne: true },
             $and: [
@@ -383,12 +387,20 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     try {
       const { search } = queries.body;
 
-      const findQuery = await this.queryBus.execute(
-        new GetPOIRawQuery({
-          campDetails,
-          search,
-        }),
+      const result = await this.queryBus.execute(
+        new GetPOIRawQuery({ campDetails, search }),
       );
+
+      if (!result) {
+        return {
+          accessibilitiesIds: [],
+          groupTypesIds: [],
+          categoriesIds: [],
+          subCategoriesIds: [],
+        };
+      }
+
+      const { findQuery } = result;
 
       const [
         accessibilitiesIds,
@@ -396,22 +408,30 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         categoriesIds,
         subCategoriesIds,
       ] = await Promise.all([
-        this.getDistincts(this.BusinessesAuditModel, 'accessibilitiesId', {
+        this.getDistincts(
+          this.PointOfInterestsAuditModel,
+          'accessibilitiesId',
+          {
+            ...findQuery,
+            isActive: true,
+          },
+        ),
+        this.getDistincts(this.PointOfInterestsAuditModel, 'groupTypesId', {
           ...findQuery,
           isActive: true,
         }),
-        this.getDistincts(this.BusinessesAuditModel, 'groupTypesId', {
+        this.getDistincts(this.PointOfInterestsAuditModel, 'bussCategoriesId', {
           ...findQuery,
           isActive: true,
         }),
-        this.getDistincts(this.BusinessesAuditModel, 'bussCategoriesId', {
-          ...findQuery,
-          isActive: true,
-        }),
-        this.getDistincts(this.BusinessesAuditModel, 'bussSubCategoriesId', {
-          ...findQuery,
-          isActive: true,
-        }),
+        this.getDistincts(
+          this.PointOfInterestsAuditModel,
+          'bussSubCategoriesId',
+          {
+            ...findQuery,
+            isActive: true,
+          },
+        ),
       ]);
 
       return {

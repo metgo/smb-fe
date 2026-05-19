@@ -1,13 +1,4 @@
 /* eslint-disable no-shadow */
-
-export enum EventStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  CLOSED = 'CLOSED',
-  REJECTED = 'REJECTED',
-  DRAFT = 'DRAFT',
-}
-
 // delete this enum if not used elsewhere
 export enum EventPaymentMethod {
   TICKET = 'TICKET',

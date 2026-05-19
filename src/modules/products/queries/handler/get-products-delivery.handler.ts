@@ -6,10 +6,10 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { GetProductsDeliveryQuery } from '../get-products-delivery-info.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { ProductStatus } from '../../products.type';
 import { ProductsService } from '../../products.services';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { ProductsAudit } from '../../schema/products-audit.schema';
+import { CommonStatus } from 'src/common/enum';
 
 @QueryHandler(GetProductsDeliveryQuery)
 export class GetProductsDeliveryHandler
@@ -77,7 +77,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       // const categoryIds = campDetails.category.map(cat => cat.id);
 
       const findQuery = {
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
         productId: { $in: filteredProductIds },

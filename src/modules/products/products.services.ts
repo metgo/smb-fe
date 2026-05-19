@@ -13,11 +13,10 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { GetProductsQuery } from 'src/modules/products/queries';
 import { Business } from '../business/shared/schema/business.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
@@ -52,7 +51,7 @@ export class ProductsService {
       const product = await this.ProductsAuditModel.findOne({
         productId: id,
         isActive: true,
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isDeleted: { $ne: true },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
@@ -103,7 +102,7 @@ export class ProductsService {
       let product = await this.ProductsAuditModel.findOne({
         slug,
         isActive: true,
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isDeleted: { $ne: true },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
@@ -119,7 +118,7 @@ export class ProductsService {
         product = await this.ProductsAuditModel.findOne({
           productId: slug,
           isActive: true,
-          status: ProductStatus.APPROVED,
+          status: CommonStatus.APPROVED,
           isDeleted: { $ne: true },
           $or: [
             { 'quantity.remaining': { $gt: 0 } },
@@ -183,7 +182,7 @@ export class ProductsService {
     try {
       const findQuery = {
         productId: { $in: ids },
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
       };
@@ -275,7 +274,7 @@ export class ProductsService {
           { 'quantity.isUnlimited': true },
         ],
         isDeleted: { $ne: true },
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
       }).lean();
 
@@ -326,7 +325,7 @@ export class ProductsService {
     const products = await this.ProductsAuditModel.find({
       [field]: { $in: id },
       isActive: true,
-      status: ProductStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       isDeleted: { $ne: true },
       $or: [
         { 'quantity.remaining': { $gt: 0 } },

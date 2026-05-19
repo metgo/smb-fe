@@ -7,7 +7,7 @@ import {
   Product,
   ProductSchema,
 } from 'src/modules/products/schema/products.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
+import { CommonStatus } from 'src/common/enum';
 
 const ProductModel = mongoose.model(Product.name, ProductSchema);
 export class ProductFactory implements BaseFactory<Product> {
@@ -19,7 +19,7 @@ export class ProductFactory implements BaseFactory<Product> {
     const defaultProduct = {
       name: faker.person.firstName(),
       busiEmail: faker.internet.email(),
-      status: ProductStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       primaryUserId: new mongoose.Types.ObjectId(),
       businessId: new mongoose.Types.ObjectId(),
       dmoId: new mongoose.Types.ObjectId(),

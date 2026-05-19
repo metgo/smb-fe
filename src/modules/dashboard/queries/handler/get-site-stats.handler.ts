@@ -6,8 +6,8 @@ import { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import {
   Business,
   BusinessDocument,
@@ -114,7 +114,7 @@ export class GetSiteStatsHandler implements IQueryHandler<GetSiteStatsQuery> {
                 ? [{ authorityId: { $in: authorityIds } }]
                 : []),
             ],
-            status: BusinessStatus.APPROVED,
+            status: CommonStatus.APPROVED,
           })
           : 0;
 

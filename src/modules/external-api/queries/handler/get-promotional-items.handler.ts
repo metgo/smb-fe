@@ -6,17 +6,12 @@ import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ExternalApi } from '../../schema/external-api.schema';
 import { ServerErrors } from 'src/common/constant';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { TripStatus } from 'src/modules/trips/trips.types';
-import {
-  BusinessStatus,
-  GeoServicesTypes,
-} from 'src/modules/business/business.type';
-import { EventStatus } from 'src/modules/events/events.type';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { GetPromotionalItemsQuery } from '../get-promotional-items.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
@@ -189,8 +184,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
   ) {
     const campaignOrConditionsBusiness = this.buildOrConditions(campDetails);
     const baseBusinessMatch = {
-      status: BusinessStatus.APPROVED,
-      serviceType: GeoServicesTypes.BUSINESS,
+      status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
     };
@@ -302,7 +296,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     });
 
     const baseEventMatch = {
-      status: EventStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
     };

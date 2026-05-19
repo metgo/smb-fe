@@ -2,10 +2,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { SortOrder } from 'src/common/enum';
+import { CommonStatus, SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { BusinessStatus } from '../../../business.type';
 import { GetSearchRecommendationQuery } from '../get-search-recommendation.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
@@ -45,7 +44,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
       }
 
       let findQuery: any = {
-        status: BusinessStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
       };
 

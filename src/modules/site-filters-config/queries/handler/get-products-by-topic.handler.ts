@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { paginateData } from 'src/common/pagination';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
@@ -15,7 +15,6 @@ import { GetProductsByTopicQuery } from '../get-products-by-topic.query';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { Model } from 'mongoose';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
@@ -131,7 +130,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       const products = await this.ProductsAuditModel.find({
         productId: { $in: allProductIds },
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
         $or: [
@@ -373,7 +372,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
     const products = await this.ProductsAuditModel.find({
       ...(bussCatIds.length && { primaryCategoryId: { $in: bussCatIds } }),
-      status: ProductStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
       $and: andConditions,

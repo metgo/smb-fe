@@ -13,7 +13,7 @@ import { GetAllEventsRequest } from '../events/requests/get-all-events.request';
 import { GetAllTripsRequest } from '../trips/request/get-all-trips.request';
 import { GetAllApprovedBusinessesRequest } from '../business/tourism/request/get-all-approved-businesses.request';
 import { GetAllApprovedBusinessesQuery } from '../business/tourism/queries/get-all-approved-businesses.query';
-import { GeoServicesTypes } from '../business/business.type';
+import { GetAllPOIsRequest } from '../point-of-interests/request/get-all-pois.request';
 
 @Controller()
 export class CampaignController {
@@ -43,11 +43,9 @@ export class CampaignController {
 
     const requestBusiness = new GetAllApprovedBusinessesRequest();
     requestBusiness.campCode = campCode;
-    requestBusiness.serviceType = GeoServicesTypes.BUSINESS;
 
-    const requestPOI = new GetAllApprovedBusinessesRequest();
+    const requestPOI = new GetAllPOIsRequest();
     requestPOI.campCode = campCode;
-    requestPOI.serviceType = GeoServicesTypes.POINT_OF_INTEREST;
 
     const [businessResult, poiResult, eventResult, tripResult, fundayResult]
       = await Promise.all([

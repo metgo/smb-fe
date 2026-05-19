@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
-import { GeoServicesTypes } from '../../business.type';
 import { Locale } from 'src/common/enum';
 
 export class GetAllBusinessesForMapRequest {
@@ -44,14 +43,6 @@ export class GetAllBusinessesForMapRequest {
   })
   @IsOptional()
     bussSubCategoriesId: string;
-
-  @ApiProperty({
-    enum: GeoServicesTypes,
-    required: false,
-  })
-  @IsEnum(GeoServicesTypes)
-  @IsOptional()
-    serviceType: GeoServicesTypes;
 
   @ApiProperty({
     type: 'enum',

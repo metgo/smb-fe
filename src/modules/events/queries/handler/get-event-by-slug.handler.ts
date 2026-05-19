@@ -6,10 +6,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetEventBySlugQuery } from '../get-event-by-slug.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { EventStatus } from '../../events.type';
 import { TicketStatus } from 'src/modules/tickets/tickets.type';
 import { GetAllTicketsQuery } from 'src/modules/tickets/queries/get-all-tickets.query';
 import { GetAllTicketsRequest } from 'src/modules/tickets/requests/get-all-tickets.request';
@@ -46,7 +46,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
 
       let findQuery: any = {
         slug,
-        status: EventStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
 
         dayDescription: {

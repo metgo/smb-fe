@@ -4,7 +4,6 @@ import {
 } from 'class-validator';
 
 import { SortOrder } from 'src/common/enum';
-import { GeoServicesTypes } from '../../business.type';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
 export class GetAllApprovedBusinessesRequest extends LocaleFilterQuery {
@@ -57,12 +56,4 @@ export class GetAllApprovedBusinessesRequest extends LocaleFilterQuery {
   @IsEnum(SortOrder)
   @IsOptional()
     sortOrder: SortOrder;
-
-  @ApiProperty({
-    enum: GeoServicesTypes,
-    required: false,
-  })
-  @IsEnum(GeoServicesTypes)
-  @IsOptional()
-    serviceType: GeoServicesTypes;
 }

@@ -139,3 +139,6 @@ function main() {
 }
 
 main();
+
+
+//node scripts/sync-schemas.js --apply

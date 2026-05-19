@@ -2,12 +2,10 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import { GetCombinedSearchQuery } from '../get-combined-search.query';
-import { EventStatus } from 'src/modules/events/events.type';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 
@@ -43,19 +41,19 @@ implements IQueryHandler<GetCombinedSearchQuery> {
       }
 
       const businessBaseQuery: any = {
-        status: BusinessStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         $and: [],
       };
 
       const productBaseQuery: any = {
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         $and: [],
       };
 
       const eventBaseQuery: any = {
-        status: EventStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         $and: [],
       };

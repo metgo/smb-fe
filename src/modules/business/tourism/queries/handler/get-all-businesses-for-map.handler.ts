@@ -2,10 +2,10 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { GetAllBusinessForMapTourismQuery } from '../get-all-businesses-for-map.query';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
@@ -29,7 +29,6 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
         bussCategoriesId,
         bussSubCategoriesId,
         campCode,
-        serviceType,
         locale,
       } = queries.query;
 
@@ -50,9 +49,8 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
       }
 
       let findQuery: any = {
-        status: BusinessStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
-        ...(serviceType && { serviceType }),
       };
 
       const orConditions = [];
@@ -131,7 +129,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
       }
 
       const select
-        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId slug serviceType businessId';
+        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId slug businessId';
 
       const allBusiness = await queryhandler<BusinessesAudit>(
         this.BusinessesAuditModel,

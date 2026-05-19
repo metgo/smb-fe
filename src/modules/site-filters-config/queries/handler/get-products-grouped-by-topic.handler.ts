@@ -5,7 +5,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { Model } from 'mongoose';
 
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { shuffleArray } from 'src/common/utils/shuffle';
 import {
@@ -16,7 +16,6 @@ import { GetProductsGroupedByTopicQuery } from '../get-products-grouped-by-topic
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CacheService } from 'src/services/cache/cache.service';
@@ -115,7 +114,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
     const products = await this.ProductsAuditModel.find({
       productId: { $in: allProductIds },
-      status: ProductStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
       $or: [
@@ -196,7 +195,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     }
 
     const findQuery = {
-      status: ProductStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       isActive: true,
       isDeleted: { $ne: true },
 

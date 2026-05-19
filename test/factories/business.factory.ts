@@ -3,14 +3,11 @@ import mongoose from 'mongoose';
 import { faker } from '@faker-js/faker';
 
 import {
-  BusinessStatus,
-  GeoServicesTypes,
-} from 'src/modules/business/business.type';
-import {
   Business,
   BusinessSchema,
 } from 'src/modules/business/shared/schema/business.schema';
 import { BaseFactory } from 'test/factories/base.factory';
+import { CommonStatus } from 'src/common/enum';
 
 const BusinessModel = mongoose.model(Business.name, BusinessSchema);
 export class BusinessesFactory implements BaseFactory<Business> {
@@ -22,11 +19,10 @@ export class BusinessesFactory implements BaseFactory<Business> {
     const defaultBusiness = {
       name: faker.person.firstName(),
       busiEmail: faker.internet.email(),
-      status: BusinessStatus.APPROVED,
+      status: CommonStatus.APPROVED,
       userId: new mongoose.Types.ObjectId(),
       authorityId: new mongoose.Types.ObjectId(),
       dmoId: new mongoose.Types.ObjectId(),
-      serviceType: GeoServicesTypes.BUSINESS,
     };
     const newBusiness = await BusinessModel.create({
       ...defaultBusiness,

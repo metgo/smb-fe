@@ -6,8 +6,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetSearchRecommendationQuery } from '../get-search-recommendation.query';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { SortOrder } from 'src/common/enum';
-import { EventStatus } from '../../events.type';
+import { CommonStatus, SortOrder } from 'src/common/enum';
 import { EventsAudit } from '../../schema/events-audit.schema';
 
 @QueryHandler(GetSearchRecommendationQuery)
@@ -43,7 +42,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
       today.setUTCHours(0, 0, 0, 0);
 
       let findQuery: any = {
-        status: EventStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
 
         dayDescription: {

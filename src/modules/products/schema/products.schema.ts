@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
@@ -9,7 +10,7 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
-import { ProductStatus, ProductType } from 'src/modules/products/products.type';
+import { ProductType } from 'src/modules/products/products.type';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -155,8 +156,8 @@ export class Product extends AuditableSchema {
     }
   ];
 
-  @Prop({ enum: ProductStatus, default: ProductStatus.DRAFT })
-    status: ProductStatus;
+  @Prop({ enum: CommonStatus, default: CommonStatus.DRAFT })
+    status: CommonStatus;
 
   @Prop({ default: 200, required: false })
     impact: number;

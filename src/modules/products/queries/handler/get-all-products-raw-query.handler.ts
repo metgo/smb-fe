@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { ProductStatus } from '../../products.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 
@@ -48,7 +48,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       let findQuery: any = {
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
         isDeleted: { $ne: true },
         $and: [

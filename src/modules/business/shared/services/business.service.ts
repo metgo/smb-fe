@@ -1,17 +1,10 @@
 /* eslint-disable no-undef */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ObjectId } from 'typeorm';
 
-import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { disSelect } from 'src/common/utils/select.handling';
-
-import {
-  BusinessStatus,
-  GetBusinessByIdOrSlug,
-} from 'src/modules/business/business.type';
 
 import { BusinessesAudit } from '../schema/businesses-audit.schema';
 import { Locale } from 'src/common/enum';
@@ -22,72 +15,6 @@ export class BusinessService {
     @InjectModel(BusinessesAudit.name)
     private BusinessesAuditModel: Model<BusinessesAudit>,
   ) {}
-
-  async getBusiness(command: GetBusinessByIdOrSlug) {
-    const { id, locale } = command;
-
-    const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    const select = `${disSelect}`;
-
-    try {
-      const business = await this.BusinessesAuditModel.findOne({
-        businessId: id,
-        isActive: true,
-        isDeleted: { $ne: true },
-      })
-        .select(select)
-        .populate(populate)
-        .lean();
-
-      if (!business || business?.status !== BusinessStatus.APPROVED) {
-        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-      }
-      const { businessId, ...rest } = business;
-
-      const mappedData = {
-        ...rest,
-        _id: businessId,
-      };
-
-      const response = await this.localizeBusiness(mappedData, locale);
-
-      return response;
-    } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        const business = await this.BusinessesAuditModel.findOne({
-          slug: id,
-          isActive: true,
-          isDeleted: { $ne: true },
-        })
-          .select(select)
-          .populate(populate);
-
-        if (!business || business?.status !== BusinessStatus.APPROVED) {
-          throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-        }
-
-        const { businessId, ...rest } = business;
-
-        const mappedData = {
-          ...rest,
-          _id: businessId,
-        };
-
-        const response = await this.localizeBusiness(mappedData, locale);
-
-        return response;
-      }
-      exceptionHandling(error);
-    }
-  }
 
   async findBusinessEmailByIds(ids: ObjectId[]) {
     try {

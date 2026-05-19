@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetEventRawQuery } from '../get-event-raw-query.query';
-import { EventStatus } from 'src/modules/events/events.type';
 
 @QueryHandler(GetEventRawQuery)
 export class GetEventRawQueryHandler
@@ -21,7 +21,7 @@ implements IQueryHandler<GetEventRawQuery> {
 
       today.setUTCHours(0, 0, 0, 0);
       let findQuery: any = {
-        status: EventStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
 
         dayDescription: {

@@ -37,9 +37,6 @@ class Data {
 
   @ApiProperty()
     slug: string;
-
-  @ApiProperty()
-    serviceType: string;
 }
 
 export class GetAllBusinessesForMapResponse {

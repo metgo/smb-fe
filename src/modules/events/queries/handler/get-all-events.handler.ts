@@ -2,11 +2,10 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { SortOrder } from 'src/common/enum';
+import { CommonStatus, SortOrder } from 'src/common/enum';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllEventsQuery } from '../get-all-events.query';
-import { EventStatus } from '../../events.type';
 import { EventsAudit } from '../../schema/events-audit.schema';
 
 @QueryHandler(GetAllEventsQuery)
@@ -45,7 +44,7 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
     today.setUTCHours(0, 0, 0, 0);
 
     let findQuery: any = {
-      status: EventStatus.APPROVED,
+      status: CommonStatus.APPROVED,
 
       dayDescription: {
         $elemMatch: {

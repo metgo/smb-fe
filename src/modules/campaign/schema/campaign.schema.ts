@@ -12,6 +12,7 @@ import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { CampaignType } from '../campaign.type';
+import { PointOfInterest } from 'src/modules/point-of-interests/schema/point-of-interest.schema';
 
 @Schema({ _id: false })
 class Category {
@@ -109,6 +110,13 @@ export class Campaign extends AuditableSchema {
     required: false,
   })
     businessIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: PointOfInterest.name }],
+    ref: PointOfInterest.name,
+    required: false,
+  })
+    poiIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],

@@ -1,18 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { User } from 'src/modules/users/schema/users.schema';
-import {
-  CommonQuestionAnswerType,
-  EventStatus,
-  EventType,
-} from '../events.type';
+import { CommonQuestionAnswerType, EventType } from '../events.type';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { RecurringEventRule } from './recurring-event.schema';
 import { ScheduledEventNotification } from './scheduled-event-notification.schema';
 
@@ -105,8 +103,8 @@ export class Event extends AuditableSchema {
   @Prop()
     internalNotes: string;
 
-  @Prop({ enum: EventStatus, default: EventStatus.DRAFT })
-    status: EventStatus;
+  @Prop({ enum: CommonStatus, default: CommonStatus.DRAFT })
+    status: CommonStatus;
 
   @Prop()
     rejected_reason: string;
@@ -156,6 +154,14 @@ export class Event extends AuditableSchema {
     default: null,
   })
     dmoId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Business.name,
+    required: false,
+    default: null,
+  })
+    businessId: mongoose.Types.ObjectId;
 
   @Prop({
     type: {

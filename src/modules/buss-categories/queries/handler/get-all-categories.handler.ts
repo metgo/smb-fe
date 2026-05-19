@@ -5,13 +5,12 @@ import { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
-import { Locale } from 'src/common/enum';
+import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllCategoriesQuery } from '../get-all-categories.query';
 import { BussCategory } from '../../schema/buss.category.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
 
 @QueryHandler(GetAllCategoriesQuery)
@@ -100,7 +99,7 @@ implements ICommandHandler<GetAllCategoriesQuery> {
       }
 
       const productCountQuery: any = {
-        status: ProductStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isDeleted: { $ne: true },
         isActive: true,
         $and: [

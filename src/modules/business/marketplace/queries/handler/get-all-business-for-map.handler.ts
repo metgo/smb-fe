@@ -100,7 +100,6 @@ implements IQueryHandler<GetAllBusinessForMapQuery> {
           location: business?.location,
           bussCategoriesId: business?.bussCategoriesId,
           bussSubCategoriesId: business?.bussSubCategoriesId,
-          serviceType: business?.serviceType,
           slug: business?.slug,
         })),
       );

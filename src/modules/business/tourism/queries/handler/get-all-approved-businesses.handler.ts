@@ -2,12 +2,11 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { CommonStatus, SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { GetAllApprovedBusinessesQuery } from '../get-all-approved-businesses.query';
-import { BusinessStatus } from '../../../business.type';
-import { SortOrder } from 'src/common/enum';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 
@@ -34,7 +33,6 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
         sortBy,
         sortOrder,
         campCode,
-        serviceType,
         locale,
       } = queries.query;
 
@@ -55,9 +53,9 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
       }
 
       let findQuery: any = {
-        status: BusinessStatus.APPROVED,
+        status: CommonStatus.APPROVED,
         isActive: true,
-        ...(serviceType && { serviceType }),
+        isDeleted: { $ne: true },
       };
 
       const orConditions = [];
@@ -130,13 +128,17 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
           ...findQuery,
           $or: [
             { name: { $regex: search, $options: 'i' } },
+            { nameHe: { $regex: search, $options: 'i' } },
+            { nameAr: { $regex: search, $options: 'i' } },
             { description: { $regex: search, $options: 'i' } },
+            { descriptionHe: { $regex: search, $options: 'i' } },
+            { descriptionAr: { $regex: search, $options: 'i' } },
           ],
         };
       }
 
       const select
-        = '_id name nameHe nameAr description descriptionHe descriptionAr geoLocation images logo primaryCategoryId address slug serviceType businessId';
+        = '_id name nameHe nameAr description descriptionHe descriptionAr geoLocation images logo primaryCategoryId address slug businessId';
 
       const allBusiness = await queryhandler<BusinessesAudit>(
         this.BusinessesAuditModel,

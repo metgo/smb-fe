@@ -2,8 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
+import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { BusinessStatus } from '../../../business.type';
 import { GetBusinessDetailForMapTourismQuery } from '../get-business-detail-for-map.query';
 import { ServerErrors } from 'src/common/constant';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -44,7 +44,7 @@ implements IQueryHandler<GetBusinessDetailForMapTourismQuery> {
       try {
         const business = await this.BusinessesAuditModel.findOne({
           businessId: id,
-          status: BusinessStatus.APPROVED,
+          status: CommonStatus.APPROVED,
           isActive: true,
         })
           .select(select)
