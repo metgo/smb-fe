@@ -152,7 +152,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
     useThemeClasses();
 
   useEffect(() => {
-    markDirty(2);
+    markDirty(3);
   }, [
     startDate,
     eventDays,

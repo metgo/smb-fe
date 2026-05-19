@@ -645,6 +645,11 @@ export default function CreateEventWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (!eventName?.trim() && !eventNameHe?.trim() && !eventNameAr?.trim()) {
+      toast.error(tc("name_required"));
+      return;
+    }
+
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (eventId) {
