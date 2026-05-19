@@ -851,15 +851,11 @@ export default function CreateEventWizard({
         )}
         {currentStep === 1 && (
           <EventBasicInformation
+            formData={translationFormData}
+            onChange={handleTranslateChange}
             searchBusiness={searchBusiness}
             eventId={eventId}
             markDirty={handleMarkDirty}
-            eventNameHe={eventNameHe}
-            setEventNameHe={setEventNameHe}
-            shortDescriptionHe={shortDescriptionHe}
-            setShortDescriptionHe={setShortDescriptionHe}
-            fullDescriptionHe={fullDescriptionHe}
-            setFullDescriptionHe={setFullDescriptionHe}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
