@@ -415,7 +415,7 @@ export default function CreateEventWizard({
 
     switch (step) {
       case 1:
-        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        // if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
         if (
           !eventName?.trim() &&
           !eventNameHe?.trim() &&
@@ -492,6 +492,8 @@ export default function CreateEventWizard({
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
   };
+  console.log("🚀 ~ CreateEventWizard ~ eventDays:", eventDays);
+
   const eventDateTimePayload = {
     dayDescription: eventDays?.map((item) => ({
       date: isMultiDay ? item.date : startDate,
@@ -976,7 +978,6 @@ export default function CreateEventWizard({
         )}
         {currentStep === 7 && (
           <Media
-            markDirty={handleMarkDirty}
             images={images}
             imagesRef={imagesRef}
             setPrimaryImage={setPrimaryImage}

@@ -146,6 +146,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   recurrenceEndType,
   setRecurrenceEndType,
 }) => {
+  console.log("🚀 ~ EventDateTimeFormat ~ startDate:", startDate);
   const { t } = useTranslation("events");
   const { t: cT } = useTranslation("common");
   const { textSecondary, textTertiary, inputClasses, textPrimary, isDark } =
@@ -321,7 +322,10 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               value={
                 startDate ? new Date(startDate).toISOString().split("T")[0] : ""
               }
-              onChange={(date) => setStartDate(date)}
+              onChange={(date) => {
+                setStartDate(date);
+                setEventDays((prev) => [{ ...prev[0], date }]);
+              }}
               placeholder={t("select_date")}
               error={errors.startDate}
             />
