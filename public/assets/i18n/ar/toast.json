@@ -5,6 +5,7 @@
   "draft_saved": "تم حفظ المسودة",
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
+  "name_required": "يرجى إدخال اسم قبل الحفظ",
   "image_upload_info": "بدأ تحميل الصورة. يرجى الانتظار…",
   "image_upload_success": "تم تحميل الصورة بنجاح",
   "image_upload_failed": "فشل تحميل الصورة",

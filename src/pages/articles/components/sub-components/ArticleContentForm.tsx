@@ -15,7 +15,6 @@ export default function ArticleContentForm({
   syncKey,
   editingLanguage,
 }: ArticleContentFormProps) {
-  console.log("🚀 ~ ArticleContentForm ~ formData:", formData);
   const { t } = useTranslation("article");
   const {
     bgSecondary,

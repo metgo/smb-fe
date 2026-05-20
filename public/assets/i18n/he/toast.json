@@ -5,6 +5,7 @@
   "draft_saved": "הטיוטה נשמרה",
   "draft_failed": "שמירת הטיוטה נכשלה",
   "fill_all_fields": "יש למלא את כל השדות הנדרשים לפני ההמשך",
+  "name_required": "אנא הזן שם לפני השמירה",
   "image_upload_info": "העלאת התמונה החלה. אנא המתן…",
   "image_upload_success": "התמונה הועלתה בהצלחה",
   "image_upload_failed": "העלאת התמונה נכשלה",

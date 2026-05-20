@@ -180,6 +180,7 @@ export default function CreateEventWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
 
   const [isRecurring, setIsRecurring] = useState(false);
+
   const [recurrencePattern, setRecurrencePattern] =
     useState<RecurrencePattern>("weekly");
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]); // 0=Sun, 1=Mon, etc.
@@ -215,7 +216,6 @@ export default function CreateEventWizard({
   const [eventImages, setEventImages] = useState<TImages>([]);
   const {
     images,
-    setImages,
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
@@ -256,7 +256,6 @@ export default function CreateEventWizard({
   useEffect(() => {
     if (isOpen && !editId) {
       // Reset to initial state
-      setImages([]);
       setEventId("");
       setCurrentStep(1);
       setEventName("");
@@ -305,7 +304,7 @@ export default function CreateEventWizard({
       setHasFormChanges(false);
       initialImagesCountRef.current = 0;
     }
-  }, [isOpen, editId, setImages]);
+  }, [isOpen, editId]);
 
   useEffect(() => {
     if (editData && editId) {
@@ -492,6 +491,7 @@ export default function CreateEventWizard({
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
   };
+
   const eventDateTimePayload = {
     dayDescription: eventDays?.map((item) => ({
       date: isMultiDay ? item.date : startDate,
@@ -592,6 +592,12 @@ export default function CreateEventWizard({
     [markDirty],
   );
 
+  useEffect(() => {
+    if (images.length) {
+      handleMarkDirty(7);
+    }
+  }, [images, handleMarkDirty]);
+
   const translationFormData = {
     name: eventName,
     nameHe: eventNameHe,
@@ -645,6 +651,11 @@ export default function CreateEventWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (!eventName?.trim() && !eventNameHe?.trim() && !eventNameAr?.trim()) {
+      toast.error(tc("name_required"));
+      return;
+    }
+
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (eventId) {
@@ -846,15 +857,11 @@ export default function CreateEventWizard({
         )}
         {currentStep === 1 && (
           <EventBasicInformation
+            formData={translationFormData}
+            onChange={handleTranslateChange}
             searchBusiness={searchBusiness}
             eventId={eventId}
             markDirty={handleMarkDirty}
-            eventNameHe={eventNameHe}
-            setEventNameHe={setEventNameHe}
-            shortDescriptionHe={shortDescriptionHe}
-            setShortDescriptionHe={setShortDescriptionHe}
-            fullDescriptionHe={fullDescriptionHe}
-            setFullDescriptionHe={setFullDescriptionHe}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
@@ -975,7 +982,6 @@ export default function CreateEventWizard({
         )}
         {currentStep === 7 && (
           <Media
-            markDirty={handleMarkDirty}
             images={images}
             imagesRef={imagesRef}
             setPrimaryImage={setPrimaryImage}

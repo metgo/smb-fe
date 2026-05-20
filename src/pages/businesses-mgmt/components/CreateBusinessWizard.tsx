@@ -622,6 +622,14 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (
+      !formData.name?.trim() &&
+      !formData.nameHe?.trim() &&
+      !formData.nameAr?.trim()
+    ) {
+      toast.error(tt("name_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (businessId) {

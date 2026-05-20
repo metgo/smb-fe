@@ -52,7 +52,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
   } = useThemeClasses();
 
   useEffect(() => {
-    markDirty(3);
+    markDirty(4);
   }, [
     registrationRequired,
     capacityType,
@@ -61,7 +61,7 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
     markDirty,
   ]);
 
-  if (currentStep !== 3) return null;
+  if (currentStep !== 4) return null;
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
