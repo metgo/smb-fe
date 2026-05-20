@@ -215,7 +215,6 @@ export default function CreateEventWizard({
   const [eventImages, setEventImages] = useState<TImages>([]);
   const {
     images,
-    setImages,
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
@@ -256,7 +255,6 @@ export default function CreateEventWizard({
   useEffect(() => {
     if (isOpen && !editId) {
       // Reset to initial state
-      setImages([]);
       setEventId("");
       setCurrentStep(1);
       setEventName("");
@@ -305,7 +303,7 @@ export default function CreateEventWizard({
       setHasFormChanges(false);
       initialImagesCountRef.current = 0;
     }
-  }, [isOpen, editId, setImages]);
+  }, [isOpen, editId]);
 
   useEffect(() => {
     if (editData && editId) {
@@ -564,6 +562,7 @@ export default function CreateEventWizard({
     }),
   };
 
+  console.log("🚀 ~ CreateEventWizard ~ eventImages:", eventImages);
   const eventMediaPayload = {
     images: eventImages,
   };
@@ -574,7 +573,13 @@ export default function CreateEventWizard({
     3: () => eventDateTimePayload,
     4: () => eventRegistrationPayload,
     6: () => eventMsgSchedulePayload,
-    7: () => eventMediaPayload,
+    7: () => {
+      console.log(
+        "🚀 ~ CreateEventWizard ~ eventMediaPayload:",
+        eventMediaPayload,
+      );
+      return eventMediaPayload;
+    },
   };
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
@@ -593,6 +598,12 @@ export default function CreateEventWizard({
     },
     [markDirty],
   );
+
+  useEffect(() => {
+    if (images.length) {
+      handleMarkDirty(7);
+    }
+  }, [images, handleMarkDirty]);
 
   const translationFormData = {
     name: eventName,
