@@ -414,7 +414,7 @@ export default function CreateEventWizard({
 
     switch (step) {
       case 1:
-        // if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
         if (
           !eventName?.trim() &&
           !eventNameHe?.trim() &&
