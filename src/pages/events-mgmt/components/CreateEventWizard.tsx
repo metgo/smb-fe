@@ -180,6 +180,7 @@ export default function CreateEventWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
 
   const [isRecurring, setIsRecurring] = useState(false);
+
   const [recurrencePattern, setRecurrencePattern] =
     useState<RecurrencePattern>("weekly");
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]); // 0=Sun, 1=Mon, etc.
@@ -490,7 +491,6 @@ export default function CreateEventWizard({
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
   };
-  console.log("🚀 ~ CreateEventWizard ~ eventDays:", eventDays);
 
   const eventDateTimePayload = {
     dayDescription: eventDays?.map((item) => ({
@@ -562,7 +562,6 @@ export default function CreateEventWizard({
     }),
   };
 
-  console.log("🚀 ~ CreateEventWizard ~ eventImages:", eventImages);
   const eventMediaPayload = {
     images: eventImages,
   };
@@ -573,13 +572,7 @@ export default function CreateEventWizard({
     3: () => eventDateTimePayload,
     4: () => eventRegistrationPayload,
     6: () => eventMsgSchedulePayload,
-    7: () => {
-      console.log(
-        "🚀 ~ CreateEventWizard ~ eventMediaPayload:",
-        eventMediaPayload,
-      );
-      return eventMediaPayload;
-    },
+    7: () => eventMediaPayload,
   };
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,

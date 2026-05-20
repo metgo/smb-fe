@@ -146,7 +146,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   recurrenceEndType,
   setRecurrenceEndType,
 }) => {
-  console.log("🚀 ~ EventDateTimeFormat ~ startDate:", startDate);
   const { t } = useTranslation("events");
   const { t: cT } = useTranslation("common");
   const { textSecondary, textTertiary, inputClasses, textPrimary, isDark } =

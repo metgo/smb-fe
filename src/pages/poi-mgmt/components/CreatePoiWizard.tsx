@@ -71,7 +71,6 @@ export default function CreatePoiWizard({
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
-  console.log("🚀 ~ CreatePoiWizard ~ geo:", geo);
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
