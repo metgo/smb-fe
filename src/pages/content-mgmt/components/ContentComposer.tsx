@@ -130,6 +130,12 @@ const TopicBlock = ({
     );
   };
 
+  const handleIconChange = (topicIndex: number, icon: string) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, icon } : t)),
+    );
+  };
+
   const handleToggleTopic = (templateIndex: number) => {
     setTemplateContent((prev) =>
       prev.map((template, tIndex) =>
@@ -235,12 +241,14 @@ const TopicBlock = ({
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
                 colors: topic.colors,
+                icon: topic.icon,
               }}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
               onColorChange={handleColorChange}
               onApplyColorToChildren={handleApplyColorToChildren}
+              onIconChange={handleIconChange}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />

@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useDrop } from "react-dnd";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,15 +56,23 @@ const TopicCategoryCard = ({
 
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const iconPickerRef = useRef<HTMLDivElement>(null);
+  const iconPanelRef = useRef<HTMLDivElement>(null);
   const iconPopupId = useRef(Math.random().toString(36));
+  const [iconPopupPos, setIconPopupPos] = useState<{
+    top: number;
+    left?: number;
+    right?: number;
+  } | null>(null);
 
-  // Close icon picker on outside click
+  // Close icon picker on outside click — check both trigger and portal panel
   useEffect(() => {
     if (!iconPickerOpen) return;
     const handler = (e: MouseEvent) => {
       if (
         iconPickerRef.current &&
-        !iconPickerRef.current.contains(e.target as Node)
+        !iconPickerRef.current.contains(e.target as Node) &&
+        iconPanelRef.current &&
+        !iconPanelRef.current.contains(e.target as Node)
       )
         setIconPickerOpen(false);
     };
@@ -80,6 +89,26 @@ const TopicCategoryCard = ({
     document.addEventListener("popup-opened", handler);
     return () => document.removeEventListener("popup-opened", handler);
   }, []);
+
+  // Calculate fixed portal position — works for both LTR and RTL
+  useEffect(() => {
+    if (!iconPickerOpen) {
+      setIconPopupPos(null);
+      return;
+    }
+    const raf = requestAnimationFrame(() => {
+      if (!iconPickerRef.current) return;
+      const rect = iconPickerRef.current.getBoundingClientRect();
+      const PANEL_W = 288; // w-72
+      const top = rect.bottom + 4;
+      if (rect.left + PANEL_W > window.innerWidth - 8) {
+        setIconPopupPos({ top, right: window.innerWidth - rect.right });
+      } else {
+        setIconPopupPos({ top, left: rect.left });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [iconPickerOpen]);
 
   const openIconPicker = () => {
     setIconPickerOpen((prev) => {
@@ -368,12 +397,20 @@ const TopicCategoryCard = ({
                     })()}
                   </button>
 
-                  {iconPickerOpen && (
-                    <>
-                      {/* Picker panel */}
+                  {iconPickerOpen &&
+                    iconPopupPos &&
+                    createPortal(
                       <div
+                        ref={iconPanelRef}
+                        style={{
+                          position: "fixed",
+                          top: iconPopupPos.top,
+                          left: iconPopupPos.left,
+                          right: iconPopupPos.right,
+                          zIndex: 9999,
+                        }}
                         className={clsx(
-                          "absolute top-12 left-0 z-50 rounded-xl border shadow-2xl",
+                          "rounded-xl border shadow-2xl",
                           "w-72 overflow-hidden",
                           "animate-in fade-in slide-in-from-top-2 duration-150",
                           isDark
@@ -451,9 +488,9 @@ const TopicCategoryCard = ({
                             })}
                           </div>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </div>,
+                      document.body,
+                    )}
                 </div>
 
                 <ColorPickerField

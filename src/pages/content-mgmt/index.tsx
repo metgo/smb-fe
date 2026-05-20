@@ -205,6 +205,7 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
+  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
@@ -278,6 +279,7 @@ export default function ContentMgmtPage() {
               };
             }),
             isPrimary: topic.isPrimary,
+            icon: topic.icon,
             colors: topic.colors ?? [],
           }),
         );
@@ -753,6 +755,7 @@ export default function ContentMgmtPage() {
               isPrimary: template.isPrimary,
               isArchived: template.isHideTopic,
               order: index,
+              icon: template.icon ?? "",
               colors: template.colors ?? [],
               siteCategories: filteredCategories,
             };

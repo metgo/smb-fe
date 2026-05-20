@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { Palette, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ColorPickerFieldProps {
@@ -13,6 +14,7 @@ interface ColorPickerFieldProps {
 const DEFAULT_1 = "#6366f1";
 const DEFAULT_2 = "#ec4899";
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
+const POPUP_W = 208; // w-52
 
 const ColorPickerField = ({
   colors,
@@ -29,7 +31,13 @@ const ColorPickerField = ({
   const [c1, setC1] = useState(colors[0] ?? DEFAULT_1);
   const [c2, setC2] = useState(colors[1] ?? DEFAULT_2);
   const ref = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const popupId = useRef(Math.random().toString(36));
+  const [popupPos, setPopupPos] = useState<{
+    top: number;
+    left?: number;
+    right?: number;
+  } | null>(null);
 
   // Sync local state when prop changes externally
   useEffect(() => {
@@ -38,11 +46,16 @@ const ColorPickerField = ({
     if (colors[1]) setC2(colors[1]);
   }, [colors.join(",")]);
 
-  // Close on outside click
+  // Close on outside click — must check both trigger and portal popup
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
+      if (
+        ref.current &&
+        !ref.current.contains(e.target as Node) &&
+        popupRef.current &&
+        !popupRef.current.contains(e.target as Node)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", handler);
@@ -57,6 +70,25 @@ const ColorPickerField = ({
     document.addEventListener("popup-opened", handler);
     return () => document.removeEventListener("popup-opened", handler);
   }, []);
+
+  // Calculate fixed portal position — works for both LTR and RTL
+  useEffect(() => {
+    if (!open) {
+      setPopupPos(null);
+      return;
+    }
+    const raf = requestAnimationFrame(() => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const top = rect.bottom + 4;
+      if (rect.left + POPUP_W > window.innerWidth - 8) {
+        setPopupPos({ top, right: window.innerWidth - rect.right });
+      } else {
+        setPopupPos({ top, left: rect.left });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
 
   const handleToggleOpen = () => {
     setOpen((v) => {
@@ -108,6 +140,7 @@ const ColorPickerField = ({
       <button
         onClick={handleToggleOpen}
         title="Pick background color"
+        style={colors.length > 0 ? previewBg : undefined}
         className={clsx(
           "w-7 h-7 rounded border transition-all hover:scale-110 shrink-0 flex items-center justify-center",
           colors.length > 0
@@ -131,11 +164,20 @@ const ColorPickerField = ({
         )}
       </button>
 
-      {open && (
-        <>
+      {open &&
+        popupPos &&
+        createPortal(
           <div
+            ref={popupRef}
+            style={{
+              position: "fixed",
+              top: popupPos.top,
+              left: popupPos.left,
+              right: popupPos.right,
+              zIndex: 9999,
+            }}
             className={clsx(
-              "absolute left-0 top-7 z-50 rounded-xl border shadow-xl w-52 p-3 space-y-3",
+              "rounded-xl border shadow-xl w-52 p-3 space-y-3",
               isDark
                 ? "bg-gray-900 border-gray-700 shadow-black/60"
                 : "bg-white border-gray-200 shadow-gray-300/40",
@@ -267,9 +309,9 @@ const ColorPickerField = ({
             >
               {t("remove_color")}
             </button>
-          </div>
-        </>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

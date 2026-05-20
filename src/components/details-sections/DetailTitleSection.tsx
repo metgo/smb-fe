@@ -30,7 +30,6 @@ const DetailTitleSection = ({
   updatedAt,
   completionPercent,
 }: DetailTitleSectionProps) => {
-  console.log("🚀 ~ DetailTitleSection ~ images:", images);
   const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
