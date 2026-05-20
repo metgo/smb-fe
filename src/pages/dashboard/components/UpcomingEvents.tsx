@@ -7,18 +7,15 @@ import { routes } from "@/lib/routes";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback, InfoTooltip } from "@/components/shared";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetAllUpcomingEventsQuery } from "@/store/api/eventQueryApi";
 
 export default function UpcomingEvents() {
   const { t } = useTranslation("dashboard");
   const { isDark, language, isRTL } = useThemeClasses();
 
-  const { data: events } = useGetAllEventsQuery({
-    page: 1,
-    limit: 3,
-  });
+  const { data: events } = useGetAllUpcomingEventsQuery();
 
-  if (events?.totalData === 0) return null;
+  if (events?.data?.length === 0) return null;
 
   return (
     <section>
@@ -41,64 +38,70 @@ export default function UpcomingEvents() {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events?.data?.map((event: any) => (
-          <Link
-            key={event._id}
-            to={`${routes.eventDetails}?eventId=${event?._id}`}
-            className={clsx(
-              "rounded-xl border overflow-hidden hover:shadow-lg transition-all group",
-              isDark
-                ? "bg-gray-900 border-gray-800"
-                : "bg-white border-gray-200",
-            )}
-          >
-            {/* Image */}
-            <div className="relative h-48 overflow-hidden">
-              <ImageWithFallback
-                src={
-                  event?.images?.find((img: any) => img?.isPrimary)?.image ||
-                  event?.images[0]?.image
-                }
-                alt={event?.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
+        {events?.data?.map((event: IUpcommingEvent) => {
+          const localizedName =
+            language === "he"
+              ? event.nameHe || event.name
+              : language === "ar"
+                ? event.nameAr || event.name
+                : event.name;
 
-            {/* Event Details */}
-            <div className="p-4">
-              <h3
-                className={clsx(
-                  "mb-2 line-clamp-2 font-semibold",
-                  isDark ? "text-white" : "text-gray-900",
-                )}
-              >
-                {event?.name}
-              </h3>
-
-              <div
-                className={clsx(
-                  "flex items-start gap-2 text-sm mb-2",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>
-                  {formatDate(event?.dayDescription[0]?.date, language)}
-                </span>
+          return (
+            <Link
+              key={event._id}
+              to={`${routes.eventDetails}?eventId=${event._id}`}
+              className={clsx(
+                "rounded-xl border overflow-hidden hover:shadow-lg transition-all group",
+                isDark
+                  ? "bg-gray-900 border-gray-800"
+                  : "bg-white border-gray-200",
+              )}
+            >
+              {/* Image */}
+              <div className="relative h-48 overflow-hidden">
+                <ImageWithFallback
+                  src={event.image ?? undefined}
+                  alt={localizedName}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
 
-              <div
-                className={clsx(
-                  "flex items-start gap-2 text-sm",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                <span className="line-clamp-1">{event?.address?.location}</span>
+              {/* Event Details */}
+              <div className="p-4">
+                <h3
+                  className={clsx(
+                    "mb-2 line-clamp-2 font-semibold",
+                    isDark ? "text-white" : "text-gray-900",
+                  )}
+                >
+                  {localizedName}
+                </h3>
+
+                <div
+                  className={clsx(
+                    "flex items-start gap-2 text-sm mb-2",
+                    isDark ? "text-gray-400" : "text-gray-600",
+                  )}
+                >
+                  <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>{formatDate(event.upcomingDate, language)}</span>
+                </div>
+
+                <div
+                  className={clsx(
+                    "flex items-start gap-2 text-sm",
+                    isDark ? "text-gray-400" : "text-gray-600",
+                  )}
+                >
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span className="line-clamp-1">
+                    {event.address?.location}
+                  </span>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
 
         {/* Show More Card */}
         <Link

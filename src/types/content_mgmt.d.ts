@@ -33,6 +33,7 @@ interface IContentTemplate {
   isHideTopic?: boolean;
   groups: IContentGroup[];
   colors?: string[];
+  icon?: string | null;
 }
 
 // -------------------- Response ---------------------
@@ -93,6 +94,7 @@ interface IContentTopic {
   description: string | null;
   descriptionHe: string | null;
   descriptionAr: string | null;
+  icon?: string | null;
   colors?: string[];
 
   siteCategories: ISiteCategory[];

@@ -3,6 +3,9 @@
   "split": "تقسيم",
 
   "apply_same": "تطبيق نفس الشيء",
+  "remove_color": "إزالة اللون",
+  "background_color": "لون الخلفية",
+  "select_icon": "اختر أيقونة",
 
   "create_new_topic": "إنشاء موضوع جديد",
   "placeholder_new_topic": "مثال: أقسام الصفحة الرئيسية، المحتوى المميز...",
