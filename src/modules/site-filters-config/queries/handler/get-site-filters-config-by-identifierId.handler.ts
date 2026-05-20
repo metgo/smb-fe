@@ -168,10 +168,14 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
               titleAr,
               descriptionHe,
               descriptionAr,
+              icon,
+              colors,
               ...topicRest
             } = topic;
             return {
               ...topicRest,
+              icon,
+              colors,
               title: this.localizeString(
                 { base: topic.title, he: titleHe, ar: titleAr },
                 locale,
@@ -306,10 +310,14 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
             titleAr,
             descriptionHe,
             descriptionAr,
+            icon,
+            colors,
             ...topicRest
           } = topic;
           return {
             ...topicRest,
+            icon,
+            colors,
             title: this.localizeString(
               { base: topic.title, he: titleHe, ar: titleAr },
               locale,

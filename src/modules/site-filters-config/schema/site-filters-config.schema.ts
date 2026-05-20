@@ -7,6 +7,7 @@ import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { SiteFiltersConfigStatus } from '../site-filters-config.type';
 import { Product } from 'src/modules/products/schema/products.schema';
+import { PointOfInterest } from 'src/modules/point-of-interests/schema/point-of-interest.schema';
 
 @Schema({ _id: false })
 export class SiteCategoriesItem {
@@ -41,7 +42,7 @@ export class SiteCategoriesItem {
     eventIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: PointOfInterest.name }],
     required: false,
   })
     poiIds: mongoose.Types.ObjectId[];
@@ -72,6 +73,9 @@ export class SiteCategoriesItem {
 
   @Prop({ default: null })
     icon: string;
+
+  @Prop({ type: [String], default: ['#800080'] })
+    colors: string[];
 }
 
 export const SiteCategoriesItemSchema
@@ -108,6 +112,12 @@ export class SiteTopicItem {
 
   @Prop({ type: Boolean, default: false })
     isArchived: boolean;
+
+  @Prop({ default: null })
+    icon: string;
+
+  @Prop({ type: [String], default: ['#800080'] })
+    colors: string[];
 }
 
 export const SiteTopicItemSchema = SchemaFactory.createForClass(SiteTopicItem);
@@ -139,6 +149,9 @@ export class SiteFiltersConfig extends AuditableSchema {
 
   @Prop({ default: null })
     headerDescriptionAr: string;
+
+  @Prop({ default: null })
+    icon: string;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
