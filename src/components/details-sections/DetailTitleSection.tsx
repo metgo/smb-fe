@@ -33,39 +33,51 @@ const DetailTitleSection = ({
   const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
 
+  const divider = (
+    <div
+      className={clsx("w-px h-3 shrink-0 opacity-30", textTertiary)}
+      style={{ background: "currentColor" }}
+    />
+  );
+
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-3">
       <ImageWithFallback
         src={images?.[0]?.image}
         alt={name || nameHe || nameAr}
         className={clsx(
-          "w-24 h-22 rounded-xl object-cover border-2",
-          isDark ? "border-gray-600" : "border-gray-300",
+          "w-14 h-14 rounded-xl object-cover shrink-0 border",
+          isDark ? "border-gray-600" : "border-gray-200",
         )}
       />
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-        <div>
+      <div className="flex flex-1 items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0">
           <h1
-            className={`text-3xl mb-2 ${
+            className={`text-lg font-semibold leading-tight truncate ${
               isDark ? "text-gray-100" : "text-gray-900"
             }`}
           >
             {getLngWiseStr(language, name, nameHe, nameAr)}
           </h1>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              <span className={isDark ? "text-gray-300" : "text-gray-700"}>
-                {t("impact_score")}: {impact?.toFixed(1)}
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              {createdAt && (
-                <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+              <TrendingUp className="w-3 h-3" />
+              {impact?.toFixed(1)}
+            </span>
+
+            {createdAt && (
+              <>
+                {divider}
+                <span
+                  className={clsx(
+                    "inline-flex items-center gap-1 text-xs",
+                    textTertiary,
+                  )}
+                >
                   <svg
-                    className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
+                    className="w-3 h-3 shrink-0"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -74,28 +86,22 @@ const DetailTitleSection = ({
                     <rect x="2" y="3" width="12" height="11" rx="1.5" />
                     <path d="M5 1.5v3M11 1.5v3M2 7h12" />
                   </svg>
-                  <span className={clsx(" font-medium", textTertiary)}>
-                    {t("created")}
-                  </span>
-                  <span className={clsx("", textTertiary)}>
-                    {formatDateTime(createdAt, language)}
-                  </span>
-                </div>
-              )}
+                  {formatDateTime(createdAt, language)}
+                </span>
+              </>
+            )}
 
-              <div
-                className={clsx(
-                  "w-px h-3 shrink-0",
-                  textTertiary,
-                  "opacity-30",
-                )}
-                style={{ background: "currentColor" }}
-              />
-
-              {updatedAt && (
-                <div className="flex items-center gap-1.5">
+            {updatedAt && (
+              <>
+                {divider}
+                <span
+                  className={clsx(
+                    "inline-flex items-center gap-1 text-xs",
+                    textTertiary,
+                  )}
+                >
                   <svg
-                    className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
+                    className="w-3 h-3 shrink-0"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -116,37 +122,26 @@ const DetailTitleSection = ({
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span className={clsx(" font-medium", textTertiary)}>
-                    {t("updated")}
-                  </span>
-                  <span className={clsx("", textTertiary)}>
-                    {formatDateTime(updatedAt, language)}
-                  </span>
-                </div>
-              )}
-            </div>
+                  {formatDateTime(updatedAt, language)}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Completion Percentage */}
-        <div className="flex flex-col items-end">
-          <span
-            className={`text-sm mb-1 ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
+        <div className="shrink-0 flex flex-col items-end gap-1">
+          <span className={clsx("text-[10px]", textTertiary)}>
             {t("completion_percentage")}
           </span>
-
-          <div className="flex items-center gap-3">
-            <div className="w-32 h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-teal-600 transition-all duration-300"
+                className="h-full bg-teal-500 transition-all duration-300"
                 style={{ width: `${completionPercent}%` }}
               />
             </div>
             <span
-              className={`text-sm ${
+              className={`text-xs font-medium ${
                 isDark ? "text-gray-300" : "text-gray-700"
               }`}
             >

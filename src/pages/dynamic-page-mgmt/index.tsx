@@ -363,7 +363,7 @@ export default function DynamicPageMgmt() {
   return (
     <div
       className={clsx(
-        "min-h-screen flex flex-col transition-colors relative",
+        "h-[calc(100vh-7rem)] flex flex-col overflow-hidden transition-colors relative",
         isDark ? "bg-gray-900" : "bg-white",
       )}
     >
@@ -371,7 +371,7 @@ export default function DynamicPageMgmt() {
 
       {/* Header */}
       <div className={clsx("shrink-0 px-6 pt-6 pb-0 border-b", borderColor)}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl mb-1 bg-linear-to-r from-teal-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
               {t("page_title")}
@@ -407,7 +407,7 @@ export default function DynamicPageMgmt() {
       </div>
 
       {/* Form Body */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto min-h-0 p-6">
         <div className="space-y-6">
           <div
             className={clsx(

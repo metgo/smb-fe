@@ -36,6 +36,7 @@ import {
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
+import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
 import {
@@ -262,7 +263,10 @@ function App() {
       element: (
         <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
-            <Outlet />
+            <>
+              <RouterProgressBar />
+              <Outlet />
+            </>
           </ProtectedRoute>
         </Suspense>
       ),

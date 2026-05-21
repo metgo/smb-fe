@@ -18,7 +18,7 @@ const ContinueWithGoogle = () => {
     <button
       type="button"
       onClick={handleGoogleClick}
-      className="w-full py-4 bg-white/80 hover:bg-gray-100 text-gray-900 rounded-xl flex items-center justify-center gap-3 transition-colors cursor-pointer"
+      className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 text-white rounded-xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-sm"
     >
       <svg className="w-6 h-6" viewBox="0 0 24 24">
         <path

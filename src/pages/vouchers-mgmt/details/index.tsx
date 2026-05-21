@@ -189,7 +189,7 @@ export default function VoucherDetailsPage() {
   };
 
   return (
-    <div className=" flex flex-col overflow-hidden relative h-[88vh] ">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isLoading} /> {/* Fixed Header */}
       <div className={clsx(` shrink-0 border-b py-4 `, borderColor)}>
         {/* Top Row */}
@@ -214,13 +214,15 @@ export default function VoucherDetailsPage() {
           </div>
         </div>
       </div>
-      <TabsSection
-        tabs={voucherTabs}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <div className="shrink-0">
+        <TabsSection
+          tabs={voucherTabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </div>
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         <div className=" py-6">
           {/* Overview Tab */}
           {activeTab === "overview" && (

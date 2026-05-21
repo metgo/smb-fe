@@ -35,6 +35,7 @@ import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
 import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { promotionsApi } from "./api/promotionsApi";
+import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -114,6 +115,7 @@ export const store = configureStore({
       poiMutationApi.middleware,
       websiteSettingsApi.middleware,
       promotionsApi.middleware,
+      nprogressMiddleware,
     ),
 });
 

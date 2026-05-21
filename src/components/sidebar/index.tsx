@@ -28,6 +28,7 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
+  ChevronLeft,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -297,7 +298,7 @@ export default function Sidebar() {
     const ChevronIcon = isRTL
       ? expanded
         ? ChevronDown
-        : ChevronRight
+        : ChevronLeft
       : expanded
         ? ChevronDown
         : ChevronRight;

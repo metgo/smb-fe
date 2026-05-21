@@ -1,6 +1,7 @@
 import ConnectedWebsites from "../details-sections/ConnectedWebsites";
 import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
+import RouterProgressBar from "./RouterProgressBar";
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
 import FilterChips from "./FilterChips";
@@ -23,6 +24,7 @@ import WizardFooter from "./WizardFooter";
 export {
   Spinner,
   SplashLoader,
+  RouterProgressBar,
   PageStats,
   PageHeader,
   IdleLogout,

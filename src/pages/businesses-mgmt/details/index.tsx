@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,7 +55,7 @@ export default function BusinessDetailsPage() {
 
   const { isTraveller } = useUserRoles();
 
-  const { borderColor, isDark } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -222,101 +221,63 @@ export default function BusinessDetailsPage() {
   };
 
   return (
-    <div className=" flex flex-col overflow-hidden relative h-[88vh] ">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isLoading} />
 
-      {/* Header */}
-      <div className={clsx(` shrink-0 border-b px-6 `, borderColor)}>
-        {/* Top Row */}
-        <div className="flex items-center justify-between mb-4">
-          <BackToListBtn navPath={routes.businessMgmt} />
+      {/* Top Row */}
+      <div className="flex items-center justify-between mb-4 shrink-0">
+        <BackToListBtn navPath={routes.businessMgmt} />
+        <div className="flex items-center gap-2">
+          <StatusChangeBtn
+            handleStatusChange={onStatusChangeHandler}
+            status={business?.status}
+          />
 
-          <div className="flex items-center gap-2">
-            <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={business?.status}
-            />
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="text-sm font-medium">{t("actions")}</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
 
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+            {isDropdownOpen && (
+              <div
+                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
                   isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
                 }`}
               >
-                <MoreHorizontal className="w-4 h-4" />
-                <span className="text-sm font-medium">{t("actions")}</span>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isDropdownOpen && (
-                <div
-                  className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                {/* Edit */}
+                <button
+                  onClick={() => {
+                    handleMutateData(IOpMode.EDIT);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
                     isDark
-                      ? "bg-gray-900 border-gray-700"
-                      : "bg-white border-gray-200"
+                      ? "text-teal-400 hover:bg-gray-800"
+                      : "text-teal-700 hover:bg-gray-50"
                   }`}
                 >
-                  {/* Edit */}
+                  <Edit className="w-4 h-4 shrink-0" />
+                  {t("edit")}
+                </button>
+
+                {/* Change Owner */}
+                {!isTraveller && (
                   <button
                     onClick={() => {
-                      handleMutateData(IOpMode.EDIT);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                      isDark
-                        ? "text-teal-400 hover:bg-gray-800"
-                        : "text-teal-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Edit className="w-4 h-4 shrink-0" />
-                    {t("edit")}
-                  </button>
-
-                  {/* Change Owner */}
-                  {!isTraveller && (
-                    <button
-                      onClick={() => {
-                        setIsOwnerChangeModalOpen(true);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                        isDark
-                          ? "text-gray-300 hover:bg-gray-800"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <UserCog className="w-4 h-4 shrink-0" />
-                      {t("change_owner")}
-                    </button>
-                  )}
-
-                  <div
-                    className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
-                  />
-                  {onCreateProduct && (
-                    <button
-                      onClick={() => {
-                        onCreateProduct();
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                        isDark
-                          ? "text-indigo-400 hover:bg-gray-800"
-                          : "text-indigo-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Plus className="w-4 h-4 shrink-0" />
-                      {t("create_product")}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      onViewProduct();
+                      setIsOwnerChangeModalOpen(true);
                       setIsDropdownOpen(false);
                     }}
                     className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
@@ -325,14 +286,49 @@ export default function BusinessDetailsPage() {
                         : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    <Eye className="w-4 h-4 shrink-0" />
-                    View Product
+                    <UserCog className="w-4 h-4 shrink-0" />
+                    {t("change_owner")}
                   </button>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* <button
+                <div
+                  className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
+                />
+                {onCreateProduct && (
+                  <button
+                    onClick={() => {
+                      onCreateProduct();
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                      isDark
+                        ? "text-indigo-400 hover:bg-gray-800"
+                        : "text-indigo-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 shrink-0" />
+                    {t("create_product")}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    onViewProduct();
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Eye className="w-4 h-4 shrink-0" />
+                  View Product
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* <button
               onClick={() => handleMutateData(IOpMode.DUPLICATE)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${isDark
                 ? "border-gray-700 hover:bg-gray-800 text-gray-300"
@@ -342,24 +338,31 @@ export default function BusinessDetailsPage() {
               <Copy className="w-4 h-4" />
               <span>{tc("duplicate") || "Duplicate"}</span>
             </button> */}
-          </div>
         </div>
+      </div>
 
+      <div className="details-top shrink-0">
         <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-4"
         />
-        <TabsSection
-          tabs={businessTabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
+      <div className="mt-6 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0">
+          <TabsSection
+            tabs={businessTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        <div className="details-content flex-1 overflow-y-auto min-h-0">
+          {renderContent()}
+        </div>
+      </div>
 
       {/* Change Owner Modal */}
       {isOwnerChangeModalOpen && (
