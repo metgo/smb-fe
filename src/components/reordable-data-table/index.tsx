@@ -67,6 +67,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({});
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
+
   // Column Order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
     const defaultOrder = columns.map((c) => c.key as string);
@@ -99,7 +100,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const handler = () => setIsScrolledX(el.scrollLeft > 4);
+    // RTL layouts produce negative scrollLeft in Chrome/Edge, so use Math.abs.
+    const handler = () => setIsScrolledX(Math.abs(el.scrollLeft) > 4);
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
   }, []);
@@ -245,75 +247,117 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     [selectedItems, rowKey, onSelectionChange],
   );
 
-  // Sticky styles
+  // ─── Sticky position (inline style for left/right offset) ─────────────────
+  // In RTL the visual sides are flipped: PINNED_LEFT (checkbox) sticks to the
+  // right edge, and PINNED_RIGHT (actions) sticks to the left edge.
   const getStickyStyle = useCallback(
     (colKey: string): React.CSSProperties => {
       if (PINNED_LEFT.has(colKey)) {
-        let left = 0;
+        let offset = 0;
         for (const key of [...PINNED_LEFT]) {
           if (key === colKey) break;
-          left += colWidths[key] ?? 0;
+          offset += colWidths[key] ?? 0;
         }
-        return { position: "sticky", left, zIndex: 30 };
+        return isRTL
+          ? { position: "sticky", right: offset, zIndex: 20 }
+          : { position: "sticky", left: offset, zIndex: 20 };
       }
       if (PINNED_RIGHT.has(colKey)) {
-        let right = 0;
+        let offset = 0;
         for (const key of [...PINNED_RIGHT].reverse()) {
           if (key === colKey) break;
-          right += colWidths[key] ?? 0;
+          offset += colWidths[key] ?? 0;
         }
-        return { position: "sticky", right, zIndex: 30 };
+        return isRTL
+          ? { position: "sticky", left: offset, zIndex: 20 }
+          : { position: "sticky", right: offset, zIndex: 20 };
       }
       return {};
     },
-    [colWidths],
+    [colWidths, isRTL],
   );
 
+  // ─── Sticky background + shadow (className) ───────────────────────────────
+  //
+  // Shadow and border must face the scrolling content, which in RTL is the
+  // opposite physical side from LTR.  We derive "visually on the right edge"
+  // rather than "in the PINNED_RIGHT set" so the logic stays direction-aware.
+  //
   const getStickyBgClass = useCallback(
     (colKey: string, isSelected = false) => {
       if (!PINNED_ALL.has(colKey)) return "";
 
-      const isRight = PINNED_RIGHT.has(colKey);
-      const bgBase = isSelected
+      // True when the column sits on the visual right edge of the table.
+      const isVisuallyRight = isRTL
+        ? PINNED_LEFT.has(colKey)
+        : PINNED_RIGHT.has(colKey);
+
+      // Base background — must be opaque
+      const bg = isSelected
         ? isDark
-          ? "bg-teal-900/20"
-          : "bg-teal-50/60"
+          ? "bg-teal-900/40"
+          : "bg-teal-50"
         : isDark
           ? "bg-gray-900"
           : "bg-white";
 
-      const shadowClass = isScrolledX
-        ? isRight
+      // Dividing shadow line visible only while scrolled
+      const shadow = isScrolledX
+        ? isVisuallyRight
           ? isDark
-            ? "shadow-[-1px_0_0_0_rgba(255,255,255,0.07)]"
-            : "shadow-[-1px_0_0_0_rgba(0,0,0,0.08)]"
+            ? "shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.5)]"
+            : "shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.10)]"
           : isDark
-            ? "shadow-[1px_0_0_0_rgba(255,255,255,0.07)]"
-            : "shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+            ? "shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)]"
+            : "shadow-[4px_0_8px_-2px_rgba(0,0,0,0.10)]"
         : "";
 
-      return clsx(bgBase, shadowClass);
+      // Border line on the inner edge of the pinned column
+      const border = isVisuallyRight
+        ? isDark
+          ? "border-l border-gray-700/60"
+          : "border-l border-gray-200"
+        : isDark
+          ? "border-r border-gray-700/60"
+          : "border-r border-gray-200";
+
+      return clsx(bg, shadow, border);
     },
-    [isDark, isScrolledX],
+    [isDark, isScrolledX, isRTL],
   );
 
+  // Header variant — always uses the header background
   const getStickyHeaderBgClass = useCallback(
     (colKey: string) => {
       if (!PINNED_ALL.has(colKey)) return "";
-      const isRight = PINNED_RIGHT.has(colKey);
+
+      const isVisuallyRight = isRTL
+        ? PINNED_LEFT.has(colKey)
+        : PINNED_RIGHT.has(colKey);
+
       const bg = isDark ? "bg-gray-900" : "bg-gray-50";
+
       const shadow = isScrolledX
-        ? isRight
+        ? isVisuallyRight
           ? isDark
-            ? "shadow-[-1px_0_0_0_rgba(255,255,255,0.07)]"
-            : "shadow-[-1px_0_0_0_rgba(0,0,0,0.08)]"
+            ? "shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.5)]"
+            : "shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.10)]"
           : isDark
-            ? "shadow-[1px_0_0_0_rgba(255,255,255,0.07)]"
-            : "shadow-[1px_0_0_0_rgba(0,0,0,0.08)]"
+            ? "shadow-[4px_0_8px_-2px_rgba(0,0,0,0.5)]"
+            : "shadow-[4px_0_8px_-2px_rgba(0,0,0,0.10)]"
         : "";
-      return clsx(bg, shadow);
+
+      const border = isVisuallyRight
+        ? isDark
+          ? "border-l border-gray-700/60"
+          : "border-l border-gray-200"
+        : isDark
+          ? "border-r border-gray-700/60"
+          : "border-r border-gray-200";
+
+      return clsx(bg, shadow, border);
     },
-    [isDark, isScrolledX],
+    [isDark, isScrolledX, isRTL],
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -325,7 +369,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
         isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white",
       )}
     >
-      {/* InfiniteScroll Loader - placed after table so it appears at bottom */}
       <InfiniteScroll
         dataLength={data?.length || 0}
         next={next || (() => {})}
@@ -339,15 +382,15 @@ export default function ReordableDataTable<T extends Record<string, any>>({
           ref={scrollRef}
           className="w-full overflow-auto"
           style={{
-            maxHeight: "calc(100vh - 400px)", // ← Adjust this as needed
+            maxHeight: "calc(100vh - 400px)",
             scrollbarWidth: "none",
           }}
         >
           <table className="w-full border-collapse min-w-full">
-            {/* Sticky Header */}
+            {/* ── Sticky Header ── */}
             <thead
               className={clsx(
-                "sticky top-0 z-40 border-b", // ← This makes header sticky
+                "sticky top-0 z-40 border-b",
                 isDark
                   ? "bg-gray-900 border-gray-800"
                   : "bg-gray-50 border-gray-200",
@@ -366,8 +409,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   const isOver =
                     dragOverColumn === colKey && draggedColumn !== colKey;
 
+                  // FIX: header pinned cells need z-index above body pinned cells
                   const stickyStyle: React.CSSProperties = isPinned
-                    ? { ...getStickyStyle(colKey), zIndex: 30 }
+                    ? { ...getStickyStyle(colKey), zIndex: 40 }
                     : {};
 
                   return (
@@ -413,8 +457,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                           className={clsx(
                             "cursor-pointer transition-colors",
                             isDark
-                              ? "border-gray-600 data-[state=checked]:bg-teal-500 ... "
-                              : "border-gray-300 data-[state=checked]:bg-teal-600 ...",
+                              ? "border-gray-600 data-[state=checked]:bg-teal-500"
+                              : "border-gray-300 data-[state=checked]:bg-teal-600",
                           )}
                         />
                       ) : (
@@ -442,7 +486,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               </tr>
             </thead>
 
-            {/* Body - scrolls naturally inside the same table */}
+            {/* ── Body ── */}
             <tbody
               className={clsx(
                 "divide-y",
@@ -470,6 +514,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   return (
                     <tr
                       key={idx}
+                      // FIX: only fire row navigation when clicking a non-pinned cell.
+                      // We guard this at the <td> level below instead of stopping
+                      // propagation there, so the tr handler is intentionally simple.
                       onClick={() => onRowClick?.(item)}
                       className={clsx(
                         "group relative transition-colors duration-100",
@@ -488,18 +535,29 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                         if (!column) return <td key={colKey} />;
 
                         const isPinned = PINNED_ALL.has(colKey);
+                        const isPinnedRight = PINNED_RIGHT.has(colKey);
 
                         return (
                           <td
                             key={colKey}
                             style={getStickyStyle(colKey)}
-                            onClick={(e) =>
-                              colKey === "checkbox" && e.stopPropagation()
+                            // FIX: stop propagation on the <td> for checkbox AND
+                            // actions columns so neither triggers row navigation.
+                            // Buttons inside actions already call e.stopPropagation()
+                            // on their own onClick, but this catches clicks on the
+                            // cell padding around them.
+                            onClick={
+                              colKey === "checkbox" || isPinnedRight
+                                ? (e) => e.stopPropagation()
+                                : undefined
                             }
                             className={clsx(
                               "px-4 py-3 text-sm align-middle",
                               isDark ? "text-gray-300" : "text-gray-700",
+                              // FIX: pinned cells get a solid, state-aware background
                               isPinned && getStickyBgClass(colKey, isSelected),
+                              // FIX: mirror the row hover on pinned cells so they
+                              // don't look disconnected while the cursor moves across
                               isPinned && !isSelected && onRowClick
                                 ? isDark
                                   ? "group-hover:bg-gray-800/60"
@@ -535,7 +593,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               <tr>
                 <td
                   colSpan={columnOrder.length}
-                  className=" pt-2 text-center h-80"
+                  className="pt-2 text-center h-80"
                 >
                   {hasMore || isDataLoading ? (
                     <div className="flex items-center flex-col justify-center gap-3 pb-40">
