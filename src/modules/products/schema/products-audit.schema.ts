@@ -24,6 +24,13 @@ export const ProductsAuditSchema = SchemaFactory.createForClass(ProductsAudit);
 ProductsAuditSchema.index({ productId: 1, isActive: 1 });
 ProductsAuditSchema.index({ productId: 1, version: -1 });
 ProductsAuditSchema.index({ slug: 1 });
-ProductsAuditSchema.index({ name: 'text', description: 'text' });
+ProductsAuditSchema.index({
+  name: 'text',
+  nameHe: 'text',
+  nameAr: 'text',
+  description: 'text',
+  descriptionHe: 'text',
+  descriptionAr: 'text',
+});
 
 export type ProductsAuditDocument = HydratedDocument<ProductsAudit>;

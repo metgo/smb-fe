@@ -5,6 +5,12 @@ import { Model } from 'mongoose';
 
 import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import {
+  buildHebrewSearchRegex,
+  normalizeHebrewSearch,
+} from 'src/core/helper/atlas-search.util';
+import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
+import { ConfigService } from 'src/services/config/config.service';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
@@ -16,6 +22,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
     private campaignService: CampaignService,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(queries: GetAllProductsRawQuery): Promise<any> {
@@ -180,11 +187,30 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       if (search) {
+        let expandedTerms: string[] = [];
+        try {
+          const normalizedSearch = normalizeHebrewSearch(search);
+          expandedTerms = await expandSearchTerms(
+            normalizedSearch,
+            this.configService.get('GEMINI_API_KEY'),
+          );
+        } catch (expansionError) {
+          console.warn(
+            '[Search Expansion] Failed in Product Raw Query:',
+            expansionError?.message,
+          );
+        }
+
+        const searchTerms = [search, ...expandedTerms].filter(
+          (t, i, arr) => t && arr.indexOf(t) === i,
+        );
+        const combinedPattern = searchTerms
+          .map(t => buildHebrewSearchRegex(t).source)
+          .join('|');
+        const regex = { $regex: combinedPattern, $options: 'i' };
+
         const matchingCategoryIds = await this.CategoryModel.find({
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { hebrewName: { $regex: search, $options: 'i' } },
-          ],
+          $or: [{ name: regex }, { hebrewName: regex }],
         }).select('_id');
 
         findQuery = {
@@ -193,8 +219,12 @@ implements IQueryHandler<GetAllProductsRawQuery> {
             ...findQuery.$and,
             {
               $or: [
-                { name: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
+                { name: regex },
+                { nameHe: regex },
+                { nameAr: regex },
+                { description: regex },
+                { descriptionHe: regex },
+                { descriptionAr: regex },
                 { categories: { $in: matchingCategoryIds } },
               ],
             },

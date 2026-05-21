@@ -34,6 +34,10 @@ import {
 import { BusinessSharedController } from './shared/controllers/business.controller';
 import { Tags, TagsSchema } from 'src/modules/tags/schema/tags.schema';
 import {
+  BussCategory,
+  BussCategorySchema,
+} from 'src/modules/buss-categories/schema/buss.category.schema';
+import {
   ExternalApi,
   ExternalApiSchema,
 } from 'src/modules/external-api/schema/external-api.schema';
@@ -52,6 +56,7 @@ import { CreateBusinessHandler } from './command/handler/create-business.handler
       { name: 'BusinessAudit', schema: BusinessAuditSchema },
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: Tags.name, schema: TagsSchema },
+      { name: BussCategory.name, schema: BussCategorySchema },
       { name: ExternalApi.name, schema: ExternalApiSchema },
       { name: Campaign.name, schema: CampaignSchema },
     ]),

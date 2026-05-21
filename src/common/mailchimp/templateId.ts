@@ -34,4 +34,5 @@ export const DynamicEmailTemplate = {
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
   InquiryFundayToUser: 'inquiry-funday',
   InquiryFundayToOwner: 'inquiry-funday-for-client',
+  NoSearchResult: 'no-search-result-notification',
 };

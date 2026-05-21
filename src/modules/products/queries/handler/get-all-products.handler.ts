@@ -1,10 +1,19 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 
 import { SortOrder } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
+import {
+  PRODUCTS_SEARCH_INDEX,
+  buildHebrewSearchRegex,
+  normalizeHebrewSearch,
+} from 'src/core/helper/atlas-search.util';
+import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
+import { ConfigService } from 'src/services/config/config.service';
+import { Tags } from 'src/modules/tags/schema/tags.schema';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 import { GetAllProductsQuery } from '../get-all-products.query';
 import { ProductsAudit } from '../../schema/products-audit.schema';
@@ -17,7 +26,12 @@ implements IQueryHandler<GetAllProductsQuery> {
     private queryBus: QueryBus,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
+    @InjectModel(Tags.name)
+    private TagModel: Model<Tags>,
+    @InjectModel(BussCategory.name)
+    private CategoryModel: Model<BussCategory>,
     private readonly productsService: ProductsService,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(queries: GetAllProductsQuery): Promise<any> {
@@ -55,6 +69,11 @@ implements IQueryHandler<GetAllProductsQuery> {
         ),
       );
 
+      // If findQuery returned empty data signal, return early
+      if (findQuery?.data && !findQuery.data.length) {
+        return { totalData: 0, products: [] };
+      }
+
       let select
         = '_id slug name nameHe nameAr description descriptionHe descriptionAr images price quantity businessId groupTypesId accessibilitiesId tagsId categories subCategories productId deliveryArea isPickUpAvailable deliveryAdditionalInfo deliverySpecificSellerInfo deliveryReturnExchange';
 
@@ -81,6 +100,222 @@ implements IQueryHandler<GetAllProductsQuery> {
         populate = queries.customPopulate;
       }
 
+      // Use Atlas Search when search term is provided — with regex fallback
+      if (search) {
+        try {
+          const normalizedSearch = normalizeHebrewSearch(search);
+          const expandedTerms = await expandSearchTerms(
+            normalizedSearch,
+            this.configService.get('GEMINI_API_KEY'),
+          );
+
+          // If the original search had nikud, we should include it explicitly
+          // because the Atlas index might be nikud-sensitive.
+          const searchTerms = [search, ...expandedTerms].filter(
+            (t, i, arr) => t && arr.indexOf(t) === i,
+          );
+
+          const pageNum = Number(page) || 1;
+          const limitNum = Number(limit) || 20;
+          const skip = (pageNum - 1) * limitNum;
+
+          // Search paths for Atlas
+          const searchPaths = [
+            'name',
+            'nameHe',
+            'nameAr',
+            'description',
+            'descriptionHe',
+            'descriptionAr',
+          ];
+
+          // Contextual Search: Find categories matching search terms
+          let matchingCategoryIds: any[] = [];
+          try {
+            const categoryOrQueries = searchTerms
+              .map(t => {
+                const r = buildHebrewSearchRegex(t);
+                return [
+                  { name: { $regex: r.source, $options: 'i' } },
+                  { hebrewName: { $regex: r.source, $options: 'i' } },
+                ];
+              })
+              .flat();
+            matchingCategoryIds = await this.CategoryModel.find({
+              $or: categoryOrQueries,
+            }).select('_id');
+          } catch (catError: any) {
+            console.warn(
+              '[Contextual Search] Failed to fetch matching categories in Products:',
+              catError?.message,
+            );
+          }
+
+          // Contextual Search: Find tags matching search terms
+          let matchingTagIds: any[] = [];
+          try {
+            const tagOrQueries = searchTerms
+              .map(t => {
+                const r = buildHebrewSearchRegex(t);
+                return [
+                  { name: { $regex: r.source, $options: 'i' } },
+                  { nameHe: { $regex: r.source, $options: 'i' } },
+                  { nameAr: { $regex: r.source, $options: 'i' } },
+                ];
+              })
+              .flat();
+            matchingTagIds = await this.TagModel.find({
+              $or: tagOrQueries,
+            }).select('_id');
+          } catch (tagError: any) {
+            console.warn(
+              '[Contextual Search] Failed to fetch matching tags in Products:',
+              tagError?.message,
+            );
+          }
+
+          // Build search clauses for each term
+          const shouldClauses: any[] = searchTerms.map((term, index) => {
+            const isOriginalInput = index === 0;
+            const isNormalizedOriginal = index === 1;
+            const isHighPriority = isOriginalInput || isNormalizedOriginal;
+
+            if (term.includes(' ')) {
+              // Multi-word: use phrase match to avoid splitting on spaces
+              // (prevents false positives like "עץ" matching everything)
+              return {
+                phrase: {
+                  query: term,
+                  path: searchPaths,
+                  slop: 1,
+                  ...(isHighPriority && { score: { boost: { value: 10 } } }),
+                },
+              };
+            }
+
+            // Single word: use text with fuzzy (Atlas tokenizer handles nikud internally for fuzzy matches)
+            return {
+              text: {
+                query: term,
+                path: searchPaths,
+                fuzzy: { maxEdits: 2, prefixLength: 1 },
+                ...(isHighPriority && { score: { boost: { value: 10 } } }),
+              },
+            };
+          });
+
+          // Add category matches to Atlas should clauses
+          matchingCategoryIds.forEach(cat => {
+            shouldClauses.push({
+              text: {
+                query: cat._id.toString(),
+                path: ['categories'],
+              },
+            });
+          });
+
+          // Add tag matches to Atlas should clauses
+          matchingTagIds.forEach(tag => {
+            shouldClauses.push({
+              text: {
+                query: tag._id.toString(),
+                path: ['tagsId'],
+              },
+            });
+          });
+
+          console.log(
+            '[Search] original:',
+            search,
+            '| terms used:',
+            searchTerms.length,
+          );
+
+          const searchStage = {
+            $search: {
+              index: PRODUCTS_SEARCH_INDEX,
+              compound: {
+                should: shouldClauses,
+                minimumShouldMatch: 1,
+              },
+            },
+          };
+
+          // Remove regex search conditions from findQuery — Atlas Search handles it
+          const { $and: andConditions, ...baseQuery } = findQuery;
+          const nonSearchConditions = (andConditions || []).filter(
+            (cond: any) => !cond.$or?.some((o: any) => o.nameHe !== undefined),
+          );
+
+          const matchStage: PipelineStage = {
+            $match: {
+              ...baseQuery,
+              ...(nonSearchConditions.length && { $and: nonSearchConditions }),
+            },
+          };
+
+          const pipeline: PipelineStage[] = [
+            searchStage as any,
+            matchStage,
+            {
+              $sort: {
+                [sortBy || 'createdAt']: sortOrder === SortOrder.ASC ? 1 : -1,
+              },
+            },
+            { $skip: skip },
+            { $limit: limitNum },
+          ];
+
+          const countPipeline: PipelineStage[] = [
+            searchStage as any,
+            matchStage,
+            { $count: 'total' },
+          ];
+
+          const [results, countResult] = await Promise.all([
+            this.ProductsAuditModel.aggregate(pipeline),
+            this.ProductsAuditModel.aggregate(countPipeline),
+          ]);
+
+          const totalData = countResult[0]?.total || 0;
+
+          if (!results.length) {
+            return { totalData: 0, products: [] };
+          }
+
+          const mappedProducts = await Promise.all(
+            results.map((product: any) => {
+              const { _id, productId, ...rest } = product;
+              return { ...rest, _id: productId };
+            }),
+          );
+
+          const localizedProducts = await Promise.all(
+            mappedProducts.map(p => this.productsService.localizeProduct(p, locale)),
+          );
+
+          return {
+            totalData,
+            data: localizedProducts,
+            meta: {
+              page: pageNum,
+              limit: limitNum,
+              data: localizedProducts.length,
+              pageCount: Math.ceil(totalData / limitNum),
+              hasPreviousPage: pageNum > 1,
+              hasNextPage: pageNum < Math.ceil(totalData / limitNum),
+            },
+          };
+        } catch (atlasError: any) {
+          // Atlas Search failed — fall back to regex search silently
+          console.warn(
+            '[Atlas Search] Falling back to regex search:',
+            atlasError?.message,
+          );
+        }
+      }
+
+      // Default path: no search, or Atlas Search fallback
       const productsList = await queryhandler<ProductsAudit>(
         this.ProductsAuditModel,
         {

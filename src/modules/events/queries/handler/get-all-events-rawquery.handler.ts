@@ -3,12 +3,21 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import {
+  buildHebrewSearchRegex,
+  normalizeHebrewSearch,
+} from 'src/core/helper/atlas-search.util';
+import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
+import { ConfigService } from 'src/services/config/config.service';
 import { GetAllEventsRawQuery } from '../get-all-events-rawquery.query';
 
 @QueryHandler(GetAllEventsRawQuery)
 export class GetAllEventsRawQueryHandler
 implements IQueryHandler<GetAllEventsRawQuery> {
-  constructor(private campaignService: CampaignService) {}
+  constructor(
+    private campaignService: CampaignService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async execute(queries: GetAllEventsRawQuery): Promise<any> {
     try {
@@ -92,18 +101,35 @@ implements IQueryHandler<GetAllEventsRawQuery> {
       }
 
       if (search) {
-        findQuery = {
-          ...findQuery,
-          $and: [
-            ...findQuery.$and,
-            {
-              $or: [
-                { name: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
-              ],
-            },
-          ],
-        };
+        let expandedTerms: string[] = [];
+        try {
+          const normalizedSearch = normalizeHebrewSearch(search);
+          expandedTerms = await expandSearchTerms(
+            normalizedSearch,
+            this.configService.get('GEMINI_API_KEY'),
+          );
+        } catch (expansionError) {
+          console.warn(
+            '[Search Expansion] Failed in Event Raw Query:',
+            expansionError?.message,
+          );
+        }
+
+        const searchTerms = [search, ...expandedTerms].filter(
+          (t, i, arr) => t && arr.indexOf(t) === i,
+        );
+        const combinedPattern = searchTerms
+          .map(t => buildHebrewSearchRegex(t).source)
+          .join('|');
+        const regex = { $regex: combinedPattern, $options: 'i' };
+
+        if (!findQuery.$and) {
+          findQuery.$and = [];
+        }
+
+        findQuery.$and.push({
+          $or: [{ name: regex }, { description: regex }],
+        });
       }
 
       return findQuery;

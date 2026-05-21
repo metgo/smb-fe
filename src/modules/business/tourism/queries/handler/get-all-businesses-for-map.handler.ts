@@ -123,7 +123,11 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
           ...findQuery,
           $or: [
             { name: { $regex: search, $options: 'i' } },
+            { nameHe: { $regex: search, $options: 'i' } },
+            { nameAr: { $regex: search, $options: 'i' } },
             { description: { $regex: search, $options: 'i' } },
+            { descriptionHe: { $regex: search, $options: 'i' } },
+            { descriptionAr: { $regex: search, $options: 'i' } },
           ],
         };
       }

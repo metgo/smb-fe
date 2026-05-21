@@ -8,6 +8,7 @@ import { EventSchema } from './schema/events.schema';
 import { MediaModule } from '../media/media.module';
 import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
+import { ConfigModule } from 'src/services/config/config.module';
 import { GetAllEventsHandler } from './queries/handler/get-all-events.handler';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { GetEventBySlugHandler } from './queries/handler/get-event-by-slug.handler';
@@ -30,6 +31,7 @@ import { EventsAudit, EventsAuditSchema } from './schema/events-audit.schema';
     DMOModule,
     GcpBucketModule,
     CampaignModule,
+    ConfigModule,
   ],
   controllers: [EventController],
   providers: [

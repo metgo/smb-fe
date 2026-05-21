@@ -35,7 +35,7 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
     JwtAuthModule,
     MailChimpModule,
     SmsModule,
-    VoucherModule,
+    forwardRef(() => VoucherModule),
   ],
   controllers: [UsersController],
   providers: [UsersService],

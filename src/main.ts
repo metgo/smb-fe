@@ -16,6 +16,7 @@ const API_PORT = configService.get('API_PORT');
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger(winstonConfig),
+    abortOnError: false,
   });
   app.enableCors();
   const seederService = app.get(UsersService);

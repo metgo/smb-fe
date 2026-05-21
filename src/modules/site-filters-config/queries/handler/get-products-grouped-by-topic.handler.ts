@@ -123,7 +123,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       ],
     })
       .select(
-        '_id productId name nameHe nameAr slug shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId',
+        '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId',
       )
       .populate([
         { path: 'businessId', select: '_id logo name nameHe nameAr slug' },
@@ -213,7 +213,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
     const products = await this.ProductsAuditModel.find(findQuery)
       .select(
-        '_id productId name nameHe nameAr slug shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
+        '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
       )
       .populate([
         { path: 'businessId', select: '_id logo name nameHe nameAr slug' },

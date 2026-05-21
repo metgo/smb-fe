@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { ConfigModule } from 'src/services/config/config.module';
 import { UsersModule } from '../users/users.module';
 import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
@@ -43,6 +44,7 @@ import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
       { name: Tags.name, schema: TagsSchema },
       { name: Campaign.name, schema: CampaignSchema },
     ]),
+    ConfigModule,
     UsersModule,
     AuthorityModule,
     DMOModule,
