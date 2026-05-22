@@ -87,7 +87,7 @@ const TopicHeader = ({
   return (
     <div
       className={clsx(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors",
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors w-full min-w-0",
         isDark
           ? "bg-gray-800/70 border-gray-700 text-gray-100"
           : "bg-linear-to-r from-slate-50 to-gray-50 border-gray-200 text-gray-900",
@@ -138,7 +138,7 @@ const TopicHeader = ({
         <>
           <h3
             className={clsx(
-              "flex-1 text-sm font-semibold truncate min-w-60 flex items-center gap-2",
+              "flex-1 text-sm font-semibold truncate min-w-0 flex items-center gap-2",
               isDark ? "text-gray-100" : "text-gray-800",
             )}
           >

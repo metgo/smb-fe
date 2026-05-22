@@ -50,7 +50,12 @@ const ContentConfigHeader = ({
   };
 
   const handleCreateCategory = () => {
-    if (!newCategoryName.trim() || !selectedTopicForNewCategory) return;
+    if (
+      !newCategoryName.trim() ||
+      !selectedTopicForNewCategory ||
+      !newCategoryDescription.trim()
+    )
+      return;
 
     const updated = templateContents.map((topic) => {
       if (topic.topic === selectedTopicForNewCategory) {
@@ -209,7 +214,9 @@ const ContentConfigHeader = ({
               <Button
                 onClick={handleCreateCategory}
                 disabled={
-                  !newCategoryName.trim() || !selectedTopicForNewCategory
+                  !newCategoryName.trim() ||
+                  !selectedTopicForNewCategory ||
+                  !newCategoryDescription.trim()
                 }
                 className="bg-teal-600 hover:bg-teal-700 text-white w-full"
               >
