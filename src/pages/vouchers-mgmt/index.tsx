@@ -1,7 +1,8 @@
+import { useState } from "react";
+
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { VouchersList, CreateVoucherWizard } from "./components";
 import { useGetAllCampaignsQuery } from "@/store/api/masterDataApi";
-import { useState } from "react";
 
 export default function VouchersMgmtPage() {
   const { isDark } = useThemeClasses();

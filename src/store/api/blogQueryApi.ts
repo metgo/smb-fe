@@ -51,6 +51,14 @@ export const blogQueryApi = createApi({
         data,
       }),
     }),
+
+    generateBlogName: builder.mutation<any, any>({
+      query: (data) => ({
+        url: `${endpoints.blogs}/generate-blog-name`,
+        method: "POST",
+        data,
+      }),
+    }),
   }),
 });
 
@@ -61,4 +69,5 @@ export const {
   // useCreateBlogMutation,
   // useUpdateBlogMutation,
   useGenerateSeoMutation,
+  useGenerateBlogNameMutation,
 } = blogQueryApi;

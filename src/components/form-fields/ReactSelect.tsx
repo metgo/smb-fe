@@ -15,7 +15,7 @@ type Props = {
     name: string;
     logo?: string | undefined;
   }[];
-  value?: string;
+  value?: string | null;
   onChange: (value: string) => void;
 
   onSearch?: (keyword: string) => void;

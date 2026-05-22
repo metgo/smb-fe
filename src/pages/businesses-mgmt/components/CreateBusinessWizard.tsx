@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   MapPin,
@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   Truck,
+  LanguagesIcon,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -30,11 +31,16 @@ import {
 } from "./sub-components";
 import { ConfirmDialog, WizardFooter } from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { modelTitle, parseAddress, removeNulls } from "@/helpers";
+import {
+  detectLanguage,
+  modelTitle,
+  parseAddress,
+  removeNulls,
+} from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import {
@@ -43,6 +49,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
+import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -60,12 +67,12 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
-  const [selectedFormLanguage, setSelectedFormLanguage] =
+  const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-
+  const [_detecedLanguage, setDetectedLanguage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
@@ -87,10 +94,7 @@ export default function CreateBusinessWizard({
 
   // Business Media States
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [logoGcsUrl, setLogoGcsUrl] = useState<string>("");
-  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
-    null,
-  );
+  const [deleteTargetLogo, setDeleteTargetLogo] = useState<string | null>(null);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
     allBlacklistIds: [] as string[],
     selectedBlacklistIds: [] as string[],
@@ -106,13 +110,13 @@ export default function CreateBusinessWizard({
     // Step 1
     id: "",
     authority: "",
-    nameEn: "",
+    name: "",
     nameHe: "",
     nameAr: "",
-    shortDescriptionEn: "",
+    shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescriptionEn: "",
+    fullDescription: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     internalNotes: "",
@@ -154,6 +158,47 @@ export default function CreateBusinessWizard({
     // Step 8
     socialMedia: [],
   });
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const name = data.name?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const description = data.description?.trim() || "";
+
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = name || shortDescription || description;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    setDetectedLanguage(detectedLang);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.nameHe = name || data.nameHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.descriptionHe = description || data.descriptionHe;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.nameAr = name || data.nameAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.descriptionAr = description || data.descriptionAr;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -171,32 +216,52 @@ export default function CreateBusinessWizard({
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
 
   const {
-    image: logoImage,
-    handleImageSelect: handleLogoImageSelect,
-    uploadImage: uploadLogoImage,
-    confirmDelete: confirmDeleteLogo,
-    deleteTarget: deleteTargetLogo,
-    setDeleteTarget: setDeleteTargetLogo,
-    isImageDeleting: isLogoImageDeleting,
-    handleDeleteImage: handleDeleteLogoImage,
-  } = useSingleImageUpload({
-    initialImage: businessLogoImage?.image,
-    onChange: setBusinessLogoImage,
+    previewUrl: logoPreviewUrl,
+    gcsUrl: logoGcsUrl,
+    progress: logoProgress,
+    status: logoStatus,
+    isDeleting: isLogoImageDeleting,
+    handleFileSelect: handleLogoImageSelect,
+    deleteFile: deleteLogoFile,
+    reset: resetLogo,
+  } = useFileUpload({
+    initialUrl: opMode === IOpMode.EDIT ? editData?.logo?.image : undefined,
   });
+
+  const logoImage: IImageUpload | null = logoPreviewUrl
+    ? {
+        id: 0,
+        previewUrl: logoPreviewUrl,
+        gcsURL: logoGcsUrl,
+        progress: logoProgress,
+        status: logoStatus as IImageUpload["status"],
+      }
+    : null;
+
+  const handleDeleteLogoImage = (img: IImageUpload) => {
+    if (img.status !== "success") {
+      resetLogo();
+      return;
+    }
+    if (img.gcsURL) setDeleteTargetLogo(img.gcsURL);
+  };
+
+  const confirmDeleteLogo = async () => {
+    await deleteLogoFile();
+    setDeleteTargetLogo(null);
+  };
 
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
   const [initBusinessCreate, { isLoading: isCreating }] =
@@ -212,7 +277,7 @@ export default function CreateBusinessWizard({
       {
         weight: 10,
         filled: !!(
-          formData.nameEn?.trim() ||
+          formData.name?.trim() ||
           formData.nameHe?.trim() ||
           formData.nameAr?.trim()
         ),
@@ -220,7 +285,7 @@ export default function CreateBusinessWizard({
       {
         weight: 10,
         filled: !!(
-          formData.shortDescriptionEn?.trim() ||
+          formData.shortDescription?.trim() ||
           formData.shortDescriptionHe?.trim() ||
           formData.shortDescriptionAr?.trim()
         ),
@@ -228,7 +293,7 @@ export default function CreateBusinessWizard({
       {
         weight: 10,
         filled: !!(
-          formData.fullDescriptionEn?.trim() ||
+          formData.fullDescription?.trim() ||
           formData.fullDescriptionHe?.trim() ||
           formData.fullDescriptionAr?.trim()
         ),
@@ -242,7 +307,7 @@ export default function CreateBusinessWizard({
       { weight: 10, filled: !!formData.primaryCategory?.trim() },
       { weight: 5, filled: formData.tags?.length > 0 },
       // Media (10%)
-      { weight: 5, filled: !!(logoImage || businessLogoImage) },
+      { weight: 5, filled: !!logoPreviewUrl },
       { weight: 5, filled: (images?.length ?? 0) > 0 },
       // Operating Hours (5%)
       { weight: 5, filled: formData.operatingHours?.length > 0 },
@@ -258,7 +323,7 @@ export default function CreateBusinessWizard({
       0,
     );
     return Math.round((earned / total) * 100);
-  }, [formData, address, images, logoImage, businessLogoImage]);
+  }, [formData, address, images, logoPreviewUrl]);
 
   useEffect(() => {
     if (userRole === "authority") {
@@ -272,7 +337,7 @@ export default function CreateBusinessWizard({
     if (editData && businessId) {
       const loadedFormData = {
         //basic info
-        nameEn:
+        name:
           opMode === IOpMode.DUPLICATE
             ? `${editData?.name || ""} (Duplicate)`
             : editData?.name || "",
@@ -285,12 +350,12 @@ export default function CreateBusinessWizard({
             ? `${editData?.nameAr || ""} (نسخ)`
             : editData?.nameAr || "",
 
-        shortDescriptionEn: editData?.shortDescription || "",
-        shortDescriptionHe: editData?.shortDescriptionAr || "",
-        shortDescriptionAr: editData?.shortDescriptionHe || "",
-        fullDescriptionEn: editData?.description || "",
-        fullDescriptionHe: editData?.descriptionAr || "",
-        fullDescriptionAr: editData?.descriptionHe || "",
+        shortDescription: editData?.shortDescription || "",
+        shortDescriptionHe: editData?.shortDescriptionHe || "",
+        shortDescriptionAr: editData?.shortDescriptionAr || "",
+        fullDescription: editData?.description || "",
+        fullDescriptionHe: editData?.descriptionHe || "",
+        fullDescriptionAr: editData?.descriptionAr || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
@@ -377,29 +442,35 @@ export default function CreateBusinessWizard({
         setAddress(formatted);
       }
 
+      if (editData?.geoLocation) {
+        setGeo({
+          lat: String(editData.geoLocation.lat),
+          lng: String(editData.geoLocation.lng),
+        });
+      }
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images);
-        setBusinessLogoImage({ image: editData?.logo?.image });
       } else {
         setGalleryImages([]);
-        setBusinessLogoImage(null);
       }
     }
   }, [editData, opMode, businessId]);
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: t("step_contact_ownership"), icon: Users },
-    { number: 3, title: t("step_location"), icon: MapPin },
-    { number: 4, title: t("step_attributes"), icon: Tag },
-    { number: 5, title: t("step_media"), icon: ImageIcon },
-    { number: 6, title: t("step_operating_hours"), icon: Clock },
-    { number: 7, title: t("step_delivery_policy"), icon: Truck },
-    { number: 8, title: t("step_online_info"), icon: Globe },
-    { number: 9, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 2, title: tc("translation"), icon: LanguagesIcon },
+
+    { number: 3, title: t("step_contact_ownership"), icon: Users },
+    { number: 4, title: t("step_location"), icon: MapPin },
+    { number: 5, title: t("step_attributes"), icon: Tag },
+    { number: 6, title: t("step_media"), icon: ImageIcon },
+    { number: 7, title: t("step_operating_hours"), icon: Clock },
+    { number: 8, title: t("step_delivery_policy"), icon: Truck },
+    { number: 9, title: t("step_online_info"), icon: Globe },
+    { number: 10, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   // Draft Save Payload per Step
@@ -407,13 +478,13 @@ export default function CreateBusinessWizard({
     // step 1:
     authorityId: selectedAuthorityId,
     // dmoId: selectedDmoId,
-    name: formData.nameEn,
+    name: formData.name,
     nameAr: formData.nameAr,
     nameHe: formData.nameHe,
-    shortDescription: formData.shortDescriptionEn,
+    shortDescription: formData.shortDescription,
     shortDescriptionAr: formData.shortDescriptionAr,
     shortDescriptionHe: formData.shortDescriptionHe,
-    description: formData.fullDescriptionEn,
+    description: formData.fullDescription,
     descriptionAr: formData.fullDescriptionAr,
     descriptionHe: formData.fullDescriptionHe,
     internalNotes: formData.internalNotes,
@@ -450,7 +521,7 @@ export default function CreateBusinessWizard({
     // subcategories: formData.subcategories,
     // serviceType: formData.serviceType,
     //  step 5
-    logo: editData ? businessLogoImage : { image: logoGcsUrl },
+    logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
     openingHrs: formData.operatingHours,
@@ -484,19 +555,19 @@ export default function CreateBusinessWizard({
     switch (step) {
       case 1:
         if (
-          !formData.nameEn?.trim() &&
+          !formData.name?.trim() &&
           !formData.nameAr?.trim() &&
           !formData.nameHe?.trim()
         )
           newErrors.name = t("required_field");
         if (
-          !formData.shortDescriptionEn?.trim() &&
+          !formData.shortDescription?.trim() &&
           !formData.shortDescriptionAr?.trim() &&
           !formData.shortDescriptionHe?.trim()
         )
           newErrors.shortDescription = t("required_field");
         if (
-          !formData.fullDescriptionEn?.trim() &&
+          !formData.fullDescription?.trim() &&
           !formData.fullDescriptionAr?.trim() &&
           !formData.fullDescriptionHe?.trim()
         )
@@ -543,12 +614,6 @@ export default function CreateBusinessWizard({
     onClose();
   };
   const handleNext = async () => {
-    // if (!validateStep(currentStep) && isPublishBtnClicked) return;
-    if (currentStep === 5) {
-      const logoUrl = await uploadLogoImage();
-      setLogoGcsUrl(logoUrl);
-      await uploadAll();
-    }
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -557,10 +622,15 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (
+      !formData.name?.trim() &&
+      !formData.nameHe?.trim() &&
+      !formData.nameAr?.trim()
+    ) {
+      toast.error(tt("name_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
-    const logoUrl = await uploadLogoImage();
-    setLogoGcsUrl(logoUrl);
-    await uploadAll();
     await saveDraft(false);
     if (businessId) {
       await createWebsiteAccessItem({
@@ -593,7 +663,9 @@ export default function CreateBusinessWizard({
         itemId: businessId,
       });
     }
-    await saveDraft(true);
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+
+    await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
 
@@ -657,8 +729,6 @@ export default function CreateBusinessWizard({
         return (
           <BusinessBasicInfos
             {...commonProps}
-            selectedFormLanguage={selectedFormLanguage}
-            setSelectedFormLanguage={setSelectedFormLanguage}
             businessId={businessId}
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
@@ -669,9 +739,18 @@ export default function CreateBusinessWizard({
             businessAssociatedWebsites={editData?.associatedWebsites ?? []}
           />
         );
+
       case 2:
-        return <BusinessContactOwership {...commonProps} />;
+        return (
+          <BusinessTranslateButton
+            formData={formData}
+            onChange={handleChange}
+          />
+        );
+
       case 3:
+        return <BusinessContactOwership {...commonProps} />;
+      case 4:
         return (
           <BusinessLocation
             {...commonProps}
@@ -682,16 +761,16 @@ export default function CreateBusinessWizard({
           />
         );
 
-      case 4:
+      case 5:
         return (
           <Attributes
             selectedFormLanguage={selectedFormLanguage}
             editData={editData}
             {...commonProps}
-            name={formData.nameEn || formData.nameHe || formData.nameAr}
+            name={formData.name || formData.nameHe || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
-              formData.fullDescriptionEn ||
+              formData.fullDescription ||
               formData.fullDescriptionAr
             }
             formData={formData}
@@ -702,15 +781,15 @@ export default function CreateBusinessWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 5:
-        return <Media {...mediaProps} business={editData} isBusiness={true} />;
       case 6:
-        return <BusinessOpeningHours {...commonProps} />;
+        return <Media {...mediaProps} business={editData} isBusiness={true} />;
       case 7:
-        return <DeliveryPolicyOption {...commonProps} />;
+        return <BusinessOpeningHours {...commonProps} />;
       case 8:
-        return <BusinessOnlinePresence {...commonProps} />;
+        return <DeliveryPolicyOption {...commonProps} />;
       case 9:
+        return <BusinessOnlinePresence {...commonProps} />;
+      case 10:
         return (
           <BusinessReviewSubmit
             {...commonProps}

@@ -23,6 +23,7 @@ interface UploadZoneProps {
   urlValue: string;
   onUrlChange: (v: string) => void;
   onFileSelect: (file: File) => void;
+  required?: boolean;
 }
 
 export default function UploadZone({
@@ -42,6 +43,7 @@ export default function UploadZone({
   urlValue,
   onUrlChange,
   onFileSelect,
+  required = true,
 }: UploadZoneProps) {
   const { t } = useTranslation("promotions");
   const {
@@ -72,7 +74,7 @@ export default function UploadZone({
       <div className="flex items-center gap-2">
         <Icon className={`w-4 h-4 ${textSecondary}`} />
         <span className={`text-sm font-semibold ${textPrimary}`}>{label}</span>
-        <span className="text-red-500 text-sm">*</span>
+        {required && <span className="text-red-500 text-sm">*</span>}
       </div>
 
       {/* ── URL input ─────────────────────────────────────────────────── */}

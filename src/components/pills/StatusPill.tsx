@@ -6,7 +6,7 @@ const StatusPill = ({ status }: { status: string }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
 
-  const st = status.toLowerCase();
+  const st = status?.toLowerCase() || "pending";
 
   let colorClass: string;
   switch (st) {

@@ -19,8 +19,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ProductAvailabilityDetails,
   ProductInfoDetails,
-  ProductInventoryDetails,
-  ProductPricingDetails,
+  ProductPricingInventoryDetails,
 } from "./components";
 import {
   useGetProductbyIdQuery,
@@ -33,7 +32,6 @@ import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { CreateProductWizard } from "../components";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { productTabs } from "@/constants/tabs";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 import {
   AttributesDetails,
   DeliveryPolicyOptionDetails,
@@ -85,7 +83,6 @@ export default function ProductDetailsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -127,27 +124,6 @@ export default function ProductDetailsPage() {
     setOpMode(mode);
   };
 
-  const {
-    images,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-
-  useEffect(() => {
-    if (product) {
-      setGalleryImages(product?.images ?? []);
-    }
-  }, [product]);
-
   const onStatusChangeHandler = async (status: string) => {
     if (productId)
       try {
@@ -167,16 +143,11 @@ export default function ProductDetailsPage() {
   const renderContent = () => {
     const commonProps = { t, language, product };
     const mediaProps = {
-      t,
-      images,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
+      logoImage: null,
+      images: (product?.images ?? []).map((img: IImage) => ({
+        previewUrl: img.image,
+      })),
+      primaryImageIndex: 0,
     };
     switch (activeTab) {
       case "overview":
@@ -190,10 +161,8 @@ export default function ProductDetailsPage() {
             tags={product?.tagsId}
           />
         );
-      case "pricing":
-        return <ProductPricingDetails {...commonProps} />;
-      case "inventory":
-        return <ProductInventoryDetails {...commonProps} />;
+      case "pricing_inventory":
+        return <ProductPricingInventoryDetails {...commonProps} />;
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
@@ -206,150 +175,136 @@ export default function ProductDetailsPage() {
   };
 
   return (
-    <div
-      className={`h-[calc(100vh-64px)] overflow-y-auto ${
-        isDark ? "bg-gray-950" : "bg-gray-50"
-      }`}
-    >
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isLoading} />
 
-      {/* Fixed Header */}
-      <div
-        className={`sticky top-0 z-10 ${
-          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
-        } border-b`}
-      >
-        <div className="max-w-full mx-auto px-6 py-2">
-          <div className={clsx("flex items-center justify-between mb-4")}>
+      {/* Action bar */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <button
+          onClick={() => navigate(routes.productsMgmt)}
+          className={clsx(
+            "flex items-center gap-2 py-2 rounded-lg transition-colors",
+            isDark
+              ? "hover:bg-gray-800 text-gray-300"
+              : "hover:bg-gray-100 text-gray-700",
+          )}
+        >
+          {isRTL ? (
+            <ArrowRight className="w-5 h-5" />
+          ) : (
+            <ArrowLeft className="w-5 h-5" />
+          )}
+          <span>{ct("back_to_list") || "Back"}</span>
+        </button>
+
+        <div className="flex items-center gap-3">
+          <StatusChangeBtn
+            status={product?.status}
+            handleStatusChange={onStatusChangeHandler}
+          />
+          <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => navigate(routes.productsMgmt)}
-              className={clsx(
-                "flex items-center gap-2 py-2 rounded-lg transition-colors",
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                 isDark
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-100 text-gray-700",
-              )}
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
             >
-              {isRTL ? (
-                <ArrowRight className="w-5 h-5" />
-              ) : (
-                <ArrowLeft className="w-5 h-5" />
-              )}
-              <span>{ct("back_to_list") || "Back"}</span>
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="text-sm font-medium">Actions</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
-            <div className={clsx("flex items-center gap-3")}>
-              <>
-                <StatusChangeBtn
-                  status={product?.status}
-                  handleStatusChange={onStatusChangeHandler}
+            {isDropdownOpen && (
+              <div
+                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <button
+                  onClick={() => {
+                    handleEdit(IOpMode.EDIT);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-indigo-400 hover:bg-gray-800"
+                      : "text-indigo-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <Edit className="w-4 h-4 shrink-0" />
+                  {t("edit") || "Edit"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleEdit(IOpMode.DUPLICATE);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Copy className="w-4 h-4 shrink-0" />
+                  {t("duplicate") || "Duplicate"}
+                </button>
+
+                <div
+                  className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
                 />
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setIsDropdownOpen((prev) => !prev)}
-                    className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                      isDark
-                        ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                        : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-                    }`}
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                    <span className="text-sm font-medium">Actions</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
 
-                  {isDropdownOpen && (
-                    <div
-                      className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700"
-                          : "bg-white border-gray-200"
-                      }`}
-                    >
-                      {/* Edit */}
-                      <button
-                        onClick={() => {
-                          handleEdit(IOpMode.EDIT);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                          isDark
-                            ? "text-indigo-400 hover:bg-gray-800"
-                            : "text-indigo-600 hover:bg-gray-50"
-                        }`}
-                      >
-                        <Edit className="w-4 h-4 shrink-0" />
-                        {t("edit") || "Edit"}
-                      </button>
-
-                      {/* Duplicate */}
-                      <button
-                        onClick={() => {
-                          handleEdit(IOpMode.DUPLICATE);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                          isDark
-                            ? "text-gray-300 hover:bg-gray-800"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <Copy className="w-4 h-4 shrink-0" />
-                        {t("duplicate") || "Duplicate"}
-                      </button>
-
-                      {/* Divider */}
-                      <div
-                        className={`mx-3 my-1 border-t ${isDark ? "border-gray-700" : "border-gray-100"}`}
-                      />
-
-                      {/* View Business */}
-                      <button
-                        onClick={() => {
-                          onViewBusiness();
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
-                          isDark
-                            ? "text-gray-300 hover:bg-gray-800"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <Eye className="w-4 h-4 shrink-0" />
-                        {t("view_business")}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
-            </div>
+                <button
+                  onClick={() => {
+                    onViewBusiness();
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Eye className="w-4 h-4 shrink-0" />
+                  {t("view_business")}
+                </button>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          <DetailTitleSection
-            {...product}
-            imageSrc={product?.images?.[0]?.image}
-          />
-          <PageStats
-            stats={salesStats}
-            isLoading={isStatsLoading}
-            className={`grid  grid-cols-2 lg:grid-cols-3 gap-2 mt-4`}
-          />
+      {/* Title + Stats */}
+      <div className="details-top shrink-0">
+        <DetailTitleSection
+          {...product}
+          imageSrc={product?.images?.[0]?.image}
+        />
+        <PageStats
+          stats={salesStats}
+          isLoading={isStatsLoading}
+          className="grid grid-cols-2 lg:grid-cols-3 gap-2 my-4"
+        />
+      </div>
 
+      {/* Tabs + scrollable content */}
+      <div className="mt-6 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0">
           <TabsSection
             tabs={productTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-      </div>
-
-      {/* Content */}
-      <div
-        className={`${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} rounded-xl border p-6 my-6 max-w-full`}
-      >
-        {renderContent()}
+        <div className="details-content flex-1 overflow-y-auto min-h-0">
+          {renderContent()}
+        </div>
       </div>
 
       {isEditOpen && (

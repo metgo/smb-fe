@@ -41,7 +41,7 @@ export function useBusinessDraftSaver({
 
   // 🔹 Save Draft (manual or autosave)
   const saveDraft = useCallback(
-    async (isPublish = false) => {
+    async (isPublish = false, processedFormData?: any) => {
       try {
         let internalbusinessId;
 
@@ -52,7 +52,7 @@ export function useBusinessDraftSaver({
           setBusinessId(res?.id);
         }
         // 2️⃣ Build base payload
-        let payload = stepPayloadMap;
+        let payload = processedFormData || stepPayloadMap;
 
         // 3️⃣ If publishing, override status
         if (isPublish) {

@@ -165,7 +165,7 @@ export default function CreatePromotionWizard({
       return;
     }
 
-    if (!desktopUpload.gcsUrl || !mobileUpload.gcsUrl) {
+    if (!desktopUpload.gcsUrl) {
       toast.error(tToast("promotion_media_required"));
       return;
     }

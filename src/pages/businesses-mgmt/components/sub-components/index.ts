@@ -6,6 +6,7 @@ import BusinessMedia from "./BusinessMedia";
 import BusinessOnlinePresence from "./BusinessOnlinePresence";
 import BusinessOpeningHours from "./BusinessOpeningHours";
 import BusinessReviewSubmit from "./BusinessReviewSubmit";
+import { BusinessContentForm } from "./BusinesscontentForm";
 
 export {
   BusinessAttributes,
@@ -16,4 +17,5 @@ export {
   BusinessOnlinePresence,
   BusinessOpeningHours,
   BusinessReviewSubmit,
+  BusinessContentForm,
 };

@@ -8,7 +8,7 @@
   "reset": "Reset",
   "export": "Export",
   "no_blogs_to_export": "No blogs to export",
-
+  "please_select_website_before_publishing": "Please select a website before publishing.",
   "title": "Title",
   "subTitle": "Subtitle",
   "subtitle": "Subtitle",
@@ -22,6 +22,13 @@
   "preview": "Preview",
   "externalApi": "Website",
 
+  "translation": "Translation",
+  "translate_hint": "Enter text to translate",
+  "content": "Content",
+  "form": "Form",
+  "seo": "SEO",
+  "review": "Review",
+  "auto_translate": "Auto Translate",
   "loading_article": "Loading article...",
   "article_not_found": "Article not found.",
   "back_to_articles": "Back to Articles",
@@ -63,9 +70,11 @@
   "delete": "Delete",
 
   "characters": "characters",
-  "title_placeholder": "Enter article title...",
+  "title_placeholder": "Enter title...",
   "subtitle_placeholder": "Enter subtitle...",
   "short_description_placeholder": "Enter a brief description shown in previews and search results...",
+  "full_description_placeholder": "Enter the full description content here...",
+  "full_description": "Full Description",
 
   "settings": "Settings",
   "auto_seo": "Auto SEO",

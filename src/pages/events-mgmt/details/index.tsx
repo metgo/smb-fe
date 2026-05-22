@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
+import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
 
 import {
   EventDateTimeDetails,
@@ -20,7 +20,6 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
@@ -52,12 +51,11 @@ export default function EventDetailsPage() {
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
 
-  const { isDark, bgPrimary } = useThemeClasses();
+  const { bgPrimary } = useThemeClasses();
 
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
   ]);
@@ -78,25 +76,9 @@ export default function EventDetailsPage() {
 
   useEffect(() => {
     if (eventDetails) {
-      setGalleryImages(eventDetails?.images ?? []);
       setEventDays(eventDetails?.dayDescription ?? []);
     }
   }, [eventDetails]);
-
-  const {
-    images,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useImagesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
 
   const handleClose = () => {
     setIsEditOpen(false);
@@ -160,16 +142,10 @@ export default function EventDetailsPage() {
   const renderContent = () => {
     const commonProps = { t, eventDetails };
     const mediaProps = {
-      t,
-      images,
-      primaryImageIndex,
-      setPrimaryImage,
-      handleImageUpload,
-      deleteTarget,
-      setDeleteTarget,
-      isImageDeleting,
-      confirmDelete,
-      handleDeleteImage,
+      images: (eventDetails?.images ?? []).map((img: IImage) => ({
+        previewUrl: img.image,
+      })),
+      primaryImageIndex: 0,
     };
 
     switch (activeTab) {
@@ -221,56 +197,57 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isLoading || isFetching} />
-      {/* Sticky Header */}
-      <div
-        className={clsx(
-          "sticky top-0 z-20 border-b shrink-0",
-          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
-        )}
-      >
-        {/* Top controls row */}
-        <div className="px-6 pt-4 pb-3 flex items-center justify-between">
-          <BackToListBtn navPath={routes.eventsMgmt} />
-          <div className="flex items-center gap-3">
-            <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={eventDetails?.status}
-            />
-            <button
-              onClick={() => setIsEditOpen(true)}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
-            >
-              <Edit className="w-4 h-4" />
-              {t("edit")}
-            </button>
-          </div>
+
+      {/* Action bar */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <BackToListBtn navPath={routes.eventsMgmt} />
+        <div className="flex items-center gap-3">
+          <StatusChangeBtn
+            handleStatusChange={onStatusChangeHandler}
+            status={eventDetails?.status}
+          />
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+          >
+            <Edit className="w-4 h-4" />
+            {t("edit")}
+          </button>
         </div>
+      </div>
 
-        {/* Title & Tabs */}
-        <div className="px-6 pb-3">
-          <DetailTitleSection
-            {...eventDetails}
-            imageSrc={eventDetails?.images?.[0]?.image}
-          />
-          <PageStats
-            stats={singleEventStats}
-            isLoading={isStatsLoading}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 my-6"
-          />
+      {/* Title + Stats */}
+      <div className="details-top shrink-0">
+        <DetailTitleSection
+          {...eventDetails}
+          imageSrc={eventDetails?.images?.[0]?.image}
+        />
+        <PageStats
+          stats={singleEventStats}
+          isLoading={isStatsLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 pt-4 pb-1"
+        />
+      </div>
 
+      {/* Tabs + scrollable content */}
+      <div className="flex flex-col flex-1 min-h-0 mt-2">
+        <div className="shrink-0">
           <TabsSection
             tabs={eventTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-      </div>
-
-      {/* Scrollable Content */}
-      <div className={clsx("flex-1 overflow-y-auto", bgPrimary)}>
-        <div className="py-3 px-2">{renderContent()}</div>
+        <div
+          className={clsx(
+            "details-content flex-1 overflow-y-auto min-h-0",
+            bgPrimary,
+          )}
+        >
+          <div className="py-3 px-2">{renderContent()}</div>
+        </div>
       </div>
 
       {/* Edit Modal */}

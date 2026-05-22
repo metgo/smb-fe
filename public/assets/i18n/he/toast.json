@@ -5,12 +5,17 @@
   "draft_saved": "הטיוטה נשמרה",
   "draft_failed": "שמירת הטיוטה נכשלה",
   "fill_all_fields": "יש למלא את כל השדות הנדרשים לפני ההמשך",
+  "name_required": "אנא הזן שם לפני השמירה",
   "image_upload_info": "העלאת התמונה החלה. אנא המתן…",
   "image_upload_success": "התמונה הועלתה בהצלחה",
   "image_upload_failed": "העלאת התמונה נכשלה",
-  "image_deleted": "התמונה נמחקה בהצלחה",
   "delete_failed": "מחיקת התמונה נכשלה",
   "login_failed": "התחברות נכשלה",
+
+  "poi_delete_loading": "מוחק נקודות עניין...",
+  "poi_deleted_success": "נקודות העניין נמחקו בהצלחה",
+  "poi_delete_failed": "מחיקת נקודות העניין נכשלה",
+
   "business_delete_loading": "אנא המתן. העסקים נמחקים…",
   "business_deleted_success": "העסקים נמחקו בהצלחה",
   "business_delete_failed": "מחיקת העסקים נכשלה",
@@ -35,6 +40,9 @@
   "product_status_change_loading": "אנא המתן. סטטוס המוצר משתנה…",
   "product_status_update_success": "סטטוס המוצרים עודכן בהצלחה",
   "product_status_update_failed": "כישלון בשינוי סטטוס המוצרים",
+  "product_quantity_change_loading": "אנא המתן. כמות המוצר מתעדכנת…",
+  "product_quantity_update_success": "כמות המוצר עודכנה בהצלחה",
+  "product_quantity_update_failed": "עדכון כמות המוצר נכשל",
 
   "promotion_created_success": "המבצע נוצר בהצלחה",
   "promotion_create_failed": "יצירת המבצע נכשלה",

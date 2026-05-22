@@ -29,10 +29,14 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
+import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
 import {
@@ -43,6 +47,7 @@ import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import { VendorReconciliationMgmt } from "./pages/vendor-reconcilation-mgmt";
+import { UserRole } from "./enums/user.types";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -66,12 +71,8 @@ const handleGoogleOAuthCallback = (): boolean => {
         );
       }
 
-      // Clean up URL by removing userData param
-      urlParams.delete("userData");
-      const newUrl = urlParams.toString()
-        ? `${window.location.pathname}?${urlParams.toString()}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      // Redirect to auth route so ProtectedRoute handles role-based redirects (traveller → business)
+      window.history.replaceState({}, "", routes.auth);
 
       return true;
     } catch (error) {
@@ -160,6 +161,11 @@ function App() {
           if (user) {
             dispatch(loginSuccess(user));
           }
+          if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
+            window.location.href = routes.businessMgmt;
+          } else {
+            window.location.href = routes.dashboard;
+          }
         } catch (error) {
           console.error(
             "Error updating Redux state after Google login:",
@@ -175,14 +181,29 @@ function App() {
     isLoginPage = false,
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
+    const userInfo = sessionStorage.getItem("user_info");
 
+    let user: any = null;
+    if (userInfo) {
+      try {
+        user = JSON.parse(userInfo).user;
+      } catch (e) {
+        console.error("Failed to parse user_info");
+      }
+    }
+
+    // If user is on login page
     if (isLoginPage) {
-      if (isLoggedIn) {
+      if (isLoggedIn && user) {
+        if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
+          return <Navigate to={routes.businessMgmt} replace />;
+        }
         return <Navigate to={routes.dashboard} replace />;
       }
       return children;
     }
 
+    // Normal protected routes
     if (!isLoggedIn) {
       return <Navigate to={routes.auth} replace />;
     }
@@ -236,6 +257,9 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
+        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+        { path: routes.poiDetails, element: <PoiDetailsPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
@@ -244,7 +268,10 @@ function App() {
       element: (
         <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
-            <Outlet />
+            <>
+              <RouterProgressBar />
+              <Outlet />
+            </>
           </ProtectedRoute>
         </Suspense>
       ),
