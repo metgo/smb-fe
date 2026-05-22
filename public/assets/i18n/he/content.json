@@ -31,12 +31,18 @@
   "business_removed_from_category": "עסק הוסר מהקטגוריה",
   "drag_businesses_here_to_add_them_to_this_category": "גרור עסקים לכאן כדי להוסיף אותם לקטגוריה זו",
   "rename_category": "שנה שם קטגוריה",
+  "show_category": "הצג קטגוריה",
+  "hide_category": "הסתר קטגוריה",
+  "set_primary_category": "הגדר כראשית",
+  "unset_primary_category": "בטל ראשית",
   "delete_category": "מחק קטגוריה",
   "delete_category_confirm": "כל העסקים בקטגוריה זו יימחקו אף הם",
 
   "delete_topic_confirm": "כל הקטגוריות הקשורות לנושא זה יימחקו גם כן",
   "topic_deleted": "הנושא נמחק בהצלחה",
   "select_website": "בחר אתר",
+  "select_website_first": "בחר אתר לניהול התוכן שלך",
+  "select_website_first_subtitle": "בחר אתר מהפאנל הימני כדי להתחיל",
 
   "content_manager_title": "מנהל תוכן",
   "content_manager_description": "ארגן עסקים לקטגוריות מותאמות אישית עבור חלקי האתר שלך",

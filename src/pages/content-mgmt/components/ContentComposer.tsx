@@ -25,7 +25,7 @@ interface ContentComposerProps {
   isExpanded: boolean;
   contentStatus: TStatus;
   setHeader: (v: string) => void;
-  externalApiId: string;
+  externalApiId: string | null;
   templateContentId: string | null;
   setExternalApiId: (v: string) => void;
   onStatusChangeHandler: (v: TStatus) => void;
@@ -265,7 +265,7 @@ const TopicBlock = ({
               )}
             >
               <Layers className="w-3 h-3" />
-              {topic.groups.length} {t("categories")}
+              {topic.groups.length}
             </span>
           </div>
         </div>

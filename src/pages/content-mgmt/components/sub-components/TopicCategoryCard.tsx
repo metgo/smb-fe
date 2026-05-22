@@ -1,17 +1,18 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useDrop } from "react-dnd";
-import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Check,
   ChevronDown,
-  Edit2,
   Eye,
   EyeClosed,
+  MoreVertical,
   Star,
   Trash2,
   X,
@@ -54,6 +55,9 @@ const TopicCategoryCard = ({
     categoryIndex: number;
   } | null>(null);
 
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const iconPickerRef = useRef<HTMLDivElement>(null);
   const iconPanelRef = useRef<HTMLDivElement>(null);
@@ -63,6 +67,17 @@ const TopicCategoryCard = ({
     left?: number;
     right?: number;
   } | null>(null);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setShowMenu(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMenu]);
 
   // Close icon picker on outside click — check both trigger and portal panel
   useEffect(() => {
@@ -502,9 +517,12 @@ const TopicCategoryCard = ({
 
               <div className="flex items-center gap-2">
                 <h3
+                  onClick={() => setEditing(true)}
                   className={clsx(
-                    "text-lg font-semibold flex items-center gap-2 w-80",
-                    isDark ? "text-gray-100" : "text-gray-900",
+                    "text-lg font-semibold flex items-center gap-2 w-80 cursor-pointer rounded px-1 -mx-1 transition-colors",
+                    isDark
+                      ? "text-gray-100 hover:bg-gray-700/60"
+                      : "text-gray-900 hover:bg-gray-200/60",
                   )}
                 >
                   {group.category}
@@ -520,71 +538,99 @@ const TopicCategoryCard = ({
           )}
         </div>
 
-        <div className="flex">
+        <div ref={menuRef} className="relative shrink-0">
           <Button
-            size="sm"
             variant="ghost"
-            onClick={() => setEditing(true)}
-            title="Rename"
+            size="sm"
+            onClick={() => setShowMenu((v) => !v)}
             className={clsx(
+              "h-7 w-7 p-0 rounded-md transition-colors",
               isDark
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-500 hover:bg-gray-200",
+                ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                : "text-gray-400 hover:text-gray-700 hover:bg-gray-100",
             )}
           >
-            <Edit2 className="w-4 h-4" />
+            <MoreVertical className="w-4 h-4" />
           </Button>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => toggleCategoryVisibility(topicIndex, categoryIndex)}
-            title="Visibility"
-            className={clsx(
-              isDark
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-500 hover:bg-gray-200",
-            )}
-          >
-            {group.isHideCategory ? (
-              <EyeClosed className="w-4 h-4 opacity-50" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={togglePrimary}
-            title="Set primary"
-            className={clsx(
-              isDark
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-500 hover:bg-gray-200",
-            )}
-          >
-            <Star
+          {showMenu && (
+            <div
               className={clsx(
-                "w-4 h-4",
-                group.isPrimary
-                  ? "text-yellow-400 fill-yellow-400"
-                  : "text-gray-400 hover:bg-gray-200",
+                "absolute right-0 top-8 z-50 w-44 rounded-lg border shadow-lg overflow-hidden",
+                isDark
+                  ? "bg-gray-800 border-gray-700"
+                  : "bg-white border-gray-200",
               )}
-            />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => requestDeleteCategory(topicIndex, categoryIndex)}
-            title="Delete"
-            className={clsx(
-              isDark
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-500 hover:bg-gray-200",
-            )}
-          >
-            <Trash2 className="w-4 h-4 text-red-500" />
-          </Button>
+            >
+              <button
+                className={clsx(
+                  "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                  isDark
+                    ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                )}
+                onClick={() => {
+                  toggleCategoryVisibility(topicIndex, categoryIndex);
+                  setShowMenu(false);
+                }}
+              >
+                {group.isHideCategory ? (
+                  <Eye className="w-3.5 h-3.5 shrink-0" />
+                ) : (
+                  <EyeClosed className="w-3.5 h-3.5 shrink-0" />
+                )}
+                {group.isHideCategory ? t("show_category") : t("hide_category")}
+              </button>
+
+              <button
+                className={clsx(
+                  "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                  isDark
+                    ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                )}
+                onClick={() => {
+                  togglePrimary();
+                  setShowMenu(false);
+                }}
+              >
+                <Star
+                  className={clsx(
+                    "w-3.5 h-3.5 shrink-0",
+                    group.isPrimary
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-400",
+                  )}
+                />
+                {group.isPrimary
+                  ? t("unset_primary_category")
+                  : t("set_primary_category")}
+              </button>
+
+              <div
+                className={clsx(
+                  "mx-3 my-1 h-px",
+                  isDark ? "bg-gray-700" : "bg-gray-100",
+                )}
+              />
+
+              <button
+                className={clsx(
+                  "w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                  isDark
+                    ? "text-red-400 hover:bg-gray-700 hover:text-red-300"
+                    : "text-red-600 hover:bg-red-50 hover:text-red-700",
+                )}
+                onClick={() => {
+                  setShowMenu(false);
+                  requestDeleteCategory(topicIndex, categoryIndex);
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                {t("delete_category")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

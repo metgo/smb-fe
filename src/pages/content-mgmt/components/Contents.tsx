@@ -314,12 +314,38 @@ const Contents = ({
                       {option}
                     </span>
                     {isTabLoading ? (
-                      <span
-                        className={clsx(
-                          "w-5 h-3 rounded animate-pulse inline-block",
-                          isDark ? "bg-gray-600" : "bg-gray-300",
-                        )}
-                      />
+                      <span className="flex items-center gap-px">
+                        <span
+                          className={clsx(
+                            "w-1 h-1 rounded-full animate-bounce [animation-delay:0ms]",
+                            isSelected
+                              ? "bg-teal-500"
+                              : isDark
+                                ? "bg-gray-400"
+                                : "bg-gray-400",
+                          )}
+                        />
+                        <span
+                          className={clsx(
+                            "w-1 h-1 rounded-full animate-bounce [animation-delay:150ms]",
+                            isSelected
+                              ? "bg-teal-500"
+                              : isDark
+                                ? "bg-gray-400"
+                                : "bg-gray-400",
+                          )}
+                        />
+                        <span
+                          className={clsx(
+                            "w-1 h-1 rounded-full animate-bounce [animation-delay:300ms]",
+                            isSelected
+                              ? "bg-teal-500"
+                              : isDark
+                                ? "bg-gray-400"
+                                : "bg-gray-400",
+                          )}
+                        />
+                      </span>
                     ) : (
                       <span
                         className={clsx(

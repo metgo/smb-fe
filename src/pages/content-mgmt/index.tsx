@@ -145,19 +145,19 @@ export default function ContentMgmtPage() {
 
   const { isDark, language, isRTL } = useThemeClasses();
 
-  const { dmoId, authorityId, startDate, endDate } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [viewMode, setViewMode] = useState<TViewMode>(
     (localStorage.getItem("contentViewMode") as TViewMode) ?? "grid",
   );
   const [header, setHeader] = useState("<p></p>");
-  const [externalApiId, setExternalApiId] = useState("");
+  const [externalApiId, setExternalApiId] = useState<string | null>(null);
   const [contentStatus, setContentStatus] = useState<TStatus>("draft");
   const [templateContentId, setTemplateContentId] = useState<string | null>(
     null,
   );
+
+  const [isApiIdChanging, setIsApiIdChanging] = useState(false);
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
@@ -205,7 +205,6 @@ export default function ContentMgmtPage() {
   const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
     initialTemplateContent,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ templateContents:", templateContents);
 
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
@@ -216,12 +215,44 @@ export default function ContentMgmtPage() {
   const [focus, setFocus] = useState<PanelFocus>("both");
   const [page, setPage] = useState(1);
 
+  const [productPage, setProductPage] = useState(1);
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+
+  const defaultTabState: TabState = {
+    searchQuery: "",
+    filters: {
+      hasProductFilter: "all",
+      primaryCategory: "all",
+      businessId: "",
+      registrationFilter: "",
+      eventTypeFilter: "",
+      dateRangeFilter: {
+        start: "",
+        end: "",
+      },
+      isTrip: "all",
+    },
+  };
+
+  // Replace the single page/search state with per-tab state
+  const [tabState, setTabState] = useState<Record<string, TabState>>({
+    Businesses: { ...defaultTabState },
+    Products: { ...defaultTabState },
+    Trips: { ...defaultTabState },
+    Events: { ...defaultTabState },
+    POI: { ...defaultTabState },
+  });
+
   const initializedRef = useRef(false);
   const businessInitializedRef = useRef(false);
   const productInitializedRef = useRef(false);
 
-  // Reset state immediately when externalApiId changes to avoid stale templateContentId
+  // Reset all state when externalApiId changes (new site selection = clean slate)
   useEffect(() => {
+    if (!externalApiId) return;
+    setIsApiIdChanging(true);
+    if (selected === "Products") setSelected("Businesses");
     initializedRef.current = false;
     businessInitializedRef.current = false;
     productInitializedRef.current = false;
@@ -229,6 +260,73 @@ export default function ContentMgmtPage() {
     setTemplateContentId(null);
     setContentStatus("draft");
     setTemplateContent(initialTemplateContent);
+    setSelectedBacklogIds(new Set());
+    setPage(1);
+    setProductPage(1);
+    setCombinedBusinesses([]);
+    setCombinedProducts([]);
+    setTabState({
+      Businesses: {
+        searchQuery: "",
+        filters: {
+          hasProductFilter: "all",
+          primaryCategory: "all",
+          businessId: "",
+          registrationFilter: "",
+          eventTypeFilter: "",
+          dateRangeFilter: { start: "", end: "" },
+          isTrip: "all",
+        },
+      },
+      Products: {
+        searchQuery: "",
+        filters: {
+          hasProductFilter: "all",
+          primaryCategory: "all",
+          businessId: "",
+          registrationFilter: "",
+          eventTypeFilter: "",
+          dateRangeFilter: { start: "", end: "" },
+          isTrip: "all",
+        },
+      },
+      Trips: {
+        searchQuery: "",
+        filters: {
+          hasProductFilter: "all",
+          primaryCategory: "all",
+          businessId: "",
+          registrationFilter: "",
+          eventTypeFilter: "",
+          dateRangeFilter: { start: "", end: "" },
+          isTrip: "all",
+        },
+      },
+      Events: {
+        searchQuery: "",
+        filters: {
+          hasProductFilter: "all",
+          primaryCategory: "all",
+          businessId: "",
+          registrationFilter: "",
+          eventTypeFilter: "",
+          dateRangeFilter: { start: "", end: "" },
+          isTrip: "all",
+        },
+      },
+      POI: {
+        searchQuery: "",
+        filters: {
+          hasProductFilter: "all",
+          primaryCategory: "all",
+          businessId: "",
+          registrationFilter: "",
+          eventTypeFilter: "",
+          dateRangeFilter: { start: "", end: "" },
+          isTrip: "all",
+        },
+      },
+    });
   }, [externalApiId]);
 
   // Recreate initialTemplateContent when dmoId or authorityId changes
@@ -298,47 +396,21 @@ export default function ContentMgmtPage() {
     }
   }, [templateContentsData, externalApiId]);
 
-  const defaultTabState: TabState = {
-    searchQuery: "",
-    filters: {
-      hasProductFilter: "all",
-      primaryCategory: "all",
-      businessId: "",
-      registrationFilter: "",
-      eventTypeFilter: "",
-      dateRangeFilter: {
-        start: "",
-        end: "",
-      },
-      isTrip: "all",
-    },
-  };
-  // Replace the single page/search state with per-tab state
-  const [tabState, setTabState] = useState<Record<string, TabState>>({
-    Businesses: { ...defaultTabState },
-    Products: { ...defaultTabState },
-    Trips: { ...defaultTabState },
-    Events: { ...defaultTabState },
-    POI: { ...defaultTabState },
-  });
   const businessTab = tabState["Businesses"];
   const productTab = tabState["Products"];
   const tripTab = tabState["Trips"];
   const eventTab = tabState["Events"];
   const poiTab = tabState["POI"];
 
-  const [productPage, setProductPage] = useState(1);
-
   const businessParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Businesses"];
     const params: any = {
       dmoId,
-      startDate,
-      endDate,
       authorityId,
       locale: language,
       status: "APPROVED",
       page,
+      externalApiId,
       limit: BUSINESS_PAGE_LIMIT,
     };
     if (searchQuery) params.search = searchQuery;
@@ -347,7 +419,7 @@ export default function ContentMgmtPage() {
     if (filters.primaryCategory !== "all")
       params.primaryCategory = filters.primaryCategory;
     return params;
-  }, [businessTab, dmoId, startDate, endDate, authorityId, language, page]);
+  }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
 
   const productParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Products"];
@@ -355,6 +427,7 @@ export default function ContentMgmtPage() {
       status: "APPROVED",
       dmoId,
       authorityId,
+      externalApiId,
       limit: BUSINESS_PAGE_LIMIT,
       page: productPage,
     };
@@ -411,14 +484,11 @@ export default function ContentMgmtPage() {
     return params;
   }, [poiTab, language, dmoId, authorityId]);
 
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
-  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
-
   const {
     data: businessData,
     isLoading,
     isFetching,
-  } = useGetAllbusinessesQuery(businessParams);
+  } = useGetAllbusinessesQuery(externalApiId ? businessParams : skipToken);
 
   const businessHasMore = businessData?.meta?.hasNextPage;
 
@@ -430,13 +500,13 @@ export default function ContentMgmtPage() {
     businessTab.filters,
     dmoId,
     authorityId,
-    startDate,
-    endDate,
+    externalApiId,
   ]);
 
   useEffect(() => {
     if (!businessData?.data) return;
     if (page === 1) {
+      setIsApiIdChanging(false);
       setCombinedBusinesses(businessData.data);
     } else {
       setCombinedBusinesses((prev) => {
@@ -459,7 +529,7 @@ export default function ContentMgmtPage() {
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
   } = useGetAllProductsQuery(
-    selected === "Products" ? productParams : skipToken,
+    selected === "Products" && externalApiId ? productParams : skipToken,
   );
 
   const productHasMore = productData?.meta?.hasNextPage;
@@ -831,7 +901,7 @@ export default function ContentMgmtPage() {
     <DndProvider backend={HTML5Backend}>
       <div
         className={clsx(
-          "h-[86vh] transition-colors flex flex-col p-2",
+          "h-[86vh] transition-colors flex flex-col p-2 rounded-2xl",
           isDark ? "bg-gray-900" : "bg-gray-50",
         )}
       >
@@ -937,46 +1007,81 @@ export default function ContentMgmtPage() {
                       posClass={isRTL ? "left-0" : "right-0"}
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                     />
-                    <Contents
-                      currentTab={currentTab}
-                      selected={selected}
-                      setSelected={setSelected}
-                      isExpanded={focus === "both"}
-                      viewMode={viewMode}
-                      setViewMode={setViewMode}
-                      totalData={
-                        selected === "Products"
-                          ? productData?.totalData
-                          : active?.rawData?.totalData
-                      }
-                      tabCounts={{
-                        Businesses: businessData?.totalData ?? 0,
-                        Products: productData?.totalData ?? 0,
-                        Trips: tripData?.totalData ?? 0,
-                        Events: eventData?.totalData ?? 0,
-                        POI: Array.isArray(poiData)
-                          ? poiData.length
-                          : (poiData?.totalData ?? 0),
-                      }}
-                      tabLoadings={{
-                        Businesses: isLoading,
-                        Products: isLoadingProduct,
-                        Trips: isLoadingTrip,
-                        Events: isLoadingEvent,
-                        POI: isLoadingPOI,
-                      }}
-                      combinedBusinesses={combinedItems}
-                      clearFilter={clearFilter}
-                      filters={filters}
-                      setFilters={setFilters}
-                      searchQuery={searchQuery} //  per-tab
-                      setSearchQuery={setSearchQuery} //  per-tab
-                      isLoading={active.isLoading}
-                      loadMore={active?.loadMore}
-                      hasMore={active?.hasMore}
-                      templateContents={templateContents}
-                      setTemplateContent={setTemplateContent}
-                    />
+                    {!externalApiId ? (
+                      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={clsx(
+                            "w-20 h-20 opacity-30",
+                            isDark ? "text-gray-400" : "text-gray-400",
+                          )}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.2}
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        <p
+                          className={clsx(
+                            "text-base font-semibold",
+                            isDark ? "text-gray-400" : "text-gray-500",
+                          )}
+                        >
+                          {t("select_website_first")}
+                        </p>
+                        <p
+                          className={clsx(
+                            "text-sm",
+                            isDark ? "text-gray-600" : "text-gray-400",
+                          )}
+                        >
+                          {t("select_website_first_subtitle")}
+                        </p>
+                      </div>
+                    ) : (
+                      <Contents
+                        currentTab={currentTab}
+                        selected={selected}
+                        setSelected={setSelected}
+                        isExpanded={focus === "both"}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        totalData={
+                          selected === "Products"
+                            ? productData?.totalData
+                            : active?.rawData?.totalData
+                        }
+                        tabCounts={{
+                          Businesses: businessData?.totalData ?? 0,
+                          Products: productData?.totalData ?? 0,
+                          Trips: tripData?.totalData ?? 0,
+                          Events: eventData?.totalData ?? 0,
+                          POI: Array.isArray(poiData)
+                            ? poiData.length
+                            : (poiData?.totalData ?? 0),
+                        }}
+                        tabLoadings={{
+                          Businesses: isLoading || isApiIdChanging,
+                          Products: isLoadingProduct || isApiIdChanging,
+                          Trips: isLoadingTrip,
+                          Events: isLoadingEvent,
+                          POI: isLoadingPOI,
+                        }}
+                        combinedBusinesses={combinedItems}
+                        clearFilter={clearFilter}
+                        filters={filters}
+                        setFilters={setFilters}
+                        searchQuery={searchQuery} //  per-tab
+                        setSearchQuery={setSearchQuery} //  per-tab
+                        isLoading={active.isLoading}
+                        loadMore={active?.loadMore}
+                        hasMore={active?.hasMore}
+                        templateContents={templateContents}
+                        setTemplateContent={setTemplateContent}
+                      />
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
