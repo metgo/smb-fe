@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -13,6 +13,7 @@ import {
   Eye,
   CreditCard,
   FileText,
+  LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
@@ -40,12 +41,13 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { modelTitle, removeNulls } from "@/helpers";
+import { detectLanguage, modelTitle, removeNulls } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
+import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -64,6 +66,9 @@ export default function CreateProductWizard({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
+
+  const { t: tp } = useTranslation("common");
+  const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
   const { isTraveller } = useUserRoles();
@@ -170,13 +175,13 @@ export default function CreateProductWizard({
 
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
-    nameEn: "",
+    name: "",
     nameHe: "",
     nameAr: "",
     shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescriptionEn: "",
+    fullDescription: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     type: "",
@@ -204,7 +209,9 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -382,11 +389,13 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: t("product_segmentation"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: CreditCard },
-    { number: 4, title: t("product_media"), icon: ImageIcon },
-    { number: 5, title: t("product_delivery_service"), icon: Truck },
-    { number: 6, title: t("product_review"), icon: Eye },
+    { number: 2, title: tp("translation"), icon: LanguagesIcon },
+
+    { number: 3, title: t("product_segmentation"), icon: Package },
+    { number: 4, title: t("product_pricing"), icon: CreditCard },
+    { number: 5, title: t("product_media"), icon: ImageIcon },
+    { number: 6, title: t("product_delivery_service"), icon: Truck },
+    { number: 7, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -427,6 +436,14 @@ export default function CreateProductWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (
+      !formData.name?.trim() &&
+      !formData.nameHe?.trim() &&
+      !formData.nameAr?.trim()
+    ) {
+      toast.error(tc("name_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
   };
@@ -461,12 +478,51 @@ export default function CreateProductWizard({
       toast.error(t("fill_all_fields"));
       return;
     }
-    setIsPublishing(true);
 
-    await saveDraft(true);
+    setIsPublishing(true);
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+
+    await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const name = data.name?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const description = data.description?.trim() || "";
 
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = name || shortDescription || description;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    setDetectedLanguage(detectedLang);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.nameHe = name || data.nameHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.descriptionHe = description || data.descriptionHe;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.nameAr = name || data.nameAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.descriptionAr = description || data.descriptionAr;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
   // Draft Save Payload per Step
   const stepPayloadMap = {
     completionPercent: completionPercent,
@@ -514,7 +570,7 @@ export default function CreateProductWizard({
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
   };
 
-  const saveDraft = async (isPublish = false) => {
+  const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
       let internalProductId;
 
@@ -527,7 +583,7 @@ export default function CreateProductWizard({
       }
 
       // Only send payload for the current step
-      const payload = stepPayloadMap;
+      const payload = processedFormData;
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
@@ -600,11 +656,15 @@ export default function CreateProductWizard({
         );
       case 2:
         return (
+          <ProductTranslateButton formData={formData} onChange={handleChange} />
+        );
+      case 3:
+        return (
           <Attributes
-            name={formData.nameHe || formData.nameEn || formData.nameAr}
+            name={formData.nameHe || formData.name || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
-              formData.fullDescriptionEn ||
+              formData.fullDescription ||
               formData.fullDescriptionAr
             }
             {...commonProps}
@@ -616,11 +676,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 3:
-        return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <Media {...mediaProps} {...commonProps} />;
+        return <ProductPricingAvailability {...commonProps} />;
       case 5:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 6:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -630,7 +690,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={setIsSameAsBusiness}
           />
         );
-      case 6:
+      case 7:
         return (
           <ProductReviewSubmit
             {...commonProps}

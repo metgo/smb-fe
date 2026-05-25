@@ -25,7 +25,7 @@ interface ContentComposerProps {
   isExpanded: boolean;
   contentStatus: TStatus;
   setHeader: (v: string) => void;
-  externalApiId: string;
+  externalApiId: string | null;
   templateContentId: string | null;
   setExternalApiId: (v: string) => void;
   onStatusChangeHandler: (v: TStatus) => void;
@@ -112,6 +112,28 @@ const TopicBlock = ({
     };
 
     setTemplateContent(updated);
+  };
+
+  const handleColorChange = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, colors } : t)),
+    );
+  };
+
+  const handleApplyColorToChildren = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) =>
+        i === topicIndex
+          ? { ...t, groups: t.groups.map((g) => ({ ...g, colors })) }
+          : t,
+      ),
+    );
+  };
+
+  const handleIconChange = (topicIndex: number, icon: string) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, icon } : t)),
+    );
   };
 
   const handleToggleTopic = (templateIndex: number) => {
@@ -218,10 +240,15 @@ const TopicBlock = ({
                 name: topic.topic,
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
+                colors: topic.colors,
+                icon: topic.icon,
               }}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
+              onColorChange={handleColorChange}
+              onApplyColorToChildren={handleApplyColorToChildren}
+              onIconChange={handleIconChange}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />
@@ -238,7 +265,7 @@ const TopicBlock = ({
               )}
             >
               <Layers className="w-3 h-3" />
-              {topic.groups.length} {t("categories")}
+              {topic.groups.length}
             </span>
           </div>
         </div>

@@ -81,6 +81,17 @@ export function Signup({ setCurrentTab }: SignupProps) {
     <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
+          {/* Logo & site name */}
+          <div className="flex flex-col items-center">
+            <div className="w-30 h-30 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
+              <img
+                src="/assets/images/metgologo.png"
+                alt="Metgo"
+                className="w-30"
+              />
+            </div>
+          </div>
+
           <AuthHeader
             title="register"
             desc="already_have_account"

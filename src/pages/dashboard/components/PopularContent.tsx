@@ -340,28 +340,30 @@ export default function PopularContent() {
           title={t("popular_content")}
         />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <PopularCard
-          title={t("popular_businesses")}
-          icon={<Building2 className="w-5 h-5 text-white" />}
-          items={popularBusinesses}
-          metricLabel={t("total_views")}
-          navPath="/businesses-management"
-        />
-        <PopularCard
-          title={t("popular_products")}
-          icon={<Package className="w-5 h-5 text-white" />}
-          items={popularProducts}
-          metricLabel={t("total_purchases")}
-          navPath="/products-management"
-        />
-        <PopularCard
-          title={t("popular_pois")}
-          icon={<Monitor className="w-5 h-5 text-white" />}
-          items={popularPois}
-          metricLabel={t("page_views")}
-          navPath="/pois-management"
-        />
+      <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="grid grid-flow-col auto-cols-[280px] gap-6 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+          <PopularCard
+            title={t("popular_businesses")}
+            icon={<Building2 className="w-5 h-5 text-white" />}
+            items={popularBusinesses}
+            metricLabel={t("total_views")}
+            navPath="/businesses-management"
+          />
+          <PopularCard
+            title={t("popular_products")}
+            icon={<Package className="w-5 h-5 text-white" />}
+            items={popularProducts}
+            metricLabel={t("total_purchases")}
+            navPath="/products-management"
+          />
+          <PopularCard
+            title={t("popular_pois")}
+            icon={<Monitor className="w-5 h-5 text-white" />}
+            items={popularPois}
+            metricLabel={t("page_views")}
+            navPath="/pois-management"
+          />
+        </div>
       </div>
     </section>
   );

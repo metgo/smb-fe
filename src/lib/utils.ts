@@ -1,6 +1,16 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { routes } from "./routes";
+import { UserRole } from "@/enums/user.types";
+import {
+  User,
+  Shield,
+  ShieldCheck,
+  Map,
+  MapPin,
+  Building2,
+  Building,
+} from "lucide-react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -42,6 +52,7 @@ export const categories: Record<string, string> = {
 
 export const itemEndpoint: Record<string, string> = {
   BUSINESS: routes.businessDetails,
+  POI: routes.poiDetails,
   PRODUCT: routes.productDetails,
   EVENT: routes.eventDetails,
 };
@@ -94,4 +105,14 @@ export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
   "seller_info_option7",
   "seller_info_option8",
   "seller_info_option9",
+];
+
+export const ROLE_TABS = [
+  { id: UserRole.SUPERADMIN, label: "Super Admins", icon: ShieldCheck },
+  { id: UserRole.ADMIN, label: "Admins", icon: Shield },
+  { id: UserRole.DMOADMIN, label: "DMO Admins", icon: MapPin },
+  { id: UserRole.DMO, label: "DMOs", icon: Map },
+  { id: UserRole.AUTHORITY_ADMIN, label: "Authority Admins", icon: Building },
+  { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
+  { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
 ];

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Building2,
@@ -124,6 +124,88 @@ const CATEGORY_ICONS = {
   culture: Landmark,
 };
 
+function StatusSelect({
+  status,
+  setStatus,
+  isDark,
+  tc,
+}: {
+  status: string;
+  setStatus: (v: string) => void;
+  isDark: boolean;
+  tc: (key: string) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = itemStatuses.find((s) => s.value === status);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={clsx(
+          "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm border focus:outline-none",
+          isDark
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-gray-50 border-gray-300 text-gray-900",
+        )}
+      >
+        {tc(selected?.label ?? "")}
+        <ChevronDown
+          className={clsx(
+            "w-3 h-3 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={clsx(
+            "absolute top-full right-0 mt-1 z-50 rounded-lg border shadow-lg min-w-full overflow-hidden",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          {itemStatuses.map((s) => (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => {
+                setStatus(s.value);
+                setOpen(false);
+              }}
+              className={clsx(
+                "w-full text-left px-3 py-2 text-sm transition-colors",
+                s.value === status
+                  ? isDark
+                    ? "bg-gray-700 text-white"
+                    : "bg-gray-100 text-gray-900"
+                  : isDark
+                    ? "text-gray-300 hover:bg-gray-700"
+                    : "text-gray-700 hover:bg-gray-50",
+              )}
+            >
+              {tc(s.label)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface DistributionCardProps {
   title: string;
   icon: React.ReactNode;
@@ -197,6 +279,13 @@ export function DistributionCard({
               </p>
             </div>
           </div>
+
+          <StatusSelect
+            status={status}
+            setStatus={setStatus}
+            isDark={isDark}
+            tc={tc}
+          />
         </div>
         <div className="h-80 flex items-center justify-center">
           <p className={isDark ? "text-gray-400" : "text-gray-500"}>
@@ -250,35 +339,16 @@ export function DistributionCard({
         </div>
 
         {/* ===== Status Select ===== */}
-        <div className="relative">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className={clsx(
-              "appearance-none rounded-lg px-3 py-1.5 pr-8 text-sm border focus:outline-none",
-              isDark
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-gray-50 border-gray-300 text-gray-900",
-            )}
-          >
-            {itemStatuses?.map((s) => (
-              <option key={s.value} value={s.value}>
-                {tc(s.label)}
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            className={clsx(
-              "absolute top-1/2 right-2 -translate-y-1/2 w-3 h-3 pointer-events-none",
-              isDark ? "text-gray-400" : "text-gray-500",
-            )}
-          />
-        </div>
+        <StatusSelect
+          status={status}
+          setStatus={setStatus}
+          isDark={isDark}
+          tc={tc}
+        />
       </div>
 
       {/* ===== Chart ===== */}
-      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
+      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-16 pt-16">
         {/* Background */}
         <div
           className={clsx(
@@ -290,7 +360,7 @@ export function DistributionCard({
         />
 
         {/* Grid */}
-        <div className="absolute inset-0 flex flex-col justify-between pb-12 pt-16 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col justify-between pb-16 pt-16 pointer-events-none">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -322,8 +392,8 @@ export function DistributionCard({
           return (
             <div
               key={index}
-              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer"
-              style={{ height: "100%", minWidth: 40, maxWidth: 80 }}
+              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer min-w-7 max-w-12 sm:min-w-10 sm:max-w-20"
+              style={{ height: "100%" }}
               onMouseEnter={() => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
@@ -383,12 +453,7 @@ export function DistributionCard({
                 )}
 
                 {/* Value tooltip - shows actual count */}
-                <div
-                  className={clsx(
-                    "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
-                    isActive ? "opacity-100" : "opacity-0",
-                  )}
-                >
+                <div className="absolute -top-20 left-0 lg:hidden">
                   <div
                     className={clsx(
                       "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
@@ -418,14 +483,14 @@ export function DistributionCard({
                 </div>
 
                 {/* Percentage - shows actual percentage */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+                <div className="absolute bottom-3 md:left-2 -left-2 z-10">
                   <span
                     className={clsx(
-                      "px-2 py-0.5 rounded-full text-xs font-bold shadow-md transition-all",
+                      "block px-2 py-0.5 rounded-full text-xs font-bold shadow-md",
                       isDark
                         ? "bg-gray-900 text-white"
                         : "bg-white text-gray-900",
-                      isActive ? "scale-110" : "scale-100",
+                      "transform rotate-45 md:rotate-0",
                     )}
                   >
                     {item?.percentage}%
@@ -434,10 +499,11 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-16">
+              <div className="absolute -bottom-6 left-4 z-30">
                 <span
                   className={clsx(
-                    "text-xs font-bold line-clamp-2",
+                    "transform rotate-45 md:rotate-0",
+                    "block whitespace-nowrap text-xs font-bold",
                     isDark ? "text-gray-300" : "text-gray-700",
                   )}
                 >
@@ -509,36 +575,38 @@ export default function DistributionCards() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <DistributionCard
-          status={bzStatus}
-          setStatus={setBzStatus}
-          title={t("businesses")}
-          icon={<Building2 className="w-5 h-5 text-white" />}
-          total={businessData?.total}
-          data={businessData?.byCategory}
-          isLoading={isBzStatsLoading}
-        />
+      <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="grid grid-flow-col auto-cols-[280px] gap-3 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+          <DistributionCard
+            status={bzStatus}
+            setStatus={setBzStatus}
+            title={t("businesses")}
+            icon={<Building2 className="w-5 h-5 text-white" />}
+            total={businessData?.total}
+            data={businessData?.byCategory}
+            isLoading={isBzStatsLoading}
+          />
 
-        <DistributionCard
-          status={productStatus}
-          setStatus={setProductStatus}
-          title={t("products")}
-          icon={<Package className="w-5 h-5 text-white" />}
-          total={productData?.total}
-          data={productData?.byCategory}
-          isLoading={isProductStatsLoading}
-        />
+          <DistributionCard
+            status={productStatus}
+            setStatus={setProductStatus}
+            title={t("products")}
+            icon={<Package className="w-5 h-5 text-white" />}
+            total={productData?.total}
+            data={productData?.byCategory}
+            isLoading={isProductStatsLoading}
+          />
 
-        <DistributionCard
-          status={poiStatus}
-          setStatus={setPoiStatus}
-          title={t("pois")}
-          icon={<MapPin className="w-5 h-5 text-white" />}
-          total={poiData?.total}
-          data={poiData?.byCategory}
-          isLoading={isPoiStatsLoading}
-        />
+          <DistributionCard
+            status={poiStatus}
+            setStatus={setPoiStatus}
+            title={t("pois")}
+            icon={<MapPin className="w-5 h-5 text-white" />}
+            total={poiData?.total}
+            data={poiData?.byCategory}
+            isLoading={isPoiStatsLoading}
+          />
+        </div>
       </div>
     </section>
   );

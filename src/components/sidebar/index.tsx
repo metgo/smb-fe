@@ -33,10 +33,11 @@ import {
   UserRoundCog,
   Handshake,
   Gift,
+  ChevronLeft,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
-import { toggleSidebar } from "@/features/uiSlice";
+import { toggleSidebar, setMobileSidebarOpen } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -60,9 +61,10 @@ export default function Sidebar() {
 
   const { isDark, isRTL } = useThemeClasses();
   const { isTraveller, isSuperadmin } = useUserRoles();
-  const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
-
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
+    (state) => state.ui,
+  );
+  const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -112,10 +114,10 @@ export default function Sidebar() {
     },
     {
       id: "poi",
-      path: routes.pointOfInterest,
+      path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "trips",
@@ -174,6 +176,13 @@ export default function Sidebar() {
           path: routes.contentMgmt,
           label: t("content_mgmt") || "Content Management",
           icon: Layers2,
+          isEnabled: true,
+        },
+        {
+          id: "website-settings",
+          path: routes.websiteMgmt,
+          label: t("website_settings") || "Website Settings",
+          icon: Settings,
           isEnabled: true,
         },
         {
@@ -280,10 +289,10 @@ export default function Sidebar() {
         },
         {
           id: "users",
-          path: routes.dashboard,
+          path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "documents",
@@ -314,15 +323,18 @@ export default function Sidebar() {
   };
 
   const handleItemClick = (item: MenuItem, hasSubItems: boolean) => {
-    // Prevent navigation if item is disabled
     if (!item.isEnabled) {
       return;
     }
 
     if (hasSubItems) {
       toggleExpanded(item.path, item.id);
+    } else {
+      if (isMobileSidebarOpen) {
+        dispatch(setMobileSidebarOpen(false));
+      }
+      navigate(item.path);
     }
-    navigate(item.path);
   };
 
   const isItemActive = (path: string) =>
@@ -340,7 +352,7 @@ export default function Sidebar() {
     const ChevronIcon = isRTL
       ? expanded
         ? ChevronDown
-        : ChevronRight
+        : ChevronLeft
       : expanded
         ? ChevronDown
         : ChevronRight;
@@ -364,12 +376,10 @@ export default function Sidebar() {
                 : isDark
                   ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-          } ${isSidebarCollapsed ? "justify-center" : ""}`}
+          } ${!showLabels ? "justify-center" : ""}`}
         >
-          <Icon
-            className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}
-          />
-          {!isSidebarCollapsed && (
+          <Icon className={`${!showLabels ? "w-5 h-5" : "w-4 h-4"} shrink-0`} />
+          {showLabels && (
             <>
               <span
                 className={`flex-1 ${isRTL ? "text-right" : "text-left"} text-sm truncate`}
@@ -384,7 +394,7 @@ export default function Sidebar() {
         </button>
 
         {/* Sub-items */}
-        {!isSidebarCollapsed && hasSubItems && expanded && !isDisabled && (
+        {showLabels && hasSubItems && expanded && !isDisabled && (
           <div
             ref={(el) => {
               subItemsRefs.current[item.id] = el;
@@ -403,10 +413,10 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Overlay */}
-      {isMobileOpen && (
+      {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
 
@@ -416,28 +426,45 @@ export default function Sidebar() {
           fixed
           top-20
           h-[calc(100vh-5rem)]
-          ${isSidebarCollapsed ? "w-16" : "w-64"}
+          w-64
+          ${isSidebarCollapsed ? "lg:w-16" : "lg:w-64"}
           transition-all duration-300
           flex flex-col
           border-r
-          z-30
-          ${
-            isDark
-              ? "bg-gray-900/50 border-gray-800"
-              : "bg-white border-gray-200"
-          }
+          z-40
+          ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
+          ${
+            isRTL
+              ? isMobileSidebarOpen
+                ? "translate-x-0"
+                : "translate-x-full lg:translate-x-0"
+              : isMobileSidebarOpen
+                ? "translate-x-0"
+                : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         {/* Toggle Button */}
         <div
-          className={`p-4 border-b ${
-            isDark ? "border-gray-800" : "border-gray-200"
-          }`}
+          className={`p-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
         >
+          {/* Mobile: close button */}
+          <button
+            onClick={() => dispatch(setMobileSidebarOpen(false))}
+            className={`lg:hidden w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
+              isDark
+                ? "hover:bg-gray-800 text-gray-300"
+                : "hover:bg-gray-100 text-gray-700"
+            }`}
+            title="Close sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {/* Desktop: collapse button */}
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className={`w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
+            className={`hidden lg:flex w-full cursor-pointer items-center justify-center p-2 rounded-lg transition-colors ${
               isDark
                 ? "hover:bg-gray-800 text-gray-300"
                 : "hover:bg-gray-100 text-gray-700"
@@ -461,14 +488,15 @@ export default function Sidebar() {
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin),
+                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
+                  !(sub.id === "users" && !isSuperadmin),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}
         </nav>
 
         {/* Footer */}
-        {!isSidebarCollapsed && (
+        {showLabels && (
           <div
             className={`p-4 border-t text-center ${
               isDark ? "border-gray-800" : "border-gray-200"

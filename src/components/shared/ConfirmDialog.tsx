@@ -2,6 +2,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { AlertTriangle, Info, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { createPortal } from "react-dom";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -68,9 +69,9 @@ export default function ConfirmDialog({
   const vc = variantConfig[variant];
   const Icon = variant === "info" ? Info : AlertTriangle;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
       onClick={onCancel}
     >
       <div
@@ -154,6 +155,7 @@ export default function ConfirmDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

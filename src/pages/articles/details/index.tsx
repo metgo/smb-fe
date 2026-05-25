@@ -1,21 +1,25 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Edit,
   ExternalLink,
   FileText,
   Globe,
   Image as ImageIcon,
+  ArrowLeft,
+  ArrowRight,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { CreateArticleWizard } from "../components";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
-import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
+import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
@@ -83,14 +87,18 @@ function getPrimaryImage(images: BlogImage[]): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ArticleDetails() {
   const { t } = useTranslation("article");
+  const { t: ct } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark, language } = useThemeClasses();
+  const { isDark, language, isRTL } = useThemeClasses();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const blogId = searchParams.get("blogId") ?? "";
 
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [updateBlog] = useUpdateBlogMutation();
   const {
@@ -108,14 +116,21 @@ export default function ArticleDetails() {
     if (!isEditOpen) refetch();
   }, [refetch, isEditOpen]);
 
-  const {
-    bgPrimary,
-    bgSecondary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-  } = useThemeClasses();
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
   const tabs = [
     { id: "overview", label: t("tab_overview"), icon: FileText },
@@ -301,128 +316,206 @@ export default function ArticleDetails() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`min-h-screen ${bgPrimary}`}>
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
       <Spinner isLoading={isDetailLoading} />
-      <div className=" mx-auto p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <BackToListBtn navPath={routes.articleMgmt} />
-            <div className="flex items-center gap-4">
-              <StatusChangeBtn
-                handleStatusChange={onStatusChangeHandler}
-                status={blogDetails?.status as TStatus}
+
+      {/* Action bar */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <button
+          onClick={() => navigate(routes.articleMgmt)}
+          className={clsx(
+            "flex items-center gap-2 py-2 rounded-lg transition-colors",
+            isDark
+              ? "hover:bg-gray-800 text-gray-300"
+              : "hover:bg-gray-100 text-gray-700",
+          )}
+        >
+          {isRTL ? (
+            <ArrowRight className="w-5 h-5" />
+          ) : (
+            <ArrowLeft className="w-5 h-5" />
+          )}
+          <span>{ct("back_to_list") || "Back"}</span>
+        </button>
+
+        <div className="flex items-center gap-3">
+          <StatusChangeBtn
+            handleStatusChange={onStatusChangeHandler}
+            status={blogDetails?.status as TStatus}
+          />
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+              <span className="text-sm font-medium">Actions</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
-              <div>
+            </button>
+
+            {isDropdownOpen && (
+              <div
+                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
                 <button
-                  onClick={() => setIsEditOpen(true)}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer bg-blue-500 rounded-md ${
+                  onClick={() => {
+                    setIsEditOpen(true);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
                     isDark
-                      ? "text-white hover:bg-gray-800"
-                      : "text-indigo-200 hover:text-indigo-500 hover:bg-gray-200"
+                      ? "text-indigo-400 hover:bg-gray-800"
+                      : "text-indigo-600 hover:bg-gray-50"
                   }`}
                 >
                   <Edit className="w-4 h-4 shrink-0" />
-                  {t("edit")}
+                  {t("edit") || "Edit"}
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Title + meta */}
+      <div className="details-top shrink-0">
+        <div className="flex items-center gap-3">
+          <ImageWithFallback
+            src={primaryImage}
+            alt={blogDetails?.title}
+            className={clsx(
+              "w-14 h-14 rounded-xl object-cover shrink-0 border",
+              isDark ? "border-gray-600" : "border-gray-200",
+            )}
+          />
+          <div className="flex flex-1 items-center justify-between gap-4 min-w-0">
+            <div className="min-w-0">
+              <h1
+                className={`text-lg font-semibold leading-tight truncate ${
+                  isDark ? "text-gray-100" : "text-gray-900"
+                }`}
+              >
+                {blogDetails?.title}
+              </h1>
+              <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                {blogDetails?.createdAt && (
+                  <span
+                    className={clsx(
+                      "inline-flex items-center gap-1 text-xs",
+                      textTertiary,
+                    )}
+                  >
+                    <svg
+                      className="w-3 h-3 shrink-0"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                      <path d="M5 1.5v3M11 1.5v3M2 7h12" />
+                    </svg>
+                    {formatDateTime(blogDetails?.createdAt, language)}
+                  </span>
+                )}
+                {blogDetails?.updatedAt && (
+                  <>
+                    <div
+                      className={clsx(
+                        "w-px h-3 shrink-0 opacity-30",
+                        textTertiary,
+                      )}
+                      style={{ background: "currentColor" }}
+                    />
+                    <span
+                      className={clsx(
+                        "inline-flex items-center gap-1 text-xs",
+                        textTertiary,
+                      )}
+                    >
+                      <svg
+                        className="w-3 h-3 shrink-0"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path
+                          d="M13.5 8A5.5 5.5 0 1 1 8 2.5"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M10.5 1.5l3 1-1 3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M8 5v3.5l2 1"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {formatDateTime(blogDetails?.updatedAt, language)}
+                    </span>
+                  </>
+                )}
+                {blogDetails?.externalApiId && (
+                  <>
+                    <div
+                      className={clsx(
+                        "w-px h-3 shrink-0 opacity-30",
+                        textTertiary,
+                      )}
+                      style={{ background: "currentColor" }}
+                    />
+                    <a
+                      href={blogDetails?.externalApiId?.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-gray-700"
+                    >
+                      <img
+                        src={blogDetails?.externalApiId?.logo}
+                        alt={blogDetails?.externalApiId?.name}
+                        className="w-4 h-4 object-contain rounded"
+                      />
+                      <span className="font-medium hover:underline">
+                        {blogDetails?.externalApiId?.name}
+                      </span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h1 className={`text-3xl font-bold ${textPrimary}`}>
-              {blogDetails?.title}
-            </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            {blogDetails?.createdAt && (
-              <div className="flex items-center gap-1.5">
-                <svg
-                  className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <rect x="2" y="3" width="12" height="11" rx="1.5" />
-                  <path d="M5 1.5v3M11 1.5v3M2 7h12" />
-                </svg>
-                <span className={clsx(" font-medium", textTertiary)}>
-                  {t("created")}
-                </span>
-                <span className={clsx("", textTertiary)}>
-                  {formatDateTime(blogDetails?.createdAt, language)}
-                </span>
-              </div>
-            )}
-            <div
-              className={clsx("w-px h-3 shrink-0", textTertiary, "opacity-30")}
-              style={{ background: "currentColor" }}
-            />
-            {blogDetails?.updatedAt && (
-              <div className="flex items-center gap-1.5">
-                <svg
-                  className={clsx("w-3.5 h-3.5 shrink-0", textTertiary)}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5" strokeLinecap="round" />
-                  <path
-                    d="M10.5 1.5l3 1-1 3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M8 5v3.5l2 1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className={clsx(" font-medium", textTertiary)}>
-                  {t("updated")}
-                </span>
-                <span className={clsx("", textTertiary)}>
-                  {formatDateTime(blogDetails?.updatedAt, language)}
-                </span>
-              </div>
-            )}
-            {/* Website */}
-            {blogDetails?.externalApiId ? (
-              <a
-                href={blogDetails?.externalApiId?.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 ml-2 text-sm text-gray-700 w-fit"
-              >
-                <img
-                  src={blogDetails?.externalApiId?.logo}
-                  alt={blogDetails?.externalApiId?.name}
-                  className="w-6 h-6 object-contain rounded"
-                />
-                <span className="font-medium hover:underline">
-                  {blogDetails?.externalApiId?.name}
-                </span>
-                <ExternalLink className="w-3 h-3 ml-1" />
-              </a>
-            ) : (
-              <span>-</span>
-            )}{" "}
-          </div>
         </div>
+      </div>
 
-        <TabsSection
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-
-        {/* Tab Content */}
-        <div className={`${bgPrimary} rounded-lg mt-4`}>
+      {/* Tabs + scrollable content */}
+      <div className="mt-6 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0">
+          <TabsSection
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        <div className="details-content flex-1 overflow-y-auto min-h-0">
           {renderTabContent()}
         </div>
       </div>
+
       {isEditOpen && (
         <CreateArticleWizard
           onClose={() => setIsEditOpen(false)}

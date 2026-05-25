@@ -6,7 +6,6 @@ import {
   useGetDmosQuery,
   useGetSubCategoriesQuery,
   useGetAllTagsQuery,
-  useGetAllIconsQuery,
 } from "@/store/api/masterDataApi";
 import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
@@ -19,7 +18,6 @@ export function useCommon() {
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
   const { data: subCategories } = useGetSubCategoriesQuery({ locale });
-  const { data: allIcons } = useGetAllIconsQuery({});
 
   const { data: socialMedia } = useGetAllSocialMediaQuery();
 
@@ -41,7 +39,6 @@ export function useCommon() {
     dmosAuthorities,
     socialMedia,
     allWebsites,
-    allIcons,
     groupTypes: groupTypes?.datas?.data,
     accessibility: accessibility?.datas?.data,
     categories: primaryCategories?.datas?.data,

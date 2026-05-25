@@ -8,12 +8,17 @@
   "draft_saved": "Draft Saved",
   "draft_failed": "Failed to save draft",
   "fill_all_fields": "Fill all required fields before proceeding",
+  "name_required": "Please enter a name before saving",
   "image_upload_info": "Image upload has started. Please wait…",
   "image_upload_success": "Image uploaded successfully",
   "image_upload_failed": "Image upload failed",
   "image_deleted": "Image deleted successfully",
   "delete_failed": "Failed to delete image",
   "login_failed": "Login failed",
+
+  "poi_delete_loading": "Deleting POIs...",
+  "poi_deleted_success": "POIs deleted successfully",
+  "poi_delete_failed": "Failed to delete POIs",
 
   "business_delete_loading": "Please wait. Businesses are deleting...",
   "business_deleted_success": "Businesses deleted successfully",
@@ -39,6 +44,9 @@
   "product_status_change_loading": "Please wait. Product's status is changing...",
   "product_status_update_success": "Products status updated successfully",
   "product_status_update_failed": "Failed to change products status",
+  "product_quantity_change_loading": "Please wait. Product quantity is updating...",
+  "product_quantity_update_success": "Product quantity updated successfully",
+  "product_quantity_update_failed": "Failed to update product quantity",
 
   "promotion_created_success": "Promotion created successfully",
   "promotion_create_failed": "Failed to create promotion",

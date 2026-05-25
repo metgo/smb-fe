@@ -1,5 +1,8 @@
 import "./index.css";
 import "./i18n";
+import { registerSW } from "virtual:pwa-register";
+
+registerSW({ immediate: true });
 
 import { Toaster } from "sonner";
 import { StrictMode } from "react";

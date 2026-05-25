@@ -155,32 +155,31 @@ const ContentCard = ({
             alt={name}
             className="w-full h-full object-cover"
           />
-
           {cardContent}
         </div>
         <div
           className={clsx(
-            "px-3 py-4",
-            isDark
-              ? "bg-gray-900 border border-gray-700/50 text-gray-200"
-              : "bg-white border border-gray-200 text-gray-800",
+            "px-2.5 py-2",
+            isDark ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800",
           )}
         >
           <h4
             className={clsx(
-              "font-medium truncate mb-1",
+              "text-sm font-semibold truncate leading-tight",
               isDark ? "text-gray-100" : "text-gray-900",
             )}
           >
             {name}
           </h4>
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
-            {descripition ? getPlainTextFromRichText(descripition) : "-"}
-          </p>
+          {descripition && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+              {getPlainTextFromRichText(descripition)}
+            </p>
+          )}
           {categoryName && (
             <span
               className={clsx(
-                "inline-block px-3 py-1 text-xs font-bold rounded-full",
+                "inline-block mt-1.5 px-1.5 py-0.5 text-[10px] font-semibold rounded",
                 bgTertiary,
               )}
             >
@@ -206,9 +205,9 @@ const ContentCard = ({
         isExpanded ? "col-span-12" : "col-span-4",
       )}
     >
-      <div className="grid grid-cols-12 h-20">
-        {/* Image */}
-        <div className="relative col-span-2">
+      <div className="flex h-14">
+        {/* Thumbnail */}
+        <div className="relative w-14 shrink-0">
           <ImageWithFallback
             src={image}
             alt={name}
@@ -220,32 +219,35 @@ const ContentCard = ({
         {/* Content */}
         <div
           className={clsx(
-            "p-3 col-span-10 flex flex-col",
-            isDark
-              ? "bg-gray-900 border border-gray-700/50 text-gray-200"
-              : "bg-white border border-gray-200 text-gray-800",
+            "flex-1 min-w-0 px-2.5 py-1.5 flex flex-col justify-center",
+            isDark ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800",
           )}
         >
-          {/* Name + Category */}
-          <div className="flex items-start justify-between mb-1">
+          <div className="flex items-center gap-2">
             <h4
               className={clsx(
-                "font-medium truncate",
+                "text-sm font-semibold truncate flex-1 leading-tight",
                 isDark ? "text-gray-100" : "text-gray-900",
               )}
             >
-              {name ? name : "-"}
+              {name || "-"}
             </h4>
-
-            <span className="ml-2 px-3 py-1 text-xs font-medium text-gray-800 bg-gray-200 rounded-full whitespace-nowrap">
-              {categoryName ? categoryName : "-"}
-            </span>
+            {categoryName && (
+              <span
+                className={clsx(
+                  "shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded whitespace-nowrap",
+                  bgTertiary,
+                )}
+              >
+                {categoryName}
+              </span>
+            )}
           </div>
-
-          {/* Description */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
-            {descripition ? getPlainTextFromRichText(descripition) : "-"}
-          </p>
+          {descripition && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+              {getPlainTextFromRichText(descripition)}
+            </p>
+          )}
         </div>
       </div>
     </div>

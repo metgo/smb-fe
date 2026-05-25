@@ -29,7 +29,7 @@ export default function ViewModeToggle({
 
   return (
     <div
-      className={`flex items-center gap-1 p-1 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+      className={`flex items-center gap-1 p-1 rounded md:rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
     >
       <button
         onClick={() => onChange("list")}

@@ -22,6 +22,9 @@ import AuthoritiesMgmtPage from "./authorities-mgmt";
 import WebsiteConfigPage from "./website-mgmt/website-config";
 import PartnersPage from "./partners";
 import CampaignsMgmtPage from "./campaign-mgmt";
+import UsersMgmtPage from "./users-mgmt";
+import PoiMgmtPage from "./poi-mgmt";
+import PoiDetailsPage from "./poi-mgmt/details";
 
 export {
   AuthPage,
@@ -48,4 +51,7 @@ export {
   WebsiteMgmtPage,
   WebsiteConfigPage,
   DynamicPageMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 };

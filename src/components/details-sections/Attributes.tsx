@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { X } from "lucide-react";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -100,6 +100,15 @@ const Attributes: FC<AttributesProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
+
+  const selectedCatRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    selectedCatRef.current?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [formData.primaryCategory]);
 
   /* ---------------- Helpers ---------------- */
 
@@ -218,19 +227,20 @@ const Attributes: FC<AttributesProps> = ({
           {t("primary_category")} <span className="text-red-500">*</span>
         </label>
 
-        <div className="grid grid-cols-6 gap-3">
+        <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
           {categories?.map((cat: any) => {
             const isSelected = formData.primaryCategory === cat._id;
 
             return (
               <button
                 key={cat._id}
+                ref={isSelected ? selectedCatRef : null}
                 type="button"
                 onClick={() =>
                   setFormData({ ...formData, primaryCategory: cat._id })
                 }
                 className={`
-                w-full h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
                 ${
                   isSelected
                     ? "border-4 border-teal-600 text-teal-600"

@@ -32,6 +32,12 @@ export const endpoints = {
   dmosAuthorities: "/dmos-authorities",
   changeOwner: "/admin/businesses/assign-user/",
 
+  // poi
+  poi: "/point-of-interests",
+  pois: "/point-of-interests",
+  poisStatDashboard: "/point-of-interests-stat",
+  bulkPoisUpdate: "/bulk-point-of-interests-update",
+
   // business
   business: "/businesses",
   businesses: "/businesses",
@@ -57,6 +63,7 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+  upcomingEvents: "/upcoming-events",
 
   users: "/users",
   userInfo: "/users/me",
@@ -84,14 +91,18 @@ export const endpoints = {
   trips: "/trips",
   stations: "/stations",
 
+  //voucher
+  vouchers: "/vouchers",
+  voucher: "/voucher-id",
+  postVoucher: "/vouchers",
+  searchVoucher: "/search-vouchers",
+  voucherStatDashboard: "/vouchers-stats",
+  bulkVouchersUpdate: "/bulk-vouchers-update",
+  sendemail: "/vouchers/send-email",
+  sendsms: "/vouchers/send-sms",
+
   // cmpaings
-  campaign: "",
-  postVoucher: "",
-  sendemail: "",
-  sendsms: "",
-  vouchers: "",
-  bulkVouchersUpdate: "",
-  voucherStatDashboard: "",
+  campaign: "/admin/campaign",
 
   // Admin endpoints
   dynamicPage: "/settings",

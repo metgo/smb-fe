@@ -113,12 +113,6 @@ export default function ProductsMgmtPage() {
   const urlBusinessName = searchParams?.get("businessName");
   const urlBusinessNameProduct = searchParams?.get("businessNameProduct");
 
-  useEffect(() => {
-    if (urlBusinessId && urlBusinessName) {
-      handleCreateNew();
-    }
-  }, [urlBusinessId, urlBusinessName]);
-
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
@@ -157,6 +151,17 @@ export default function ProductsMgmtPage() {
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const hasSavedFilters = filters.businessId !== "" || filters.status !== "all";
+
+  // ─── Handlers (memoized) ─────────
+  const handleCreateNew = useCallback(() => {
+    setIsCreateModalOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (urlBusinessId && urlBusinessName) {
+      handleCreateNew();
+    }
+  }, [urlBusinessId, urlBusinessName, handleCreateNew]);
 
   // ─── Load persisted state on mount ─────────
   useEffect(() => {
@@ -349,10 +354,13 @@ export default function ProductsMgmtPage() {
     setPage((prev) => prev + 1);
   }, [hasMore, isFetching]);
 
-  // ─── Handlers (memoized) ─────────
-  const handleCreateNew = useCallback(() => {
-    setIsCreateModalOpen(true);
-  }, []);
+  const refetchFromPage1 = useCallback(() => {
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
 
   const removeQueryParams = useCallback(() => {
     navigate({}, { replace: true });
@@ -468,26 +476,28 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="h-[calc(104vh-150px)] flex flex-col">
-        <PageHeader
-          title={t("products_management")}
-          description={t("products_management_desc")}
-          h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-          btnLabel={t("add_products")}
-          onClick={handleCreateNew}
-          totalCount={totalData ?? 0}
-        />
-        <PageStats
-          stats={salesStats}
-          isLoading={isStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        />
+      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
+        <div className="shrink-0">
+          <PageHeader
+            title={t("products_management")}
+            description={t("products_management_desc")}
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            btnLabel={t("add_products")}
+            onClick={handleCreateNew}
+            totalCount={totalData ?? 0}
+          />
+          <PageStats
+            stats={salesStats}
+            isLoading={isStatsLoading}
+            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
+          />
+        </div>
 
         <div className="shrink-0 space-y-2 mb-2 mt-4">
           {/* Toolbar */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col gap-2">
             {/* Search */}
-            <div className="flex-1 relative max-w-full">
+            <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
@@ -496,40 +506,42 @@ export default function ProductsMgmtPage() {
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap relative">
               <FilterButton value={showFilters} onChange={setShowFilters} />
 
               {viewMode === "list" && (
                 <div className="relative" ref={columnSettingsRef}>
                   <button
                     onClick={() => setShowColumnSettings(!showColumnSettings)}
-                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                    className={`px-3 py-3 md:py-2.5 rounded md:rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
                       isDark
                         ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                         : "border-gray-300 hover:bg-gray-100 text-gray-700"
                     }`}
                   >
-                    <Columns className="w-5 h-5" />
-                    {t("show_columns")}
+                    <Columns className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">
+                      {t("show_columns")}
+                    </span>
                     {showColumnSettings ? (
-                      <ChevronUp className="w-4 h-4" />
+                      <ChevronUp className="w-3.5 h-3.5 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-3.5 h-3.5 shrink-0" />
                     )}
                   </button>
 
                   {showColumnSettings && (
                     <div
-                      className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-96 overflow-y-auto border z-50 ${
+                      className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-60 rounded-lg shadow-lg max-h-80 overflow-y-auto border z-50 ${
                         isDark
                           ? "bg-gray-800 border-gray-700"
                           : "bg-white border-gray-200"
                       }`}
                     >
                       <div
-                        className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
+                        className={`p-3 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1">
                           <h3
                             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
                           >
@@ -548,11 +560,11 @@ export default function ProductsMgmtPage() {
                           {t("select_columns_to_display")}
                         </p>
                       </div>
-                      <div className="p-3 space-y-1">
+                      <div className="p-2 space-y-0.5">
                         {columnDefinitions.map(({ key }) => (
                           <label
                             key={key}
-                            className={`flex items-center gap-2 p-2 rounded cursor-pointer ${
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer ${
                               isRTL ? "flex-row-reverse" : ""
                             } ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
                           >
@@ -578,33 +590,37 @@ export default function ProductsMgmtPage() {
                 </div>
               )}
 
-              <ViewModeToggle
-                onChange={(mode) => {
-                  setViewMode(mode);
-                  localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify({
-                      ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
-                      viewMode: mode,
-                    }),
-                  );
-                }}
-                value={viewMode}
-                tableName="productViewMode"
-              />
+              <div className="ml-auto">
+                <ViewModeToggle
+                  onChange={(mode) => {
+                    setViewMode(mode);
+                    localStorage.setItem(
+                      STORAGE_KEY,
+                      JSON.stringify({
+                        ...JSON.parse(
+                          localStorage.getItem(STORAGE_KEY) || "{}",
+                        ),
+                        viewMode: mode,
+                      }),
+                    );
+                  }}
+                  value={viewMode}
+                  tableName="productViewMode"
+                />
+              </div>
             </div>
           </div>
 
           {/* Filters Panel */}
           {(showFilters || urlBusinessId || hasSavedFilters) && (
             <div
-              className={`rounded-md border p-2 ${borderColor} ${bgPrimary}`}
+              className={`rounded-md border py-2 px-3 ${borderColor} ${bgPrimary}`}
             >
-              <div className="flex gap-4 items-start w-full">
+              <div className="flex flex-wrap gap-3 items-start w-full">
                 <FilterByStatus filters={filters} setFilters={setFilters} />
 
                 {!urlBusinessId && (
-                  <div className="flex flex-col min-w-45">
+                  <div className="flex flex-col flex-1 min-w-35">
                     <label
                       className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                     >
@@ -633,11 +649,11 @@ export default function ProductsMgmtPage() {
                   filters.businessId !== "" ||
                   urlBusinessName ||
                   urlBusinessNameProduct) && (
-                  <div className="flex flex-col min-w-45">
+                  <div className="flex flex-col w-full sm:w-auto">
                     <label className={`block text-sm mb-1 ${textTertiary}`}>
                       {tb("active_filters")}:
                     </label>
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-1.5 items-center">
                       {filters.status !== "all" && (
                         <FilterChips
                           label={t(filters.status)}
@@ -656,7 +672,6 @@ export default function ProductsMgmtPage() {
                           onRemove={removeQueryParams}
                         />
                       )}
-
                       {filters.businessId && (
                         <FilterChips
                           label={
@@ -671,7 +686,7 @@ export default function ProductsMgmtPage() {
                         filters.businessId !== "") && (
                         <button
                           onClick={clearAllFilters}
-                          className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                          className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
                         >
                           {t("clear_all")}
                         </button>
@@ -694,7 +709,7 @@ export default function ProductsMgmtPage() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {!isLoadingProduct &&
           !isFetching &&
           combinedProducts?.length === 0 ? (
@@ -729,6 +744,7 @@ export default function ProductsMgmtPage() {
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}
+              refetch={refetchFromPage1}
             />
           ) : (
             <ProductGridView

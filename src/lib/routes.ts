@@ -22,6 +22,8 @@ export const routes = {
   voucherDetails: "/voucher-details",
 
   pointOfInterest: "/point-of-interest",
+  poiMgmt: "/poi-management",
+  poiDetails: "/poi-details",
   trips: "/trips",
   notificationMgmt: "/notifications-management",
 
@@ -42,6 +44,8 @@ export const routes = {
 
   dynamicPages: "/dynamic-pages",
   promotionMgmt: "/promotions-management",
+
+  users: "/users",
 };
 
 export type RouteKey = keyof typeof routes;
