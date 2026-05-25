@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 
 import {
   BusinessContactDetails,
@@ -45,6 +46,7 @@ import {
 import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { envKeys } from "@/lib/envKeys";
 
 export default function BusinessDetailsPage() {
   const navigate = useNavigate();
@@ -72,6 +74,62 @@ export default function BusinessDetailsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   const businessId = searchParams.get("businessId") ?? "";
+  const profileToken = searchParams.get("token");
+
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditClicked, setIsEditClicked] = useState(false);
+  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
+  const [missingFieldsFromToken, setMissingFieldsFromToken] = useState<
+    string[]
+  >([]);
+
+  // ── No-auth profile completion token handling ──────────────────────────
+  // When token is in URL, validate it directly and open Edit modal.
+  // ProtectedRoute allows this page through without login when token is present.
+  useEffect(() => {
+    // Check URL token first (no-auth flow from email link)
+    if (profileToken) {
+      const validateToken = async () => {
+        try {
+          const res = await axios.get(
+            `${envKeys.baseUrl}/complete-profile/${profileToken}`,
+          );
+          const { fields } = res.data;
+          setIsEditClicked(true);
+          setOpMode(IOpMode.EDIT);
+          setMissingFieldsFromToken(fields ?? []);
+          // Clean token from URL
+          window.history.replaceState(
+            {},
+            "",
+            `${routes.businessDetails}?businessId=${businessId}`,
+          );
+        } catch {
+          // Token expired or invalid — redirect to a clean error page
+          window.location.replace(`${routes.auth}?tokenError=expired`);
+        }
+      };
+      validateToken();
+      return;
+    }
+
+    // Check sessionStorage (post-login redirect flow)
+    const storedToken = sessionStorage.getItem("profile_completion_token");
+    const storedFields: string[] = JSON.parse(
+      sessionStorage.getItem("profile_completion_fields") ?? "[]",
+    );
+    if (storedToken && storedFields.length) {
+      sessionStorage.removeItem("profile_completion_token");
+      sessionStorage.removeItem("profile_completion_business_id");
+      sessionStorage.removeItem("profile_completion_fields");
+      setIsEditClicked(true);
+      setOpMode(IOpMode.EDIT);
+      setMissingFieldsFromToken(storedFields);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileToken, businessId]);
+
   ///business detail stats
   const {
     data,
@@ -116,16 +174,13 @@ export default function BusinessDetailsPage() {
       value: `${data?.conversionRate || 0}%`,
     },
   ];
+
   const {
     data: business,
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
-  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEditClicked, setIsEditClicked] = useState(false);
-  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isEditClicked) {
@@ -346,7 +401,7 @@ export default function BusinessDetailsPage() {
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-2 md:gap-4"
         />
       </div>
 
@@ -375,9 +430,13 @@ export default function BusinessDetailsPage() {
       {isEditClicked && (
         <CreateBusinessWizard
           editData={business}
-          onClose={() => setIsEditClicked(false)}
+          onClose={() => {
+            setIsEditClicked(false);
+            setMissingFieldsFromToken([]);
+          }}
           refetch={refetch}
           opMode={opMode}
+          missingFields={missingFieldsFromToken}
         />
       )}
     </div>

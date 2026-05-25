@@ -86,7 +86,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
         id="business-table-scroll"
         className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {products?.map((product) => {
             const isChecked = selectedProducts?.has(product._id) ?? false;
             return (
@@ -94,30 +94,30 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                 key={product?._id}
                 onClick={() => handleProductClick(product?._id)}
                 className={clsx(
-                  `rounded-xl border-2 overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`,
-                  isDark
-                    ? "bg-gray-900 text-gray-300"
-                    : "bg-white text-gray-900",
-                  isChecked ? "border-teal-500" : "border-gray-300",
+                  "rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group relative",
+                  isDark ? "bg-gray-800" : "bg-white",
+                  isChecked
+                    ? "border-2 border-teal-500"
+                    : `border ${isDark ? "border-gray-700" : "border-gray-200"}`,
                 )}
               >
-                {/* Checkbox and Delete Button */}
+                {/* Top overlay: checkbox + status + actions */}
                 <div
-                  className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
+                  className="absolute top-2 left-0 z-30 w-full flex items-center justify-between px-1.5"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {selectedProducts && (
                       <Checkbox
                         checked={isChecked}
                         onCheckedChange={() => toggleCheckBox(product?._id)}
-                        className={`cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 `}
+                        className="cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                       />
                     )}
                     <ItemStatusBadge status={product?.status?.toLowerCase()} />
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {handleEditClick && (
                       <EditIconBtn
                         onClick={(e) => {
@@ -137,7 +137,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                 </div>
 
                 {/* Product Image */}
-                <div className="relative h-40 bg-linear-to-br from-blue-500 to-indigo-600">
+                <div className="relative h-24 sm:h-28 bg-linear-to-br from-blue-500 to-indigo-600">
                   {product?.images?.length > 0 ? (
                     <ImageWithFallback
                       src={product?.images?.[0]?.image}
@@ -146,15 +146,18 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-16 h-16 text-white opacity-50" />
+                      <Package className="w-10 h-10 text-white opacity-50" />
                     </div>
                   )}
+                  <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/20 to-transparent" />
                 </div>
 
                 {/* Product Info */}
-                <div className="p-2">
+                <div className="px-2.5 py-2">
                   <h3
-                    className={`${isDark ? "text-white" : "text-gray-900"} mb-2 font-medium line-clamp-2`}
+                    className={`font-semibold text-sm leading-tight mb-1 line-clamp-1 ${
+                      isDark ? "text-gray-100" : "text-gray-800"
+                    }`}
                   >
                     {getLngWiseStr(
                       language,
@@ -164,7 +167,9 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                     )}
                   </h3>
                   <p
-                    className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"} mb-3 line-clamp-1`}
+                    className={`text-xs mb-1.5 line-clamp-1 ${
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    }`}
                   >
                     {getPlainTextFromRichText(
                       getLngWiseStr(
@@ -176,20 +181,26 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
                     )}
                   </p>
 
-                  <div className=" items-center justify-between">
-                    <div
-                      className={clsx(isDark ? "text-white" : "text-gray-900")}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`font-bold text-sm ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
                     >
-                      <span className="font-bold">
-                        ₪ {product?.price?.sellingPrice ?? "-"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Building2 size={16} />
-                      <span className="text-sm">
-                        {product?.businessId?.name}
-                      </span>
-                    </div>
+                      ₪ {product?.price?.sellingPrice ?? "-"}
+                    </span>
+                    {product?.businessId?.name && (
+                      <div
+                        className={`flex items-center gap-1 text-xs ${
+                          isDark ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        <Building2 className="w-3 h-3 shrink-0" />
+                        <span className="truncate max-w-16">
+                          {product?.businessId?.name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

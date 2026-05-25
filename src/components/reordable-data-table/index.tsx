@@ -390,7 +390,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             {/* ── Sticky Header ── */}
             <thead
               className={clsx(
-                "sticky top-0 z-40 border-b",
+                "sticky top-0 z-20 border-b",
                 isDark
                   ? "bg-gray-900 border-gray-800"
                   : "bg-gray-50 border-gray-200",

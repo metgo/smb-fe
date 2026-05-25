@@ -195,6 +195,7 @@ const NotificationsBell = () => {
               {notifications?.map((notification) => {
                 const isUnread = !notification.isRead;
                 const itemType = notification?.itemType;
+                console.log("🚀 ~ NotificationsBell ~ itemType:", itemType);
 
                 const queryParam = `${itemType.toLowerCase()}Id`;
 

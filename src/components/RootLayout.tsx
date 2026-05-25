@@ -20,13 +20,13 @@ const RootLayout = () => {
     >
       <RouterProgressBar />
       <Header />
-      <div className=" pt-20 relative">
+      <div className=" pt-14 md:pt-20 relative">
         <Sidebar />
 
         {/* Main Content Area - With left margin for fixed sidebar */}
         <div
           className={clsx(
-            `flex-1 transition-all duration-300 py-4 px-4 sm:px-6 lg:px-8`,
+            `flex-1 transition-all duration-300 py-4 px-2 sm:px-6 lg:px-8`,
             isRTL
               ? isSidebarCollapsed
                 ? "lg:mr-16"

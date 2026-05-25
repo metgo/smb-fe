@@ -91,7 +91,7 @@ function BusinessGridView<T extends Business>({
         id="business-table-scroll"
         ref={scrollRef}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
           {data?.map((business) => {
             const isChecked = selectedItems?.has(business?._id) ?? false;
 
@@ -100,42 +100,40 @@ function BusinessGridView<T extends Business>({
                 key={business._id}
                 onClick={() => onRowClick && onRowClick(business)}
                 className={clsx(
-                  `rounded-xl border-2 overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`,
-                  isDark
-                    ? "bg-gray-900 text-gray-300"
-                    : "bg-white text-gray-900",
-                  isChecked ? "border-teal-500" : "border-gray-300",
+                  "rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer relative",
+                  isDark ? "bg-gray-800" : "bg-white",
+                  isChecked
+                    ? "border-2 border-teal-500"
+                    : `border ${isDark ? "border-gray-700" : "border-gray-200"}`,
                 )}
               >
+                {/* Top overlay: checkbox + status + delete */}
                 <div
-                  className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
+                  className="absolute top-2 left-0 z-30 w-full flex items-center justify-between px-1.5"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {selectedItems && (
                       <Checkbox
                         checked={isChecked}
                         onCheckedChange={() => toggleCheckBox(business?._id)}
-                        className={clsx(
-                          "cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500",
-                        )}
+                        className="cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                       />
                     )}
                     <ItemStatusBadge status={business?.status?.toLowerCase()} />
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <DeleteIconBtn
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsConfirmOpen(true);
-                        setBusinessToDelete(business?._id);
-                      }}
-                    />
-                  </div>
+                  <DeleteIconBtn
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsConfirmOpen(true);
+                      setBusinessToDelete(business?._id);
+                    }}
+                  />
                 </div>
 
-                <div className="relative h-40">
+                {/* Image */}
+                <div className="relative h-24 sm:h-28">
                   {business?.images && business.images.length > 0 ? (
                     <ImageWithFallback
                       src={business.images[0].image}
@@ -143,21 +141,24 @@ function BusinessGridView<T extends Business>({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-linear-to-br from-gray-400 to-teal-400 flex items-center justify-center">
-                      <Image className="w-20 h-20 text-white/40" />
+                    <div className="w-full h-full bg-linear-to-br from-gray-300 to-teal-400 flex items-center justify-center">
+                      <Image className="w-10 h-10 text-white/50" />
                     </div>
                   )}
+                  {/* Bottom gradient for readability */}
+                  <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/20 to-transparent" />
                 </div>
 
+                {/* Content */}
                 <div
-                  className={`p-2 ${
-                    isDark
-                      ? "bg-gray-800 text-gray-400"
-                      : "bg-white text-gray-600"
+                  className={`px-2.5 py-2 ${
+                    isDark ? "bg-gray-800" : "bg-white"
                   }`}
                 >
                   <h3
-                    className={`${isDark ? "text-white" : "text-gray-600"} font-semibold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white`}
+                    className={`font-semibold text-sm leading-tight mb-1.5 line-clamp-1 ${
+                      isDark ? "text-gray-100" : "text-gray-800"
+                    }`}
                   >
                     {getLngWiseStr(
                       language,
@@ -167,21 +168,26 @@ function BusinessGridView<T extends Business>({
                     )}
                   </h3>
 
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-1">
                     {business?.address && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                      <div
+                        className={`flex items-center gap-1.5 text-xs ${
+                          isDark ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        <MapPin className="w-3 h-3 shrink-0" />
                         <span className="truncate">
                           {business?.address?.country}, {business.address?.city}
                         </span>
                       </div>
                     )}
-                  </div>
-
-                  <div className="mt-2 text-sm">
                     {business?.phoneNumber && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
+                      <div
+                        className={`flex items-center gap-1.5 text-xs ${
+                          isDark ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        <Phone className="w-3 h-3 shrink-0" />
                         <span className="truncate">
                           {business?.phoneNumber}
                         </span>
