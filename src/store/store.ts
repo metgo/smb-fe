@@ -29,11 +29,13 @@ import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
 import { tripQueryApi } from "./api/tripsQueryApi";
 import { poiQueryApi } from "./api/poiQueryApi";
+import { poiMutationApi } from "./api/poiMutationApi";
 import { dynamicPageApi } from "./api/dynamicPageApi";
 import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
 import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { promotionsApi } from "./api/promotionsApi";
+import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -74,6 +76,7 @@ export const store = configureStore({
     [blogMutationApi.reducerPath]: blogMutationApi.reducer,
 
     [poiQueryApi.reducerPath]: poiQueryApi.reducer,
+    [poiMutationApi.reducerPath]: poiMutationApi.reducer,
 
     [notificationApi.reducerPath]: notificationApi.reducer,
     [dynamicPageApi.reducerPath]: dynamicPageApi.reducer,
@@ -109,8 +112,10 @@ export const store = configureStore({
       blogMutationApi.middleware,
       blogQueryApi.middleware,
       poiQueryApi.middleware,
+      poiMutationApi.middleware,
       websiteSettingsApi.middleware,
       promotionsApi.middleware,
+      nprogressMiddleware,
     ),
 });
 

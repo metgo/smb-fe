@@ -70,9 +70,11 @@
   "delete": "حذف",
 
   "characters": "حرف",
-  "title_placeholder": "أدخل عنوان المقال...",
+  "title_placeholder": "أدخل العنوان...",
   "subtitle_placeholder": "أدخل العنوان الفرعي...",
-  "short_description_placeholder": "أدخل وصفًا مختصرًا يظهر في المعاينة ونتائج البحث...",
+  "short_description_placeholder": "أدخل وصفاً مختصراً يظهر في المعاينات ونتائج البحث...",
+  "full_description_placeholder": "أدخل محتوى الوصف الكامل هنا...",
+  "full_description": "الوصف الكامل",
 
   "settings": "الإعدادات",
   "auto_seo": "تحسين تلقائي",

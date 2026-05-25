@@ -152,7 +152,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
     useThemeClasses();
 
   useEffect(() => {
-    markDirty(2);
+    markDirty(3);
   }, [
     startDate,
     eventDays,
@@ -321,7 +321,10 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               value={
                 startDate ? new Date(startDate).toISOString().split("T")[0] : ""
               }
-              onChange={(date) => setStartDate(date)}
+              onChange={(date) => {
+                setStartDate(date);
+                setEventDays((prev) => [{ ...prev[0], date }]);
+              }}
               placeholder={t("select_date")}
               error={errors.startDate}
             />

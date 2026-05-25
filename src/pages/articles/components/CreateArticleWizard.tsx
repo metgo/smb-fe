@@ -205,6 +205,10 @@ const CreateArticleWizard = ({
   };
 
   const handleNext = async () => {
+    if (currentStep === 1) {
+      const processed = detectAndAssignLanguageFields(formData);
+      setFormData(processed);
+    }
     setCurrentStep((prev) => prev + 1);
   };
 

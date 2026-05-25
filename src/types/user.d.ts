@@ -72,3 +72,36 @@ interface UserInfoRes {
   dmo: string | null;
   authority: string | null;
 }
+
+interface IUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  dob: string | null;
+  email: string;
+  language_preference: string;
+  isPhoneVerify: boolean;
+  isEmailVerify: boolean;
+  loginAttempts: number;
+  role: "superadmin" | "admin" | "user";
+  hasBusiness: boolean;
+  lastLogin: string;
+  countryCode: string;
+  phoneNumber: string;
+  languagePreference: string;
+  address: string;
+}
+interface IUsersRes {
+  datas: {
+    data: IUser[];
+    totalData: number;
+    meta: {
+      page: number;
+      limit: number;
+      data: number;
+      pageCount: number;
+      hasPreviousPage: boolean;
+      hasNextPage: boolean;
+    };
+  };
+}

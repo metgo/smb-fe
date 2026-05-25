@@ -10,9 +10,11 @@ interface PageStatsProps {
 export default function PageStats({
   stats,
   isLoading = false,
-  className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6",
+  className = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-6",
 }: PageStatsProps) {
   const { bgSecondary, textPrimary, textTertiary, isDark } = useThemeClasses();
+
+  const borderClass = isDark ? "border-gray-600/50" : "border-gray-200";
 
   return (
     <div className={clsx(className)}>
@@ -20,44 +22,49 @@ export default function PageStats({
         ? Array.from({ length: stats?.length || 4 }).map((_, i) => (
             <div
               key={i}
-              className={`${bgSecondary} rounded-xl px-4 py-2 border shadow-sm animate-pulse ${
-                isDark ? "border-gray-500" : "border-gray-200"
-              }`}
+              className={`${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm animate-pulse flex items-center gap-3`}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 bg-gray-300 rounded" />
-                <div className="h-4 w-24 bg-gray-300 rounded" />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-20 bg-gray-300 rounded" />
-                <div className="h-3 w-16 bg-gray-200 rounded" />
+              <div className="w-8 h-8 bg-gray-300 rounded-lg shrink-0" />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="h-3 w-16 bg-gray-300 rounded" />
+                <div className="h-4 w-12 bg-gray-200 rounded" />
               </div>
             </div>
           ))
         : stats?.map((item, index) => (
             <div
               key={index}
-              className={`${bgSecondary} rounded-xl px-4 py-2 border shadow-sm ${
-                isDark ? "border-gray-500" : "border-gray-200"
-              }`}
+              className={`${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm flex items-center gap-3`}
             >
-              <div className="flex items-center gap-2 mb-3">
+              <div
+                className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                  isDark ? "bg-white/5" : "bg-black/5"
+                }`}
+              >
                 {item.icon}
-                <span className={`text-sm ${textPrimary}`}>{item.title}</span>
               </div>
-
-              <div className="flex items-center gap-2">
-                <p className={`text-2xl ${textPrimary}`}>{item.value}</p>
-                {item.label && (
-                  <p
-                    className={`text-xs ${
-                      item.labelClass ? item.labelClass : textTertiary
-                    }`}
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`text-[11px] leading-tight truncate ${textTertiary}`}
+                >
+                  {item.title}
+                </p>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span
+                    className={`text-base font-semibold leading-tight ${textPrimary}`}
                   >
-                    {item.label}
-                  </p>
-                )}
+                    {item.value}
+                  </span>
+                  {item.label && (
+                    <span
+                      className={`text-[10px] leading-tight ${
+                        item.labelClass ? item.labelClass : textTertiary
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}

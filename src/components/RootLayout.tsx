@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import Header from "./header";
 import Sidebar from "./sidebar";
 import { useAppSelector } from "@/hooks/hooks";
+import RouterProgressBar from "./shared/RouterProgressBar";
 
 const RootLayout = () => {
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
@@ -17,6 +18,7 @@ const RootLayout = () => {
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
+      <RouterProgressBar />
       <Header />
       <div className=" pt-20 relative">
         <Sidebar />

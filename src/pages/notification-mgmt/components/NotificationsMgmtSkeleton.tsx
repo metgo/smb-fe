@@ -21,13 +21,13 @@ const Pulse = ({
 const StatCardSkeleton = ({ isDark }: { isDark: boolean }) => (
   <div
     className={clsx(
-      "rounded-2xl p-4 border space-y-3",
+      "rounded-xl p-3 border space-y-2",
       isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-gray-50",
     )}
   >
-    <Pulse isDark={isDark} className="w-10 h-10 rounded-xl" />
-    <Pulse isDark={isDark} className="h-6 w-10" />
-    <Pulse isDark={isDark} className="h-3 w-16" />
+    <Pulse isDark={isDark} className="w-7 h-7 rounded-lg" />
+    <Pulse isDark={isDark} className="h-5 w-8" />
+    <Pulse isDark={isDark} className="h-2.5 w-14" />
   </div>
 );
 
@@ -74,7 +74,7 @@ const NotificationsMgmtSkeleton = () => {
       <div className="shrink-0 p-6 pb-0">
         <div className="max-w-400 mx-auto">
           {/* Stats Cards — 7 columns mirrors NotificationStatsCards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
             {Array.from({ length: 7 }).map((_, i) => (
               <StatCardSkeleton key={i} isDark={isDark} />
             ))}

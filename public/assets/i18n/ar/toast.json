@@ -5,12 +5,18 @@
   "draft_saved": "تم حفظ المسودة",
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
+  "name_required": "يرجى إدخال اسم قبل الحفظ",
   "image_upload_info": "بدأ تحميل الصورة. يرجى الانتظار…",
   "image_upload_success": "تم تحميل الصورة بنجاح",
   "image_upload_failed": "فشل تحميل الصورة",
   "image_deleted": "تم حذف الصورة بنجاح",
   "delete_failed": "فشل حذف الصورة",
   "login_failed": "فشل تسجيل الدخول",
+
+  "poi_delete_loading": "جاري حذف نقاط الاهتمام...",
+  "poi_deleted_success": "تم حذف نقاط الاهتمام بنجاح",
+  "poi_delete_failed": "فشل في حذف نقاط الاهتمام",
+
   "business_delete_loading": "يرجى الانتظار. جاري حذف الأنشطة التجارية…",
   "business_deleted_success": "تم حذف الأنشطة التجارية بنجاح",
   "business_delete_failed": "فشل حذف الأنشطة التجارية",
@@ -35,6 +41,9 @@
   "product_status_change_loading": "يرجى الانتظار. جاري تغيير حالة المنتج…",
   "product_status_update_success": "تم تحديث حالة المنتجات بنجاح",
   "product_status_update_failed": "فشل تغيير حالة المنتجات",
+  "product_quantity_change_loading": "يرجى الانتظار. جاري تحديث كمية المنتج…",
+  "product_quantity_update_success": "تم تحديث كمية المنتج بنجاح",
+  "product_quantity_update_failed": "فشل تحديث كمية المنتج",
 
   "promotion_created_success": "تم إنشاء الترويج بنجاح",
   "promotion_create_failed": "فشل إنشاء الترويج",

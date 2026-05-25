@@ -28,6 +28,7 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
+  ChevronLeft,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -107,10 +108,10 @@ export default function Sidebar() {
     },
     {
       id: "poi",
-      path: routes.pointOfInterest,
+      path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "trips",
@@ -171,6 +172,13 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
+          id: "website-settings",
+          path: routes.websiteMgmt,
+          label: t("website_settings") || "Website Settings",
+          icon: Settings,
+          isEnabled: true,
+        },
+        {
           id: "dynamic-pages",
           path: routes.dynamicPages,
           label: t("dynamic_pages") || "Dynamic Pages",
@@ -212,18 +220,11 @@ export default function Sidebar() {
           icon: Layout,
           isEnabled: false,
         },
-        {
-          id: "website-settings",
-          path: routes.websiteMgmt,
-          label: t("website_settings") || "Website Settings",
-          icon: Settings,
-          isEnabled: true,
-        },
       ],
     },
     {
       id: "settings",
-      path: routes.profile,
+      path: "#settings",
       label: t("settings") || "Settings",
       icon: Settings,
       isEnabled: true,
@@ -237,10 +238,10 @@ export default function Sidebar() {
         },
         {
           id: "users",
-          path: routes.dashboard,
+          path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "documents",
@@ -297,7 +298,7 @@ export default function Sidebar() {
     const ChevronIcon = isRTL
       ? expanded
         ? ChevronDown
-        : ChevronRight
+        : ChevronLeft
       : expanded
         ? ChevronDown
         : ChevronRight;
@@ -417,7 +418,8 @@ export default function Sidebar() {
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin),
+                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
+                  !(sub.id === "users" && !isSuperadmin),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}

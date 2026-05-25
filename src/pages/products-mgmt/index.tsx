@@ -354,6 +354,14 @@ export default function ProductsMgmtPage() {
     setPage((prev) => prev + 1);
   }, [hasMore, isFetching]);
 
+  const refetchFromPage1 = useCallback(() => {
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
+
   const removeQueryParams = useCallback(() => {
     navigate({}, { replace: true });
   }, [navigate]);
@@ -468,20 +476,22 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="h-[calc(104vh-150px)] flex flex-col">
-        <PageHeader
-          title={t("products_management")}
-          description={t("products_management_desc")}
-          h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-          btnLabel={t("add_products")}
-          onClick={handleCreateNew}
-          totalCount={totalData ?? 0}
-        />
-        <PageStats
-          stats={salesStats}
-          isLoading={isStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        />
+      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
+        <div className="shrink-0">
+          <PageHeader
+            title={t("products_management")}
+            description={t("products_management_desc")}
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            btnLabel={t("add_products")}
+            onClick={handleCreateNew}
+            totalCount={totalData ?? 0}
+          />
+          <PageStats
+            stats={salesStats}
+            isLoading={isStatsLoading}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          />
+        </div>
 
         <div className="shrink-0 space-y-2 mb-2 mt-4">
           {/* Toolbar */}
@@ -694,7 +704,7 @@ export default function ProductsMgmtPage() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {!isLoadingProduct &&
           !isFetching &&
           combinedProducts?.length === 0 ? (
@@ -729,6 +739,7 @@ export default function ProductsMgmtPage() {
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}
+              refetch={refetchFromPage1}
             />
           ) : (
             <ProductGridView

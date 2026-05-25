@@ -5,6 +5,7 @@ type VoucherStatus =
   | "EXPIRED"
   | "CANCELED"
   | "UNASSIGNED";
+
 interface CampId {
   _id: string;
   createdAt: string;
@@ -131,6 +132,7 @@ interface IVoucherFormData {
   expirationDate: string;
   xlsFile: File | null;
 }
+
 interface IVoucher {
   _id: string;
   createdAt: string;
@@ -153,4 +155,40 @@ interface IVoucher {
   assigneeInfo: AssigneeInfo;
   creatorInfo: CreatorInfo;
   purchaserInfo: PurchaserInfo;
+}
+
+interface IVoucherItem {
+  _id: string;
+
+  amount: number;
+  remainingAmount: number;
+
+  paymentStatus: "PAID" | "PENDING" | "FAILED";
+  status: "ASSIGNED" | "UNASSIGNED" | "EXPIRED" | "USED";
+
+  expireDate: string; // ISO date string
+
+  creatorInfo: {
+    id: string;
+    createdAt: string; // ISO date string
+  };
+
+  assigneeInfo: {
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+    assignedAt: string; // ISO date string
+  };
+
+  purchaserInfo: {
+    id: string;
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+  };
+
+  campId: string;
+  code: string;
 }

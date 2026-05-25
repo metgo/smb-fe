@@ -129,7 +129,7 @@ const EventDateTimeDetails: React.FC<EventDateTimeDetailsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {dayDescription?.map((day, index) => (
           <div
-            key={day._id}
+            key={index}
             className={clsx(
               "rounded-xl border p-6 transition-all duration-200 hover:shadow-lg",
               isDark

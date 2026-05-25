@@ -33,10 +33,14 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 } from "@/pages";
 import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
+import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
 import {
@@ -157,7 +161,6 @@ function App() {
       if (userInfo) {
         try {
           const { user } = JSON.parse(userInfo);
-          console.log("🚀 ~ App ~ user:", user);
           if (user) {
             dispatch(loginSuccess(user));
           }
@@ -175,32 +178,39 @@ function App() {
       }
     }
   }, [dispatch]);
- 
+
   // Handle profile completion token — auto-login the user if token is in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const token = urlParams.get("token");
     const currentAccessToken = sessionStorage.getItem("access_token");
- 
+
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
       const fetchUserProfile = async () => {
         try {
           // Set the token temporarily so /users/me can use it
           sessionStorage.setItem("access_token", token);
- 
-          const response = await axios.get(`${envKeys.baseUrl}${endpoints.userInfo}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
- 
+
+          const response = await axios.get(
+            `${envKeys.baseUrl}${endpoints.userInfo}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
           const userData = response.data;
           if (userData) {
             saveUserInfo({ user: userData });
             dispatch(loginSuccess(userData));
 
             // Clean token from URL now that it's stored in session
-            const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/^&/, '?');
-            window.history.replaceState({}, '', newUrl);
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
 
             // Notify other components like SocketProvider
             window.dispatchEvent(new Event("session:updated"));
@@ -248,8 +258,9 @@ function App() {
     if (!isLoggedIn) {
       // Allow business-details with a profile completion token to bypass login
       const urlParams = new URLSearchParams(window.location.search);
-      const hasToken = urlParams.get('token');
-      const isBusinessDetails = window.location.pathname === routes.businessDetails;
+      const hasToken = urlParams.get("token");
+      const isBusinessDetails =
+        window.location.pathname === routes.businessDetails;
 
       if (hasToken && isBusinessDetails) {
         return children;
@@ -303,6 +314,9 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
+        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+        { path: routes.poiDetails, element: <PoiDetailsPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
@@ -311,7 +325,10 @@ function App() {
       element: (
         <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
-            <Outlet />
+            <>
+              <RouterProgressBar />
+              <Outlet />
+            </>
           </ProtectedRoute>
         </Suspense>
       ),
