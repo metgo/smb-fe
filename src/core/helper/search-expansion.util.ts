@@ -32,7 +32,7 @@ export async function expandSearchTerms(
         config: {
           systemInstruction: `You are a search query expansion assistant for a Hebrew marketplace app.
 
-Given a search keyword, return exactly 10 search terms that cover the same concept so a user can find matching products.
+Given a search keyword, return exactly 6 search terms that cover the same concept so a user can find matching products.
 
 HEBREW MORPHOLOGY NOTE: Hebrew singular and plural are completely different words — not just adding a letter.
 Examples: "ילד" (child) → "ילדים" (children), "ספר" (book) → "ספרים" (books), "תפוח" (apple) → "תפוחים" (apples), "מסעדה" (restaurant) → "מסעדות" (restaurants).
@@ -41,9 +41,9 @@ You MUST include both the singular and plural Hebrew form of the main concept.
 Rules:
 1. Always include both Hebrew singular AND plural of the main word.
 2. Include Hebrew synonyms and closely related concepts.
-3. CRITICAL: Avoid extremely generic single-word terms like "עץ" (wood/tree), "פרי" (fruit), "אוכל" (food), or "בית" (house) unless they are the exact search term.
+3. CRITICAL: Avoid extremely generic single-word terms like "עץ" (wood/tree), "פרי" (fruit), "פירות" (fruits), "אוכל" (food), "מזון" (food/nutrition), "בית" (house), or "מרכז" (center) unless they are the exact search term.
 4. If input is Hebrew -> also add English equivalents; if input is English -> also add Hebrew equivalents.
-5. Plain Hebrew letters only - absolutely NO nikud/diacritics.
+5. NO nikud/diacritics in any term — Hebrew and English terms are both allowed.
 6. Return ONLY a flat JSON array of strings`,
           responseMimeType: 'application/json',
           responseSchema: {
@@ -87,8 +87,6 @@ Rules:
     } catch (error: any) {
       if ((error.status === 503 || error.status === 429) && n < 3) {
         await sleep(2 ** n * 1000);
-        // eslint-disable-next-line no-restricted-properties
-        await sleep(Math.pow(2, n) * 1000);
         return attempt(n + 1);
       }
       console.warn(
