@@ -178,9 +178,12 @@ const PickupLocationModal = ({
               {pickupLocationModal.data.openingHrs.length > 0 ? (
                 <div className="mt-3 space-y-2">
                   {pickupLocationModal.data.openingHrs.map((timeSlot, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
+                    <div
+                      key={idx}
+                      className="flex flex-wrap items-center gap-2"
+                    >
                       <span
-                        className={`text-xs w-12 ${
+                        className={`text-xs w-8 sm:w-12 shrink-0 ${
                           isDark ? "text-gray-400" : "text-gray-600"
                         }`}
                       >

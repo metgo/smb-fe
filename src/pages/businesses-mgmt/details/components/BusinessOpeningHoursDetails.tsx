@@ -147,7 +147,7 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2
-          className={`flex items-center gap-2 font-semibold ${
+          className={`flex items-center gap-2 text-sm sm:text-base font-semibold ${
             isDark ? "text-white" : "text-gray-900"
           }`}
         >
@@ -222,7 +222,7 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
             <div
               key={day}
               className={`
-                flex justify-between items-center p-4 rounded-xl border transition
+                flex justify-between items-center p-2 sm:p-4 rounded-xl border transition
                 ${bg} ${border}
                 ${
                   isToday

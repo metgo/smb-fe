@@ -24,7 +24,7 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
   return (
     <div
       className={clsx(
-        "rounded-xl border p-6 transition-all duration-200",
+        "rounded-xl border p-2 md:p-4 transition-all duration-200",
         isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
       )}
     >
@@ -63,7 +63,7 @@ const DescriptionCard: React.FC<DescriptionCardProps> = ({
       ) : (
         <div
           className={clsx(
-            "text-base leading-relaxed pl-11",
+            " text-sm md:text-base leading-relaxed md:pl-11",
             preWrap && "whitespace-pre-wrap",
             isDark ? "text-gray-200" : "text-gray-800",
           )}

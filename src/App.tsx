@@ -37,7 +37,6 @@ import {
   PoiMgmtPage,
   PoiDetailsPage,
 } from "@/pages";
-import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
@@ -333,10 +332,7 @@ function App() {
         </Suspense>
       ),
       errorElement: <ErrorUiPage />,
-      children: [
-        { path: routes.auth, element: <AuthPage /> },
-        { path: "/test-lab", element: <TestLabPage /> },
-      ],
+      children: [{ path: routes.auth, element: <AuthPage /> }],
     },
   ]);
 

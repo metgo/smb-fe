@@ -1,4 +1,5 @@
 import ConnectedWebsites from "../details-sections/ConnectedWebsites";
+import GridCard from "./GridCard";
 import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
 import RouterProgressBar from "./RouterProgressBar";
@@ -20,6 +21,8 @@ import TabsSection from "./TabsSection";
 import ViewModeToggle from "./ViewModeToggle";
 import WebsiteSelect from "./WebsiteSelect";
 import WizardFooter from "./WizardFooter";
+import WizardStepper from "./WizardStepper";
+export type { WizardStep } from "./WizardStepper";
 
 export {
   Spinner,
@@ -44,4 +47,6 @@ export {
   ConnectedWebsites,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,
+  WizardStepper,
+  GridCard,
 };

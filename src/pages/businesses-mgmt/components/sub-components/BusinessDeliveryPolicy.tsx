@@ -176,70 +176,64 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     : "bg-gray-50 border-gray-200"
                 }`}
               >
-                <div className="grid grid-cols-12 gap-3 mb-3">
-                  {/* Area */}
-                  {/* Delivery Area */}
-                  <div className="col-span-5">
-                    <label
-                      className={`block text-xs mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      {t("delivery_area")}
-                    </label>
-
-                    <input
-                      type="text"
-                      value={deliveryArea.area}
-                      onChange={(e) => {
-                        const areas = formData.deliveryArea.map((area, idx) =>
-                          idx === areaIdx
-                            ? { ...area, area: e.target.value }
-                            : area,
-                        );
-                        setFormData({ ...formData, deliveryArea: areas });
-                      }}
-                      placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
-                        ${
+                <div className="space-y-2 mb-3">
+                  {/* Area + Price row */}
+                  <div className="flex gap-3">
+                    <div className="flex-1 min-w-0">
+                      <label
+                        className={`block text-xs mb-1 ${
+                          isDark ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        {t("delivery_area")}
+                      </label>
+                      <input
+                        type="text"
+                        value={deliveryArea.area}
+                        onChange={(e) => {
+                          const areas = formData.deliveryArea.map(
+                            (area, idx) =>
+                              idx === areaIdx
+                                ? { ...area, area: e.target.value }
+                                : area,
+                          );
+                          setFormData({ ...formData, deliveryArea: areas });
+                        }}
+                        placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
+                        className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500 ${
                           isDark
                             ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
                             : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                        }
-                      `}
-                    />
+                        }`}
+                      />
+                    </div>
+                    <div className="w-24 sm:w-32 shrink-0">
+                      <label
+                        className={`block text-xs mb-1 ${
+                          isDark ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        {t("delivery_price")}
+                      </label>
+                      <input
+                        type="number"
+                        value={deliveryArea.price}
+                        onChange={(e) => {
+                          const areas = [...formData.deliveryArea];
+                          areas[areaIdx].price = e.target.value;
+                          setFormData({ ...formData, deliveryArea: areas });
+                        }}
+                        className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500 ${
+                          isDark
+                            ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+                            : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                        }`}
+                      />
+                    </div>
                   </div>
 
-                  {/* Price */}
-                  <div className="col-span-3">
-                    <label
-                      className={`block text-xs mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      {t("delivery_price")}
-                    </label>
-
-                    <input
-                      type="number"
-                      value={deliveryArea.price}
-                      onChange={(e) => {
-                        const areas = [...formData.deliveryArea];
-                        areas[areaIdx].price = e.target.value;
-                        setFormData({ ...formData, deliveryArea: areas });
-                      }}
-                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
-                      ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
-                          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                      }
-                    `}
-                    />
-                  </div>
-
-                  {/* Add Location */}
-                  <div className="col-span-3 flex items-end">
+                  {/* Add Location + Delete row */}
+                  <div className="flex gap-2">
                     <button
                       onClick={() =>
                         setPickupLocationModal({
@@ -253,21 +247,15 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                           },
                         })
                       }
-                      className={`w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1
-                      ${
+                      className={`flex-1 px-3 py-2 rounded-lg border text-sm flex justify-center items-center gap-1 ${
                         isDark
                           ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
                           : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }
-                    `}
+                      }`}
                     >
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 shrink-0" />
                       {t("add_location")}
                     </button>
-                  </div>
-
-                  {/* Delete */}
-                  <div className="col-span-1 flex items-end">
                     <button
                       onClick={() =>
                         setFormData({
@@ -277,7 +265,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                           ),
                         })
                       }
-                      className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
+                      className="p-2 rounded-lg bg-red-600 text-white cursor-pointer shrink-0"
                     >
                       <X className="w-4 h-4" />
                     </button>

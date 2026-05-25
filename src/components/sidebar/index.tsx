@@ -273,15 +273,18 @@ export default function Sidebar() {
   };
 
   const handleItemClick = (item: MenuItem, hasSubItems: boolean) => {
-    // Prevent navigation if item is disabled
     if (!item.isEnabled) {
       return;
     }
 
     if (hasSubItems) {
       toggleExpanded(item.path, item.id);
+    } else {
+      if (isMobileSidebarOpen) {
+        dispatch(setMobileSidebarOpen(false));
+      }
+      navigate(item.path);
     }
-    navigate(item.path);
   };
 
   const isItemActive = (path: string) =>
@@ -362,7 +365,7 @@ export default function Sidebar() {
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}

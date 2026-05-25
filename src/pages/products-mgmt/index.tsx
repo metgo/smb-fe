@@ -506,14 +506,14 @@ export default function ProductsMgmtPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap relative">
               <FilterButton value={showFilters} onChange={setShowFilters} />
 
               {viewMode === "list" && (
                 <div className="relative" ref={columnSettingsRef}>
                   <button
                     onClick={() => setShowColumnSettings(!showColumnSettings)}
-                    className={`px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
+                    className={`px-3 py-3 md:py-2.5 rounded md:rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
                       isDark
                         ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                         : "border-gray-300 hover:bg-gray-100 text-gray-700"

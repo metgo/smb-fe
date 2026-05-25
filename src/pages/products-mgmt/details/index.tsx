@@ -1,12 +1,9 @@
-import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState, useRef } from "react";
 import {
   Edit,
   Package,
   ArrowUp,
-  ArrowLeft,
-  ArrowRight,
   ArrowUpDown,
   Copy,
   Eye,
@@ -38,17 +35,16 @@ import {
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
-import { StatusChangeBtn } from "@/components/btns";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { IOpMode } from "@/enums/operation.types";
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
 
   const { t } = useTranslation("products");
-  const { t: ct } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark, language, isRTL } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const [updateProduct] = useUpdateProductMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -175,27 +171,12 @@ export default function ProductDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative py-8">
       <Spinner isLoading={isLoading} />
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <button
-          onClick={() => navigate(routes.productsMgmt)}
-          className={clsx(
-            "flex items-center gap-2 py-2 rounded-lg transition-colors",
-            isDark
-              ? "hover:bg-gray-800 text-gray-300"
-              : "hover:bg-gray-100 text-gray-700",
-          )}
-        >
-          {isRTL ? (
-            <ArrowRight className="w-5 h-5" />
-          ) : (
-            <ArrowLeft className="w-5 h-5" />
-          )}
-          <span>{ct("back_to_list") || "Back"}</span>
-        </button>
+        <BackToListBtn navPath={routes.productsMgmt} />
 
         <div className="flex items-center gap-3">
           <StatusChangeBtn

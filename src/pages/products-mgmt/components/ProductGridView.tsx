@@ -3,20 +3,14 @@ import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Building2, Loader, Package } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { DeleteIconBtn, EditIconBtn } from "@/components/btns";
-import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
+import { getLngWiseStr } from "@/helpers";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
-import {
-  ConfirmDialog,
-  ImageWithFallback,
-  ItemStatusBadge,
-} from "@/components/shared";
+import { ConfirmDialog, GridCard } from "@/components/shared";
 
 interface ProductGridViewProps {
   products: any[];
@@ -48,7 +42,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   useInfiniteScroll({
     ref: scrollRef,
     hasMore,
-    isLoading: isLoading,
+    isLoading,
     onLoadMore: fetchNextPage,
   });
 
@@ -69,17 +63,9 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
     if (setSelectedProducts) setSelectedProducts(newSelected);
   };
 
-  const handleProductClick = (productId: string) => {
-    navigate(`${routes.productDetails}?productId=${productId}`, {
-      replace: true,
-    });
-  };
-
   return (
     <div
-      className={`py-3 px-2 rounded-xl ${
-        isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"
-      }`}
+      className={`py-3 px-2 rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-white"}`}
     >
       <div
         ref={scrollRef}
@@ -87,125 +73,69 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
         className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-          {products?.map((product) => {
-            const isChecked = selectedProducts?.has(product._id) ?? false;
-            return (
-              <div
-                key={product?._id}
-                onClick={() => handleProductClick(product?._id)}
-                className={clsx(
-                  "rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group relative",
-                  isDark ? "bg-gray-800" : "bg-white",
-                  isChecked
-                    ? "border-2 border-teal-500"
-                    : `border ${isDark ? "border-gray-700" : "border-gray-200"}`,
-                )}
-              >
-                {/* Top overlay: checkbox + status + actions */}
-                <div
-                  className="absolute top-2 left-0 z-30 w-full flex items-center justify-between px-1.5"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {selectedProducts && (
-                      <Checkbox
-                        checked={isChecked}
-                        onCheckedChange={() => toggleCheckBox(product?._id)}
-                        className="cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
-                      />
+          {products?.map((product) => (
+            <GridCard
+              key={product._id}
+              image={product.images?.[0]?.image}
+              imageAlt={product.name}
+              fallbackIcon={Package}
+              fallbackGradient="from-blue-500 to-indigo-600"
+              title={getLngWiseStr(
+                language,
+                product?.name,
+                product?.nameHe,
+                product?.nameAr,
+              )}
+              status={product?.status?.toLowerCase()}
+              isChecked={selectedProducts?.has(product._id) ?? false}
+              onCheckChange={
+                selectedProducts ? () => toggleCheckBox(product._id) : undefined
+              }
+              onEdit={
+                handleEditClick
+                  ? (e) => {
+                      e.stopPropagation();
+                      handleEditClick(product._id);
+                    }
+                  : undefined
+              }
+              onDelete={(e) => {
+                e.stopPropagation();
+                setIsConfirmOpen(true);
+                setItemToDelete(product._id);
+              }}
+              onClick={() =>
+                navigate(`${routes.productDetails}?productId=${product._id}`, {
+                  replace: true,
+                })
+              }
+              footer={
+                <div className="flex items-center justify-between">
+                  <span
+                    className={clsx(
+                      "font-bold text-sm",
+                      isDark ? "text-white" : "text-gray-900",
                     )}
-                    <ItemStatusBadge status={product?.status?.toLowerCase()} />
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    {handleEditClick && (
-                      <EditIconBtn
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditClick(product._id);
-                        }}
-                      />
-                    )}
-                    <DeleteIconBtn
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsConfirmOpen(true);
-                        setItemToDelete(product?._id);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Product Image */}
-                <div className="relative h-24 sm:h-28 bg-linear-to-br from-blue-500 to-indigo-600">
-                  {product?.images?.length > 0 ? (
-                    <ImageWithFallback
-                      src={product?.images?.[0]?.image}
-                      alt={product?.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-10 h-10 text-white opacity-50" />
+                  >
+                    ₪ {product?.price?.sellingPrice ?? "-"}
+                  </span>
+                  {product?.businessId?.name && (
+                    <div
+                      className={clsx(
+                        "flex items-center gap-1 text-xs",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      <Building2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate max-w-16">
+                        {product.businessId.name}
+                      </span>
                     </div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/20 to-transparent" />
                 </div>
-
-                {/* Product Info */}
-                <div className="px-2.5 py-2">
-                  <h3
-                    className={`font-semibold text-sm leading-tight mb-1 line-clamp-1 ${
-                      isDark ? "text-gray-100" : "text-gray-800"
-                    }`}
-                  >
-                    {getLngWiseStr(
-                      language,
-                      product?.name,
-                      product?.nameHe,
-                      product?.nameAr,
-                    )}
-                  </h3>
-                  <p
-                    className={`text-xs mb-1.5 line-clamp-1 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    {getPlainTextFromRichText(
-                      getLngWiseStr(
-                        language,
-                        product?.description,
-                        product?.descriptionHe,
-                        product?.descriptionAr,
-                      ),
-                    )}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`font-bold text-sm ${
-                        isDark ? "text-white" : "text-gray-900"
-                      }`}
-                    >
-                      ₪ {product?.price?.sellingPrice ?? "-"}
-                    </span>
-                    {product?.businessId?.name && (
-                      <div
-                        className={`flex items-center gap-1 text-xs ${
-                          isDark ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
-                        <Building2 className="w-3 h-3 shrink-0" />
-                        <span className="truncate max-w-16">
-                          {product?.businessId?.name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              }
+            />
+          ))}
         </div>
 
         {isLoading && (

@@ -1,4 +1,6 @@
 import { toast } from "sonner";
+import axios from "axios";
+
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -6,7 +8,6 @@ import {
   ChevronDown,
   Edit,
   Eye,
-  MoreHorizontal,
   MousePointer,
   Plus,
   Share2,
@@ -16,7 +17,6 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
 
 import {
   BusinessContactDetails,
@@ -276,11 +276,11 @@ export default function BusinessDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
       {/* Top Row */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
         <BackToListBtn navPath={routes.businessMgmt} />
         <div className="flex items-center gap-2">
           <StatusChangeBtn
@@ -291,14 +291,14 @@ export default function BusinessDetailsPage() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+              className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
                 isDark
                   ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">{t("actions")}</span>
+              {/* <MoreHorizontal className="w-4 h-4" /> */}
+              <span className="inline text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
@@ -401,12 +401,12 @@ export default function BusinessDetailsPage() {
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-2 md:gap-4"
+          className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 my-2 sm:my-4 gap-2 md:gap-3"
         />
       </div>
 
       {/* Content */}
-      <div className="mt-6 flex flex-col flex-1 min-h-0">
+      <div className="mt-2 sm:mt-4 flex flex-col flex-1 min-h-0">
         <div className="shrink-0">
           <TabsSection
             tabs={businessTabs}

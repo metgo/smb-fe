@@ -463,7 +463,7 @@ export default function BusinessesMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex flex-col pt-10 md:pt-0">
         {/* Sticky Header */}
         <div
           className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
