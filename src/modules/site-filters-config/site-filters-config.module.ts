@@ -25,6 +25,10 @@ import {
   BusinessesAudit,
   BusinessesAuditSchema,
 } from '../business/shared/schema/businesses-audit.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 import { ProductsModule } from '../products/products.module';
 import {
   BussCategory,
@@ -40,6 +44,7 @@ import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
       { name: ExternalApi.name, schema: ExternalApiSchema },
       { name: ProductsAudit.name, schema: ProductsAuditSchema },
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
+      { name: Business.name, schema: BusinessSchema },
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: Tags.name, schema: TagsSchema },
       { name: Campaign.name, schema: CampaignSchema },

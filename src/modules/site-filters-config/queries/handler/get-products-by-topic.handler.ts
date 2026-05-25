@@ -17,6 +17,7 @@ import {
   PRODUCTS_SEARCH_INDEX,
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
+  normalizeArabicSearch,
 } from 'src/core/helper/atlas-search.util';
 import { GetProductsByTopicQuery } from '../get-products-by-topic.query';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
@@ -27,6 +28,7 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { CacheService } from 'src/services/cache/cache.service';
 
 const PRODUCTS_BY_TOPIC_CACHE_TTL = 120; // 2 minutes
@@ -49,6 +51,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private CampaignModel: Model<Campaign>,
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
+    @InjectModel(Business.name)
+    private BusinessModel: Model<Business>,
     private readonly configService: ConfigService,
     private readonly cacheService: CacheService,
   ) {}
@@ -57,7 +61,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     externalApiId,
     query,
   }: GetProductsByTopicQuery): Promise<any> {
-    const cacheKey = `products:by-topic:${externalApiId}:${JSON.stringify(query)}`;
+    const cacheKey = `products:by-topic:${externalApiId}:${JSON.stringify(
+      query,
+    )}`;
     const cached = this.cacheService.get<any>(cacheKey);
     if (cached) return cached;
     const {
@@ -75,69 +81,67 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       let searchOrConditions: any[] = [];
       let expandedTerms: string[] = [];
       let searchTerms: string[] = [];
+      let matchingBusinessIds: any[] = [];
+      let matchingBusinessNameIds: any[] = [];
+      let matchingBusinessShortDescIds: any[] = [];
       let matchingCategoryIds: any[] = [];
       let matchingTagIds: any[] = [];
       let normalizedBase = '';
+      let buildSearchConditions:
+        | ((terms: string[], fields: string[]) => any[])
+        | null = null;
+      let lookupTerms: string[] = [];
+      let atlasRankedIds: string[] = [];
 
-      if (search) {
-        normalizedBase = normalizeHebrewSearch(search);
-        const apiKey = this.configService.get('GEMINI_API_KEY');
-        expandedTerms = await expandSearchTerms(normalizedBase, apiKey);
-        searchTerms = [search, ...expandedTerms].filter((t, i, arr) => t && arr.indexOf(t) === i);
-
-        const regexes = expandedTerms.map(term => buildHebrewSearchRegex(term));
-        searchOrConditions = regexes.flatMap(regex => [
-          { name: regex },
-          { nameHe: regex },
-          { nameAr: regex },
-          { description: regex },
-          { descriptionHe: regex },
-          { descriptionAr: regex },
-          { slug: regex },
-        ]);
-
-        // contextual category lookup
-        try {
-          const categoryOrQueries = searchTerms.map(t => {
-            const r = buildHebrewSearchRegex(t);
-            return [
-              { name: { $regex: r.source, $options: 'i' } },
-              { hebrewName: { $regex: r.source, $options: 'i' } },
-            ];
-          }).flat();
-          matchingCategoryIds = await this.BussCategoryModel.find({ $or: categoryOrQueries }).select('_id');
-        } catch (catError: any) {
-          this.logger.warn(`[Topic Search] Category lookup failed: ${catError?.message}`);
-        }
-
-        // contextual tag lookup
-        try {
-          const tagOrQueries = searchTerms.map(t => {
-            const r = buildHebrewSearchRegex(t);
-            return [
-              { name: { $regex: r.source, $options: 'i' } },
-              { nameHe: { $regex: r.source, $options: 'i' } },
-              { nameAr: { $regex: r.source, $options: 'i' } },
-            ];
-          }).flat();
-          matchingTagIds = await this.TagsModel.find({ $or: tagOrQueries }).select('_id');
-        } catch (tagError: any) {
-          this.logger.warn(`[Topic Search] Tag lookup failed: ${tagError?.message}`);
-        }
-
-        if (matchingCategoryIds.length) {
-          searchOrConditions.push({ categories: { $in: matchingCategoryIds.map(c => c._id) } });
-        }
-        if (matchingTagIds.length) {
-          searchOrConditions.push({ tagsId: { $in: matchingTagIds.map(t => t._id) } });
-        }
-      }
-      const siteSettings = await this.SiteFiltersConfigModel.findOne({
+      const siteSettingsPromise = this.SiteFiltersConfigModel.findOne({
         externalApiId,
         status: SiteFiltersConfigStatus.APPROVED,
       })
         .select('siteTopics')
         .lean();
+
+      if (search) {
+        normalizedBase = normalizeArabicSearch(normalizeHebrewSearch(search));
+        const apiKey = this.configService.get('GEMINI_API_KEY');
+        expandedTerms = await expandSearchTerms(normalizedBase, apiKey);
+
+        searchTerms = [
+          ...new Set(
+            [search, normalizedBase, ...expandedTerms].filter(Boolean),
+          ),
+        ];
+
+        const regexMap = new Map(
+          searchTerms.map(t => [t, buildHebrewSearchRegex(t)]),
+        );
+        lookupTerms = searchTerms.slice(0, 5);
+
+        buildSearchConditions = (terms: string[], fields: string[]) => terms.flatMap(t => {
+          const r = regexMap.get(t) ?? buildHebrewSearchRegex(t);
+          return fields.map(f => ({
+            [f]: { $regex: r.source, $options: 'i' },
+          }));
+        });
+
+        const fallbackTerms = searchTerms.slice(0, 6);
+        searchOrConditions = fallbackTerms.flatMap(term => {
+          const regex = regexMap.get(term) ?? buildHebrewSearchRegex(term);
+          return [
+            { name: regex },
+            { nameHe: regex },
+            { nameAr: regex },
+            { shortDescription: regex },
+            { shortDescriptionHe: regex },
+            { shortDescriptionAr: regex },
+            { description: regex },
+            { descriptionHe: regex },
+            { descriptionAr: regex },
+            { slug: regex },
+          ];
+        });
+      }
+
+      const siteSettings = await siteSettingsPromise;
 
       let siteCategories: any[] = [];
 
@@ -175,7 +179,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           hasDelivery,
           searchOrConditions,
         );
-        this.cacheService.set(cacheKey, fallbackResult, PRODUCTS_BY_TOPIC_CACHE_TTL);
+        this.cacheService.set(
+          cacheKey,
+          fallbackResult,
+          PRODUCTS_BY_TOPIC_CACHE_TTL,
+        );
         return fallbackResult;
       }
 
@@ -204,8 +212,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       const allProductIds = productCategoryEntries.map(e => e.productId);
 
-      const productSelectFields = '_id productId name nameHe nameAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea';
-      const productPopulate = [{ path: 'businessId', select: '_id logo name nameHe nameAr slug' }];
+      const productSelectFields
+        = '_id productId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea categories tagsId';
+      const productPopulate = [
+        { path: 'businessId', select: '_id logo name nameHe nameAr slug' },
+      ];
       const baseProductQuery: any = {
         productId: { $in: allProductIds },
         status: CommonStatus.APPROVED,
@@ -216,7 +227,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           { 'quantity.isUnlimited': true },
         ],
         ...(groupTypesId?.length && { groupTypesId: { $in: groupTypesId } }),
-        ...(accessibilitiesId?.length && { accessibilitiesId: { $in: accessibilitiesId } }),
+        ...(accessibilitiesId?.length && {
+          accessibilitiesId: { $in: accessibilitiesId },
+        }),
         ...(tagsId?.length && { tagsId: { $in: tagsId } }),
         ...(hasDelivery === true && { 'deliveryArea.0': { $exists: true } }),
         ...(hasDelivery === false && { 'deliveryArea.0': { $exists: false } }),
@@ -226,116 +239,278 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       if (search && searchTerms.length) {
         try {
-          // Atlas Search — tiered relevance scoring
-          //   Tier 1 (boost 100): exact phrase match of the user's literal input
-          //   Tier 2 (boost  30): fuzzy match of the original + its normalised form
-          //   Tier 3 (boost   5): AI-expanded semantic synonyms (fuzzy)
-          const searchPaths = ['name', 'nameHe', 'nameAr', 'description', 'descriptionHe', 'descriptionAr'];
+          const nameFields = ['nameHe', 'name', 'nameAr'];
+          const shortDescFields = [
+            'shortDescriptionHe',
+            'shortDescription',
+            'shortDescriptionAr',
+          ];
+          const descFields = ['descriptionHe', 'description', 'descriptionAr'];
           const shouldClauses: any[] = [];
 
-          // Tier 1 — exact phrase
+          const addPhrase = (
+            q: string,
+            path: string[],
+            boost: number,
+            slop = 0,
+          ) => {
+            shouldClauses.push({
+              phrase: {
+                query: q,
+                path,
+                ...(slop && { slop }),
+                score: { boost: { value: boost } },
+              },
+            });
+          };
+
+          const addFuzzy = (
+            q: string,
+            path: string[],
+            maxEdits: number,
+            prefixLength: number,
+            boost: number,
+          ) => {
+            shouldClauses.push({
+              text: {
+                query: q,
+                path,
+                fuzzy: { maxEdits, prefixLength },
+                score: { boost: { value: boost } },
+              },
+            });
+          };
+
+          const originalTerms = Array.from(
+            new Set([search, normalizedBase].filter(Boolean)),
+          );
+          const originalSet = new Set(originalTerms);
+          const filteredExpanded = expandedTerms
+            .filter(t => t && !originalSet.has(t))
+            .slice(0, 12);
+
           shouldClauses.push({
             phrase: {
               query: search,
-              path: searchPaths,
+              path: nameFields,
+              score: { boost: { value: 10000 } },
+            },
+          });
+          originalTerms.forEach(t => addFuzzy(t, nameFields, 1, 2, 5000));
+          filteredExpanded.forEach(t => {
+            if (t.includes(' ')) {
+              addPhrase(t, nameFields, 3000, 1);
+            } else {
+              addFuzzy(t, nameFields, 2, 1, 1500);
+            }
+          });
+
+          shouldClauses.push({
+            phrase: {
+              query: search,
+              path: shortDescFields,
+              score: { boost: { value: 1000 } },
+            },
+          });
+          originalTerms.forEach(t => addFuzzy(t, shortDescFields, 1, 2, 500));
+          filteredExpanded.forEach(t => {
+            if (t.includes(' ')) {
+              addPhrase(t, shortDescFields, 300, 1);
+            } else {
+              addFuzzy(t, shortDescFields, 2, 1, 150);
+            }
+          });
+
+          shouldClauses.push({
+            phrase: {
+              query: search,
+              path: descFields,
               score: { boost: { value: 100 } },
             },
           });
-
-          // Tier 2 — fuzzy on the user's own words (original + normalised, deduped)
-          const tier2Terms = Array.from(new Set([search, normalizedBase].filter(Boolean)));
-          tier2Terms.forEach(term => {
-            shouldClauses.push({
-              text: {
-                query: term,
-                path: searchPaths,
-                fuzzy: { maxEdits: 1, prefixLength: 2 },
-                score: { boost: { value: 30 } },
-              },
-            });
+          originalTerms.forEach(t => addFuzzy(t, descFields, 1, 2, 50));
+          filteredExpanded.forEach(t => {
+            if (t.includes(' ')) {
+              addPhrase(t, descFields, 30, 1);
+            } else {
+              addFuzzy(t, descFields, 2, 1, 15);
+            }
           });
 
-          // Tier 3 — semantic expansions from Gemini (skip any already covered above)
-          const tier2Set = new Set(tier2Terms);
-          expandedTerms
-            .filter(term => term && !tier2Set.has(term))
-            .forEach(term => {
-              if (term.includes(' ')) {
-                shouldClauses.push({
-                  phrase: {
-                    query: term,
-                    path: searchPaths,
-                    slop: 1,
-                    score: { boost: { value: 5 } },
-                  },
-                });
-              } else {
-                shouldClauses.push({
-                  text: {
-                    query: term,
-                    path: searchPaths,
-                    fuzzy: { maxEdits: 2, prefixLength: 1 },
-                    score: { boost: { value: 5 } },
-                  },
-                });
-              }
-            });
+          originalTerms.forEach(t => addFuzzy(t, ['slug'], 1, 1, 5));
+          filteredExpanded.forEach(t => addFuzzy(t, ['slug'], 2, 1, 3));
 
-          matchingCategoryIds.forEach(cat => shouldClauses.push({
-            text: { query: cat._id.toString(), path: ['categories'] },
-          }));
-          matchingTagIds.forEach(tag => shouldClauses.push({
-            text: { query: tag._id.toString(), path: ['tagsId'] },
-          }));
-
-          // Step 1: get relevance-ranked IDs from Atlas Search
-          // Convert allProductIds to ObjectId so the aggregate $match performs
-          // a proper type-safe comparison (Mongoose does NOT coerce strings in
-          // raw aggregation pipelines the way it does in .find()).
           const allProductObjectIds = allProductIds
             .filter(id => Types.ObjectId.isValid(id))
             .map(id => new mongoose.Types.ObjectId(id));
 
-          const atlasResults = await this.ProductsAuditModel.aggregate([
-            {
-              $search: {
-                index: PRODUCTS_SEARCH_INDEX,
-                compound: { should: shouldClauses, minimumShouldMatch: 1 },
+          const noResults = Promise.resolve([] as any[]);
+          const [
+            atlasResults,
+            bizNameResults,
+            bizShortDescResults,
+            catResults,
+            tagResults,
+          ] = await Promise.all([
+            this.ProductsAuditModel.aggregate([
+              {
+                $search: {
+                  index: PRODUCTS_SEARCH_INDEX,
+                  compound: { should: shouldClauses, minimumShouldMatch: 1 },
+                },
               },
-            },
-            {
-              $match: {
-                productId: { $in: allProductObjectIds },
-                status: CommonStatus.APPROVED,
-                isActive: true,
-                isDeleted: { $ne: true },
+              {
+                $match: {
+                  productId: { $in: allProductObjectIds },
+                  status: CommonStatus.APPROVED,
+                  isActive: true,
+                  isDeleted: { $ne: true },
+                },
               },
-            },
-            { $project: { productId: 1 } },
+              { $limit: 300 },
+              { $project: { productId: 1 } },
+            ]),
+            buildSearchConditions
+              ? this.BusinessModel.find({
+                $or: buildSearchConditions(lookupTerms, [
+                  'name',
+                  'nameHe',
+                  'nameAr',
+                  'slug',
+                ]),
+              })
+                .select('_id')
+                .lean()
+                .catch(() => [] as any[])
+              : noResults,
+            buildSearchConditions
+              ? this.BusinessModel.find({
+                $or: buildSearchConditions(lookupTerms, [
+                  'shortDescription',
+                  'shortDescriptionHe',
+                  'shortDescriptionAr',
+                ]),
+              })
+                .select('_id')
+                .lean()
+                .catch(() => [] as any[])
+              : noResults,
+            buildSearchConditions
+              ? this.BussCategoryModel.find({
+                $or: buildSearchConditions(lookupTerms, [
+                  'name',
+                  'hebrewName',
+                ]),
+              })
+                .select('_id')
+                .lean()
+                .catch(() => [] as any[])
+              : noResults,
+            buildSearchConditions
+              ? this.TagsModel.find({
+                $or: buildSearchConditions(lookupTerms, [
+                  'name',
+                  'nameHe',
+                  'nameAr',
+                ]),
+              })
+                .select('_id')
+                .lean()
+                .catch(() => [] as any[])
+              : noResults,
           ]);
 
-          const atlasProductIds = atlasResults.map((r: any) => r.productId.toString());
+          atlasRankedIds = atlasResults.map((r: any) => r.productId.toString());
+          matchingBusinessNameIds = bizNameResults;
+          matchingBusinessShortDescIds = bizShortDescResults;
+          matchingBusinessIds = [
+            ...bizNameResults,
+            ...bizShortDescResults.filter(
+              (b: any) => !bizNameResults.some(
+                (n: any) => n._id.toString() === b._id.toString(),
+              ),
+            ),
+          ];
+          matchingCategoryIds = catResults;
+          matchingTagIds = tagResults;
 
-          // Step 2: fetch full documents with populate using Atlas-matched IDs.
-          // If Atlas Search returned no hits (e.g. index not warmed yet or no
-          // semantic match), fall back to the regex conditions so the user still
-          // gets results instead of an empty page.
-          if (atlasProductIds.length === 0) {
-            throw new Error('Atlas Search returned 0 hits — using regex fallback');
+          if (matchingBusinessIds.length) {
+            searchOrConditions.push({
+              businessId: { $in: matchingBusinessIds.map((b: any) => b._id) },
+            });
           }
+          if (catResults.length) {
+            searchOrConditions.push({
+              categories: { $in: catResults.map((c: any) => c._id) },
+            });
+          }
+          if (tagResults.length) {
+            searchOrConditions.push({
+              tagsId: { $in: tagResults.map((t: any) => t._id) },
+            });
+          }
+
+          if (
+            atlasRankedIds.length === 0
+            && matchingBusinessIds.length === 0
+            && catResults.length === 0
+            && tagResults.length === 0
+          ) {
+            throw new Error(
+              'Atlas Search returned 0 hits — using regex fallback',
+            );
+          }
+
+          const searchOrClauses: any[] = [];
+          if (atlasRankedIds.length) {
+            searchOrClauses.push({ productId: { $in: atlasRankedIds } });
+          }
+          if (matchingBusinessIds.length) {
+            searchOrClauses.push({
+              businessId: { $in: matchingBusinessIds.map((b: any) => b._id) },
+            });
+          }
+          if (catResults.length) {
+            searchOrClauses.push({
+              categories: { $in: catResults.map((c: any) => c._id) },
+            });
+          }
+          if (tagResults.length) {
+            searchOrClauses.push({
+              tagsId: { $in: tagResults.map((t: any) => t._id) },
+            });
+          }
+
+          searchTerms
+            .filter(t => /[א-ת]/.test(t))
+            .slice(0, 4)
+            .forEach(term => {
+              const r = buildHebrewSearchRegex(term);
+              searchOrClauses.push(
+                { nameHe: { $regex: r.source, $options: 'i' } },
+                { nameAr: { $regex: r.source, $options: 'i' } },
+                { shortDescriptionHe: { $regex: r.source, $options: 'i' } },
+                { shortDescriptionAr: { $regex: r.source, $options: 'i' } },
+                { descriptionHe: { $regex: r.source, $options: 'i' } },
+              );
+            });
 
           products = await this.ProductsAuditModel.find({
             ...baseProductQuery,
-            productId: { $in: atlasProductIds },
+            $and: [{ $or: searchOrClauses }],
           })
             .select(productSelectFields)
             .populate(productPopulate)
             .lean();
         } catch (atlasError: any) {
-          this.logger.warn(`[Topic Search] Atlas Search failed, using regex fallback: ${atlasError?.message}`);
+          this.logger.warn(
+            `[Topic Search] Atlas Search failed, using regex fallback: ${atlasError?.message}`,
+          );
           products = await this.ProductsAuditModel.find({
             ...baseProductQuery,
-            ...(searchOrConditions.length > 0 && { $and: [{ $or: searchOrConditions }] }),
+            ...(searchOrConditions.length > 0 && {
+              $and: [{ $or: searchOrConditions }],
+            }),
           })
             .select(productSelectFields)
             .populate(productPopulate)
@@ -352,79 +527,137 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         products.map(p => [p.productId.toString(), p]),
       );
 
-      const flatList = (
-        await Promise.all(
-          productCategoryEntries.map(async ({ productId, category }) => {
-            const product = productMap.get(productId);
-            if (!product) return null;
+      const flatList = productCategoryEntries
+        .map(({ productId, category }) => {
+          const product = productMap.get(productId);
+          if (!product) return null;
 
-            const {
-              _id,
-              productId: pid,
-              categories,
-              subCategories,
-              deliveryArea,
-              ...rest
-            } = product as any;
+          const {
+            _id,
+            productId: pid,
+            categories,
+            subCategories,
+            deliveryArea,
+            ...rest
+          } = product as any;
 
-            let selectedImage = null;
-            if (rest.images?.length) {
-              const primary = rest.images.find(img => img.isPrimary);
-              const img = primary || rest.images[0];
+          let selectedImage = null;
+          if (rest.images?.length) {
+            const primary = rest.images.find((img: any) => img.isPrimary);
+            const img = primary || rest.images[0];
 
-              if (img) {
-                const { subCoordinates, ...cleanImage } = img;
-                selectedImage = cleanImage;
-              }
+            if (img) {
+              const { subCoordinates, ...cleanImage } = img;
+              selectedImage = cleanImage;
+            }
+          }
+
+          delete rest.images;
+
+          if (rest.businessId) {
+            if (rest.businessId.logo) {
+              const { subCoordinates, ...cleanLogo } = rest.businessId.logo;
+              rest.businessId.logo = cleanLogo;
             }
 
-            delete rest.images;
-
-            if (rest.businessId) {
-              if (rest.businessId.logo) {
-                const { subCoordinates, ...cleanLogo } = rest.businessId.logo;
-                rest.businessId.logo = cleanLogo;
-              }
-
-              rest.businessId.name = getLocalizedValue(
-                rest.businessId,
-                'name',
-                locale as Locale,
-              );
-
-              delete rest.businessId.nameHe;
-              delete rest.businessId.nameAr;
-            }
-
-            const localizedBase = localizeFields(
-              { ...rest, _id: pid },
+            rest.businessId.name = getLocalizedValue(
+              rest.businessId,
+              'name',
               locale as Locale,
             );
 
-            const localizedCategory = getLocalizedValue(
-              category,
-              'title',
-              locale as Locale,
-            );
+            delete rest.businessId.nameHe;
+            delete rest.businessId.nameAr;
+          }
 
-            return {
-              ...localizedBase,
-              image: selectedImage,
-              category: localizedCategory,
-              hasDelivery: Array.isArray(deliveryArea)
-                ? deliveryArea.length > 0
-                : !!deliveryArea,
-            };
-          }),
-        )
-      ).filter(Boolean);
+          const localizedBase = localizeFields(
+            { ...rest, _id: pid },
+            locale as Locale,
+          );
+
+          const localizedCategory = getLocalizedValue(
+            category,
+            'title',
+            locale as Locale,
+          );
+
+          return {
+            ...localizedBase,
+            image: selectedImage,
+            category: localizedCategory,
+            hasDelivery: Array.isArray(deliveryArea)
+              ? deliveryArea.length > 0
+              : !!deliveryArea,
+          };
+        })
+        .filter(Boolean);
 
       const uniqueFlatList = Array.from(
         new Map(flatList.map(item => [item._id.toString(), item])).values(),
       );
 
+      if (
+        atlasRankedIds.length > 0
+        || matchingBusinessIds.length > 0
+        || matchingCategoryIds.length > 0
+        || matchingTagIds.length > 0
+      ) {
+        const atlasRankMap = new Map(atlasRankedIds.map((id, i) => [id, i]));
+        const bizNameIdSet = new Set(
+          matchingBusinessNameIds.map((b: any) => b._id.toString()),
+        );
+        const bizShortDescIdSet = new Set(
+          matchingBusinessShortDescIds.map((b: any) => b._id.toString()),
+        );
+
+        const catIdSet = new Set(
+          matchingCategoryIds.map((c: any) => c._id.toString()),
+        );
+        const tagIdSet = new Set(
+          matchingTagIds.map((t: any) => t._id.toString()),
+        );
+
+        const productCtxSet = new Set<string>();
+        const productBizSet = new Set<string>();
+        const productBizShortSet = new Set<string>();
+
+        products.forEach((p: any) => {
+          const pid = p.productId.toString();
+          if (atlasRankMap.has(pid)) return;
+
+          const bizId
+            = p.businessId?._id?.toString() ?? p.businessId?.toString();
+          const hasCat = (p.categories || []).some((c: any) => catIdSet.has(c.toString()));
+          const hasTag = (p.tagsId || []).some((t: any) => tagIdSet.has(t.toString()));
+
+          if (hasCat || hasTag) {
+            productCtxSet.add(pid);
+          } else if (bizId && bizNameIdSet.has(bizId)) {
+            productBizSet.add(pid);
+          } else if (bizId && bizShortDescIdSet.has(bizId)) {
+            productBizShortSet.add(pid);
+          }
+        });
+
+        const getGroupRank = (pid: string): number => {
+          if (atlasRankMap.has(pid)) return atlasRankMap.get(pid)!;
+          if (productCtxSet.has(pid)) return 500_000;
+          if (productBizSet.has(pid)) return 1_000_000;
+          if (productBizShortSet.has(pid)) return 1_500_000;
+          return Infinity;
+        };
+
+        uniqueFlatList.sort(
+          (a, b) => getGroupRank(a._id?.toString()) - getGroupRank(b._id?.toString()),
+        );
+      }
+
       const paginatedData = paginateData(page, limit, uniqueFlatList);
-      this.cacheService.set(cacheKey, paginatedData, PRODUCTS_BY_TOPIC_CACHE_TTL);
+      this.cacheService.set(
+        cacheKey,
+        paginatedData,
+        PRODUCTS_BY_TOPIC_CACHE_TTL,
+      );
       return paginatedData;
     } catch (error) {
       this.logger.error('[SITE SETTINGS]: FAILED TO GET PRODUCTS BY TOPIC', {
@@ -451,13 +684,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     searchOrConditions?: any[],
   ): Promise<any> {
     const {
-      groupTypesId,
-      accessibilitiesId,
-      tagsId,
-      page,
-      limit,
-      locale,
-    } = filters;
+      groupTypesId, accessibilitiesId, tagsId, page, limit, locale,
+    }
+      = filters;
 
     const externalApi = await this.ExternalApiModel.findById(externalApiId)
       .select('name primaryCampIds')

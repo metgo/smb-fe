@@ -230,22 +230,25 @@ implements IQueryHandler<GetCombinedSearchQuery> {
         eventBaseQuery.$and.push({ $or: eventCampConditions });
       }
 
-      const productSelect = '_id name nameHe nameAr descriptionHe descriptionAr description images slug price';
+      const productSelect
+        = '_id name nameHe nameAr descriptionHe descriptionAr description images slug price';
 
-      const [businessResults, eventResults, productResults] = await Promise.all([
-        this.BusinessesAuditModel.find(businessBaseQuery)
-          .select(select)
-          .limit(10)
-          .lean(),
-        this.EventsAuditModel.find(eventBaseQuery)
-          .select(select)
-          .limit(10)
-          .lean(),
-        this.ProductsAuditModel.find(productBaseQuery)
-          .select(productSelect)
-          .limit(10)
-          .lean(),
-      ]);
+      const [businessResults, eventResults, productResults] = await Promise.all(
+        [
+          this.BusinessesAuditModel.find(businessBaseQuery)
+            .select(select)
+            .limit(10)
+            .lean(),
+          this.EventsAuditModel.find(eventBaseQuery)
+            .select(select)
+            .limit(10)
+            .lean(),
+          this.ProductsAuditModel.find(productBaseQuery)
+            .select(productSelect)
+            .limit(10)
+            .lean(),
+        ],
+      );
 
       return {
         businesses: businessResults,

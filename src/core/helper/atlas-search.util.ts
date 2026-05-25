@@ -1,8 +1,14 @@
 export const PRODUCTS_SEARCH_INDEX = 'productsaudits';
 export const BUSINESSES_SEARCH_INDEX = 'businessesaudits';
 
+/** Strips Hebrew nikud / cantillation marks (U+0591–U+05C7). */
 export function normalizeHebrewSearch(text: string): string {
   return text.replace(/[֑-ׇ]/g, '').trim();
+}
+
+export function normalizeArabicSearch(text: string): string {
+  // eslint-disable-next-line no-misleading-character-class
+  return text.replace(/[ً-ٟۖ-ۭ]/g, '').trim();
 }
 
 /**
