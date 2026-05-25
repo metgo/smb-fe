@@ -61,9 +61,9 @@ export function buildProductAtlasSearchStage(search: string): object {
           'name',
           'nameHe',
           'nameAr',
-          'description',
-          'descriptionHe',
-          'descriptionAr',
+          'shortDescription',
+          'shortDescriptionHe',
+          'shortDescriptionAr',
         ],
         fuzzy: {
           maxEdits: 2,
@@ -88,9 +88,9 @@ export function buildBusinessAtlasSearchStage(search: string): object {
           'name',
           'nameHe',
           'nameAr',
-          'description',
-          'descriptionHe',
-          'descriptionAr',
+          'shortDescription',
+          'shortDescriptionHe',
+          'shortDescriptionAr',
         ],
         fuzzy: {
           maxEdits: 2,
@@ -112,9 +112,9 @@ export function buildProductRegexSearchConditions(search: string): object {
       { name: regex },
       { nameHe: regex },
       { nameAr: regex },
-      { description: regex },
-      { descriptionHe: regex },
-      { descriptionAr: regex },
+      { shortDescription: regex },
+      { shortDescriptionHe: regex },
+      { shortDescriptionAr: regex },
     ],
   };
 }
@@ -130,9 +130,9 @@ export function buildBusinessRegexSearchConditions(search: string): object {
       { name: regex },
       { nameHe: regex },
       { nameAr: regex },
-      { description: regex },
-      { descriptionHe: regex },
-      { descriptionAr: regex },
+      { shortDescription: regex },
+      { shortDescriptionHe: regex },
+      { shortDescriptionAr: regex },
     ],
   };
 }

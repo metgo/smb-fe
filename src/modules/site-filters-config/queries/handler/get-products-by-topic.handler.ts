@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -23,7 +24,6 @@ import { GetProductsByTopicQuery } from '../get-products-by-topic.query';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
-import mongoose, { Model, Types } from 'mongoose';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
@@ -133,9 +133,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             { shortDescription: regex },
             { shortDescriptionHe: regex },
             { shortDescriptionAr: regex },
-            { description: regex },
-            { descriptionHe: regex },
-            { descriptionAr: regex },
             { slug: regex },
           ];
         });
@@ -245,7 +242,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             'shortDescription',
             'shortDescriptionAr',
           ];
-          const descFields = ['descriptionHe', 'description', 'descriptionAr'];
           const shouldClauses: any[] = [];
 
           const addPhrase = (
@@ -318,22 +314,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               addPhrase(t, shortDescFields, 300, 1);
             } else {
               addFuzzy(t, shortDescFields, 2, 1, 150);
-            }
-          });
-
-          shouldClauses.push({
-            phrase: {
-              query: search,
-              path: descFields,
-              score: { boost: { value: 100 } },
-            },
-          });
-          originalTerms.forEach(t => addFuzzy(t, descFields, 1, 2, 50));
-          filteredExpanded.forEach(t => {
-            if (t.includes(' ')) {
-              addPhrase(t, descFields, 30, 1);
-            } else {
-              addFuzzy(t, descFields, 2, 1, 15);
             }
           });
 
@@ -487,11 +467,12 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             .forEach(term => {
               const r = buildHebrewSearchRegex(term);
               searchOrClauses.push(
+                { name: { $regex: r.source, $options: 'i' } },
                 { nameHe: { $regex: r.source, $options: 'i' } },
                 { nameAr: { $regex: r.source, $options: 'i' } },
                 { shortDescriptionHe: { $regex: r.source, $options: 'i' } },
                 { shortDescriptionAr: { $regex: r.source, $options: 'i' } },
-                { descriptionHe: { $regex: r.source, $options: 'i' } },
+                { shortDescription: { $regex: r.source, $options: 'i' } },
               );
             });
 
