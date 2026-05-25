@@ -278,7 +278,7 @@ export function DistributionCard({
       </div>
 
       {/* ===== Chart ===== */}
-      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
+      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-16 pt-16">
         {/* Background */}
         <div
           className={clsx(
@@ -290,7 +290,7 @@ export function DistributionCard({
         />
 
         {/* Grid */}
-        <div className="absolute inset-0 flex flex-col justify-between pb-12 pt-16 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col justify-between pb-16 pt-16 pointer-events-none">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -322,8 +322,8 @@ export function DistributionCard({
           return (
             <div
               key={index}
-              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer"
-              style={{ height: "100%", minWidth: 40, maxWidth: 80 }}
+              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer min-w-7 max-w-12 sm:min-w-10 sm:max-w-20"
+              style={{ height: "100%" }}
               onMouseEnter={() => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
@@ -385,7 +385,7 @@ export function DistributionCard({
                 {/* Value tooltip - shows actual count */}
                 <div
                   className={clsx(
-                    "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
+                    "absolute -top-20 left-0 transition-all",
                     isActive ? "opacity-100" : "opacity-0",
                   )}
                 >
@@ -418,15 +418,18 @@ export function DistributionCard({
                 </div>
 
                 {/* Percentage - shows actual percentage */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+                <div className="absolute bottom-3 left-1/2 z-10">
                   <span
                     className={clsx(
-                      "px-2 py-0.5 rounded-full text-xs font-bold shadow-md transition-all",
+                      "block px-2 py-0.5 rounded-full text-xs font-bold shadow-md",
                       isDark
                         ? "bg-gray-900 text-white"
                         : "bg-white text-gray-900",
-                      isActive ? "scale-110" : "scale-100",
                     )}
+                    style={{
+                      transform: "rotate(45deg)",
+                      transformOrigin: "0 0",
+                    }}
                   >
                     {item?.percentage}%
                   </span>
@@ -434,12 +437,13 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-16">
+              <div className="absolute -bottom-6 left-1/2 z-30">
                 <span
                   className={clsx(
-                    "text-xs font-bold line-clamp-2",
+                    "block whitespace-nowrap text-xs font-bold",
                     isDark ? "text-gray-300" : "text-gray-700",
                   )}
+                  style={{ transform: "rotate(45deg)", transformOrigin: "0 0" }}
                 >
                   {t(item?.name?.toLocaleLowerCase())}
                 </span>
@@ -509,36 +513,38 @@ export default function DistributionCards() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <DistributionCard
-          status={bzStatus}
-          setStatus={setBzStatus}
-          title={t("businesses")}
-          icon={<Building2 className="w-5 h-5 text-white" />}
-          total={businessData?.total}
-          data={businessData?.byCategory}
-          isLoading={isBzStatsLoading}
-        />
+      <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="grid grid-flow-col auto-cols-[280px] gap-3 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+          <DistributionCard
+            status={bzStatus}
+            setStatus={setBzStatus}
+            title={t("businesses")}
+            icon={<Building2 className="w-5 h-5 text-white" />}
+            total={businessData?.total}
+            data={businessData?.byCategory}
+            isLoading={isBzStatsLoading}
+          />
 
-        <DistributionCard
-          status={productStatus}
-          setStatus={setProductStatus}
-          title={t("products")}
-          icon={<Package className="w-5 h-5 text-white" />}
-          total={productData?.total}
-          data={productData?.byCategory}
-          isLoading={isProductStatsLoading}
-        />
+          <DistributionCard
+            status={productStatus}
+            setStatus={setProductStatus}
+            title={t("products")}
+            icon={<Package className="w-5 h-5 text-white" />}
+            total={productData?.total}
+            data={productData?.byCategory}
+            isLoading={isProductStatsLoading}
+          />
 
-        <DistributionCard
-          status={poiStatus}
-          setStatus={setPoiStatus}
-          title={t("pois")}
-          icon={<MapPin className="w-5 h-5 text-white" />}
-          total={poiData?.total}
-          data={poiData?.byCategory}
-          isLoading={isPoiStatsLoading}
-        />
+          <DistributionCard
+            status={poiStatus}
+            setStatus={setPoiStatus}
+            title={t("pois")}
+            icon={<MapPin className="w-5 h-5 text-white" />}
+            total={poiData?.total}
+            data={poiData?.byCategory}
+            isLoading={isPoiStatsLoading}
+          />
+        </div>
       </div>
     </section>
   );

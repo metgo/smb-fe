@@ -29,11 +29,11 @@ const RootLayout = () => {
             `flex-1 transition-all duration-300 py-4 px-4 sm:px-6 lg:px-8`,
             isRTL
               ? isSidebarCollapsed
-                ? "mr-16"
-                : "mr-64"
+                ? "lg:mr-16"
+                : "lg:mr-64"
               : isSidebarCollapsed
-                ? "ml-16"
-                : "ml-64",
+                ? "lg:ml-16"
+                : "lg:ml-64",
           )}
         >
           <Outlet />
