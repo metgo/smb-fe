@@ -22,11 +22,14 @@ import { GetProductsByTopicQuery } from '../get-products-by-topic.query';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { CacheService } from 'src/services/cache/cache.service';
+
+const PRODUCTS_BY_TOPIC_CACHE_TTL = 120; // 2 minutes
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -47,12 +50,16 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async execute({
     externalApiId,
     query,
   }: GetProductsByTopicQuery): Promise<any> {
+    const cacheKey = `products:by-topic:${externalApiId}:${JSON.stringify(query)}`;
+    const cached = this.cacheService.get<any>(cacheKey);
+    if (cached) return cached;
     const {
       groupTypesId,
       accessibilitiesId,
@@ -70,9 +77,10 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       let searchTerms: string[] = [];
       let matchingCategoryIds: any[] = [];
       let matchingTagIds: any[] = [];
+      let normalizedBase = '';
 
       if (search) {
-        const normalizedBase = normalizeHebrewSearch(search);
+        normalizedBase = normalizeHebrewSearch(search);
         const apiKey = this.configService.get('GEMINI_API_KEY');
         expandedTerms = await expandSearchTerms(normalizedBase, apiKey);
         searchTerms = [search, ...expandedTerms].filter((t, i, arr) => t && arr.indexOf(t) === i);
@@ -151,7 +159,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           );
         }
       } else {
-        return this.fallbackByPrimaryCategory(
+        const fallbackResult = await this.fallbackByPrimaryCategory(
           {
             groupTypesId,
             accessibilitiesId,
@@ -167,6 +175,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           hasDelivery,
           searchOrConditions,
         );
+        this.cacheService.set(cacheKey, fallbackResult, PRODUCTS_BY_TOPIC_CACHE_TTL);
+        return fallbackResult;
       }
 
       const productCategoryEntries = siteCategories
@@ -216,29 +226,60 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       if (search && searchTerms.length) {
         try {
-          //  Atlas Search — fuzzy matching + relevance scoring
+          // Atlas Search — tiered relevance scoring
+          //   Tier 1 (boost 100): exact phrase match of the user's literal input
+          //   Tier 2 (boost  30): fuzzy match of the original + its normalised form
+          //   Tier 3 (boost   5): AI-expanded semantic synonyms (fuzzy)
           const searchPaths = ['name', 'nameHe', 'nameAr', 'description', 'descriptionHe', 'descriptionAr'];
-          const shouldClauses: any[] = searchTerms.map((term, index) => {
-            const isHighPriority = index <= 1;
-            if (term.includes(' ')) {
-              return {
-                phrase: {
-                  query: term,
-                  path: searchPaths,
-                  slop: 1,
-                  ...(isHighPriority && { score: { boost: { value: 10 } } }),
-                },
-              };
-            }
-            return {
+          const shouldClauses: any[] = [];
+
+          // Tier 1 — exact phrase
+          shouldClauses.push({
+            phrase: {
+              query: search,
+              path: searchPaths,
+              score: { boost: { value: 100 } },
+            },
+          });
+
+          // Tier 2 — fuzzy on the user's own words (original + normalised, deduped)
+          const tier2Terms = Array.from(new Set([search, normalizedBase].filter(Boolean)));
+          tier2Terms.forEach(term => {
+            shouldClauses.push({
               text: {
                 query: term,
                 path: searchPaths,
-                fuzzy: { maxEdits: 2, prefixLength: 1 },
-                ...(isHighPriority && { score: { boost: { value: 10 } } }),
+                fuzzy: { maxEdits: 1, prefixLength: 2 },
+                score: { boost: { value: 30 } },
               },
-            };
+            });
           });
+
+          // Tier 3 — semantic expansions from Gemini (skip any already covered above)
+          const tier2Set = new Set(tier2Terms);
+          expandedTerms
+            .filter(term => term && !tier2Set.has(term))
+            .forEach(term => {
+              if (term.includes(' ')) {
+                shouldClauses.push({
+                  phrase: {
+                    query: term,
+                    path: searchPaths,
+                    slop: 1,
+                    score: { boost: { value: 5 } },
+                  },
+                });
+              } else {
+                shouldClauses.push({
+                  text: {
+                    query: term,
+                    path: searchPaths,
+                    fuzzy: { maxEdits: 2, prefixLength: 1 },
+                    score: { boost: { value: 5 } },
+                  },
+                });
+              }
+            });
 
           matchingCategoryIds.forEach(cat => shouldClauses.push({
             text: { query: cat._id.toString(), path: ['categories'] },
@@ -248,6 +289,13 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           }));
 
           // Step 1: get relevance-ranked IDs from Atlas Search
+          // Convert allProductIds to ObjectId so the aggregate $match performs
+          // a proper type-safe comparison (Mongoose does NOT coerce strings in
+          // raw aggregation pipelines the way it does in .find()).
+          const allProductObjectIds = allProductIds
+            .filter(id => Types.ObjectId.isValid(id))
+            .map(id => new mongoose.Types.ObjectId(id));
+
           const atlasResults = await this.ProductsAuditModel.aggregate([
             {
               $search: {
@@ -257,7 +305,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             },
             {
               $match: {
-                productId: { $in: allProductIds },
+                productId: { $in: allProductObjectIds },
                 status: CommonStatus.APPROVED,
                 isActive: true,
                 isDeleted: { $ne: true },
@@ -268,7 +316,14 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
           const atlasProductIds = atlasResults.map((r: any) => r.productId.toString());
 
-          // Step 2: fetch full documents with populate using Atlas-matched IDs
+          // Step 2: fetch full documents with populate using Atlas-matched IDs.
+          // If Atlas Search returned no hits (e.g. index not warmed yet or no
+          // semantic match), fall back to the regex conditions so the user still
+          // gets results instead of an empty page.
+          if (atlasProductIds.length === 0) {
+            throw new Error('Atlas Search returned 0 hits — using regex fallback');
+          }
+
           products = await this.ProductsAuditModel.find({
             ...baseProductQuery,
             productId: { $in: atlasProductIds },
@@ -369,6 +424,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       );
 
       const paginatedData = paginateData(page, limit, uniqueFlatList);
+      this.cacheService.set(cacheKey, paginatedData, PRODUCTS_BY_TOPIC_CACHE_TTL);
       return paginatedData;
     } catch (error) {
       this.logger.error('[SITE SETTINGS]: FAILED TO GET PRODUCTS BY TOPIC', {
