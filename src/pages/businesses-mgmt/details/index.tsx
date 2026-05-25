@@ -401,7 +401,8 @@ export default function BusinessDetailsPage() {
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
-          className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 my-2 sm:my-4 gap-2 md:gap-3"
+          className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+          wrapperClassName="hidden md:block my-2 sm:my-4"
         />
       </div>
 

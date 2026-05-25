@@ -489,7 +489,7 @@ export default function ProductsMgmtPage() {
           <PageStats
             stats={salesStats}
             isLoading={isStatsLoading}
-            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
+            className="sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
           />
         </div>
 

@@ -649,7 +649,7 @@ const VouchersList = ({
         <PageStats
           stats={voucherStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+          className="lg:grid-cols-5 gap-4"
         />
       </div>
 

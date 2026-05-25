@@ -28,11 +28,13 @@ const AuthPage = () => {
             background: "#fef2f2",
             border: "1px solid #fca5a5",
             borderRadius: 8,
-            padding: "12px 24px",
+            padding: "12px 20px",
             color: "#dc2626",
             fontWeight: 500,
             boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-            whiteSpace: "nowrap",
+            maxWidth: "90vw",
+            textAlign: "center",
+            wordBreak: "break-word",
           }}
         >
           This profile update link has expired.

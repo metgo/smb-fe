@@ -157,7 +157,7 @@ export default function NotificationsMgmtPage() {
     >
       <div className="h-[calc(100vh-64px)] flex flex-col">
         {/* Fixed Header */}
-        <div className="shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="shrink-0 p-4 sm:p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="max-w-400 mx-auto">
             <div className="flex items-center justify-between">
               <div>
@@ -171,7 +171,7 @@ export default function NotificationsMgmtPage() {
         </div>
 
         {/* Stats & Toolbar */}
-        <div className="shrink-0 p-6 pb-0">
+        <div className="shrink-0 p-4 sm:p-6 pb-0">
           <div className="max-w-400 mx-auto">
             {/* Stats Cards */}
             {notifStats && <NotificationStatsCards stats={notifStats} />}
@@ -261,7 +261,7 @@ export default function NotificationsMgmtPage() {
         </div>
 
         {/* Scrollable Notifications List */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
           <div className="max-w-400 mx-auto">
             {allNotifications?.length === 0 ? (
               <div

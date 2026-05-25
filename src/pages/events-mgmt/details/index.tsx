@@ -227,7 +227,8 @@ export default function EventDetailsPage() {
         <PageStats
           stats={singleEventStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 pt-4 pb-1"
+          className="sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4"
+          wrapperClassName="pt-4 pb-1"
         />
       </div>
 

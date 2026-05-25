@@ -1120,7 +1120,8 @@ export default function OrdersMgmtPage() {
           <PageStats
             stats={orderStats}
             isLoading={isStatsLoading}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-3"
+            className="sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4"
+            wrapperClassName="mb-3"
           />
         ) : (
           <UserStatsCards stats={orderStats} isLoading={isStatsLoading} />

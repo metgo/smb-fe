@@ -59,16 +59,16 @@ export function Login({ setCurrentTab }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8 relative">
+    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-4 sm:p-8 relative">
       <div className="w-full max-w-xl">
-        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl">
           {/* Logo & site name */}
           <div className="flex flex-col items-center">
-            <div className="w-30 h-30 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
               <img
                 src="/assets/images/metgologo.png"
                 alt="Metgo"
-                className="w-30"
+                className="w-16 sm:w-24"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export function Login({ setCurrentTab }: LoginProps) {
             <SubmitButton
               loading={isLoading}
               label={t("sign_in")}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-lg py-7"
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-4 sm:py-6"
             />
 
             <div className="text-center text-white/80">{t("or")}</div>

@@ -270,7 +270,8 @@ export default function ProductDetailsPage() {
         <PageStats
           stats={salesStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-2 lg:grid-cols-3 gap-2 my-4"
+          className="lg:grid-cols-3 gap-2"
+          wrapperClassName="my-4"
         />
       </div>
 
