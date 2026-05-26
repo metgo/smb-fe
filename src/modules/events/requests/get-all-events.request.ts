@@ -17,6 +17,14 @@ export class GetAllEventsRequest extends CommonFilterQuery {
     type: String,
   })
   @IsOptional()
+    businessId: string[];
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
     subCategoriesIds: string[];
 
   @ApiProperty({

@@ -10,6 +10,7 @@ import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { GetAllEventsHandler } from './queries/handler/get-all-events.handler';
+import { GetAllEventsByBusinessIdHandler } from './queries/handler/get-all-events-by-businessId.handler';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { GetEventBySlugHandler } from './queries/handler/get-event-by-slug.handler';
 import { CampaignModule } from '../campaign/campaign.module';
@@ -36,6 +37,7 @@ import { EventsAudit, EventsAuditSchema } from './schema/events-audit.schema';
   controllers: [EventController],
   providers: [
     GetAllEventsHandler,
+    GetAllEventsByBusinessIdHandler,
     GetEventBySlugHandler,
     GetSearchRecommendationTourismHandler,
     GetAllEventsRawQueryHandler,
