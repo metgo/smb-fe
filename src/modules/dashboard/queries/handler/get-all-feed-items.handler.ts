@@ -405,10 +405,17 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       }
 
       if (whitelist?.length) {
+        const todayStart = new Date();
+        todayStart.setUTCHours(0, 0, 0, 0);
+
         const whitelistedEvents = await queryhandler<EventsAudit>(
           this.EventsAuditModel,
           {
-            findQuery: { eventId: { $in: whitelist }, isActive: true },
+            findQuery: {
+              eventId: { $in: whitelist },
+              isActive: true,
+              dayDescription: { $elemMatch: { date: { $gte: todayStart } } },
+            },
             select,
             sort: sortBy || 'createdAt',
             sortOrder: sortOrder || SortOrder.DESC,
