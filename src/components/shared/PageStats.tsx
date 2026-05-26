@@ -32,7 +32,7 @@ export default function PageStats({
           ? Array.from({ length: stats?.length || 4 }).map((_, i) => (
               <div
                 key={i}
-                className={`shrink-0 w-32.5 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm animate-pulse flex items-center gap-3`}
+                className={`shrink-0 w-40 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm animate-pulse flex items-center gap-3`}
               >
                 <div className="w-8 h-8 bg-gray-300 rounded-lg shrink-0" />
                 <div className="flex-1 min-w-0 space-y-1.5">
@@ -44,7 +44,7 @@ export default function PageStats({
           : stats?.map((item, index) => (
               <div
                 key={index}
-                className={`shrink-0 w-32.5 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm flex items-center gap-3`}
+                className={`shrink-0 w-40 sm:w-auto ${bgSecondary} rounded-lg px-3 py-2.5 border ${borderClass} shadow-sm flex items-center gap-3`}
               >
                 <div
                   className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
