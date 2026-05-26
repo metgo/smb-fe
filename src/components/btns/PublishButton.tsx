@@ -15,7 +15,7 @@ const PublishButton: React.FC<PublishButtonProps> = ({
     <button
       onClick={onClick}
       disabled={isLoading}
-      className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+      className="px-2 md:px-6 py-1 md:py-2 rounded md:rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
     >
       {isLoading ? (
         <>

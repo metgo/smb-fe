@@ -341,7 +341,7 @@ export default function PopularContent() {
         />
       </div>
       <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
-        <div className="grid grid-flow-col auto-cols-[280px] gap-6 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+        <div className="grid grid-flow-col auto-cols-[320px] gap-2 md:gap-6 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
           <PopularCard
             title={t("popular_businesses")}
             icon={<Building2 className="w-5 h-5 text-white" />}

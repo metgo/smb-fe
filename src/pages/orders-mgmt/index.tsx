@@ -1053,7 +1053,7 @@ export default function OrdersMgmtPage() {
 
   return (
     <div
-      className={`h-[calc(100vh-7rem)] flex flex-col overflow-hidden ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
+      className={`h-[calc(100vh-7rem)] pt-10 md:pt-0 flex flex-col overflow-hidden ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
     >
       {/* Page Header */}
       <div className="shrink-0">
@@ -1083,7 +1083,7 @@ export default function OrdersMgmtPage() {
             />
           </div>
           <div
-            className={`flex gap-2 shrink-0 ${isRTL ? "flex-row-reverse" : ""}`}
+            className={`flex gap-2 shrink-0 mb-4 md:mb-0 ${isRTL ? "flex-row-reverse" : ""}`}
           >
             {isSuperadmin && (
               <button

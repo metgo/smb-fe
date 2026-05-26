@@ -7,7 +7,6 @@ import {
   ArrowUpDown,
   Copy,
   Eye,
-  MoreHorizontal,
   ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +22,7 @@ import {
   useGetProductStatsByIdQuery,
 } from "@/store/api/productQueryApi";
 import { routes } from "@/lib/routes";
+import { IOpMode } from "@/enums/operation.types";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
@@ -36,7 +36,6 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
-import { IOpMode } from "@/enums/operation.types";
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
@@ -44,12 +43,12 @@ export default function ProductDetailsPage() {
   const { t } = useTranslation("products");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark, language } = useThemeClasses();
+  const [searchParams] = useSearchParams();
+
+  const { isDark, isRTL, language } = useThemeClasses();
   const [updateProduct] = useUpdateProductMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const [searchParams] = useSearchParams();
 
   const productId = searchParams.get("productId");
   const {
@@ -171,7 +170,7 @@ export default function ProductDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative py-8">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:py-8 ">
       <Spinner isLoading={isLoading} />
 
       {/* Action bar */}
@@ -192,8 +191,7 @@ export default function ProductDetailsPage() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">Actions</span>
+              <span className="text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
@@ -201,7 +199,7 @@ export default function ProductDetailsPage() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
                   isDark
                     ? "bg-gray-900 border-gray-700"
                     : "bg-white border-gray-200"

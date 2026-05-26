@@ -165,45 +165,46 @@ const UsersMgmtPage = () => {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-2xl p-2 ${bgPrimary}`}
-      style={{
-        height: "calc(100vh - 112px)",
-      }}
+      className={`h-[calc(100vh-7rem)] flex flex-col overflow-hidden rounded-2xl px-2 pt-10 md:pt-0 ${bgPrimary}`}
     >
       {/* Header */}
-      <PageHeader
-        title="Users Management"
-        h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-400"
-        totalCount={totalData || undefined}
-        btnLabel="Create User"
-        onClick={() => setWizardUser(null)}
-      />
-
-      {/* Tabs */}
-      <TabsSection
-        tabs={ROLE_TABS}
-        activeTab={activeRole}
-        setActiveTab={handleRoleChange}
-      />
-
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mt-4 relative">
-        <div className="flex-1">
-          <SearchInput
-            placeholder="Search users..."
-            searchTerm={search}
-            setSearchTerm={handleSearchChange}
-          />
-        </div>
-
-        <ViewModeToggle
-          value={viewMode}
-          onChange={(mode) => {
-            setViewMode(mode);
-            localStorage.setItem("usersViewMode", mode);
-          }}
-          tableName="usersViewMode"
+      <div className="shrink-0">
+        <PageHeader
+          title="Users Management"
+          h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-400"
+          totalCount={totalData || undefined}
+          btnLabel="Create User"
+          onClick={() => setWizardUser(null)}
         />
+
+        {/* Tabs */}
+        <TabsSection
+          tabs={ROLE_TABS}
+          activeTab={activeRole}
+          setActiveTab={handleRoleChange}
+        />
+
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4">
+          <div className="flex-1 relative">
+            <SearchInput
+              placeholder="Search users..."
+              searchTerm={search}
+              setSearchTerm={handleSearchChange}
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <ViewModeToggle
+              value={viewMode}
+              onChange={(mode) => {
+                setViewMode(mode);
+                localStorage.setItem("usersViewMode", mode);
+              }}
+              tableName="usersViewMode"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Content */}

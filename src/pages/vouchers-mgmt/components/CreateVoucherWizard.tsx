@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import {
-  Check,
   FileText,
   Users,
   ClipboardList,
@@ -11,7 +10,7 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useCreateVoucherMutation } from "@/store/api/voucherMutationApi";
 
-import { WizardFooter } from "@/components/shared";
+import { WizardFooter, WizardStepper } from "@/components/shared";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -270,115 +269,65 @@ const CreateVoucherWizard = ({ onClose, campaigns }: AddVoucherWizardProps) => {
 
   // Step configuration
   const steps = [
-    { id: 1, icon: FileText, label: t("details") },
-    { id: 2, icon: Users, label: t("type") },
-    { id: 3, icon: ClipboardList, label: t("configure") },
-    { id: 4, icon: Eye, label: t("review") },
-    { id: 5, icon: Table, label: t("success") },
+    { number: 1, icon: FileText, title: t("details") },
+    { number: 2, icon: Users, title: t("type") },
+    { number: 3, icon: ClipboardList, title: t("configure") },
+    { number: 4, icon: Eye, title: t("review") },
+    { number: 5, icon: Table, title: t("success") },
   ];
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isCreating}>
       {/* Header */}
       <div
-        className={`px-6 py-4 flex items-center justify-between border-b ${
+        className={`px-4 py-3 md:px-6 md:py-4 flex items-center justify-between gap-3 border-b ${
           isDark ? "border-gray-800" : "border-gray-200"
         }`}
       >
-        <div>
+        <div className="min-w-0">
           <h2
-            className={`${isDark ? "text-gray-100" : "text-gray-900"} text-xl`}
+            className={`${isDark ? "text-gray-100" : "text-gray-900"} text-lg md:text-xl truncate`}
           >
             {t("add_voucher")}
           </h2>
           {currentStep < 6 && (
             <p
-              className={`mt-1 flex items-center gap-1 text-sm ${
+              className={`mt-0.5 flex items-center gap-1 text-xs md:text-sm truncate ${
                 isDark ? "text-gray-400" : "text-gray-600"
               }`}
             >
               {t("step_of_total", { current: currentStep, total: 5 })}
-              <span className="flex items-center">
-                {t(steps[currentStep - 1].label)}
-              </span>
+              <span>{steps[currentStep - 1].title}</span>
             </p>
           )}
         </div>
         <button
           onClick={handleDone}
-          className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+          className="px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer shrink-0"
         >
           <CheckCircle className="w-4 h-4" />
-
-          {t("done")}
+          <span className="hidden sm:inline">{t("done")}</span>
         </button>
       </div>
 
       {/* Progress Bar */}
       {currentStep < 6 && (
         <div
-          className={`px-6 py-4 border-b ${
+          className={`px-4 md:px-6 pt-3 md:pt-4 pb-2 border-b ${
             isDark ? "border-gray-800" : "border-gray-200"
           }`}
         >
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className="flex items-center flex-1 cursor-pointer"
-                onClick={() => setCurrentStep(step.id)}
-              >
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      currentStep > step.id
-                        ? "bg-green-500 text-white"
-                        : currentStep === step.id
-                          ? "bg-teal-500 text-white"
-                          : isDark
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    {currentStep > step.id ? (
-                      <Check className="w-5 h-5 bg-green-500" />
-                    ) : (
-                      <step.icon className="w-5 h-5" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-xs mt-1 ${
-                      currentStep >= step.id
-                        ? isDark
-                          ? "text-gray-100"
-                          : "text-gray-900"
-                        : isDark
-                          ? "text-gray-500"
-                          : "text-gray-500"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 ${
-                      currentStep > step.id
-                        ? "bg-green-500"
-                        : isDark
-                          ? "bg-gray-800"
-                          : "bg-gray-200"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          <WizardStepper
+            steps={steps}
+            currentStep={currentStep}
+            totalSteps={steps.length}
+            onStepClick={setCurrentStep}
+          />
         </div>
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {currentStep === 1 && (
           <VoucherInformation
             t={t}

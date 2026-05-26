@@ -476,7 +476,7 @@ export default function ProductsMgmtPage() {
   // ─── Render ─────────
   return (
     <>
-      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden">
+      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden pt-10">
         <div className="shrink-0">
           <PageHeader
             title={t("products_management")}
