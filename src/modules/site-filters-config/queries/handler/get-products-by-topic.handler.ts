@@ -29,9 +29,6 @@ import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { CacheService } from 'src/services/cache/cache.service';
-
-const PRODUCTS_BY_TOPIC_CACHE_TTL = 120; // 2 minutes
 
 @QueryHandler(GetProductsByTopicQuery)
 export class GetProductsByTopicHandler
@@ -54,18 +51,12 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     @InjectModel(Business.name)
     private BusinessModel: Model<Business>,
     private readonly configService: ConfigService,
-    private readonly cacheService: CacheService,
   ) {}
 
   async execute({
     externalApiId,
     query,
   }: GetProductsByTopicQuery): Promise<any> {
-    const cacheKey = `products:by-topic:${externalApiId}:${JSON.stringify(
-      query,
-    )}`;
-    const cached = this.cacheService.get<any>(cacheKey);
-    if (cached) return cached;
     const {
       groupTypesId,
       accessibilitiesId,
@@ -104,7 +95,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         normalizedBase = normalizeArabicSearch(normalizeHebrewSearch(search));
         const apiKey = this.configService.get('GEMINI_API_KEY');
         expandedTerms = await expandSearchTerms(normalizedBase, apiKey);
-
         searchTerms = [
           ...new Set(
             [search, normalizedBase, ...expandedTerms].filter(Boolean),
@@ -175,11 +165,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           externalApiId,
           hasDelivery,
           searchOrConditions,
-        );
-        this.cacheService.set(
-          cacheKey,
-          fallbackResult,
-          PRODUCTS_BY_TOPIC_CACHE_TTL,
         );
         return fallbackResult;
       }
@@ -633,13 +618,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         );
       }
 
-      const paginatedData = paginateData(page, limit, uniqueFlatList);
-      this.cacheService.set(
-        cacheKey,
-        paginatedData,
-        PRODUCTS_BY_TOPIC_CACHE_TTL,
-      );
-      return paginatedData;
+      return paginateData(page, limit, uniqueFlatList);
     } catch (error) {
       this.logger.error('[SITE SETTINGS]: FAILED TO GET PRODUCTS BY TOPIC', {
         err: error.message,

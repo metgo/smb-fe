@@ -4,11 +4,6 @@ import {
   normalizeArabicSearch,
 } from 'src/core/helper/atlas-search.util';
 
-const cache = new Map<string, { terms: string[]; expires: number }>();
-const CACHE_TTL_MS = 5 * 60 * 1000;
-
-const GEMINI_TIMEOUT_MS = 5000;
-
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Matches any Hebrew letter (U+05D0–U+05EA)
@@ -25,11 +20,9 @@ interface ExpandedSearchResponse {
   parents: string[];
 }
 
-/** Calls Gemini, caches the result, and returns the expanded term list. */
 async function runGemini(
   search: string,
   apiKey: string,
-  cacheKey: string,
 ): Promise<string[]> {
   const ai = new GoogleGenAI({ apiKey });
 
@@ -103,7 +96,7 @@ RULES: No nikud. No tashkeel. Return ONLY the JSON object.`,
 
       const normalizedSearch = normalizeTerm(search);
 
-      const allTerms = [
+      const result = [
         normalizedSearch,
         ...semanticTerms
           .map(t => normalizeTerm(t))
@@ -112,11 +105,7 @@ RULES: No nikud. No tashkeel. Return ONLY the JSON object.`,
         ...parentTerms.map(t => normalizeTerm(t)).filter(Boolean),
       ].filter((t, i, arr) => t && arr.indexOf(t) === i);
 
-      cache.set(cacheKey, {
-        terms: allTerms,
-        expires: Date.now() + CACHE_TTL_MS,
-      });
-      return allTerms;
+      return result;
     } catch (error: any) {
       if ((error.status === 503 || error.status === 429) && n < 3) {
         await sleep(2 ** n * 1000);
@@ -131,42 +120,11 @@ RULES: No nikud. No tashkeel. Return ONLY the JSON object.`,
   return attempt(1);
 }
 
-export function getCachedExpansion(search: string): string[] | null {
-  const cacheKey = search.trim();
-  const cached = cache.get(cacheKey);
-  if (cached && cached.expires > Date.now()) return cached.terms;
-  return null;
-}
-
 export async function expandSearchTerms(
   search: string,
   apiKey: string,
 ): Promise<string[]> {
   if (!apiKey) return [search];
 
-  const cacheKey = search.trim();
-  const cached = cache.get(cacheKey);
-  if (cached && cached.expires > Date.now()) {
-    return cached.terms;
-  }
-
-  const fallback = [normalizeTerm(search)];
-  const geminiPromise = runGemini(search, apiKey, cacheKey);
-
-  const winner = await Promise.race([
-    geminiPromise,
-    new Promise<null>(resolve => {
-      setTimeout(() => resolve(null), GEMINI_TIMEOUT_MS);
-    }),
-  ]);
-
-  if (winner === null) {
-    // Timed out — let Gemini warm the cache in the background.
-    geminiPromise.catch(() => {
-      /* swallow */
-    });
-    return fallback;
-  }
-
-  return winner;
+  return runGemini(search, apiKey);
 }
