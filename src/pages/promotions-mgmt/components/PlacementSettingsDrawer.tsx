@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import { X, Clock, SlidersHorizontal } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, Clock, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -10,7 +11,6 @@ type TPlacementConfig = {
 
 interface PlacementSettingsDrawerProps {
   selectedPlacement: string | null;
-  settingsOpen: boolean;
   setSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   placementSettings: Record<string, TPlacementConfig>;
   setPlacementSettings: React.Dispatch<
@@ -19,16 +19,106 @@ interface PlacementSettingsDrawerProps {
   defaultPlacementConfig: () => TPlacementConfig;
 }
 
+interface CustomSelectProps {
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}
+
+function CustomSelect({ value, options, onChange }: CustomSelectProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { isDark, bgPrimary, borderColor, textPrimary, textSecondary } =
+    useThemeClasses();
+
+  useEffect(() => {
+    if (!open) return;
+    const handle = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={clsx(
+          "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg border transition-colors",
+          borderColor,
+          bgPrimary,
+          textPrimary,
+          open
+            ? "ring-2 ring-green-500"
+            : isDark
+              ? "hover:border-gray-600"
+              : "hover:border-gray-400",
+        )}
+      >
+        <span>{selected?.label}</span>
+        <ChevronDown
+          className={clsx(
+            "w-3.5 h-3.5 shrink-0 transition-transform",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={clsx(
+            "absolute top-full left-0 right-0 mt-1 z-10 rounded-lg border shadow-lg overflow-hidden",
+            bgPrimary,
+            borderColor,
+          )}
+        >
+          {options.map((option) => {
+            const isActive = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={clsx(
+                  "w-full flex items-center justify-between px-3 py-2 text-sm transition-colors",
+                  isActive
+                    ? isDark
+                      ? "bg-green-900/30 text-green-400"
+                      : "bg-green-50 text-green-700"
+                    : clsx(
+                        textSecondary,
+                        isDark ? "hover:bg-gray-800" : "hover:bg-gray-50",
+                      ),
+                )}
+              >
+                <span>{option.label}</span>
+                {isActive && <Check className="w-3.5 h-3.5 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PlacementSettingsDrawer({
   selectedPlacement,
-  settingsOpen,
   setSettingsOpen,
   placementSettings,
   setPlacementSettings,
   defaultPlacementConfig,
 }: PlacementSettingsDrawerProps) {
   const { t } = useTranslation("promotions");
-  const { isDark, bgPrimary, borderColor, textPrimary } = useThemeClasses();
+  const { isDark, isRTL, bgPrimary, borderColor, textPrimary } =
+    useThemeClasses();
 
   if (!selectedPlacement) return null;
 
@@ -37,8 +127,8 @@ export default function PlacementSettingsDrawer({
   return (
     <div
       className={clsx(
-        "fixed bottom-20 right-2 z-80 w-72 transition-transform duration-300 ease-in-out",
-        settingsOpen ? "translate-y-0" : "translate-y-full",
+        "absolute top-full mt-1 z-50 w-72",
+        isRTL ? "left-0" : "right-0",
       )}
     >
       <div
@@ -86,33 +176,31 @@ export default function PlacementSettingsDrawer({
 
         {/* Fields */}
         <div className="space-y-4">
-          <div>
-            <label
-              className={`block text-xs font-medium ${textPrimary} mb-1.5`}
-            >
+          <div className="space-y-1.5">
+            <label className={`block text-xs font-medium ${textPrimary}`}>
               {t("rotation_type")}
             </label>
-            <select
+            <CustomSelect
               value={cfg.rotationType}
-              onChange={(e) =>
+              options={[
+                { value: "automatic", label: t("automatic") },
+                { value: "manual", label: t("manual") },
+              ]}
+              onChange={(val) =>
                 setPlacementSettings((prev) => ({
                   ...prev,
                   [selectedPlacement]: {
                     ...cfg,
-                    rotationType: e.target.value as "automatic" | "manual",
+                    rotationType: val as "automatic" | "manual",
                   },
                 }))
               }
-              className={`w-full px-3 py-2 text-sm rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
-            >
-              <option value="automatic">{t("automatic")}</option>
-              <option value="manual">{t("manual")}</option>
-            </select>
+            />
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <label
-              className={`flex items-center gap-1.5 text-xs font-medium ${textPrimary} mb-1.5`}
+              className={`flex items-center gap-1.5 text-xs font-medium ${textPrimary}`}
             >
               <Clock className="w-3.5 h-3.5" />
               {t("time_interval_seconds")}
@@ -131,7 +219,7 @@ export default function PlacementSettingsDrawer({
               }
               min="1"
               max="60"
-              className={`w-full px-3 py-2 text-sm rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500`}
+              className={`w-full px-3 py-2 text-sm rounded-lg border ${borderColor} ${bgPrimary} ${textPrimary} focus:ring-2 focus:ring-green-500 focus:outline-none`}
             />
           </div>
         </div>

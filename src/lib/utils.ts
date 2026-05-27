@@ -52,6 +52,7 @@ export const categories: Record<string, string> = {
 
 export const itemEndpoint: Record<string, string> = {
   BUSINESS: routes.businessDetails,
+  POI: routes.poiDetails,
   PRODUCT: routes.productDetails,
   EVENT: routes.eventDetails,
 };

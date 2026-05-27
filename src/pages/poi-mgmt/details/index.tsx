@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,7 +5,6 @@ import {
   ChevronDown,
   Edit,
   Eye,
-  MoreHorizontal,
   MousePointer,
   Timer,
   TrendingUp,
@@ -41,7 +39,7 @@ export default function PoiDetailsPage() {
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
 
-  const { borderColor, isDark } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -167,69 +165,74 @@ export default function PoiDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden relative h-[88vh]">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
-      <div className={clsx("shrink-0 border-b px-6 py-4", borderColor)}>
-        <div className="flex items-center justify-between mb-4">
-          <BackToListBtn navPath={routes.poiMgmt} />
+      <div className="flex items-center justify-between mb-3 shrink-0">
+        <BackToListBtn navPath={routes.poiMgmt} />
+        <div className="flex items-center gap-2">
+          <StatusChangeBtn
+            handleStatusChange={onStatusChangeHandler}
+            status={poi?.status}
+          />
 
-          <div className="flex items-center gap-2">
-            <StatusChangeBtn
-              handleStatusChange={onStatusChangeHandler}
-              status={poi?.status}
-            />
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
+            >
+              <span className="text-sm font-medium">{t("actions")}</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
 
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                  isDark
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
-                }`}
+            {isDropdownOpen && (
+              <div
+                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}
               >
-                <MoreHorizontal className="w-4 h-4" />
-                <span className="text-sm font-medium">{t("actions")}</span>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isDropdownOpen && (
-                <div
-                  className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}`}
+                <button
+                  onClick={() => {
+                    handleMutateData();
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark ? "text-teal-400 hover:bg-gray-800" : "text-teal-700 hover:bg-gray-50"}`}
                 >
-                  <button
-                    onClick={() => {
-                      handleMutateData();
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${isDark ? "text-teal-400 hover:bg-gray-800" : "text-teal-700 hover:bg-gray-50"}`}
-                  >
-                    <Edit className="w-4 h-4 shrink-0" />
-                    {t("edit")}
-                  </button>
-                </div>
-              )}
-            </div>
+                  <Edit className="w-4 h-4 shrink-0" />
+                  {t("edit")}
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
+      <div className="details-top shrink-0">
         <DetailTitleSection {...poi} />
         <PageStats
           stats={poiStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
-        />
-        <TabsSection
-          tabs={poiTabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4"
+          wrapperClassName="mt-3"
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
+      <div className="mt-6 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0">
+          <TabsSection
+            tabs={poiTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        <div className="details-content flex-1 overflow-y-auto min-h-0">
+          {renderContent()}
+        </div>
+      </div>
 
       {isEditClicked && (
         <CreatePoiWizard

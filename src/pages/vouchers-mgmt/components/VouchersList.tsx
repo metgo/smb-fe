@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Package,
   Download,
+  Send,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ import {
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import TooltipWrapper from "@/components/wrapper/TooltipWrapper";
 
 const LIMIT = 20;
 
@@ -72,6 +74,9 @@ const VouchersList = ({
 }: VouchersListProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation("vouchers");
+  const { t: tt } = useTranslation("toast");
+  const { t: tc } = useTranslation("common");
+
   const { textPrimary, isDark } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
 
@@ -145,7 +150,7 @@ const VouchersList = ({
       key: "code",
       label: t("code"),
       sortable: true,
-      render: (voucher: any) => (
+      render: (voucher: IVoucherItem) => (
         <span
           className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
         >
@@ -158,7 +163,7 @@ const VouchersList = ({
       key: "assignee",
       label: t("assignee"),
       sortable: true,
-      render: (voucher: any) => (
+      render: (voucher: IVoucherItem) => (
         <span
           className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
         >
@@ -171,31 +176,33 @@ const VouchersList = ({
       key: "contact",
       label: t("contact"),
       sortable: false,
-      render: (voucher: any) => (
+      render: (voucher: IVoucherItem) => (
         <div className="flex items-center gap-2">
-          {voucher.email ? (
-            <a
-              href={`mailto:${voucher.email}`}
-              onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
-              title={voucher.email}
-            >
-              <Mail className="w-4 h-4" />
-            </a>
+          {voucher?.assigneeInfo?.email ? (
+            <TooltipWrapper infoText={voucher?.assigneeInfo?.email} side="top">
+              <a
+                href={`mailto:${voucher?.assigneeInfo?.email}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
+              >
+                <Mail className="w-4 h-4" />
+              </a>
+            </TooltipWrapper>
           ) : (
-            <div>-</div>
+            <span>-</span>
           )}
-          {voucher.phone ? (
-            <a
-              href={`tel:${voucher.phone}`}
-              onClick={(e) => e.stopPropagation()}
-              className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
-              title={voucher.phone}
-            >
-              <Phone className="w-4 h-4" />
-            </a>
+          {voucher?.assigneeInfo?.phone ? (
+            <TooltipWrapper infoText={voucher?.assigneeInfo?.phone} side="top">
+              <a
+                href={`tel:${voucher?.assigneeInfo?.phone}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+            </TooltipWrapper>
           ) : (
-            <div>-</div>
+            <span>-</span>
           )}
         </div>
       ),
@@ -220,7 +227,7 @@ const VouchersList = ({
       key: "amount",
       label: t("amount"),
       sortable: true,
-      render: (voucher: any) => (
+      render: (voucher: IVoucherItem) => (
         <span
           className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
         >
@@ -259,7 +266,7 @@ const VouchersList = ({
       key: "expireDate",
       label: t("expiry"),
       sortable: true,
-      render: (voucher: any) => {
+      render: (voucher: IVoucherItem) => {
         const expired = isExpired(voucher.expireDate);
         const expiringSoon = isExpiringSoon(voucher.expireDate);
         const textColor = expired
@@ -300,6 +307,51 @@ const VouchersList = ({
         >
           {voucher.campId || "-"}
         </span>
+      ),
+    },
+
+    {
+      key: "actions",
+      label: tc("action"),
+      render: (voucher: IVoucherItem) => (
+        <div className="flex items-center gap-2 z-50">
+          <TooltipWrapper infoText={t("send_email")} side="top">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSendSingleEmail(voucher._id);
+              }}
+              disabled={!voucher?.assigneeInfo?.email}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
+                !voucher?.assigneeInfo?.email
+                  ? "opacity-30 cursor-not-allowed bg-blue-500/10 text-blue-400"
+                  : isDark
+                    ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500 hover:text-white hover:scale-110 active:scale-95"
+                    : "bg-blue-100 text-blue-900 hover:bg-blue-500 hover:text-white hover:scale-110 active:scale-95"
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+            </button>
+          </TooltipWrapper>
+
+          <TooltipWrapper infoText={t("send_sms")} side="top">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSendSingleSMS(voucher._id);
+              }}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
+                !voucher?.assigneeInfo?.phone
+                  ? "opacity-30 cursor-not-allowed bg-green-500/10 text-green-600"
+                  : isDark
+                    ? "bg-green-500/15 text-green-400 hover:bg-green-500 hover:text-white hover:scale-110 active:scale-95"
+                    : "bg-green-100 text-green-600 hover:bg-green-500 hover:text-white hover:scale-110 active:scale-95"
+              }`}
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </TooltipWrapper>
+        </div>
       ),
     },
   ].filter(Boolean) as {
@@ -380,7 +432,7 @@ const VouchersList = ({
 
   const allVouchers = voucherData?.data;
   const maxVoucherAmount = voucherData?.highestAmount ?? 1000000;
-  const [combinedVouchers, setCombinedVouchers] = useState<any[]>([]);
+  const [combinedVouchers, setCombinedVouchers] = useState<IVoucherItem[]>([]);
   const hasMore = voucherData?.meta?.hasNextPage;
 
   // Debounce amount changes (2 seconds)
@@ -455,20 +507,40 @@ const VouchersList = ({
     try {
       await sendEmail({ voucherIds: Array.from(selectedVouchers) }).unwrap();
       toast.success(
-        t("emails_sent_successfully") || "Emails sent successfully",
+        tt("emails_sent_successfully") || "Emails sent successfully",
       );
     } catch (error) {
       console.error("Failed to send voucher emails:", error);
-      toast.error(t("failed_to_send_emails") || "Failed to send emails");
+      toast.error(tt("failed_to_send_emails") || "Failed to send emails");
     }
   };
 
   const handleSendVoucherSMS = async (): Promise<void> => {
     try {
       await sendSMS({ voucherIds: Array.from(selectedVouchers) }).unwrap();
-      toast.success(t("sms_sent_successfully") || "SMS sent successfully");
+      toast.success(tt("sms_sent_successfully") || "SMS sent successfully");
     } catch (error) {
       console.error("Failed to send voucher SMS:", error);
+      toast.error(tt("failed_to_send_sms") || "Failed to send SMS");
+    }
+  };
+
+  const handleSendSingleEmail = async (voucherId: string): Promise<void> => {
+    try {
+      await sendEmail({ voucherIds: [voucherId] }).unwrap();
+      toast.success(
+        tt("emails_sent_successfully") || "Email sent successfully",
+      );
+    } catch (error) {
+      toast.error(t("failed_to_send_emails") || "Failed to send email");
+    }
+  };
+
+  const handleSendSingleSMS = async (voucherId: string): Promise<void> => {
+    try {
+      await sendSMS({ voucherIds: [voucherId] }).unwrap();
+      toast.success(tt("sms_sent_successfully") || "SMS sent successfully");
+    } catch (error) {
       toast.error(t("failed_to_send_sms") || "Failed to send SMS");
     }
   };
@@ -497,7 +569,8 @@ const VouchersList = ({
       {
         key: "contact",
         header: t("contact"),
-        get: (v: any) => [v.email, v.phone].filter(Boolean).join(" | ") || "-",
+        get: (v: any) =>
+          [v?.assigneeInfo?.email, v.phone].filter(Boolean).join(" | ") || "-",
       },
       {
         key: "status",
@@ -576,7 +649,7 @@ const VouchersList = ({
         <PageStats
           stats={voucherStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+          className="lg:grid-cols-5 gap-4"
         />
       </div>
 
@@ -594,7 +667,7 @@ const VouchersList = ({
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportCSVVouchers}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+            className={`flex items-center gap-2 px-2.5 sm:px-4 py-2 rounded-lg border transition-colors ${
               isDark
                 ? "border-gray-700 text-gray-300 hover:bg-gray-800"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
@@ -602,7 +675,7 @@ const VouchersList = ({
             title={t("downloadCSV")}
           >
             <Download className="w-4 h-4" />
-            <span>{t("downloadCSV")}</span>
+            <span className="hidden sm:inline">{t("downloadCSV")}</span>
           </button>
 
           <FilterButton value={showFilters} onChange={setShowFilters} />
@@ -616,9 +689,9 @@ const VouchersList = ({
             isDark ? "border-gray-800" : "bg-gray-50 border-gray-200"
           }`}
         >
-          <div className="grid grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
             {/* Status */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("status")}
                 value={statusFilter}
@@ -635,7 +708,7 @@ const VouchersList = ({
             </div>
 
             {/* Campaign */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("campaign")}
                 value={campaignFilter}
@@ -651,7 +724,7 @@ const VouchersList = ({
             </div>
 
             {/* Payment status */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("payment_status")}
                 value={paymentFilter}
@@ -666,7 +739,7 @@ const VouchersList = ({
             </div>
 
             {/* Date Range */}
-            <div className="col-span-4">
+            <div className="sm:col-span-2 lg:col-span-4">
               <label
                 className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
@@ -697,7 +770,7 @@ const VouchersList = ({
             </div>
 
             {/* Amount Range - Dual slider with debounce */}
-            <div className="col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               <label
                 className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >

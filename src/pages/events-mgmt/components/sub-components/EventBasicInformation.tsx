@@ -4,13 +4,11 @@ import React, { useEffect, useRef } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   DmoAuthorityWebsiteSelector,
-  RichTextEditor,
   SelectableChips,
 } from "@/components/shared";
 import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
-  InputField,
   ReactSelect,
   TextareaField,
 } from "@/components/form-fields";
@@ -18,20 +16,17 @@ import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
+import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
 
 interface EventBasicInformationProps {
+  formData: Record<string, any>;
+  onChange: (updates: Record<string, any>) => void;
   eventId: string;
   markDirty: (step: number) => void;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
-  eventNameHe: string;
-  setEventNameHe: React.Dispatch<React.SetStateAction<string>>;
-  shortDescriptionHe: string;
-  setShortDescriptionHe: React.Dispatch<React.SetStateAction<string>>;
-  fullDescriptionHe: string;
-  setFullDescriptionHe: React.Dispatch<React.SetStateAction<string>>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -58,12 +53,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
-  eventNameHe,
-  setEventNameHe,
-  shortDescriptionHe,
-  setShortDescriptionHe,
-  fullDescriptionHe,
-  setFullDescriptionHe,
+  formData,
+  onChange,
   internalNotes,
   setInternalNotes,
   selectedSubCategoriesId,
@@ -134,9 +125,12 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   useEffect(() => {
     markDirty(1);
   }, [
-    eventNameHe,
-    shortDescriptionHe,
-    fullDescriptionHe,
+    formData.nameHe,
+    formData.shortDescriptionHe,
+    formData.fullDescriptionHe,
+    formData.nameAr,
+    formData.shortDescriptionAr,
+    formData.fullDescriptionAr,
     selectedAuthorityId,
     selectedDmoId,
     selectedAccessiblitiesId,
@@ -207,52 +201,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         {t("step_1_basic_information")}
       </div>
 
-      <div dir="rtl" ref={nameSectionRef}>
-        <FormFieldWrapper
-          required
-          label={t("event_name")}
-          error={errors.eventName}
-          inputHintText={`${eventNameHe?.length ?? 0}/50 ${t("max_characters")}`}
-        >
-          <InputField
-            value={eventNameHe}
-            onChange={setEventNameHe}
-            maxLength={50}
-            placeholder="הזן שם האירוע"
-            inputClasses={`${inputClasses} text-lg`}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      <div dir="rtl" ref={shortDescSectionRef}>
-        <FormFieldWrapper
-          required
-          label={t("short_description")}
-          error={errors.shortDescription}
-          inputHintText={`${shortDescriptionHe?.length ?? 0}/50 ${t("max_characters")}`}
-        >
-          <InputField
-            value={shortDescriptionHe}
-            onChange={setShortDescriptionHe}
-            maxLength={50}
-            placeholder="תיאור קצר"
-            inputClasses={inputClasses}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      <div dir="rtl">
-        <FormFieldWrapper
-          label={t("full_description")}
-          inputHintText={`${fullDescriptionHe?.length ?? 0}/50 ${t("max_characters")}`}
-        >
-          <RichTextEditor
-            value={fullDescriptionHe}
-            onChange={setFullDescriptionHe}
-            placeholder="תיאור מלא"
-          />
-        </FormFieldWrapper>
-      </div>
+      <ProductContentForm formData={formData} onChange={onChange} />
 
       <SelectableChips
         label="subcategories"

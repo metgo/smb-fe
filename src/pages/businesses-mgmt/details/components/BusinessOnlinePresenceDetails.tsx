@@ -93,12 +93,12 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
         }`}
       >
         <Globe
-          className={`w-16 h-16 mx-auto mb-4 ${
+          className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 ${
             isDark ? "text-gray-600" : "text-gray-400"
           }`}
         />
         <p
-          className={`text-lg mb-2 ${
+          className={`text-base sm:text-lg mb-2 ${
             isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
@@ -114,7 +114,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
   return (
     <div className="space-y-6">
       <h3
-        className={`text-lg font-semibold ${
+        className={`text-base sm:text-lg font-semibold ${
           isDark ? "text-gray-100" : "text-gray-800"
         }`}
       >

@@ -37,16 +37,18 @@ const AuthHeader = ({
   };
 
   return (
-    <div className="mb-6 decoration-blue-100 flex items-start justify-between">
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h1 className="text-4xl text-white  ">{t(title)}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          {t(title)}
+        </h1>
 
-        <p className="text-white/80 mb-8 mt-4">
+        <p className="text-white/50 text-sm mt-2 mb-0">
           {desc && <>{t(desc)} </>}
           {btnText && handleCurrentTabChange && (
             <button
               onClick={handleCurrentTabChange}
-              className="text-yellow-400 hover:text-yellow-300 transition-colors cursor-pointer"
+              className="text-yellow-400 hover:text-yellow-300 transition-colors cursor-pointer font-medium"
             >
               {t(btnText)}
             </button>
@@ -61,7 +63,7 @@ const AuthHeader = ({
           handleLanguageChange((val as ItemOption).value as Language)
         }
         styles={{
-          container: (b) => ({ ...b, minWidth: 150, zIndex: 50 }),
+          container: (b) => ({ ...b, minWidth: 130, zIndex: 50 }),
 
           control: (b, s) => ({
             ...b,

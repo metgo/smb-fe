@@ -96,94 +96,53 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-      {statItems.map((stat) => {
-        const IconComponent = stat.icon;
-        const hasValue = stat.value > 0;
+    <div className="mb-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-2 sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible min-w-max sm:min-w-0">
+        {statItems.map((stat) => {
+          const IconComponent = stat.icon;
+          const hasValue = stat.value > 0;
 
-        return (
-          <div
-            key={stat.label}
-            className={`
-              group relative overflow-hidden
-              ${bgSecondary} rounded-2xl p-4 
-              border ${borderColor}
-              transition-all duration-300 ease-out
-              hover:scale-[1.02] hover:shadow-lg
-              ${hasValue ? "hover:border-opacity-50" : "opacity-80"}
-            `}
-          >
-            {/* Background gradient effect */}
+          return (
             <div
-              className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${getGradientClass(stat.color)}`}
-            />
-
-            {/* Content */}
-            <div className="relative">
-              {/* Icon with animated background */}
-              <div
-                className={`
-                w-10 h-10 rounded-xl 
-                ${getGradientClass(stat.color)} 
-                flex items-center justify-center 
-                mb-3 transition-transform duration-300 
-                group-hover:scale-110 group-hover:rotate-3
+              key={stat.label}
+              className={`
+                shrink-0 w-[110px] sm:w-auto
+                group relative overflow-hidden
+                ${bgSecondary} rounded-xl p-2.5 sm:p-3
+                border ${borderColor}
+                transition-all duration-200
+                hover:shadow-md
+                ${!hasValue && "opacity-60"}
               `}
-              >
-                <IconComponent
-                  className={`w-5 h-5 ${getIconColor(stat.color)}`}
-                />
-              </div>
+            >
+              <div
+                className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${getGradientClass(stat.color)}`}
+              />
 
-              {/* Value with special styling when zero */}
-              <div className="space-y-1">
+              <div className="relative">
+                <div
+                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg ${getGradientClass(stat.color)} flex items-center justify-center mb-1.5`}
+                >
+                  <IconComponent
+                    className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${getIconColor(stat.color)}`}
+                  />
+                </div>
+
                 <p
-                  className={`
-                  text-2xl font-semibold tracking-tight
-                  transition-colors duration-200
-                  ${hasValue ? textPrimary : textTertiary}
-                  ${hasValue && `group-hover:text-${stat.color}-600 dark:group-hover:text-${stat.color}-400`}
-                `}
+                  className={`text-base sm:text-xl font-semibold leading-none mb-1 ${hasValue ? textPrimary : textTertiary}`}
                 >
                   {stat.value.toLocaleString()}
                 </p>
-
-                {/* Label with better readability */}
                 <p
-                  className={`
-                  text-xs font-medium uppercase tracking-wider
-                  ${textTertiary}
-                  group-hover:text-opacity-100
-                `}
+                  className={`text-[9px] sm:text-[10px] font-medium uppercase tracking-wide leading-tight ${textTertiary}`}
                 >
                   {stat.label}
                 </p>
               </div>
-
-              {/* Mini trend indicator (optional - can be removed if not needed) */}
-              {hasValue && (
-                <div
-                  className={`
-                  absolute top-2 right-2 w-1.5 h-1.5 rounded-full
-                  bg-${stat.color}-500 dark:bg-${stat.color}-400
-                  animate-pulse
-                `}
-                />
-              )}
             </div>
-
-            {/* Decorative corner accent */}
-            <div
-              className={`
-              absolute bottom-0 right-0 w-12 h-12 
-              bg-linear-to-tl 
-              opacity-0 group-hover:opacity-100 
-              transition-opacity duration-500 rounded-tl-3xl
-            `}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

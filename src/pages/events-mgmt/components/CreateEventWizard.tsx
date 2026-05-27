@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Check,
   Calendar,
   Users,
   Ticket,
@@ -15,7 +14,11 @@ import {
   Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import {
@@ -180,6 +183,7 @@ export default function CreateEventWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
 
   const [isRecurring, setIsRecurring] = useState(false);
+
   const [recurrencePattern, setRecurrencePattern] =
     useState<RecurrencePattern>("weekly");
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]); // 0=Sun, 1=Mon, etc.
@@ -215,7 +219,6 @@ export default function CreateEventWizard({
   const [eventImages, setEventImages] = useState<TImages>([]);
   const {
     images,
-    setImages,
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
@@ -230,15 +233,15 @@ export default function CreateEventWizard({
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const steps = [
-    { id: 1, icon: FileText, label: t("step_1_basic_information") },
-    { id: 2, icon: Languages, label: tp("translation") },
-    { id: 3, icon: Calendar, label: t("step_2_date_time") },
-    { id: 4, icon: Users, label: t("step_3_registration") },
-    { id: 5, icon: Ticket, label: t("step_4_tickets") },
-    { id: 6, icon: Mail, label: t("messaging"), labelKey: "step_5_messaging" },
-    { id: 7, icon: Image, label: t("step_5_media") },
-    { id: 8, icon: CheckCircle, label: t("step_6_review") },
+  const steps: IWizardStep[] = [
+    { number: 1, icon: FileText, title: t("step_1_basic_information") },
+    { number: 2, icon: Languages, title: tp("translation") },
+    { number: 3, icon: Calendar, title: t("step_2_date_time") },
+    { number: 4, icon: Users, title: t("step_3_registration") },
+    { number: 5, icon: Ticket, title: t("step_4_tickets") },
+    { number: 6, icon: Mail, title: t("messaging") },
+    { number: 7, icon: Image, title: t("step_5_media") },
+    { number: 8, icon: CheckCircle, title: t("step_6_review") },
   ];
 
   useEffect(() => {
@@ -256,7 +259,6 @@ export default function CreateEventWizard({
   useEffect(() => {
     if (isOpen && !editId) {
       // Reset to initial state
-      setImages([]);
       setEventId("");
       setCurrentStep(1);
       setEventName("");
@@ -305,7 +307,7 @@ export default function CreateEventWizard({
       setHasFormChanges(false);
       initialImagesCountRef.current = 0;
     }
-  }, [isOpen, editId, setImages]);
+  }, [isOpen, editId]);
 
   useEffect(() => {
     if (editData && editId) {
@@ -492,6 +494,7 @@ export default function CreateEventWizard({
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
   };
+
   const eventDateTimePayload = {
     dayDescription: eventDays?.map((item) => ({
       date: isMultiDay ? item.date : startDate,
@@ -592,6 +595,12 @@ export default function CreateEventWizard({
     [markDirty],
   );
 
+  useEffect(() => {
+    if (images.length) {
+      handleMarkDirty(7);
+    }
+  }, [images, handleMarkDirty]);
+
   const translationFormData = {
     name: eventName,
     nameHe: eventNameHe,
@@ -645,6 +654,11 @@ export default function CreateEventWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (!eventName?.trim() && !eventNameHe?.trim() && !eventNameAr?.trim()) {
+      toast.error(tc("name_required"));
+      return;
+    }
+
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (eventId) {
@@ -763,7 +777,7 @@ export default function CreateEventWizard({
           </h2>
           <p className={`text-sm mt-1 ${textTertiary}`}>
             {t("step")} {currentStep} {t("step_of")} {steps?.length}:{" "}
-            {steps[currentStep - 1].label}
+            {steps[currentStep - 1].title}
           </p>
         </div>
 
@@ -785,56 +799,12 @@ export default function CreateEventWizard({
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div
-        className={`px-6 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"} `}
-      >
-        <div className={clsx("flex items-center justify-between ")}>
-          {steps?.map((step, index) => (
-            <div
-              key={step.id}
-              className="flex items-center flex-1 cursor-pointer"
-              onClick={() => handleSpecificStepJump(step.id)}
-            >
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    currentStep > step.id
-                      ? "bg-green-500 text-white"
-                      : currentStep === step.id
-                        ? "bg-teal-500 text-white"
-                        : isDark
-                          ? "bg-gray-800 text-gray-500"
-                          : "bg-gray-200 text-gray-400"
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    <step.icon className="w-5 h-5" />
-                  )}
-                </div>
-                <span
-                  className={`text-xs mt-1 hidden md:block ${textTertiary}`}
-                >
-                  {step.label}
-                </span>
-              </div>
-              {index < steps?.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 mx-2 ${
-                    currentStep > step.id
-                      ? "bg-green-500"
-                      : isDark
-                        ? "bg-gray-800"
-                        : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <WizardStepper
+        steps={steps}
+        currentStep={currentStep}
+        totalSteps={steps.length}
+        onStepClick={handleSpecificStepJump}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
@@ -846,15 +816,11 @@ export default function CreateEventWizard({
         )}
         {currentStep === 1 && (
           <EventBasicInformation
+            formData={translationFormData}
+            onChange={handleTranslateChange}
             searchBusiness={searchBusiness}
             eventId={eventId}
             markDirty={handleMarkDirty}
-            eventNameHe={eventNameHe}
-            setEventNameHe={setEventNameHe}
-            shortDescriptionHe={shortDescriptionHe}
-            setShortDescriptionHe={setShortDescriptionHe}
-            fullDescriptionHe={fullDescriptionHe}
-            setFullDescriptionHe={setFullDescriptionHe}
             internalNotes={internalNotes}
             setInternalNotes={setInternalNotes}
             errors={errors}
@@ -975,7 +941,6 @@ export default function CreateEventWizard({
         )}
         {currentStep === 7 && (
           <Media
-            markDirty={handleMarkDirty}
             images={images}
             imagesRef={imagesRef}
             setPrimaryImage={setPrimaryImage}

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Accessibility,
@@ -8,11 +8,14 @@ import {
   Grid3x3,
   CheckCircle2,
   TagIcon,
+  type LucideIcon,
 } from "lucide-react";
 
 import { getMatchedItems } from "@/helpers";
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AttributesDetailsProps {
   categoriesId?: string[];
@@ -21,6 +24,150 @@ interface AttributesDetailsProps {
   accessibilitiesId?: string[];
   tags?: ITags[];
 }
+
+interface AttributeSectionProps {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  isDark: boolean;
+  colorScheme: ColorScheme;
+  children: ReactNode;
+}
+
+type ColorScheme = "green" | "blue" | "purple" | "orange";
+
+// ─── Color Maps ───────────────────────────────────────────────────────────────
+
+const COLOR_MAP: Record<
+  ColorScheme,
+  {
+    iconWrap: string;
+    iconWrapDark: string;
+    icon: string;
+    iconDark: string;
+    badge: string;
+    badgeDark: string;
+  }
+> = {
+  green: {
+    iconWrap: "bg-green-100",
+    iconWrapDark: "bg-green-500/20",
+    icon: "text-green-600",
+    iconDark: "text-green-400",
+    badge:
+      "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:border-green-300",
+    badgeDark:
+      "bg-green-500/20 text-green-400 border border-green-800/50 hover:bg-green-500/30",
+  },
+  blue: {
+    iconWrap: "bg-blue-100",
+    iconWrapDark: "bg-blue-500/20",
+    icon: "text-blue-600",
+    iconDark: "text-blue-400",
+    badge: "bg-blue-100 text-blue-800 border border-blue-300",
+    badgeDark: "bg-blue-900/30 text-blue-400 border border-blue-800",
+  },
+  purple: {
+    iconWrap: "bg-purple-100",
+    iconWrapDark: "bg-purple-500/20",
+    icon: "text-purple-600",
+    iconDark: "text-purple-400",
+    badge: "bg-purple-100 text-purple-800 border border-purple-300",
+    badgeDark: "bg-purple-900/30 text-purple-400 border border-purple-800",
+  },
+  orange: {
+    iconWrap: "bg-orange-100",
+    iconWrapDark: "bg-orange-500/20",
+    icon: "text-orange-600",
+    iconDark: "text-orange-400",
+    badge: "bg-orange-100 text-orange-800 border border-orange-300",
+    badgeDark: "bg-orange-900/30 text-orange-400 border border-orange-800",
+  },
+};
+
+// ─── AttributeSection ─────────────────────────────────────────────────────────
+
+const AttributeSection: FC<AttributeSectionProps> = ({
+  icon: Icon,
+  title,
+  subtitle,
+  isDark,
+  colorScheme,
+  children,
+}) => {
+  const colors = COLOR_MAP[colorScheme];
+
+  return (
+    <div
+      className={clsx(
+        "rounded-xl border p-4 md:p-6 transition-all duration-200",
+        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className={clsx(
+            "p-2 rounded-lg shrink-0",
+            isDark ? colors.iconWrapDark : colors.iconWrap,
+          )}
+        >
+          <Icon
+            className={clsx("w-5 h-5", isDark ? colors.iconDark : colors.icon)}
+          />
+        </div>
+        <div className="min-w-0">
+          <h3
+            className={clsx(
+              "text-sm sm:text-base font-semibold truncate",
+              isDark ? "text-gray-200" : "text-gray-800",
+            )}
+          >
+            {title}
+          </h3>
+          <p
+            className={clsx(
+              "text-xs mt-0.5 truncate",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          >
+            {subtitle}
+          </p>
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+};
+
+// ─── Badge ────────────────────────────────────────────────────────────────────
+
+const Badge: FC<{
+  icon: LucideIcon;
+  label: string;
+  isDark: boolean;
+  colorScheme: ColorScheme;
+  animate?: boolean;
+}> = ({ icon: Icon, label, isDark, colorScheme, animate = false }) => {
+  const colors = COLOR_MAP[colorScheme];
+
+  return (
+    <span
+      className={clsx(
+        "px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium",
+        animate && "transition-transform duration-200 hover:scale-105",
+        isDark ? colors.badgeDark : colors.badge,
+      )}
+    >
+      <Icon className="w-3.5 h-3.5 shrink-0" />
+      <span className="truncate max-w-40 sm:max-w-none">{label}</span>
+    </span>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const AttributesDetails: FC<AttributesDetailsProps> = ({
   tags = [],
@@ -33,342 +180,140 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
   const { isDark, language } = useThemeClasses();
   const { categories, subCategories, groupTypes, accessibility } = useCommon();
 
-  const filteredCategories = getMatchedItems(categories, categoriesId) || [];
+  const filteredCategories = getMatchedItems(categories, categoriesId) ?? [];
   const filteredSubcategories =
-    getMatchedItems(subCategories, subCategoriesId) || [];
+    getMatchedItems(subCategories, subCategoriesId) ?? [];
   const filteredAccessibilities =
-    getMatchedItems(accessibility, accessibilitiesId) || [];
-  const filteredGroupTypes = getMatchedItems(groupTypes, groupTypesId) || [];
+    getMatchedItems(accessibility, accessibilitiesId) ?? [];
+  const filteredGroupTypes = getMatchedItems(groupTypes, groupTypesId) ?? [];
+  const filteredTags = tags.filter((tag) => tag?.[language]?.trim());
 
   const hasAnyData =
-    tags?.length > 0 ||
-    filteredCategories?.length > 0 ||
-    filteredSubcategories?.length > 0 ||
-    filteredAccessibilities?.length > 0 ||
-    filteredGroupTypes?.length > 0;
+    filteredTags.length > 0 ||
+    filteredCategories.length > 0 ||
+    filteredSubcategories.length > 0 ||
+    filteredAccessibilities.length > 0 ||
+    filteredGroupTypes.length > 0;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  const pluralise = (count: number, singular: string, plural: string) =>
+    `${count} ${count === 1 ? singular : plural}`;
 
   return (
-    <div className="space-y-6">
-      {/* categories */}
-      {categoriesId && categoriesId?.length > 0 && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
+    <div className="space-y-4 md:space-y-6">
+      {/* Categories */}
+      {filteredCategories.length > 0 && (
+        <AttributeSection
+          icon={Grid3x3}
+          title={t("categories")}
+          subtitle={`${pluralise(filteredCategories.length, "category", "categories")} selected`}
+          isDark={isDark}
+          colorScheme="green"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-green-500/20" : "bg-green-100",
-              )}
-            >
-              <Grid3x3
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-green-400" : "text-green-600",
-                )}
-              />
-            </div>
-            <div>
-              <h3
-                className={clsx(
-                  "text-base font-semibold",
-                  isDark ? "text-gray-200" : "text-gray-800",
-                )}
-              >
-                {t("categories")}
-              </h3>
-              <p
-                className={clsx(
-                  "text-xs mt-0.5",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {filteredCategories.length}{" "}
-                {filteredCategories.length === 1 ? "category" : "categories"}{" "}
-                selected
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {filteredCategories?.map((item: any, idx: number) => (
-              <span
-                key={idx}
-                className={clsx(
-                  "px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-200 hover:scale-105",
-                  isDark
-                    ? "bg-green-500/20 text-green-400 border border-green-800/50 hover:bg-green-500/30"
-                    : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:border-green-300",
-                )}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {item?.name}
-              </span>
-            ))}
-          </div>
-        </div>
+          {filteredCategories.map((item: any, idx: number) => (
+            <Badge
+              key={item?.id ?? idx}
+              icon={CheckCircle2}
+              label={item?.name ?? "—"}
+              isDark={isDark}
+              colorScheme="green"
+              animate
+            />
+          ))}
+        </AttributeSection>
       )}
 
       {/* Subcategories */}
-      {subCategoriesId && subCategoriesId?.length > 0 && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
+      {filteredSubcategories.length > 0 && (
+        <AttributeSection
+          icon={Grid3x3}
+          title={t("subcategories")}
+          subtitle={`${pluralise(filteredSubcategories.length, "sub-category", "sub-categories")} selected`}
+          isDark={isDark}
+          colorScheme="green"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-green-500/20" : "bg-green-100",
-              )}
-            >
-              <Grid3x3
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-green-400" : "text-green-600",
-                )}
-              />
-            </div>
-            <div>
-              <h3
-                className={clsx(
-                  "text-base font-semibold",
-                  isDark ? "text-gray-200" : "text-gray-800",
-                )}
-              >
-                {t("subcategories")}
-              </h3>
-              <p
-                className={clsx(
-                  "text-xs mt-0.5",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {filteredSubcategories.length}{" "}
-                {filteredSubcategories.length === 1
-                  ? "sub-category"
-                  : "sub-categories"}{" "}
-                selected
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {getMatchedItems(subCategories, subCategoriesId).map(
-              (item: any, idx: number) => (
-                <span
-                  key={idx}
-                  className={clsx(
-                    "px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-200 hover:scale-105",
-                    isDark
-                      ? "bg-green-500/20 text-green-400 border border-green-800/50 hover:bg-green-500/30"
-                      : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:border-green-300",
-                  )}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  {item?.name}
-                </span>
-              ),
-            )}
-          </div>
-        </div>
+          {filteredSubcategories.map((item: any, idx: number) => (
+            <Badge
+              key={item?.id ?? idx}
+              icon={CheckCircle2}
+              label={item?.name ?? "—"}
+              isDark={isDark}
+              colorScheme="green"
+              animate
+            />
+          ))}
+        </AttributeSection>
       )}
 
-      {/* Accessibility Options */}
+      {/* Accessibility */}
       {filteredAccessibilities.length > 0 && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
+        <AttributeSection
+          icon={Accessibility}
+          title={t("accessiblities")}
+          subtitle={`${pluralise(filteredAccessibilities.length, "feature", "features")} available`}
+          isDark={isDark}
+          colorScheme="blue"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-blue-500/20" : "bg-blue-100",
-              )}
-            >
-              <Accessibility
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-blue-400" : "text-blue-600",
-                )}
-              />
-            </div>
-            <div>
-              <h3
-                className={clsx(
-                  "text-base font-semibold",
-                  isDark ? "text-gray-200" : "text-gray-800",
-                )}
-              >
-                {t("accessiblities")}
-              </h3>
-              <p
-                className={clsx(
-                  "text-xs mt-0.5",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                {filteredAccessibilities.length}{" "}
-                {filteredAccessibilities.length === 1 ? "feature" : "features"}{" "}
-                available
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {filteredAccessibilities.map((option: any, idx: number) => (
-              <span
-                key={option?.id ?? idx}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                  isDark
-                    ? "bg-blue-900/30 text-blue-400 border border-blue-800"
-                    : "bg-blue-100 text-blue-800 border border-blue-300"
-                }`}
-              >
-                <Accessibility className="w-4 h-4" />
-                {option?.name ? option.name : "Unnamed Accessibility"}
-              </span>
-            ))}
-          </div>
-        </div>
+          {filteredAccessibilities.map((option: any, idx: number) => (
+            <Badge
+              key={option?.id ?? idx}
+              icon={Accessibility}
+              label={option?.name ?? "Unnamed Accessibility"}
+              isDark={isDark}
+              colorScheme="blue"
+            />
+          ))}
+        </AttributeSection>
       )}
 
       {/* Group Types */}
       {filteredGroupTypes.length > 0 && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
+        <AttributeSection
+          icon={Users}
+          title={t("group_types")}
+          subtitle={`Suitable for ${pluralise(filteredGroupTypes.length, "group type", "group types")}`}
+          isDark={isDark}
+          colorScheme="purple"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-purple-500/20" : "bg-purple-100",
-              )}
-            >
-              <Users
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-purple-400" : "text-purple-600",
-                )}
-              />
-            </div>
-            <div>
-              <h3
-                className={clsx(
-                  "text-base font-semibold",
-                  isDark ? "text-gray-200" : "text-gray-800",
-                )}
-              >
-                {t("group_types")}
-              </h3>
-              <p
-                className={clsx(
-                  "text-xs mt-0.5",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                Suitable for {filteredGroupTypes.length}{" "}
-                {filteredGroupTypes.length === 1 ? "group type" : "group types"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center flex-wrap gap-3">
-            {filteredGroupTypes.map((type: any, idx: number) => (
-              <span
-                key={type?.id ?? idx}
-                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                  isDark
-                    ? "bg-purple-900/30 text-purple-400 border border-purple-800"
-                    : "bg-purple-100 text-purple-800 border border-purple-300"
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                {type?.name ? type.name : "Unnamed Group"}
-              </span>
-            ))}
-          </div>
-        </div>
+          {filteredGroupTypes.map((type: any, idx: number) => (
+            <Badge
+              key={type?.id ?? idx}
+              icon={Users}
+              label={type?.name ?? "Unnamed Group"}
+              isDark={isDark}
+              colorScheme="purple"
+            />
+          ))}
+        </AttributeSection>
       )}
 
-      {/* Group Types */}
-      {tags?.length > 0 && (
-        <div
-          className={clsx(
-            "rounded-xl border p-6 transition-all duration-200",
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
-          )}
+      {/* Tags */}
+      {filteredTags.length > 0 && (
+        <AttributeSection
+          icon={TagIcon}
+          title={t("tags")}
+          subtitle={pluralise(filteredTags.length, "tag", "tags")}
+          isDark={isDark}
+          colorScheme="orange"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className={clsx(
-                "p-2 rounded-lg",
-                isDark ? "bg-orange-500/20" : "bg-orange-100",
-              )}
-            >
-              <TagIcon
-                className={clsx(
-                  "w-5 h-5",
-                  isDark ? "text-orange-400" : "text-orange-600",
-                )}
-              />
-            </div>
-            <div>
-              <h3
-                className={clsx(
-                  "text-base font-semibold",
-                  isDark ? "text-gray-200" : "text-gray-800",
-                )}
-              >
-                {t("tags")}
-              </h3>
-              <p
-                className={clsx(
-                  "text-xs mt-0.5",
-                  isDark ? "text-gray-400" : "text-gray-600",
-                )}
-              >
-                Suitable for {tags.length} {tags.length === 1 ? "tag" : "tags"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center flex-wrap gap-3">
-            {tags
-              .filter((tag) => tag?.[language]?.trim())
-              .map((tag, idx) => (
-                <span
-                  key={idx}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                    isDark
-                      ? "bg-orange-900/30 text-orange-400 border border-orange-800"
-                      : "bg-orange-100 text-orange-800 border border-orange-300"
-                  }`}
-                >
-                  <TagIcon className="w-4 h-4" />
-                  {tag[language]}
-                </span>
-              ))}
-          </div>
-        </div>
+          {filteredTags.map((tag, idx) => (
+            <Badge
+              key={idx}
+              icon={TagIcon}
+              label={tag[language]}
+              isDark={isDark}
+              colorScheme="orange"
+            />
+          ))}
+        </AttributeSection>
       )}
 
       {/* Empty State */}
       {!hasAnyData && (
         <div
           className={clsx(
-            "rounded-xl border p-12 text-center",
+            "rounded-xl border p-8 sm:p-12 text-center",
             isDark
               ? "bg-gray-800 border-gray-700"
               : "bg-gray-50 border-gray-200",
@@ -376,13 +321,13 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
         >
           <Tag
             className={clsx(
-              "w-12 h-12 mx-auto mb-3",
+              "w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3",
               isDark ? "text-gray-600" : "text-gray-400",
             )}
           />
           <h3
             className={clsx(
-              "text-base font-semibold mb-1",
+              "text-sm sm:text-base font-semibold mb-1",
               isDark ? "text-gray-300" : "text-gray-700",
             )}
           >
@@ -390,7 +335,7 @@ const AttributesDetails: FC<AttributesDetailsProps> = ({
           </h3>
           <p
             className={clsx(
-              "text-sm",
+              "text-xs sm:text-sm",
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >

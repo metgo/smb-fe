@@ -63,6 +63,7 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+  upcomingEvents: "/upcoming-events",
 
   users: "/users",
   userInfo: "/users/me",

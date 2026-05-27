@@ -1,6 +1,8 @@
 import clsx from "clsx";
-import { X } from "lucide-react";
+import { Palette, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ColorPickerFieldProps {
@@ -12,12 +14,15 @@ interface ColorPickerFieldProps {
 const DEFAULT_1 = "#6366f1";
 const DEFAULT_2 = "#ec4899";
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
+const POPUP_W = 208; // w-52
 
 const ColorPickerField = ({
   colors,
   onChange,
   title,
 }: ColorPickerFieldProps) => {
+  const { t } = useTranslation("content");
+
   const { isDark } = useThemeClasses();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"solid" | "gradient">(
@@ -26,6 +31,13 @@ const ColorPickerField = ({
   const [c1, setC1] = useState(colors[0] ?? DEFAULT_1);
   const [c2, setC2] = useState(colors[1] ?? DEFAULT_2);
   const ref = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const popupId = useRef(Math.random().toString(36));
+  const [popupPos, setPopupPos] = useState<{
+    top: number;
+    left?: number;
+    right?: number;
+  } | null>(null);
 
   // Sync local state when prop changes externally
   useEffect(() => {
@@ -34,16 +46,59 @@ const ColorPickerField = ({
     if (colors[1]) setC2(colors[1]);
   }, [colors.join(",")]);
 
-  // Close on outside click
+  // Close on outside click — must check both trigger and portal popup
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
+      if (
+        ref.current &&
+        !ref.current.contains(e.target as Node) &&
+        popupRef.current &&
+        !popupRef.current.contains(e.target as Node)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
+
+  // Close when another popup opens elsewhere
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail.id !== popupId.current) setOpen(false);
+    };
+    document.addEventListener("popup-opened", handler);
+    return () => document.removeEventListener("popup-opened", handler);
+  }, []);
+
+  // Calculate fixed portal position — works for both LTR and RTL
+  useEffect(() => {
+    if (!open) {
+      setPopupPos(null);
+      return;
+    }
+    const raf = requestAnimationFrame(() => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const top = rect.bottom + 4;
+      if (rect.left + POPUP_W > window.innerWidth - 8) {
+        setPopupPos({ top, right: window.innerWidth - rect.right });
+      } else {
+        setPopupPos({ top, left: rect.left });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
+  const handleToggleOpen = () => {
+    setOpen((v) => {
+      if (!v)
+        document.dispatchEvent(
+          new CustomEvent("popup-opened", { detail: { id: popupId.current } }),
+        );
+      return !v;
+    });
+  };
 
   const emit = (
     newC1: string,
@@ -75,13 +130,6 @@ const ColorPickerField = ({
     emit(c1, c2, m);
   };
 
-  const swatchBg: React.CSSProperties =
-    colors.length >= 2
-      ? { background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }
-      : colors.length === 1
-        ? { background: colors[0] }
-        : { background: isDark ? "#374151" : "#d1d5db" };
-
   const previewBg: React.CSSProperties =
     mode === "gradient"
       ? { background: `linear-gradient(135deg, ${c1}, ${c2})` }
@@ -90,29 +138,46 @@ const ColorPickerField = ({
   return (
     <div ref={ref} className="relative shrink-0">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggleOpen}
         title="Pick background color"
+        style={colors.length > 0 ? previewBg : undefined}
         className={clsx(
-          "w-5 h-5 rounded-full border-2 transition-all hover:scale-110 shrink-0",
+          "w-7 h-7 rounded border transition-all hover:scale-110 shrink-0 flex items-center justify-center",
           colors.length > 0
             ? "border-white/60 shadow-sm"
             : isDark
-              ? "border-gray-600"
-              : "border-gray-300",
+              ? "border-gray-300"
+              : "border-gray-400",
           open &&
             (isDark
               ? "ring-2 ring-offset-1 ring-offset-gray-800 ring-indigo-400"
               : "ring-2 ring-offset-1 ring-offset-white ring-indigo-400"),
         )}
-        style={swatchBg}
-      />
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div
+      >
+        {colors.length === 0 && (
+          <Palette
             className={clsx(
-              "absolute left-0 top-7 z-50 rounded-xl border shadow-xl w-52 p-3 space-y-3",
+              "w-3.5 h-3.5",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          />
+        )}
+      </button>
+
+      {open &&
+        popupPos &&
+        createPortal(
+          <div
+            ref={popupRef}
+            style={{
+              position: "fixed",
+              top: popupPos.top,
+              left: popupPos.left,
+              right: popupPos.right,
+              zIndex: 9999,
+            }}
+            className={clsx(
+              "rounded-xl border shadow-xl w-52 p-3 space-y-3",
               isDark
                 ? "bg-gray-900 border-gray-700 shadow-black/60"
                 : "bg-white border-gray-200 shadow-gray-300/40",
@@ -126,7 +191,7 @@ const ColorPickerField = ({
                   isDark ? "text-gray-400" : "text-gray-500",
                 )}
               >
-                Background Color
+                {t("background_color")}
               </span>
               <button
                 onClick={() => setOpen(false)}
@@ -242,11 +307,11 @@ const ColorPickerField = ({
                   : "border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700",
               )}
             >
-              Remove color
+              {t("remove_color")}
             </button>
-          </div>
-        </>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

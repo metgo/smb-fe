@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { RichTextEditor } from "@/components/shared";
 
 interface ContentConfigHeaderProps {
   header: string;
@@ -17,8 +16,6 @@ interface ContentConfigHeaderProps {
 }
 
 const ContentConfigHeader = ({
-  header,
-  setHeader,
   isExpanded,
   templateContents,
   setTemplateContent,
@@ -95,9 +92,8 @@ const ContentConfigHeader = ({
         {t("feed_header")}
       </div>
       <div
-        className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
+        className={clsx(isExpanded ? "space-y-2" : "grid md:grid-cols-2 gap-2")}
       >
-        <RichTextEditor value={header} onChange={setHeader} />
         <div className="space-y-2">
           {/* Create Topic */}
           <div

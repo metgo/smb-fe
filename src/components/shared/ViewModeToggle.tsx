@@ -20,7 +20,7 @@ export default function ViewModeToggle({
   tableName,
 }: ViewModeToggleProps) {
   const themeColor = useThemeClasses();
-  const baseBtn = "p-2 rounded transition-colors cursor-pointer";
+  const baseBtn = "p-1 md:p-1.5 rounded transition-colors cursor-pointer";
 
   //persist view mode
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function ViewModeToggle({
 
   return (
     <div
-      className={`flex items-center gap-1 p-1 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+      className={`flex items-center gap-1 p-1 rounded md:rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
     >
       <button
         onClick={() => onChange("list")}

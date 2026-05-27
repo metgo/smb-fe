@@ -1,12 +1,15 @@
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
+import { routes } from "@/lib/routes";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
 import { useAppDispatch } from "@/hooks/hooks";
 import { loginSuccess } from "@/features/authSlice";
+import { UserRole } from "@/enums/user.types";
 
 import AuthInputField from "./AuthInputField";
 import AuthHeader from "./AuthHeader";
@@ -17,6 +20,7 @@ interface LoginProps {
 
 export function Login({ setCurrentTab }: LoginProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { t } = useTranslation("login");
   const { t: tt } = useTranslation("toast");
 
@@ -24,12 +28,11 @@ export function Login({ setCurrentTab }: LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [login, { isLoading }] = useLoginMutation();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const data = await login({ email: username, password }).unwrap();
-
       if (typeof window !== "undefined") {
         sessionStorage.setItem(
           "user_info",
@@ -38,23 +41,38 @@ export function Login({ setCurrentTab }: LoginProps) {
         sessionStorage.setItem("access_token", data.accessToken);
         window.dispatchEvent(new Event("session:updated"));
       }
-
       dispatch(loginSuccess(data.user));
-
       toast.success(
         t("welcome_message", {
           firstName: data.user.firstName,
           lastName: data.user.lastName,
         }),
       );
+      if (data.user.role === UserRole.TRAVELLER && !data.user.hasBusiness) {
+        navigate(routes.businessMgmt, { replace: true });
+      } else {
+        navigate(routes.dashboard, { replace: true });
+      }
     } catch (err: any) {
       toast.error(tt("login_failed"));
     }
   };
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8 relative">
+    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-4 sm:p-8 relative">
       <div className="w-full max-w-xl">
-        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl">
+          {/* Logo & site name */}
+          <div className="flex flex-col items-center">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/20 border border-white/40 flex items-center justify-center mb-3 shadow-lg">
+              <img
+                src="/assets/images/metgologo.png"
+                alt="Metgo"
+                className="w-16 sm:w-24"
+              />
+            </div>
+          </div>
+
           <AuthHeader
             title="sign_in"
             desc="no_account"
@@ -63,7 +81,6 @@ export function Login({ setCurrentTab }: LoginProps) {
           />
 
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Username/Email Input */}
             <AuthInputField
               isRequired
               value={username}
@@ -71,7 +88,6 @@ export function Login({ setCurrentTab }: LoginProps) {
               onChange={setUsername}
             />
 
-            {/* Password Input */}
             <AuthInputField
               isRequired
               type="password"
@@ -80,10 +96,8 @@ export function Login({ setCurrentTab }: LoginProps) {
               onChange={setPassword}
             />
 
-            {/* Error Message */}
             {error && <p className="text-red-300 text-sm">{error}</p>}
 
-            {/* Forgot Password */}
             <div className="text-right">
               <button
                 type="button"
@@ -97,14 +111,12 @@ export function Login({ setCurrentTab }: LoginProps) {
             <SubmitButton
               loading={isLoading}
               label={t("sign_in")}
-              className="bg-blue-500  hover:bg-blue-600 text-white rounded-xl text-lg py-7"
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-6"
             />
 
-            {/* Divider */}
             <div className="text-center text-white/80">{t("or")}</div>
           </form>
 
-          {/* Google Sign In */}
           <div className="mt-4">
             <ContinueWithGoogle />
           </div>

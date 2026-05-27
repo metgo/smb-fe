@@ -38,15 +38,15 @@ export default function WizardFooter({
     <div
       className={clsx(
         borderColor,
-        "flex items-center justify-between p-6 border-t",
+        "flex items-center justify-between p-3 sm:p-6 border-t",
       )}
     >
       {/* Left */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {currentStep > 1 && (
           <button
             onClick={onPrevious}
-            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg border transition-colors flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
               isDark
                 ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                 : "border-gray-300 hover:bg-gray-100"
@@ -54,12 +54,12 @@ export default function WizardFooter({
           >
             {isRTL ? (
               <>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {t("previous")}
               </>
             ) : (
               <>
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {t("previous")}
               </>
             )}
@@ -68,25 +68,25 @@ export default function WizardFooter({
       </div>
 
       {/* Right */}
-      <div className={clsx("flex items-center gap-3")}>
+      <div className={clsx("flex items-center gap-2 sm:gap-3")}>
         {onSaveDraft && (
           <button
             onClick={onSaveDraft}
             disabled={isSaving}
-            className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg border cursor-pointer transition-colors ${
               isDark
                 ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                 : "border-gray-300 hover:bg-gray-100"
             }`}
           >
             {isSaving ? (
-              <span className="flex items-center gap-2">
-                <Loader className="w-4 h-4 animate-spin" />
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <Loader className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                 {t("saving")}
               </span>
             ) : (
-              <span className="flex items-center gap-2">
-                <Save className="w-4 h-4" />
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {t("save_draft")}
               </span>
             )}
@@ -96,17 +96,17 @@ export default function WizardFooter({
         {currentStep < totalSteps ? (
           <button
             onClick={onNext}
-            className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+            className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-1.5 sm:gap-2 cursor-pointer"
           >
             {isRTL ? (
               <>
                 {t("next")}
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </>
             ) : (
               <>
                 {t("next")}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </>
             )}
           </button>
@@ -116,16 +116,16 @@ export default function WizardFooter({
               <button
                 onClick={onPublish}
                 disabled={isPublishing}
-                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-1.5 sm:gap-2 cursor-pointer"
               >
                 {isPublishing ? (
                   <>
-                    <Loader className="w-4 h-4 animate-spin" />
+                    <Loader className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                     {t("publishing")}
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     {t("publish")}
                   </>
                 )}
@@ -135,10 +135,9 @@ export default function WizardFooter({
             {onDone && (
               <button
                 onClick={onDone}
-                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-1.5 sm:gap-2 cursor-pointer"
               >
-                <CheckCircle className="w-4 h-4" />
-
+                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {t("done")}
               </button>
             )}

@@ -363,31 +363,36 @@ export default function DynamicPageMgmt() {
   return (
     <div
       className={clsx(
-        "min-h-screen flex flex-col transition-colors relative",
+        "h-[calc(100vh-7rem)] flex flex-col overflow-hidden transition-colors relative",
         isDark ? "bg-gray-900" : "bg-white",
       )}
     >
       <Spinner isLoading={isCreating || isLoading || isFetching} />
 
       {/* Header */}
-      <div className={clsx("shrink-0 px-6 pt-6 pb-0 border-b", borderColor)}>
-        <div className="flex items-center justify-between">
+      <div
+        className={clsx(
+          "shrink-0 px-4 sm:px-6 pt-4 sm:pt-6 pb-0 border-b",
+          borderColor,
+        )}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-3xl mb-1 bg-linear-to-r from-teal-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl mb-1 bg-linear-to-r from-teal-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
               {t("page_title")}
             </h1>
             <p className={clsx("text-sm mb-0", textSecondary)}>
               {t("page_subtitle")}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex  items-center gap-2 sm:gap-4">
             <ReactSelect
-              minWidth={180}
+              minWidth={200}
               items={associatedWebsite}
               value={externalApiId}
               onChange={(value) => setExternalApiId(value)}
             />
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <DraftButton
                 onClick={() => handleSubmit("DRAFT")}
                 isLoading={isCreating || isUpdating}
@@ -407,11 +412,11 @@ export default function DynamicPageMgmt() {
       </div>
 
       {/* Form Body */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
         <div className="space-y-6">
           <div
             className={clsx(
-              "rounded-xl border p-6 space-y-5",
+              "rounded-xl border p-4 sm:p-6 space-y-5",
               borderColor,
               bgSecondary,
             )}

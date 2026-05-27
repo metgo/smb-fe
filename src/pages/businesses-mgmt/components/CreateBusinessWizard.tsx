@@ -29,7 +29,11 @@ import {
   BusinessOpeningHours,
   BusinessReviewSubmit,
 } from "./sub-components";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -56,6 +60,7 @@ interface CreateBusinessWizardProps {
   editData?: any;
   refetch?: any;
   opMode?: TOpMode;
+  missingFields?: string[];
 }
 
 export default function CreateBusinessWizard({
@@ -63,14 +68,15 @@ export default function CreateBusinessWizard({
   editData,
   refetch,
   opMode = IOpMode.CREATE,
+  missingFields = [],
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary } = useThemeClasses();
+  const { textPrimary, isRTL, theme } = useThemeClasses();
+
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [_detecedLanguage, setDetectedLanguage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -78,7 +84,33 @@ export default function CreateBusinessWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState(1);
+  // When opened from email link with missingFields, start on the step of the first missing field
+  const getStepForField = (field: string): number => {
+    const stepMap: Record<string, number> = {
+      name: 1,
+      shortDescription: 1,
+      description: 1,
+      busiEmail: 2,
+      phoneNumber: 2,
+      contactDetails: 2,
+      contactName: 2,
+      address: 3,
+      primaryCategoryId: 4,
+      tags: 4,
+      logo: 5,
+      images: 5,
+      openingHrs: 6,
+      socialMedia: 8,
+    };
+    return stepMap[field] ?? 1;
+  };
+  const initialStep =
+    missingFields.length > 0 ? getStepForField(missingFields[0]) : 1;
+
+  // Set of step numbers that have missing fields — used to highlight them in the step indicator
+  const stepsWithMissingFields = new Set(missingFields.map(getStepForField));
+
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -332,30 +364,39 @@ export default function CreateBusinessWizard({
     }
   }, []);
   useEffect(() => {
-    if (businessId === "" || opMode === IOpMode.CREATE) return;
+    // For CREATE mode, we don't load from editData
+    if (opMode === IOpMode.CREATE) return;
 
-    if (editData && businessId) {
+    // Wait until we have both the data and the ID (either from state or from prop)
+    const effectiveId = businessId || editData?._id;
+    if (editData && effectiveId) {
       const loadedFormData = {
         //basic info
         name:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.name || ""} (Duplicate)`
-            : editData?.name || "",
+            ? `${editData?.nameEn || editData?.name || ""} (Duplicate)`
+            : editData?.nameEn || editData?.name || "",
         nameHe:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameHe || ""} (שכפל)`
-            : editData?.nameHe || "",
+            ? `${editData?.nameHe || editData?.name || ""} (שכפל)`
+            : editData?.nameHe || editData?.name || "",
         nameAr:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || ""} (نسخ)`
-            : editData?.nameAr || "",
+            ? `${editData?.nameAr || editData?.name || ""} (نسخ)`
+            : editData?.nameAr || editData?.name || "",
 
-        shortDescription: editData?.shortDescription || "",
-        shortDescriptionHe: editData?.shortDescriptionHe || "",
-        shortDescriptionAr: editData?.shortDescriptionAr || "",
-        fullDescription: editData?.description || "",
-        fullDescriptionHe: editData?.descriptionHe || "",
-        fullDescriptionAr: editData?.descriptionAr || "",
+        shortDescriptionEn:
+          editData?.shortDescriptionEn || editData?.shortDescription || "",
+        shortDescriptionHe:
+          editData?.shortDescriptionHe || editData?.shortDescription || "",
+        shortDescriptionAr:
+          editData?.shortDescriptionAr || editData?.shortDescription || "",
+        fullDescriptionEn:
+          editData?.descriptionEn || editData?.description || "",
+        fullDescriptionHe:
+          editData?.descriptionHe || editData?.description || "",
+        fullDescriptionAr:
+          editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
@@ -622,6 +663,14 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (
+      !formData.name?.trim() &&
+      !formData.nameHe?.trim() &&
+      !formData.nameAr?.trim()
+    ) {
+      toast.error(tt("name_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (businessId) {
@@ -662,10 +711,10 @@ export default function CreateBusinessWizard({
   };
 
   useEffect(() => {
-    if (opMode !== IOpMode.CREATE) {
-      setBusinessId(editData?._id);
+    if (opMode !== IOpMode.CREATE && editData?._id && businessId === "") {
+      setBusinessId(editData._id);
     }
-  }, [opMode, businessId]);
+  }, [opMode, editData?._id, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
@@ -797,14 +846,14 @@ export default function CreateBusinessWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className={clsx("px-6 py-4 border-b", textPrimary)}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className={clsx("text-2xl", textPrimary)}>
+      <div className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h2 className={clsx("text-lg sm:text-2xl truncate", textPrimary)}>
               {modelTitle(opMode, tc)} {t("business")}
             </h2>
             <p
-              className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`hidden sm:block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
               {steps[currentStep - 1].title}
@@ -812,122 +861,83 @@ export default function CreateBusinessWizard({
 
             {lastSaved && (
               <p
-                className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+                className={`text-xs mt-1 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
               >
                 {t("saved")} {lastSaved.toLocaleTimeString()}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Impact Percent Indicator */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="relative w-14 h-14">
-                <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    fill="none"
-                    strokeWidth="5"
-                    className={
-                      theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
-                    }
-                  />
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    fill="none"
-                    strokeWidth="5"
-                    strokeDasharray={`${2 * Math.PI * 22}`}
-                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                    stroke={
-                      completionPercent >= 70
-                        ? "#16a34a"
-                        : completionPercent >= 40
-                          ? "#f59e0b"
-                          : "#ef4444"
-                    }
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className={clsx(
-                      "text-xs font-bold",
-                      completionPercent >= 70
-                        ? "text-green-600"
-                        : completionPercent >= 40
-                          ? "text-amber-500"
-                          : "text-red-500",
-                    )}
-                  >
-                    {completionPercent}%
-                  </span>
-                </div>
+            <div className="relative w-10 h-10 sm:w-14 sm:h-14">
+              <svg
+                className="w-10 h-10 sm:w-14 sm:h-14 -rotate-90"
+                viewBox="0 0 56 56"
+              >
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  className={
+                    theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
+                  }
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  strokeDasharray={`${2 * Math.PI * 22}`}
+                  strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                  stroke={
+                    completionPercent >= 70
+                      ? "#16a34a"
+                      : completionPercent >= 40
+                        ? "#f59e0b"
+                        : "#ef4444"
+                  }
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className={clsx(
+                    "text-xs font-bold",
+                    completionPercent >= 70
+                      ? "text-green-600"
+                      : completionPercent >= 40
+                        ? "text-amber-500"
+                        : "text-red-500",
+                  )}
+                >
+                  {completionPercent}%
+                </span>
               </div>
             </div>
             <PublishButton onClick={handlePublish} isLoading={isPublishing} />
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.number}
-                onClick={() => setCurrentStep(step.number)}
-                className="flex-1 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  {/* Icon */}
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                      step.number === currentStep
-                        ? "bg-teal-600 text-white"
-                        : step.number < currentStep
-                          ? "bg-green-600 text-white"
-                          : theme === "dark"
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {step.number < currentStep ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                  </div>
-
-                  {/* Connecting Line */}
-                  {step.number < totalSteps && (
-                    <div
-                      className={`flex-1 h-1 rounded ${
-                        step.number < currentStep
-                          ? "bg-green-600"
-                          : theme === "dark"
-                            ? "bg-gray-800"
-                            : "bg-gray-200"
-                      }`}
-                    />
-                  )}
-                </div>
-
-                {/* Step Title Below */}
-                <div className="mt-1">
-                  <span
-                    className={`text-xs block text-center md:block text-nowrap overflow-hidden ${textTertiary}`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <WizardStepper
+          steps={steps}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          stepsWithMissingFields={stepsWithMissingFields}
+          onStepClick={setCurrentStep}
+        />
       </div>
+
+      {/* Missing fields banner — shown when opened via no-auth email link */}
+      {missingFields.length > 0 && (
+        <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
+          <span className="font-medium">⚠️ Missing fields: </span>
+          {missingFields.join(", ")}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
