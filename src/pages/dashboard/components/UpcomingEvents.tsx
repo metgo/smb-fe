@@ -38,7 +38,7 @@ export default function UpcomingEvents() {
 
       {/* Events Grid */}
       <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
-        <div className="grid grid-flow-col auto-cols-[260px] gap-6 lg:grid-flow-row lg:grid-cols-4 lg:auto-cols-auto">
+        <div className="grid grid-flow-col auto-cols-[260px] gap-2 md:gap-6 lg:grid-flow-row lg:grid-cols-4 lg:auto-cols-auto">
           {events?.data?.map((event: IUpcommingEvent) => {
             const localizedName =
               language === "he"

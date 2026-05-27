@@ -649,7 +649,7 @@ const VouchersList = ({
         <PageStats
           stats={voucherStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+          className="lg:grid-cols-5 gap-4"
         />
       </div>
 
@@ -667,7 +667,7 @@ const VouchersList = ({
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportCSVVouchers}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+            className={`flex items-center gap-2 px-2.5 sm:px-4 py-2 rounded-lg border transition-colors ${
               isDark
                 ? "border-gray-700 text-gray-300 hover:bg-gray-800"
                 : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
@@ -675,7 +675,7 @@ const VouchersList = ({
             title={t("downloadCSV")}
           >
             <Download className="w-4 h-4" />
-            <span>{t("downloadCSV")}</span>
+            <span className="hidden sm:inline">{t("downloadCSV")}</span>
           </button>
 
           <FilterButton value={showFilters} onChange={setShowFilters} />
@@ -689,9 +689,9 @@ const VouchersList = ({
             isDark ? "border-gray-800" : "bg-gray-50 border-gray-200"
           }`}
         >
-          <div className="grid grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
             {/* Status */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("status")}
                 value={statusFilter}
@@ -708,7 +708,7 @@ const VouchersList = ({
             </div>
 
             {/* Campaign */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("campaign")}
                 value={campaignFilter}
@@ -724,7 +724,7 @@ const VouchersList = ({
             </div>
 
             {/* Payment status */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <FilterSelect
                 label={t("payment_status")}
                 value={paymentFilter}
@@ -739,7 +739,7 @@ const VouchersList = ({
             </div>
 
             {/* Date Range */}
-            <div className="col-span-4">
+            <div className="sm:col-span-2 lg:col-span-4">
               <label
                 className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >
@@ -770,7 +770,7 @@ const VouchersList = ({
             </div>
 
             {/* Amount Range - Dual slider with debounce */}
-            <div className="col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               <label
                 className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
               >

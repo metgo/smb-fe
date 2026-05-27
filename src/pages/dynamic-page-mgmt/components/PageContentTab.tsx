@@ -29,7 +29,7 @@ export default function PageContentTab({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className={clsx("block text-sm font-medium", textPrimary)}>
             {t("field_title")} <span className="text-red-500">*</span>

@@ -1,9 +1,7 @@
-import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useEffect } from "react";
 import {
-  Check,
   Eye,
   FileText,
   Image as ImageIcon,
@@ -13,7 +11,11 @@ import {
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import {
   useCreateBlogMutation,
   useUpdateBlogMutation,
@@ -114,9 +116,8 @@ const CreateArticleWizard = ({
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
-  const { textPrimary, borderColor, bgTertiary, textSecondary } =
+  const { textPrimary, borderColor, textTertiary, language } =
     useThemeClasses();
-  const { language, textTertiary } = useThemeClasses();
   const [currentStep, setCurrentStep] = useState(1);
   const [_detecedLanguage, setDetectedLanguage] = useState("");
   const steps = [
@@ -513,54 +514,12 @@ const CreateArticleWizard = ({
 
       {/* ── Step Tracker ────────────────────────────────────────────────────── */}
       <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-        <div className="flex items-start justify-between">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            const isActive = currentStep === step.number;
-            const isCompleted = currentStep > step.number;
-
-            return (
-              <div
-                key={step.number}
-                className="flex-1  cursor-pointer"
-                onClick={() => setCurrentStep(step.number)}
-              >
-                <div className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        isActive
-                          ? "bg-teal-500 text-white"
-                          : isCompleted
-                            ? "bg-green-500 text-white"
-                            : `${bgTertiary} ${textTertiary}`
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <Icon className="w-5 h-5" />
-                      )}
-                    </div>
-                    <span
-                      className={clsx(
-                        "mt-2 text-sm text-center",
-                        textSecondary,
-                      )}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${isCompleted ? "bg-green-500" : bgTertiary}`}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <WizardStepper
+          steps={steps}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onStepClick={setCurrentStep}
+        />
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────────── */}

@@ -96,50 +96,53 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
-      {statItems.map((stat) => {
-        const IconComponent = stat.icon;
-        const hasValue = stat.value > 0;
+    <div className="mb-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-2 sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible min-w-max sm:min-w-0">
+        {statItems.map((stat) => {
+          const IconComponent = stat.icon;
+          const hasValue = stat.value > 0;
 
-        return (
-          <div
-            key={stat.label}
-            className={`
-              group relative overflow-hidden
-              ${bgSecondary} rounded-xl p-3
-              border ${borderColor}
-              transition-all duration-200
-              hover:shadow-md
-              ${!hasValue && "opacity-60"}
-            `}
-          >
+          return (
             <div
-              className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${getGradientClass(stat.color)}`}
-            />
-
-            <div className="relative">
+              key={stat.label}
+              className={`
+                shrink-0 w-[110px] sm:w-auto
+                group relative overflow-hidden
+                ${bgSecondary} rounded-xl p-2.5 sm:p-3
+                border ${borderColor}
+                transition-all duration-200
+                hover:shadow-md
+                ${!hasValue && "opacity-60"}
+              `}
+            >
               <div
-                className={`w-7 h-7 rounded-lg ${getGradientClass(stat.color)} flex items-center justify-center mb-2`}
-              >
-                <IconComponent
-                  className={`w-3.5 h-3.5 ${getIconColor(stat.color)}`}
-                />
-              </div>
+                className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${getGradientClass(stat.color)}`}
+              />
 
-              <p
-                className={`text-xl font-semibold leading-none mb-1 ${hasValue ? textPrimary : textTertiary}`}
-              >
-                {stat.value.toLocaleString()}
-              </p>
-              <p
-                className={`text-[10px] font-medium uppercase tracking-wide leading-tight ${textTertiary}`}
-              >
-                {stat.label}
-              </p>
+              <div className="relative">
+                <div
+                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg ${getGradientClass(stat.color)} flex items-center justify-center mb-1.5`}
+                >
+                  <IconComponent
+                    className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${getIconColor(stat.color)}`}
+                  />
+                </div>
+
+                <p
+                  className={`text-base sm:text-xl font-semibold leading-none mb-1 ${hasValue ? textPrimary : textTertiary}`}
+                >
+                  {stat.value.toLocaleString()}
+                </p>
+                <p
+                  className={`text-[9px] sm:text-[10px] font-medium uppercase tracking-wide leading-tight ${textTertiary}`}
+                >
+                  {stat.label}
+                </p>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

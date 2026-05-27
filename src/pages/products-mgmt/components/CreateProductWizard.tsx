@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  Check,
   Image as ImageIcon,
   Package,
   Truck,
@@ -20,7 +19,11 @@ import {
   ProductPricingAvailability,
   ProductReviewSubmit,
 } from "./sub-components";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useInitProductCreateMutation,
@@ -78,15 +81,8 @@ export default function CreateProductWizard({
   const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
 
-  const {
-    language,
-    bgTertiary,
-    textPrimary,
-    textTertiary,
-    textSecondary,
-    borderColor,
-    isDark,
-  } = useThemeClasses();
+  const { language, textPrimary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
     useGetBusinessForProductQuery(
@@ -706,65 +702,68 @@ export default function CreateProductWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       <div
-        className={`p-6 border-b ${borderColor} flex items-center justify-between`}
+        className={`px-4 py-3 md:p-6 border-b ${borderColor} flex items-center justify-between gap-3`}
       >
-        <div>
-          <h2 className={`text-2xl ${textPrimary} mb-1`}>
+        <div className="min-w-0">
+          <h2
+            className={`text-lg md:text-2xl ${textPrimary} mb-0.5 md:mb-1 truncate`}
+          >
             {modelTitle(opMode, t)} {t("product")}
           </h2>
-          <p className={`text-sm ${textTertiary}`}>
-            {t("step")} {currentStep} {t("of")} 6:{" "}
+          <p className={`text-xs md:text-sm ${textTertiary} truncate`}>
+            {t("step")} {currentStep} {t("of")} {steps.length}:{" "}
             {steps[currentStep - 1]?.title}
           </p>
         </div>
 
         {/* Right content */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {/* Impact Percent Indicator */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="relative w-14 h-14">
-              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
-                  fill="none"
-                  strokeWidth="5"
-                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
-                />
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
-                  fill="none"
-                  strokeWidth="5"
-                  strokeDasharray={`${2 * Math.PI * 22}`}
-                  strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
-                  strokeLinecap="round"
-                  className="transition-all duration-500"
-                  stroke={
-                    completionPercent >= 70
-                      ? "#16a34a"
-                      : completionPercent >= 40
-                        ? "#f59e0b"
-                        : "#ef4444"
-                  }
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span
-                  className={clsx(
-                    "text-xs font-bold",
-                    completionPercent >= 70
-                      ? "text-green-600"
-                      : completionPercent >= 40
-                        ? "text-amber-500"
-                        : "text-red-500",
-                  )}
-                >
-                  {completionPercent}%
-                </span>
-              </div>
+          <div className="relative w-10 h-10 md:w-14 md:h-14">
+            <svg
+              className="w-10 h-10 md:w-14 md:h-14 -rotate-90"
+              viewBox="0 0 56 56"
+            >
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                strokeWidth="5"
+                className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
+              />
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 22}`}
+                strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+                stroke={
+                  completionPercent >= 70
+                    ? "#16a34a"
+                    : completionPercent >= 40
+                      ? "#f59e0b"
+                      : "#ef4444"
+                }
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                className={clsx(
+                  "text-[10px] md:text-xs font-bold",
+                  completionPercent >= 70
+                    ? "text-green-600"
+                    : completionPercent >= 40
+                      ? "text-amber-500"
+                      : "text-red-500",
+                )}
+              >
+                {completionPercent}%
+              </span>
             </div>
           </div>
           <PublishButton onClick={handlePublish} isLoading={isPublishing} />
@@ -772,66 +771,19 @@ export default function CreateProductWizard({
       </div>
 
       {/* Progress Bar */}
-      <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-        <div className="flex items-start justify-between">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            const isActive = currentStep === step.number;
-            const isCompleted = currentStep > step.number;
-
-            return (
-              <div
-                key={step.number}
-                className="flex-1 cursor-pointer"
-                onClick={() => setCurrentStep(step.number)}
-              >
-                <div className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
-                      ${
-                        isActive
-                          ? "bg-teal-500 text-white"
-                          : isCompleted
-                            ? "bg-green-500 text-white"
-                            : `${bgTertiary} ${textTertiary}`
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <Icon className="w-5 h-5" />
-                      )}
-                    </div>
-
-                    {/* Title below icon */}
-                    <span
-                      className={clsx(
-                        "mt-2 text-sm text-center",
-                        textSecondary,
-                      )}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
-
-                  {/* Connector line */}
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${
-                        isCompleted ? "bg-green-500" : bgTertiary
-                      }`}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <div className={`px-4 md:px-6 pt-3 md:pt-4 pb-2 border-b ${borderColor}`}>
+        <WizardStepper
+          steps={steps}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onStepClick={setCurrentStep}
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        {renderStepContent()}
+      </div>
 
       <WizardFooter
         currentStep={currentStep}

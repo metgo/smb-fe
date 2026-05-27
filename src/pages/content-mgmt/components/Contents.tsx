@@ -270,7 +270,7 @@ const Contents = ({
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
@@ -281,7 +281,7 @@ const Contents = ({
             {currentTab} {t("available")}
           </div>
 
-          <div className="flex flex-1 justify-end">
+          <div className="flex ml-auto">
             <div className="flex items-center gap-1">
               {FILTER_OPTIONS.map((option) => {
                 const isSelected = selected === option;
@@ -303,7 +303,7 @@ const Contents = ({
                     {FILTER_ICONS[option]}
                     <span
                       className={clsx(
-                        "text-xs font-medium",
+                        "text-xs font-medium hidden min-[400px]:inline",
                         isSelected
                           ? "text-teal-600"
                           : isDark
@@ -392,11 +392,11 @@ const Contents = ({
             className={`border-t pt-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
           >
             <div className="flex flex-wrap items-start gap-4 w-full">
-              <div className="grid grid-cols-8 gap-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-8 gap-2 pb-2">
                 {/* ── Business filters ── */}
                 {currentTab === "Businesses" && (
                   <>
-                    <div className="flex flex-col col-span-4">
+                    <div className="flex flex-col sm:col-span-4">
                       <label
                         className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >
@@ -418,7 +418,7 @@ const Contents = ({
                       </select>
                     </div>
 
-                    <div className="flex flex-col col-span-4">
+                    <div className="flex flex-col sm:col-span-4">
                       <label
                         className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >

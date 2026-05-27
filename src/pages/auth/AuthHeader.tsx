@@ -37,9 +37,9 @@ const AuthHeader = ({
   };
 
   return (
-    <div className="mb-8 flex items-start justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
           {t(title)}
         </h1>
 
@@ -63,7 +63,7 @@ const AuthHeader = ({
           handleLanguageChange((val as ItemOption).value as Language)
         }
         styles={{
-          container: (b) => ({ ...b, minWidth: 150, zIndex: 50 }),
+          container: (b) => ({ ...b, minWidth: 130, zIndex: 50 }),
 
           control: (b, s) => ({
             ...b,

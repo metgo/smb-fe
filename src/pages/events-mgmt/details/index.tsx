@@ -197,7 +197,7 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:top-0">
       <Spinner isLoading={isLoading || isFetching} />
 
       {/* Action bar */}
@@ -227,7 +227,8 @@ export default function EventDetailsPage() {
         <PageStats
           stats={singleEventStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 pt-4 pb-1"
+          className="sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4"
+          wrapperClassName="pt-4 pb-1"
         />
       </div>
 

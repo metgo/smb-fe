@@ -178,7 +178,7 @@ export default function PurchasesReport() {
 
         {/* Metrics */}
         <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0 mb-8">
-          <div className="grid grid-flow-col auto-cols-[200px] gap-4 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
+          <div className="grid grid-flow-col auto-cols-[200px] gap-2 md:gap-4 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
             {purchasesReports.map((item) => (
               <PurchaseMetric
                 key={item.id}
@@ -271,7 +271,7 @@ export default function PurchasesReport() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center flex-col md:flex-row justify-center gap-6 mt-4">
+        <div className="flex items-center flex-wrap flex-row justify-center gap-2 md:gap-6 md:mt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
             <span

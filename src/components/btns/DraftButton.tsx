@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { Save, Loader } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface DraftButtonProps {
@@ -10,6 +10,7 @@ interface DraftButtonProps {
 const DraftButton: React.FC<DraftButtonProps> = ({ isLoading, onClick }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
+
   return (
     <button
       onClick={onClick}
@@ -23,12 +24,12 @@ const DraftButton: React.FC<DraftButtonProps> = ({ isLoading, onClick }) => {
       {isLoading ? (
         <>
           <Loader className="w-4 h-4 animate-spin" />
-          {t("saving")}
+          <span className="hidden md:block">{t("saving")}</span>
         </>
       ) : (
         <>
           <Save className="w-4 h-4" />
-          {t("save_draft")}
+          <span className="hidden md:block">{t("save_draft")}</span>
         </>
       )}
     </button>

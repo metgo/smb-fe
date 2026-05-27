@@ -57,7 +57,7 @@ export default function BusinessDetailsPage() {
 
   const { isTraveller } = useUserRoles();
 
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -297,7 +297,6 @@ export default function BusinessDetailsPage() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              {/* <MoreHorizontal className="w-4 h-4" /> */}
               <span className="inline text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -306,7 +305,7 @@ export default function BusinessDetailsPage() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
                   isDark
                     ? "bg-gray-900 border-gray-700"
                     : "bg-white border-gray-200"
@@ -382,17 +381,6 @@ export default function BusinessDetailsPage() {
               </div>
             )}
           </div>
-
-          {/* <button
-              onClick={() => handleMutateData(IOpMode.DUPLICATE)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${isDark
-                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                } transition-colors`}
-            >
-              <Copy className="w-4 h-4" />
-              <span>{tc("duplicate") || "Duplicate"}</span>
-            </button> */}
         </div>
       </div>
 
@@ -401,7 +389,8 @@ export default function BusinessDetailsPage() {
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
-          className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 my-2 sm:my-4 gap-2 md:gap-3"
+          className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+          wrapperClassName=" my-2 sm:my-4"
         />
       </div>
 

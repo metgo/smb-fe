@@ -576,7 +576,7 @@ export default function DistributionCards() {
       </div>
 
       <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
-        <div className="grid grid-flow-col auto-cols-[280px] gap-3 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+        <div className="grid grid-flow-col auto-cols-[320px] gap-3 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
           <DistributionCard
             status={bzStatus}
             setStatus={setBzStatus}

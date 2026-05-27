@@ -29,7 +29,7 @@ const AuthInputField = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "auth-input w-full px-6 py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/30",
+          "auth-input w-full px-4 py-3 sm:px-6 sm:py-4 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/30",
           isPassword && "pe-12",
         )}
       />

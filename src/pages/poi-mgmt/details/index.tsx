@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Edit,
   Eye,
-  MoreHorizontal,
   MousePointer,
   Timer,
   TrendingUp,
@@ -166,7 +165,7 @@ export default function PoiDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
       <div className="flex items-center justify-between mb-3 shrink-0">
@@ -186,7 +185,6 @@ export default function PoiDetailsPage() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
               <span className="text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -218,7 +216,8 @@ export default function PoiDetailsPage() {
         <PageStats
           stats={poiStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
+          className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4"
+          wrapperClassName="mt-3"
         />
       </div>
 
