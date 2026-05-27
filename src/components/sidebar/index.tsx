@@ -179,13 +179,6 @@ export default function Sidebar() {
           isEnabled: true,
         },
         {
-          id: "website-settings",
-          path: routes.websiteMgmt,
-          label: t("website_settings") || "Website Settings",
-          icon: Settings,
-          isEnabled: true,
-        },
-        {
           id: "dynamic-pages",
           path: routes.dynamicPages,
           label: t("dynamic_pages") || "Dynamic Pages",

@@ -172,10 +172,6 @@ export default function ContentMgmtPage() {
   } = useGetContentByExternalIdQuery(
     externalApiId ? { externalApiId } : skipToken,
   );
-  console.log(
-    "🚀 ~ ContentMgmtPage ~ templateContentsData:",
-    templateContentsData,
-  );
 
   const initialTemplateContent: IContentTemplate[] = [
     {

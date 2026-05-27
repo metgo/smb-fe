@@ -74,7 +74,7 @@ export const endpoints = {
   mediaSignedUrl: "/media-signed-url",
   mediaFileDelete: "/media",
 
-  websites: "/websites",
+  websites: "/site-settings/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
 
