@@ -61,7 +61,7 @@ const TabsSection = ({ tabs, activeTab, setActiveTab }: TabsSectionProps) => {
             key={tab.id}
             ref={isActive ? activeTabRef : null}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2 py-1.5 sm:px-4 sm:py-2 cursor-pointer rounded-t-lg flex items-center gap-1.5 whitespace-nowrap transition-colors text-xs sm:text-sm ${
+            className={`px-2 py-1.5 sm:px-4 sm:py-2 cursor-pointer rounded-t-lg flex items-center gap-1.5 whitespace-nowrap transition-colors font-bold text-sm sm:text-sm ${
               isActive
                 ? isDark
                   ? "bg-gray-800 text-teal-400 border-b-2 border-teal-500"

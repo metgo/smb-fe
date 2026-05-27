@@ -2,16 +2,13 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Edit,
   ExternalLink,
   FileText,
   Globe,
   Image as ImageIcon,
-  ArrowLeft,
-  ArrowRight,
-  MoreHorizontal,
   ChevronDown,
 } from "lucide-react";
 
@@ -19,7 +16,7 @@ import { routes } from "@/lib/routes";
 import { CreateArticleWizard } from "../components";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetBlogByIdQuery } from "@/store/api/blogQueryApi";
-import { StatusChangeBtn } from "@/components/btns";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
@@ -87,11 +84,9 @@ function getPrimaryImage(images: BlogImage[]): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ArticleDetails() {
   const { t } = useTranslation("article");
-  const { t: ct } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark, language, isRTL } = useThemeClasses();
-  const navigate = useNavigate();
+  const { isDark, language } = useThemeClasses();
   const [searchParams] = useSearchParams();
   const blogId = searchParams.get("blogId") ?? "";
 
@@ -316,27 +311,12 @@ export default function ArticleDetails() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isDetailLoading} />
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <button
-          onClick={() => navigate(routes.articleMgmt)}
-          className={clsx(
-            "flex items-center gap-2 py-2 rounded-lg transition-colors",
-            isDark
-              ? "hover:bg-gray-800 text-gray-300"
-              : "hover:bg-gray-100 text-gray-700",
-          )}
-        >
-          {isRTL ? (
-            <ArrowRight className="w-5 h-5" />
-          ) : (
-            <ArrowLeft className="w-5 h-5" />
-          )}
-          <span>{ct("back_to_list") || "Back"}</span>
-        </button>
+        <BackToListBtn navPath={routes.articleMgmt} />
 
         <div className="flex items-center gap-3">
           <StatusChangeBtn
@@ -352,7 +332,6 @@ export default function ArticleDetails() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
               <span className="text-sm font-medium">Actions</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}

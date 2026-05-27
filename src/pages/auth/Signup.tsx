@@ -118,7 +118,7 @@ export function Signup({ setCurrentTab }: SignupProps) {
               <SubmitButton
                 label={t("next")}
                 loading={step1Loading}
-                className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-4 sm:py-6"
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-6"
               />
             </form>
           )}
@@ -149,7 +149,7 @@ export function Signup({ setCurrentTab }: SignupProps) {
               <SubmitButton
                 loading={step2Loading}
                 label={t("register")}
-                className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-4 sm:py-6"
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-6"
               />
             </form>
           )}

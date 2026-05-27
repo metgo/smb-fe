@@ -385,14 +385,13 @@ export default function DynamicPageMgmt() {
               {t("page_subtitle")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            <div className="flex-1 sm:flex-none min-w-40">
-              <ReactSelect
-                items={associatedWebsite}
-                value={externalApiId}
-                onChange={(value) => setExternalApiId(value)}
-              />
-            </div>
+          <div className="flex  items-center gap-2 sm:gap-4">
+            <ReactSelect
+              minWidth={200}
+              items={associatedWebsite}
+              value={externalApiId}
+              onChange={(value) => setExternalApiId(value)}
+            />
             <div className="flex gap-2 shrink-0">
               <DraftButton
                 onClick={() => handleSubmit("DRAFT")}

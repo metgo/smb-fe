@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   X,
   Send,
+  List,
+  Edit3,
   ChevronDown,
   Maximize2,
   PanelLeftClose,
@@ -115,7 +117,7 @@ const PanelExpandButton = ({
     animate={{ opacity: 1, y: 0 }}
     className={clsx(
       "absolute z-50 flex items-center gap-1 py-2 rounded-md text-xs font-medium",
-      "hidden group-hover:flex transition-opacity duration-150",
+      "hidden md:group-hover:flex transition-opacity duration-150",
       isExpanded
         ? "left-0 right-0 mx-auto w-max top-0 px-4"
         : `px-2 top-0 ${posClass}`,
@@ -213,6 +215,10 @@ export default function ContentMgmtPage() {
   const [showSendResults, setShowSendResults] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768,
+  );
+  const [mobilePanel, setMobilePanel] = useState<"left" | "right">("left");
   const [page, setPage] = useState(1);
 
   const [productPage, setProductPage] = useState(1);
@@ -894,6 +900,14 @@ export default function ContentMgmtPage() {
     toast.success(t("messages_sent_to_customers", { count: results?.length }));
   };
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const effectiveFocus: PanelFocus = isMobile ? mobilePanel : focus;
+
   const expandLeft = () => setFocus((p) => (p === "left" ? "both" : "left"));
   const expandRight = () => setFocus((p) => (p === "right" ? "both" : "right"));
 
@@ -917,25 +931,25 @@ export default function ContentMgmtPage() {
                   : "bg-white border-gray-200",
               )}
             >
-              <div className="flex justify-between items-start w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start w-full gap-3">
                 {/* left section */}
                 <div className="flex flex-col">
                   <h1
                     className={clsx(
-                      "text-2xl font-bold mb-2",
+                      "text-xl sm:text-2xl font-bold mb-1",
                       isDark ? "text-gray-400" : "text-gray-900",
                     )}
                   >
                     {t("content_manager_title")}
                   </h1>
 
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                     {t("content_manager_description")}
                   </p>
                 </div>
 
                 {/* right section */}
-                <div className="flex gap-3 mt-4">
+                <div className="flex gap-2 sm:gap-3 sm:mt-4 shrink-0">
                   <DraftButton
                     onClick={() => handleSubmit("DRAFT")}
                     isLoading={isCreating || isUpdating}
@@ -983,17 +997,54 @@ export default function ContentMgmtPage() {
               </AnimatePresence>
             </div>
 
+            {/* ── Mobile panel switcher ── */}
+            <div
+              className={clsx(
+                "md:hidden flex border-b shrink-0 mt-2",
+                isDark ? "border-gray-700" : "border-gray-200",
+              )}
+            >
+              <button
+                onClick={() => setMobilePanel("left")}
+                className={clsx(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  mobilePanel === "left"
+                    ? "border-teal-500 text-teal-600"
+                    : isDark
+                      ? "border-transparent text-gray-400"
+                      : "border-transparent text-gray-500",
+                )}
+              >
+                <List className="w-4 h-4" />
+                {t("source_backlog_title")}
+              </button>
+              <button
+                onClick={() => setMobilePanel("right")}
+                className={clsx(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  mobilePanel === "right"
+                    ? "border-teal-500 text-teal-600"
+                    : isDark
+                      ? "border-transparent text-gray-400"
+                      : "border-transparent text-gray-500",
+                )}
+              >
+                <Edit3 className="w-4 h-4" />
+                {t("content_composer_title")}
+              </button>
+            </div>
+
             {/* ── Two-panel layout ── */}
             <div className="flex gap-0 flex-1 overflow-hidden min-h-0">
               {/* ── LEFT: Contents ── */}
               <AnimatePresence initial={false}>
-                {focus !== "right" && (
+                {effectiveFocus !== "right" && (
                   <motion.div
                     key="left-panel"
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={focus === "left" ? "expanded" : "half"}
+                    animate={effectiveFocus === "left" ? "expanded" : "half"}
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -1003,7 +1054,7 @@ export default function ContentMgmtPage() {
                       isDark={isDark}
                       onToggle={expandLeft}
                       expandLabel={t("expand")}
-                      isExpanded={focus === "left"}
+                      isExpanded={effectiveFocus === "left"}
                       posClass={isRTL ? "left-0" : "right-0"}
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                     />
@@ -1045,7 +1096,7 @@ export default function ContentMgmtPage() {
                         currentTab={currentTab}
                         selected={selected}
                         setSelected={setSelected}
-                        isExpanded={focus === "both"}
+                        isExpanded={effectiveFocus === "both"}
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                         totalData={
@@ -1088,7 +1139,7 @@ export default function ContentMgmtPage() {
 
               {/* ── Animated divider ── */}
               <AnimatePresence>
-                {focus === "both" && (
+                {effectiveFocus === "both" && (
                   <motion.div
                     key="divider"
                     initial={{ opacity: 0, scaleY: 0 }}
@@ -1105,13 +1156,13 @@ export default function ContentMgmtPage() {
 
               {/* ── RIGHT: ContentComposer ── */}
               <AnimatePresence initial={false}>
-                {focus !== "left" && (
+                {effectiveFocus !== "left" && (
                   <motion.div
                     key="right-panel"
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={focus === "right" ? "expanded" : "half"}
+                    animate={effectiveFocus === "right" ? "expanded" : "half"}
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -1121,7 +1172,7 @@ export default function ContentMgmtPage() {
                       isDark={isDark}
                       onToggle={expandRight}
                       expandLabel={t("expand")}
-                      isExpanded={focus === "right"}
+                      isExpanded={effectiveFocus === "right"}
                       posClass={isRTL ? "right-0" : "left-0"}
                       collapseIcon={<PanelLeftClose className="w-3.5 h-3.5" />}
                     />
@@ -1129,7 +1180,7 @@ export default function ContentMgmtPage() {
                       header={header}
                       setHeader={setHeader}
                       contentStatus={contentStatus}
-                      isExpanded={focus === "both"}
+                      isExpanded={effectiveFocus === "both"}
                       externalApiId={externalApiId}
                       setExternalApiId={setExternalApiId}
                       templateContents={templateContents}

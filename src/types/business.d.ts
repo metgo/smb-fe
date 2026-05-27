@@ -88,3 +88,19 @@ interface IBusinessMedia {
   logo: IImageUpload;
   gallery: IImageUpload[];
 }
+
+interface IBusinessColumnVisibility {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  contactDetails: boolean;
+  busiEmail: boolean;
+  phoneNumber: boolean;
+  productCount: boolean;
+  status: boolean;
+  lifetimeSales: boolean;
+  tripCount: boolean;
+  associatedWebsites: boolean;
+  contactPhone: boolean;
+  categories: boolean;
+}

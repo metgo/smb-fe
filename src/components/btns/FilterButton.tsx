@@ -21,7 +21,7 @@ const FilterButton = ({ value, onChange }: FilterButtonProps) => {
       }`}
     >
       <Filter className="w-4 h-4" />
-      <span>{t("filters")}</span>
+      <span className="hidden md:block">{t("filters")}</span>
       {value ? (
         <ChevronUp className="w-4 h-4" />
       ) : (

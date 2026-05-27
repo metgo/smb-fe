@@ -12,10 +12,7 @@ import * as XLSX from "xlsx";
 
 import {
   Download,
-  ChevronDown,
-  ChevronUp,
   Loader,
-  Columns,
   Mail,
   Phone,
   DollarSign,
@@ -36,6 +33,7 @@ import {
   FilterChips,
   PageHeader,
   PageStats,
+  ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
 import {
@@ -87,7 +85,7 @@ export default function OrdersMgmtPage() {
     (state) => state.auth,
   );
   const { isSuperadmin, isTraveller } = useUserRoles();
-  const { textSecondary, isDark, isRTL, language } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
 
   //view mode toggle
   const [isOpen, setIsOpen] = useState(false);
@@ -1148,87 +1146,39 @@ export default function OrdersMgmtPage() {
                 />
               </div>
 
-              <div
-                className={`flex items-center gap-2 flex-wrap ${isRTL ? "flex-row-reverse" : ""}`}
-              >
-                <button
-                  onClick={
-                    orderSummaryClick ? handleExportCSVSummary : handleExportCSV
-                  }
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-sm ${
-                    isDark
-                      ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                      : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                  }`}
-                  title={t("downloadCSV")}
-                >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span className="hidden sm:inline">{t("downloadCSV")}</span>
-                </button>
+              <div className={`flex items-center gap-2 justify-between w-full`}>
+                <div className="flex items-center gap-2">
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+                  <ShowColumns
+                    t={t}
+                    viewMode={viewMode}
+                    columnDefinitions={columns}
+                    columnVisibility={columnVisibility}
+                    showColumnSettings={showColumnSettings}
+                    setShowColumnSettings={setShowColumnSettings}
+                    setColumnVisibility={setColumnVisibility}
+                    resetToDefault={() => setColumnVisibility(defaultColumns)}
+                  />
+                  <button
+                    onClick={
+                      orderSummaryClick
+                        ? handleExportCSVSummary
+                        : handleExportCSV
+                    }
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-sm ${
+                      isDark
+                        ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
+                        : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+                    }`}
+                    title={t("downloadCSV")}
+                  >
+                    <Download className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">{t("downloadCSV")}</span>
+                  </button>
+                </div>
 
-                <FilterButton value={showFilters} onChange={setShowFilters} />
-                {viewMode === "list" && (
-                  <div className="relative" ref={columnSettingsRef}>
-                    {!orderSummaryClick && (
-                      <button
-                        onClick={() =>
-                          setShowColumnSettings(!showColumnSettings)
-                        }
-                        className={`px-3 py-2 rounded-lg border flex items-center gap-2 transition-colors text-sm ${
-                          isDark
-                            ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                            : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        <Columns className="w-4 h-4 shrink-0" />
-                        <span className="hidden sm:inline">
-                          {t("show_columns")}
-                        </span>
-                        {showColumnSettings ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </button>
-                    )}
-
-                    {showColumnSettings && (
-                      <div
-                        className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-                      >
-                        <div className="p-3 max-h-80 overflow-y-auto">
-                          {Object.entries(columnVisibility).map(
-                            ([key, visible]) => (
-                              <label
-                                key={key}
-                                className={`flex items-center gap-2 p-2 rounded cursor-pointer ${isRTL ? "flex-row-reverse justify-end" : ""} ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={visible}
-                                  onChange={(e) =>
-                                    setColumnVisibility((prev) => ({
-                                      ...prev,
-                                      [key]: e.target.checked,
-                                    }))
-                                  }
-                                  className="rounded"
-                                />
-                                <span className={`text-sm ${textSecondary}`}>
-                                  {t(key as keyof typeof t)}
-                                </span>
-                              </label>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
                 {!orderSummaryClick && (
-                  <div className="ml-auto">
-                    <ViewModeToggle onChange={setViewMode} value={viewMode} />
-                  </div>
+                  <ViewModeToggle onChange={setViewMode} value={viewMode} />
                 )}
               </div>
             </div>

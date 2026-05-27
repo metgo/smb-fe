@@ -74,9 +74,8 @@ const ContentConfigHeader = ({
   return (
     <div className="mb-4 shrink-0 space-y-2 border rounded-lg">
       <div
-        className={clsx(isExpanded ? "space-y-2" : "grid grid-cols-2 gap-2")}
+        className={clsx(isExpanded ? "space-y-2" : "grid md:grid-cols-2 gap-2")}
       >
-        {/* <RichTextEditor value={header} onChange={setHeader} /> */}
         <div className="space-y-2">
           {/* Create Topic */}
           <div

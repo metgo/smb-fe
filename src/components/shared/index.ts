@@ -22,7 +22,7 @@ import ViewModeToggle from "./ViewModeToggle";
 import WebsiteSelect from "./WebsiteSelect";
 import WizardFooter from "./WizardFooter";
 import WizardStepper from "./WizardStepper";
-export type { WizardStep } from "./WizardStepper";
+import ShowColumns from "./ShowColumns";
 
 export {
   Spinner,
@@ -41,6 +41,7 @@ export {
   BulkActionBar,
   ViewModeToggle,
   SelectableChips,
+  ShowColumns,
   ItemStatusBadge,
   RichTextEditor,
   ImageWithFallback,

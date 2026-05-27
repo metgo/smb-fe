@@ -91,9 +91,9 @@ const BlogGridView = ({
       <div
         ref={scrollRef}
         id="blog-table-scroll"
-        className="overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-250px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto mb-20"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
           {data?.map((blog) => {
             const isChecked = selectedItems?.has(blog?._id) ?? false;
             const firstImage = blog?.images?.[0]?.image;
@@ -141,7 +141,7 @@ const BlogGridView = ({
                 </div>
 
                 {/* Image Section */}
-                <div className="relative h-48">
+                <div className="relative h-30 sm:h-40 md:h-48">
                   {firstImage ? (
                     <ImageWithFallback
                       src={firstImage}
@@ -156,17 +156,19 @@ const BlogGridView = ({
                 </div>
 
                 {/* Content Section */}
-                <div className={`p-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                <div
+                  className={`p-3 sm:p-4 ${isDark ? "bg-gray-800" : "bg-white"}`}
+                >
                   <h3
-                    className={`font-semibold text-lg mb-2 line-clamp-1 leading-tight ${
+                    className={`font-semibold text-base sm:text-lg mb-2 line-clamp-1 leading-tight ${
                       isDark ? "text-white" : "text-gray-900"
                     }`}
                   >
                     {blog.title}
                   </h3>
                   <h3
-                    className={`font-medum text-md mb-2 line-clamp-1 leading-tight ${
-                      isDark ? "text-white" : "text-gray-900"
+                    className={`font-medium text-sm mb-2 line-clamp-1 leading-tight ${
+                      isDark ? "text-gray-300" : "text-gray-600"
                     }`}
                   >
                     {blog.shortDescription}

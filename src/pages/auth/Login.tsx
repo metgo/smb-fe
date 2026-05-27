@@ -111,7 +111,7 @@ export function Login({ setCurrentTab }: LoginProps) {
             <SubmitButton
               loading={isLoading}
               label={t("sign_in")}
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-4 sm:py-6"
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-6"
             />
 
             <div className="text-center text-white/80">{t("or")}</div>

@@ -1,16 +1,10 @@
 import clsx from "clsx";
-import { CheckCircle, type LucideIcon } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 
-export interface WizardStep {
-  number: number;
-  title: string;
-  icon: LucideIcon;
-}
-
 interface WizardStepperProps {
-  steps: WizardStep[];
+  steps: IWizardStep[];
   currentStep: number;
   totalSteps: number;
   stepsWithMissingFields?: Set<number>;
@@ -27,7 +21,7 @@ export default function WizardStepper({
   const { theme } = useAppSelector((state) => state.settings);
   const isDark = theme === "dark";
 
-  const getIconBg = (step: WizardStep) => {
+  const getIconBg = (step: IWizardStep) => {
     if (step.number === currentStep) return "bg-teal-600 text-white";
     if (step.number < currentStep) return "bg-green-600 text-white";
     if (stepsWithMissingFields.has(step.number))
@@ -35,7 +29,7 @@ export default function WizardStepper({
     return isDark ? "bg-gray-800 text-gray-500" : "bg-gray-200 text-gray-500";
   };
 
-  const getConnectorBg = (step: WizardStep) => {
+  const getConnectorBg = (step: IWizardStep) => {
     if (step.number < currentStep) return "bg-green-600";
     return isDark ? "bg-gray-800" : "bg-gray-200";
   };

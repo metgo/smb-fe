@@ -19,7 +19,6 @@ import {
   WizardFooter,
   WizardStepper,
 } from "@/components/shared";
-import type { WizardStep } from "@/components/shared/WizardStepper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import {
@@ -234,7 +233,7 @@ export default function CreateEventWizard({
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const steps: WizardStep[] = [
+  const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
     { number: 2, icon: Languages, title: tp("translation") },
     { number: 3, icon: Calendar, title: t("step_2_date_time") },
