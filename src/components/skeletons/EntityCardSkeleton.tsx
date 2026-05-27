@@ -35,43 +35,34 @@ const EntityCardSkeleton = () => {
       {/* Logo area */}
       <div
         className={clsx(
-          "h-28 flex items-center justify-center",
+          "h-20 sm:h-28 flex items-center justify-center",
           isDark ? "bg-gray-700/50" : "bg-gray-100",
         )}
       >
         <div
           className={clsx(
-            "h-16 w-16 rounded-xl",
+            "h-10 w-10 sm:h-16 sm:w-16 rounded-xl",
             isDark ? "bg-gray-600" : "bg-gray-200",
           )}
         />
       </div>
 
       {/* Body */}
-      <div className="p-4 space-y-3">
-        {/* Title */}
+      <div className="p-2 sm:p-4 space-y-2">
+        {/* Name */}
         <div
           className={clsx(
             "h-5 w-3/4 rounded-md",
             isDark ? "bg-gray-700" : "bg-gray-200",
           )}
         />
-
-        {/* Subtitle / content */}
-        <div className="space-y-2">
-          <div
-            className={clsx(
-              "h-4 w-full rounded-md",
-              isDark ? "bg-gray-700" : "bg-gray-200",
-            )}
-          />
-          <div
-            className={clsx(
-              "h-4 w-5/6 rounded-md",
-              isDark ? "bg-gray-700" : "bg-gray-200",
-            )}
-          />
-        </div>
+        {/* Children slot (e.g. dmo badge row) */}
+        <div
+          className={clsx(
+            "h-4 w-1/2 rounded-md",
+            isDark ? "bg-gray-700" : "bg-gray-200",
+          )}
+        />
       </div>
     </div>
   );
@@ -79,7 +70,7 @@ const EntityCardSkeleton = () => {
 
 const EntityCardsSkeleton = ({ count = 7 }: { count?: number }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
       {[...Array(count)].map((_, i) => (
         <EntityCardSkeleton key={i} />
       ))}

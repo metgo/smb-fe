@@ -47,7 +47,7 @@ function PartnerCard({
       {/* Logo area */}
       <div
         className={clsx(
-          "relative h-28 flex items-center justify-center",
+          "relative h-20 sm:h-28 flex items-center justify-center",
           isDark ? "bg-gray-700/60" : "bg-gray-100",
         )}
       >
@@ -55,7 +55,7 @@ function PartnerCard({
           <ImageWithFallback
             src={partner.logo}
             alt={partner.name}
-            className="h-16 w-auto object-contain"
+            className="h-10 sm:h-16 w-auto object-contain"
           />
         ) : (
           <Handshake className="w-12 h-12 text-gray-400" />
@@ -63,7 +63,7 @@ function PartnerCard({
       </div>
 
       {/* Body */}
-      <div className="p-4 space-y-2.5">
+      <div className="p-2 sm:p-4 space-y-2.5">
         {/* Name */}
         <h3 className={clsx("text-base font-semibold truncate", textPrimary)}>
           {partner.name}
@@ -187,7 +187,7 @@ function PartnerCard({
         ].map((action, i) => (
           <div
             key={action.title}
-            className="opacity-0 group-hover:opacity-100 transition-all duration-150 relative group/tip"
+            className="sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150 relative group/tip"
             style={{ transitionDelay: `${i * 40}ms` }}
           >
             <button

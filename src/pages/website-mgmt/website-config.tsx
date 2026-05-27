@@ -785,32 +785,37 @@ export default function WebsiteConfigPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
+    <div className="flex flex-col gap-3 sm:gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
       <BackToListBtn navPath={routes.websiteMgmt} />
       {/* Page Header */}
-      <section className="flex items-center justify-between gap-6">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center border border-teal-500">
+      <section className="flex items-center flex-wrap justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500">
             {websiteLogo ? (
               <ImageWithFallback
                 src={websiteLogo}
                 alt={websiteName || "Logo"}
-                className=" object-contain w-12 h-12"
+                className="object-contain w-10 h-10 sm:w-12 sm:h-12"
               />
             ) : (
-              <Settings className="w-8 h-8 text-teal-600" />
+              <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             )}
           </div>
-          <div>
-            <h1 className={clsx("text-xl font-bold", textPrimary)}>
+          <div className="min-w-0">
+            <h1
+              className={clsx(
+                "text-base sm:text-xl font-bold truncate",
+                textPrimary,
+              )}
+            >
               {websiteName && websiteName + " - "} {t("page_title")}
             </h1>
-            <p className={clsx("text-sm", textSecondary)}>
+            <p className={clsx("text-xs sm:text-sm", textSecondary)}>
               {t("page_subtitle")}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {(() => {
             const score = calculateCompletionScore(formData);
             const color =
@@ -879,7 +884,7 @@ export default function WebsiteConfigPage() {
           {/* Step content */}
           <div
             ref={stepContentRef}
-            className="flex-1 overflow-y-auto px-6 py-8 relative"
+            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-8 relative"
           >
             {renderStep()}
           </div>

@@ -215,7 +215,7 @@ const CreatePartnerWizard = ({
               {t("partner_names")}
             </p>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
                 {
                   key: "nameEn",
@@ -271,7 +271,7 @@ const CreatePartnerWizard = ({
               {t("partner_descriptions")}
             </p>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
                 {
                   key: "descriptionEn",
@@ -444,7 +444,7 @@ const CreatePartnerWizard = ({
                   </span>
                 </label>
 
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid  grid-cols-3 md:grid-cols-4 gap-2">
                   {allWebsites.map((website) => {
                     const checked = formData.selectedWebsites.includes(
                       website._id,
@@ -476,7 +476,7 @@ const CreatePartnerWizard = ({
 
                         <div className="min-w-0">
                           <p
-                            className={`text-sm font-medium truncate ${textPrimary}`}
+                            className={`md:text-sm text-xs  font-medium truncate ${textPrimary}`}
                           >
                             {website.name}
                           </p>

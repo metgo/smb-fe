@@ -34,7 +34,7 @@ const Step01Generals = ({
           {t("website_name")} <span className="text-red-500">*</span>
         </label>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
           <input
             type="text"
             value={formData.websiteNameEn}
@@ -79,7 +79,7 @@ const Step01Generals = ({
           {t("slogan")} <span className="text-red-500">*</span>
         </label>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
           <input
             type="text"
             value={formData.sloganEn}

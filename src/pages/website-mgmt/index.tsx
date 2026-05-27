@@ -97,7 +97,7 @@ export default function WebsiteMgmtPage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pt-10 md:pt-0">
       <PageHeader
         title={t("website_management")}
         h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-500"
@@ -119,7 +119,7 @@ export default function WebsiteMgmtPage() {
               <p className="text-sm text-gray-400">{t("no_websites_desc")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
               {allWebsites?.map((website) => (
                 <EntityCard
                   key={website._id}

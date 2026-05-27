@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Landmark, Building2 } from "lucide-react";
@@ -11,15 +12,15 @@ import {
   PageHeader,
   EntityCard,
   Spinner,
+  TabsSection,
 } from "@/components/shared";
-import { AuthorityTabs, CreateAuthorityWizardModal } from "./components";
+import { CreateAuthorityWizardModal } from "./components";
 import {
   useGetAllDmosQuery,
   useGetAuthoritiesByDmoIdQuery,
   useUpdateAuthorityMutation,
   useDeleteAuthorityMutation,
 } from "@/store/api/websiteConfigApi";
-import { toast } from "sonner";
 import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 
 const AuthoritiesMgmtPage = () => {
@@ -28,7 +29,7 @@ const AuthoritiesMgmtPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: dmos } = useGetAllDmosQuery();
 
-  const { bgPrimary, isDark, textTertiary } = useThemeClasses();
+  const { bgPrimary, textTertiary } = useThemeClasses();
   const [updateAuthority, { isLoading: isUpdating }] =
     useUpdateAuthorityMutation();
   const [deleteAuthority, { isLoading: isDeleting }] =
@@ -135,7 +136,7 @@ const AuthoritiesMgmtPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
+    <div className="flex flex-col h-full overflow-y-auto pt-10 md:pt-0">
       <div className={`sticky top-0 z-10 ${bgPrimary}`}>
         <PageHeader
           title={t("authority_management")}
@@ -147,11 +148,14 @@ const AuthoritiesMgmtPage = () => {
           onClick={() => setCreateModalOpen(true)}
         />
 
-        <AuthorityTabs
-          dmos={dmos || []}
-          activeTab={activeDmoId}
-          onTabChange={handleTabChange}
-          isDark={isDark}
+        <TabsSection
+          tabs={(dmos || []).map((dmo) => ({
+            id: dmo._id,
+            label: dmo.name,
+            icon: dmo.logoPath || Building2,
+          }))}
+          activeTab={activeDmoId ?? ""}
+          setActiveTab={handleTabChange}
         />
       </div>
 
@@ -175,7 +179,7 @@ const AuthoritiesMgmtPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
                 {authorities?.map((auth) => (
                   <EntityCard
                     key={auth._id}

@@ -68,7 +68,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
       {/* Logo area */}
       <div
         className={clsx(
-          "relative h-28 flex items-center justify-center",
+          "relative h-20 sm:h-28 flex items-center justify-center",
           isDark ? "bg-gray-700/60" : "bg-gray-100",
         )}
       >
@@ -76,7 +76,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
           <ImageWithFallback
             src={logo}
             alt={name}
-            className="h-16 w-auto object-contain"
+            className="h-10 sm:h-16 w-auto object-contain"
           />
         ) : (
           fallbackIcon
@@ -84,7 +84,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
       </div>
 
       {/* Body */}
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         <h3
           className={clsx("text-base font-semibold truncate mb-1", textPrimary)}
         >
@@ -93,9 +93,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
         {children}
       </div>
 
-      {/* Action column — top-right, all fade in on hover */}
+      {/* Action column — always visible on mobile, fade in on hover for desktop */}
       <div className="absolute right-3 top-3 flex flex-col gap-1.5">
-        <div className="opacity-0 group-hover:opacity-100 transition-all duration-150">
+        <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150">
           <ActionBtn
             title={isActive ? "Deactivate" : "Activate"}
             colorClass={
@@ -112,7 +112,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
         {actions.map((action, i) => (
           <div
             key={action.title}
-            className="opacity-0 group-hover:opacity-100 transition-all duration-150"
+            className="sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150"
             style={{ transitionDelay: `${(i + 1) * 40}ms` }}
           >
             <ActionBtn

@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { Share2 } from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Props {
   formData: ISiteSettingsFormData;
@@ -12,8 +13,6 @@ interface Props {
   ) => void;
 }
 
-// Social fields are built inside the component using t()
-
 function Toggle({
   label,
   description,
@@ -21,7 +20,6 @@ function Toggle({
   onChange,
   textPrimary,
   textSecondary,
-  isDark,
 }: {
   label: string;
   description?: string;
@@ -32,27 +30,14 @@ function Toggle({
   isDark: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <div>
         <p className={clsx("text-sm font-medium", textPrimary)}>{label}</p>
         {description && (
           <p className={clsx("text-xs mt-0.5", textSecondary)}>{description}</p>
         )}
       </div>
-      <button
-        onClick={() => onChange(!checked)}
-        className={clsx(
-          "relative w-12 h-6 rounded-full transition-colors",
-          checked ? "bg-teal-500" : isDark ? "bg-gray-700" : "bg-gray-300",
-        )}
-      >
-        <span
-          className={clsx(
-            "absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
-            checked ? "translate-x-6" : "translate-x-0.5",
-          )}
-        />
-      </button>
+      <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
 }
@@ -134,8 +119,8 @@ const Step05SocialMedia = ({ formData, errors, onChange }: Props) => {
 
       <div className={clsx("flex flex-col gap-4 pt-4 border-t", borderColor)}>
         <Toggle
-          label="Show Social Icons on Website"
-          description="Display social icons in header/footer"
+          label={t("show_social_icons")}
+          description={t("show_social_icons_desc")}
           checked={formData.showSocialIcons}
           onChange={(v) => onChange("showSocialIcons", v)}
           textPrimary={textPrimary}
@@ -143,7 +128,7 @@ const Step05SocialMedia = ({ formData, errors, onChange }: Props) => {
           isDark={isDark}
         />
         <Toggle
-          label="Open Links in New Tab"
+          label={t("open_links_new_tab")}
           checked={formData.socialLinksNewTab}
           onChange={(v) => onChange("socialLinksNewTab", v)}
           textPrimary={textPrimary}

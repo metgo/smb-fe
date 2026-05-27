@@ -90,7 +90,7 @@ const DmosMgmtPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pt-10 md:pt-0">
       <PageHeader
         title={t("dmo_management")}
         h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-500"
@@ -110,7 +110,7 @@ const DmosMgmtPage = () => {
               <p className="text-sm text-gray-400">{t("add_dmo_desc")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
               {dmos?.map((dmo) => {
                 return (
                   <EntityCard

@@ -71,7 +71,7 @@ export function StepIndicator({
               {i > 0 && (
                 <div
                   className={clsx(
-                    "w-16 h-px shrink-0 transition-colors duration-300",
+                    "w-4 sm:w-16 h-px shrink-0 transition-colors duration-300",
                     isCompleted
                       ? "bg-teal-500"
                       : isDark

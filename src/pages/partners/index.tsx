@@ -74,7 +74,7 @@ const PartnersPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pt-10 md:pt-0">
       <PageHeader
         title={t("partners_title")}
         h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
@@ -94,7 +94,7 @@ const PartnersPage = () => {
               <p className="text-sm text-gray-400">{t("add_partner_desc")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
               {partners?.map((partner) => (
                 <PartnerCard
                   key={partner._id}

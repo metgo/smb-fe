@@ -145,7 +145,7 @@ const Step06ContactDetails = ({ formData, errors, onChange }: Props) => {
         <label className={clsx("text-sm font-medium", textPrimary)}>
           {t("whatsapp_message")}
         </label>
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6">
           <textarea
             cols={4}
             value={formData.whatsappMessageEn}
