@@ -385,14 +385,13 @@ export default function CreateBusinessWizard({
             ? `${editData?.nameAr || editData?.name || ""} (نسخ)`
             : editData?.nameAr || editData?.name || "",
 
-        shortDescriptionEn:
+        shortDescription:
           editData?.shortDescriptionEn || editData?.shortDescription || "",
         shortDescriptionHe:
           editData?.shortDescriptionHe || editData?.shortDescription || "",
         shortDescriptionAr:
           editData?.shortDescriptionAr || editData?.shortDescription || "",
-        fullDescriptionEn:
-          editData?.descriptionEn || editData?.description || "",
+        fullDescription: editData?.descriptionEn || editData?.description || "",
         fullDescriptionHe:
           editData?.descriptionHe || editData?.description || "",
         fullDescriptionAr:
