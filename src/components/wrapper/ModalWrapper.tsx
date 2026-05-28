@@ -22,7 +22,6 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
 }) => {
   const { cardClasses, isRTL } = useThemeClasses();
   const [mounted, setMounted] = useState(false);
-  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
@@ -33,8 +32,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   }, []);
 
   const handleClose = () => {
-    setClosing(true);
-    setTimeout(onClose, 300);
+    onClose();
   };
 
   return (
@@ -51,9 +49,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
           isRTL ? "rtl" : "ltr",
           "w-full flex flex-col relative rounded-t-2xl md:rounded-2xl",
           "transition-transform duration-300 ease-out",
-          mounted && !closing
-            ? "translate-y-0"
-            : "translate-y-full md:translate-y-0",
+          mounted ? "translate-y-0" : "translate-y-full md:translate-y-0",
         )}
       >
         {/* Collapse handle — mobile only, tapping closes the sheet */}

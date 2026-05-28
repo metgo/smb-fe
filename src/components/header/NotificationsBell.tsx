@@ -25,6 +25,7 @@ const NotificationsBell = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("notifications");
   const popupRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
   const { isNotificationOpen } = useAppSelector((state) => state.ui);
   const { notifications } = useAppSelector((state) => state.notification);
@@ -83,7 +84,8 @@ const NotificationsBell = () => {
       if (
         isNotificationOpen &&
         popupRef.current &&
-        !popupRef.current.contains(event.target as Node)
+        !popupRef.current.contains(event.target as Node) &&
+        !backdropRef.current?.contains(event.target as Node)
       ) {
         dispatch(toggleNotification());
       }
@@ -124,174 +126,193 @@ const NotificationsBell = () => {
         )}
       </button>
 
-      {/* Notification Dropdown */}
+      {/* Notification Panel */}
       {isNotificationOpen && (
-        <div
-          ref={popupRef}
-          className={clsx(
-            "absolute mt-2.5 w-95 rounded-2xl shadow-2xl border z-50 flex flex-col overflow-hidden",
-            "animate-fade-in",
-            isDark
-              ? "bg-gray-900 border-gray-700/80 shadow-black/40"
-              : "bg-white border-gray-200 shadow-gray-200/80",
-            isRTL ? "left-0" : "right-0",
-          )}
-          style={{ maxHeight: "520px" }}
-        >
-          {/* Header */}
+        <>
+          {/* Mobile backdrop */}
           <div
+            ref={backdropRef}
+            className="fixed inset-0 bg-black/70 z-40 md:hidden"
+            onClick={() => dispatch(toggleNotification())}
+          />
+
+          <div
+            ref={popupRef}
             className={clsx(
-              "flex items-center justify-between px-5 py-4 border-b",
+              "flex flex-col overflow-hidden shadow-2xl border z-50 animate-fade-in",
+              // Mobile: full-width bottom sheet
+              "fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85dvh]",
+              // Desktop: absolute dropdown
+              "md:absolute md:bottom-auto md:left-auto md:right-auto md:rounded-2xl md:mt-2.5 md:w-[420px] md:max-h-[600px]",
+              isRTL ? "md:left-0" : "md:right-0",
               isDark
-                ? "border-gray-700/80 bg-gray-900"
-                : "border-gray-100 bg-gray-50/80",
+                ? "bg-gray-900 border-gray-700/80 shadow-black/40"
+                : "bg-white border-gray-200 shadow-gray-200/80",
             )}
           >
-            <div className="flex items-center gap-2.5">
-              <span className={clsx("text-sm font-semibold", textPrimary)}>
-                {t("notifications")}
-              </span>
-              {unreadCount > 0 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                  {unreadCount} {t("new")}
-                </span>
-              )}
-            </div>
-            {unreadCount > 0 && (
-              <button
-                className={clsx(
-                  "flex items-center gap-1 text-xs font-medium transition-colors",
-                  "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
-                )}
-              >
-                <CheckCheck className="w-3.5 h-3.5" />
-                {t("mark_all_read")}
-              </button>
-            )}
-          </div>
-
-          {/* Notification List */}
-          {notifications?.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 gap-3">
-              <span
-                className={clsx(
-                  "w-12 h-12 rounded-full flex items-center justify-center",
-                  isDark ? "bg-gray-800" : "bg-gray-100",
-                )}
-              >
-                <Bell
-                  className={clsx(
-                    "w-5 h-5",
-                    isDark ? "text-gray-600" : "text-gray-400",
-                  )}
-                />
-              </span>
-              <p className="text-sm text-gray-400 font-medium">
-                {t("no_new_notifications")}
-              </p>
-            </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
-              {notifications?.map((notification) => {
-                const isUnread = !notification.isRead;
-                const itemType = notification?.itemType;
-                console.log("🚀 ~ NotificationsBell ~ itemType:", itemType);
-
-                const queryParam = `${itemType.toLowerCase()}Id`;
-
-                const handleNavigate = async () => {
-                  dispatch(toggleNotification());
-                  await markNotificationsAsRead(notification._id);
-                  dispatch(markNotificationAsRead(notification._id));
-                  navigate(
-                    `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
-                  );
-                };
-
-                return (
-                  <div
-                    key={notification?._id}
-                    onClick={handleNavigate}
-                    className={clsx(
-                      "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
-                      isRTL ? "border-r-[3px]" : "border-l-[3px]",
-                      getBorderColor(notification?.notifType, isRTL), // read notifications
-                      !notification?.isRead
-                        ? isDark
-                          ? "bg-blue-500/5 hover:bg-blue-500/10"
-                          : "bg-blue-50/60 hover:bg-blue-50"
-                        : isDark
-                          ? "hover:bg-gray-800/60"
-                          : "hover:bg-gray-50",
-                    )}
-                  >
-                    {/* Icon */}
-                    {getNotificationIcon(notification?.notifType)}
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h4
-                          className={clsx(
-                            "text-sm leading-snug",
-                            isUnread
-                              ? `font-semibold ${textPrimary}`
-                              : `font-medium ${textSecondary}`,
-                          )}
-                        >
-                          {notification?.content?.[language]?.title}
-                        </h4>
-                        {/* Unread dot */}
-                        {isUnread && (
-                          <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-                        )}
-                      </div>
-                      <p
-                        className={clsx(
-                          "text-xs mt-0.5 leading-relaxed line-clamp-2",
-                          textSecondary,
-                        )}
-                      >
-                        {notification?.content?.[language]?.message}
-                      </p>
-                      <p
-                        className={clsx(
-                          "text-[11px] mt-1.5 font-medium",
-                          textTertiary,
-                        )}
-                      >
-                        {timeAgo(notification.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {notifications?.length > 0 && (
+            {/* Mobile drag handle */}
+            <button
+              onClick={() => dispatch(toggleNotification())}
+              className="flex justify-center pt-2.5 pb-1 md:hidden shrink-0 w-full"
+              aria-label="Close notifications"
+            >
+              <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            </button>
+            {/* Header */}
             <div
               className={clsx(
-                "px-5 py-3 border-t",
+                "flex items-center justify-between px-5 py-4 border-b",
                 isDark
                   ? "border-gray-700/80 bg-gray-900"
                   : "border-gray-100 bg-gray-50/80",
               )}
             >
-              <button
-                onClick={handleViewAllNotification}
+              <div className="flex items-center gap-2.5">
+                <span className={clsx("text-sm font-semibold", textPrimary)}>
+                  {t("notifications")}
+                </span>
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    {unreadCount} {t("new")}
+                  </span>
+                )}
+              </div>
+              {unreadCount > 0 && (
+                <button
+                  className={clsx(
+                    "flex items-center gap-1 text-xs font-medium transition-colors",
+                    "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
+                  )}
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  {t("mark_all_read")}
+                </button>
+              )}
+            </div>
+
+            {/* Notification List */}
+            {notifications?.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-14 gap-3">
+                <span
+                  className={clsx(
+                    "w-12 h-12 rounded-full flex items-center justify-center",
+                    isDark ? "bg-gray-800" : "bg-gray-100",
+                  )}
+                >
+                  <Bell
+                    className={clsx(
+                      "w-5 h-5",
+                      isDark ? "text-gray-600" : "text-gray-400",
+                    )}
+                  />
+                </span>
+                <p className="text-sm text-gray-400 font-medium">
+                  {t("no_new_notifications")}
+                </p>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                {notifications?.map((notification) => {
+                  const isUnread = !notification.isRead;
+                  const itemType = notification?.itemType;
+                  console.log("🚀 ~ NotificationsBell ~ itemType:", itemType);
+
+                  const queryParam = `${itemType.toLowerCase()}Id`;
+
+                  const handleNavigate = async () => {
+                    dispatch(toggleNotification());
+                    await markNotificationsAsRead(notification._id);
+                    dispatch(markNotificationAsRead(notification._id));
+                    navigate(
+                      `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                    );
+                  };
+
+                  return (
+                    <div
+                      key={notification?._id}
+                      onClick={handleNavigate}
+                      className={clsx(
+                        "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
+                        isRTL ? "border-r-[3px]" : "border-l-[3px]",
+                        getBorderColor(notification?.notifType, isRTL), // read notifications
+                        !notification?.isRead
+                          ? isDark
+                            ? "bg-blue-500/5 hover:bg-blue-500/10"
+                            : "bg-blue-50/60 hover:bg-blue-50"
+                          : isDark
+                            ? "hover:bg-gray-800/60"
+                            : "hover:bg-gray-50",
+                      )}
+                    >
+                      {/* Icon */}
+                      {getNotificationIcon(notification?.notifType)}
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4
+                            className={clsx(
+                              "text-sm leading-snug",
+                              isUnread
+                                ? `font-semibold ${textPrimary}`
+                                : `font-medium ${textSecondary}`,
+                            )}
+                          >
+                            {notification?.content?.[language]?.title}
+                          </h4>
+                          {/* Unread dot */}
+                          {isUnread && (
+                            <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+                          )}
+                        </div>
+                        <p
+                          className={clsx(
+                            "text-xs mt-0.5 leading-relaxed line-clamp-2",
+                            textSecondary,
+                          )}
+                        >
+                          {notification?.content?.[language]?.message}
+                        </p>
+                        <p
+                          className={clsx(
+                            "text-[11px] mt-1.5 font-medium",
+                            textTertiary,
+                          )}
+                        >
+                          {timeAgo(notification.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {notifications?.length > 0 && (
+              <div
                 className={clsx(
-                  "w-full flex items-center justify-center gap-2",
-                  "text-sm font-semibold text-blue-600 dark:text-blue-400",
-                  "hover:text-blue-700 dark:hover:text-blue-300 transition-colors",
+                  "px-5 py-3 border-t",
+                  isDark
+                    ? "border-gray-700/80 bg-gray-900"
+                    : "border-gray-100 bg-gray-50/80",
                 )}
               >
-                {t("view_all_notifications")}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-        </div>
+                <button
+                  onClick={handleViewAllNotification}
+                  className={clsx(
+                    "w-full flex items-center justify-center gap-2",
+                    "text-sm font-semibold text-blue-600 dark:text-blue-400",
+                    "hover:text-blue-700 dark:hover:text-blue-300 transition-colors",
+                  )}
+                >
+                  {t("view_all_notifications")}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
