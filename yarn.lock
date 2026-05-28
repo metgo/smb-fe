@@ -4493,9 +4493,9 @@ dom-helpers@^5.0.1:
     csstype "^3.0.2"
 
 dompurify@^3.3.1:
-  version "3.4.6"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.6.tgz#8f73010d14a46cd9781bbd3630f3bcef025a2111"
-  integrity sha512-+7gzEI8trIIQkVCvQ3ucGtNfH3nOmDgVTzc62rAAOlMxLth78pwpPoZCPc7CyRzAQF89MqcfPdEWkDwnjgqktg==
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.7.tgz#e2702ea4fd5d83467f1baef62309466ce7d44a82"
+  integrity sha512-2jBxDJY4RR06tQNy4w5FlFH7kfxsQZlufd0sbv+chfHCxeJwrFw2baUDsSwvBISD4K4RDbd0PTfy3uNXsR6siA==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -4516,9 +4516,9 @@ ejs@^3.1.10:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.328:
-  version "1.5.362"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.362.tgz#0696661e1e8ea46248e82f62f0a0bfe1aac2ce76"
-  integrity sha512-PUY2DrLvkjkUuWqq+KPL2iWshrJsZOcIojzRQ7eXFacc9dWga7MGMJAa15VbiejSZB1PAXaRLAiKgruHP8LB1w==
+  version "1.5.363"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.363.tgz#6e9ee6bbb98d4aa12e96853e89993990d577eec8"
+  integrity sha512-VjUKPyWzGnT1fujlkEGC/BvN70Hh70KXtAqcmniXviYlJC/ivcT+BWGPyxWVbJZLfvtKR6dqg1L7T7pgAMBtWA==
 
 emoji-regex@^10.3.0:
   version "10.6.0"
@@ -5807,9 +5807,9 @@ loose-envify@^1.0.0, loose-envify@^1.4.0:
     js-tokens "^3.0.0 || ^4.0.0"
 
 lru-cache@^11.0.0:
-  version "11.5.0"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.5.0.tgz#14117229fd25bc9c67936e32de90ca047488c97a"
-  integrity sha512-5YgH9UJd7wVb9hIouI2adWpgqrrICkt070Dnj8EUY1+B4B2P9eRLPAkAAo6NICA7CEhOIeBHl46u9zSNpNu7zA==
+  version "11.5.1"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.5.1.tgz#f3daa3540847b9737ebc02499ddb36765e54db4a"
+  integrity sha512-RPimw/7aMdv2oqRrxKwvZXcPfwBrn/JZ2xYcY9Hus/6LaS3VOAKVWKWgNLCFSiOm1ESXinjsDlidVU7JlnCN2A==
 
 lru-cache@^5.1.1:
   version "5.1.1"

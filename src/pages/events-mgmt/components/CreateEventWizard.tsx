@@ -180,7 +180,7 @@ export default function CreateEventWizard({
   >("physical");
   const [address, setAddress] = useState("");
   const [onlineLink, setOnlineLink] = useState("");
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
 
   const [isRecurring, setIsRecurring] = useState(false);
 
@@ -341,7 +341,7 @@ export default function CreateEventWizard({
       setStartDate(editData?.dayDescription?.[0]?.date || "");
       setGeo({
         lat: editData?.geoLocation?.lat,
-        lng: editData?.geoLocation?.long,
+        long: editData?.geoLocation?.long,
       });
       setEventFormat(editData?.eventType?.toLowerCase());
       setRecurrencePattern(
@@ -501,7 +501,7 @@ export default function CreateEventWizard({
       startTime: item.startTime,
       endTime: item.endTime,
     })),
-    geoLocation: { lat: geo.lat, long: geo.lng },
+    geoLocation: { lat: geo.lat, long: geo.long },
     recurringEventRule: {
       pattern: recurrencePattern?.toUpperCase(),
       daysOfWeek: selectedWeekdays,
