@@ -2,6 +2,8 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { X, Sparkles, Building2, ShoppingBag, Check, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getPlainTextFromRichText } from "@/helpers";
+import { ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import type { IAiSuggestedEntity } from "@/store/api/contentMutationApi";
 
@@ -29,91 +31,92 @@ const EntityCard = ({
   isDark: boolean;
 }) => {
   const imageUrl = entity.images?.[0]?.image;
+  const plainDescription = getPlainTextFromRichText(entity.description || "");
 
   return (
     <div
       onClick={onToggle}
       className={clsx(
-        "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all",
+        "group relative overflow-hidden rounded-lg border cursor-pointer transition-all",
         selected
           ? isDark
-            ? "border-teal-500 bg-teal-900/20"
-            : "border-teal-500 bg-teal-50"
+            ? "border-teal-500 bg-gray-900 ring-1 ring-teal-400/40"
+            : "border-teal-500 bg-white ring-1 ring-teal-400/40"
           : isDark
-            ? "border-gray-700 bg-gray-800/40 hover:border-gray-500"
-            : "border-gray-200 bg-white hover:border-gray-300",
+            ? "border-gray-600 bg-gray-900/80 opacity-70 hover:opacity-100 hover:border-gray-400"
+            : "border-gray-300 bg-white opacity-70 hover:opacity-100 hover:border-gray-400",
       )}
     >
-      {/* Thumbnail */}
-      <div
-        className={clsx(
-          "w-12 h-12 rounded-md shrink-0 overflow-hidden flex items-center justify-center",
-          isDark ? "bg-gray-700" : "bg-gray-100",
-        )}
-      >
+      <div className="relative aspect-video">
         {imageUrl ? (
-          <img
+          <ImageWithFallback
             src={imageUrl}
             alt={entity.name}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <Building2
+          <div
             className={clsx(
-              "w-5 h-5",
-              isDark ? "text-gray-500" : "text-gray-400",
+              "flex h-full w-full items-center justify-center",
+              isDark ? "bg-gray-800" : "bg-gray-100",
             )}
-          />
+          >
+            <Building2
+              className={clsx(
+                "h-10 w-10",
+                isDark ? "text-gray-600" : "text-gray-400",
+              )}
+            />
+          </div>
         )}
+
+        <div
+          className={clsx(
+            "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md shadow transition-colors",
+            selected ? "bg-teal-500 text-white" : "bg-red-500/90 text-white",
+          )}
+        >
+          {selected ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+        </div>
       </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p
+      <div
+        className={clsx(
+          "min-h-24 px-3 py-2.5",
+          isDark ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800",
+        )}
+      >
+        <h4
           className={clsx(
-            "font-medium text-sm truncate",
+            "truncate text-sm font-semibold leading-tight",
             isDark ? "text-gray-100" : "text-gray-900",
           )}
         >
-          {entity.name}
-        </p>
-        {entity.description && (
+          {entity.name || "-"}
+        </h4>
+        {plainDescription && (
           <p
             className={clsx(
-              "text-xs mt-0.5 line-clamp-2",
+              "mt-1 line-clamp-2 text-xs leading-snug",
               isDark ? "text-gray-400" : "text-gray-500",
             )}
           >
-            {entity.description}
+            {plainDescription}
           </p>
         )}
         {entity.matchReason && (
           <div
             className={clsx(
-              "flex items-center gap-1 mt-1.5 text-xs rounded px-1.5 py-0.5 w-fit",
+              "mt-2 flex w-fit max-w-full items-center gap-1 rounded px-1.5 py-0.5 text-[11px]",
               isDark
-                ? "bg-purple-900/40 text-purple-300"
+                ? "bg-purple-900/50 text-purple-200"
                 : "bg-purple-50 text-purple-700",
             )}
           >
-            <Info className="w-3 h-3 shrink-0" />
-            {entity.matchReason}
+            <Info className="h-3 w-3 shrink-0" />
+            <span className="truncate">{entity.matchReason}</span>
           </div>
         )}
-      </div>
-
-      {/* Checkbox */}
-      <div
-        className={clsx(
-          "w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-colors",
-          selected
-            ? "bg-teal-500 border-teal-500"
-            : isDark
-              ? "border-gray-600"
-              : "border-gray-300",
-        )}
-      >
-        {selected && <Check className="w-3 h-3 text-white" />}
       </div>
     </div>
   );
@@ -185,7 +188,7 @@ const AiReviewModal = ({
       {/* Panel */}
       <div
         className={clsx(
-          "relative z-10 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh]",
+          "relative z-10 flex max-h-[85vh] w-full max-w-4xl flex-col rounded-2xl shadow-2xl",
           isDark ? "bg-gray-900 border border-gray-700" : "bg-white",
         )}
       >
@@ -313,12 +316,12 @@ const AiReviewModal = ({
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {activeTab === "businesses" &&
                 (suggestedBusinesses.length === 0 ? (
                   <p
                     className={clsx(
-                      "text-sm text-center py-8",
+                      "col-span-full py-8 text-center text-sm",
                       isDark ? "text-gray-500" : "text-gray-400",
                     )}
                   >
@@ -340,7 +343,7 @@ const AiReviewModal = ({
                 (suggestedProducts.length === 0 ? (
                   <p
                     className={clsx(
-                      "text-sm text-center py-8",
+                      "col-span-full py-8 text-center text-sm",
                       isDark ? "text-gray-500" : "text-gray-400",
                     )}
                   >
