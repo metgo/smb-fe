@@ -51,6 +51,10 @@
   "purpose_other": "أخرى",
   "identifier_id": "معرّف المُعرِّف",
   "identifier_id_placeholder": "أدخل معرّف المُعرِّف",
+  "ga_property_id": "معرّف خاصية GA",
+  "ga_property_id_placeholder": "أدخل معرّف خاصية GA",
+  "platform_charge": "رسوم المنصة (%)",
+  "platform_charge_placeholder": "0",
   "camp_code": "رمز الحملة",
   "camp_code_placeholder": "أدخل رمز الحملة",
 

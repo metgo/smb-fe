@@ -1,13 +1,16 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 import { Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Props {
   isEdit: boolean;
   formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
-  onChange: (field: keyof ISiteSettingsFormData, value: string) => void;
+  onChange: (
+    field: keyof ISiteSettingsFormData,
+    value: string | number,
+  ) => void;
 }
 
 const Step01Generals = ({
@@ -120,7 +123,7 @@ const Step01Generals = ({
       </div>
 
       {/* Purpose & Website Url */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-6">
         <div className="flex flex-col gap-2 col-span-8">
           <label className={clsx("text-sm font-medium", textPrimary)}>
             {t("website_url")} <span className="text-red-500">*</span>
@@ -160,9 +163,9 @@ const Step01Generals = ({
         </div>
       </div>
 
-      {/* Identifier ID & Camp Code */}
-      <div className="grid grid-cols-12 gap-6">
-        <div className="flex flex-col gap-2 col-span-8">
+      {/* GA Property ID & Platform Charge */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-6">
+        <div className="flex flex-col gap-2 col-span-4">
           <label className={clsx("text-sm font-medium", textPrimary)}>
             {t("identifier_id")} <span className="text-red-500">*</span>
           </label>
@@ -182,6 +185,42 @@ const Step01Generals = ({
           {errors.identifierId && (
             <p className="text-xs text-red-500">{errors.identifierId}</p>
           )}
+        </div>
+        <div className="flex flex-col gap-2 col-span-4">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            {t("ga_property_id")}
+          </label>
+          <input
+            type="text"
+            value={formData.gaPropertyId}
+            onChange={(e) => onChange("gaPropertyId", e.target.value)}
+            placeholder={t("ga_property_id_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 col-span-4">
+          <label className={clsx("text-sm font-medium", textPrimary)}>
+            {t("platform_charge")}
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={0.01}
+            value={formData.platformCharge}
+            onChange={(e) =>
+              onChange("platformCharge", parseFloat(e.target.value) || 0)
+            }
+            placeholder={t("platform_charge_placeholder")}
+            className={clsx(
+              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
+              inputClasses,
+            )}
+          />
         </div>
       </div>
     </div>

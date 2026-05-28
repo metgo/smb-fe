@@ -5,7 +5,12 @@ import { Globe, Megaphone } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ConfirmDialog, EntityCard, PageHeader } from "@/components/shared";
+import {
+  ConfirmDialog,
+  EntityCard,
+  PageHeader,
+  TabsSection,
+} from "@/components/shared";
 import { useGetAllCampaignsQuery } from "@/store/api/websiteConfigApi";
 import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
 
@@ -26,9 +31,6 @@ const CampaignsMgmtPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const allCampaigns = campaigns ?? [];
-
-  const countForWebsite = (websiteId: string) =>
-    allCampaigns?.filter((c) => c.externalApiId === websiteId).length;
 
   const visibleCampaigns =
     activeTab === ALL_TAB
@@ -62,8 +64,17 @@ const CampaignsMgmtPage = () => {
 
   const activeWebsite = (allWebsites ?? []).find((w) => w._id === activeTab);
 
+  const websiteTabs = [
+    { id: ALL_TAB, label: "All", icon: Globe },
+    ...(allWebsites ?? []).map((w) => ({
+      id: w._id,
+      label: w.name,
+      icon: w.logo || Globe,
+    })),
+  ];
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
+    <div className="flex flex-col h-full overflow-y-auto pt-10 md:pt-0">
       <div className={clsx("sticky top-0 z-10", bgPrimary)}>
         <PageHeader
           title="Campaign Management"
@@ -71,100 +82,12 @@ const CampaignsMgmtPage = () => {
           totalCount={visibleCampaigns.length}
         />
 
-        {/* Tabs */}
-        <div
-          className={clsx(
-            "flex gap-1 border-b overflow-x-auto",
-            isDark ? "border-gray-700" : "border-gray-200",
-          )}
-          style={
-            {
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            } as React.CSSProperties
-          }
-        >
-          {/* All tab */}
-          <button
-            onClick={() => setActiveTab(ALL_TAB)}
-            className={clsx(
-              "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors border-b-2 -mb-px",
-              activeTab === ALL_TAB
-                ? isDark
-                  ? "border-violet-500 text-violet-400"
-                  : "border-violet-600 text-violet-700"
-                : isDark
-                  ? "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
-            )}
-          >
-            <Globe className="w-4 h-4" />
-            <span>All</span>
-            <span
-              className={clsx(
-                "ml-0.5 px-1.5 py-0.5 text-xs rounded-full font-semibold",
-                activeTab === ALL_TAB
-                  ? isDark
-                    ? "bg-violet-500/20 text-violet-300"
-                    : "bg-violet-100 text-violet-700"
-                  : isDark
-                    ? "bg-gray-700 text-gray-400"
-                    : "bg-gray-100 text-gray-500",
-              )}
-            >
-              {allCampaigns.length}
-            </span>
-          </button>
-
-          {(allWebsites ?? [])?.map((website) => {
-            const isActive = activeTab === website._id;
-            const count = countForWebsite(website._id);
-            return (
-              <button
-                key={website._id}
-                onClick={() => setActiveTab(website._id)}
-                className={clsx(
-                  "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors border-b-2 -mb-px",
-                  isActive
-                    ? isDark
-                      ? "border-violet-500 text-violet-400"
-                      : "border-violet-600 text-violet-700"
-                    : isDark
-                      ? "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
-                )}
-              >
-                {website.logo ? (
-                  <img
-                    src={website.logo}
-                    alt={website.name}
-                    className="w-6 h-6 object-contain rounded-sm"
-                  />
-                ) : (
-                  <Globe className="w-4 h-4" />
-                )}
-                <span>{website.name}</span>
-                <span
-                  className={clsx(
-                    "ml-0.5 px-1.5 py-0.5 text-xs rounded-full font-semibold",
-                    isActive
-                      ? isDark
-                        ? "bg-violet-500/20 text-violet-300"
-                        : "bg-violet-100 text-violet-700"
-                      : isDark
-                        ? "bg-gray-700 text-gray-400"
-                        : "bg-gray-100 text-gray-500",
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <TabsSection
+          tabs={websiteTabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
       </div>
-
-      {/* <Spinner isLoading={} /> */}
 
       <div className="mt-4 flex-1">
         {isLoading || isFetching ? (
@@ -182,7 +105,7 @@ const CampaignsMgmtPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-1">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
                 {visibleCampaigns.map((campaign) => (
                   <EntityCard
                     key={campaign._id}

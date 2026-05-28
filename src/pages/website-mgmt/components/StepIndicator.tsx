@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   CheckCircle,
@@ -50,6 +51,20 @@ export function StepIndicator({
   isDark = false,
 }: StepIndicatorProps) {
   const { t } = useTranslation("website_settings");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    const active = activeRef.current;
+    if (!container || !active) return;
+    const containerCenter = container.offsetWidth / 2;
+    const activeCenter = active.offsetLeft + active.offsetWidth / 2;
+    container.scrollTo({
+      left: activeCenter - containerCenter,
+      behavior: "smooth",
+    });
+  }, [currentStep]);
 
   return (
     <div
@@ -59,14 +74,21 @@ export function StepIndicator({
       )}
     >
       {/* Pill row */}
-      <div className="flex items-center px-1.5 gap-0.5 h-11 overflow-x-auto">
+      <div
+        ref={scrollRef}
+        className="flex items-center px-1.5 gap-0.5 h-11 overflow-x-auto"
+      >
         {STEP_META.map(({ icon: Icon, label }, i) => {
           const step = i + 1;
           const isActive = step === currentStep;
           const isCompleted = step < currentStep;
 
           return (
-            <div key={step} className="flex items-center gap-0.5 shrink-0">
+            <div
+              key={step}
+              ref={isActive ? activeRef : undefined}
+              className="flex items-center gap-0.5 shrink-0"
+            >
               {/* Connector line (skip before first pill) */}
               {i > 0 && (
                 <div

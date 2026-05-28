@@ -51,6 +51,10 @@
   "purpose_other": "אחר",
   "identifier_id": "מזהה",
   "identifier_id_placeholder": "הזן מזהה",
+  "ga_property_id": "מזהה נכס GA",
+  "ga_property_id_placeholder": "הזן מזהה נכס GA",
+  "platform_charge": "עמלת פלטפורמה (%)",
+  "platform_charge_placeholder": "0",
   "camp_code": "קוד קמפיין",
   "camp_code_placeholder": "הזן קוד קמפיין",
 

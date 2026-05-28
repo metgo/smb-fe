@@ -133,6 +133,8 @@ interface ISiteSettingsFormData {
   identifierId: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   isActive: boolean;
+  gaPropertyId: string;
+  platformCharge: number;
 
   /* Step 2 – Branding & Media */
   logoUrl: string;
@@ -235,6 +237,8 @@ interface IWebsiteConfigRes {
   websiteUrl: string;
   purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
   identifierId: string;
+  gaPropertyId: string;
+  platformCharge: number;
 
   logoUrl: string;
   faviconUrl: string;

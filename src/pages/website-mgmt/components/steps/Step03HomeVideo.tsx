@@ -274,7 +274,7 @@ function VideoSection({
       </div>
 
       {/* Grid — always shown, upload card at the end */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {videos.map((video) => (
           <VideoCard
             key={video._id}
@@ -494,7 +494,7 @@ function ThumbnailSection({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {thumbnails.map((thumbnail) => (
           <ThumbnailCard
             key={thumbnail._id}

@@ -42,6 +42,7 @@ const TOTAL_STEPS = 10;
 
 const DEFAULT_FORM: ISiteSettingsFormData = {
   isActive: true,
+
   /* Step 1 */
   websiteNameEn: "",
   websiteNameHe: "",
@@ -52,6 +53,8 @@ const DEFAULT_FORM: ISiteSettingsFormData = {
   websiteUrl: "",
   purpose: "MARKETPLACE",
   identifierId: "",
+  gaPropertyId: "",
+  platformCharge: 0,
 
   /* Step 2 */
   logoUrl: "",
@@ -146,6 +149,8 @@ const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
     "sloganAr",
     "websiteUrl",
     "identifierId",
+    "gaPropertyId",
+    "platformCharge",
   ],
   2: ["primaryCampId", "campIds"],
   3: ["logoUrl", "faviconUrl", "bgImageUrl", "specialSymbolUrl"],
@@ -226,6 +231,8 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   websiteUrl: data.websiteUrl,
   purpose: data.purpose,
   identifierId: data.identifierId,
+  gaPropertyId: data.gaPropertyId,
+  platformCharge: data.platformCharge,
   logoUrl: data.logoUrl,
   faviconUrl: data.faviconUrl,
   specialSymbolUrl: data.specialSymbolUrl,
@@ -351,6 +358,8 @@ export default function WebsiteConfigPage() {
       sloganAr: d.sloganAr ?? "",
       purpose: d.purpose ?? "MARKETPLACE",
       identifierId: d.identifierId ?? "",
+      gaPropertyId: d.gaPropertyId ?? "",
+      platformCharge: d.platformCharge ?? 0,
 
       logoUrl: d.logoUrl ?? "",
       faviconUrl: d.faviconUrl ?? "",
@@ -427,7 +436,7 @@ export default function WebsiteConfigPage() {
   const onChange = useCallback(
     (
       field: keyof ISiteSettingsFormData,
-      value: string | boolean | string[],
+      value: string | boolean | string[] | number,
     ) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => {

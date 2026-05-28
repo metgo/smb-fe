@@ -51,6 +51,10 @@
   "purpose_other": "Other",
   "identifier_id": "Identifier ID",
   "identifier_id_placeholder": "Enter identifier ID",
+  "ga_property_id": "GA Property ID",
+  "ga_property_id_placeholder": "Enter GA Property ID",
+  "platform_charge": "Platform Charge (%)",
+  "platform_charge_placeholder": "0",
   "camp_code": "Camp Code",
   "camp_code_placeholder": "Enter camp code",
 
