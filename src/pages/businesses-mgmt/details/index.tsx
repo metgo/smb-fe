@@ -247,7 +247,7 @@ export default function BusinessDetailsPage() {
             lat={
               business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
             }
-            lng={
+            long={
               business?.geoLocation?.long ??
               business?.location?.coordinates?.[1]
             }

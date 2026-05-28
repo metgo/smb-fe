@@ -63,13 +63,13 @@ const MarkerMap = ({
       },
     });
 
-    setGeo({ lat: lat.toString(), lng: lng.toString() });
+    setGeo({ lat: lat.toString(), long: lng.toString() });
 
     markerRef.current.addListener("dragend", (e: any) => {
       if (!e.latLng) return;
       const newLat = e.latLng.lat();
       const newLng = e.latLng.lng();
-      setGeo({ lat: newLat.toString(), lng: newLng.toString() });
+      setGeo({ lat: newLat.toString(), long: newLng.toString() });
       fetchAddress(newLat, newLng);
     });
 
@@ -105,7 +105,7 @@ const MarkerMap = ({
       const defaultCenter = { lat: 31.304167, lng: 34.521977 };
 
       const lat = parseFloat(geo?.lat);
-      const lng = parseFloat(geo?.lng);
+      const lng = parseFloat(geo?.long);
 
       const center = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : defaultCenter;
 
@@ -195,7 +195,7 @@ const MarkerMap = ({
     const lat = data.location.latitude;
     const lng = data.location.longitude;
 
-    setGeo({ lat: lat.toString(), lng: lng.toString() });
+    setGeo({ lat: lat.toString(), long: lng.toString() });
     setAddress(data.formattedAddress);
     setInputValue(data.formattedAddress);
     setSuggestions([]);
@@ -213,7 +213,7 @@ const MarkerMap = ({
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      setGeo({ lat: lat.toString(), lng: lng.toString() });
+      setGeo({ lat: lat.toString(), long: lng.toString() });
 
       if (map) {
         placeMarker(lat, lng, map);

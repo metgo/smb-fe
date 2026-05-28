@@ -22,7 +22,7 @@ interface IWizardStep {
 
 interface Geo {
   lat: string;
-  lng: string;
+  long: string;
 }
 
 interface ITags {

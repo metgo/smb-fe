@@ -121,7 +121,7 @@ export default function CreateBusinessWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
 
   // Business Media States
@@ -466,7 +466,7 @@ export default function CreateBusinessWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.lng),
+          long: String(editData.geoLocation.long),
         });
       }
 
@@ -486,7 +486,7 @@ export default function CreateBusinessWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.lng),
+          long: String(editData.geoLocation.long),
         });
       }
       setSelectAuthorityId(editData?.authorityId?._id || "");
