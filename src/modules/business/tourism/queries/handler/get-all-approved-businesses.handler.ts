@@ -10,8 +10,6 @@ import {
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
-import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
-import { ConfigService } from 'src/services/config/config.service';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
@@ -31,7 +29,6 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
     private CategoryModel: Model<BussCategory>,
     private campaignService: CampaignService,
     private readonly businessService: BusinessService,
-    private readonly configService: ConfigService,
   ) {}
 
   async execute(queries: GetAllApprovedBusinessesQuery): Promise<any> {
@@ -125,21 +122,8 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
 
       // Atlas Search with regex fallback
       if (search) {
-        let expandedTerms: string[] = [];
-        try {
-          const normalizedSearch = normalizeHebrewSearch(search);
-          expandedTerms = await expandSearchTerms(
-            normalizedSearch,
-            this.configService.get('GEMINI_API_KEY'),
-          );
-        } catch (expansionError) {
-          console.warn(
-            '[Search Expansion] Failed in Business Search:',
-            expansionError?.message,
-          );
-        }
-
-        const searchTerms = [search, ...expandedTerms].filter(
+        const normalizedSearch = normalizeHebrewSearch(search);
+        const searchTerms = [search, normalizedSearch].filter(
           (t, i, arr) => t && arr.indexOf(t) === i,
         );
         const searchPaths = [

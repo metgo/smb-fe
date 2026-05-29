@@ -10,8 +10,6 @@ import {
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
-import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
-import { ConfigService } from 'src/services/config/config.service';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
@@ -31,7 +29,6 @@ implements IQueryHandler<GetAllProductsQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
     private readonly productsService: ProductsService,
-    private readonly configService: ConfigService,
   ) {}
 
   async execute(queries: GetAllProductsQuery): Promise<any> {
@@ -104,14 +101,7 @@ implements IQueryHandler<GetAllProductsQuery> {
       if (search) {
         try {
           const normalizedSearch = normalizeHebrewSearch(search);
-          const expandedTerms = await expandSearchTerms(
-            normalizedSearch,
-            this.configService.get('GEMINI_API_KEY'),
-          );
-
-          // If the original search had nikud, we should include it explicitly
-          // because the Atlas index might be nikud-sensitive.
-          const searchTerms = [search, ...expandedTerms].filter(
+          const searchTerms = [search, normalizedSearch].filter(
             (t, i, arr) => t && arr.indexOf(t) === i,
           );
 

@@ -12,8 +12,6 @@ import {
   getLocalizedValue,
   localizeFields,
 } from 'src/core/helper/localization.util';
-import { ConfigService } from 'src/services/config/config.service';
-import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
 import {
   PRODUCTS_SEARCH_INDEX,
   buildHebrewSearchRegex,
@@ -50,7 +48,6 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     private ExternalApiModel: Model<ExternalApi>,
     @InjectModel(Business.name)
     private BusinessModel: Model<Business>,
-    private readonly configService: ConfigService,
   ) {}
 
   async execute({
@@ -70,7 +67,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
     try {
       let searchOrConditions: any[] = [];
-      let expandedTerms: string[] = [];
+      const expandedTerms: string[] = [];
       let searchTerms: string[] = [];
       let matchingBusinessIds: any[] = [];
       let matchingBusinessNameIds: any[] = [];
@@ -93,11 +90,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       if (search) {
         normalizedBase = normalizeArabicSearch(normalizeHebrewSearch(search));
-        const apiKey = this.configService.get('GEMINI_API_KEY');
-        expandedTerms = await expandSearchTerms(normalizedBase, apiKey);
         searchTerms = [
           ...new Set(
-            [search, normalizedBase, ...expandedTerms].filter(Boolean),
+            [search, normalizedBase].filter(Boolean),
           ),
         ];
 
@@ -192,7 +187,10 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         return [];
       }
 
+      console.log('site category product refs:', productCategoryEntries.length);
+
       const allProductIds = productCategoryEntries.map(e => e.productId);
+      console.log('unique product refs:', new Set(allProductIds).size);
 
       const productSelectFields
         = '_id productId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea categories tagsId';
@@ -334,7 +332,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               },
               { $limit: 300 },
               { $project: { productId: 1 } },
-            ]),
+            ]).catch(() => [] as any[]),
             buildSearchConditions
               ? this.BusinessModel.find({
                 $or: buildSearchConditions(lookupTerms, [
@@ -388,16 +386,26 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           atlasRankedIds = atlasResults.map((r: any) => r.productId.toString());
           matchingBusinessNameIds = bizNameResults;
           matchingBusinessShortDescIds = bizShortDescResults;
-          matchingBusinessIds = [
-            ...bizNameResults,
-            ...bizShortDescResults.filter(
-              (b: any) => !bizNameResults.some(
-                (n: any) => n._id.toString() === b._id.toString(),
-              ),
-            ),
-          ];
           matchingCategoryIds = catResults;
           matchingTagIds = tagResults;
+
+          // Find businesses whose tagsId contains the matched tag IDs
+          let bizByTagResults: any[] = [];
+          if (tagResults.length) {
+            bizByTagResults = await this.BusinessModel.find({
+              tagsId: { $in: tagResults.map((t: any) => t._id) },
+            })
+              .select('_id')
+              .lean()
+              .catch(() => []);
+          }
+
+          const allBizIds = [...bizNameResults, ...bizShortDescResults, ...bizByTagResults];
+          matchingBusinessIds = allBizIds.filter(
+            (b: any, i: number) => allBizIds.findIndex(
+              (x: any) => x._id.toString() === b._id.toString(),
+            ) === i,
+          );
 
           if (matchingBusinessIds.length) {
             searchOrConditions.push({
@@ -415,18 +423,8 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             });
           }
 
-          if (
-            atlasRankedIds.length === 0
-            && matchingBusinessIds.length === 0
-            && catResults.length === 0
-            && tagResults.length === 0
-          ) {
-            throw new Error(
-              'Atlas Search returned 0 hits — using regex fallback',
-            );
-          }
-
           const searchOrClauses: any[] = [];
+
           if (atlasRankedIds.length) {
             searchOrClauses.push({ productId: { $in: atlasRankedIds } });
           }
@@ -461,6 +459,10 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               );
             });
 
+          if (!searchOrClauses.length) {
+            throw new Error('No search signals — using regex fallback');
+          }
+
           products = await this.ProductsAuditModel.find({
             ...baseProductQuery,
             $and: [{ $or: searchOrClauses }],
@@ -492,6 +494,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       const productMap = new Map(
         products.map(p => [p.productId.toString(), p]),
       );
+      console.log('products after DB filters:', products.length);
 
       const flatList = productCategoryEntries
         .map(({ productId, category }) => {
@@ -561,6 +564,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       const uniqueFlatList = Array.from(
         new Map(flatList.map(item => [item._id.toString(), item])).values(),
       );
+      console.log('final unique products:', uniqueFlatList.length);
 
       if (
         atlasRankedIds.length > 0

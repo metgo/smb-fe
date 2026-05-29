@@ -9,8 +9,6 @@ import {
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
-import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
-import { ConfigService } from 'src/services/config/config.service';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
@@ -22,7 +20,6 @@ implements IQueryHandler<GetAllProductsRawQuery> {
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
     private campaignService: CampaignService,
-    private readonly configService: ConfigService,
   ) {}
 
   async execute(queries: GetAllProductsRawQuery): Promise<any> {
@@ -187,21 +184,8 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       }
 
       if (search) {
-        let expandedTerms: string[] = [];
-        try {
-          const normalizedSearch = normalizeHebrewSearch(search);
-          expandedTerms = await expandSearchTerms(
-            normalizedSearch,
-            this.configService.get('GEMINI_API_KEY'),
-          );
-        } catch (expansionError) {
-          console.warn(
-            '[Search Expansion] Failed in Product Raw Query:',
-            expansionError?.message,
-          );
-        }
-
-        const searchTerms = [search, ...expandedTerms].filter(
+        const normalizedSearch = normalizeHebrewSearch(search);
+        const searchTerms = [search, normalizedSearch].filter(
           (t, i, arr) => t && arr.indexOf(t) === i,
         );
         const combinedPattern = searchTerms

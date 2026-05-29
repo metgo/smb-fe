@@ -9,8 +9,6 @@ import {
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
-import { expandSearchTerms } from 'src/core/helper/search-expansion.util';
-import { ConfigService } from 'src/services/config/config.service';
 import { Tags } from 'src/modules/tags/schema/tags.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllBusinessesRawQuery } from '../get-all-businesses-rawquery.query';
@@ -20,7 +18,6 @@ export class GetAllBusinessesRawQueryHandler
 implements IQueryHandler<GetAllBusinessesRawQuery> {
   constructor(
     private campaignService: CampaignService,
-    private readonly configService: ConfigService,
     @InjectModel(Tags.name)
     private TagModel: Model<Tags>,
     @InjectModel(BussCategory.name)
@@ -133,21 +130,8 @@ implements IQueryHandler<GetAllBusinessesRawQuery> {
       }
 
       if (search) {
-        let expandedTerms: string[] = [];
-        try {
-          const normalizedSearch = normalizeHebrewSearch(search);
-          expandedTerms = await expandSearchTerms(
-            normalizedSearch,
-            this.configService.get('GEMINI_API_KEY'),
-          );
-        } catch (expansionError) {
-          console.warn(
-            '[Search Expansion] Failed in Business Raw Query:',
-            expansionError?.message,
-          );
-        }
-
-        const searchTerms = [search, ...expandedTerms].filter(
+        const normalizedSearch = normalizeHebrewSearch(search);
+        const searchTerms = [search, normalizedSearch].filter(
           (t, i, arr) => t && arr.indexOf(t) === i,
         );
         const combinedPattern = searchTerms

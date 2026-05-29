@@ -58,6 +58,8 @@ export class SiteSettingsController {
     @Param('externalApiId') externalApiId: string,
     @Query() query: GetProductsByTopicRequest,
   ) {
+    console.log('Received request for products by topic with query:', query);
+    console.log('Received request for products by topic with externalApiId:', externalApiId);
     return this.queryBus.execute(
       new GetProductsByTopicQuery(externalApiId, query),
     );
