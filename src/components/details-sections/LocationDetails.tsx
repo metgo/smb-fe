@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 interface LocationDetailsProps {
   lat: string | number;
-  lng: string | number;
+  long: string | number;
   address: {
     location: string;
     city: string;
@@ -20,37 +20,38 @@ interface LocationDetailsProps {
 
 const LocationDetails: FC<LocationDetailsProps> = ({
   lat,
-  lng,
+  long,
   address,
   purpose,
 }) => {
   const { t } = useTranslation("common");
   const { isDark } = useThemeClasses();
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
-  const [formattedAddress, setFormatAddress] = useState("");
+  const [geo, setGeo] = useState<Geo>(() => ({
+    lat: lat ? String(lat) : "",
+    long: long ? String(long) : "",
+  }));
+  const [formattedAddress, setFormatAddress] = useState(() => {
+    if (!address) return "";
+    return [address.location, address.city, address.country]
+      .filter(Boolean)
+      .join(", ");
+  });
 
   useEffect(() => {
-    if (!lat && !lng) return;
-
-    // Set geo location
-    setGeo({
-      lat: String(lat),
-      lng: String(lng),
-    });
-
-    // Set formatted address
+    if (!lat && !long) return;
+    setGeo({ lat: String(lat), long: String(long) });
     if (address) {
-      const formatted = [address.location, address.city, address.country]
-        .filter(Boolean)
-        .join(", ");
-
-      setFormatAddress(formatted);
+      setFormatAddress(
+        [address.location, address.city, address.country]
+          .filter(Boolean)
+          .join(", "),
+      );
     }
-  }, [lat, lng, address]);
+  }, [lat, long, address]);
 
   const hasLocation = address?.location || address?.city || address?.country;
 
-  const hasCoordinates = lat && lng;
+  const hasCoordinates = lat && long;
   // const subTitle =
   //   purpose === "Event"
   //     ? "Find out where this event is taking place"
@@ -304,7 +305,7 @@ const LocationDetails: FC<LocationDetailsProps> = ({
                       isDark ? "text-green-400" : "text-green-600",
                     )}
                   >
-                    {lng || "-"}
+                    {long || "-"}
                   </p>
                 </div>
               </div>
