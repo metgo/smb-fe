@@ -1,10 +1,35 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
-type TStatus = "draft" | "pending" | "approved" | "rejected" | "archived";
+
+type TViewMode = "list" | "grid";
+
+type TStatus =
+  | "draft"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "closed"
+  | "archived";
+
+type EventStatus = "draft" | "pending" | "approved";
+type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
+type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
+
+interface IWizardStep {
+  number: number;
+  title: string;
+  icon: LucideIcon;
+}
 
 interface Geo {
   lat: string;
-  lng: string;
+  long: string;
+}
+
+interface ITags {
+  he: string;
+  ar: string;
+  en: string;
 }
 
 interface IWebsite {
@@ -14,9 +39,17 @@ interface IWebsite {
   logo: string;
   dmoIds: string[];
   authorityIds: string[];
+  isActive?: boolean;
 }
 
+interface ITag {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+}
 type TAllWebsites = IWebsite[];
+type TAllTags = ITag[];
 
 interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];
@@ -41,8 +74,8 @@ interface ThemeClasses {
 }
 
 interface PageStats {
-  id: number;
-  title: string;
+  id?: number;
+  title?: string;
   value: string | number;
   label?: string;
   labelClass?: string;
@@ -62,7 +95,18 @@ interface IDmo {
   imagePath?: string;
   logoPath?: string;
   authorities: Authority[];
+  isActive?: boolean;
 }
+
+type EnrichedAuthority = {
+  _id: string;
+  name: string;
+  logoPath?: string;
+  dmoId: string;
+  dmoName: string;
+  dmoLogo?: string;
+  isActive?: boolean;
+};
 
 interface IDeleteTarget {
   imageUrl: string;
@@ -102,4 +146,44 @@ interface IAssociatedWebsiteIds {
   _id: string;
   name: string;
   url: string;
+  externalApiId?: string;
 }
+
+interface ISearchBusiness {
+  _id: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+  slug: string;
+}
+
+type TNotifStatus = "ALL" | "READ" | "UNREAD";
+
+type TItemType = "ALL" | "BUSINESS" | "PRODUCT" | "EVENT" | "FUNDAY" | "TRIP";
+
+type TNotifType =
+  | "ALL"
+  | "INFO"
+  | "WARNING"
+  | "ACTION"
+  | "URGENT"
+  | "ERROR"
+  | "UNREAD";
+
+type TItemStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "CLOSED"
+  | "REJECTED"
+  | "DRAFT"
+  | "ARCHIVED";
+
+type TOrderStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "shipped"
+  | "canceled";
+type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
+
+type TSortDirection = "asc" | "desc" | null;

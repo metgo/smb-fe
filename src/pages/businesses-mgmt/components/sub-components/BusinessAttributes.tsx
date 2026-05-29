@@ -39,9 +39,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
 }) => {
-  const { textSecondary, isDark } = useThemeClasses();
-  const { primaryCategories, accessibility, groupTypes, subCategories } =
-    useCommon();
+  const { isDark } = useThemeClasses();
+  const { categories, accessibility, groupTypes, subCategories } = useCommon();
 
   // Tag autocomplete states
   const [tagInput, setTagInput] = useState("");
@@ -93,7 +92,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         >
           <option value="">{t("select")}</option>
-          {primaryCategories?.datas?.data.map((cat: any) => (
+          {categories?.map((cat: any) => (
             <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
@@ -105,18 +104,16 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
       </div>
 
       <SelectableChips
-        label="Accessiblities"
-        items={accessibility?.datas?.data}
+        label="accessiblities"
+        items={accessibility}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
       <SelectableChips
-        label="Group Types"
-        items={groupTypes?.datas?.data}
+        label="group_types"
+        items={groupTypes}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
       {/* Tags */}
@@ -135,8 +132,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
             isDark ? "text-gray-400" : "text-gray-500"
           }`}
         >
-          Type a tag and press <span className="font-medium">comma (,)</span> to
-          add
+          {t("tag_input_hint")}
         </p>
 
         <div
@@ -170,7 +166,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
             {/* Input */}
             <input
               type="text"
-              placeholder="Add tag..."
+              placeholder={t("add_tag_placeholder")}
               value={tagInput}
               onChange={(e) => {
                 setTagInput(e.target.value);

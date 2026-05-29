@@ -1,0 +1,40 @@
+{
+  "name": "שם",
+  "title_placeholder": "הזן שם...",
+  "description": "תיאור",
+  "description_placeholder": "הזן תיאור...",
+  "media_url_placeholder": "https://example.com/logo.png",
+  "or": "או",
+  "uploading": "מעלה...",
+  "remove": "הסר",
+  "drop_to_upload": "שחרר להעלאה",
+  "drag_or_click_upload": "גרור ושחרר או לחץ להעלאה",
+  "select_dmo": "בחר מרכז יעד",
+
+  "general_tab": "כללי",
+  "boundary_tab": "גבולות",
+
+  "edit_dmo": "ערוך מרכז יעד",
+  "create_dmo": "צור מרכז יעד",
+  "dmo_created_success": "מרכז היעד נוצר בהצלחה",
+  "dmo_updated_success": "מרכז היעד עודכן בהצלחה",
+  "dmo_create_failed": "יצירת מרכז היעד נכשלה",
+  "dmo_update_failed": "עדכון מרכז היעד נכשל",
+  "dmo_boundary_desc": "צייר את מצולע הגבולות של מרכז היעד על המפה. גרור את הסיכה להגדרת נקודת המרכז.",
+
+  "edit_authority": "ערוך רשות",
+  "create_authority": "צור רשות",
+  "authority_created_success": "הרשות נוצרה בהצלחה",
+  "authority_updated_success": "הרשות עודכנה בהצלחה",
+  "authority_create_failed": "יצירת הרשות נכשלה",
+  "authority_update_failed": "עדכון הרשות נכשל",
+  "authority_boundary_desc": "צייר את מצולע הגבולות של הרשות על המפה. גרור את הסיכה להגדרת נקודת המרכז.",
+
+  "cancel": "ביטול",
+  "save_changes": "שמור שינויים",
+  "saving": "שומר...",
+
+  "center": "מרכז",
+  "boundary": "גבולות",
+  "vertices": "קודקודים"
+}

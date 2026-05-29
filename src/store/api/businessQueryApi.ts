@@ -27,36 +27,30 @@ interface BusinessListParams {
   endDate?: string;
 }
 
+interface BusinessesForProductParams {
+  locale: Language;
+  limit: number;
+  search?: string;
+  status?: string;
+  authorityId?: string;
+  dmoId?: string;
+  page?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
 export const businessQueryApi = createApi({
   reducerPath: "businessQueryApi",
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Business"],
+
   endpoints: (builder) => ({
     getAllbusinesses: builder.query<any, BusinessListParams>({
       query: (params) => ({
-        url: endpoints.businesses,
+        url: `${endpoints.businesses}?sortBy=DESC`,
         method: "GET",
         params,
       }),
-
-      serializeQueryArgs: ({ endpointName, queryArgs }) => {
-        // serialize to a string that includes page and search/filter params
-        const { page, search, status, authorityId, dmoId, hasProductFilter } =
-          queryArgs;
-
-        // Important: only serialize params relevant to cache differentiation
-        return `${endpointName}-${page}-${search || ""}-${status || ""}-${authorityId || ""}-${dmoId || ""}-${hasProductFilter !== undefined ? hasProductFilter : ""}`;
-      },
-      // 🔑 merge new page data into cache
-      merge: (currentCache, newData) => {
-        currentCache.data.push(...newData.data);
-        currentCache.meta = newData.meta;
-      },
-
-      // 🔑 refetch when page changes
-      forceRefetch({ currentArg, previousArg }) {
-        return currentArg?.page !== previousArg?.page;
-      },
     }),
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({
@@ -81,14 +75,44 @@ export const businessQueryApi = createApi({
         url: `${endpoints.business}/${businessId}`,
         method: "GET",
       }),
+      keepUnusedDataFor: 0,
+    }),
+    getBusinessDeliveryInfoById: builder.query<
+      any,
+      { businessId: string | null }
+    >({
+      query: ({ businessId }) => ({
+        url: `${endpoints.business}/${businessId}`,
+        method: "GET",
+        params: { showOnlyDeliveryInfo: true },
+      }),
+    }),
+
+    getbusinessBySlug: builder.query<any, { slug: string | null }>({
+      query: ({ slug }) => ({
+        url: `${endpoints.business}/${slug}`,
+        method: "GET",
+      }),
+    }),
+
+    getBusinessForProduct: builder.query<any, BusinessesForProductParams>({
+      query: (params) => ({
+        url: endpoints.searchBusiness,
+        method: "GET",
+        params,
+      }),
     }),
   }),
 });
 
 export const {
   useGetAllbusinessesQuery,
+  useLazyGetAllbusinessesQuery,
+  useGetBusinessForProductQuery,
+  useLazyGetBusinessForProductQuery,
   useGetBusinessStatsQuery,
   useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
+  useLazyGetBusinessDeliveryInfoByIdQuery,
 } = businessQueryApi;

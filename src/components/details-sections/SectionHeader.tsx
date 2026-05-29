@@ -12,7 +12,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subTitle }) => {
     <div>
       <h2
         className={clsx(
-          "text-2xl font-bold",
+          "text-xl sm:text-2xl font-bold",
           isDark ? "text-white" : "text-gray-900",
         )}
       >

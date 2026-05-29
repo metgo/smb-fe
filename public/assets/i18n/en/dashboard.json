@@ -43,6 +43,13 @@
   "purchases_report_desc": "Detailed analysis of purchase trends showing the breakdown of vouchers and credit card payments that comprise total orders, with historical comparisons and averages.",
   "popular_content_desc": "Top-performing businesses, products, and points of interest ranked by views, bookings, and engagement metrics with growth trends and podium rankings.",
 
+  "popular_content": "Popular Content",
+  "total_purchases": "Total Purchases",
+  "total_views": "Total views",
+  "all_time": "All Time",
+  "ga_desc": "Key performance metrics and trends",
+  "total": "Total",
+
   "distribution_overview": "Distribution Overview",
   "businesses": "Businesses",
   "products": "Products",

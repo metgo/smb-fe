@@ -1,39 +1,55 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
-  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  isRTL?: boolean;
-  isDark: boolean;
+  setSearchTerm: (v: string) => void;
+  storageKey?: string;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
-  isRTL = false,
-  isDark,
 }) => {
   const [inputValue, setInputValue] = useState(searchTerm);
+  const { isDark, rowDir } = useThemeClasses();
+  const isRTL = rowDir === "flex-row-reverse";
+  const inputRef = useRef<HTMLInputElement>(null);
+  const lastPushedRef = useRef(searchTerm);
 
+  // Sync from parent only when the input is NOT focused and the change is
+  // external (e.g. clearFilter, or a saved search loaded on mount). Skipping
+  // the sync while the user is actively typing prevents the parent's async
+  // state update from clobbering keystrokes mid-type — the root cause of
+  // characters disappearing on slow devices / browsers.
   useEffect(() => {
-    setInputValue(searchTerm); // Sync if external searchTerm changes
+    const isFocused = document.activeElement === inputRef.current;
+    if (!isFocused && searchTerm !== lastPushedRef.current) {
+      setInputValue(searchTerm);
+      lastPushedRef.current = searchTerm;
+    }
   }, [searchTerm]);
 
+  // Debounce: propagate local input up to parent after 300 ms of inactivity.
   useEffect(() => {
     const handler = setTimeout(() => {
+      lastPushedRef.current = inputValue;
       setSearchTerm(inputValue);
-    }, 3000); // 3 seconds debounce
-
-    return () => {
-      clearTimeout(handler);
-    };
+    }, 300);
+    return () => clearTimeout(handler);
   }, [inputValue, setSearchTerm]);
 
+  const handleClear = () => {
+    lastPushedRef.current = "";
+    setInputValue("");
+    setSearchTerm("");
+  };
+
   return (
-    <div className="relative">
+    <div>
       <Search
         className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
           isDark ? "text-gray-500" : "text-gray-400"
@@ -41,6 +57,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       />
 
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={inputValue}
@@ -59,7 +76,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
               ? "text-gray-400 hover:text-gray-200"
               : "text-gray-500 hover:text-black"
           }`}
-          onClick={() => setInputValue("")}
+          onClick={handleClear}
           size={20}
         />
       )}

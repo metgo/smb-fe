@@ -1,0 +1,45 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { endpoints } from "@/lib/endpoints";
+
+export const orderQueryApi = createApi({
+  reducerPath: "orderQueryApi",
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["Order"],
+  endpoints: (builder) => ({
+    getAllOrders: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.orders,
+        method: "GET",
+        params,
+      }),
+    }),
+    getAllOrderSummary: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.orderSummary,
+        method: "GET",
+        params,
+      }),
+    }),
+    getOrderById: builder.query<any, { orderId: string | null }>({
+      query: ({ orderId }) => ({
+        url: `${endpoints.orders}/${orderId}`,
+        method: "GET",
+      }),
+    }),
+    getOrderStats: builder.query<any, any>({
+      query: (params) => ({
+        url: endpoints.ordersStats,
+        method: "GET",
+        params,
+      }),
+    }),
+  }),
+});
+
+export const {
+  useGetAllOrdersQuery,
+  useGetAllOrderSummaryQuery,
+  useGetOrderByIdQuery,
+  useGetOrderStatsQuery,
+} = orderQueryApi;

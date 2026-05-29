@@ -2,9 +2,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import uiReducer from "@/features/uiSlice";
 import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
+import notificationSlice from "@/features/notificationSlice";
 import filterReducer from "@/features/filterSlice";
 import themeSlice from "@/features/themeSlice";
-
 import { authApi } from "@/store/api/authApi";
 import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
@@ -12,14 +12,33 @@ import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
 import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
+import { voucherMutationApi } from "./api/voucherMutationApi";
+import { voucherQueryApi } from "./api/voucherQueryApi";
 import { eventQueryApi } from "./api/eventQueryApi";
+import { orderQueryApi } from "./api/orderQueryApi";
+import { orderMutationApi } from "./api/orderMutationApi";
 import { userMutationApi } from "./api/userMutationApi";
 import { miniSiteMutationApi } from "./api/miniSiteMutation";
 import { miniSiteQueryApi } from "./api/miniSiteQueryApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
+import { productMutationApi } from "./api/productMutationApi";
+import { productQueryApi } from "./api/productQueryApi";
 import { commonMutationApi } from "./api/commonMutationApi";
 import { saveSettings, saveUserInfo } from "@/lib/storage";
+import { contentMutationApi } from "./api/contentMutationApi";
+import { contentQueryApi } from "./api/contentQueryApi";
+import { notificationApi } from "./api/notificationApi";
+import { tripQueryApi } from "./api/tripsQueryApi";
+import { poiQueryApi } from "./api/poiQueryApi";
+import { poiMutationApi } from "./api/poiMutationApi";
+import { dynamicPageApi } from "./api/dynamicPageApi";
+import { blogQueryApi } from "./api/blogQueryApi";
+import { blogMutationApi } from "./api/blogMutationApi";
+import { websiteSettingsApi } from "./api/websiteSettingsApi";
+import { promotionsApi } from "./api/promotionsApi";
+import { websiteConfigApi } from "./api/websiteConfigApi";
+import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -28,22 +47,47 @@ export const store = configureStore({
     settings: settingsReducer,
     filters: filterReducer,
     theme: themeSlice,
-
+    notification: notificationSlice,
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
-    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
     [masterDataApi.reducerPath]: masterDataApi.reducer,
-    [userMutationApi.reducerPath]: userMutationApi.reducer,
-    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
     [commonMutationApi.reducerPath]: commonMutationApi.reducer,
     [miniSiteMutationApi.reducerPath]: miniSiteMutationApi.reducer,
     [miniSiteQueryApi.reducerPath]: miniSiteQueryApi.reducer,
+    [orderMutationApi.reducerPath]: orderMutationApi.reducer,
+
+    [productMutationApi.reducerPath]: productMutationApi.reducer,
+    [productQueryApi.reducerPath]: productQueryApi.reducer,
 
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
+    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
+
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
+    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+
     [userQueryApi.reducerPath]: userQueryApi.reducer,
+    [orderQueryApi.reducerPath]: orderQueryApi.reducer,
+    [userMutationApi.reducerPath]: userMutationApi.reducer,
+
+    [contentQueryApi.reducerPath]: contentQueryApi.reducer,
+    [contentMutationApi.reducerPath]: contentMutationApi.reducer,
+    [voucherMutationApi.reducerPath]: voucherMutationApi.reducer,
+
+    [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
+    [tripQueryApi.reducerPath]: tripQueryApi.reducer,
+    [blogQueryApi.reducerPath]: blogQueryApi.reducer,
+    [blogMutationApi.reducerPath]: blogMutationApi.reducer,
+
+    [poiQueryApi.reducerPath]: poiQueryApi.reducer,
+    [poiMutationApi.reducerPath]: poiMutationApi.reducer,
+
+    [notificationApi.reducerPath]: notificationApi.reducer,
+    [dynamicPageApi.reducerPath]: dynamicPageApi.reducer,
+    [websiteSettingsApi.reducerPath]: websiteSettingsApi.reducer,
+    [promotionsApi.reducerPath]: promotionsApi.reducer,
+    [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -54,13 +98,33 @@ export const store = configureStore({
       userMutationApi.middleware,
       eventMutationApi.middleware,
       businessMutationApi.middleware,
+      orderMutationApi.middleware,
       eventQueryApi.middleware,
+      orderQueryApi.middleware,
       userQueryApi.middleware,
       businessQueryApi.middleware,
       mediaMutationApi.middleware,
       miniSiteMutationApi.middleware,
       miniSiteQueryApi.middleware,
+      productMutationApi.middleware,
+      productQueryApi.middleware,
+
       commonMutationApi.middleware,
+      contentMutationApi.middleware,
+      contentQueryApi.middleware,
+      voucherMutationApi.middleware,
+      voucherQueryApi.middleware,
+      notificationApi.middleware,
+      dynamicPageApi.middleware,
+      tripQueryApi.middleware,
+      blogMutationApi.middleware,
+      blogQueryApi.middleware,
+      poiQueryApi.middleware,
+      poiMutationApi.middleware,
+      websiteSettingsApi.middleware,
+      promotionsApi.middleware,
+      websiteConfigApi.middleware,
+      nprogressMiddleware,
     ),
 });
 

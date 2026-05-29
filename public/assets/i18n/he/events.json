@@ -1,4 +1,5 @@
 {
+  "select_business": "בחר עסק",
   "events_management_dashboard": "לוח ניהול אירועים",
   "events_management_desc": "נהל אירועים עם מדדים ודוחות מפורטים",
 
@@ -199,8 +200,8 @@
   "supported_formats": "פורמטים נתמכים: JPEG, PNG, GIF",
   "cover_image": "תמונת כיסוי",
   "set_as_cover": "تעيين ככיסוי",
-  "review_your_event": "مراجعة האירוע שלך",
-  "review_all_details": "مراجعة כל הפרטים לפני פירסום האירוع",
+  "review_your_event": " האירוע שלך",
+  "review_all_details": " כל הפרטים לפני פירסום האירוع",
   "review_your_business": "סקירת העסק שלך",
   "review_business_details": "סקור את כל הפרטים לפני השליחה",
   "basic_information": "מידע בסיסי",

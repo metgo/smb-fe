@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Building2,
@@ -8,7 +8,7 @@ import {
   Compass,
   ShoppingBag,
   UtensilsCrossed,
-  Plane,
+  TentTree,
   Landmark,
   MapPin,
   Package,
@@ -20,8 +20,9 @@ import {
   useGetPOIStatsQuery,
   useGetProductStatsQuery,
 } from "@/store/api/itemStatsApi";
-import { InfoTooltip, Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { InfoTooltip, Spinner } from "@/components/shared";
+import { itemStatuses } from "@/lib/utils";
 
 const getColors = (isDark: boolean) => ({
   sleep: {
@@ -119,9 +120,91 @@ const CATEGORY_ICONS = {
   attraction: Compass,
   local: ShoppingBag,
   eat: UtensilsCrossed,
-  travel: Plane,
+  travel: TentTree,
   culture: Landmark,
 };
+
+function StatusSelect({
+  status,
+  setStatus,
+  isDark,
+  tc,
+}: {
+  status: string;
+  setStatus: (v: string) => void;
+  isDark: boolean;
+  tc: (key: string) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = itemStatuses.find((s) => s.value === status);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={clsx(
+          "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm border focus:outline-none",
+          isDark
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-gray-50 border-gray-300 text-gray-900",
+        )}
+      >
+        {tc(selected?.label ?? "")}
+        <ChevronDown
+          className={clsx(
+            "w-3 h-3 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={clsx(
+            "absolute top-full right-0 mt-1 z-50 rounded-lg border shadow-lg min-w-full overflow-hidden",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          {itemStatuses.map((s) => (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => {
+                setStatus(s.value);
+                setOpen(false);
+              }}
+              className={clsx(
+                "w-full text-left px-3 py-2 text-sm transition-colors",
+                s.value === status
+                  ? isDark
+                    ? "bg-gray-700 text-white"
+                    : "bg-gray-100 text-gray-900"
+                  : isDark
+                    ? "text-gray-300 hover:bg-gray-700"
+                    : "text-gray-700 hover:bg-gray-50",
+              )}
+            >
+              {tc(s.label)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface DistributionCardProps {
   title: string;
@@ -130,7 +213,6 @@ interface DistributionCardProps {
   status: string;
   setStatus: (v: string) => void;
   isLoading: boolean;
-  statuses: { value: string; label: string }[];
   data: {
     _id?: string;
     name: string;
@@ -140,40 +222,6 @@ interface DistributionCardProps {
   }[];
 }
 
-const bzPoiStatuses = [
-  { value: "DRAFT", label: "Draft" },
-  { value: "PENDING", label: "Pending" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "ARCHIVED", label: "Archived" },
-  { value: "CLOSED", label: "Closed" },
-  { value: "REJECTED", label: "Rejected" },
-];
-
-const prodStatuses = [
-  { value: "draft", label: "Draft" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
-
-const getCategoryName = (name: string, t: (v: string) => string) => {
-  switch (name) {
-    case "sleep":
-      return t("sleep");
-    case "eat":
-      return t("eat");
-    case "attraction":
-      return t("attraction");
-    case "local":
-      return t("local");
-    case "travel":
-      return t("travel");
-    case "culture":
-      return t("culture");
-    default:
-      return name;
-  }
-};
-
 export function DistributionCard({
   title,
   icon,
@@ -181,10 +229,11 @@ export function DistributionCard({
   data,
   status,
   setStatus,
-  statuses,
   isLoading,
 }: DistributionCardProps) {
   const { t } = useTranslation("dashboard");
+  const { t: tc } = useTranslation("common");
+
   const { isDark } = useThemeClasses();
   const COLORS = getColors(isDark);
 
@@ -198,7 +247,7 @@ export function DistributionCard({
 
   // Calculate the highest percentage to normalize bar heights
   const maxPercentage = Math.max(
-    ...(data?.map((item) => item.percentage) || [0]),
+    ...(data?.map((item) => item?.percentage) || [0]),
   );
 
   // Function to calculate normalized height (scaled to 100% based on max)
@@ -207,13 +256,60 @@ export function DistributionCard({
     return (percentage / maxPercentage) * 100;
   };
 
+  // If data is undefined or empty, show empty state
+  if (!data || data.length === 0) {
+    return (
+      <div
+        className={clsx(
+          "rounded-xl border p-3",
+          isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+        )}
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
+              {icon}
+            </div>
+            <div>
+              <h3 className={isDark ? "text-white" : "text-gray-900"}>
+                {title}
+              </h3>
+              <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+                {tc("total")} 0
+              </p>
+            </div>
+          </div>
+
+          <StatusSelect
+            status={status}
+            setStatus={setStatus}
+            isDark={isDark}
+            tc={tc}
+          />
+        </div>
+        <div className="h-80 flex items-center justify-center">
+          <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+            {tc("no_data_available")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={clsx(
-        "rounded-xl border p-3 hover:shadow-lg transition-shadow",
+        "rounded-xl border p-3 hover:shadow-lg transition-shadow relative",
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
       )}
     >
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-50">
+          <Spinner isLoading={isLoading} />
+        </div>
+      )}
+
       {/* ===== Header ===== */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -237,42 +333,22 @@ export function DistributionCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Total: {total?.toLocaleString()}
+              {tc("total")} {total?.toLocaleString() || 0}
             </p>
           </div>
         </div>
 
         {/* ===== Status Select ===== */}
-        <div className="relative">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className={clsx(
-              "appearance-none rounded-lg px-3 py-1.5 pr-8 text-sm border focus:outline-none",
-              isDark
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-gray-50 border-gray-300 text-gray-900",
-            )}
-          >
-            {statuses?.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            className={clsx(
-              "absolute top-1/2 right-2 -translate-y-1/2 w-3 h-3 pointer-events-none",
-              isDark ? "text-gray-400" : "text-gray-500",
-            )}
-          />
-        </div>
+        <StatusSelect
+          status={status}
+          setStatus={setStatus}
+          isDark={isDark}
+          tc={tc}
+        />
       </div>
 
       {/* ===== Chart ===== */}
-      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
-        <Spinner isLoading={isLoading} />
+      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-16 pt-16">
         {/* Background */}
         <div
           className={clsx(
@@ -284,7 +360,7 @@ export function DistributionCard({
         />
 
         {/* Grid */}
-        <div className="absolute inset-0 flex flex-col justify-between pb-12 pt-16 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col justify-between pb-16 pt-16 pointer-events-none">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -297,13 +373,16 @@ export function DistributionCard({
         </div>
 
         {data?.map((item, index) => {
-          const Icon =
+          const IconComponent =
             CATEGORY_ICONS[
-              item.name.toLowerCase() as keyof typeof CATEGORY_ICONS
+              item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS
             ];
 
+          // Skip if icon is not found
+          if (!IconComponent) return null;
+
           const colorConfig =
-            COLORS[item.name.toLowerCase() as keyof typeof COLORS];
+            COLORS[item?.name?.toLowerCase() as keyof typeof COLORS];
 
           const isActive = activeIndex === index;
 
@@ -313,8 +392,8 @@ export function DistributionCard({
           return (
             <div
               key={index}
-              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer"
-              style={{ height: "100%", minWidth: 40, maxWidth: 80 }}
+              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer min-w-7 max-w-12 sm:min-w-10 sm:max-w-20"
+              style={{ height: "100%" }}
               onMouseEnter={() => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
@@ -337,52 +416,51 @@ export function DistributionCard({
                 <div className="absolute inset-0 bg-black/20 rounded-t-lg blur-sm translate-y-1" />
 
                 {/* Side */}
-                <div
-                  className={clsx(
-                    "absolute top-0 -right-1 w-3 h-full rounded-tr-lg bg-linear-to-b",
-                    colorConfig.sideGradient,
-                  )}
-                  style={{ transform: "skewY(-3deg)" }}
-                />
+                {colorConfig && (
+                  <>
+                    <div
+                      className={clsx(
+                        "absolute top-0 -right-1 w-3 h-full rounded-tr-lg bg-linear-to-b",
+                        colorConfig?.sideGradient,
+                      )}
+                      style={{ transform: "skewY(-3deg)" }}
+                    />
 
-                {/* Front */}
-                <div
-                  className={clsx(
-                    "absolute inset-0 border-2 border-b-0 rounded-t-xl backdrop-blur-sm bg-linear-to-b transition-all duration-300",
-                    colorConfig.bgGradient,
-                    isActive
-                      ? `${colorConfig.shadow} shadow-2xl`
-                      : colorConfig.shadow,
-                  )}
-                />
+                    {/* Front */}
+                    <div
+                      className={clsx(
+                        "absolute inset-0 border-2 border-b-0 rounded-t-xl backdrop-blur-sm bg-linear-to-b transition-all duration-300",
+                        colorConfig?.bgGradient,
+                        isActive
+                          ? `${colorConfig?.shadow} shadow-2xl`
+                          : colorConfig?.shadow,
+                      )}
+                    />
 
-                {/* Top cap */}
-                <div
-                  className={clsx(
-                    "absolute -top-1 left-0 right-1 h-3 rounded-t-lg border-2 bg-linear-to-r",
-                    colorConfig.topGradient,
-                    isActive ? "shadow-xl" : "shadow-lg",
-                  )}
-                  style={{
-                    transform: "perspective(100px) rotateX(45deg)",
-                    transformOrigin: "bottom",
-                  }}
-                />
+                    {/* Top cap */}
+                    <div
+                      className={clsx(
+                        "absolute -top-1 left-0 right-1 h-3 rounded-t-lg border-2 bg-linear-to-r",
+                        colorConfig?.topGradient,
+                        isActive ? "shadow-xl" : "shadow-lg",
+                      )}
+                      style={{
+                        transform: "perspective(100px) rotateX(45deg)",
+                        transformOrigin: "bottom",
+                      }}
+                    />
+                  </>
+                )}
 
                 {/* Value tooltip - shows actual count */}
-                <div
-                  className={clsx(
-                    "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
-                    isActive ? "opacity-100" : "opacity-0",
-                  )}
-                >
+                <div className="absolute -top-20 left-0 lg:hidden">
                   <div
                     className={clsx(
                       "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
-                      colorConfig.gradient,
+                      colorConfig?.gradient,
                     )}
                   >
-                    {item.count}
+                    {item?.count || item?.value || 0}
                   </div>
                 </div>
 
@@ -396,23 +474,23 @@ export function DistributionCard({
                   <div
                     className={clsx(
                       "w-8 h-8 rounded-lg shadow-lg flex items-center justify-center bg-linear-to-br",
-                      colorConfig.gradient,
-                      colorConfig.shadow,
+                      colorConfig?.gradient,
+                      colorConfig?.shadow,
                     )}
                   >
-                    <Icon className="w-4 h-4 text-white" />
+                    <IconComponent className="w-4 h-4 text-white" />
                   </div>
                 </div>
 
                 {/* Percentage - shows actual percentage */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+                <div className="absolute bottom-3 md:left-2 -left-2 z-10">
                   <span
                     className={clsx(
-                      "px-2 py-0.5 rounded-full text-xs font-bold shadow-md transition-all",
+                      "block px-2 py-0.5 rounded-full text-xs font-bold shadow-md",
                       isDark
                         ? "bg-gray-900 text-white"
                         : "bg-white text-gray-900",
-                      isActive ? "scale-110" : "scale-100",
+                      "transform rotate-45 md:rotate-0",
                     )}
                   >
                     {item?.percentage}%
@@ -421,14 +499,15 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-16">
+              <div className="absolute -bottom-6 left-4 z-30">
                 <span
                   className={clsx(
-                    "text-xs font-bold line-clamp-2",
+                    "transform rotate-45 md:rotate-0",
+                    "block whitespace-nowrap text-xs font-bold",
                     isDark ? "text-gray-300" : "text-gray-700",
                   )}
                 >
-                  {getCategoryName(item.name, t)}
+                  {t(item?.name?.toLocaleLowerCase())}
                 </span>
               </div>
             </div>
@@ -449,7 +528,7 @@ export default function DistributionCards() {
     (state) => state.auth,
   );
   const [bzStatus, setBzStatus] = useState("APPROVED");
-  const [productStatus, setProductStatus] = useState("active");
+  const [productStatus, setProductStatus] = useState("APPROVED");
   const [poiStatus, setPoiStatus] = useState("APPROVED");
 
   /* ---------------- API Calls --------------- */
@@ -479,18 +558,15 @@ export default function DistributionCards() {
       status: productStatus,
     });
 
-  useEffect(() => {
-    if (!businessData?.datas) return;
-  }, [businessData]);
-
-  useEffect(() => {
-    if (!poiData?.datas) return;
-  }, [poiData]);
-
   return (
     <section>
       <div className="flex items-start gap-2 mb-6">
-        <h2 className={clsx("flex-1", isDark ? "text-white" : "text-gray-900")}>
+        <h2
+          className={clsx(
+            "flex-1 text-xl font-semibold",
+            isDark ? "text-white" : "text-gray-900",
+          )}
+        >
           {t("distribution_overview")}
         </h2>
         <InfoTooltip
@@ -499,39 +575,38 @@ export default function DistributionCards() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <DistributionCard
-          status={bzStatus}
-          setStatus={setBzStatus}
-          title={t("businesses")}
-          icon={<Building2 className="w-5 h-5 text-white" />}
-          total={businessData?.total}
-          data={businessData?.byCategory}
-          statuses={bzPoiStatuses}
-          isLoading={isBzStatsLoading}
-        />
+      <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="grid grid-flow-col auto-cols-[320px] gap-3 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+          <DistributionCard
+            status={bzStatus}
+            setStatus={setBzStatus}
+            title={t("businesses")}
+            icon={<Building2 className="w-5 h-5 text-white" />}
+            total={businessData?.total}
+            data={businessData?.byCategory}
+            isLoading={isBzStatsLoading}
+          />
 
-        <DistributionCard
-          status={productStatus}
-          setStatus={setProductStatus}
-          title={t("products")}
-          icon={<Package className="w-5 h-5 text-white" />}
-          total={productData?.total}
-          data={productData?.byCategory}
-          statuses={prodStatuses}
-          isLoading={isProductStatsLoading}
-        />
+          <DistributionCard
+            status={productStatus}
+            setStatus={setProductStatus}
+            title={t("products")}
+            icon={<Package className="w-5 h-5 text-white" />}
+            total={productData?.total}
+            data={productData?.byCategory}
+            isLoading={isProductStatsLoading}
+          />
 
-        <DistributionCard
-          status={poiStatus}
-          setStatus={setPoiStatus}
-          title={t("pois")}
-          icon={<MapPin className="w-5 h-5 text-white" />}
-          total={poiData?.total}
-          data={poiData?.byCategory}
-          statuses={bzPoiStatuses}
-          isLoading={isPoiStatsLoading}
-        />
+          <DistributionCard
+            status={poiStatus}
+            setStatus={setPoiStatus}
+            title={t("pois")}
+            icon={<MapPin className="w-5 h-5 text-white" />}
+            total={poiData?.total}
+            data={poiData?.byCategory}
+            isLoading={isPoiStatsLoading}
+          />
+        </div>
       </div>
     </section>
   );

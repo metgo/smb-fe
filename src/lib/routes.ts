@@ -1,18 +1,31 @@
 export const routes = {
   dashboard: "/",
+  analyticsDashboard: "/analytics-dashboard",
+  home: "/home",
 
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
 
+  articleMgmt: "/articles-management",
+  articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
 
   productsMgmt: "/products-management",
-  ordersMgmt: "/orders-management",
   productDetails: "/product-details",
+
+  ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
+
+  contentMgmt: "/content-management",
+  voucherMgmt: "/voucher-management",
+  voucherDetails: "/voucher-details",
+
   pointOfInterest: "/point-of-interest",
+  poiMgmt: "/poi-management",
+  poiDetails: "/poi-details",
   trips: "/trips",
+  notificationMgmt: "/notifications-management",
 
   funDays: "/fun-days",
   vouchers: "/vouchers",
@@ -21,7 +34,20 @@ export const routes = {
   auth: "/authentication",
   miniSiteMgmt: "/mini-site-management",
   miniSiteDetails: "/mini-site-details",
+  miniSite: "/mini-site",
+
   profile: "/profile",
+  partners: "/partners",
+  campaignMgmt: "/campaign-mgmt",
+  dmoMgmt: "/dmo-management",
+  authorityMgmt: "/authority-management",
+  websiteMgmt: "/website-management",
+  websiteConfig: "/website-config",
+
+  dynamicPages: "/dynamic-pages",
+  promotionMgmt: "/promotions-management",
+
+  users: "/users",
 };
 
 export type RouteKey = keyof typeof routes;

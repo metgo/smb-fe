@@ -17,7 +17,7 @@ export const useImagesUpload = ({
   initialImages = [],
   onChange,
 }: UseImagesUploadProps) => {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("toast");
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [deleteMedia, { isLoading: isImageDeleting }] =
     useDeleteMediaMutation();
@@ -106,9 +106,9 @@ export const useImagesUpload = ({
         ),
       );
 
-      toast.success("Image uploaded successfully");
+      toast.success(t("image_upload_success"));
     } catch {
-      toast.error("Image upload failed");
+      toast.error(t("image_upload_failed"));
       setImages((prev) =>
         prev.map((img) => (img.id === id ? { ...img, status: "error" } : img)),
       );
@@ -116,12 +116,50 @@ export const useImagesUpload = ({
   };
 
   /* ---------------- Upload all ---------------- */
-  const uploadAll = async () => {
-    for (const img of images) {
-      if (img.status !== "success") {
-        await uploadImage(img.id);
+  const uploadAll = async (): Promise<IImageUpload[]> => {
+    let current = [...images];
+
+    for (const img of current) {
+      if (img.status === "success" || !img.file) continue;
+
+      try {
+        setImages((prev) =>
+          prev.map((m) =>
+            m.id === img.id ? { ...m, status: "uploading", progress: 0 } : m,
+          ),
+        );
+
+        const webpFile = await convertToWebP(img.file);
+        const { signedUrl, gcsURL } = await generateSignedUrl(webpFile);
+
+        await uploadWithProgress(webpFile, signedUrl, (progress) => {
+          setImages((prev) =>
+            prev.map((m) => (m.id === img.id ? { ...m, progress } : m)),
+          );
+        });
+
+        const uploaded: IImageUpload = {
+          ...img,
+          status: "success",
+          progress: 100,
+          gcsURL,
+        };
+        current = current.map((m) => (m.id === img.id ? uploaded : m));
+        setImages((prev) => prev.map((m) => (m.id === img.id ? uploaded : m)));
+
+        toast.success(t("image_upload_success"));
+      } catch {
+        toast.error(t("image_upload_failed"));
+        current = current.map((m) =>
+          m.id === img.id ? { ...m, status: "error" } : m,
+        );
+        setImages((prev) =>
+          prev.map((m) => (m.id === img.id ? { ...m, status: "error" } : m)),
+        );
       }
     }
+
+    return current;
   };
 
   /* ---------------- Primary image ---------------- */
@@ -134,14 +172,24 @@ export const useImagesUpload = ({
 
   /* ---------------- Remove image ---------------- */
   const removeImage = (index: number) => {
+    const newPrimaryIndex =
+      primaryImageIndex === index
+        ? 0
+        : index < primaryImageIndex
+          ? primaryImageIndex - 1
+          : primaryImageIndex;
+
     setImages((prev) => {
       const img = prev[index];
       if (img?.previewUrl?.startsWith("blob:")) {
         URL.revokeObjectURL(img.previewUrl);
       }
-      return prev.filter((_, i) => i !== index);
+      return prev
+        .filter((_, i) => i !== index)
+        .map((img, i) => ({ ...img, isPrimary: i === newPrimaryIndex }));
     });
-    if (primaryImageIndex === index) setPrimaryImageIndex(0);
+
+    setPrimaryImageIndex(newPrimaryIndex);
   };
 
   /*--------------- Delete Image Locally - If not uploaded yet ------------------ */

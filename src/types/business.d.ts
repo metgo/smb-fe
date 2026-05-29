@@ -1,6 +1,8 @@
 interface Business {
   id: string;
   name: string;
+  nameHe: string;
+  nameAr: string;
   shortDescription: string;
   fullDescription: string;
   email: string;
@@ -28,7 +30,7 @@ interface Business {
   productsCount: number;
   lifetimeSales: number; // Total sales revenue in ILS
   address: string;
-  coordinates: { lat: number; lng: number };
+  coordinates: { lat: number; long: number };
   owner?: {
     name: string;
     email: string;
@@ -85,4 +87,20 @@ interface BusinessContactPayload {
 interface IBusinessMedia {
   logo: IImageUpload;
   gallery: IImageUpload[];
+}
+
+interface IBusinessColumnVisibility {
+  impact: boolean;
+  name: boolean;
+  shortDescription: boolean;
+  contactDetails: boolean;
+  busiEmail: boolean;
+  phoneNumber: boolean;
+  productCount: boolean;
+  status: boolean;
+  lifetimeSales: boolean;
+  tripCount: boolean;
+  associatedWebsites: boolean;
+  contactPhone: boolean;
+  categories: boolean;
 }

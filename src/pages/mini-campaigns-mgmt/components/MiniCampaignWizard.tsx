@@ -20,7 +20,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { websites } from "@/constants/data";
 
 interface MiniCampaignWizardProps {
   theme: Theme;
@@ -222,7 +221,9 @@ export default function MiniCampaignWizard({
   const downloadSampleXLS = () => {
     const csvContent =
       "Name,Email,Phone\nJohn Doe,john@example.com,+972501234567\nJane Smith,jane@example.com,+972501234568";
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob(["﻿", csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "voucher-template.csv";
@@ -521,7 +522,7 @@ export default function MiniCampaignWizard({
                     <div
                       className={`absolute top-full left-0 right-0 mt-2 ${bgPrimary} shadow-lg border ${borderColor} rounded-lg max-h-60 overflow-y-auto z-20`}
                     >
-                      <div className="p-2 space-y-1">
+                      {/* <div className="p-2 space-y-1">
                         {websites.map((site) => (
                           <label
                             key={site}
@@ -545,7 +546,7 @@ export default function MiniCampaignWizard({
                             <span className={textPrimary}>{site}</span>
                           </label>
                         ))}
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </div>

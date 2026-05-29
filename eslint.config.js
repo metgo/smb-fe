@@ -24,7 +24,8 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-empty-object-type": "off",
-
+      "no-unused-expressions": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
       /* ---------- React Hooks / Purity ---------- */
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/purity": "off",
@@ -39,6 +40,7 @@ export default defineConfig([
 
       "react-hooks/purity": "off",
       "react-compiler/react-compiler": "off",
+      "react-hooks/refs": "off",
     },
   },
 ]);

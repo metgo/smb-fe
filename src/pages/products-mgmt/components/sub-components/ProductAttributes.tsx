@@ -1,98 +1,105 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
+import { SelectableChips } from "@/components/shared";
+import { useEffect, useMemo } from "react";
 
 interface ProductAttributesProps {
   t: (key: string) => string;
   formData: {
     type: string;
+    primaryCategory: string;
     categories: string[];
+    subCategories: string[];
   };
   setFormData: (data: any) => void;
   errors: {
     type?: string;
+    primaryCategory?: string;
     categories?: string;
   };
-  availableCategories: string[];
 }
 
 const ProductAttributes = ({
   t,
+  errors,
   formData,
   setFormData,
-  errors,
-  availableCategories,
 }: ProductAttributesProps) => {
-  const { textPrimary, textSecondary, borderColor, hoverBg } =
-    useThemeClasses();
+  const { textSecondary, borderColor, hoverBg } = useThemeClasses();
+  const { categories, subCategories } = useCommon();
 
-  const productTypes = [
-    { value: "physical", label: t("physical_product"), icon: "📦" },
-    { value: "table-order", label: t("table_order"), icon: "🍽️" },
-    { value: "service", label: t("service"), icon: "⚡" },
-    { value: "hotel-room", label: t("hotel_room"), icon: "🏨" },
-    { value: "experience", label: t("experience"), icon: "🎭" },
-  ];
+  const filteredSubCategories = useMemo(() => {
+    if (!formData?.categories?.length) return [];
+
+    return (subCategories || []).filter((sub: any) =>
+      sub.bussCategoryId?.some((cat: any) =>
+        formData?.categories?.includes(cat._id),
+      ),
+    );
+  }, [formData?.categories, subCategories]);
+
+  useEffect(() => {
+    setFormData((prev: any) => ({
+      ...prev,
+      subCategories: prev?.subCategories?.filter((subId: string) =>
+        filteredSubCategories?.some((sub: any) => sub._id === subId),
+      ),
+    }));
+  }, [filteredSubCategories, setFormData]);
+
+  const handleToggle = (id: string) => {
+    setFormData((prev: any) => {
+      const currentSubCategories = prev.subCategories ?? [];
+
+      if (currentSubCategories.includes(id)) {
+        return {
+          ...prev,
+          subCategories: currentSubCategories.filter(
+            (item: any) => item !== id,
+          ),
+        };
+      }
+
+      return {
+        ...prev,
+        subCategories: [...currentSubCategories, id],
+      };
+    });
+  };
 
   return (
     <div className="space-y-6">
-      {/* Product Type */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_product_type")} *
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {productTypes.map((type) => (
-            <button
-              key={type.value}
-              type="button"
-              onClick={() => setFormData({ ...formData, type: type.value })}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                formData.type === type.value
-                  ? "border-teal-500 bg-teal-50 dark:bg-teal-950/30"
-                  : `${borderColor} ${hoverBg}`
-              }`}
-            >
-              <div className="text-3xl mb-2">{type.icon}</div>
-              <div className={`font-medium ${textPrimary}`}>{type.label}</div>
-            </button>
-          ))}
-        </div>
-        {errors.type && (
-          <p className="text-red-500 text-sm mt-1">{errors.type}</p>
-        )}
-      </div>
-
-      {/* Product Categories */}
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_categories")} *
+          {t("select_categories")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {availableCategories.map((category) => (
+          {categories?.map((cat: any) => (
             <label
-              key={category}
+              key={cat._id}
               className={`flex items-center gap-2 p-3 rounded-lg border ${borderColor} cursor-pointer ${hoverBg}`}
             >
               <input
                 type="checkbox"
-                checked={formData.categories.includes(category)}
+                checked={formData?.categories?.includes(cat._id)}
                 onChange={(e) => {
                   if (e.target.checked) {
                     setFormData({
                       ...formData,
-                      categories: [...formData.categories, category],
+                      categories: [...formData.categories, cat._id],
                     });
                   } else {
                     setFormData({
                       ...formData,
-                      categories: formData.categories.filter(
-                        (c) => c !== category,
+                      categories: formData?.categories?.filter(
+                        (c) => c !== cat._id,
                       ),
                     });
                   }
                 }}
                 className="rounded"
               />
-              <span className={`text-sm ${textSecondary}`}>{category}</span>
+              <span className={`text-sm ${textSecondary}`}>{cat.name}</span>
             </label>
           ))}
         </div>
@@ -100,6 +107,13 @@ const ProductAttributes = ({
           <p className="text-red-500 text-sm mt-1">{errors.categories}</p>
         )}
       </div>
+
+      <SelectableChips
+        label={"sub_categories"}
+        items={filteredSubCategories ?? []}
+        selectedIds={formData?.subCategories}
+        onSelect={handleToggle}
+      />
     </div>
   );
 };

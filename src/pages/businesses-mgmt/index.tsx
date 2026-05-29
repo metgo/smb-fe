@@ -1,13 +1,15 @@
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
+import { routes } from "@/lib/routes";
 import {
   BusinessGridView,
   BusinessListView,
   CreateBusinessWizard,
 } from "./components";
-import { routes } from "@/lib/routes";
 
-import { useTranslation } from "react-i18next";
 import {
   Download,
   CheckCircle,
@@ -17,28 +19,34 @@ import {
   Theater,
   Map,
 } from "lucide-react";
-import { useState, useEffect, useMemo, useRef } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import ColumnSettingsDropdown from "@/components/shared/ColumnSettingsDropdown";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
+  ConfirmDialog,
   PageHeader,
   PageStats,
+  ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
 import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import { toast } from "sonner";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterChips from "@/components/shared/FilterChips";
+import EmptyState from "@/components/shared/EmptyState";
+import { FilterByStatus } from "@/components/filter-fields";
 
-// Column configuration
-const defaultColumns = {
+// Constants & Types
+const LIMIT = 20;
+const STORAGE_KEY = "business_query_state";
+const COLUMNS_STORAGE_KEY = "businessesTableColumns";
+const SEARCH_STORAGE_KEY = "businessSearchTerm";
+
+const defaultColumns: IBusinessColumnVisibility = {
   impact: true,
   name: true,
   shortDescription: true,
@@ -54,95 +62,108 @@ const defaultColumns = {
   categories: false,
 };
 
-type ColumnVisibility = typeof defaultColumns;
-
-// Column definitions with default status
-const columnDefinitions = [
-  { key: "impact" as keyof ColumnVisibility, isDefault: true },
-  { key: "name" as keyof ColumnVisibility, isDefault: true },
-  { key: "shortDescription" as keyof ColumnVisibility, isDefault: true },
-  { key: "contactDetails" as keyof ColumnVisibility, isDefault: true },
-  { key: "busiEmail" as keyof ColumnVisibility, isDefault: true },
-  { key: "phoneNumber" as keyof ColumnVisibility, isDefault: true },
-  { key: "productCount" as keyof ColumnVisibility, isDefault: true },
-  { key: "status" as keyof ColumnVisibility, isDefault: true },
-  { key: "lifetimeSales" as keyof ColumnVisibility, isDefault: true },
-  { key: "tripCount" as keyof ColumnVisibility, isDefault: false },
-  { key: "associatedWebsites" as keyof ColumnVisibility, isDefault: false },
-  { key: "contactPhone" as keyof ColumnVisibility, isDefault: false },
-  { key: "categories" as keyof ColumnVisibility, isDefault: false },
+const columnDefinitions: Array<{
+  key: keyof IBusinessColumnVisibility;
+  isDefault: boolean;
+}> = [
+  { key: "impact", isDefault: true },
+  { key: "name", isDefault: true },
+  { key: "shortDescription", isDefault: true },
+  { key: "contactDetails", isDefault: true },
+  { key: "busiEmail", isDefault: true },
+  { key: "phoneNumber", isDefault: true },
+  { key: "productCount", isDefault: true },
+  { key: "status", isDefault: true },
+  { key: "lifetimeSales", isDefault: true },
+  { key: "tripCount", isDefault: false },
+  { key: "associatedWebsites", isDefault: false },
+  { key: "contactPhone", isDefault: false },
+  { key: "categories", isDefault: false },
 ];
 
-const LIMIT = 20;
-
+// Main Component
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const { textSecondary, isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { t: tc } = useTranslation("toast");
+  const { isDark, language, bgSecondary, borderColor } = useThemeClasses();
 
+  // Auth state
+  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
+    (state) => state.auth,
+  );
+
+  // ─── Local State ─────────────────────────────────────────
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const handleBusinessClick = (business: any) => {
-    navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
-      replace: true,
-    });
-  };
-
-  const { data: businessStatsData } = useGetBusinessStatsQuery({});
-  const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
-
-  //infinite scroll states
-  const [page, setPage] = useState<number>(1);
-
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [error, _setError] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    status: "all",
+    hasProductFilter: "all" as const,
+  });
+  const [columnVisibility, setColumnVisibility] =
+    useState<IBusinessColumnVisibility>(defaultColumns);
+  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
+  const hasSavedFilters =
+    filters.hasProductFilter !== "all" || filters.status !== "all";
 
-  // Filters
-  const [filters, setFilters] = useState({
-    dmoId,
-    authorityId,
-    status: "all",
-    hasProductFilter: "all",
-  });
-
-  const clearFilter = () => {
-    setFilters({
-      authorityId: "",
-      dmoId: "",
-      status: "all",
-      hasProductFilter: "all",
-    });
-  };
-
-  // Column visibility - load from localStorage or use defaults
-  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(
-    () => {
-      try {
-        const saved = localStorage.getItem("businessesTableColumns");
-        if (saved) {
-          return { ...defaultColumns, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error("Failed to load column settings:", e);
-      }
-      return defaultColumns;
-    },
-  );
-
-  // Close column settings when clicking outside
+  // ─── Load persisted state on mount (safe, no render loop) ─────────
   useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (saved?.filters) setFilters(saved.filters);
+      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
+      if (saved?.page) setPage(saved.page);
+      if (saved?.viewMode) setViewMode(saved.viewMode);
+    } catch (e) {
+      console.error("Failed to load saved state:", e);
+    }
+  }, []);
+
+  // Load column visibility
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setColumnVisibility((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch (e) {
+      console.error("Failed to load column settings:", e);
+    }
+  }, []);
+
+  // ─── Persist state to localStorage (debounced via effect) ─────────
+  useEffect(() => {
+    const queryState = { page, filters, searchTerm, viewMode };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
+  }, [page, filters, searchTerm, viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
+  //   } else {
+  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
+  //   }
+  // }, [searchTerm]);
+
+  // ─── Close column dropdown on outside click ─────────
+  useEffect(() => {
+    if (!showColumnSettings) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (
         columnSettingsRef.current &&
@@ -151,47 +172,55 @@ export default function BusinessesMgmtPage() {
         setShowColumnSettings(false);
       }
     };
-
-    if (showColumnSettings) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColumnSettings]);
 
+  // ─── Reset page when filters/search change ─────────
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
+
+  // ─── Query Parameters (memoized, stable reference) ─────────
   const queryParams = useMemo(() => {
-    const params: any = {
+    const params: Record<string, any> = {
       page,
+      dmoId,
+      // startDate,
+      // endDate,
+      authorityId,
       limit: LIMIT,
+      locale: language,
+      externalApiId: websiteId,
     };
-
-    if (searchTerm) params.search = searchTerm;
-
-    if (filters.status !== "all") {
-      params.status = filters.status;
-    }
-
-    if (filters.authorityId && filters.authorityId !== "all") {
-      params.authorityId = filters.authorityId;
-    }
-
-    if (filters.dmoId && filters.dmoId !== "all") {
-      params.dmoId = filters.dmoId;
-    }
-
+    const finalSearchTerm =
+      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
+    if (finalSearchTerm) params.search = finalSearchTerm;
+    if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
     }
-
     return params;
-  }, [page, searchTerm, filters]);
+  }, [
+    page,
+    searchTerm,
+    filters,
+    language,
+    dmoId,
+    authorityId,
+    // startDate,
+    // endDate,
+    websiteId,
+  ]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, filters]);
+  // ─── API Queries ─────────
+  const statsQueryParams = useMemo(() => {
+    const { page, limit, locale, ...rest } = queryParams;
+    return rest;
+  }, [queryParams]);
 
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+  const { data: businessStatsData, isLoading: isStatsLoading } =
+    useGetBusinessStatsQuery(statsQueryParams);
 
   const {
     data: businessData,
@@ -200,424 +229,302 @@ export default function BusinessesMgmtPage() {
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
 
-  const businesses = businessData?.data ?? [];
+  const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
+    useBulkBusinessesUpdateMutation();
+
   const hasMore = businessData?.meta?.hasNextPage;
+  const totalData = businessData?.totalData;
 
+  // ─── Infinite Scroll: Merge new data safely ─────────
   useEffect(() => {
-    if (!businesses?.length) return;
-
-    if (page === 1) {
-      setCombinedBusinesses(businesses);
-    } else {
-      setCombinedBusinesses((prev) => {
-        // Prevent duplicates (important!)
-        const existingIds = new Set(prev.map((b) => b._id));
-        const newItems = businesses.filter((b: any) => !existingIds.has(b._id));
-
-        return [...prev, ...newItems];
-      });
+    if (!businessData?.data?.length) {
+      setCombinedBusinesses([]);
+      return;
     }
-  }, [businesses]);
 
-  const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => {
-      return prev + 1;
+    setCombinedBusinesses((prev) => {
+      if (page === 1) return businessData?.data;
+      const existingIds = new Set(prev.map((b) => b._id));
+      const newItems = businessData?.data?.filter(
+        (b: any) => !existingIds.has(b._id),
+      );
+      return newItems.length ? [...prev, ...newItems] : prev;
     });
-  };
+  }, [businessData, page]);
 
-  // Reset to default columns
-  const resetToDefault = () => {
+  const fetchNextPage = useCallback(() => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => prev + 1);
+  }, [hasMore, isFetching]);
+
+  // ─── Handlers (memoized to prevent re-renders) ─────────
+  const handleBusinessClick = useCallback(
+    (business: any) => {
+      navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const clearFilter = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SEARCH_STORAGE_KEY);
+    setFilters({ status: "all", hasProductFilter: "all" });
+    setSearchTerm("");
+    setPage(1);
+  }, []);
+
+  const resetToDefault = useCallback(() => {
     setColumnVisibility(defaultColumns);
-  };
+  }, []);
 
-  const handleBulkDelete = async () => {
+  const promptBulkDelete = useCallback(() => {
     if (!selectedBusinesses.size) return;
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    setIsBulkDelete(true);
+    setIsConfirmOpen(true);
+  }, [selectedBusinesses.size]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (!selectedBusinesses.size) return;
+    console.log(
+      "🚀 ~ BusinessesMgmtPage ~ selectedBusinesses:",
+      selectedBusinesses,
+    );
+
+    const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
         businessesId: Array.from(selectedBusinesses),
         isDeleted: true,
       });
-
       if (results?.data) {
-        const message = "Businesses deleted successfully";
-        toast.success(message, { id: toastId });
+        toast.success(tc("business_deleted_success"), { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Businesses", {
+      toast.error(error?.message || tc("business_delete_failed"), {
         id: toastId,
       });
+    } finally {
+      setIsConfirmOpen(false);
+      setIsBulkDelete(false);
     }
-  };
+  }, [selectedBusinesses, bulkBusinessesUpdate, refetch, tc]);
 
-  const handleBulkStatusChange = async (status: TStatus) => {
-    if (!selectedBusinesses.size) return;
-    const toastId = toast.loading(
-      "Please wait. Businesses's status are changing...",
-    );
-
-    try {
-      const results = await bulkBusinessesUpdate({
-        businessesId: Array.from(selectedBusinesses),
-        status: status?.toLocaleUpperCase(),
-      });
-
-      if (results?.data) {
-        const message = "Businesses status updated successfully";
-        toast.success(message, { id: toastId });
-        setSelectedBusinesses(new Set());
-        refetch();
+  const handleBulkStatusChange = useCallback(
+    async (status: TStatus) => {
+      if (!selectedBusinesses.size) return;
+      const toastId = toast.loading(tc("business_status_change_loading"));
+      try {
+        const results = await bulkBusinessesUpdate({
+          businessesId: Array.from(selectedBusinesses),
+          status: status?.toLocaleUpperCase(),
+        });
+        if (results?.data) {
+          toast.success(tc("business_status_update_success"), { id: toastId });
+          setSelectedBusinesses(new Set());
+          refetch();
+        }
+      } catch (error: any) {
+        toast.error(error?.message || tc("business_status_update_failed"), {
+          id: toastId,
+        });
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to change Businesses status", {
-        id: toastId,
-      });
-    }
-  };
+    },
+    [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
+  );
 
-  const handleExport = () => {
-    // 1. Determine which businesses to export
+  // ─── Export Logic (extracted for clarity) ─────────
+  const handleExport = useCallback(() => {
     const businessesToExport =
       selectedBusinesses.size > 0
-        ? (businessData?.data?.filter((business: any) =>
-            selectedBusinesses.has(business._id),
+        ? (businessData?.data?.filter((b: any) =>
+            selectedBusinesses.has(b._id),
           ) ?? [])
         : (businessData?.data ?? []);
 
-    if (businessesToExport.length === 0) {
-      alert(t("noBusinessesToExport") || "No businesses to export");
+    if (!businessesToExport.length) {
+      toast.info(t("noBusinessesToExport") || "No businesses to export");
       return;
     }
 
-    // 2. CSV escaping utility
     const escapeCSV = (value: any): string => {
-      if (value === null || value === undefined) return "";
-      const stringValue = String(value);
-      if (
-        stringValue.includes(",") ||
-        stringValue.includes('"') ||
-        stringValue.includes("\n")
-      ) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    // 3. Build headers & corresponding keys based on visible columns
-    const headers: string[] = [];
-    const columnKeys: string[] = [];
+    const columns = Object.entries(columnVisibility)
+      .filter(([_, visible]) => visible)
+      .map(([key]) => key as keyof IBusinessColumnVisibility);
 
-    if (visibleColumns.impact) {
-      headers.push(t("impactScore"));
-      columnKeys.push("impact");
-    }
-    if (visibleColumns.name) {
-      headers.push(t("businessName"));
-      columnKeys.push("name"); // actual field is .name
-    }
-    if (visibleColumns.shortDescription) {
-      headers.push(t("shortDescription"));
-      columnKeys.push("shortDescription");
-    }
-    if (visibleColumns.contactDetails) {
-      headers.push(t("contactPerson"));
-      columnKeys.push("contactName");
-    }
-    if (visibleColumns.busiEmail) {
-      headers.push(t("businessEmail"));
-      columnKeys.push("busiEmail"); // field name in data
-    }
-    if (visibleColumns.phoneNumber) {
-      headers.push(t("phoneNumber"));
-      columnKeys.push("phoneNumber");
-    }
-    if (visibleColumns.productCount) {
-      headers.push(t("productsCount"));
-      columnKeys.push("productCount"); // field name in data
-    }
-    if (visibleColumns.status) {
-      headers.push(t("status"));
-      columnKeys.push("status");
-    }
-    if (visibleColumns.lifetimeSales) {
-      headers.push(t("lifetimeSales"));
-      columnKeys.push("lifetimeSales");
-    }
-    if (visibleColumns.tripCount) {
-      headers.push(t("tripCount"));
-      columnKeys.push("tripCount");
-    }
-    if (visibleColumns.associatedWebsites) {
-      headers.push(t("websiteUrl"));
-      columnKeys.push("associatedWebsites");
-    }
-    if (visibleColumns.contactPhone) {
-      headers.push(t("contactPhone"));
-      columnKeys.push("contactPhone");
-    }
-    if (visibleColumns.categories) {
-      headers.push(t("categories"));
-      columnKeys.push("categories");
-    }
-
-    // 4. Build CSV content
-    let csvContent = headers.map(escapeCSV).join(",") + "\n";
-
-    businessesToExport.forEach((business: any) => {
-      const row: string[] = [];
-
-      columnKeys.forEach((key) => {
-        let value: any;
-
-        switch (key) {
-          case "impactScore":
-            value = business.impact ?? 0;
-            break;
-          case "name":
-            value =
-              business.name || business.slug || t("unnamed_business") || "-";
-            break;
-          case "busiEmail":
-            value = business.busiEmail || "-";
-            break;
-          case "phoneNumber":
-            value = business.phoneNumber || "-";
-            break;
-          case "productCount":
-            value = business.productCount ?? 0;
-            break;
-          case "status":
-            value = business.status || "unknown";
-            break;
-          case "tripCount":
-            value = business.tripCount ?? getTripCount(business); // fallback to your helper
-            break;
-          case "websiteUrl": {
-            // Pick first valid URL if array
-            const sites = business.associatedWebsites || [];
-            value = sites?.find((s: any) => s.url)?.url || "-";
-            break;
+    const headers = columns.map((key) => t(key));
+    const csvRows = businessesToExport.map((business: any) =>
+      columns
+        .map((key) => {
+          let value: any = business[key];
+          if (key === "associatedWebsites") {
+            value = business.associatedWebsites?.[0]?.url || "-";
+          } else if (key === "categories" && Array.isArray(value)) {
+            value = value.join(", ");
+          } else if (key === "tripCount" && value == null) {
+            value = Math.floor((business.productCount * business.impact) / 10);
           }
-          case "categories": {
-            value = Array.isArray(business.categories)
-              ? business.categories.join(", ")
-              : "-";
-            break;
-          }
-          case "lifetimeSales":
-          case "shortDescription":
-          case "contactName":
-          case "contactPhone":
-            // Add these fields when they exist in your real data
-            value = business[key] ?? "-";
-            break;
-          default:
-            value = "-";
-        }
-
-        row.push(escapeCSV(value));
-      });
-
-      csvContent += row.join(",") + "\n";
-    });
-
-    // 5. Trigger download
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    const timestamp = new Date().toISOString().slice(0, 10);
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", `businesses_export_${timestamp}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  // Mock calculation based on products count and impact score
-  const getTripCount = (business: any): number => {
-    return Math.floor((business.productCount * business.impact) / 10);
-  };
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h3
-            className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
-          >
-            {t("error_loading_businesses")}
-          </h3>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
-          >
-            {t("retry") || "Retry"}
-          </button>
-        </div>
-      </div>
+          return escapeCSV(value ?? "-");
+        })
+        .join(","),
     );
-  }
 
-  const businessStats = [
-    {
-      id: 1,
-      title: t("total_businesses") || "Total Businesses",
-      value: businessStatsData?.totalBusinesses,
-      label: t("registered") || "Registered",
-      icon: <Map className="w-5 h-5 text-purple-600" />,
-    },
-    {
-      id: 2,
-      title: t("active_businesses") || "Active Businesses",
-      value: businessStatsData?.activeBusinesses,
-      label: t("approved") || "Approved",
-      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-    },
-    {
-      id: 3,
-      title: t("total_products") || "Total Products",
-      value: businessStatsData?.totalProducts,
-      label: t("listed") || "Listed",
-      icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
-    },
-    {
-      id: 4,
-      title: t("avg_impact") || "Avg. Impact",
-      value: businessStatsData?.averageImpactScore,
-      label: t("score") || "Score",
-      icon: <Theater className="w-5 h-5 text-orange-600" />,
-    },
-    {
-      id: 5,
-      title: t("pending_approval") || "Pending Approval",
-      value: businessStatsData?.pendingApproval,
-      label: t("awaiting") || "Awaiting",
-      icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
-    },
-    {
-      id: 6,
-      title: t("avg_completion") || "Avg. Completion",
-      value: businessStatsData?.averageCompletion,
-      label: t("profile_data") || "Profile Data",
-      icon: <Landmark className="w-5 h-5 text-teal-600" />,
-    },
-  ];
+    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
+      "\n",
+    );
+    const blob = new Blob(["﻿", csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `businesses_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [selectedBusinesses, businessData, columnVisibility, t]);
 
+  // ─── Stats Cards ─────────
+  const businessStats = useMemo(
+    () => [
+      {
+        id: 1,
+        title: t("total_businesses"),
+        value: businessStatsData?.totalBusinesses,
+        label: t("registered"),
+        icon: <Map className="w-5 h-5 text-purple-600" />,
+      },
+      {
+        id: 2,
+        title: t("active_businesses"),
+        value: businessStatsData?.activeBusinesses,
+        label: t("approved"),
+        icon: <CheckCircle className="w-5 h-5 text-green-600" />,
+      },
+      {
+        id: 3,
+        title: t("total_products"),
+        value: businessStatsData?.totalProducts,
+        label: t("listed"),
+        icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
+      },
+      {
+        id: 4,
+        title: t("avg_impact"),
+        value: businessStatsData?.averageImpactScore,
+        label: t("score"),
+        icon: <Theater className="w-5 h-5 text-orange-600" />,
+      },
+      {
+        id: 5,
+        title: t("pending_approval"),
+        value: businessStatsData?.pendingApproval,
+        label: t("awaiting"),
+        icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
+      },
+      {
+        id: 6,
+        title: t("avg_completion"),
+        value: businessStatsData?.averageCompletion,
+        label: t("profile_data"),
+        icon: <Landmark className="w-5 h-5 text-teal-600" />,
+      },
+    ],
+    [businessStatsData, t],
+  );
+
+  // ─── Render ─────────
   return (
     <>
-      <div className="flex flex-col  ">
+      <div className="flex flex-col pt-10 md:pt-0">
         {/* Sticky Header */}
         <div
-          className={`border-b ${
-            isDark ? " border-gray-800" : "bg-transparent border-gray-200"
-          } z-10`}
+          className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
         >
           <PageHeader
             title={t("businesses_management")}
             description={t("businesses_management_desc")}
             btnLabel={t("add_business")}
             onClick={() => setIsCreateModalOpen(true)}
-            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+            totalCount={totalData ?? 0}
           />
           <PageStats
             stats={businessStats}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
+            isLoading={isStatsLoading}
+            className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-4"
           />
 
-          {/* Search and Filters */}
-          <div className="py-4 flex flex-col lg:flex-row gap-3">
-            {/* Search */}
+          {/* Search & Actions */}
+          <div className="py-3 flex flex-col gap-2">
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                isRTL={isRTL}
-                isDark={isDark}
+                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
-            <FilterButton value={showFilters} onChange={setShowFilters} />
+            <div className="flex items-center  justify-between gap-2 w-full">
+              <div className="flex items-center gap-2">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode={viewMode}
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={resetToDefault}
+                />
 
-            {/* Column Settings */}
-            {viewMode === "list" && (
-              <ColumnSettingsDropdown
-                columnVisibility={columnVisibility as Record<string, boolean>}
-                setColumnVisibility={
-                  setColumnVisibility as Dispatch<
-                    SetStateAction<Record<string, boolean>>
-                  >
-                }
-                columnDefinitions={columnDefinitions}
-                resetToDefault={resetToDefault}
-                isDark={isDark}
-                isRTL={isRTL}
-                textSecondary={textSecondary}
+                <button
+                  onClick={handleExport}
+                  className={`px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  <Download className="w-4 h-4 shrink-0" />
+                  <span className="hidden sm:inline">{t("export")}</span>
+                </button>
+              </div>
+
+              <ViewModeToggle
+                onChange={(mode) => {
+                  setViewMode(mode);
+                  localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify({
+                      ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
+                      viewMode: mode,
+                    }),
+                  );
+                }}
+                value={viewMode}
+                tableName="businessViewMode"
               />
-            )}
-
-            {/* Export */}
-            <button
-              onClick={handleExport}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              <Download className="w-5 h-5" />
-              {t("export")}
-            </button>
-            <ViewModeToggle onChange={setViewMode} value={viewMode} />
+            </div>
           </div>
 
           {/* Filters Panel */}
-          {showFilters && (
+          {(showFilters || hasSavedFilters) && (
             <div
-              className={`pb-4 border-t ${
-                isDark
-                  ? "border-gray-800 bg-gray-900/30"
-                  : "border-gray-200 bg-gray-50"
-              }`}
+              className={`border-t py-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-4 mt-4">
-                {/* Status Filter */}
-                <div>
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("status")}
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) =>
-                      setFilters({ ...filters, status: e.target.value })
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="DRAFT">{t("draft")}</option>
-                    <option value="PENDING">{t("pending")}</option>
-                    <option value="APPROVED">{t("approved")}</option>
-                    <option value="REJECTED">{t("rejected")}</option>
-                    <option value="CLOSED">{t("closed")}</option>
-                  </select>
-                </div>
-
-                {/* Has Products Filter */}
-                <div>
+              <div className="flex flex-wrap items-start gap-3 px-3 w-full">
+                <FilterByStatus filters={filters} setFilters={setFilters} />
+                <div className="flex flex-col flex-1 min-w-35">
                   <label
                     className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
@@ -628,10 +535,10 @@ export default function BusinessesMgmtPage() {
                     onChange={(e) =>
                       setFilters({
                         ...filters,
-                        hasProductFilter: e.target.value,
+                        hasProductFilter: e.target.value as any,
                       })
                     }
-                    className={`w-full px-3 py-2 rounded-lg border ${
+                    className={`w-full px-2 py-1.5 text-sm rounded-lg border ${
                       isDark
                         ? "bg-gray-800 border-gray-700 text-gray-200"
                         : "bg-white border-gray-300 text-gray-900"
@@ -642,102 +549,116 @@ export default function BusinessesMgmtPage() {
                     <option value="no">{t("no")}</option>
                   </select>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <button
-                  onClick={clearFilter}
-                  className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
-                >
-                  {t("clear_all")}
-                </button>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {Object.entries(filters).map(([key, value]) => {
-                    // Skip rendering empty filters
-                    if (!value || value === "all") return null;
-
-                    if (key === "authorityId" && !filters.dmoId) {
-                      return null;
-                    }
-
-                    let displayValue = value;
-                    if (key === "status") {
-                      displayValue = t(value.toLowerCase()) || value;
-                    } else if (key === "hasProductFilter") {
-                      displayValue = value === "yes" ? t("yes") : t("no");
-                    }
-
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
-                      >
-                        <span>{displayValue}</span>
-
-                        <button
-                          onClick={() => {
-                            if (key === "status") {
-                              setFilters((prev) => ({
-                                ...prev,
-                                status: "all",
-                              }));
-                            } else {
-                              // For other keys
-                              setFilters((prev) => ({ ...prev, [key]: "" }));
-                            }
-                          }}
-                          className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
-                          aria-label="Remove filter"
-                        >
-                          ✕
-                        </button>
+                {hasSavedFilters && (
+                  <div className="flex flex-col w-full sm:w-auto">
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("active_filters")}
+                    </label>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.entries(filters).map(
+                          ([key, value]) =>
+                            value !== "all" && (
+                              <FilterChips
+                                key={key}
+                                label={t(
+                                  value === "yes" || value === "no"
+                                    ? value
+                                    : value.toLowerCase(),
+                                )}
+                                onRemove={() =>
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    [key]: "all",
+                                  }))
+                                }
+                              />
+                            ),
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                      <button
+                        onClick={clearFilter}
+                        className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           <BulkActionBar
-            selectedItemCount={selectedBusinesses.size || 0}
+            selectedItemCount={selectedBusinesses.size}
             handleBulkStatusChange={handleBulkStatusChange}
-            onBulkAction={{
-              delete: handleBulkDelete,
-            }}
+            handleBulkDelete={promptBulkDelete}
+            hancleClearSelection={() => setSelectedBusinesses(new Set())}
           />
         </div>
+
+        {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-2">
-          {viewMode === "list" ? (
+          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
+            <div
+              className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
+            >
+              <EmptyState searchQuery={searchTerm} />
+            </div>
+          ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
-              hasMore={hasMore}
+              hasMore={!!hasMore}
               next={fetchNextPage}
-              isLoading={isLoading || isFetching}
+              isLoading={isLoading}
               columnVisibility={columnVisibility}
-              businesses={combinedBusinesses || []}
+              businesses={combinedBusinesses}
               onBusinessClick={handleBusinessClick}
               selectedBusinesses={selectedBusinesses}
               setSelectedBusinesses={setSelectedBusinesses}
             />
           ) : (
-            <div className="overflow-y-auto ">
-              <BusinessGridView
-                t={t}
-                refetch={refetch}
-                hasMore={hasMore}
-                next={fetchNextPage}
-                data={combinedBusinesses || []}
-                onRowClick={handleBusinessClick}
-                isLoading={isLoading || isFetching}
-              />
-            </div>
+            <BusinessGridView
+              refetch={refetch}
+              hasMore={!!hasMore}
+              next={fetchNextPage}
+              data={combinedBusinesses}
+              onRowClick={handleBusinessClick}
+              isLoading={isLoading || isFetching}
+              selectedItems={selectedBusinesses}
+              setSelectedItems={setSelectedBusinesses}
+            />
           )}
         </div>
-      </div>
 
-      {isCreateModalOpen && (
-        <CreateBusinessWizard onClose={() => setIsCreateModalOpen(false)} />
-      )}
+        {/* Modals */}
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={t("delete_business")}
+          message={t("delete_business_confirm")}
+          confirmText="delete"
+          loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setIsBulkDelete(false);
+          }}
+          onConfirm={() => {
+            if (isBulkDelete) {
+              handleBulkDelete();
+            }
+            setIsConfirmOpen(false);
+          }}
+        />
+        {isCreateModalOpen && (
+          <CreateBusinessWizard
+            onClose={() => setIsCreateModalOpen(false)}
+            refetch={refetch}
+          />
+        )}
+      </div>
     </>
   );
 }

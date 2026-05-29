@@ -2,7 +2,7 @@ import { loadUserInfo } from "@/lib/storage";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface User {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -36,6 +36,7 @@ interface AuthState {
   startDate: string;
   endDate: string;
   timeFrame: string;
+  associatedWebsite: TAllWebsites;
 }
 
 const persisted = loadUserInfo();
@@ -49,7 +50,8 @@ const initialState: AuthState = {
   websiteId: persisted?.websiteId ?? "",
   startDate: persisted?.startDate ?? "",
   endDate: persisted?.endDate ?? "",
-  timeFrame: persisted?.timeFrame ?? "last_year",
+  timeFrame: persisted?.timeFrame ?? "all_time",
+  associatedWebsite: [],
 };
 
 const authSlice = createSlice({
@@ -68,12 +70,21 @@ const authSlice = createSlice({
       state.user = null;
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem("user_info");
-        localStorage.removeItem("access_token");
+        localStorage.clear();
+        sessionStorage.removeItem("user_info");
+        sessionStorage.removeItem("access_token");
       }
     },
     setDmo: (state, action: PayloadAction<string>) => {
       state.dmoId = action.payload;
+
+      if (!action.payload) {
+        state.authorityId = "";
+        state.websiteId = "";
+      }
+    },
+    setFilteredWebsite: (state, action: PayloadAction<TAllWebsites>) => {
+      state.associatedWebsite = action.payload;
     },
     setAuthority: (state, action: PayloadAction<string>) => {
       state.authorityId = action.payload;
@@ -99,5 +110,6 @@ export const {
   setWebsite,
   setTimeFrame,
   setTimeFrameValue,
+  setFilteredWebsite,
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+*.env
 draft.json
 
 # Editor directories and files
@@ -24,5 +25,6 @@ draft.json
 *.njsproj
 *.sln
 *.sw?
-
+*draft
 draft.json
+*.env

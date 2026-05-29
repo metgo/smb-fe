@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -17,7 +17,6 @@ import {
   X,
   Ticket,
   Receipt,
-  Home,
   Megaphone,
   FileText,
   Rss,
@@ -26,13 +25,23 @@ import {
   Users,
   File,
   UserCircle,
+  BellIcon,
+  Layers2,
+  BookOpen,
+  LocateFixed,
+  Wrench,
+  UserRoundCog,
+  Handshake,
+  Gift,
+  ChevronLeft,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
-import { toggleSidebar } from "@/features/uiSlice";
+import { toggleSidebar, setMobileSidebarOpen } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface MenuItem {
   id: string;
@@ -50,13 +59,15 @@ export default function Sidebar() {
 
   const dispatch = useAppDispatch();
 
-  const { isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
-  const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
-
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { isDark, isRTL } = useThemeClasses();
+  const { isTraveller, isSuperadmin } = useUserRoles();
+  const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
+    (state) => state.ui,
+  );
+  const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const menuItems: MenuItem[] = [
     {
@@ -78,14 +89,14 @@ export default function Sidebar() {
       path: routes.productsMgmt,
       label: t("products") || "Products",
       icon: Package,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "orders",
       path: routes.ordersMgmt,
       label: t("orders") || "Orders",
       icon: ShoppingCart,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "events",
@@ -95,11 +106,18 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+    {
       id: "poi",
-      path: routes.pointOfInterest,
+      path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "trips",
@@ -117,17 +135,17 @@ export default function Sidebar() {
     },
     {
       id: "local-economy",
-      path: routes.miniCampaignMgmt,
+      path: "#local_economy",
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
-      isEnabled: false,
+      isEnabled: true,
       subItems: [
         {
           id: "vouchers",
-          path: routes.vouchers,
+          path: routes.voucherMgmt,
           label: t("vouchers") || "Vouchers",
           icon: Ticket,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "offline-vouchers",
@@ -141,37 +159,45 @@ export default function Sidebar() {
           path: routes.miniCampaignMgmt,
           label: t("mini_campaigns") || "Mini-Campaigns",
           icon: Megaphone,
-          isEnabled: false,
+          isEnabled: true,
         },
       ],
     },
+
     {
       id: "site-management",
-      path: routes.miniSiteMgmt,
+      path: "#site_management",
       label: t("site_management") || "Site Management",
       icon: Globe,
       isEnabled: true,
       subItems: [
         {
-          id: "home",
-          path: routes.dashboard,
-          label: t("home") || "Home",
-          icon: Home,
-          isEnabled: false,
+          id: "content-mgmt",
+          path: routes.contentMgmt,
+          label: t("content_mgmt") || "Content Management",
+          icon: Layers2,
+          isEnabled: true,
+        },
+        {
+          id: "dynamic-pages",
+          path: routes.dynamicPages,
+          label: t("dynamic_pages") || "Dynamic Pages",
+          icon: BookOpen,
+          isEnabled: true,
         },
         {
           id: "promotions",
-          path: routes.dashboard,
+          path: routes.promotionMgmt,
           label: t("promotions") || "Promotions",
           icon: Megaphone,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
-          id: "blog",
-          path: routes.dashboard,
-          label: t("blog") || "Blog",
+          id: "article",
+          path: routes.articleMgmt,
+          label: t("article") || "Article",
           icon: FileText,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "news-feed",
@@ -197,8 +223,52 @@ export default function Sidebar() {
       ],
     },
     {
+      id: "website_config",
+      path: "#website_config",
+      label: t("website_config") || "Website Config",
+      icon: Wrench,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "dmo",
+          path: routes.dmoMgmt,
+          label: t("dmos") || "DMOs",
+          icon: UserRoundCog,
+          isEnabled: true,
+        },
+        {
+          id: "authority",
+          path: routes.authorityMgmt,
+          label: t("authorities") || "Authorities",
+          icon: LocateFixed,
+          isEnabled: true,
+        },
+        {
+          id: "campaign",
+          path: routes.campaignMgmt,
+          label: t("campaigns") || "Campaigns",
+          icon: Gift,
+          isEnabled: true,
+        },
+        {
+          id: "website",
+          path: routes.websiteMgmt,
+          label: t("websites") || "Websites",
+          icon: Globe,
+          isEnabled: true,
+        },
+        {
+          id: "partners",
+          path: routes.partners,
+          label: t("partners") || "Partners",
+          icon: Handshake,
+          isEnabled: true,
+        },
+      ],
+    },
+    {
       id: "settings",
-      path: routes.profile,
+      path: "#settings",
       label: t("settings") || "Settings",
       icon: Settings,
       isEnabled: true,
@@ -212,10 +282,10 @@ export default function Sidebar() {
         },
         {
           id: "users",
-          path: routes.dashboard,
+          path: routes.users,
           label: t("users") || "Users",
           icon: Users,
-          isEnabled: false,
+          isEnabled: true,
         },
         {
           id: "documents",
@@ -228,27 +298,41 @@ export default function Sidebar() {
     },
   ];
 
-  const toggleExpanded = (path: string) => {
+  const toggleExpanded = (path: string, itemId: string) => {
+    const isCurrentlyExpanded = expandedItems.includes(path);
     setExpandedItems((prev) =>
       prev.includes(path)
         ? prev.filter((navPath) => navPath !== path)
         : [...prev, path],
     );
+    if (!isCurrentlyExpanded) {
+      setTimeout(() => {
+        subItemsRefs.current[itemId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }, 50);
+    }
   };
 
   const handleItemClick = (item: MenuItem, hasSubItems: boolean) => {
-    // Prevent navigation if item is disabled
     if (!item.isEnabled) {
       return;
     }
 
     if (hasSubItems) {
-      toggleExpanded(item.path);
+      toggleExpanded(item.path, item.id);
+    } else {
+      if (isMobileSidebarOpen) {
+        dispatch(setMobileSidebarOpen(false));
+      }
+      navigate(item.path);
     }
-    navigate(item.path);
   };
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) =>
+    location.pathname.slice(0, 5) === path.slice(0, 5);
+
   const isExpanded = (path: string) => expandedItems.includes(path);
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
@@ -261,7 +345,7 @@ export default function Sidebar() {
     const ChevronIcon = isRTL
       ? expanded
         ? ChevronDown
-        : ChevronRight
+        : ChevronLeft
       : expanded
         ? ChevronDown
         : ChevronRight;
@@ -285,14 +369,10 @@ export default function Sidebar() {
                 : isDark
                   ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer"
-          } ${isSidebarCollapsed ? "justify-center" : ""} ${
-            isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""
-          }`}
+          } ${!showLabels ? "justify-center" : ""}`}
         >
-          <Icon
-            className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}
-          />
-          {!isSidebarCollapsed && (
+          <Icon className={`${!showLabels ? "w-5 h-5" : "w-4 h-4"} shrink-0`} />
+          {showLabels && (
             <>
               <span
                 className={`flex-1 ${isRTL ? "text-right" : "text-left"} text-sm truncate`}
@@ -307,8 +387,13 @@ export default function Sidebar() {
         </button>
 
         {/* Sub-items */}
-        {!isSidebarCollapsed && hasSubItems && expanded && !isDisabled && (
-          <div className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}>
+        {showLabels && hasSubItems && expanded && !isDisabled && (
+          <div
+            ref={(el) => {
+              subItemsRefs.current[item.id] = el;
+            }}
+            className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}
+          >
             {item.subItems!.map((subItem) =>
               renderMenuItem(subItem, level + 1),
             )}
@@ -321,10 +406,10 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Overlay */}
-      {isMobileOpen && (
+      {isMobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => dispatch(setMobileSidebarOpen(false))}
         />
       )}
 
@@ -334,28 +419,45 @@ export default function Sidebar() {
           fixed
           top-20
           h-[calc(100vh-5rem)]
-          ${isSidebarCollapsed ? "w-16" : "w-64"}
+          w-64
+          ${isSidebarCollapsed ? "lg:w-16" : "lg:w-64"}
           transition-all duration-300
           flex flex-col
           border-r
-          z-30
-          ${
-            isDark
-              ? "bg-gray-900/50 border-gray-800"
-              : "bg-white border-gray-200"
-          }
+          z-40
+          ${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"}
           ${isRTL ? "right-0" : "left-0"}
+          ${
+            isRTL
+              ? isMobileSidebarOpen
+                ? "translate-x-0"
+                : "translate-x-full lg:translate-x-0"
+              : isMobileSidebarOpen
+                ? "translate-x-0"
+                : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         {/* Toggle Button */}
         <div
-          className={`p-4 border-b ${
-            isDark ? "border-gray-800" : "border-gray-200"
-          }`}
+          className={`p-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
         >
+          {/* Mobile: close button */}
+          <button
+            onClick={() => dispatch(setMobileSidebarOpen(false))}
+            className={`lg:hidden w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
+              isDark
+                ? "hover:bg-gray-800 text-gray-300"
+                : "hover:bg-gray-100 text-gray-700"
+            }`}
+            title="Close sidebar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {/* Desktop: collapse button */}
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className={`w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
+            className={`hidden lg:flex w-full cursor-pointer items-center justify-center p-2 rounded-lg transition-colors ${
               isDark
                 ? "hover:bg-gray-800 text-gray-300"
                 : "hover:bg-gray-100 text-gray-700"
@@ -372,11 +474,22 @@ export default function Sidebar() {
 
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto py-4">
-          {menuItems.map((item) => renderMenuItem(item))}
+          {menuItems
+            ?.filter((item) => !(item.id === "website_config" && !isSuperadmin))
+            ?.map((item) => ({
+              ...item,
+              subItems: item.subItems?.filter(
+                (sub) =>
+                  !(isTraveller && sub.id === "content-mgmt") &&
+                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
+                  !(sub.id === "users" && !isSuperadmin),
+              ),
+            }))
+            ?.map((item) => renderMenuItem(item))}
         </nav>
 
         {/* Footer */}
-        {!isSidebarCollapsed && (
+        {showLabels && (
           <div
             className={`p-4 border-t text-center ${
               isDark ? "border-gray-800" : "border-gray-200"

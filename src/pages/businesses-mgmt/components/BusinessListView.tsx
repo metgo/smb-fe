@@ -1,9 +1,11 @@
-import clsx from "clsx";
 import { AlertCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
+import { getPlainTextFromRichText } from "@/helpers";
+import { StatusPill, ScorePill } from "@/components/pills";
+
 export const defaultColumns = {
   impact: true,
   name: true,
@@ -59,60 +61,31 @@ export default function BusinessListView({
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
 
-    columnVisibility.impact && {
-      key: "impact",
-      label: t("impact_score"),
-      width: "110px",
-      render: (business: any) => {
-        const score = business.impact ?? 0;
-        return (
-          <span
-            className={clsx(
-              "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
-              score >= 650
-                ? isDark
-                  ? "bg-green-500/20 text-green-400"
-                  : "bg-green-100 text-green-700"
-                : score >= 450
-                  ? isDark
-                    ? "bg-yellow-500/20 text-yellow-400"
-                    : "bg-yellow-100 text-yellow-700"
-                  : isDark
-                    ? "bg-gray-700 text-gray-400"
-                    : "bg-gray-100 text-gray-600",
-            )}
-          >
-            {score}
-          </span>
-        );
-      },
-    },
-
     columnVisibility.name && {
       key: "name",
+      sortable: true,
       label: t("business_name"),
       render: (business: any) => (
         <span className={`${textPrimary} line-clamp-1`}>
-          {business.name || business.slug || t("unnamed_business") || "-"}
+          {business.name || business.slug || "-"}
         </span>
       ),
     },
 
     columnVisibility.shortDescription && {
       key: "shortDescription",
+      sortable: true,
       label: t("shortDescription"),
       render: (business: any) => (
-        <div
-          className={`${textPrimary} line-clamp-1`}
-          dangerouslySetInnerHTML={{
-            __html: business?.shortDescription || "-",
-          }}
-        />
+        <div className={`${textPrimary} line-clamp-1`}>
+          {getPlainTextFromRichText(business?.shortDescription)}
+        </div>
       ),
     },
 
     columnVisibility.contactDetails && {
       key: "contactDetails",
+      sortable: true,
       label: t("contactPerson"),
       render: (business: any) => (
         <span className={textPrimary}>
@@ -123,6 +96,7 @@ export default function BusinessListView({
 
     columnVisibility.busiEmail && {
       key: "busiEmail",
+      sortable: true,
       label: t("business_email"),
       render: (business: any) => (
         <a
@@ -137,6 +111,7 @@ export default function BusinessListView({
 
     columnVisibility.phoneNumber && {
       key: "phoneNumber",
+      sortable: true,
       label: t("phone_number"),
       render: (business: any) => (
         <a
@@ -151,6 +126,7 @@ export default function BusinessListView({
 
     columnVisibility.productCount && {
       key: "productCount",
+      sortable: true,
       label: t("products_count"),
       render: (business: any) => (
         <span className={textPrimary}>{business.productCount ?? 0}</span>
@@ -160,40 +136,32 @@ export default function BusinessListView({
     columnVisibility.status && {
       key: "status",
       label: t("status"),
-      render: (business: any) => {
-        const st = (business.status || "").toLowerCase();
-        return (
-          <span
-            className={clsx(
-              "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-              st === "approved"
-                ? "bg-blue-500/20 text-blue-400"
-                : st === "pending"
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : st === "rejected"
-                    ? "bg-red-500/20 text-red-400"
-                    : isDark
-                      ? "bg-gray-700 text-gray-400"
-                      : "bg-gray-100 text-gray-600",
-            )}
-          >
-            {t(st) || st || t("unknown")}
-          </span>
-        );
-      },
+      sortable: true,
+      render: (business: any) => <StatusPill status={business.status} />,
     },
 
     columnVisibility.tripCount && {
       key: "tripCount",
+      sortable: true,
       label: t("trips"),
       render: (business: any) => (
         <span className={textPrimary}>{business.tripCount ?? 0}</span>
       ),
     },
-
+    columnVisibility.impact && {
+      key: "impact",
+      sortable: true,
+      label: t("impact_score"),
+      width: "110px",
+      render: (business: any) => {
+        const score = business.impact ?? 0;
+        return <ScorePill score={score} />;
+      },
+    },
     columnVisibility.associatedWebsites && {
       key: "associatedWebsites",
       label: t("website"),
+      sortable: true,
       render: (business: any) => {
         const sites = business.associatedWebsites || [];
         if (!sites.length) return <span className={textSecondary}>-</span>;
@@ -251,7 +219,7 @@ export default function BusinessListView({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
+    <div className="flex flex-col overflow-hidden h-[calc(100vh-400px)]">
       <div className="sticky">
         <ReordableDataTable
           rowKey="_id"

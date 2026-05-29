@@ -7,13 +7,14 @@ import { Plus, Trash2, Upload, X } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
 import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 import { FormFieldWrapper } from "@/components/form-fields";
+import { IOpMode } from "@/enums/operation.types";
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
@@ -64,7 +65,6 @@ const CreateTicketWizard = ({
   } = useThemeClasses();
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [isDelete, setIsDelete] = useState(false);
 
   // ─── ERROR STATES ───────────────────────────────────────────────
   const [errors, setErrors] = useState<{
@@ -80,16 +80,15 @@ const CreateTicketWizard = ({
   );
 
   const {
-    image,
-    handleImageSelect,
-    uploadImage,
+    images,
+    handleImageUpload,
     confirmDelete,
     deleteTarget,
     setDeleteTarget,
     isImageDeleting,
     handleDeleteImage,
-  } = useSingleImageUpload({
-    initialImage: isDelete ? undefined : editData?.imageUrl,
+  } = useFilesUpload({
+    initialImages: editData?.imageUrl ? [{ image: editData.imageUrl }] : [],
     onChange: () => {},
   });
 
@@ -124,14 +123,14 @@ const CreateTicketWizard = ({
     let firstInvalidField: string | null = null;
 
     // Name
-    if (!editData.name?.trim()) {
+    if (!editData?.name?.trim()) {
       newErrors.name = t("ticket_name_required") || "Ticket name is required";
       isValid = false;
       firstInvalidField = firstInvalidField ?? "name";
     }
 
     // Description
-    if (!editData.description?.trim()) {
+    if (!editData?.description?.trim()) {
       newErrors.description =
         t("description_required") || "Ticket description is required";
       isValid = false;
@@ -167,13 +166,13 @@ const CreateTicketWizard = ({
 
     // Prices - only when paid or VIP
     if (isPaidOrVip) {
-      if (!editData.price?.markedPrice || editData.price.markedPrice <= 0) {
+      if (!editData?.price?.markedPrice || editData?.price.markedPrice <= 0) {
         newErrors.markedPrice =
           t("marked_price_required") || "Marked price is required";
         isValid = false;
         firstInvalidField = firstInvalidField ?? "markedPrice";
       }
-      if (!editData.price?.sellingPrice || editData.price.sellingPrice <= 0) {
+      if (!editData?.price?.sellingPrice || editData?.price.sellingPrice <= 0) {
         newErrors.sellingPrice =
           t("selling_price_required") || "Selling price is required";
         isValid = false;
@@ -226,41 +225,39 @@ const CreateTicketWizard = ({
       return;
     }
 
-    const uploadImageUrl = await uploadImage();
-
     const payload: ITicketPayload = {
       eventId,
-      name: editData.name.trim(),
-      description: editData.description?.trim() || "",
+      name: editData?.name.trim(),
+      description: editData?.description?.trim() || "",
       price: {
-        markedPrice: editData.price?.markedPrice || 0,
-        sellingPrice: editData.price?.sellingPrice || 0,
+        markedPrice: editData?.price?.markedPrice || 0,
+        sellingPrice: editData?.price?.sellingPrice || 0,
         discountPercent: editData?.price?.discountPercent || 0,
         discountAmount: editData?.price?.discountAmount || 0,
       },
       quantity: {
-        initial: editData.quantity?.initial || 0,
+        initial: editData?.quantity?.initial || 0,
         sold: 0,
-        remaining: editData.quantity?.initial || 0,
-        isUnlimited: editData.quantity?.isUnlimited || false,
-        perUserLimit: editData.quantity?.perUserLimit || 0,
+        remaining: editData?.quantity?.initial || 0,
+        isUnlimited: editData?.quantity?.isUnlimited || false,
+        perUserLimit: editData?.quantity?.perUserLimit || 0,
       },
       dayDescription: ticketDateTime.map((item) => ({
         date: item.date,
         startTime: item.startTime,
         endTime: item.endTime,
       })),
-      images: [{ image: uploadImageUrl ?? image?.gcsURL }],
+      images: [{ image: images[0]?.gcsURL ?? "" }],
       status: editData?.status,
-      type: editData.type.toUpperCase(),
+      type: editData?.type.toUpperCase(),
     };
 
     try {
       const res =
-        editData._id && opMode !== "DUPLICATE"
+        editData?._id && opMode !== IOpMode.DUPLICATE
           ? await updateTicket({
               body: payload,
-              ticketId: editData._id,
+              ticketId: editData?._id,
             }).unwrap()
           : await createTicket(payload).unwrap();
 
@@ -289,8 +286,8 @@ const CreateTicketWizard = ({
     ]);
   };
 
-  const removeEventDay = (id: string | number) => {
-    setTicketDateTime((prev) => prev.filter((day) => day._id !== id));
+  const removeEventDay = (pDay: any) => {
+    setTicketDateTime((prev) => prev.filter((day) => day !== pDay));
   };
 
   const updateTicketDay = (
@@ -316,7 +313,7 @@ const CreateTicketWizard = ({
       onClose={handleClose}
       height="max-h"
       maxWidth="max-w-3xl"
-      showSpinner={isSaving || isUpdating || image?.status === "uploading"}
+      showSpinner={isSaving || isUpdating || images[0]?.status === "uploading"}
     >
       <div className="p-4 space-y-4 relative">
         <h3 className={`text-xl ${textPrimary}`}>{modelTitle(opMode, t)}</h3>
@@ -339,7 +336,7 @@ const CreateTicketWizard = ({
               required
               label={t("ticket_name")}
               error={errors?.name}
-              inputHintText={`${editData.name?.length ?? 0}/50 ${t("max_characters")}`}
+              inputHintText={`${editData?.name?.length ?? 0}/50 ${t("max_characters")}`}
             >
               <input
                 type="text"
@@ -433,7 +430,7 @@ const CreateTicketWizard = ({
             <div className="space-y-4 mt-2">
               {ticketDateTime?.map((day, index) => (
                 <div
-                  key={day._id}
+                  key={index}
                   ref={(el) => {
                     if (el) sectionRefs.current[`day-${index}`] = el;
                   }}
@@ -501,7 +498,7 @@ const CreateTicketWizard = ({
 
                     <button
                       type="button"
-                      onClick={() => removeEventDay(day?._id || "")}
+                      onClick={() => removeEventDay(day || "")}
                       className="col-span-1 p-2 text-red-500 hover:text-red-600 bg-red-100 dark:bg-red-900/30 rounded-md flex items-center justify-center"
                     >
                       <Trash2 size={18} />
@@ -767,18 +764,18 @@ const CreateTicketWizard = ({
               <label className={`block text-sm mb-2 ${textSecondary}`}>
                 {t("ticket_image")}
               </label>
-              {image?.progress !== undefined &&
-                image.progress > 0 &&
-                image.status === "uploading" && (
+              {images[0]?.progress !== undefined &&
+                images[0].progress > 0 &&
+                images[0].status === "uploading" && (
                   <div className="flex items-center gap-2 w-32">
                     <div className="w-full bg-gray-200 rounded h-2">
                       <div
                         className="bg-teal-600 h-2 rounded transition-all"
-                        style={{ width: `${image.progress}%` }}
+                        style={{ width: `${images[0].progress}%` }}
                       />
                     </div>
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {image.progress}%
+                      {images[0].progress}%
                     </span>
                   </div>
                 )}
@@ -792,19 +789,16 @@ const CreateTicketWizard = ({
                   : "border-gray-300 bg-gray-50",
               )}
             >
-              {image?.previewUrl ? (
+              {images[0]?.previewUrl ? (
                 <div className="relative">
                   <ImageWithFallback
-                    src={image.previewUrl}
+                    src={images[0].previewUrl}
                     alt="Ticket preview"
                     className="w-full h-40 object-cover rounded-lg"
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      handleDeleteImage(image, opMode);
-                      setIsDelete(true);
-                    }}
+                    onClick={() => handleDeleteImage(images[0], 0)}
                     className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   >
                     <X className="w-6 h-6" />
@@ -822,8 +816,8 @@ const CreateTicketWizard = ({
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImageSelect(file);
+                      if (e.target.files?.length)
+                        handleImageUpload(e.target.files);
                     }}
                     className="hidden"
                     id="ticket-image-upload"
@@ -860,17 +854,15 @@ const CreateTicketWizard = ({
 
           <button
             onClick={saveTicket}
-            disabled={isSaving || isUpdating || image?.status === "uploading"}
+            disabled={isSaving || isUpdating}
             className={clsx(
               "px-6 py-2.5 rounded-lg text-white transition-colors min-w-30",
-              isSaving || isUpdating || image?.status === "uploading"
+              isSaving || isUpdating
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-teal-600 hover:bg-teal-700 cursor-pointer",
             )}
           >
-            {isSaving || isUpdating || image?.status === "uploading"
-              ? "Saving..."
-              : t("save_ticket")}
+            {isSaving || isUpdating ? "Saving..." : t("save_ticket")}
           </button>
         </div>
       </div>

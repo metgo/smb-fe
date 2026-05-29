@@ -18,11 +18,11 @@ export const eventMutationApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Event"],
   endpoints: (builder) => ({
-    initEventCreate: builder.mutation<any, void>({
-      query: () => ({
+    initEventCreate: builder.mutation<any, { businessId?: string }>({
+      query: ({ businessId }) => ({
         url: endpoints.events,
         method: "POST",
-        data: { name: "" },
+        data: { name: "", ...(businessId && { businessId }) },
       }),
       invalidatesTags: ["Event"],
     }),

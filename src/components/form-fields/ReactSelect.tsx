@@ -1,25 +1,36 @@
 import Select from "react-select";
+
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "../shared";
 
 export type ItemOption = {
   value: string;
   label: string;
-  logo: string | undefined;
+  logo?: string | undefined;
 };
 
 type Props = {
   items?: {
     _id: string;
     name: string;
-    logo: string | undefined;
+    logo?: string | undefined;
   }[];
-  value?: string;
+  value?: string | null;
   onChange: (value: string) => void;
+
+  onSearch?: (keyword: string) => void;
+  isLoading?: boolean;
+
   placeholder?: string;
   isClearable?: boolean;
   isDisabled?: boolean;
   minWidth?: number;
+
+  logoSize?: {
+    width: number;
+    height: number;
+  };
+  optionGap?: number;
 };
 
 export default function ReactSelect({
@@ -30,16 +41,19 @@ export default function ReactSelect({
   placeholder = "Select website",
   isClearable = false,
   isDisabled = false,
+  isLoading = false,
+  onSearch,
+  logoSize = { width: 40, height: 30 },
+  optionGap = 4,
 }: Props) {
   const { isDark } = useThemeClasses();
 
-  if (!items?.length) return null;
-
-  const options: ItemOption[] = items.map((site) => ({
-    value: site._id,
-    label: site.name,
-    logo: site.logo,
-  }));
+  const options: ItemOption[] =
+    items?.map((site) => ({
+      value: site._id,
+      label: site.name,
+      logo: site.logo,
+    })) || [];
 
   const selectedOption = options.find((o) => o.value === value) || null;
 
@@ -52,11 +66,18 @@ export default function ReactSelect({
       isDisabled={isDisabled}
       placeholder={placeholder}
       onChange={(opt) => onChange(opt?.value ?? "")}
+      isLoading={isLoading}
+      onInputChange={(inputValue, { action }) => {
+        if (action === "input-change") {
+          onSearch?.(inputValue);
+        }
+      }}
       styles={{
-        container: (base) => ({ ...base, minWidth, zIndex: 30 }),
+        container: (base) => ({ ...base, minWidth, zIndex: 40 }),
         control: (base, state) => ({
           ...base,
-          borderRadius: 12,
+          borderRadius: 8,
+          height: 44,
           borderColor: state.isFocused
             ? isDark
               ? "#2dd4bf"
@@ -65,7 +86,7 @@ export default function ReactSelect({
               ? "#374151"
               : "#d1d5db",
           backgroundColor: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#ffffff" : "#111827",
           boxShadow: state.isFocused
             ? isDark
               ? "0 0 0 2px #2dd4bf"
@@ -81,12 +102,16 @@ export default function ReactSelect({
                 : "#9ca3af",
           },
         }),
+        input: (base) => ({
+          ...base,
+          color: isDark ? "#ffffff" : "#111827",
+        }),
         menu: (base) => ({
           ...base,
           borderRadius: 8,
           borderColor: isDark ? "#374151" : "#e5e7eb",
           backgroundColor: isDark ? "#111827" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#ffffff" : "#111827",
           boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         }),
         option: (base, state) => ({
@@ -102,7 +127,7 @@ export default function ReactSelect({
               : isDark
                 ? "#111827"
                 : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#fff" : "#111827",
           cursor: "pointer",
         }),
         singleValue: (base) => ({
@@ -110,7 +135,7 @@ export default function ReactSelect({
           display: "flex",
           alignItems: "center",
           gap: 8,
-          color: isDark ? "#f9fafb" : "#111827",
+          color: isDark ? "#fff" : "#111827",
         }),
         placeholder: (base) => ({
           ...base,
@@ -130,12 +155,18 @@ export default function ReactSelect({
         }),
       }}
       formatOptionLabel={(option: ItemOption) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <ImageWithFallback
-            src={option.logo}
-            alt={option.label}
-            style={{ width: 40, height: 30, objectFit: "contain" }}
-          />
+        <div style={{ display: "flex", alignItems: "center", gap: optionGap }}>
+          {option.logo && (
+            <ImageWithFallback
+              src={option.logo}
+              alt={option.label}
+              style={{
+                width: logoSize.width,
+                height: logoSize.height,
+                objectFit: "contain",
+              }}
+            />
+          )}
           <span className="font-semibold">{option.label}</span>
         </div>
       )}

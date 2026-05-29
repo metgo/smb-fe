@@ -1,0 +1,37 @@
+{
+  "page_title": "Dynamic Pages",
+  "page_subtitle": "Manage the content of your static legal pages",
+
+  "tab_terms": "Terms & Conditions",
+  "tab_privacy": "Privacy Policy",
+  "tab_business_regulation": "Business Regulation",
+  "tab_document_upload": "Document Upload",
+
+  "field_title": "Title",
+  "field_title_placeholder_terms": "e.g. Terms and Conditions",
+  "field_title_placeholder_privacy": "e.g. Privacy Policy",
+  "field_title_required": "Title is required",
+
+  "field_subtitle": "Subtitle",
+  "field_subtitle_optional": "(optional)",
+  "field_subtitle_placeholder": "A short description shown below the title",
+
+  "field_content": "Content",
+  "field_content_placeholder": "Write your page content here…",
+  "field_content_required": "Content is required",
+
+  "upload_drag_drop": "Drag & drop files here, or click to browse",
+  "upload_supported_formats": "Supported: PDF, Word (.doc/.docx), Excel (.xls/.xlsx), PowerPoint (.ppt/.pptx), TXT",
+  "error_no_document": "Please upload at least one document",
+  "error_upload_in_progress": "Please wait for all files to finish uploading",
+  "error_upload_failed_files": "Please remove or retry failed uploads before saving",
+  "error_file_upload_failed": "File upload failed. Please try again",
+
+  "btn_save": "Save",
+  "btn_preview": "Preview",
+  "btn_open": "Open",
+  "btn_download": "Download",
+  "btn_remove": "Remove",
+  "label_primary_file": "Primary File",
+  "label_secondary_file": "Secondary File"
+}

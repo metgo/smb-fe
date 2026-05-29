@@ -1,5 +1,6 @@
 import { endpoints } from "@/lib/endpoints";
 import { envKeys } from "@/lib/envKeys";
+import { useTranslation } from "react-i18next";
 
 const handleGoogleClick = async (e: any) => {
   e.preventDefault();
@@ -12,11 +13,12 @@ const handleGoogleClick = async (e: any) => {
 };
 
 const ContinueWithGoogle = () => {
+  const { t } = useTranslation("login");
   return (
     <button
       type="button"
       onClick={handleGoogleClick}
-      className="w-full py-4 bg-white hover:bg-gray-100 text-gray-900 rounded-xl flex items-center justify-center gap-3 transition-colors cursor-pointer"
+      className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 text-white rounded-xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-sm"
     >
       <svg className="w-6 h-6" viewBox="0 0 24 24">
         <path
@@ -36,7 +38,7 @@ const ContinueWithGoogle = () => {
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
         />
       </svg>
-      Continue with Google
+      {t("continue_with_google")}
     </button>
   );
 };

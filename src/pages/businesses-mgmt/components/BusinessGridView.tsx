@@ -1,26 +1,20 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { AlertCircle, Image, MapPin, Phone, TrashIcon } from "lucide-react";
+import { Image, Loader, MapPin, Phone } from "lucide-react";
 
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
-import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { getLngWiseStr } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
+import { ConfirmDialog, GridCard } from "@/components/shared";
 
 interface Business {
   _id: string;
   name: string;
   image?: string;
-  location?: string;
-  images: {
-    image: string;
-  }[];
+  images: { image: string }[];
   phoneNumber: string;
-  address: {
-    city: string;
-    country: string;
-    location: string;
-  };
+  address: { city: string; country: string; location: string };
 }
 
 interface GridViewProps<T> {
@@ -30,7 +24,8 @@ interface GridViewProps<T> {
   next?: () => void;
   hasMore?: boolean;
   isLoading?: boolean;
-  t: (key: string) => string;
+  selectedItems?: Set<string>;
+  setSelectedItems?: (v: Set<string>) => void;
 }
 
 function BusinessGridView<T extends Business>({
@@ -39,24 +34,26 @@ function BusinessGridView<T extends Business>({
   refetch,
   hasMore,
   next,
-  t,
   isLoading = false,
+  selectedItems,
+  setSelectedItems,
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
 
-  //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
-  useInfiniteScroll({
-    ref: scrollRef,
-    hasMore,
-    isLoading: isLoading,
-    onLoadMore: next,
-  });
+  useInfiniteScroll({ ref: scrollRef, hasMore, isLoading, onLoadMore: next });
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
     useDeleteBusinessMutation();
+
+  const toggleCheckBox = (itemId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(itemId)) newSelected.delete(itemId);
+    else newSelected.add(itemId);
+    if (setSelectedItems) setSelectedItems(newSelected);
+  };
 
   const handleBusinessDelete = async (businessId: string) => {
     const res = await deleteBusiness({ businessId });
@@ -64,114 +61,64 @@ function BusinessGridView<T extends Business>({
     refetch();
   };
 
-  if (data.length === 0) {
-    return (
-      <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
-        <AlertCircle
-          className={`w-16 h-16 mx-auto mb-4 ${
-            isDark ? "text-gray-500" : "text-gray-400"
-          }`}
-        />
-        <h3
-          className={`text-lg mb-2 ${
-            isDark ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {t("no_businesses_found")}
-        </h3>
-        <p className={isDark ? "text-gray-500" : "text-gray-600"}>
-          {t("no_businesses_found_desc")}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={`py-6 px-4 ${
-        isDark ? "border-gray-700 bg-gray-900" : "border-gray-300 "
-      } `}
+      className={`pb-6 pt-2 px-2 ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-300"}`}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto mb-20"
         id="business-table-scroll"
         ref={scrollRef}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {data.map((business) => (
-            <div
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+          {data?.map((business) => (
+            <GridCard
               key={business._id}
-              className={`${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
-              onClick={() => onRowClick && onRowClick(business)}
-            >
-              {/* Delete button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsConfirmOpen(true);
-                  setBusinessToDelete(business?._id);
-                }}
-                className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                aria-label={`Delete ${business.name}`}
-              >
-                <TrashIcon size={18} />
-              </button>
-
-              <div className="relative h-36">
-                {business?.images && business.images.length > 0 ? (
-                  <ImageWithFallback
-                    src={business.images[0].image}
-                    alt={business.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-linear-to-br from-gray-400 to-teal-400 flex items-center justify-center">
-                    <Image className="w-20 h-20 text-white/40" />
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`p-5 ${
-                  isDark
-                    ? "bg-gray-800 text-gray-400"
-                    : "bg-white text-gray-600"
-                }`}
-              >
-                <h3
-                  className={`${isDark ? "text-white" : "text-gray-600"} font-semibold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white`}
-                >
-                  {business.name}
-                </h3>
-
-                <div className="space-y-2 text-sm">
-                  {business.address && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">
-                        {business?.address?.country}, {business.address?.city}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-2 text-sm">
-                  {business?.phoneNumber && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      <span className="truncate">{business.phoneNumber}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+              image={business.images?.[0]?.image}
+              imageAlt={business.name}
+              fallbackIcon={Image}
+              fallbackGradient="from-gray-300 to-teal-400"
+              title={getLngWiseStr(
+                language,
+                business?.name,
+                business?.nameHe,
+                business?.nameAr,
+              )}
+              status={business?.status?.toLowerCase()}
+              isChecked={selectedItems?.has(business._id) ?? false}
+              onCheckChange={
+                selectedItems ? () => toggleCheckBox(business._id) : undefined
+              }
+              onDelete={(e) => {
+                e.stopPropagation();
+                setIsConfirmOpen(true);
+                setBusinessToDelete(business._id);
+              }}
+              onClick={() => onRowClick?.(business)}
+              meta={[
+                business?.address && {
+                  icon: MapPin,
+                  label: `${business.address.country}, ${business.address.city}`,
+                },
+                business?.phoneNumber && {
+                  icon: Phone,
+                  label: business.phoneNumber,
+                },
+              ]}
+            />
           ))}
         </div>
+
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+            <Loader className="w-10 h-10 animate-spin text-teal-600" />
+          </div>
+        )}
       </div>
 
       <ConfirmDialog
         open={isConfirmOpen}
-        title={"delete_business"}
+        title="delete_business"
         message="delete_business_confirm"
         confirmText="delete"
         loading={isDeleting}

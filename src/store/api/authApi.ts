@@ -19,6 +19,20 @@ interface RegisterStep2Payload {
   phoneNumber: string;
   languagePreference?: string;
 }
+interface ForgotPasswordStep3Payload {
+  email: string;
+  purpose: string;
+}
+interface VerifyOtpPayload {
+  code: string;
+  token: string;
+}
+
+interface ResetPasswordPayload {
+  password: string;
+  confirmPassword: string;
+  token: string;
+}
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -32,7 +46,27 @@ export const authApi = createApi({
         data: body,
       }),
     }),
-
+    forgotPassword: builder.mutation<any, ForgotPasswordStep3Payload>({
+      query: (body) => ({
+        url: endpoints.forgotPassword,
+        method: "POST",
+        data: body,
+      }),
+    }),
+    verifyOtp: builder.mutation<any, VerifyOtpPayload>({
+      query: (body) => ({
+        url: endpoints.verifyOtp,
+        method: "POST",
+        data: body,
+      }),
+    }),
+    resetPassword: builder.mutation<any, ResetPasswordPayload>({
+      query: (body) => ({
+        url: endpoints.resetPassword,
+        method: "POST",
+        data: body,
+      }),
+    }),
     //  Register - Step 1
     registerStep1: builder.mutation<any, RegisterStep1Payload>({
       query: (body) => ({
@@ -56,4 +90,7 @@ export const {
   useLoginMutation,
   useRegisterStep1Mutation,
   useRegisterStep2Mutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
 } = authApi;

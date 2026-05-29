@@ -14,7 +14,7 @@ import {
   CheckCircle,
   XCircle,
   CalendarRange,
-  TrashIcon,
+  Loader,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +23,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
   ConfirmDialog,
-  ImageWithFallback,
+  GridCard,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
@@ -35,12 +35,13 @@ import { EventCardSkeleton } from "@/components/skeletons";
 import QuickSnapEventDetails from "./QuickSnapEventDetails";
 import CreateEventWizard from "./CreateEventWizard";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
+import EmptyState from "@/components/shared/EmptyState";
+import { StatusPill } from "@/components/pills";
 
 interface EventsWithViewModeProps {
   events: any[];
   viewMode: string;
   isLoading: boolean;
-  selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -88,23 +89,17 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
   statusFilter,
   searchQuery,
 }: EventsWithViewModeProps) {
-  const { t, i18n } = useTranslation("events");
-  const language = i18n.language || "en";
+  const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("toast");
+
   const navigate = useNavigate();
-  const {
-    bgPrimary,
-    bgSecondary,
-    bgTertiary,
-    borderColor,
-    textTertiary,
-    textPrimary,
-  } = useThemeClasses();
+  const { bgSecondary, borderColor, textTertiary, textPrimary, language } =
+    useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
@@ -127,9 +122,7 @@ export default function EventsWithViewMode({
   const [getEventEditData] = useLazyGetEventByIdQuery();
 
   const handleEditEvent = async () => {
-    const toastId = toast.loading(
-      "Event's edit data fetching. Please wait....",
-    );
+    const toastId = toast.loading(tc("event_edit_data_fetching"));
     if (clickedEventData) {
       const eventDetails = await getEventEditData({
         eventId: clickedEventData?._id,
@@ -139,7 +132,7 @@ export default function EventsWithViewMode({
         setClickedEventData(null);
         setShowQuickViewModal(false);
         setEditData(eventDetails);
-        toast.success("Event details fetched", { id: toastId });
+        toast.success(tc("event_details_fetched"), { id: toastId });
         navigate(`?eventId=${clickedEventData?._id}`);
       }
     }
@@ -228,9 +221,15 @@ export default function EventsWithViewMode({
   };
 
   const handleEventDelete = async (eventId: string) => {
-    const res = await deleteEvent({ eventId });
-    toast.success(res?.data?.message || "Event deleted successfully");
+    await deleteEvent({ eventId });
+    toast.success(tc("event_deleted_success"));
     refetch();
+  };
+  const toggleCheckBox = (itemId: string) => {
+    const newSelected = new Set(selectedEvents);
+    if (newSelected.has(itemId)) newSelected.delete(itemId);
+    else newSelected.add(itemId);
+    if (setSelectedEvents) setSelectedEvents(newSelected);
   };
 
   // Events on a given date
@@ -424,6 +423,18 @@ export default function EventsWithViewMode({
 
   // Grid View
   const GridView = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center">
+          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        </div>
+      );
+    }
+
+    // If no events match the search query, show "not found" message
+    if (!displayedEvents || displayedEvents.length === 0) {
+      return <EmptyState searchQuery={searchQuery} />;
+    }
     const displayed = events?.slice(0, displayedListCount);
 
     if (events?.length === 0 && !isLoading) {
@@ -435,7 +446,6 @@ export default function EventsWithViewMode({
           </h3>
           <p className={textTertiary}>
             {searchQuery ||
-            selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
             registrationFilter !== "all" ||
             statusFilter !== "all"
@@ -447,88 +457,60 @@ export default function EventsWithViewMode({
     }
 
     return (
-      <div className="py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {isLoading ? (
-            Array.from({ length: 7 }).map((_, index) => (
-              <EventCardSkeleton key={index} />
-            ))
-          ) : (
-            <>
-              {displayed?.map((event) => {
-                return (
-                  <div
-                    key={event._id}
-                    onClick={() => handleEventSelect(event)}
-                    className={clsx(
-                      bgPrimary,
-                      textPrimary,
-                      " relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
-                    )}
-                  >
-                    <div className="relative h-52">
-                      {event?.images?.[0]?.image ? (
-                        <ImageWithFallback
-                          src={event?.images?.[0]?.image}
-                          alt={event.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                          <Calendar className="w-20 h-20 text-white/40" />
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsConfirmOpen(true);
-                        setEventToDelete(event._id);
-                      }}
-                      className={clsx(
-                        "absolute top-3 right-3 z-50 cursor-pointer p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600 border",
-                        bgTertiary,
-                      )}
-                    >
-                      <TrashIcon size={16} />
-                    </button>
-
-                    <div className="p-5">
-                      <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                        {event.name}
-                      </h3>
-                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          {extractEventDates(event?.dayDescription)}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">
-                            {extractCenterAddressText(event?.address?.location)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-5 flex justify-between items-center">
-                        <span
-                          className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
-                        >
-                          {event?.isFree ? t("free") : `₪ 0`}
+      <div className="py-4 px-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+          {isLoading
+            ? Array.from({ length: 7 }).map((_, index) => (
+                <EventCardSkeleton key={index} />
+              ))
+            : displayed?.map((event) => (
+                <GridCard
+                  key={event._id}
+                  image={event?.images?.[0]?.image}
+                  imageAlt={event.name}
+                  imageHeight="h-36"
+                  fallbackIcon={Calendar}
+                  fallbackGradient="from-purple-400 to-pink-400"
+                  title={event.name}
+                  status={event?.status?.toLowerCase()}
+                  isChecked={selectedEvents?.has(event._id) ?? false}
+                  onCheckChange={() => toggleCheckBox(event._id)}
+                  onDelete={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setEventToDelete(event._id);
+                  }}
+                  onClick={() => handleEventSelect(event)}
+                  meta={[
+                    {
+                      icon: Calendar,
+                      label: extractEventDates(event?.dayDescription),
+                    },
+                    event?.address?.location && {
+                      icon: MapPin,
+                      label: extractCenterAddressText(event.address.location),
+                    },
+                  ]}
+                  footer={
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={
+                          event.isFree
+                            ? "text-emerald-600 font-medium text-xs"
+                            : "text-purple-600 font-medium text-xs"
+                        }
+                      >
+                        {event?.isFree ? t("free") : `₪ 0`}
+                      </span>
+                      {event.registrationRequired && (
+                        <span className="text-xs text-gray-500">
+                          {event.totalRegistrations}/{event.capacity}
                         </span>
-                        {event.registrationRequired && (
-                          <div className="text-xs text-gray-500">
-                            {event.totalRegistrations}/{event.capacity}
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
+                  }
+                />
+              ))}
         </div>
 
         {events?.length > displayedListCount && (
@@ -569,7 +551,9 @@ export default function EventsWithViewMode({
                 {event.isMultiDay && (
                   <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
                 )}
-                <span className="text-sm line-clamp-2">{event.name}</span>
+                <span className="text-sm line-clamp-2">
+                  {event.name || event.nameHe || event.nameAr}
+                </span>
               </div>
             ),
           },
@@ -643,23 +627,7 @@ export default function EventsWithViewMode({
             key: "status",
             label: t("status"),
             sortable: true,
-            render: (event) => (
-              <span
-                className={`px-2 py-1 rounded-full text-xs ${
-                  event.status === "APPROVED"
-                    ? "bg-blue-500/20 text-blue-500"
-                    : event.status === "PENDING"
-                      ? "bg-gray-500/20 text-gray-500"
-                      : "bg-red-500/20 text-red-500"
-                }`}
-              >
-                {event.status === "APPROVED"
-                  ? t("approved")
-                  : event.status === "PENDING"
-                    ? t("pending")
-                    : t("draft")}
-              </span>
-            ),
+            render: (event) => <StatusPill status={event.status} />,
           },
           {
             key: "registrations",
@@ -692,22 +660,20 @@ export default function EventsWithViewMode({
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedEvents.size) return;
-    const toastId = toast.loading(
-      "Please wait. Event's status are changing...",
-    );
+    const toastId = toast.loading(tc("event_status_change_loading"));
 
     try {
-      const results = await Promise.all(
+      await Promise.all(
         Array.from(selectedEvents).map((eventId: string) =>
           updateEvent({ eventId, body: { status: status?.toUpperCase() } }),
         ),
       );
-      const message = results[0]?.data?.message;
+      const message = tc("event_status_update_success");
       toast.success(message, { id: toastId });
       setSelectedEvents(new Set());
       refetch();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change events status", {
+      toast.error(tc("event_status_update_failed"), {
         id: toastId,
       });
     }
@@ -715,29 +681,21 @@ export default function EventsWithViewMode({
 
   const handleBulkDelete = async () => {
     if (!selectedEvents.size) return;
-    const toastId = toast.loading("Please wait. Events are deleting...");
+    const toastId = toast.loading(tc("event_delete_loading"));
     try {
-      const results = await Promise.all(
+      await Promise.all(
         Array.from(selectedEvents).map((eventId: string) =>
           deleteEvent({ eventId }),
         ),
       );
 
-      const message =
-        results[0]?.data?.message || "Events deleted successfully";
+      const message = tc("event_deleted_success");
       toast.success(message, { id: toastId });
       setSelectedEvents(new Set());
       refetch();
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete events");
+      toast.error(tc("event_delete_failed"));
     }
-  };
-
-  const handleBulkCsvExport = () => {
-    console.log("CSV export for:", 2);
-  };
-  const handleBulkPdfExport = () => {
-    console.log("PDF export for:", 2);
   };
 
   return (
@@ -745,11 +703,8 @@ export default function EventsWithViewMode({
       <BulkActionBar
         selectedItemCount={selectedEvents.size || 0}
         handleBulkStatusChange={handleBulkStatusChange}
-        onBulkAction={{
-          delete: handleBulkDelete,
-          csvExport: handleBulkCsvExport,
-          pdfExport: handleBulkPdfExport,
-        }}
+        handleBulkDelete={handleBulkDelete}
+        hancleClearSelection={() => setSelectedEvents(new Set())}
       />
 
       {/* Controls */}
@@ -812,7 +767,7 @@ export default function EventsWithViewMode({
         className={clsx(
           bgSecondary,
           borderColor,
-          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)]",
+          "border flex-1 overflow-y-auto max-h-[calc(100vh-400px)] rounded-2xl",
         )}
       >
         {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
@@ -861,6 +816,7 @@ export default function EventsWithViewMode({
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}
+          refetch={refetch}
         />
       )}
     </div>

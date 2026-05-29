@@ -1,12 +1,16 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import axios from "axios";
 import {
   Outlet,
   RouterProvider,
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
+import { envKeys } from "@/lib/envKeys";
+import { endpoints } from "@/lib/endpoints";
 
 import { routes } from "@/lib/routes";
+import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
@@ -17,13 +21,76 @@ import {
   EventsMgmtPage,
   ProfilePage,
   OrdersMgmtPage,
+  VouchersMgmtPage,
   EventDetailsPage,
   BusinessDetailsPage,
-  MiniSiteMgmtPage,
+  ProductDetailsPage,
+  VoucherDetailsPage,
+  ContentMgmtPage,
+  ErrorUiPage,
+  NotificationsMgmtPage,
+  AnalyticsDashboardPage,
+  WebsiteMgmtPage,
+  DynamicPageMgmtPage,
+  PromotionsMgmtPage,
+  DmosMgmtPage,
+  AuthoritiesMgmtPage,
+  WebsiteConfigPage,
+  PartnersPage,
+  CampaignsMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 } from "@/pages";
-import { IdleLogout } from "./components/shared";
-import TestLabPage from "./pages/test-lab";
-import MiniSiteDetailsPage from "./pages/mini-site-mgmt/details";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { IdleLogout, SplashLoader } from "./components/shared";
+import RouterProgressBar from "./components/shared/RouterProgressBar";
+import { loginSuccess } from "@/features/authSlice";
+import { useSocket } from "./providers/SocketProvider";
+import {
+  addNotification,
+  setNotifications,
+} from "./features/notificationSlice";
+import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
+import ArticlesManagement from "./pages/articles";
+import ArticleDetails from "./pages/articles/details";
+import { UserRole } from "./enums/user.types";
+
+// Handle Google OAuth callback - extract userData from URL and store in localStorage
+const handleGoogleOAuthCallback = (): boolean => {
+  if (typeof window === "undefined") return false;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const userData = urlParams.get("userData");
+
+  if (userData) {
+    try {
+      const data = JSON.parse(decodeURIComponent(userData));
+
+      // Store tokens and user info in localStorage
+      if (data.accessToken) {
+        sessionStorage.setItem("access_token", data.accessToken);
+      }
+      if (data.user) {
+        sessionStorage.setItem(
+          "user_info",
+          JSON.stringify({ user: data.user }),
+        );
+      }
+
+      // Redirect to auth route so ProtectedRoute handles role-based redirects (traveller → business)
+      window.history.replaceState({}, "", routes.auth);
+
+      return true;
+    } catch (error) {
+      console.error("Error parsing Google OAuth userData:", error);
+    }
+  }
+  return false;
+};
+
+// Run synchronously before React renders
+const isGoogleOAuthCallback = handleGoogleOAuthCallback();
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -31,20 +98,196 @@ interface ProtectedRouteProps {
 }
 
 function App() {
+  const socket = useSocket();
+  const dispatch = useAppDispatch();
+
+  const { notifications } = useAppSelector((state) => state.notification);
+  const latestCreatedAt = notifications?.[0]?.createdAt;
+
+  const [getLatestNotification] = useLazyGetAllNotificationsQuery();
+
+  useEffect(() => {
+    if (!socket) return;
+    const notificationSound = new Audio("/assets/audio/bell-ring.mp3");
+    const fetchInitialNotifications = async () => {
+      try {
+        const response = await getLatestNotification({}).unwrap();
+
+        if (response?.data) {
+          dispatch(setNotifications(response.data));
+        }
+      } catch (error) {
+        console.error("Initial notification fetch failed", error);
+      }
+    };
+
+    const handleNotification = async (data: any) => {
+      console.log("🔔", data);
+
+      if (!data?.type) return;
+      notificationSound.play().catch((err) => {
+        console.log("Sound blocked by browser:", err);
+      });
+
+      try {
+        const response = await getLatestNotification({
+          createdAfter: latestCreatedAt,
+        }).unwrap();
+
+        if (response?.data?.length) {
+          response.data.reverse().forEach((notif: INotification) => {
+            dispatch(addNotification(notif));
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch new notifications", error);
+      }
+    };
+
+    const handleConnect = () => {
+      console.log("✅ Socket connected");
+      fetchInitialNotifications();
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("notification", handleNotification);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("notification", handleNotification);
+    };
+  }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
+
+  // Update Redux state if Google OAuth callback was handled
+  useEffect(() => {
+    if (isGoogleOAuthCallback) {
+      const userInfo = sessionStorage.getItem("user_info");
+      if (userInfo) {
+        try {
+          const { user } = JSON.parse(userInfo);
+          if (user) {
+            dispatch(loginSuccess(user));
+          }
+
+          const savedRedirect = sessionStorage.getItem("redirect_after_login");
+          if (savedRedirect) {
+            sessionStorage.removeItem("redirect_after_login");
+            window.location.href = savedRedirect;
+          } else if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
+            window.location.href = routes.businessMgmt;
+          } else {
+            window.location.href = routes.dashboard;
+          }
+        } catch (error) {
+          console.error(
+            "Error updating Redux state after Google login:",
+            error,
+          );
+        }
+      }
+    }
+  }, [dispatch]);
+
+  // Handle profile completion token — auto-login the user if token is in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const currentAccessToken = sessionStorage.getItem("access_token");
+
+    // Only trigger if we have a token and it's either new or different from the current one
+    if (token && token !== currentAccessToken) {
+      const fetchUserProfile = async () => {
+        try {
+          // Set the token temporarily so /users/me can use it
+          sessionStorage.setItem("access_token", token);
+
+          const response = await axios.get(
+            `${envKeys.baseUrl}${endpoints.userInfo}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          const userData = response.data;
+          if (userData) {
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to auto-login via profile token", error);
+          // If auto-login fails, don't leave a potentially broken token
+          if (sessionStorage.getItem("access_token") === token) {
+            sessionStorage.removeItem("access_token");
+          }
+        }
+      };
+      fetchUserProfile();
+    }
+  }, [dispatch]);
+
   const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     isLoginPage = false,
   }) => {
-    const isLoggedIn = !!localStorage.getItem("access_token");
+    const isLoggedIn = !!sessionStorage.getItem("access_token");
+    const userInfo = sessionStorage.getItem("user_info");
 
+    let user: any = null;
+    if (userInfo) {
+      try {
+        user = JSON.parse(userInfo).user;
+      } catch (e) {
+        console.error("Failed to parse user_info");
+      }
+    }
+
+    // If user is on login page
     if (isLoginPage) {
-      if (isLoggedIn) {
+      if (isLoggedIn && user) {
+        const savedRedirect = sessionStorage.getItem("redirect_after_login");
+        if (savedRedirect) {
+          sessionStorage.removeItem("redirect_after_login");
+          return <Navigate to={savedRedirect} replace />;
+        }
+
+        if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
+          return <Navigate to={routes.businessMgmt} replace />;
+        }
         return <Navigate to={routes.dashboard} replace />;
       }
       return children;
     }
 
+    // Normal protected routes
     if (!isLoggedIn) {
+      const attemptedPath = window.location.pathname + window.location.search;
+      if (
+        attemptedPath &&
+        attemptedPath.includes("/notifications-management")
+      ) {
+        sessionStorage.setItem("redirect_after_login", attemptedPath);
+      }
+      // Allow business-details with a profile completion token to bypass login
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasToken = urlParams.get("token");
+      const isBusinessDetails =
+        window.location.pathname === routes.businessDetails;
+
+      if (hasToken && isBusinessDetails) {
+        return children;
+      }
+
       return <Navigate to={routes.auth} replace />;
     }
 
@@ -54,44 +297,72 @@ function App() {
   const router = createBrowserRouter([
     {
       element: (
-        <Suspense fallback={null}>
+        <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute>
             <IdleLogout />
             <RootLayout />
           </ProtectedRoute>
         </Suspense>
       ),
+      errorElement: <ErrorUiPage />,
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
+        {
+          path: routes.analyticsDashboard,
+          element: <AnalyticsDashboardPage />,
+        },
 
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
         { path: routes.businessDetails, element: <BusinessDetailsPage /> },
-        { path: routes.miniSiteDetails, element: <MiniSiteDetailsPage /> },
+
+        { path: routes.articleMgmt, element: <ArticlesManagement /> },
+        { path: routes.articleDetails, element: <ArticleDetails /> },
+
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.eventDetails, element: <EventDetailsPage /> },
 
         { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-
         { path: routes.miniCampaignMgmt, element: <MiniCampaignsMgmtPage /> },
-        { path: routes.miniSiteMgmt, element: <MiniSiteMgmtPage /> },
+        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+        { path: routes.eventDetails, element: <EventDetailsPage /> },
+        { path: routes.productDetails, element: <ProductDetailsPage /> },
+        { path: routes.contentMgmt, element: <ContentMgmtPage /> },
+        { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
+        { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
 
         { path: routes.profile, element: <ProfilePage /> },
+        { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+        { path: routes.partners, element: <PartnersPage /> },
+        { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
+        { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
+        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+        { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
+
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+        { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
+        { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
+
+        { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
+        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+        { path: routes.poiDetails, element: <PoiDetailsPage /> },
+
         { path: "/*", element: <DashboardPage /> },
       ],
     },
     {
       element: (
-        <Suspense fallback={null}>
+        <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
-            <Outlet />
+            <>
+              <RouterProgressBar />
+              <Outlet />
+            </>
           </ProtectedRoute>
         </Suspense>
       ),
-      children: [
-        { path: routes.auth, element: <AuthPage /> },
-        { path: "/test-lab", element: <TestLabPage /> },
-      ],
+      errorElement: <ErrorUiPage />,
+      children: [{ path: routes.auth, element: <AuthPage /> }],
     },
   ]);
 

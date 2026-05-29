@@ -26,15 +26,15 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
   isDark,
   business,
 }) => {
-  const socialMediaMap = Array.isArray(business.socialMedia)
-    ? business.socialMedia.reduce<
+  const socialMediaMap = Array?.isArray(business?.socialMedia)
+    ? business?.socialMedia?.reduce<
         Record<string, { url: string; iconPath: string; iconAlt: string }>
       >((acc, item) => {
-        const name = item.socialMediaId.name.toLowerCase(); // e.g. "facebook"
+        const name = item?.socialMediaId?.name?.toLowerCase(); // e.g. "facebook"
         acc[name] = {
-          url: item.url,
-          iconPath: item.socialMediaId.icon.iconPath,
-          iconAlt: item.socialMediaId.icon.iconAlt,
+          url: item?.url,
+          iconPath: item?.socialMediaId?.icon?.iconPath,
+          iconAlt: item?.socialMediaId?.icon?.iconAlt,
         };
         return acc;
       }, {})
@@ -80,10 +80,10 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
 
   // rest of your component remains unchanged
   const activeSocialLinks = socialLinks.filter(
-    (link) => link.link && link.link.trim() !== "",
+    (link) => link?.link && link?.link?.trim() !== "",
   );
 
-  if (activeSocialLinks.length === 0) {
+  if (activeSocialLinks?.length === 0) {
     return (
       <div
         className={`p-8 text-center rounded-lg border ${
@@ -93,12 +93,12 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
         }`}
       >
         <Globe
-          className={`w-16 h-16 mx-auto mb-4 ${
+          className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 ${
             isDark ? "text-gray-600" : "text-gray-400"
           }`}
         />
         <p
-          className={`text-lg mb-2 ${
+          className={`text-base sm:text-lg mb-2 ${
             isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
@@ -114,7 +114,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
   return (
     <div className="space-y-6">
       <h3
-        className={`text-lg font-semibold ${
+        className={`text-base sm:text-lg font-semibold ${
           isDark ? "text-gray-100" : "text-gray-800"
         }`}
       >
@@ -122,17 +122,17 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {activeSocialLinks?.map((link) => {
+        {activeSocialLinks?.map((link, index) => {
           return (
             <div
-              key={link.platform}
+              key={index}
               className={`group flex flex-col gap-3 p-5 rounded-xl border transition-all
                 ${
                   isDark
                     ? "border-gray-700 hover:border-gray-600"
                     : "border-gray-200 hover:border-gray-300"
                 }
-                ${link.bg} hover:shadow-sm`}
+                ${link?.bg} hover:shadow-sm`}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -144,7 +144,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
                   <img
                     src={link?.iconPath}
                     alt={link?.platform}
-                    className={`w-12 h-12 ${link.color}`}
+                    className={`w-12 h-12 ${link?.color}`}
                   />
                 </div>
                 <div>
@@ -153,16 +153,16 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
                       isDark ? "text-gray-100" : "text-gray-800"
                     }`}
                   >
-                    {link.platform}
+                    {link?.platform}
                   </span>
                   <Link
-                    to={link.link}
+                    to={link?.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`flex items-center w-full gap-2 text-sm ${link.color} hover:underline group-hover:underline break-all`}
+                    className={`flex items-center w-full gap-2 text-sm ${link?.color} hover:underline group-hover:underline break-all`}
                   >
                     <span className="truncate line-clamp-1 max-w-90">
-                      {link.link}
+                      {link?.link}
                     </span>
                     <ExternalLink className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
                   </Link>

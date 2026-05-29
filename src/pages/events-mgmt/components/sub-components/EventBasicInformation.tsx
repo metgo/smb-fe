@@ -1,43 +1,32 @@
-import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import React, { useEffect, useRef } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   DmoAuthorityWebsiteSelector,
   SelectableChips,
 } from "@/components/shared";
-import {
-  useGetAccessibilityQuery,
-  useGetGroupTypesQuery,
-  useGetSubCategoriesQuery,
-} from "@/store/api/masterDataApi";
+import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
   FormFieldWrapper,
-  InputField,
-  RadioGroupField,
+  ReactSelect,
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import { useCommon } from "@/hooks/useCommon";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { getLngWiseStr } from "@/helpers";
+import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
 
 interface EventBasicInformationProps {
+  formData: Record<string, any>;
+  onChange: (updates: Record<string, any>) => void;
   eventId: string;
   markDirty: (step: number) => void;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
-  eventName: string;
-  setEventName: React.Dispatch<React.SetStateAction<string>>;
-  shortDescription: string;
-  setShortDescription: React.Dispatch<React.SetStateAction<string>>;
-  fullDescription: string;
-  setFullDescription: React.Dispatch<React.SetStateAction<string>>;
-  eventStatus: "draft" | "pending" | "approved";
-  setEventStatus: React.Dispatch<
-    React.SetStateAction<"draft" | "pending" | "approved">
-  >;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -47,10 +36,14 @@ interface EventBasicInformationProps {
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
   errors: Record<string, string>;
-
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   eventAssociatedWebsites?: IAssociatedWebsiteIds[];
+  selectedBusinessId: string;
+  setSelectedBusinessId: (id: string) => void;
+  businesses: ISearchBusiness[];
+  isBusinessLoading: boolean;
+  searchBusiness: (key: string) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -60,14 +53,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
-  eventName,
-  setEventName,
-  shortDescription,
-  setShortDescription,
-  fullDescription,
-  setFullDescription,
-  eventStatus,
-  setEventStatus,
+  formData,
+  onChange,
   internalNotes,
   setInternalNotes,
   selectedSubCategoriesId,
@@ -80,31 +67,33 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   eventAssociatedWebsites = [],
+  selectedBusinessId,
+  setSelectedBusinessId,
+  businesses,
+  isBusinessLoading,
+  searchBusiness,
 }) => {
   const { t, i18n } = useTranslation("events");
-  const { userRole } = useAppSelector((state) => state.auth);
-  const { textSecondary, inputClasses } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
+  const { inputClasses, language } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({
     bussCategoryId: categoryIds.event,
     locale,
   });
-  const { data: accessibility } = useGetAccessibilityQuery({ locale });
-  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
 
-  // Individual refs for scroll targets
+  const { groupTypes, accessibility } = useCommon();
+
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
   const authoritySectionRef = useRef<HTMLDivElement | null>(null);
   const nameSectionRef = useRef<HTMLDivElement | null>(null);
   const shortDescSectionRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll to first error field
   useEffect(() => {
     if (Object.keys(errors).length === 0) return;
 
     const firstErrorKey = Object.keys(errors)[0];
-
     let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
 
     switch (firstErrorKey) {
@@ -125,12 +114,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     }
 
     if (targetRef?.current) {
-      targetRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-
-      // Try to focus the first focusable element inside
+      targetRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
       const focusable = targetRef.current.querySelector(
         "input, select, textarea, button",
       ) as HTMLElement | null;
@@ -141,15 +125,19 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   useEffect(() => {
     markDirty(1);
   }, [
-    eventName,
-    shortDescription,
-    fullDescription,
+    formData.nameHe,
+    formData.shortDescriptionHe,
+    formData.fullDescriptionHe,
+    formData.nameAr,
+    formData.shortDescriptionAr,
+    formData.fullDescriptionAr,
     selectedAuthorityId,
     selectedDmoId,
     selectedAccessiblitiesId,
     selectedGroupTypesId,
     selectedSubCategoriesId,
     internalNotes,
+    selectedBusinessId,
     markDirty,
   ]);
 
@@ -180,6 +168,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <DmoAuthorityWebsiteSelector
+        keyId="_id"
         errors={errors}
         isEdit={!!eventId}
         selectedDmoId={selectedDmoId}
@@ -192,95 +181,50 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         itemAssociatedWebsites={eventAssociatedWebsites}
       />
 
-      {/* Event Name */}
-      <div ref={nameSectionRef}>
-        <FormFieldWrapper
-          required
-          label={t("event_name")}
-          error={errors.eventName}
-          inputHintText={`${eventName?.length ?? 0}/50 ${t("max_characters")}`}
-        >
-          <InputField
-            value={eventName}
-            onChange={setEventName}
-            maxLength={50}
-            placeholder={t("enter_event_name")}
-            inputClasses={`${inputClasses} text-lg`}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      {/* Short Description */}
-      <div ref={shortDescSectionRef}>
-        <FormFieldWrapper
-          required
-          label={t("short_description")}
-          error={errors.shortDescription}
-          inputHintText={`${shortDescription?.length ?? 0}/50 ${t("max_characters")}`}
-        >
-          <InputField
-            maxLength={50}
-            value={shortDescription}
-            onChange={setShortDescription}
-            placeholder={t("brief_description")}
-            inputClasses={inputClasses}
-          />
-        </FormFieldWrapper>
-      </div>
-
-      {/* Full Description */}
-      <FormFieldWrapper
-        label={t("full_description")}
-        inputHintText={`${fullDescription?.length ?? 0}/500 ${t("max_characters")}`}
-      >
-        <TextareaField
-          rows={8}
-          value={fullDescription}
-          onChange={setFullDescription}
-          placeholder={t("full_event_description")}
-          maxLength={500}
-          inputClasses={`${inputClasses} text-base`}
+      <FormFieldWrapper label={t("select_business")}>
+        <ReactSelect
+          value={selectedBusinessId}
+          onChange={(id: string) => setSelectedBusinessId(id)}
+          placeholder={t("select_business")}
+          items={
+            businesses?.map((biz) => ({
+              _id: biz._id,
+              name: getLngWiseStr(language, biz.name, biz.nameHe, biz.nameAr),
+            })) || []
+          }
+          isLoading={isBusinessLoading}
+          onSearch={searchBusiness}
         />
       </FormFieldWrapper>
 
-      {/* Event Status */}
-      <FormFieldWrapper label={t("event_status")}>
-        <RadioGroupField
-          value={eventStatus}
-          options={["draft", "pending", "approved"]}
-          onChange={setEventStatus}
-          labelMapper={(v) => t(v)}
-          textSecondary={textSecondary}
-        />
-      </FormFieldWrapper>
+      <div className="font-semibold text-md text-gray-700">
+        {t("step_1_basic_information")}
+      </div>
 
-      {/* Chips */}
+      <ProductContentForm formData={formData} onChange={onChange} />
+
       <SelectableChips
-        label="Sub Categories"
+        label="subcategories"
         items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
-        label="Accessiblities"
-        items={accessibility?.datas?.data ?? []}
+        label="accessiblities"
+        items={accessibility ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
       />
 
       <SelectableChips
-        label="Group Types"
-        items={groupTypes?.datas?.data ?? []}
+        label="group_types"
+        items={groupTypes ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
       />
 
-      {/* Internal Notes */}
-      {userRole === UserRole.SUPERADMIN && (
+      {isSuperadmin && (
         <FormFieldWrapper
           label={t("internal_notes")}
           hint={t("visible_only_to_admins")}

@@ -63,13 +63,13 @@ const MarkerMap = ({
       },
     });
 
-    setGeo({ lat: lat.toString(), lng: lng.toString() });
+    setGeo({ lat: lat.toString(), long: lng.toString() });
 
     markerRef.current.addListener("dragend", (e: any) => {
       if (!e.latLng) return;
       const newLat = e.latLng.lat();
       const newLng = e.latLng.lng();
-      setGeo({ lat: newLat.toString(), lng: newLng.toString() });
+      setGeo({ lat: newLat.toString(), long: newLng.toString() });
       fetchAddress(newLat, newLng);
     });
 
@@ -104,14 +104,17 @@ const MarkerMap = ({
 
       const defaultCenter = { lat: 31.304167, lng: 34.521977 };
 
-      const lat = parseFloat(geo?.lat);
-      const lng = parseFloat(geo?.lng);
+      const parsedLat = parseFloat(geo?.lat);
+      const parsedLng = parseFloat(geo?.long);
+      const hasValidCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
-      const center = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : defaultCenter;
+      const center = hasValidCoords
+        ? { lat: parsedLat, lng: parsedLng }
+        : defaultCenter;
 
       const googleMap = new window.google.maps.Map(mapRef.current, {
         center,
-        zoom: 10,
+        zoom: hasValidCoords ? 15 : 10,
         mapTypeControl: false,
         streetViewControl: false,
         zoomControl: false,
@@ -122,7 +125,20 @@ const MarkerMap = ({
 
       setMap(googleMap);
 
-      placeMarker(center.lat, center.lng, googleMap);
+      if (hasValidCoords) {
+        placeMarker(center.lat, center.lng, googleMap);
+      } else if (address) {
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address }, (results: any, status: string) => {
+          if (status === "OK" && results?.[0]) {
+            const geoLat = results[0].geometry.location.lat();
+            const geoLng = results[0].geometry.location.lng();
+            googleMap.setCenter({ lat: geoLat, lng: geoLng });
+            googleMap.setZoom(15);
+            placeMarker(geoLat, geoLng, googleMap);
+          }
+        });
+      }
 
       googleMap.addListener("dblclick", (e: any) => {
         if (!e.latLng) return;
@@ -195,7 +211,7 @@ const MarkerMap = ({
     const lat = data.location.latitude;
     const lng = data.location.longitude;
 
-    setGeo({ lat: lat.toString(), lng: lng.toString() });
+    setGeo({ lat: lat.toString(), long: lng.toString() });
     setAddress(data.formattedAddress);
     setInputValue(data.formattedAddress);
     setSuggestions([]);
@@ -213,7 +229,7 @@ const MarkerMap = ({
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      setGeo({ lat: lat.toString(), lng: lng.toString() });
+      setGeo({ lat: lat.toString(), long: lng.toString() });
 
       if (map) {
         placeMarker(lat, lng, map);

@@ -1,0 +1,20 @@
+{
+  "name": "string",
+  "dmoId": "string",
+  "description": "string",
+  "userId": "string",
+  "isActive": true,
+  "boundary": {
+    "type": "Polygon",
+    "coordinates": [
+      null
+    ]
+  },
+  "center": {
+    "type": "Point",
+    "coordinates": [
+      0
+    ]
+  },
+  "logoPath": "string"
+}
