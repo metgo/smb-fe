@@ -142,9 +142,9 @@ const NotificationsBell = () => {
               "flex flex-col overflow-hidden shadow-2xl border z-50 animate-fade-in",
               // Mobile: full-width bottom sheet
               "fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85dvh]",
-              // Desktop: absolute dropdown
-              "md:absolute md:bottom-auto md:left-auto md:right-auto md:rounded-2xl md:mt-2.5 md:w-[420px] md:max-h-[600px]",
-              isRTL ? "md:left-0" : "md:right-0",
+              // Desktop: absolute dropdown, anchored to keep panel inside screen
+              "md:absolute md:bottom-auto md:rounded-2xl md:mt-2.5 md:w-105 md:max-h-150",
+              isRTL ? "md:left-0 md:right-auto" : "md:right-0 md:left-auto",
               isDark
                 ? "bg-gray-900 border-gray-700/80 shadow-black/40"
                 : "bg-white border-gray-200 shadow-gray-200/80",
