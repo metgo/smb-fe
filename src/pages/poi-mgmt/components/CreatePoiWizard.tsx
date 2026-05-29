@@ -74,7 +74,7 @@ export default function CreatePoiWizard({
   const [selectedDmoId, setSelectedDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
@@ -244,7 +244,7 @@ export default function CreatePoiWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.long),
+          long: String(editData.geoLocation.long),
         });
       }
       if (editData?.address) {
@@ -321,7 +321,7 @@ export default function CreatePoiWizard({
       city: addr.city,
       location: addr.location,
     },
-    geoLocation: { lat: geo.lat, long: geo.lng },
+    geoLocation: { lat: geo.lat, long: geo.long },
     tagsId: formData.tags?.map((tag: any) => ({
       en: tag.en,
       he: tag.he,

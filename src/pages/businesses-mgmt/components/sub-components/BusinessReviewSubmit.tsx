@@ -44,7 +44,7 @@ interface BusinessReviewSubmitProps {
   address: string;
   geo?: {
     lat: string;
-    lng: string;
+    long: string;
   };
   t: (key: string) => string;
   setCurrentStep: (v: number) => void;
@@ -194,8 +194,8 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             {row(t("address"), address)}
             {row(
               t("geo"),
-              geo?.lat && geo?.lng
-                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.lng).toFixed(4)}`
+              geo?.lat && geo?.long
+                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.long).toFixed(4)}`
                 : null,
             )}
           </div>

@@ -145,7 +145,7 @@ export default function PoiDetailsPage() {
             purpose="POI"
             address={poi?.address}
             lat={poi?.geoLocation?.lat ?? poi?.location?.coordinates?.[0]}
-            lng={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
+            long={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
           />
         );
       case "media":

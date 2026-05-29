@@ -158,7 +158,7 @@ export default function EventDetailsPage() {
           <LocationDetails
             purpose="Event"
             lat={eventDetails?.geoLocation?.lat}
-            lng={eventDetails?.geoLocation?.long}
+            long={eventDetails?.geoLocation?.long}
             address={eventDetails?.address}
           />
         );

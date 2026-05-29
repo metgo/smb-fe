@@ -30,7 +30,7 @@ interface Business {
   productsCount: number;
   lifetimeSales: number; // Total sales revenue in ILS
   address: string;
-  coordinates: { lat: number; lng: number };
+  coordinates: { lat: number; long: number };
   owner?: {
     name: string;
     email: string;
