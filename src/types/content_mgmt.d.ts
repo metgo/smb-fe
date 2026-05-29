@@ -20,6 +20,7 @@ interface IIcon {
 
 interface IContentGroup {
   category: string;
+  description?: string;
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];

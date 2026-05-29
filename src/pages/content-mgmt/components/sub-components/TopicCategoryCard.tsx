@@ -12,18 +12,25 @@ import {
   ChevronDown,
   Eye,
   EyeClosed,
+  Loader2,
   MoreVertical,
+  Sparkles,
   Star,
   Trash2,
   X,
 } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  useAiSuggestCategoryEntitiesMutation,
+  type IAiSuggestedEntity,
+} from "@/store/api/contentMutationApi";
 import ColorPickerField from "./ColorPickerField";
 import ContentCard from "./ContentCard";
 
 import { ConfirmDialog } from "@/components/shared";
 import { LUCIDE_ICONS } from "../../utils/lucideIcons";
+import AiReviewModal from "../AiReviewModal";
 
 const ItemTypes = {
   BUSINESS_CARD: "business_card",
@@ -33,6 +40,7 @@ interface Props {
   group: any;
   topicIndex: number;
   categoryIndex: number;
+  externalApiId?: string | null;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
 }
@@ -41,6 +49,7 @@ const TopicCategoryCard = ({
   group,
   topicIndex,
   categoryIndex,
+  externalApiId,
   templateContents,
   setTemplateContent,
 }: Props) => {
@@ -57,6 +66,11 @@ const TopicCategoryCard = ({
 
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [aiSuggestEntities, { isLoading: isAiLoading }] =
+    useAiSuggestCategoryEntitiesMutation();
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiBusinesses, setAiBusinesses] = useState<IAiSuggestedEntity[]>([]);
+  const [aiProducts, setAiProducts] = useState<IAiSuggestedEntity[]>([]);
 
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const iconPickerRef = useRef<HTMLDivElement>(null);
@@ -301,6 +315,103 @@ const TopicCategoryCard = ({
     );
   };
 
+  const handleAiAutoFill = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const categoryName = group.category?.trim();
+    const categoryDescription =
+      group.description?.trim() || group.category?.trim() || "";
+
+    if (!categoryName) {
+      toast.error("Please name this category before using AI auto fill.");
+      return;
+    }
+
+    try {
+      const result = await aiSuggestEntities({
+        categoryName,
+        categoryDescription,
+        externalApiId: externalApiId ?? undefined,
+      }).unwrap();
+
+      const existingIds = new Set(
+        group.contents.map((item: IContent) => item._id),
+      );
+      const businesses = result.businesses.filter(
+        (item) => !existingIds.has(item._id),
+      );
+      const products = result.products.filter(
+        (item) => !existingIds.has(item._id),
+      );
+
+      if (!businesses.length && !products.length) {
+        toast.info("AI found no new matching entities for this category.");
+        return;
+      }
+
+      setAiBusinesses(businesses);
+      setAiProducts(products);
+      setShowAiModal(true);
+    } catch {
+      toast.error("AI suggestion failed. Please try again.");
+    }
+  };
+
+  const handleAiModalConfirm = (
+    selectedBusinesses: IAiSuggestedEntity[],
+    selectedProducts: IAiSuggestedEntity[],
+  ) => {
+    const nextContents: IContent[] = [
+      ...selectedBusinesses.map((business) => ({
+        _id: business._id,
+        name: business.name,
+        desc: business.description,
+        imageUrl: business.images?.[0]?.image || "",
+        primaryCategory: "",
+        contentType: "business" as const,
+        title: business.name,
+        message: business.description,
+      })),
+      ...selectedProducts.map((product) => ({
+        _id: product._id,
+        name: product.name,
+        desc: product.description,
+        imageUrl: product.images?.[0]?.image || "",
+        primaryCategory: "",
+        contentType: "product" as const,
+        title: product.name,
+        message: product.description,
+      })),
+    ];
+
+    if (!nextContents.length) {
+      setShowAiModal(false);
+      return;
+    }
+
+    setTemplateContent((prev) =>
+      prev.map((template, tIndex) => {
+        if (tIndex !== topicIndex) return template;
+        return {
+          ...template,
+          groups: template.groups.map((grp, gIndex) => {
+            if (gIndex !== categoryIndex) return grp;
+            const existingIds = new Set(grp.contents.map((item) => item._id));
+            return {
+              ...grp,
+              contents: [
+                ...grp.contents,
+                ...nextContents.filter((item) => !existingIds.has(item._id)),
+              ],
+            };
+          }),
+        };
+      }),
+    );
+    setShowAiModal(false);
+    toast.success("AI suggestions added to the category.");
+  };
+
   const divRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -533,6 +644,41 @@ const TopicCategoryCard = ({
                 <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
                   {group.contents.length}
                 </span>
+                <div className="relative group/ai">
+                  <button
+                    type="button"
+                    title="Auto Fill with AI"
+                    aria-label="Auto Fill with AI"
+                    onClick={handleAiAutoFill}
+                    disabled={isAiLoading}
+                    className={clsx(
+                      "h-7 w-7 rounded-md border flex items-center justify-center transition-colors",
+                      isAiLoading
+                        ? isDark
+                          ? "border-gray-700 text-gray-500 cursor-wait"
+                          : "border-gray-200 text-gray-400 cursor-wait"
+                        : isDark
+                          ? "border-purple-600/70 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400"
+                          : "border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-500",
+                    )}
+                  >
+                    {isAiLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <div
+                    className={clsx(
+                      "absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover/ai:opacity-100 pointer-events-none transition-opacity z-20",
+                      isDark
+                        ? "bg-gray-700 text-gray-200"
+                        : "bg-gray-800 text-white",
+                    )}
+                  >
+                    Auto Fill with AI
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -681,6 +827,14 @@ const TopicCategoryCard = ({
           setCategoryToDelete(null);
         }}
         onConfirm={confirmDeleteCategory}
+      />
+      <AiReviewModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        categoryName={group.category}
+        suggestedBusinesses={aiBusinesses}
+        suggestedProducts={aiProducts}
+        onConfirm={handleAiModalConfirm}
       />
     </div>
   );

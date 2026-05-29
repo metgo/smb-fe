@@ -7,10 +7,15 @@ import {
   XCircle,
   CheckCheck,
   ArrowRight,
+  User,
+  Tag,
+  ExternalLink,
+  Check,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { getBorderColor, timeAgo } from "@/helpers";
 import { toggleNotification } from "@/features/uiSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -19,6 +24,11 @@ import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
 import { useMarkNotificationsAsReadMutation } from "@/store/api/notificationApi";
 import { markNotificationAsRead } from "@/features/notificationSlice";
+import {
+  useApproveCategorySuggestionMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
+import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 
 const NotificationsBell = () => {
   const navigate = useNavigate();
@@ -31,6 +41,11 @@ const NotificationsBell = () => {
   const { notifications } = useAppSelector((state) => state.notification);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [updateProduct] = useUpdateProductMutation();
+
+  const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
 
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
@@ -140,9 +155,7 @@ const NotificationsBell = () => {
             ref={popupRef}
             className={clsx(
               "flex flex-col overflow-hidden shadow-2xl border z-50 animate-fade-in",
-              // Mobile: full-width bottom sheet
               "fixed bottom-0 left-0 right-0 rounded-t-2xl max-h-[85dvh]",
-              // Desktop: absolute dropdown, anchored to keep panel inside screen
               "md:absolute md:bottom-auto md:rounded-2xl md:mt-2.5 md:w-105 md:max-h-150",
               isRTL ? "md:left-0 md:right-auto" : "md:right-0 md:left-auto",
               isDark
@@ -158,13 +171,12 @@ const NotificationsBell = () => {
             >
               <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
             </button>
+
             {/* Header */}
             <div
               className={clsx(
-                "flex items-center justify-between px-5 py-4 border-b",
-                isDark
-                  ? "border-gray-700/80 bg-gray-900"
-                  : "border-gray-100 bg-gray-50/80",
+                "flex items-center justify-between px-5 py-4 border-b shrink-0",
+                isDark ? "border-gray-700/80" : "border-gray-100",
               )}
             >
               <div className="flex items-center gap-2.5">
@@ -215,41 +227,91 @@ const NotificationsBell = () => {
                 {notifications?.map((notification) => {
                   const isUnread = !notification.isRead;
                   const itemType = notification?.itemType;
-                  console.log("🚀 ~ NotificationsBell ~ itemType:", itemType);
+                  const queryParam = `${itemType?.toLowerCase()}Id`;
+                  const isApproving = approvingIds.has(notification._id);
 
-                  const queryParam = `${itemType.toLowerCase()}Id`;
+                  const isCategorySuggestion =
+                    notification.notifType === "ACTION" &&
+                    !!notification.actionData?.suggestedCategory;
 
-                  const handleNavigate = async () => {
+                  const canApprove =
+                    notification.notifType === "ACTION" &&
+                    notification.status !== "CLOSED" &&
+                    (itemType === "BUSINESS" || itemType === "PRODUCT");
+
+                  const handleViewDetails = async (e: React.MouseEvent) => {
+                    e.stopPropagation();
                     dispatch(toggleNotification());
                     await markNotificationsAsRead(notification._id);
                     dispatch(markNotificationAsRead(notification._id));
-                    navigate(
-                      `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                    if (itemEndpoint[itemType]) {
+                      navigate(
+                        `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                      );
+                    }
+                  };
+
+                  const handleApprove = async (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setApprovingIds((prev) =>
+                      new Set(prev).add(notification._id),
                     );
+                    try {
+                      if (isCategorySuggestion) {
+                        await approveCategorySuggestion({
+                          itemId: notification.itemId,
+                          itemType: notification.itemType,
+                          categoryTitle:
+                            notification.actionData?.suggestedCategory || "",
+                          notificationId: notification._id,
+                        }).unwrap();
+                      } else if (itemType === "BUSINESS") {
+                        await updateBusiness({
+                          businessId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      } else if (itemType === "PRODUCT") {
+                        await updateProduct({
+                          productId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      }
+                      await markNotificationsAsRead(notification._id);
+                      dispatch(markNotificationAsRead(notification._id));
+                      toast.success("Approved successfully!");
+                    } catch {
+                      toast.error("Failed to approve. Please try again.");
+                    } finally {
+                      setApprovingIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(notification._id);
+                        return next;
+                      });
+                    }
                   };
 
                   return (
                     <div
                       key={notification?._id}
-                      onClick={handleNavigate}
                       className={clsx(
-                        "flex items-start gap-3.5 px-5 py-4 cursor-pointer transition-colors duration-150 group",
+                        "flex items-start gap-3.5 px-5 py-4 transition-colors duration-150",
                         isRTL ? "border-r-[3px]" : "border-l-[3px]",
-                        getBorderColor(notification?.notifType, isRTL), // read notifications
+                        getBorderColor(notification?.notifType, isRTL),
                         !notification?.isRead
                           ? isDark
-                            ? "bg-blue-500/5 hover:bg-blue-500/10"
-                            : "bg-blue-50/60 hover:bg-blue-50"
-                          : isDark
-                            ? "hover:bg-gray-800/60"
-                            : "hover:bg-gray-50",
+                            ? "bg-blue-500/5"
+                            : "bg-blue-50/60"
+                          : "",
                       )}
                     >
                       {/* Icon */}
-                      {getNotificationIcon(notification?.notifType)}
+                      <div className="shrink-0 mt-0.5">
+                        {getNotificationIcon(notification?.notifType)}
+                      </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
+                        {/* Title row */}
                         <div className="flex items-start justify-between gap-2">
                           <h4
                             className={clsx(
@@ -261,19 +323,64 @@ const NotificationsBell = () => {
                           >
                             {notification?.content?.[language]?.title}
                           </h4>
-                          {/* Unread dot */}
                           {isUnread && (
                             <span className="mt-1 shrink-0 w-2 h-2 rounded-full bg-blue-500" />
                           )}
                         </div>
+
+                        {/* Description */}
                         <p
                           className={clsx(
-                            "text-xs mt-0.5 leading-relaxed line-clamp-2",
+                            "text-xs mt-1 leading-relaxed line-clamp-2",
                             textSecondary,
                           )}
                         >
                           {notification?.content?.[language]?.message}
                         </p>
+
+                        {/* Meta row: creator + category tag */}
+                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                          {notification?.creatorInfo?.name && (
+                            <span
+                              className={clsx(
+                                "flex items-center gap-1 text-[11px]",
+                                textTertiary,
+                              )}
+                            >
+                              <User className="w-3 h-3" />
+                              {notification.creatorInfo.name}
+                            </span>
+                          )}
+
+                          {notification?.actionData?.suggestedCategory && (
+                            <span
+                              className={clsx(
+                                "flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full",
+                                isDark
+                                  ? "bg-amber-900/30 text-amber-300"
+                                  : "bg-amber-50 text-amber-700",
+                              )}
+                            >
+                              <Tag className="w-2.5 h-2.5" />
+                              {notification.actionData.suggestedCategory}
+                            </span>
+                          )}
+
+                          {itemType && (
+                            <span
+                              className={clsx(
+                                "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                                isDark
+                                  ? "bg-gray-700 text-gray-400"
+                                  : "bg-gray-100 text-gray-500",
+                              )}
+                            >
+                              {itemType}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Timestamp */}
                         <p
                           className={clsx(
                             "text-[11px] mt-1.5 font-medium",
@@ -282,6 +389,39 @@ const NotificationsBell = () => {
                         >
                           {timeAgo(notification.createdAt)}
                         </p>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 mt-2.5">
+                          {canApprove && (
+                            <button
+                              onClick={handleApprove}
+                              disabled={isApproving}
+                              className={clsx(
+                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                                "bg-green-600 hover:bg-green-700 text-white",
+                                "disabled:opacity-60 disabled:cursor-not-allowed",
+                              )}
+                            >
+                              <Check className="w-3 h-3" />
+                              {isApproving ? "Approving..." : "Approve"}
+                            </button>
+                          )}
+
+                          {itemEndpoint[itemType] && (
+                            <button
+                              onClick={handleViewDetails}
+                              className={clsx(
+                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                                isDark
+                                  ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                                  : "bg-gray-100 hover:bg-gray-200 text-gray-700",
+                              )}
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Details
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -292,7 +432,7 @@ const NotificationsBell = () => {
             {notifications?.length > 0 && (
               <div
                 className={clsx(
-                  "px-5 py-3 border-t",
+                  "px-5 py-3 border-t shrink-0",
                   isDark
                     ? "border-gray-700/80 bg-gray-900"
                     : "border-gray-100 bg-gray-50/80",
