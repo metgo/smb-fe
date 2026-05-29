@@ -28,3 +28,4 @@ draft.json
 *draft
 draft.json
 *.env
+clean-branches.sh
