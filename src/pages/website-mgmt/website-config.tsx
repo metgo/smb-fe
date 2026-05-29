@@ -1,42 +1,38 @@
 import clsx from "clsx";
 import { toast } from "sonner";
+import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback, useRef, useEffect } from "react";
-import {
-  Image as ImageIcon,
-  Palette,
-  Share2,
-  Phone,
-  Search,
-  BarChart2,
-  Globe,
-  CheckCircle,
-  Video,
-  Handshake,
-} from "lucide-react";
+
+import { useSearchParams } from "react-router-dom";
+import { ImageWithFallback } from "@/components/shared";
+import { BackToListBtn, PublishButton } from "@/components/btns";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import WizardFooter from "@/components/shared/WizardFooter";
 import {
-  Step01BrandingMedia,
-  Step02HomeVideo,
-  Step02ThemeAppearance,
-  Step03SocialMedia,
-  Step04ContactDetails,
-  Step05SeoMeta,
-  Step06Analytics,
-  Step07Localization,
-  Step08Partners,
-  Step12SavePublish,
-} from "./steps";
+  Step01Generals,
+  Step02BrandingMedia,
+  Step03HomeVideo,
+  Step04ThemeAppearance,
+  Step05SocialMedia,
+  Step06ContactDetails,
+  Step07SeoMeta,
+  Step08Analytics,
+  Step09Localization,
+  Step10Campaigns,
+} from "./components/steps";
 import {
   useCreateWebsiteSettingMutation,
   useUpdateWebsiteSettingMutation,
   useGetWebsiteSettingDetailsQuery,
-} from "@/store/api/websiteSettingsApi";
+  useGetAllCampaignsQuery,
+} from "@/store/api/websiteConfigApi";
 import { Spinner } from "@/components/shared";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { convertToWebP, uploadWithProgress } from "@/helpers";
+import { routes } from "@/lib/routes";
+import { StepIndicator } from "./components/StepIndicator";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                           */
@@ -44,30 +40,35 @@ import { convertToWebP, uploadWithProgress } from "@/helpers";
 
 const TOTAL_STEPS = 10;
 
-const STEP_ICONS: React.FC<{ className?: string }>[] = [
-  ImageIcon,
-  Video,
-  Palette,
-  Share2,
-  Phone,
-  Search,
-  BarChart2,
-  Globe,
-  Handshake,
-  CheckCircle,
-];
+const DEFAULT_FORM: ISiteSettingsFormData = {
+  isActive: true,
 
-const DEFAULT_FORM: SiteSettingsFormData = {
   /* Step 1 */
-  websiteName: "",
-  slogan: "",
+  websiteNameEn: "",
+  websiteNameHe: "",
+  websiteNameAr: "",
+  sloganEn: "",
+  sloganHe: "",
+  sloganAr: "",
+  websiteUrl: "",
+  purpose: "MARKETPLACE",
+  identifierId: "",
+  gaPropertyId: "",
+  platformCharge: 0,
+
+  /* Step 2 */
   logoUrl: "",
   faviconUrl: "",
-  splashLogoUrl: "",
-  /* Step 2 */
+  bgImageUrl: "",
+  specialSymbolUrl: "",
+
+  /* Step 3 */
   desktopVideos: [],
   mobileVideos: [],
-  /* Step 3 */
+  desktopVideoThumbnails: [],
+  mobileVideoThumbnails: [],
+
+  /* Step 4 */
   primaryColor: "#0d9488",
   secondaryColor: "#6366f1",
   backgroundColor: "#ffffff",
@@ -76,7 +77,8 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   buttonStyle: "rounded",
   buttonRadius: "8",
   darkModeEnabled: false,
-  /* Step 4 */
+
+  /* Step 5 */
   facebookUrl: "",
   instagramUrl: "",
   twitterUrl: "",
@@ -85,16 +87,21 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   tiktokUrl: "",
   showSocialIcons: true,
   socialLinksNewTab: true,
-  /* Step 5 */
+
+  /* Step 6 */
   phoneNumber: "",
   whatsappNumber: "",
+  whatsappMessageEn: "",
+  whatsappMessageHe: "",
+  whatsappMessageAr: "",
   email: "",
   supportEmail: "",
   physicalAddress: "",
   googleMapsEmbed: "",
   enableClickToCall: true,
   enableWhatsappChat: false,
-  /* Step 6 */
+
+  /* Step 7 */
   metaTitle: "",
   metaDescription: "",
   metaKeywords: "",
@@ -107,35 +114,133 @@ const DEFAULT_FORM: SiteSettingsFormData = {
   canonicalUrl: "",
   robotsTxt: "User-agent: *\nAllow: /",
   sitemapUrl: "",
-  /* Step 7 */
+
+  /* Step 8 */
   googleAnalyticsId: "",
   googleTagManagerId: "",
   facebookPixelId: "",
   headerScripts: "",
   footerScripts: "",
-  /* Step 8 */
+
+  /* Step 9 */
   defaultLanguage: "English",
   multiLanguageEnabled: false,
   timezone: "UTC",
   currency: "USD",
   dateFormat: "",
-  /* Step 9 */
-  partners: [],
+
+  /* Step 10 */
+  primaryCampId: "",
+  campIds: [],
+};
+
+/* ------------------------------------------------------------------ */
+/*  Completion score                                                    */
+/* ------------------------------------------------------------------ */
+
+// Keyed by wizard display step (1–10 as rendered in renderStep)
+const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
+  1: [
+    "websiteNameEn",
+    "websiteNameHe",
+    "websiteNameAr",
+    "sloganEn",
+    "sloganHe",
+    "sloganAr",
+    "websiteUrl",
+    "identifierId",
+    "gaPropertyId",
+    "platformCharge",
+  ],
+  2: ["primaryCampId", "campIds"],
+  3: ["logoUrl", "faviconUrl", "bgImageUrl", "specialSymbolUrl"],
+  4: [
+    "desktopVideos",
+    "mobileVideos",
+    "desktopVideoThumbnails",
+    "mobileVideoThumbnails",
+  ],
+  5: ["fontSourceUrl"],
+  6: [
+    "facebookUrl",
+    "instagramUrl",
+    "twitterUrl",
+    "youtubeUrl",
+    "linkedinUrl",
+    "tiktokUrl",
+  ],
+  7: [
+    "phoneNumber",
+    "whatsappNumber",
+    "whatsappMessageEn",
+    "whatsappMessageHe",
+    "whatsappMessageAr",
+    "email",
+    "supportEmail",
+    "physicalAddress",
+    "googleMapsEmbed",
+  ],
+  8: [
+    "metaTitle",
+    "metaDescription",
+    "metaKeywords",
+    "ogTitle",
+    "ogDescription",
+    "ogImageUrl",
+    "twitterCardTitle",
+    "twitterCardDescription",
+    "twitterCardImageUrl",
+    "canonicalUrl",
+    "sitemapUrl",
+  ],
+  9: [
+    "googleAnalyticsId",
+    "googleTagManagerId",
+    "facebookPixelId",
+    "headerScripts",
+    "footerScripts",
+  ],
+  10: ["dateFormat"],
+};
+
+const isFilled = (value: unknown): boolean => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  return true;
+};
+
+const calculateCompletionScore = (data: ISiteSettingsFormData): number => {
+  const allFields = Object.values(STEP_FIELDS).flat();
+  const filled = allFields.filter((field) => isFilled(data[field])).length;
+  return Math.round((filled / allFields.length) * 100);
 };
 
 /* ------------------------------------------------------------------ */
 /*  Payload builder                                                     */
 /* ------------------------------------------------------------------ */
 
-const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
-  externalApiId,
-  websiteName: data.websiteName,
-  slogan: data.slogan,
+const buildPayload = (data: ISiteSettingsFormData) => ({
+  isActive: true,
+  score: calculateCompletionScore(data),
+  websiteNameEn: data.websiteNameEn,
+  websiteNameHe: data.websiteNameHe,
+  websiteNameAr: data.websiteNameAr,
+  sloganEn: data.sloganEn,
+  sloganHe: data.sloganHe,
+  sloganAr: data.sloganAr,
+  websiteUrl: data.websiteUrl,
+  purpose: data.purpose,
+  identifierId: data.identifierId,
+  gaPropertyId: data.gaPropertyId,
+  platformCharge: data.platformCharge,
   logoUrl: data.logoUrl,
   faviconUrl: data.faviconUrl,
-  splashLogoUrl: data.splashLogoUrl,
+  specialSymbolUrl: data.specialSymbolUrl,
+  bgImageUrl: data.bgImageUrl,
   desktopVideos: data.desktopVideos,
   mobileVideos: data.mobileVideos,
+  desktopVideoThumbnails: data.desktopVideoThumbnails,
+  mobileVideoThumbnails: data.mobileVideoThumbnails,
   primaryColor: data.primaryColor,
   secondaryColor: data.secondaryColor,
   backgroundColor: data.backgroundColor,
@@ -154,6 +259,9 @@ const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   socialLinksNewTab: data.socialLinksNewTab,
   phoneNumber: data.phoneNumber,
   whatsappNumber: data.whatsappNumber,
+  whatsappMessageEn: data.whatsappMessageEn,
+  whatsappMessageHe: data.whatsappMessageHe,
+  whatsappMessageAr: data.whatsappMessageAr,
   email: data.email,
   supportEmail: data.supportEmail,
   physicalAddress: data.physicalAddress,
@@ -182,36 +290,28 @@ const buildPayload = (data: SiteSettingsFormData, externalApiId: string) => ({
   timezone: data.timezone,
   currency: data.currency,
   dateFormat: data.dateFormat,
-  partners: data.partners,
+  primaryCampId: data.primaryCampId,
+  campIds: data.campIds,
 });
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                           */
+/*  Main Components                                                     */
 /* ------------------------------------------------------------------ */
-
-interface Props {
-  externalApiId: string;
-}
-
-export default function SiteSettingsWizard({ externalApiId }: Props) {
+export default function WebsiteConfigPage() {
   const { t } = useTranslation("website_settings");
-  const { textSecondary, borderColor, cardClasses, isDark } = useThemeClasses();
+  const [searchParams] = useSearchParams();
 
-  const STEP_META = [
-    t("step_branding"),
-    t("step_videos"),
-    t("step_theme"),
-    t("step_social"),
-    t("step_contact"),
-    t("step_seo"),
-    t("step_analytics"),
-    t("step_language"),
-    t("step_partners"),
-    t("step_publish"),
-  ].map((label, i) => ({ icon: STEP_ICONS[i], label }));
+  const websiteId = searchParams.get("websiteId");
+  const websiteName = searchParams.get("websiteName");
+  const websiteLogo = searchParams.get("websiteLogo");
+
+  const { textPrimary, textSecondary, borderColor, cardClasses, isDark } =
+    useThemeClasses();
+  const { data: allCampaigns } = useGetAllCampaignsQuery();
+  const campaigns = allCampaigns?.filter((c) => c.type !== "MINI_SITE") ?? [];
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<SiteSettingsFormData>(DEFAULT_FORM);
+  const [formData, setFormData] = useState<ISiteSettingsFormData>(DEFAULT_FORM);
   const [errors, setErrors] = useState<SiteSettingsErrors>({});
   const [isPublishing, setIsPublishing] = useState(false);
   const [uploadStates, setUploadStates] = useState<
@@ -230,8 +330,11 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   const [updateWebsiteSetting] = useUpdateWebsiteSettingMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
 
-  const { data: existingSettings, isLoading } =
-    useGetWebsiteSettingDetailsQuery(externalApiId, { skip: !externalApiId });
+  const {
+    data: existingSettings,
+    isLoading,
+    refetch,
+  } = useGetWebsiteSettingDetailsQuery(websiteId, { skip: !websiteId });
 
   /* ---------------- Hydrate form from fetched settings ---------------- */
 
@@ -239,19 +342,34 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     setFormData(DEFAULT_FORM);
     setUploadStates({});
     setErrors({});
-  }, [externalApiId]);
+  }, [websiteId]);
 
   useEffect(() => {
     if (!existingSettings) return;
     const d = existingSettings;
     setFormData({
-      websiteName: d.websiteName ?? "",
-      slogan: d.slogan ?? "",
+      isActive: true,
+      websiteNameEn: d.websiteNameEn ?? "",
+      websiteNameHe: d.websiteNameHe ?? "",
+      websiteNameAr: d.websiteNameAr ?? "",
+      websiteUrl: d.websiteUrl ?? "",
+      sloganEn: d.sloganEn ?? "",
+      sloganHe: d.sloganHe ?? "",
+      sloganAr: d.sloganAr ?? "",
+      purpose: d.purpose ?? "MARKETPLACE",
+      identifierId: d.identifierId ?? "",
+      gaPropertyId: d.gaPropertyId ?? "",
+      platformCharge: d.platformCharge ?? 0,
+
       logoUrl: d.logoUrl ?? "",
       faviconUrl: d.faviconUrl ?? "",
-      splashLogoUrl: d.splashLogoUrl ?? "",
+      specialSymbolUrl: d.specialSymbolUrl ?? "",
+      bgImageUrl: d.bgImageUrl ?? "",
+
       desktopVideos: d.desktopVideos ?? [],
       mobileVideos: d.mobileVideos ?? [],
+      desktopVideoThumbnails: d.desktopVideoThumbnails ?? [],
+      mobileVideoThumbnails: d.mobileVideoThumbnails ?? [],
       primaryColor: d.primaryColor ?? "#0d9488",
       secondaryColor: d.secondaryColor ?? "#6366f1",
       backgroundColor: d.backgroundColor ?? "#ffffff",
@@ -270,6 +388,11 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       socialLinksNewTab: d.socialLinksNewTab ?? true,
       phoneNumber: d.phoneNumber ?? "",
       whatsappNumber: d.whatsappNumber ?? "",
+
+      whatsappMessageEn: d.whatsappMessageEn ?? "",
+      whatsappMessageHe: d.whatsappMessageHe ?? "",
+      whatsappMessageAr: d.whatsappMessageAr ?? "",
+
       email: d.email ?? "",
       supportEmail: d.supportEmail ?? "",
       physicalAddress: d.physicalAddress ?? "",
@@ -298,7 +421,8 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       timezone: d.timezone ?? "UTC",
       currency: d.currency ?? "USD",
       dateFormat: d.dateFormat ?? "",
-      partners: d.partners ?? [],
+      primaryCampId: d.primaryCampId ?? "",
+      campIds: d.campIds ?? [],
     });
     setUploadStates({});
   }, [existingSettings]);
@@ -310,7 +434,10 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   };
 
   const onChange = useCallback(
-    (field: keyof SiteSettingsFormData, value: string | boolean) => {
+    (
+      field: keyof ISiteSettingsFormData,
+      value: string | boolean | string[] | number,
+    ) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => {
         const next = { ...prev };
@@ -324,7 +451,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   /* ---------------- Image Upload (logo, favicon, splash, OG) ---------------- */
 
   const handleFileSelect = useCallback(
-    async (field: keyof SiteSettingsFormData, file: File) => {
+    async (field: keyof ISiteSettingsFormData, file: File) => {
       const previewUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, [field]: previewUrl }));
       setUploadStates((prev) => ({ ...prev, [field]: "uploading" }));
@@ -363,7 +490,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     [createSignedUrl],
   );
 
-  const handleFileClear = useCallback((field: keyof SiteSettingsFormData) => {
+  const handleFileClear = useCallback((field: keyof ISiteSettingsFormData) => {
     setFormData((prev) => {
       const url = prev[field] as string;
       if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
@@ -382,7 +509,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
       setFormData((prev) => {
         const existing = prev[field];
         const newItem: VideoItem = {
-          id,
+          _id: id,
           url: previewUrl,
           name: file.name,
           isActive: existing.length === 0,
@@ -410,7 +537,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
         setFormData((prev) => ({
           ...prev,
           [field]: prev[field].map((v) =>
-            v.id === id ? { ...v, url: gcsURL } : v,
+            v._id === id ? { ...v, url: gcsURL } : v,
           ),
         }));
         setUploadStates((prev) => ({ ...prev, [id]: "done" }));
@@ -432,12 +559,12 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     (field: "desktopVideos" | "mobileVideos", id: string) => {
       setFormData((prev) => {
         const removedWasActive =
-          prev[field].find((v) => v.id === id)?.isActive ?? false;
-        const remaining = prev[field].filter((v) => v.id !== id);
+          prev[field].find((v) => v._id === id)?.isActive ?? false;
+        const remaining = prev[field].filter((v) => v._id !== id);
         if (removedWasActive && remaining.length > 0) {
           remaining[0] = { ...remaining[0], isActive: true };
         }
-        const url = prev[field].find((v) => v.id === id)?.url;
+        const url = prev[field].find((v) => v._id === id)?.url;
         if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
         return { ...prev, [field]: remaining };
       });
@@ -454,95 +581,102 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
     (field: "desktopVideos" | "mobileVideos", id: string) => {
       setFormData((prev) => ({
         ...prev,
-        [field]: prev[field].map((v) => ({ ...v, isActive: v.id === id })),
+        [field]: prev[field].map((v) => ({ ...v, isActive: v._id === id })),
       }));
     },
     [],
   );
 
-  /* ---------------- Partner Handlers ---------------- */
+  /* ---------------- Thumbnail Upload ---------------- */
 
-  const handlePartnerAdd = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      partners: [
-        ...prev.partners,
-        {
-          id: crypto.randomUUID(),
-          name: "",
-          description: "",
-          logo: "",
-          website: "",
-        },
-      ],
-    }));
-  }, []);
-
-  const handlePartnerRemove = useCallback((id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      partners: prev.partners.filter((p) => p.id !== id),
-    }));
-  }, []);
-
-  const handlePartnerChange = useCallback(
-    (id: string, field: keyof PartnerItem, value: string) => {
-      setFormData((prev) => ({
-        ...prev,
-        partners: prev.partners.map((p) =>
-          p.id === id ? { ...p, [field]: value } : p,
-        ),
-      }));
-    },
-    [],
-  );
-
-  /* ---------------- Partner Logo Upload ---------------- */
-
-  const handlePartnerLogoUpload = useCallback(
-    async (partnerId: string, file: File) => {
+  const handleThumbnailAdd = useCallback(
+    async (
+      field: "desktopVideoThumbnails" | "mobileVideoThumbnails",
+      file: File,
+    ) => {
+      const id = crypto.randomUUID();
       const previewUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        partners: prev.partners.map((p) =>
-          p.id === partnerId ? { ...p, logo: previewUrl } : p,
-        ),
-      }));
+
+      setFormData((prev) => {
+        const existing = prev[field];
+        const newItem: ThumnailItem = {
+          _id: id,
+          url: previewUrl,
+          name: file.name,
+          isActive: existing.length === 0,
+        };
+        return { ...prev, [field]: [...existing, newItem] };
+      });
+      setUploadStates((prev) => ({ ...prev, [id]: "uploading" }));
 
       try {
-        const webpFile = await convertToWebP(file);
+        const fileToUpload = await convertToWebP(file);
         const res = await createSignedUrl([
-          { originalName: webpFile.name, mimeType: webpFile.type },
+          { originalName: fileToUpload.name, mimeType: fileToUpload.type },
         ]);
         const { signedUrl, gcsURL } = res.data[0];
 
-        await uploadWithProgress(webpFile, signedUrl, (p) =>
-          setUploadProgress((prev) => ({ ...prev, [partnerId]: p })),
+        await uploadWithProgress(fileToUpload, signedUrl, (p) =>
+          setUploadProgress((prev) => ({ ...prev, [id]: p })),
         );
 
         URL.revokeObjectURL(previewUrl);
         setUploadProgress((prev) => {
           const next = { ...prev };
-          delete next[partnerId];
+          delete next[id];
           return next;
         });
         setFormData((prev) => ({
           ...prev,
-          partners: prev.partners.map((p) =>
-            p.id === partnerId ? { ...p, logo: gcsURL } : p,
+          [field]: prev[field].map((th) =>
+            th._id === id ? { ...th, url: gcsURL } : th,
           ),
         }));
-        toast.success(t("logo_uploaded"));
+        setUploadStates((prev) => ({ ...prev, [id]: "done" }));
+        toast.success(t("file_uploaded"));
       } catch {
         setUploadProgress((prev) => {
           const next = { ...prev };
-          delete next[partnerId];
+          delete next[id];
           return next;
         });
-        toast.error(t("logo_upload_failed"));
+        setUploadStates((prev) => ({ ...prev, [id]: "error" }));
+        toast.error(t("upload_failed"));
       }
     },
     [createSignedUrl],
+  );
+
+  const handleThumbnailRemove = useCallback(
+    (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
+      setFormData((prev) => {
+        const removedWasActive =
+          prev[field].find((th) => th._id === id)?.isActive ?? false;
+        const remaining = prev[field].filter((th) => th._id !== id);
+        if (removedWasActive && remaining.length > 0) {
+          remaining[0] = { ...remaining[0], isActive: true };
+        }
+        const url = prev[field].find((th) => th._id === id)?.url;
+        if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+        return { ...prev, [field]: remaining };
+      });
+      setUploadStates((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    },
+    [],
+  );
+
+  const handleThumbnailActivate = useCallback(
+    (field: "desktopVideoThumbnails" | "mobileVideoThumbnails", id: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: prev[field].map((th) => ({ ...th, isActive: th._id === id })),
+      }));
+    },
+    [],
   );
 
   /* ---------------- Navigation ---------------- */
@@ -553,19 +687,29 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   };
 
   const handlePrevious = () => goToStep(Math.max(1, currentStep - 1));
-  const handleNext = () => goToStep(Math.min(TOTAL_STEPS, currentStep + 1));
+
+  const validateStep1 = (): boolean => {
+    const newErrors: SiteSettingsErrors = {};
+    if (!formData.websiteNameEn.trim())
+      newErrors.websiteNameEn = t("field_required");
+    if (!formData.sloganEn.trim()) newErrors.sloganEn = t("field_required");
+    if (!formData.identifierId.trim())
+      newErrors.identifierId = t("field_required");
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (currentStep === 1 && !validateStep1()) return;
+    goToStep(Math.min(TOTAL_STEPS, currentStep + 1));
+  };
 
   /* ---------------- Save / Publish ---------------- */
 
   const handlePublish = async () => {
-    if (!externalApiId) {
-      toast.error(t("select_website_first"));
-      return;
-    }
-
     setIsPublishing(true);
     try {
-      const payload = buildPayload(formData, externalApiId);
+      const payload = buildPayload(formData);
       if (existingSettings) {
         await updateWebsiteSetting({
           id: existingSettings._id,
@@ -575,6 +719,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
         await createWebsiteSetting(payload).unwrap();
       }
       toast.success(t("settings_published"));
+      refetch();
     } catch {
       toast.error(t("settings_publish_failed"));
     } finally {
@@ -585,6 +730,7 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   /* ---------------- Step Rendering ---------------- */
 
   const stepProps = {
+    isEdit: !!existingSettings,
     formData,
     errors,
     onChange,
@@ -596,162 +742,175 @@ export default function SiteSettingsWizard({ externalApiId }: Props) {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <Step01BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
-        );
+        return <Step01Generals {...stepProps} />;
       case 2:
         return (
-          <Step02HomeVideo
+          <Step10Campaigns
+            campaigns={campaigns}
+            formData={formData}
+            onChange={onChange}
+          />
+        );
+      case 3:
+        return (
+          <Step02BrandingMedia {...stepProps} uploadProgress={uploadProgress} />
+        );
+      case 4:
+        return (
+          <Step03HomeVideo
             formData={formData}
             uploadStates={uploadStates}
             uploadProgress={uploadProgress}
             onVideoAdd={handleVideoAdd}
             onVideoRemove={handleVideoRemove}
             onVideoActivate={handleVideoActivate}
+            onThumbnailAdd={handleThumbnailAdd}
+            onThumbnailRemove={handleThumbnailRemove}
+            onThumbnailActivate={handleThumbnailActivate}
           />
         );
-      case 3:
-        return <Step02ThemeAppearance {...stepProps} />;
-      case 4:
-        return <Step03SocialMedia {...stepProps} />;
       case 5:
-        return <Step04ContactDetails {...stepProps} />;
+        return <Step04ThemeAppearance {...stepProps} />;
       case 6:
-        return <Step05SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+        return <Step05SocialMedia {...stepProps} />;
       case 7:
+        return <Step06ContactDetails {...stepProps} />;
+      case 8:
+        return <Step07SeoMeta {...stepProps} uploadProgress={uploadProgress} />;
+      case 9:
         return (
-          <Step06Analytics
+          <Step08Analytics
             formData={formData}
             errors={errors}
             onChange={onChange}
           />
         );
-      case 8:
-        return <Step07Localization {...stepProps} />;
-      case 9:
-        return (
-          <Step08Partners
-            partners={formData.partners}
-            onPartnerAdd={handlePartnerAdd}
-            onPartnerRemove={handlePartnerRemove}
-            onPartnerChange={handlePartnerChange}
-            onLogoUpload={handlePartnerLogoUpload}
-            uploadProgress={uploadProgress}
-          />
-        );
       case 10:
-        return <Step12SavePublish formData={formData} />;
+        return <Step09Localization {...stepProps} />;
+
       default:
         return null;
     }
   };
 
-  /* ------------------------------------------------------------------ */
-  /*  Render                                                              */
-  /* ------------------------------------------------------------------ */
-
   return (
-    <div
-      className={clsx(
-        "flex flex-col h-full rounded-2xl border overflow-hidden relative",
-        cardClasses,
-        borderColor,
-      )}
-    >
-      <Spinner isLoading={isLoading} />
-      {/* Step indicator */}
-      <div
-        className={clsx(
-          "flex items-center justify-between px-6 py-4 border-b overflow-x-auto shrink-0",
-          borderColor,
-        )}
-      >
-        {STEP_META.map(({ icon: Icon, label }, i) => {
-          const step = i + 1;
-          const isActive = step === currentStep;
-          const isCompleted = step < currentStep;
-
-          return (
-            <button
-              key={step}
-              onClick={() => goToStep(step)}
+    <div className="flex flex-col gap-3 sm:gap-6 px-4 sm:px-6 lg:px-8 py-6 mx-auto w-full h-full">
+      <BackToListBtn navPath={routes.websiteMgmt} />
+      {/* Page Header */}
+      <section className="flex items-center flex-wrap justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center border border-teal-500">
+            {websiteLogo ? (
+              <ImageWithFallback
+                src={websiteLogo}
+                alt={websiteName || "Logo"}
+                className="object-contain w-10 h-10 sm:w-12 sm:h-12"
+              />
+            ) : (
+              <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <h1
               className={clsx(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all cursor-pointer shrink-0",
-                isActive
-                  ? "bg-teal-500/15"
-                  : isCompleted
-                    ? isDark
-                      ? "hover:bg-gray-800"
-                      : "hover:bg-gray-100"
-                    : isDark
-                      ? "hover:bg-gray-800 opacity-50"
-                      : "hover:bg-gray-100 opacity-50",
+                "text-base sm:text-xl font-bold truncate",
+                textPrimary,
               )}
             >
+              {websiteName && websiteName + " - "} {t("page_title")}
+            </h1>
+            <p className={clsx("text-xs sm:text-sm", textSecondary)}>
+              {t("page_subtitle")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {(() => {
+            const score = calculateCompletionScore(formData);
+            const color =
+              score >= 75
+                ? "text-teal-600 bg-teal-50 border-teal-200 dark:bg-teal-900/30 dark:border-teal-700"
+                : score >= 40
+                  ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700"
+                  : "text-red-500 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700";
+            return (
               <div
                 className={clsx(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                  isActive
-                    ? "bg-teal-500 text-white"
-                    : isCompleted
-                      ? "bg-teal-500/20 text-teal-600"
-                      : isDark
-                        ? "bg-gray-800 text-gray-500"
-                        : "bg-gray-200 text-gray-400",
+                  "flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold",
+                  color,
                 )}
               >
-                {isCompleted ? (
-                  <CheckCircle className="w-4 h-4" />
-                ) : (
-                  <Icon className="w-4 h-4" />
-                )}
+                <svg
+                  viewBox="0 0 32 32"
+                  className="w-5 h-5 -rotate-90"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeOpacity="0.2"
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeDasharray={`${(score / 100) * 75.4} 75.4`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {score}%
               </div>
-              <span
-                className={clsx(
-                  "text-xs font-medium whitespace-nowrap",
-                  isActive
-                    ? "text-teal-600"
-                    : isCompleted
-                      ? textSecondary
-                      : textSecondary,
-                )}
-              >
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })()}
+          <PublishButton isLoading={isPublishing} onClick={handlePublish} />
+        </div>
+      </section>
 
-      {/* Step progress bar */}
-      <div
-        className={clsx(
-          "h-1 w-full shrink-0",
-          isDark ? "bg-gray-800" : "bg-gray-100",
-        )}
-      >
+      {/* Wizard — fills remaining height */}
+      <div className="flex-1 min-h-0">
         <div
-          className="h-full bg-teal-500 transition-all duration-300"
-          style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-        />
-      </div>
+          className={clsx(
+            "flex flex-col h-full rounded-2xl border overflow-hidden relative",
+            cardClasses,
+            borderColor,
+          )}
+        >
+          <Spinner isLoading={isLoading} />
 
-      {/* Step content */}
-      <div ref={stepContentRef} className="flex-1 overflow-y-auto px-6 py-8">
-        {renderStep()}
-      </div>
+          <StepIndicator
+            isDark={isDark}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+          />
 
-      {/* Footer */}
-      <WizardFooter
-        currentStep={currentStep}
-        totalSteps={TOTAL_STEPS}
-        isSaving={isSaving}
-        isPublishing={isPublishing}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onPublish={handlePublish}
-        isPublishButton={currentStep === TOTAL_STEPS}
-      />
+          {/* Step content */}
+          <div
+            ref={stepContentRef}
+            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-8 relative"
+          >
+            {renderStep()}
+          </div>
+
+          {/* Footer */}
+          <WizardFooter
+            currentStep={currentStep}
+            totalSteps={TOTAL_STEPS}
+            isSaving={isSaving}
+            isPublishing={isPublishing}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onPublish={handlePublish}
+            isPublishButton={currentStep === TOTAL_STEPS}
+          />
+        </div>
+      </div>
     </div>
   );
 }

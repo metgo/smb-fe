@@ -2,6 +2,7 @@ import ConnectedWebsites from "../details-sections/ConnectedWebsites";
 import GridCard from "./GridCard";
 import ReordableDataTable from "../reordable-data-table";
 import BulkActionBar from "./BulkActionBar";
+import EntityCard from "./EntityCard";
 import RouterProgressBar from "./RouterProgressBar";
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
@@ -39,6 +40,7 @@ export {
   FilterChips,
   ConfirmDialog,
   BulkActionBar,
+  EntityCard,
   ViewModeToggle,
   SelectableChips,
   ShowColumns,

@@ -76,6 +76,12 @@
   "documents": "מסמכים",
   "version": "גרסה",
   "max_characters": "מקסימום תווים",
+  "website_config": "תצורת אתר",
+  "dmos": "ארגוני ניהול יעד",
+  "authorities": "רשויות",
+  "campaigns": "קמפיינים",
+  "websites": "אתרים",
+  "partners": "שותפים",
 
   "translation": "תרגום",
   "translate_hint": "תרגם",
@@ -100,6 +106,7 @@
   "publishing": "מפרסם...",
   "cancle": "ביטול",
   "delete": "מחק",
+  "processing": "מעבד...",
   "resend": "שלח מחדש",
   "csvExport": "ייצוא CSV",
   "confirm": "אישור",
@@ -346,5 +353,35 @@
   "address_placeholder": "כתובת",
 
   "max_length_reached": "הגעת לאורך המקסימלי.",
-  "select_options_placeholder": "בחר אפשרויות"
+  "select_options_placeholder": "בחר אפשרויות",
+
+  "delete_partner": "מחק שותף",
+  "delete_partner_confirm": "האם אתה בטוח שברצונך למחוק שותף זה? לא ניתן לבטל פעולה זו.",
+  "partner_deleted": "השותף נמחק בהצלחה",
+  "partner_delete_failed": "מחיקת השותף נכשלה",
+
+  "delete_authority": "מחיקת רשות",
+  "delete_authority_confirm": "האם אתה בטוח שברצונך למחוק רשות זו? פעולה זו אינה ניתנת לביטול.",
+  "authority_deleted": "הרשות נמחקה בהצלחה",
+  "authority_delete_failed": "מחיקת הרשות נכשלה",
+  "migrate_authority_to_prod": "העברת רשות לסביבת ייצור",
+  "migrate_authority_to_prod_confirm": "אתה עומד להעביר את הרשות לסביבת הייצור. פעולה זו תפרסם אותה לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+  "migrate_to_prod": "העבר לייצור",
+
+  "delete_dmo": "מחיקת DMO",
+  "delete_dmo_confirm": "האם אתה בטוח שברצונך למחוק DMO זה? פעולה זו אינה ניתנת לביטול.",
+  "dmo_deleted": "ה-DMO נמחק בהצלחה",
+  "dmo_delete_failed": "מחיקת ה-DMO נכשלה",
+  "migrate_dmo_to_prod": "העברת DMO לסביבת ייצור",
+  "migrate_dmo_to_prod_confirm": "אתה עומד להעביר את ה-DMO לסביבת הייצור. פעולה זו תפרסם אותו לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+
+  "migrate_website_to_prod": "העברת אתר לסביבת ייצור",
+  "migrate_website_to_prod_confirm": "אתה עומד להעביר את האתר לסביבת הייצור. פעולה זו תפרסם אותו לכלל המשתמשים. האם אתה בטוח שברצונך להמשיך?",
+  "delete_website": "מחיקת אתר",
+  "delete_website_confirm": "האם אתה בטוח שברצונך למחוק אתר זה? פעולה זו אינה ניתנת לביטול.",
+  "website_deleted": "האתר נמחק בהצלחה",
+  "website_delete_failed": "מחיקת האתר נכשלה",
+
+  "deactivate_website": "השבתת אתר",
+  "deactivate_website_confirm": "לאחר השבתה, מבקרי האתר יראו מסך \"בנייה\" במקום האתר הפעיל. האם אתה בטוח שברצונך להשבית?"
 }

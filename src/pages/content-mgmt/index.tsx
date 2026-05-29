@@ -345,7 +345,7 @@ export default function ContentMgmtPage() {
 
   useEffect(() => {
     if (templateContentsData && externalApiId) {
-      if (externalApiId === templateContentsData?.externalApiId._id) {
+      if (externalApiId === templateContentsData?.externalApiId?._id) {
         const formattedTemplateContents = templateContentsData?.siteTopics?.map(
           (topic) => ({
             topic: topic.title,

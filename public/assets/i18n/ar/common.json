@@ -104,6 +104,12 @@
   "documents": "المستندات",
   "version": "الإصدار",
   "max_characters": "الحد الأقصى للحروف",
+  "website_config": "إعدادات الموقع",
+  "dmos": "منظمات إدارة الوجهات",
+  "authorities": "السلطات",
+  "campaigns": "الحملات",
+  "websites": "المواقع الإلكترونية",
+  "partners": "الشركاء",
 
   "filters": "الفلاتر",
   "previous": "السابق",
@@ -114,6 +120,7 @@
   "publishing": "جاري النشر...",
   "cancle": "إلغاء",
   "delete": "حذف",
+  "processing": "جارٍ المعالجة...",
   "resend": "إعادة الإرسال",
   "csvExport": "تصدير CSV",
   "confirm": "تأكيد",
@@ -355,5 +362,35 @@
   "address_placeholder": "العنوان",
 
   "max_length_reached": "تم الوصول إلى الحد الأقصى للطول.",
-  "select_options_placeholder": "اختر الخيارات"
+  "select_options_placeholder": "اختر الخيارات",
+
+  "delete_partner": "حذف الشريك",
+  "delete_partner_confirm": "هل أنت متأكد من حذف هذا الشريك؟ لا يمكن التراجع عن هذا الإجراء.",
+  "partner_deleted": "تم حذف الشريك بنجاح",
+  "partner_delete_failed": "فشل حذف الشريك",
+
+  "delete_authority": "حذف الجهة",
+  "delete_authority_confirm": "هل أنت متأكد أنك تريد حذف هذه الجهة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "authority_deleted": "تم حذف الجهة بنجاح",
+  "authority_delete_failed": "فشل حذف الجهة",
+  "migrate_authority_to_prod": "نقل الجهة إلى بيئة الإنتاج",
+  "migrate_authority_to_prod_confirm": "أنت على وشك نقل هذه الجهة إلى بيئة الإنتاج. سيجعلها ذلك متاحة لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
+  "migrate_to_prod": "النقل إلى الإنتاج",
+
+  "delete_dmo": "حذف DMO",
+  "delete_dmo_confirm": "هل أنت متأكد أنك تريد حذف هذا الـ DMO؟ لا يمكن التراجع عن هذا الإجراء.",
+  "dmo_deleted": "تم حذف الـ DMO بنجاح",
+  "dmo_delete_failed": "فشل حذف الـ DMO",
+  "migrate_dmo_to_prod": "نقل DMO إلى بيئة الإنتاج",
+  "migrate_dmo_to_prod_confirm": "أنت على وشك نقل هذا الـ DMO إلى بيئة الإنتاج. سيجعله ذلك متاحاً لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
+
+  "migrate_website_to_prod": "نقل الموقع إلى بيئة الإنتاج",
+  "migrate_website_to_prod_confirm": "أنت على وشك نقل هذا الموقع إلى بيئة الإنتاج. سيجعله ذلك متاحاً لجميع المستخدمين. هل أنت متأكد أنك تريد المتابعة؟",
+  "delete_website": "حذف الموقع",
+  "delete_website_confirm": "هل أنت متأكد أنك تريد حذف هذا الموقع؟ لا يمكن التراجع عن هذا الإجراء.",
+  "website_deleted": "تم حذف الموقع بنجاح",
+  "website_delete_failed": "فشل حذف الموقع",
+
+  "deactivate_website": "تعطيل الموقع",
+  "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟"
 }

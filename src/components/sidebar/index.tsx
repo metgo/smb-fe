@@ -28,6 +28,11 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
+  LocateFixed,
+  Wrench,
+  UserRoundCog,
+  Handshake,
+  Gift,
   ChevronLeft,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -158,6 +163,7 @@ export default function Sidebar() {
         },
       ],
     },
+
     {
       id: "site-management",
       path: "#site_management",
@@ -170,13 +176,6 @@ export default function Sidebar() {
           path: routes.contentMgmt,
           label: t("content_mgmt") || "Content Management",
           icon: Layers2,
-          isEnabled: true,
-        },
-        {
-          id: "website-settings",
-          path: routes.websiteMgmt,
-          label: t("website_settings") || "Website Settings",
-          icon: Settings,
           isEnabled: true,
         },
         {
@@ -220,6 +219,50 @@ export default function Sidebar() {
           label: t("mini_site") || "Mini-site",
           icon: Layout,
           isEnabled: false,
+        },
+      ],
+    },
+    {
+      id: "website_config",
+      path: "#website_config",
+      label: t("website_config") || "Website Config",
+      icon: Wrench,
+      isEnabled: true,
+      subItems: [
+        {
+          id: "dmo",
+          path: routes.dmoMgmt,
+          label: t("dmos") || "DMOs",
+          icon: UserRoundCog,
+          isEnabled: true,
+        },
+        {
+          id: "authority",
+          path: routes.authorityMgmt,
+          label: t("authorities") || "Authorities",
+          icon: LocateFixed,
+          isEnabled: true,
+        },
+        {
+          id: "campaign",
+          path: routes.campaignMgmt,
+          label: t("campaigns") || "Campaigns",
+          icon: Gift,
+          isEnabled: true,
+        },
+        {
+          id: "website",
+          path: routes.websiteMgmt,
+          label: t("websites") || "Websites",
+          icon: Globe,
+          isEnabled: true,
+        },
+        {
+          id: "partners",
+          path: routes.partners,
+          label: t("partners") || "Partners",
+          icon: Handshake,
+          isEnabled: true,
         },
       ],
     },
@@ -432,6 +475,7 @@ export default function Sidebar() {
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto py-4">
           {menuItems
+            ?.filter((item) => !(item.id === "website_config" && !isSuperadmin))
             ?.map((item) => ({
               ...item,
               subItems: item.subItems?.filter(

@@ -4,10 +4,10 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
   onChange: (
-    field: keyof SiteSettingsFormData,
+    field: keyof ISiteSettingsFormData,
     value: string | boolean,
   ) => void;
 }
@@ -34,9 +34,9 @@ function ColorField({
   inputClasses,
 }: {
   label: string;
-  field: keyof SiteSettingsFormData;
+  field: keyof ISiteSettingsFormData;
   value: string;
-  onChange: (f: keyof SiteSettingsFormData, v: string) => void;
+  onChange: (f: keyof ISiteSettingsFormData, v: string) => void;
   textPrimary: string;
   inputClasses: string;
 }) {
@@ -70,13 +70,13 @@ function ColorField({
   );
 }
 
-export default function Step02ThemeAppearance({ formData, onChange }: Props) {
+const Step04ThemeAppearance = ({ formData, onChange }: Props) => {
   const { t } = useTranslation("website_settings");
   const { textPrimary, textSecondary, inputClasses, isDark } =
     useThemeClasses();
 
   const BUTTON_STYLES: {
-    value: SiteSettingsFormData["buttonStyle"];
+    value: ISiteSettingsFormData["buttonStyle"];
     label: string;
   }[] = [
     { value: "rounded", label: t("btn_rounded") },
@@ -94,7 +94,7 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
       </div>
 
       {/* Colors */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
         <ColorField
           label={t("primary_color")}
           field="primaryColor"
@@ -237,4 +237,6 @@ export default function Step02ThemeAppearance({ formData, onChange }: Props) {
       </div>
     </div>
   );
-}
+};
+
+export default Step04ThemeAppearance;

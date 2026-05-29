@@ -11,8 +11,15 @@ import BlogGridView from "./components/sub-components/BlogGridView";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, ShowColumns, ViewModeToggle } from "@/components/shared";
+import {
+  ShowColumns,
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  ViewModeToggle,
+} from "@/components/shared";
 import { useGetAllBlogsQuery } from "@/store/api/blogQueryApi";
+import { useDeleteBlogMutation } from "@/store/api/blogMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
@@ -71,8 +78,11 @@ export default function ArticlesManagement() {
   );
   const { websiteId } = useAppSelector((state) => state.auth);
 
+  const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
+
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
@@ -179,6 +189,19 @@ export default function ArticlesManagement() {
       setPage(1);
     }
   }, [page, refetch]);
+
+  const handleBulkDelete = useCallback(async () => {
+    try {
+      await deleteBlog(Array.from(selectedBlogs)).unwrap();
+      toast.success(t("bulk_delete_success"));
+      setSelectedBlogs(new Set());
+      handleRefetch();
+    } catch {
+      toast.error(t("bulk_delete_error"));
+    } finally {
+      setIsBulkDeleteConfirmOpen(false);
+    }
+  }, [deleteBlog, selectedBlogs, t, handleRefetch]);
 
   const handleExport = useCallback(() => {
     const blogsToExport =
@@ -296,6 +319,17 @@ export default function ArticlesManagement() {
           /> */}
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedBlogs.size > 0 && (
+          <div className="mt-2">
+            <BulkActionBar
+              selectedItemCount={selectedBlogs.size}
+              handleBulkDelete={() => setIsBulkDeleteConfirmOpen(true)}
+              hancleClearSelection={() => setSelectedBlogs(new Set())}
+            />
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto mt-2">
           {!isLoading && !isFetching && combinedBlogs.length === 0 ? (
@@ -326,16 +360,16 @@ export default function ArticlesManagement() {
         </div>
 
         {/* Modals */}
-        {/* <ConfirmDialog
-          open={isConfirmOpen}
-          title="Delete Articles"
-          message="Are you sure you want to delete the selected articles?"
-          confirmText="Delete"
+        <ConfirmDialog
+          open={isBulkDeleteConfirmOpen}
+          title={t("delete_articles")}
+          message={t("bulk_delete_confirm_message")}
+          confirmText={t("delete")}
           loading={isDeleting}
           variant="danger"
-          onCancel={() => setIsConfirmOpen(false)}
+          onCancel={() => setIsBulkDeleteConfirmOpen(false)}
           onConfirm={handleBulkDelete}
-        /> */}
+        />
 
         {isCreateModalOpen && (
           <CreateArticleWizard onClose={() => setIsCreateModalOpen(false)} />

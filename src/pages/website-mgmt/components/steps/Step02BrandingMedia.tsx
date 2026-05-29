@@ -1,18 +1,16 @@
-import { useRef } from "react";
-import { X, Image as ImageIcon } from "lucide-react";
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { X, Image as ImageIcon } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
-  formData: SiteSettingsFormData;
-  errors: SiteSettingsErrors;
-  onChange: (field: keyof SiteSettingsFormData, value: string) => void;
+  formData: ISiteSettingsFormData;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
   uploadProgress: Record<string, number>;
-  onFileSelect: (field: keyof SiteSettingsFormData, file: File) => void;
-  onFileClear: (field: keyof SiteSettingsFormData) => void;
+  onFileSelect: (field: keyof ISiteSettingsFormData, file: File) => void;
+  onFileClear: (field: keyof ISiteSettingsFormData) => void;
 }
 
 function UploadBox({
@@ -111,15 +109,13 @@ function UploadBox({
   );
 }
 
-export default function Step01BrandingMedia({
+const Step02BrandingMedia = ({
   formData,
-  errors,
-  onChange,
   uploadStates,
   uploadProgress,
   onFileSelect,
   onFileClear,
-}: Props) {
+}: Props) => {
   const { t } = useTranslation("website_settings");
   const { inputClasses, borderColor, textPrimary, textSecondary, isDark } =
     useThemeClasses();
@@ -134,55 +130,12 @@ export default function Step01BrandingMedia({
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <ImageIcon className="w-5 h-5 text-teal-500" />
         <h2 className={clsx("text-lg font-semibold", textPrimary)}>
           {t("branding_title")}
         </h2>
-      </div>
-
-      {/* Website Name & Slogan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("website_name")}
-          </label>
-          <input
-            type="text"
-            value={formData.websiteName}
-            onChange={(e) => onChange("websiteName", e.target.value)}
-            placeholder={t("website_name_placeholder")}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
-              inputClasses,
-              errors.websiteName && "border-red-500",
-            )}
-          />
-          {errors.websiteName && (
-            <p className="text-xs text-red-500">{errors.websiteName}</p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className={clsx("text-sm font-medium", textPrimary)}>
-            {t("slogan")}
-          </label>
-          <input
-            type="text"
-            value={formData.slogan}
-            onChange={(e) => onChange("slogan", e.target.value)}
-            placeholder={t("slogan_placeholder")}
-            className={clsx(
-              "px-4 py-2.5 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20 text-sm",
-              inputClasses,
-              errors.slogan && "border-red-500",
-            )}
-          />
-          {errors.slogan && (
-            <p className="text-xs text-red-500">{errors.slogan}</p>
-          )}
-        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -211,20 +164,37 @@ export default function Step01BrandingMedia({
           onClear={() => onFileClear("faviconUrl")}
           icon={ImageIcon}
         />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <UploadBox
+          {...shared}
+          label={t("special_symbole")}
+          hint={t("logo_hint")}
+          accept="image/png,image/svg+xml,image/webp"
+          value={formData.specialSymbolUrl}
+          uploadState={uploadStates["specialSymbolUrl"] ?? "idle"}
+          uploadProgress={uploadProgress["specialSymbolUrl"] ?? 0}
+          onSelect={(f) => onFileSelect("specialSymbolUrl", f)}
+          onClear={() => onFileClear("specialSymbolUrl")}
+          icon={ImageIcon}
+        />
 
         <UploadBox
           {...shared}
-          label={t("splash_logo")}
-          hint={t("splash_logo_hint")}
-          accept="image/png,image/svg+xml"
-          value={formData.splashLogoUrl}
-          uploadState={uploadStates["splashLogoUrl"] ?? "idle"}
-          uploadProgress={uploadProgress["splashLogoUrl"] ?? 0}
-          onSelect={(f) => onFileSelect("splashLogoUrl", f)}
-          onClear={() => onFileClear("splashLogoUrl")}
+          label={t("background_image")}
+          hint={t("favicon_hint")}
+          accept="image/x-icon,image/png"
+          value={formData.bgImageUrl}
+          uploadState={uploadStates["bgImageUrl"] ?? "idle"}
+          uploadProgress={uploadProgress["bgImageUrl"] ?? 0}
+          onSelect={(f) => onFileSelect("bgImageUrl", f)}
+          onClear={() => onFileClear("bgImageUrl")}
           icon={ImageIcon}
         />
       </div>
     </div>
   );
-}
+};
+
+export default Step02BrandingMedia;

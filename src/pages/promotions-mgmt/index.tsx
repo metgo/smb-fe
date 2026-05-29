@@ -3,10 +3,10 @@ import { toast } from "sonner";
 import { DndProvider } from "react-dnd";
 import { Plus, SlidersHorizontal, Home, Image, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AnimatePresence } from "framer-motion";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState, useCallback, useEffect, useRef } from "react";
-import { AnimatePresence } from "framer-motion";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { PublishButton } from "@/components/btns";

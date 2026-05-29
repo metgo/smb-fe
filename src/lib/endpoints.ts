@@ -29,7 +29,7 @@ export const endpoints = {
 
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
-  dmos: "/dmos",
+  dmosAuthorities: "/dmos-authorities",
   changeOwner: "/admin/businesses/assign-user/",
 
   // poi
@@ -74,7 +74,7 @@ export const endpoints = {
   mediaSignedUrl: "/media-signed-url",
   mediaFileDelete: "/media",
 
-  websites: "/websites",
+  websites: "/site-settings/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
 
@@ -106,12 +106,18 @@ export const endpoints = {
 
   // Admin endpoints
   dynamicPage: "/settings",
+
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
   bloggenerateName: "/generate-blog-name",
-  // Website settgins
+
+  // Website settgins & Config
+  dmos: "/dmos",
+  authorities: "/authorities",
   websiteSettings: "/site-settings",
+  partners: "/partners",
+  campaigns: "/campaigns",
 
   // Promotions
   promotions: "/promotions",

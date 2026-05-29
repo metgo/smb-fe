@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next";
 import CircularProgress from "@/components/shared/CircularProgress";
 
 interface Props {
-  formData: SiteSettingsFormData;
+  formData: ISiteSettingsFormData;
   errors: SiteSettingsErrors;
-  onChange: (field: keyof SiteSettingsFormData, value: string) => void;
+  onChange: (field: keyof ISiteSettingsFormData, value: string) => void;
   uploadStates: Record<string, "idle" | "uploading" | "done" | "error">;
   uploadProgress: Record<string, number>;
-  onFileSelect: (field: keyof SiteSettingsFormData, file: File) => void;
-  onFileClear: (field: keyof SiteSettingsFormData) => void;
+  onFileSelect: (field: keyof ISiteSettingsFormData, file: File) => void;
+  onFileClear: (field: keyof ISiteSettingsFormData) => void;
 }
 
 function Field({
@@ -40,7 +40,7 @@ function Field({
   );
 }
 
-export default function Step05SeoMeta({
+const Step07SeoMeta = ({
   formData,
   errors,
   onChange,
@@ -48,7 +48,7 @@ export default function Step05SeoMeta({
   uploadProgress,
   onFileSelect,
   onFileClear,
-}: Props) {
+}: Props) => {
   const { t } = useTranslation("website_settings");
   const ogImageRef = useRef<HTMLInputElement>(null);
   const twitterImageRef = useRef<HTMLInputElement>(null);
@@ -341,4 +341,6 @@ export default function Step05SeoMeta({
       </div>
     </div>
   );
-}
+};
+
+export default Step07SeoMeta;

@@ -38,10 +38,11 @@ export const blogMutationApi = createApi({
     }),
 
     // Delete blog
-    deleteBlog: builder.mutation<any, { blogId: string }>({
-      query: ({ blogId }) => ({
-        url: `${endpoints.blogs}/${blogId}`,
+    deleteBlog: builder.mutation<any, string[]>({
+      query: (blogIds) => ({
+        url: endpoints.blogs,
         method: "DELETE",
+        data: blogIds,
       }),
     }),
   }),
