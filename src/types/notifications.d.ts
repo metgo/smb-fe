@@ -25,6 +25,9 @@ interface INotification {
   itemType: TItemType;
   isRead: boolean;
   isUrgent: boolean;
+  actionData?: {
+    suggestedCategory?: string;
+  };
   creatorInfo: {
     _id: string;
     name: string;

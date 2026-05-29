@@ -27,6 +27,8 @@ import {
   useGetNotificatonStatsQuery,
   useMarkNotificationsAsReadMutation,
 } from "@/store/api/notificationApi";
+import { useApproveCategorySuggestionMutation } from "@/store/api/businessMutationApi";
+import { toast } from "sonner";
 import { useSocket } from "@/providers/SocketProvider";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
@@ -38,6 +40,7 @@ export default function NotificationsMgmtPage() {
   const { t: tc } = useTranslation("common");
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -373,6 +376,7 @@ export default function NotificationsMgmtPage() {
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {allNotifications?.map((notification) => {
                       const itemType = notification?.itemType;
+                      if (!itemType) return null;
                       const queryParam = `${itemType.toLowerCase()}Id`;
 
                       const handleNavigate = async () => {
@@ -420,7 +424,7 @@ export default function NotificationsMgmtPage() {
                                     : `font-semibold ${textPrimary}`,
                                 )}
                               >
-                                {notification?.content?.[language].title}
+                                {notification?.content?.[language]?.title}
                               </h4>
 
                               <p
@@ -439,6 +443,39 @@ export default function NotificationsMgmtPage() {
                               >
                                 {timeAgo(notification.createdAt)}
                               </p>
+
+                              {notification?.notifType === "ACTION" &&
+                                notification.actionData?.suggestedCategory &&
+                                notification.status !== "CLOSED" && (
+                                  <div className="mt-3 flex items-center gap-2">
+                                    <button
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                          await approveCategorySuggestion({
+                                            itemId: notification.itemId,
+                                            itemType: notification.itemType,
+                                            categoryTitle:
+                                              notification.actionData
+                                                ?.suggestedCategory || "",
+                                            notificationId: notification._id,
+                                          }).unwrap();
+                                          toast.success(
+                                            "Category approved and assigned!",
+                                          );
+                                          refetchNotifList();
+                                        } catch (err) {
+                                          toast.error(
+                                            "Failed to approve category.",
+                                          );
+                                        }
+                                      }}
+                                      className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition"
+                                    >
+                                      Approve
+                                    </button>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>

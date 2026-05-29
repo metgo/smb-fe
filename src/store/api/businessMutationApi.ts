@@ -44,6 +44,25 @@ export const businessMutationApi = createApi({
         data: body,
       }),
     }),
+    approveCategorySuggestion: builder.mutation<
+      any,
+      {
+        itemId: string;
+        itemType: TItemType;
+        categoryTitle: string;
+        notificationId: string;
+      }
+    >({
+      query: ({ itemId, itemType, categoryTitle, notificationId }) => {
+        const route =
+          itemType.toUpperCase() === "PRODUCT" ? "products" : "businesses";
+        return {
+          url: `/${route}/${itemId}/approve-category`,
+          method: "POST",
+          data: { categoryTitle, notificationId },
+        };
+      },
+    }),
   }),
 });
 
@@ -52,4 +71,5 @@ export const {
   useUpdateBusinessMutation,
   useDeleteBusinessMutation,
   useBulkBusinessesUpdateMutation,
+  useApproveCategorySuggestionMutation,
 } = businessMutationApi;

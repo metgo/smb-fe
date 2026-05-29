@@ -38,6 +38,7 @@ interface TopicBlockProps {
   topic: IContentTemplate;
   index: number;
   isDark: boolean;
+  externalApiId: string | null;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
   moveItem: (from: number, to: number) => void;
@@ -49,6 +50,7 @@ const TopicBlock = ({
   topic,
   index,
   isDark,
+  externalApiId,
   templateContents,
   setTemplateContent,
   moveItem,
@@ -292,6 +294,7 @@ const TopicBlock = ({
                       group={group}
                       topicIndex={index}
                       categoryIndex={categoryIndex}
+                      externalApiId={externalApiId}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
                     />
@@ -433,6 +436,7 @@ const ContentComposer = ({
               topic={topic}
               index={index}
               isDark={isDark}
+              externalApiId={externalApiId}
               templateContents={templateContents}
               setTemplateContent={setTemplateContent}
               moveItem={moveItem}
