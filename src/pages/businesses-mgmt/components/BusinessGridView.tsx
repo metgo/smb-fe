@@ -98,7 +98,7 @@ function BusinessGridView<T extends Business>({
               meta={[
                 business?.address && {
                   icon: MapPin,
-                  label: `${business.address.country}, ${business.address.city}`,
+                  label: `${business?.address?.city ? business.address.city + ", " : ""}${business.address.location ? business.address.location : "-"}`,
                 },
                 business?.phoneNumber && {
                   icon: Phone,
