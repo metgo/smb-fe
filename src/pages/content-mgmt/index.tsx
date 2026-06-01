@@ -30,13 +30,18 @@ import {
 import { Spinner } from "@/components/shared";
 import { PublishButton } from "@/components/btns";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useBlocker } from "react-router-dom";
 import DraftButton from "@/components/btns/DraftButton";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
-import { useGetContentByExternalIdQuery } from "@/store/api/contentQueryApi";
+import {
+  useGetContentByExternalIdQuery,
+  useGetAllViewsQuery,
+} from "@/store/api/contentQueryApi";
 import {
   useCreateContentMutation,
   useUpdateContentMutation,
 } from "@/store/api/contentMutationApi";
+import { ConfirmDialog } from "@/components/shared";
 import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
@@ -66,6 +71,9 @@ interface Filters {
     end: string;
   };
   isTrip: string;
+  assignmentStatus: string;
+  viewCategory: string;
+  sortOrder: string;
 }
 
 const BUSINESS_PAGE_LIMIT = 20;
@@ -147,7 +155,9 @@ export default function ContentMgmtPage() {
 
   const { isDark, language, isRTL } = useThemeClasses();
 
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, associatedWebsite } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const [viewMode, setViewMode] = useState<TViewMode>(
     (localStorage.getItem("contentViewMode") as TViewMode) ?? "grid",
@@ -163,6 +173,29 @@ export default function ContentMgmtPage() {
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
+
+  // ── Views (multi-view system) ──────────────────────────────────────────────
+  const {
+    data: viewsData,
+    isLoading: isLoadingViews,
+    refetch: refetchViews,
+  } = useGetAllViewsQuery(externalApiId ? { externalApiId } : skipToken);
+
+  const views: IView[] = Array.isArray(viewsData) ? viewsData : [];
+  const hasActiveView = views.some((v) => v.isActive);
+
+  // Navigation guard: warn when leaving without an active view
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      !!externalApiId &&
+      views.length > 0 &&
+      !hasActiveView &&
+      currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  const selectedWebsiteName =
+    (associatedWebsite as any[])?.find?.((w: any) => w.value === externalApiId)
+      ?.label ?? "";
 
   const {
     refetch,
@@ -238,6 +271,9 @@ export default function ContentMgmtPage() {
         end: "",
       },
       isTrip: "all",
+      assignmentStatus: "all",
+      viewCategory: "all",
+      sortOrder: "recent",
     },
   };
 
@@ -272,66 +308,11 @@ export default function ContentMgmtPage() {
     setCombinedBusinesses([]);
     setCombinedProducts([]);
     setTabState({
-      Businesses: {
-        searchQuery: "",
-        filters: {
-          hasProductFilter: "all",
-          primaryCategory: "all",
-          businessId: "",
-          registrationFilter: "",
-          eventTypeFilter: "",
-          dateRangeFilter: { start: "", end: "" },
-          isTrip: "all",
-        },
-      },
-      Products: {
-        searchQuery: "",
-        filters: {
-          hasProductFilter: "all",
-          primaryCategory: "all",
-          businessId: "",
-          registrationFilter: "",
-          eventTypeFilter: "",
-          dateRangeFilter: { start: "", end: "" },
-          isTrip: "all",
-        },
-      },
-      Trips: {
-        searchQuery: "",
-        filters: {
-          hasProductFilter: "all",
-          primaryCategory: "all",
-          businessId: "",
-          registrationFilter: "",
-          eventTypeFilter: "",
-          dateRangeFilter: { start: "", end: "" },
-          isTrip: "all",
-        },
-      },
-      Events: {
-        searchQuery: "",
-        filters: {
-          hasProductFilter: "all",
-          primaryCategory: "all",
-          businessId: "",
-          registrationFilter: "",
-          eventTypeFilter: "",
-          dateRangeFilter: { start: "", end: "" },
-          isTrip: "all",
-        },
-      },
-      POI: {
-        searchQuery: "",
-        filters: {
-          hasProductFilter: "all",
-          primaryCategory: "all",
-          businessId: "",
-          registrationFilter: "",
-          eventTypeFilter: "",
-          dateRangeFilter: { start: "", end: "" },
-          isTrip: "all",
-        },
-      },
+      Businesses: { ...defaultTabState },
+      Products: { ...defaultTabState },
+      Trips: { ...defaultTabState },
+      Events: { ...defaultTabState },
+      POI: { ...defaultTabState },
     });
   }, [externalApiId]);
 
@@ -764,6 +745,53 @@ export default function ContentMgmtPage() {
     templateContentsData,
   ]);
 
+  // ── Load a selected view into the composer ────────────────────────────────
+  const handleViewSelect = (view: IView) => {
+    const formattedTopics = (view.siteTopics ?? []).map((topic) => ({
+      topic: topic.title,
+      order: topic.order,
+      isHideTopic: topic.isArchived,
+      isPrimary: topic.isPrimary,
+      icon: topic.icon,
+      colors: topic.colors ?? [],
+      groups: (topic.siteCategories ?? []).map((item) => {
+        const mapContents = (
+          arr: IContentFeedItem[],
+          type: IContent["contentType"],
+        ) =>
+          (arr ?? []).map((content) => ({
+            _id: content._id,
+            name: content.name,
+            desc: content.description,
+            imageUrl: content?.images[0]?.image,
+            primaryCategory: content?.primaryCategoryId?.hebrewName,
+            contentType: type,
+            title: content.name || "",
+            message: content.description || "",
+          }));
+
+        return {
+          isPrimary: item.isPrimary,
+          isHideCategory: item.isArchived,
+          category: item.title,
+          icon: item.icon,
+          colors: item.colors ?? [],
+          contents: [
+            ...mapContents(item.businessIds, "business"),
+            ...mapContents(item.productIds, "product"),
+            ...mapContents(item.tripIds, "trip"),
+            ...mapContents(item.eventIds, "event"),
+            ...mapContents(item.poiIds, "poi"),
+          ],
+        };
+      }),
+    }));
+
+    setTemplateContent(formattedTopics);
+    setTemplateContentId(view._id);
+    setContentStatus((view.status?.toLowerCase() ?? "draft") as TStatus);
+  };
+
   const onStatusChangeHandler = async (status: string) => {
     if (templateContentId)
       try {
@@ -1187,6 +1215,11 @@ export default function ContentMgmtPage() {
                       templateContentId={templateContentId}
                       setTemplateContent={setTemplateContent}
                       onStatusChangeHandler={onStatusChangeHandler}
+                      views={views}
+                      isLoadingViews={isLoadingViews}
+                      websiteName={selectedWebsiteName}
+                      onViewSelect={handleViewSelect}
+                      onViewsRefetch={refetchViews}
                     />
                   </motion.div>
                 )}
@@ -1207,6 +1240,19 @@ export default function ContentMgmtPage() {
           onClose={() => setShowSendResults(false)}
           results={sendResults}
         />
+
+        {blocker.state === "blocked" && (
+          <ConfirmDialog
+            open
+            title="No Active View"
+            message="This website has no active view — content will not appear on the site. Are you sure you want to leave?"
+            confirmText="Leave Anyway"
+            cancelText="Stay"
+            variant="warning"
+            onConfirm={() => blocker.proceed?.()}
+            onCancel={() => blocker.reset?.()}
+          />
+        )}
       </div>
     </DndProvider>
   );

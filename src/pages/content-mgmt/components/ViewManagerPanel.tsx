@@ -1,0 +1,540 @@
+import clsx from "clsx";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  Plus,
+  CheckCircle,
+  Clock,
+  Archive,
+  Trash2,
+  Edit3,
+  Zap,
+  ChevronDown,
+  Loader,
+  LayoutTemplate,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ConfirmDialog } from "@/components/shared";
+import {
+  useActivateViewMutation,
+  useDeleteContentMutation,
+} from "@/store/api/contentMutationApi";
+import CreateViewWizard from "./CreateViewWizard";
+
+interface Props {
+  views: IView[];
+  isLoading: boolean;
+  externalApiId: string;
+  websiteName: string;
+  onViewSelect: (view: IView) => void;
+  onRefetch: () => void;
+}
+
+const STATUS_CONFIG: Record<
+  string,
+  { icon: React.ElementType; label: string; colors: string }
+> = {
+  PUBLISHED: {
+    icon: CheckCircle,
+    label: "Active",
+    colors: "text-green-500 bg-green-100 dark:bg-green-900/30",
+  },
+  DRAFT: {
+    icon: Clock,
+    label: "Draft",
+    colors: "text-amber-500 bg-amber-100 dark:bg-amber-900/30",
+  },
+  ARCHIVED: {
+    icon: Archive,
+    label: "Archived",
+    colors: "text-gray-400 bg-gray-100 dark:bg-gray-800",
+  },
+};
+
+const formatShortDate = (value: string | Date) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  }).format(new Date(value));
+
+const formatUpdatedDate = (value: string | Date) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+
+interface ViewCardProps {
+  view: IView;
+  isActive: boolean;
+  isDark: boolean;
+  onActivate: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  isActivating: boolean;
+}
+
+function ViewCard({
+  view,
+  isActive,
+  isDark,
+  onActivate,
+  onEdit,
+  onDelete,
+  isActivating,
+}: ViewCardProps) {
+  const status = view.isActive ? "PUBLISHED" : view.status;
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.DRAFT;
+  const Icon = cfg.icon;
+  const name = view.viewName || `View (${formatShortDate(view.createdAt)})`;
+  const updated = view.updatedAt
+    ? formatUpdatedDate(view.updatedAt)
+    : formatUpdatedDate(view.createdAt);
+  const topicCount = view.siteTopics?.length ?? 0;
+
+  return (
+    <div
+      className={clsx(
+        "rounded-xl border p-3 transition-all",
+        isActive
+          ? isDark
+            ? "border-teal-700 bg-teal-900/20"
+            : "border-teal-200 bg-teal-50"
+          : isDark
+            ? "border-gray-700 bg-gray-800 hover:border-gray-600"
+            : "border-gray-200 bg-white hover:border-gray-300",
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className={clsx(
+                "text-sm font-semibold truncate",
+                isDark ? "text-gray-200" : "text-gray-800",
+              )}
+            >
+              {name}
+            </span>
+            <span
+              className={clsx(
+                "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                cfg.colors,
+              )}
+            >
+              <Icon className="w-3 h-3" />
+              {cfg.label}
+            </span>
+          </div>
+          <p
+            className={clsx(
+              "text-xs mt-1",
+              isDark ? "text-gray-500" : "text-gray-400",
+            )}
+          >
+            {topicCount} topic{topicCount !== 1 ? "s" : ""} · Updated {updated}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          {!isActive && (
+            <button
+              onClick={onActivate}
+              disabled={isActivating}
+              title="Set as active view"
+              className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-60"
+            >
+              {isActivating ? (
+                <Loader className="w-3 h-3 animate-spin" />
+              ) : (
+                <Zap className="w-3 h-3" />
+              )}
+              Activate
+            </button>
+          )}
+          <button
+            onClick={onEdit}
+            title="Edit this view"
+            className={clsx(
+              "p-1.5 rounded-lg transition-colors",
+              isDark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-400 hover:bg-gray-100",
+            )}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+          </button>
+          {!isActive && (
+            <button
+              onClick={onDelete}
+              title="Delete this view"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Drawer (list of all views) ────────────────────────────────────────────── */
+
+interface DrawerProps {
+  views: IView[];
+  isLoading: boolean;
+  isDark: boolean;
+  websiteName: string;
+  onClose: () => void;
+  onViewSelect: (view: IView) => void;
+  onRefetch: () => void;
+  onOpenWizard: () => void;
+  onEditView: (view: IView) => void;
+}
+
+function ViewDrawer({
+  views,
+  isLoading,
+  isDark,
+  websiteName,
+  onClose,
+  onViewSelect,
+  onRefetch,
+  onOpenWizard,
+  onEditView,
+}: DrawerProps) {
+  const [activateView] = useActivateViewMutation();
+  const [deleteContent] = useDeleteContentMutation();
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<IView | null>(null);
+
+  const handleActivate = async (view: IView) => {
+    setActivatingId(view._id);
+    try {
+      await activateView({ viewId: view._id }).unwrap();
+      toast.success(`"${view.viewName || "View"}" is now active`);
+      onRefetch();
+      onViewSelect(view);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to activate view");
+    } finally {
+      setActivatingId(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteContent({ eventId: deleteTarget._id }).unwrap();
+      toast.success("View deleted");
+      onRefetch();
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Cannot delete this view");
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-[90] flex justify-end" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      {/* Panel */}
+      <div
+        className={clsx(
+          "relative z-10 flex flex-col w-full max-w-sm shadow-2xl h-full overflow-hidden",
+          isDark
+            ? "bg-gray-900 border-l border-gray-700"
+            : "bg-white border-l border-gray-200",
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className={clsx(
+            "flex items-center justify-between px-4 py-3 border-b shrink-0",
+            isDark
+              ? "border-gray-700 bg-gray-800/60"
+              : "border-gray-100 bg-gray-50",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <LayoutTemplate
+              className={clsx(
+                "w-4 h-4",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            />
+            <span
+              className={clsx(
+                "text-sm font-semibold",
+                isDark ? "text-gray-200" : "text-gray-800",
+              )}
+            >
+              Views for {websiteName}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className={clsx(
+              "p-1.5 rounded-lg transition-colors",
+              isDark
+                ? "hover:bg-gray-700 text-gray-400"
+                : "hover:bg-gray-100 text-gray-400",
+            )}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {isLoading && (
+            <div className="space-y-2">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className={clsx(
+                    "h-16 rounded-xl animate-pulse",
+                    isDark ? "bg-gray-800" : "bg-gray-100",
+                  )}
+                />
+              ))}
+            </div>
+          )}
+
+          {!isLoading && views.length === 0 && (
+            <div
+              className={clsx(
+                "text-center py-12 text-sm",
+                isDark ? "text-gray-500" : "text-gray-400",
+              )}
+            >
+              <LayoutTemplate className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p>No views yet</p>
+              <p className="text-xs mt-1">
+                Create your first view using the wizard
+              </p>
+            </div>
+          )}
+
+          {!isLoading &&
+            views.map((view) => (
+              <ViewCard
+                key={view._id}
+                view={view}
+                isActive={view.isActive}
+                isDark={isDark}
+                isActivating={activatingId === view._id}
+                onActivate={() => handleActivate(view)}
+                onEdit={() => onEditView(view)}
+                onDelete={() => setDeleteTarget(view)}
+              />
+            ))}
+        </div>
+
+        {/* Footer */}
+        <div
+          className={clsx(
+            "p-3 border-t shrink-0",
+            isDark ? "border-gray-700" : "border-gray-200",
+          )}
+        >
+          <button
+            onClick={onOpenWizard}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create New View
+          </button>
+        </div>
+      </div>
+
+      {/* Delete confirm */}
+      {deleteTarget && (
+        <ConfirmDialog
+          open
+          title="Delete View"
+          message={`Delete "${deleteTarget.viewName || "this view"}"? This cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+    </div>,
+    document.body,
+  );
+}
+
+/* ─── Exported ViewManagerPanel ────────────────────────────────────────────── */
+
+export default function ViewManagerPanel({
+  views,
+  isLoading,
+  externalApiId,
+  websiteName,
+  onViewSelect,
+  onRefetch,
+}: Props) {
+  const { isDark } = useThemeClasses();
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [editingView, setEditingView] = useState<IView | null>(null);
+
+  const activeView = views.find((v) => v.isActive);
+  const noActiveView = !isLoading && views.length > 0 && !activeView;
+
+  const handleWizardCreated = (_viewId: string, publishNow: boolean) => {
+    setShowWizard(false);
+    setShowDrawer(false);
+    setEditingView(null);
+    onRefetch();
+    toast.success(
+      publishNow ? "View is now live on your website" : "View saved as draft",
+    );
+  };
+
+  const handleEditView = (view: IView) => {
+    setEditingView(view);
+    setShowDrawer(false);
+    setShowWizard(true);
+  };
+
+  return (
+    <>
+      {/* Compact bar shown inside ContentComposer header */}
+      <div
+        className={clsx(
+          "flex items-center gap-2 px-3 py-2 rounded-lg border mt-2",
+          noActiveView
+            ? isDark
+              ? "border-amber-700/50 bg-amber-900/10"
+              : "border-amber-200 bg-amber-50"
+            : isDark
+              ? "border-gray-700 bg-gray-800/40"
+              : "border-gray-200 bg-gray-50",
+        )}
+      >
+        <LayoutTemplate
+          className={clsx(
+            "w-4 h-4 shrink-0",
+            isDark ? "text-gray-500" : "text-gray-400",
+          )}
+        />
+
+        {isLoading ? (
+          <Loader className="w-3.5 h-3.5 animate-spin text-gray-400" />
+        ) : activeView ? (
+          <>
+            <span
+              className={clsx(
+                "text-xs font-medium flex-1 truncate",
+                isDark ? "text-gray-300" : "text-gray-700",
+              )}
+            >
+              {activeView.viewName || "Active View"}
+            </span>
+            <span className="flex items-center gap-1 text-xs text-green-500 font-medium shrink-0">
+              <CheckCircle className="w-3 h-3" />
+              Live
+            </span>
+          </>
+        ) : views.length === 0 ? (
+          <span
+            className={clsx(
+              "text-xs flex-1",
+              isDark ? "text-gray-500" : "text-gray-400",
+            )}
+          >
+            No views yet
+          </span>
+        ) : (
+          <span className="text-xs flex-1 text-amber-600 dark:text-amber-400 font-medium">
+            No active view — website shows no content
+          </span>
+        )}
+
+        {/* Manage / Create buttons */}
+        {views.length > 0 ? (
+          <button
+            onClick={() => setShowDrawer(true)}
+            className={clsx(
+              "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border transition-colors shrink-0",
+              isDark
+                ? "border-gray-600 text-gray-300 hover:bg-gray-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100",
+            )}
+          >
+            Manage <ChevronDown className="w-3 h-3" />
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowWizard(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-teal-600 hover:bg-teal-700 text-white transition-colors shrink-0"
+          >
+            <Plus className="w-3 h-3" />
+            New View
+          </button>
+        )}
+      </div>
+
+      {/* No active view warning — commented out: duplicate of the main bar message + Manage button above */}
+      {/* {noActiveView && (
+        <div
+          className={clsx(
+            "flex items-center gap-2 px-3 py-1.5 rounded-lg border mt-1 text-xs",
+            isDark ? "border-amber-700/40 bg-amber-900/10 text-amber-400" : "border-amber-200 bg-amber-50 text-amber-600",
+          )}
+        >
+          ⚠ Activate a view to make content visible on your website.
+          <button
+            onClick={() => setShowDrawer(true)}
+            className="underline font-medium shrink-0"
+          >
+            Manage views
+          </button>
+        </div>
+      )} */}
+
+      {/* Views drawer */}
+      {showDrawer && (
+        <ViewDrawer
+          views={views}
+          isLoading={isLoading}
+          isDark={isDark}
+          websiteName={websiteName}
+          onClose={() => setShowDrawer(false)}
+          onViewSelect={onViewSelect}
+          onRefetch={onRefetch}
+          onOpenWizard={() => {
+            setShowDrawer(false);
+            setShowWizard(true);
+          }}
+          onEditView={handleEditView}
+        />
+      )}
+
+      {/* Wizard — create or edit */}
+      {showWizard && (
+        <CreateViewWizard
+          externalApiId={externalApiId}
+          websiteName={websiteName}
+          existingView={editingView ?? undefined}
+          onClose={() => {
+            setShowWizard(false);
+            setEditingView(null);
+          }}
+          onCreated={handleWizardCreated}
+        />
+      )}
+    </>
+  );
+}

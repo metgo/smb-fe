@@ -105,6 +105,53 @@ interface IContentTopic {
   isArchived: boolean;
 }
 
+// -------------------- Wizard Types ---------------------
+
+type WizardLang = "en" | "he" | "ar";
+
+type WizardCategory = {
+  id: string;
+  title: string;
+  titleHe: string;
+  titleAr: string;
+  description: string;
+  descriptionHe: string;
+  descriptionAr: string;
+  synonyms: string[];
+  synonymsHe: string[];
+  synonymsAr: string[];
+  searchKeywords: string[];
+  assignedBusinesses: any[];
+  assignedProducts: any[];
+  isGenerating?: boolean;
+};
+
+type WizardTopic = {
+  id: string;
+  title: string;
+  titleHe: string;
+  titleAr: string;
+  description: string;
+  descriptionHe: string;
+  descriptionAr: string;
+  categories: WizardCategory[];
+};
+
+// -------------------- View --------------------
+
+interface IView {
+  _id: string;
+  viewName: string | null;
+  viewNameHe: string | null;
+  viewNameAr: string | null;
+  isActive: boolean;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  updatedAt: string | null;
+  createdAt: string;
+  externalApiId: { _id: string; name: string };
+  siteTopics: IContentTopic[];
+}
+
 interface IContentTemplateResponse {
   _id: string;
   createdAt: string;

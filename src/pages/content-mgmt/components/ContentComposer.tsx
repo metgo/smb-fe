@@ -16,6 +16,7 @@ import { StatusChangeBtn } from "@/components/btns";
 import { ConfirmDialog } from "@/components/shared";
 import { useAppSelector } from "@/hooks/hooks";
 import { ReactSelect } from "@/components/form-fields";
+import ViewManagerPanel from "./ViewManagerPanel";
 
 // ─── DnD type for topic reordering ───────────────────────────────────────────
 const TOPIC_TYPE = "TOPIC_ITEM";
@@ -31,6 +32,11 @@ interface ContentComposerProps {
   onStatusChangeHandler: (v: TStatus) => void;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
+  views?: IView[];
+  isLoadingViews?: boolean;
+  websiteName?: string;
+  onViewSelect?: (view: IView) => void;
+  onViewsRefetch?: () => void;
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -321,6 +327,11 @@ const ContentComposer = ({
   templateContentId,
   setTemplateContent,
   onStatusChangeHandler,
+  views = [],
+  isLoadingViews = false,
+  websiteName = "",
+  onViewSelect,
+  onViewsRefetch,
 }: ContentComposerProps) => {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
@@ -406,7 +417,19 @@ const ContentComposer = ({
         </div>
       </div>
 
-      <div className="overflow-y-scroll h-[64vh] pb-8">
+      {/* View Manager — shown only when a website is selected */}
+      {externalApiId && (
+        <ViewManagerPanel
+          views={views}
+          isLoading={isLoadingViews}
+          externalApiId={externalApiId}
+          websiteName={websiteName}
+          onViewSelect={(view) => onViewSelect?.(view)}
+          onRefetch={() => onViewsRefetch?.()}
+        />
+      )}
+
+      <div className="overflow-y-scroll h-[58vh] pb-8">
         <ContentConfigHeader
           header={header}
           setHeader={setHeader}
