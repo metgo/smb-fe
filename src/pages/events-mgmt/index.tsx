@@ -199,26 +199,29 @@ export default function EventsMgmtPage() {
 
   return (
     <>
-      <div className="h-[calc(108vh-180px)] flex flex-col">
-        <PageHeader
-          title={t("events_management_dashboard")}
-          description={t("events_management_desc")}
-          btnLabel={t("add_event")}
-          h1Gradient={textPrimary}
-          onClick={handleAddEvent}
-          totalCount={events?.totalData || 0}
-        />
+      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden pt-10">
+        <div className="shrink-0">
+          <PageHeader
+            title={t("events_management_dashboard")}
+            description={t("events_management_desc")}
+            btnLabel={t("add_event")}
+            h1Gradient={textPrimary}
+            onClick={handleAddEvent}
+            totalCount={events?.totalData || 0}
+          />
 
-        <PageStats
-          stats={eventStats}
-          isLoading={isEventStatsFetching}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-        />
+          <PageStats
+            stats={eventStats}
+            isLoading={isEventStatsFetching}
+            className="sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            wrapperClassName="mb-4"
+          />
+        </div>
 
         {/* Search and Filter Section */}
-        <div className={`mb-2`}>
+        <div className="shrink-0 mb-2">
           {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-2">
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_events_placeholder")}
@@ -227,21 +230,23 @@ export default function EventsMgmtPage() {
                 storageKey="eventSearchTerm"
               />
             </div>
-            <FilterButton value={showFilters} onChange={setShowFilters} />
-            <ViewModeToggle
-              showCalendor
-              onChange={setViewMode}
-              value={viewMode}
-              tableName="eventViewMode"
-            />
+            <div className="flex items-center gap-2">
+              <FilterButton value={showFilters} onChange={setShowFilters} />
+              <ViewModeToggle
+                showCalendor
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="eventViewMode"
+              />
+            </div>
           </div>
 
           {(showFilters || hasSavedFilters) && (
             <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
-              <div className="grid grid-cols-12 gap-2 pt-2  dark:border-gray-700">
+              <div className="grid grid-cols-12 gap-2 pt-2 dark:border-gray-700">
                 {/* Event Type */}
-                <div className="col-span-3">
+                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t("event_type")}
                   </label>
@@ -261,7 +266,7 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Registration Required */}
-                <div className="col-span-3">
+                <div className="col-span-12 sm:col-span-6 lg:col-span-3">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t("registration")}
                   </label>
@@ -283,7 +288,7 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Status */}
-                <div className="col-span-2">
+                <div className="col-span-12 sm:col-span-6 lg:col-span-2">
                   <FilterByStatus
                     filters={statusFilter}
                     setFilters={(newStatus) =>
@@ -293,7 +298,7 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Date Range */}
-                <div className="col-span-4">
+                <div className="col-span-12 sm:col-span-6 lg:col-span-4">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t("date_range")}
                   </label>
@@ -440,16 +445,18 @@ export default function EventsMgmtPage() {
         </div>
 
         {/* Events with different View */}
-        <EventsWithViewMode
-          isLoading={isLoading}
-          events={(events?.data as any) || []}
-          refetch={refetch}
-          eventTypeFilter={eventTypeFilter}
-          registrationFilter={registrationFilter}
-          statusFilter={statusFilter}
-          searchQuery={searchQuery}
-          viewMode={viewMode}
-        />
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <EventsWithViewMode
+            isLoading={isLoading}
+            events={(events?.data as any) || []}
+            refetch={refetch}
+            eventTypeFilter={eventTypeFilter}
+            registrationFilter={registrationFilter}
+            statusFilter={statusFilter}
+            searchQuery={searchQuery}
+            viewMode={viewMode}
+          />
+        </div>
       </div>
       {/* Create Event Wizard */}
       <CreateEventWizard

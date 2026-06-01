@@ -73,30 +73,30 @@ export default function ProfilePage() {
   return (
     <>
       <Spinner isLoading={isFetching || isLoading} />
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-4xl mx-auto p-4 sm:p-8">
         {/* Header */}
         <div
           className={`${
             isDark ? "bg-gray-800" : "bg-white"
-          } rounded-2xl shadow-lg p-8 mb-6`}
+          } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
         >
-          <div className="flex items-center gap-6">
-            <div className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 flex items-center justify-center ">
-              <div className="text-6xl font-bold text-teal-600">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-teal-500 flex items-center justify-center shrink-0">
+              <div className="text-3xl sm:text-6xl font-bold text-teal-600">
                 {getInitials(`${user?.firstName + " " + user?.lastName}`)}
               </div>
             </div>
 
-            <div className="flex-1">
+            <div className="flex-1 text-center sm:text-start">
               <h1
-                className={`text-3xl mb-2 ${
+                className={`text-xl sm:text-3xl mb-1 sm:mb-2 ${
                   isDark ? "text-white" : "text-gray-900"
                 }`}
               >
                 {user?.firstName + " " + user?.lastName}
               </h1>
               <p
-                className={`text-lg ${
+                className={`text-base sm:text-lg ${
                   isDark ? "text-teal-400" : "text-teal-600"
                 }`}
               >
@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl cursor-pointer w-full sm:w-auto justify-center sm:justify-start"
             >
               {isRTL ? (
                 <>
@@ -127,13 +127,15 @@ export default function ProfilePage() {
         <div
           className={`${
             isDark ? "bg-gray-800" : "bg-white"
-          } rounded-2xl shadow-lg p-8 mb-6`}
+          } rounded-2xl shadow-lg p-5 sm:p-8 mb-6`}
         >
-          <h2 className={clsx("text-2xl mb-6", textSecondary)}>
+          <h2
+            className={clsx("text-xl sm:text-2xl mb-5 sm:mb-6", textSecondary)}
+          >
             {t("contact_information")}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
             <InfoItem
               icon={<Mail />}
               label={t("email")}
@@ -161,16 +163,16 @@ export default function ProfilePage() {
         <div
           className={`${
             isDark ? "bg-gray-800" : "bg-white"
-          } rounded-2xl shadow-lg p-8`}
+          } rounded-2xl shadow-lg p-5 sm:p-8`}
         >
-          <div className="flex justify-between mb-6">
-            <h2 className={clsx("text-2xl", textSecondary)}>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5 sm:mb-6">
+            <h2 className={clsx("text-xl sm:text-2xl", textSecondary)}>
               {t("bank_account_details")}
             </h2>
 
             <button
               onClick={() => setShowBankModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg cursor-pointer text-sm sm:text-base"
             >
               {userInfo?.bankAccount?.accountNumber ? (
                 <>
@@ -187,7 +189,7 @@ export default function ProfilePage() {
           </div>
 
           {userInfo?.bankAccount ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
               <div className="flex items-start gap-4">
                 <div
                   className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
@@ -268,7 +270,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 md:col-span-2">
+              <div className="flex items-start gap-4 sm:col-span-2">
                 <div
                   className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
@@ -289,10 +291,12 @@ export default function ProfilePage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500">
-              <CreditCard className="w-16 h-16 mx-auto mb-4 opacity-40" />
-              <p className="text-lg">{t("no_bank_account_added")}</p>
-              <p className="text-sm">{t("click_add_bank_account")}</p>
+            <div className="text-center py-8 sm:py-12 text-gray-500">
+              <CreditCard className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-40" />
+              <p className="text-base sm:text-lg">
+                {t("no_bank_account_added")}
+              </p>
+              <p className="text-sm mt-1">{t("click_add_bank_account")}</p>
             </div>
           )}
         </div>

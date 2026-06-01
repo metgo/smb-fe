@@ -9,6 +9,14 @@
   "export": "تصدير",
   "no_blogs_to_export": "لا توجد مقالات للتصدير",
 
+  "translation": "الترجمة",
+  "translate_hint": "أدخل النص للترجمة",
+  "content": "المحتوى",
+  "form": "نموذج",
+  "seo": "تحسين محركات البحث",
+  "review": "مراجعة",
+  "auto_translate": "الترجمة التلقائية",
+  "please_select_website_before_publishing": "يرجى اختيار موقع إلكتروني قبل النشر.",
   "title": "العنوان",
   "subTitle": "العنوان الفرعي",
   "subtitle": "العنوان الفرعي",
@@ -62,9 +70,11 @@
   "delete": "حذف",
 
   "characters": "حرف",
-  "title_placeholder": "أدخل عنوان المقال...",
+  "title_placeholder": "أدخل العنوان...",
   "subtitle_placeholder": "أدخل العنوان الفرعي...",
-  "short_description_placeholder": "أدخل وصفًا مختصرًا يظهر في المعاينة ونتائج البحث...",
+  "short_description_placeholder": "أدخل وصفاً مختصراً يظهر في المعاينات ونتائج البحث...",
+  "full_description_placeholder": "أدخل محتوى الوصف الكامل هنا...",
+  "full_description": "الوصف الكامل",
 
   "settings": "الإعدادات",
   "auto_seo": "تحسين تلقائي",

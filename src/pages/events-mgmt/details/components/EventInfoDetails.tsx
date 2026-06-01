@@ -1,8 +1,17 @@
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  FileText,
+  AlignLeft,
+  StickyNote,
+  AlertTriangle,
+  BriefcaseBusinessIcon,
+} from "lucide-react";
+
+import { getLngWiseStr } from "@/helpers";
 import { ConnectedWebsites } from "@/components/shared";
-import { FileText, AlignLeft, StickyNote, AlertTriangle } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
+import { useTranslation } from "react-i18next";
 
 interface EventInfoDetailsProps {
   t: (key: string) => string;
@@ -13,15 +22,19 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
   t,
   eventDetails,
 }) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
+  const { t: tp } = useTranslation("products");
 
   return (
     <div className="space-y-6">
       <DescriptionCard
         title={t("short_description")}
-        content={
-          eventDetails?.shortDescription ? eventDetails.shortDescription : "-"
-        }
+        content={getLngWiseStr(
+          language,
+          eventDetails?.shortDescription,
+          eventDetails?.shortDescriptionHe,
+          eventDetails?.shortDescriptionAr,
+        )}
         icon={
           <FileText
             className={clsx(
@@ -37,7 +50,12 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
       <DescriptionCard
         isEvent
         title={t("full_description")}
-        content={eventDetails?.description ? eventDetails?.description : "-"}
+        content={getLngWiseStr(
+          language,
+          eventDetails?.description,
+          eventDetails?.descriptionHe,
+          eventDetails?.descriptionAr,
+        )}
         icon={
           <AlignLeft
             className={clsx(
@@ -50,7 +68,23 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
         isDark={isDark}
         preWrap={true}
       />
-
+      <DescriptionCard
+        title={tp("business_name")}
+        content={
+          eventDetails?.businessId?.name ? eventDetails?.businessId?.name : "-"
+        }
+        icon={
+          <BriefcaseBusinessIcon
+            className={clsx(
+              "w-5 h-5",
+              isDark ? "text-purple-400" : "text-purple-600",
+            )}
+          />
+        }
+        iconBgClass={isDark ? "bg-purple-500/20" : "bg-purple-100"}
+        isDark={isDark}
+        preWrap={true} // preserves line breaks
+      />
       {/* Website Connections */}
       {eventDetails?.associatedWebsites &&
         eventDetails?.associatedWebsites?.length > 0 && (

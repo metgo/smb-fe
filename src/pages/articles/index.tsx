@@ -1,29 +1,30 @@
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { routes } from "@/lib/routes";
 import BlogListView from "./components/sub-components/BlogListView";
 import BlogGridView from "./components/sub-components/BlogGridView";
 
-import { Download, ChevronDown, ChevronUp, Columns } from "lucide-react";
-
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, ViewModeToggle } from "@/components/shared";
 import {
-  useGetAllBlogsQuery,
-  // useGetBlogStatsQuery,
-} from "@/store/api/blogQueryApi";
-// import { useBulkBlogsUpdateMutation } from "@/store/api/blogMutationApi";
+  ShowColumns,
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  ViewModeToggle,
+} from "@/components/shared";
+import { useGetAllBlogsQuery } from "@/store/api/blogQueryApi";
+import { useDeleteBlogMutation } from "@/store/api/blogMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
 import CreateArticleWizard from "./components/CreateArticleWizard";
-import clsx from "clsx";
 
 const LIMIT = 20;
 const STORAGE_KEY = "blog_query_state";
@@ -65,7 +66,7 @@ const columnDefinitions = [
 export default function ArticlesManagement() {
   const navigate = useNavigate();
   const { t } = useTranslation("article");
-  const { isDark, isRTL, textPrimary, borderColor } = useThemeClasses();
+  const { isDark, textPrimary, borderColor } = useThemeClasses();
 
   const handleBusinessClick = useCallback(
     (business: any) => {
@@ -77,8 +78,11 @@ export default function ArticlesManagement() {
   );
   const { websiteId } = useAppSelector((state) => state.auth);
 
+  const [deleteBlog, { isLoading: isDeleting }] = useDeleteBlogMutation();
+
   // Local State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
@@ -94,8 +98,6 @@ export default function ArticlesManagement() {
     useState<ColumnVisibility>(defaultColumns);
 
   const [combinedBlogs, setCombinedBlogs] = useState<any[]>([]);
-
-  const columnSettingsRef = useRef<HTMLDivElement>(null);
 
   // Load persisted state
   useEffect(() => {
@@ -149,15 +151,12 @@ export default function ArticlesManagement() {
   );
 
   // Queries
-  // const { data: blogStatsData, isLoading: isStatsLoading } = useGetBlogStatsQuery(queryParams);
   const {
     data: blogData,
     isLoading,
     isFetching,
     refetch,
   } = useGetAllBlogsQuery(queryParams);
-
-  // const [bulkBlogsUpdate, { isLoading: isDeleting }] = useBulkBlogsUpdateMutation();
 
   const hasMore = blogData?.meta?.hasNextPage;
   const totalData = blogData?.totalData || 0;
@@ -191,59 +190,18 @@ export default function ArticlesManagement() {
     }
   }, [page, refetch]);
 
-  // const clearFilter = useCallback(() => {
-  //   localStorage.removeItem(STORAGE_KEY);
-  //   setFilters({ status: "all" });
-  //   setSearchTerm("");
-  //   setPage(1);
-  // }, []);
-
-  // const resetToDefault = useCallback(() => {
-  //   setColumnVisibility(defaultColumns);
-  // }, []);
-
-  // const promptBulkDelete = useCallback(() => {
-  //   if (selectedBlogs.size === 0) return;
-  //   setIsBulkDelete(true);
-  //   setIsConfirmOpen(true);
-  // }, [selectedBlogs.size]);
-
-  // const handleBulkDelete = useCallback(async () => {
-  //   if (!selectedBlogs.size) return;
-
-  //   const toastId = toast.loading(tc("blog_delete_loading"));
-  //   try {
-  //     await bulkBlogsUpdate({
-  //       blogsId: Array.from(selectedBlogs),
-  //       isDeleted: true,
-  //     });
-  //     toast.success(tc("blog_deleted_success"), { id: toastId });
-  //     setSelectedBlogs(new Set());
-  //     refetch();
-  //   } catch (error: any) {
-  //     toast.error(error?.message || tc("blog_delete_failed"), { id: toastId });
-  //   } finally {
-  //     setIsConfirmOpen(false);
-  //     setIsBulkDelete(false);
-  //   }
-  // }, [selectedBlogs, bulkBlogsUpdate, refetch, tc]);
-
-  // const handleBulkStatusChange = useCallback(async (status: string) => {
-  //   if (!selectedBlogs.size) return;
-
-  //   const toastId = toast.loading(tc("blog_status_change_loading"));
-  //   try {
-  //     await bulkBlogsUpdate({
-  //       blogsId: Array.from(selectedBlogs),
-  //       status: status.toUpperCase(),
-  //     });
-  //     toast.success(tc("blog_status_update_success"), { id: toastId });
-  //     setSelectedBlogs(new Set());
-  //     refetch();
-  //   } catch (error: any) {
-  //     toast.error(error?.message || tc("blog_status_update_failed"), { id: toastId });
-  //   }
-  // }, [selectedBlogs, bulkBlogsUpdate, refetch, tc]);
+  const handleBulkDelete = useCallback(async () => {
+    try {
+      await deleteBlog(Array.from(selectedBlogs)).unwrap();
+      toast.success(t("bulk_delete_success"));
+      setSelectedBlogs(new Set());
+      handleRefetch();
+    } catch {
+      toast.error(t("bulk_delete_error"));
+    } finally {
+      setIsBulkDeleteConfirmOpen(false);
+    }
+  }, [deleteBlog, selectedBlogs, t, handleRefetch]);
 
   const handleExport = useCallback(() => {
     const blogsToExport =
@@ -269,7 +227,9 @@ export default function ArticlesManagement() {
       headers.join(","),
       ...rows.map((r) => r.join(",")),
     ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["﻿", csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -278,44 +238,12 @@ export default function ArticlesManagement() {
     URL.revokeObjectURL(url);
   }, [selectedBlogs, combinedBlogs, t]);
 
-  // Stats
-  // const blogStats = useMemo(() => [
-  //   {
-  //     id: 1,
-  //     title: "Total Articles",
-  //     value: blogStatsData?.totalBlogs,
-  //     label: "Created",
-  //     icon: <FileText className="w-5 h-5 text-blue-600" />,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Active / Approved",
-  //     value: blogStatsData?.activeBlogs,
-  //     label: "Visible",
-  //     icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "With Images",
-  //     value: blogStatsData?.blogsWithImages,
-  //     label: "Media",
-  //     icon: <Eye className="w-5 h-5 text-purple-600" />,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Pending",
-  //     value: blogStatsData?.pendingBlogs,
-  //     label: "Review",
-  //     icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
-  //   },
-  // ], [blogStatsData]);
-
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex flex-col pt-10 md:pt-0">
         {/* Header */}
         <div
-          className={`border-b ${isDark ? "border-gray-800" : "border-gray-200"} z-10`}
+          className={`border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
         >
           <PageHeader
             title={t("page_title")}
@@ -326,11 +254,9 @@ export default function ArticlesManagement() {
             totalCount={totalData}
           />
 
-          {/* <PageStats stats={blogStats} isLoading={isStatsLoading} /> */}
-
           {/* Search & Controls */}
           <div className="py-4 flex flex-col lg:flex-row gap-3">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 relative">
               <SearchInput
                 placeholder={t("search_placeholder")}
                 searchTerm={searchTerm}
@@ -339,79 +265,35 @@ export default function ArticlesManagement() {
               />
             </div>
 
-            <FilterButton value={showFilters} onChange={setShowFilters} />
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode={viewMode}
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={() => setColumnVisibility(defaultColumns)}
+                />
 
-            {viewMode === "list" && (
-              <div className="relative" ref={columnSettingsRef}>
                 <button
-                  onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
+                  onClick={handleExport}
+                  className={`px-4 py-1.5 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
                 >
-                  <Columns className="w-5 h-5" />
-                  {t("columns")}
-                  {showColumnSettings ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
+                  <Download className="w-4 h-4" />
+                  <span className="hidden md:block">{t("export")}</span>
                 </button>
-
-                {showColumnSettings && (
-                  <div
-                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-                  >
-                    <div className="p-4 border-b">
-                      <div className="flex justify-between mb-2">
-                        <h3>{t("column_settings")}</h3>
-                        <button
-                          onClick={() => {}}
-                          className="text-xs text-teal-600"
-                        >
-                          {t("reset")}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-3 space-y-1">
-                      {columnDefinitions.map(({ key }) => (
-                        <label
-                          key={key}
-                          className={clsx(
-                            "flex items-center gap-2 p-2 rounded cursor-pointer",
-                            textPrimary,
-                          )}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={columnVisibility[key]}
-                            onChange={(e) =>
-                              setColumnVisibility((prev) => ({
-                                ...prev,
-                                [key]: e.target.checked,
-                              }))
-                            }
-                          />
-                          <span>{t(key) || key}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
 
-            <button
-              onClick={handleExport}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${textPrimary} ${borderColor}`}
-            >
-              <Download className="w-5 h-5" />
-              {t("export")}
-            </button>
-
-            <ViewModeToggle
-              onChange={setViewMode}
-              value={viewMode}
-              tableName="blogViewMode"
-            />
+              <ViewModeToggle
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="blogViewMode"
+              />
+            </div>
           </div>
 
           {/* Filters */}
@@ -436,6 +318,17 @@ export default function ArticlesManagement() {
             hancleClearSelection={() => setSelectedBlogs(new Set())}
           /> */}
         </div>
+
+        {/* Bulk Action Bar */}
+        {selectedBlogs.size > 0 && (
+          <div className="mt-2">
+            <BulkActionBar
+              selectedItemCount={selectedBlogs.size}
+              handleBulkDelete={() => setIsBulkDeleteConfirmOpen(true)}
+              hancleClearSelection={() => setSelectedBlogs(new Set())}
+            />
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto mt-2">
@@ -467,16 +360,16 @@ export default function ArticlesManagement() {
         </div>
 
         {/* Modals */}
-        {/* <ConfirmDialog
-          open={isConfirmOpen}
-          title="Delete Articles"
-          message="Are you sure you want to delete the selected articles?"
-          confirmText="Delete"
+        <ConfirmDialog
+          open={isBulkDeleteConfirmOpen}
+          title={t("delete_articles")}
+          message={t("bulk_delete_confirm_message")}
+          confirmText={t("delete")}
           loading={isDeleting}
           variant="danger"
-          onCancel={() => setIsConfirmOpen(false)}
+          onCancel={() => setIsBulkDeleteConfirmOpen(false)}
           onConfirm={handleBulkDelete}
-        /> */}
+        />
 
         {isCreateModalOpen && (
           <CreateArticleWizard onClose={() => setIsCreateModalOpen(false)} />

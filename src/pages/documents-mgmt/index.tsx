@@ -1,17 +1,16 @@
 import { toast } from "sonner";
+import { FileText, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 
-import { FileText, X } from "lucide-react";
-
 import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageHeader } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 import EmptyState from "@/components/shared/EmptyState";
-import { CreateDocumentWizard } from "./components/sub-components/CreateDocumentWizard";
 import { ReordableDataTable } from "@/components/shared";
 import { useGetDocumentQuery } from "@/store/api/doumentMutationApi";
+import { CreateDocumentWizard } from "./components";
 
 const STORAGE_KEY = "document_query_state";
 
@@ -140,8 +139,8 @@ export default function DocumentsManagement() {
             onClick={() => openDocumentInNewTab(doc)}
             className="flex items-center gap-2 cursor-pointer hover:text-violet-600"
           >
-            <FileText className="w-4 h-4 text-violet-600 flex-shrink-0" />
-            <span className="text-sm truncate max-w-[200px]" title={fileName}>
+            <FileText className="w-4 h-4 text-violet-600 shrink-0" />
+            <span className="text-sm truncate max-w-50" title={fileName}>
               {fileName}
             </span>
           </div>

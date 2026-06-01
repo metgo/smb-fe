@@ -3,12 +3,11 @@ import {
   useGetAllSocialMediaQuery,
   useGetCategoriesQuery,
   useGetGroupTypesQuery,
-  useGetAllWebsitesQuery,
   useGetDmosQuery,
   useGetSubCategoriesQuery,
   useGetAllTagsQuery,
-  useGetAllIconsQuery,
 } from "@/store/api/masterDataApi";
+import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
 export function useCommon() {
@@ -19,7 +18,6 @@ export function useCommon() {
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
   const { data: subCategories } = useGetSubCategoriesQuery({ locale });
-  const { data: allIcons } = useGetAllIconsQuery({});
 
   const { data: socialMedia } = useGetAllSocialMediaQuery();
 
@@ -27,14 +25,6 @@ export function useCommon() {
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const { data: allTags } = useGetAllTagsQuery();
-
-  const websites = [
-    { value: "all", label: t("all_websites") },
-    { value: "visitnegev", label: "visitnegev.co.il" },
-    { value: "goisrael", label: "goisrael.com" },
-    { value: "visiteilat", label: "visiteilat.co.il" },
-    { value: "beersheva", label: "tour-beersheva.co.il" },
-  ];
 
   const dateRanges = [
     { value: "last_7_days", label: t("last_7_days") },
@@ -45,12 +35,10 @@ export function useCommon() {
   ];
 
   return {
-    websites,
     dateRanges,
     dmosAuthorities,
     socialMedia,
     allWebsites,
-    allIcons,
     groupTypes: groupTypes?.datas?.data,
     accessibility: accessibility?.datas?.data,
     categories: primaryCategories?.datas?.data,

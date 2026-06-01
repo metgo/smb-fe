@@ -9,9 +9,10 @@ interface UseEventDraftSaverProps {
   currentStep: number;
   eventId: string;
   setEventId: (id: string) => void;
-  initEventCreate: () => any;
+  initEventCreate: (args: { businessId?: string }) => any;
   updateEvent: (args: { eventId: string; body: any }) => any;
   stepPayloadMap: Record<number, () => any>;
+  businessId?: string;
   debounceMs?: number;
 }
 
@@ -22,6 +23,7 @@ export function useEventDraftSaver({
   initEventCreate,
   updateEvent,
   stepPayloadMap,
+  businessId,
   // debounceMs = 3600,
 }: UseEventDraftSaverProps) {
   const { isTraveller } = useUserRoles();
@@ -57,7 +59,7 @@ export function useEventDraftSaver({
 
         // 1️⃣ Initialize event if not created yet
         if (!eventId) {
-          const res = await initEventCreate().unwrap();
+          const res = await initEventCreate({ businessId }).unwrap();
           internalEventId = res?.id;
           setEventId(res?.id);
         }
@@ -102,6 +104,7 @@ export function useEventDraftSaver({
       setEventId,
       t,
       isTraveller,
+      businessId,
     ],
   );
 

@@ -79,7 +79,7 @@ export const masterDataApi = createApi({
     }),
     getDmos: builder.query<any, void>({
       query: () => ({
-        url: endpoints.dmos,
+        url: endpoints.dmosAuthorities,
         method: "GET",
       }),
       providesTags: ["MasterData"],

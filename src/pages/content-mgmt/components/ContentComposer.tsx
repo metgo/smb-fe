@@ -25,7 +25,7 @@ interface ContentComposerProps {
   isExpanded: boolean;
   contentStatus: TStatus;
   setHeader: (v: string) => void;
-  externalApiId: string;
+  externalApiId: string | null;
   templateContentId: string | null;
   setExternalApiId: (v: string) => void;
   onStatusChangeHandler: (v: TStatus) => void;
@@ -38,6 +38,7 @@ interface TopicBlockProps {
   topic: IContentTemplate;
   index: number;
   isDark: boolean;
+  externalApiId: string | null;
   templateContents: IContentTemplate[];
   setTemplateContent: React.Dispatch<React.SetStateAction<IContentTemplate[]>>;
   moveItem: (from: number, to: number) => void;
@@ -49,6 +50,7 @@ const TopicBlock = ({
   topic,
   index,
   isDark,
+  externalApiId,
   templateContents,
   setTemplateContent,
   moveItem,
@@ -112,6 +114,28 @@ const TopicBlock = ({
     };
 
     setTemplateContent(updated);
+  };
+
+  const handleColorChange = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, colors } : t)),
+    );
+  };
+
+  const handleApplyColorToChildren = (topicIndex: number, colors: string[]) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) =>
+        i === topicIndex
+          ? { ...t, groups: t.groups.map((g) => ({ ...g, colors })) }
+          : t,
+      ),
+    );
+  };
+
+  const handleIconChange = (topicIndex: number, icon: string) => {
+    setTemplateContent((prev) =>
+      prev.map((t, i) => (i === topicIndex ? { ...t, icon } : t)),
+    );
   };
 
   const handleToggleTopic = (templateIndex: number) => {
@@ -218,10 +242,15 @@ const TopicBlock = ({
                 name: topic.topic,
                 isHidden: topic.isHideTopic,
                 isPrimary: topic.isPrimary,
+                colors: topic.colors,
+                icon: topic.icon,
               }}
               onRename={renameTopic}
               onToggleVisibility={handleToggleTopic}
               onTogglePrimary={handleTogglePrimary}
+              onColorChange={handleColorChange}
+              onApplyColorToChildren={handleApplyColorToChildren}
+              onIconChange={handleIconChange}
               setTopicToDelete={setTopicToDelete}
               setShowDeleteConfirm={setShowDeleteConfirm}
             />
@@ -238,7 +267,7 @@ const TopicBlock = ({
               )}
             >
               <Layers className="w-3 h-3" />
-              {topic.groups.length} {t("categories")}
+              {topic.groups.length}
             </span>
           </div>
         </div>
@@ -265,6 +294,7 @@ const TopicBlock = ({
                       group={group}
                       topicIndex={index}
                       categoryIndex={categoryIndex}
+                      externalApiId={externalApiId}
                       templateContents={templateContents}
                       setTemplateContent={setTemplateContent}
                     />
@@ -338,7 +368,7 @@ const ContentComposer = ({
       {/* ── Header ── */}
       <div className="mb-4">
         {/* Second Row - Title + Description + Dropdown */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
           <div>
             <h2
               className={clsx(
@@ -406,6 +436,7 @@ const ContentComposer = ({
               topic={topic}
               index={index}
               isDark={isDark}
+              externalApiId={externalApiId}
               templateContents={templateContents}
               setTemplateContent={setTemplateContent}
               moveItem={moveItem}

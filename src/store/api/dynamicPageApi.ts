@@ -2,13 +2,25 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
+interface IDocFile {
+  file: "primary" | "secondary";
+  docUrl?: string;
+  docType?: string;
+  docSize?: string;
+}
+
 interface IDynamicPageBody {
   status: "DRAFT" | "APPROVED";
   externalApiId: string;
-  type: "terms_and_condition" | "privacy" | "business_regulation";
+  type:
+    | "terms_and_condition"
+    | "privacy"
+    | "business_regulation"
+    | "document_upload";
   title: string;
   subTitle?: string;
-  description: string;
+  description?: string;
+  files?: IDocFile[];
 }
 
 interface IDynamicPageRes {
@@ -19,10 +31,18 @@ interface IDynamicPageRes {
 interface IDynamicPageData {
   data: {
     _id: string;
-    type: "terms_and_condition" | "privacy" | "business_regulation";
+    type:
+      | "terms_and_condition"
+      | "privacy"
+      | "business_regulation"
+      | "document_upload";
     title: string;
     subTitle?: string;
-    description: string;
+    description?: string;
+    files?: IDocFile[];
+    docUrl?: string;
+    docType?: string;
+    docSize?: string;
     status: "DRAFT" | "APPROVED";
   }[];
   totalData: number;

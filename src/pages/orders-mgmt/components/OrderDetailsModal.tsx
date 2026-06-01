@@ -99,6 +99,7 @@ function OrderDetailsModal({
         <OrderStatusChangeBtn
           status={order?.status}
           handleStatusChange={onStatusChangeHandler}
+          setShowCancelDialog={setShowCancelDialog}
         />
       </div>
 
@@ -301,7 +302,8 @@ function OrderDetailsModal({
             </div>
           </div>
         </div>
-
+      </div>
+      <div className="p-4">
         {/* Actions */}
         {userRole === UserRole.AUTHORITY ||
           (userRole === UserRole.SUPERADMIN && (
@@ -358,7 +360,6 @@ function OrderDetailsModal({
             </div>
           ))}
       </div>
-
       {/* Cancellation Dialog */}
       {showCancelDialog && (
         <CancellationDialog
@@ -379,9 +380,8 @@ function OrderDetailsModal({
                   orderId: order?._id,
                   body: {
                     status: "canceled",
-                    canceled_reason: reason,
+                    canceled_reason: t(reason),
                     isQrScan: true,
-                    externalApiId: order?.externalApiId || "",
                   },
                 }).unwrap();
                 refetch();

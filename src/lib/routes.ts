@@ -22,6 +22,8 @@ export const routes = {
   voucherDetails: "/voucher-details",
 
   pointOfInterest: "/point-of-interest",
+  poiMgmt: "/poi-management",
+  poiDetails: "/poi-details",
   trips: "/trips",
   notificationMgmt: "/notifications-management",
 
@@ -31,9 +33,19 @@ export const routes = {
   miniCampaign: "/mini-campaign",
   auth: "/authentication",
   miniSite: "/mini-site",
+
   profile: "/profile",
-  websiteMgmt: "/website-settings",
+  partners: "/partners",
+  campaignMgmt: "/campaign-mgmt",
+  dmoMgmt: "/dmo-management",
+  authorityMgmt: "/authority-management",
+  websiteMgmt: "/website-management",
+  websiteConfig: "/website-config",
+
   dynamicPages: "/dynamic-pages",
+  promotionMgmt: "/promotions-management",
+
+  users: "/users",
 };
 
 export type RouteKey = keyof typeof routes;

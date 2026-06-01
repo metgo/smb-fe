@@ -1,12 +1,16 @@
 import { Suspense, useEffect } from "react";
+import axios from "axios";
 import {
   Outlet,
   RouterProvider,
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
+import { envKeys } from "@/lib/envKeys";
+import { endpoints } from "@/lib/endpoints";
 
 import { routes } from "@/lib/routes";
+import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
@@ -28,10 +32,19 @@ import {
   AnalyticsDashboardPage,
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
+  PromotionsMgmtPage,
+  DmosMgmtPage,
+  AuthoritiesMgmtPage,
+  WebsiteConfigPage,
+  PartnersPage,
+  CampaignsMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 } from "@/pages";
-import TestLabPage from "./pages/test-lab";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
+import RouterProgressBar from "./components/shared/RouterProgressBar";
 import { loginSuccess } from "@/features/authSlice";
 import { useSocket } from "./providers/SocketProvider";
 import {
@@ -42,6 +55,7 @@ import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import DocumentsManagement from "./pages/documents-mgmt";
+import { UserRole } from "./enums/user.types";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -65,12 +79,8 @@ const handleGoogleOAuthCallback = (): boolean => {
         );
       }
 
-      // Clean up URL by removing userData param
-      urlParams.delete("userData");
-      const newUrl = urlParams.toString()
-        ? `${window.location.pathname}?${urlParams.toString()}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      // Redirect to auth route so ProtectedRoute handles role-based redirects (traveller → business)
+      window.history.replaceState({}, "", routes.auth);
 
       return true;
     } catch (error) {
@@ -159,6 +169,16 @@ function App() {
           if (user) {
             dispatch(loginSuccess(user));
           }
+
+          const savedRedirect = sessionStorage.getItem("redirect_after_login");
+          if (savedRedirect) {
+            sessionStorage.removeItem("redirect_after_login");
+            window.location.href = savedRedirect;
+          } else if (user?.role === UserRole.TRAVELLER && !user?.hasBusiness) {
+            window.location.href = routes.businessMgmt;
+          } else {
+            window.location.href = routes.dashboard;
+          }
         } catch (error) {
           console.error(
             "Error updating Redux state after Google login:",
@@ -169,20 +189,106 @@ function App() {
     }
   }, [dispatch]);
 
+  // Handle profile completion token — auto-login the user if token is in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const currentAccessToken = sessionStorage.getItem("access_token");
+
+    // Only trigger if we have a token and it's either new or different from the current one
+    if (token && token !== currentAccessToken) {
+      const fetchUserProfile = async () => {
+        try {
+          // Set the token temporarily so /users/me can use it
+          sessionStorage.setItem("access_token", token);
+
+          const response = await axios.get(
+            `${envKeys.baseUrl}${endpoints.userInfo}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          const userData = response.data;
+          if (userData) {
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to auto-login via profile token", error);
+          // If auto-login fails, don't leave a potentially broken token
+          if (sessionStorage.getItem("access_token") === token) {
+            sessionStorage.removeItem("access_token");
+          }
+        }
+      };
+      fetchUserProfile();
+    }
+  }, [dispatch]);
+
   const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     isLoginPage = false,
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
+    const userInfo = sessionStorage.getItem("user_info");
 
+    let user: any = null;
+    if (userInfo) {
+      try {
+        user = JSON.parse(userInfo).user;
+      } catch (e) {
+        console.error("Failed to parse user_info");
+      }
+    }
+
+    // If user is on login page
     if (isLoginPage) {
-      if (isLoggedIn) {
+      if (isLoggedIn && user) {
+        const savedRedirect = sessionStorage.getItem("redirect_after_login");
+        if (savedRedirect) {
+          sessionStorage.removeItem("redirect_after_login");
+          return <Navigate to={savedRedirect} replace />;
+        }
+
+        if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
+          return <Navigate to={routes.businessMgmt} replace />;
+        }
         return <Navigate to={routes.dashboard} replace />;
       }
       return children;
     }
 
+    // Normal protected routes
     if (!isLoggedIn) {
+      const attemptedPath = window.location.pathname + window.location.search;
+      if (
+        attemptedPath &&
+        attemptedPath.includes("/notifications-management")
+      ) {
+        sessionStorage.setItem("redirect_after_login", attemptedPath);
+      }
+      // Allow business-details with a profile completion token to bypass login
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasToken = urlParams.get("token");
+      const isBusinessDetails =
+        window.location.pathname === routes.businessDetails;
+
+      if (hasToken && isBusinessDetails) {
+        return children;
+      }
+
       return <Navigate to={routes.auth} replace />;
     }
 
@@ -226,11 +332,23 @@ function App() {
         { path: routes.contentMgmt, element: <ContentMgmtPage /> },
         { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
         { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+
         { path: routes.profile, element: <ProfilePage /> },
+        { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+        { path: routes.partners, element: <PartnersPage /> },
+        { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
+        { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
+        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+        { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
+
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
-        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
+
+        { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
+        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+        { path: routes.poiDetails, element: <PoiDetailsPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],
@@ -239,15 +357,15 @@ function App() {
       element: (
         <Suspense fallback={<SplashLoader />}>
           <ProtectedRoute isLoginPage>
-            <Outlet />
+            <>
+              <RouterProgressBar />
+              <Outlet />
+            </>
           </ProtectedRoute>
         </Suspense>
       ),
       errorElement: <ErrorUiPage />,
-      children: [
-        { path: routes.auth, element: <AuthPage /> },
-        { path: "/test-lab", element: <TestLabPage /> },
-      ],
+      children: [{ path: routes.auth, element: <AuthPage /> }],
     },
   ]);
 

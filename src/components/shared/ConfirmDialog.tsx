@@ -1,7 +1,8 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Info, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { createPortal } from "react-dom";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -15,6 +16,33 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
+const variantConfig = {
+  danger: {
+    iconBg: "bg-red-100 dark:bg-red-900/30",
+    iconColor: "text-red-600 dark:text-red-400",
+    borderAccent: "border-red-500/40",
+    confirmBtn:
+      "bg-red-600 hover:bg-red-700 active:bg-red-800 focus-visible:ring-red-500",
+    topBar: "bg-gradient-to-r from-red-500 to-red-600",
+  },
+  warning: {
+    iconBg: "bg-amber-100 dark:bg-amber-900/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    borderAccent: "border-amber-500/40",
+    confirmBtn:
+      "bg-amber-500 hover:bg-amber-600 active:bg-amber-700 focus-visible:ring-amber-400",
+    topBar: "bg-gradient-to-r from-amber-400 to-amber-500",
+  },
+  info: {
+    iconBg: "bg-blue-100 dark:bg-blue-900/30",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    borderAccent: "border-blue-500/40",
+    confirmBtn:
+      "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-500",
+    topBar: "bg-gradient-to-r from-blue-500 to-blue-600",
+  },
+};
+
 export default function ConfirmDialog({
   open,
   title = "Confirm",
@@ -27,66 +55,107 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const { t } = useTranslation("common");
-  const { bgTertiary, bgPrimary, textPrimary, borderColor, textSecondary } =
-    useThemeClasses();
+  const {
+    isDark,
+    bgPrimary,
+    textPrimary,
+    borderColor,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
+
   if (!open) return null;
 
-  const variantStyles = {
-    danger: "text-red-600 bg-red-100",
-    warning: "text-yellow-600 bg-yellow-100",
-    info: "text-blue-600 bg-blue-100",
-  };
+  const vc = variantConfig[variant];
+  const Icon = variant === "info" ? Info : AlertTriangle;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      onClick={onCancel}
+    >
       <div
+        onClick={(e) => e.stopPropagation()}
         className={clsx(
-          bgTertiary,
-          "w-full max-w-md rounded-xl border border-red-500 p-6 shadow-xl",
+          isDark ? "bg-gray-900" : "bg-white",
+          "w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden",
+          vc.borderAccent,
         )}
       >
-        <div className="flex items-start gap-4">
-          <div className={`p-2 rounded-full ${variantStyles[variant]}`}>
-            <AlertTriangle className="w-5 h-5" />
+        {/* Accent top bar */}
+        <div className={clsx("h-1 w-full", vc.topBar)} />
+
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className={clsx("p-2.5 rounded-xl shrink-0", vc.iconBg)}>
+              <Icon className={clsx("w-5 h-5", vc.iconColor)} />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h3
+                className={clsx(
+                  "text-base font-semibold leading-snug",
+                  textSecondary,
+                )}
+              >
+                {t(title)}
+              </h3>
+              {message && (
+                <p
+                  className={clsx(
+                    "text-sm mt-1.5 leading-relaxed",
+                    textTertiary,
+                  )}
+                >
+                  {t(message)}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="flex-1">
-            <h3 className={clsx("text-lg font-semibold", textSecondary)}>
-              {t(title)}
-            </h3>
-            <p className={clsx("text-sm mt-1", textPrimary)}>
-              {t(message ?? "")}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3 font-semibold">
-          <button
-            onClick={onCancel}
-            disabled={loading}
+          {/* Divider */}
+          <div
             className={clsx(
-              borderColor,
-              bgPrimary,
-              textPrimary,
-              "px-4 py-2 rounded-lg border text-sm cursor-pointer",
+              "mt-5 mb-4 border-t",
+              isDark ? "border-gray-800" : "border-gray-100",
             )}
-          >
-            {t(cancelText)}
-          </button>
+          />
 
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={`px-4 py-2 rounded-lg text-sm cursor-pointer text-white ${
-              variant === "danger"
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-yellow-600 hover:bg-yellow-700"
-            }`}
-          >
-            {loading ? "Processing..." : t(confirmText)}
-          </button>
+          <div className="flex justify-end gap-2.5">
+            <button
+              onClick={onCancel}
+              disabled={loading}
+              className={clsx(
+                borderColor,
+                bgPrimary,
+                textPrimary,
+                "px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer",
+                "transition-colors duration-150",
+                isDark ? "hover:bg-gray-800" : "hover:bg-gray-50",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+            >
+              {t(cancelText)}
+            </button>
+
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className={clsx(
+                "px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer text-white",
+                "transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                "disabled:opacity-60 disabled:cursor-not-allowed",
+                "flex items-center gap-2",
+                vc.confirmBtn,
+              )}
+            >
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {loading ? t("processing") : t(confirmText)}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

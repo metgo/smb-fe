@@ -46,9 +46,16 @@ export const eventQueryApi = createApi({
 
     getAllEvents: builder.query<any, EventListParams>({
       query: (params) => ({
-        url: endpoints.events,
+        url: `${endpoints.events}?sortBy=DESC`,
         method: "GET",
         params,
+      }),
+    }),
+
+    getAllUpcomingEvents: builder.query<IUpcommingEventsResponse, void>({
+      query: () => ({
+        url: endpoints.upcomingEvents,
+        method: "GET",
       }),
     }),
 
@@ -76,4 +83,5 @@ export const {
   useGetEventByIdQuery,
   useLazyGetEventByIdQuery,
   useGetEventsStatsQuery,
+  useGetAllUpcomingEventsQuery,
 } = eventQueryApi;

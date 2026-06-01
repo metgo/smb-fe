@@ -2,31 +2,35 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  Check,
   Image as ImageIcon,
   Package,
   Truck,
   Eye,
   CreditCard,
   FileText,
+  LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
   ProductPricingAvailability,
   ProductReviewSubmit,
 } from "./sub-components";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useInitProductCreateMutation,
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
 
-import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
 import {
@@ -40,12 +44,13 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { modelTitle, removeNulls } from "@/helpers";
+import { detectLanguage, modelTitle, removeNulls } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
+import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -65,6 +70,9 @@ export default function CreateProductWizard({
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
 
+  const { t: tp } = useTranslation("common");
+  const [_detecedLanguage, setDetectedLanguage] = useState("");
+
   const [searchParams] = useSearchParams();
   const { isTraveller } = useUserRoles();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
@@ -73,15 +81,8 @@ export default function CreateProductWizard({
   const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
 
-  const {
-    language,
-    bgTertiary,
-    textPrimary,
-    textTertiary,
-    textSecondary,
-    borderColor,
-    isDark,
-  } = useThemeClasses();
+  const { language, textPrimary, textTertiary, borderColor, isDark } =
+    useThemeClasses();
 
   const { data: businessData, isLoading: _isBusinessesLoading } =
     useGetBusinessForProductQuery(
@@ -157,27 +158,26 @@ export default function CreateProductWizard({
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
     setPrimaryImage,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useImagesUpload({
+  } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
 
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
-    nameEn: "",
+    name: "",
     nameHe: "",
     nameAr: "",
     shortDescription: "",
     shortDescriptionHe: "",
     shortDescriptionAr: "",
-    fullDescriptionEn: "",
+    fullDescription: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
     type: "",
@@ -205,7 +205,9 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -383,11 +385,13 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: t("product_segmentation"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: CreditCard },
-    { number: 4, title: t("product_media"), icon: ImageIcon },
-    { number: 5, title: t("product_delivery_service"), icon: Truck },
-    { number: 6, title: t("product_review"), icon: Eye },
+    { number: 2, title: tp("translation"), icon: LanguagesIcon },
+
+    { number: 3, title: t("product_segmentation"), icon: Package },
+    { number: 4, title: t("product_pricing"), icon: CreditCard },
+    { number: 5, title: t("product_media"), icon: ImageIcon },
+    { number: 6, title: t("product_delivery_service"), icon: Truck },
+    { number: 7, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -428,16 +432,19 @@ export default function CreateProductWizard({
   };
 
   const handleSaveDraft = async () => {
+    if (
+      !formData.name?.trim() &&
+      !formData.nameHe?.trim() &&
+      !formData.nameAr?.trim()
+    ) {
+      toast.error(tc("name_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
-
-    await uploadAll();
     await saveDraft(false);
   };
 
   const handleNext = async () => {
-    if (currentStep === 4) {
-      await uploadAll();
-    }
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -467,12 +474,51 @@ export default function CreateProductWizard({
       toast.error(t("fill_all_fields"));
       return;
     }
-    setIsPublishing(true);
 
-    await saveDraft(true);
+    setIsPublishing(true);
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+
+    await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const name = data.name?.trim() || "";
+    const shortDescription = data.shortDescription?.trim() || "";
+    const description = data.description?.trim() || "";
 
+    // Prioritize title, then short desc, then content for detection
+    const textToDetect = name || shortDescription || description;
+    if (!textToDetect) return data;
+
+    const detectedLang = detectLanguage(textToDetect);
+    setDetectedLanguage(detectedLang);
+    const updated = { ...data };
+
+    if (detectedLang === "he") {
+      // Move to Hebrew fields
+      updated.nameHe = name || data.nameHe;
+      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
+      updated.descriptionHe = description || data.descriptionHe;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    } else if (detectedLang === "ar") {
+      // Move to Arabic fields
+      updated.nameAr = name || data.nameAr;
+      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
+      updated.descriptionAr = description || data.descriptionAr;
+
+      // Clear English fields
+      updated.name = "";
+      updated.shortDescription = "";
+      updated.description = "";
+    }
+    // else: remains in English fields (default)
+
+    return updated;
+  };
   // Draft Save Payload per Step
   const stepPayloadMap = {
     completionPercent: completionPercent,
@@ -520,7 +566,7 @@ export default function CreateProductWizard({
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
   };
 
-  const saveDraft = async (isPublish = false) => {
+  const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
       let internalProductId;
 
@@ -533,7 +579,7 @@ export default function CreateProductWizard({
       }
 
       // Only send payload for the current step
-      const payload = stepPayloadMap;
+      const payload = processedFormData;
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
@@ -606,11 +652,15 @@ export default function CreateProductWizard({
         );
       case 2:
         return (
+          <ProductTranslateButton formData={formData} onChange={handleChange} />
+        );
+      case 3:
+        return (
           <Attributes
-            name={formData.nameHe || formData.nameEn || formData.nameAr}
+            name={formData.nameHe || formData.name || formData.nameAr}
             description={
               formData.fullDescriptionHe ||
-              formData.fullDescriptionEn ||
+              formData.fullDescription ||
               formData.fullDescriptionAr
             }
             {...commonProps}
@@ -622,11 +672,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 3:
-        return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <Media {...mediaProps} {...commonProps} />;
+        return <ProductPricingAvailability {...commonProps} />;
       case 5:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 6:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -636,7 +686,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={setIsSameAsBusiness}
           />
         );
-      case 6:
+      case 7:
         return (
           <ProductReviewSubmit
             {...commonProps}
@@ -652,65 +702,68 @@ export default function CreateProductWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       <div
-        className={`p-6 border-b ${borderColor} flex items-center justify-between`}
+        className={`px-4 py-3 md:p-6 border-b ${borderColor} flex items-center justify-between gap-3`}
       >
-        <div>
-          <h2 className={`text-2xl ${textPrimary} mb-1`}>
+        <div className="min-w-0">
+          <h2
+            className={`text-lg md:text-2xl ${textPrimary} mb-0.5 md:mb-1 truncate`}
+          >
             {modelTitle(opMode, t)} {t("product")}
           </h2>
-          <p className={`text-sm ${textTertiary}`}>
-            {t("step")} {currentStep} {t("of")} 6:{" "}
+          <p className={`text-xs md:text-sm ${textTertiary} truncate`}>
+            {t("step")} {currentStep} {t("of")} {steps.length}:{" "}
             {steps[currentStep - 1]?.title}
           </p>
         </div>
 
         {/* Right content */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {/* Impact Percent Indicator */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="relative w-14 h-14">
-              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
-                  fill="none"
-                  strokeWidth="5"
-                  className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
-                />
-                <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
-                  fill="none"
-                  strokeWidth="5"
-                  strokeDasharray={`${2 * Math.PI * 22}`}
-                  strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
-                  strokeLinecap="round"
-                  className="transition-all duration-500"
-                  stroke={
-                    completionPercent >= 70
-                      ? "#16a34a"
-                      : completionPercent >= 40
-                        ? "#f59e0b"
-                        : "#ef4444"
-                  }
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span
-                  className={clsx(
-                    "text-xs font-bold",
-                    completionPercent >= 70
-                      ? "text-green-600"
-                      : completionPercent >= 40
-                        ? "text-amber-500"
-                        : "text-red-500",
-                  )}
-                >
-                  {completionPercent}%
-                </span>
-              </div>
+          <div className="relative w-10 h-10 md:w-14 md:h-14">
+            <svg
+              className="w-10 h-10 md:w-14 md:h-14 -rotate-90"
+              viewBox="0 0 56 56"
+            >
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                strokeWidth="5"
+                className={isDark ? "stroke-gray-700" : "stroke-gray-200"}
+              />
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 22}`}
+                strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+                stroke={
+                  completionPercent >= 70
+                    ? "#16a34a"
+                    : completionPercent >= 40
+                      ? "#f59e0b"
+                      : "#ef4444"
+                }
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                className={clsx(
+                  "text-[10px] md:text-xs font-bold",
+                  completionPercent >= 70
+                    ? "text-green-600"
+                    : completionPercent >= 40
+                      ? "text-amber-500"
+                      : "text-red-500",
+                )}
+              >
+                {completionPercent}%
+              </span>
             </div>
           </div>
           <PublishButton onClick={handlePublish} isLoading={isPublishing} />
@@ -718,66 +771,19 @@ export default function CreateProductWizard({
       </div>
 
       {/* Progress Bar */}
-      <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-        <div className="flex items-start justify-between">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            const isActive = currentStep === step.number;
-            const isCompleted = currentStep > step.number;
-
-            return (
-              <div
-                key={step.number}
-                className="flex-1 cursor-pointer"
-                onClick={() => setCurrentStep(step.number)}
-              >
-                <div className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
-                      ${
-                        isActive
-                          ? "bg-teal-500 text-white"
-                          : isCompleted
-                            ? "bg-green-500 text-white"
-                            : `${bgTertiary} ${textTertiary}`
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <Icon className="w-5 h-5" />
-                      )}
-                    </div>
-
-                    {/* Title below icon */}
-                    <span
-                      className={clsx(
-                        "mt-2 text-sm text-center",
-                        textSecondary,
-                      )}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
-
-                  {/* Connector line */}
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${
-                        isCompleted ? "bg-green-500" : bgTertiary
-                      }`}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <div className={`px-4 md:px-6 pt-3 md:pt-4 pb-2 border-b ${borderColor}`}>
+        <WizardStepper
+          steps={steps}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onStepClick={setCurrentStep}
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        {renderStepContent()}
+      </div>
 
       <WizardFooter
         currentStep={currentStep}

@@ -16,11 +16,23 @@ import VouchersMgmtPage from "./vouchers-mgmt";
 import VoucherDetailsPage from "./vouchers-mgmt/details";
 import WebsiteMgmtPage from "./website-mgmt";
 import DynamicPageMgmtPage from "./dynamic-page-mgmt";
+import PromotionsMgmtPage from "./promotions-mgmt";
+import DmosMgmtPage from "./dmos-mgmt";
+import AuthoritiesMgmtPage from "./authorities-mgmt";
+import WebsiteConfigPage from "./website-mgmt/website-config";
+import PartnersPage from "./partners";
+import CampaignsMgmtPage from "./campaign-mgmt";
+import UsersMgmtPage from "./users-mgmt";
+import PoiMgmtPage from "./poi-mgmt";
+import PoiDetailsPage from "./poi-mgmt/details";
 
 export {
   AuthPage,
   ErrorUiPage,
   ProfilePage,
+  DmosMgmtPage,
+  CampaignsMgmtPage,
+  AuthoritiesMgmtPage,
   BusinessesMgmtPage,
   BusinessDetailsPage,
   ProductsMgmtPage,
@@ -32,8 +44,14 @@ export {
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
   ContentMgmtPage,
+  PromotionsMgmtPage,
+  PartnersPage,
   VouchersMgmtPage,
   VoucherDetailsPage,
   WebsiteMgmtPage,
+  WebsiteConfigPage,
   DynamicPageMgmtPage,
+  UsersMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
 };

@@ -15,7 +15,7 @@ type Props = {
     name: string;
     logo?: string | undefined;
   }[];
-  value?: string;
+  value?: string | null;
   onChange: (value: string) => void;
 
   onSearch?: (keyword: string) => void;
@@ -76,7 +76,8 @@ export default function ReactSelect({
         container: (base) => ({ ...base, minWidth, zIndex: 40 }),
         control: (base, state) => ({
           ...base,
-          borderRadius: 12,
+          borderRadius: 8,
+          height: 44,
           borderColor: state.isFocused
             ? isDark
               ? "#2dd4bf"

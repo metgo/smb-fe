@@ -74,36 +74,36 @@ const BusinessOpeningHours = ({
       {formData?.operatingHours?.map((hour, idx) => (
         <div
           key={hour.day}
-          className={`flex justify-between items-start p-5 border rounded-md ${
-            isDark ? "bg-gray-800" : "bg-gray-100"
-          }`}
+          className={clsx(
+            "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-5 border rounded-md",
+            isDark ? "bg-gray-800" : "bg-gray-100",
+          )}
         >
-          {/* Left side: Day and open time (open time below day) */}
           <div className="flex flex-col">
             <div
               className={clsx("font-semibold capitalize mb-1", textSecondary)}
             >
               {t(dayFullKey[hour.day])}
             </div>
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-2 sm:gap-4 items-center flex-wrap">
               <input
                 type="time"
                 value={hour.open}
                 onChange={(e) => handleTimeChange(idx, "open", e.target.value)}
                 disabled={hour.isHoliday}
-                className={`mt-1 px-3 py-3 rounded-lg border text-sm ${
+                className={`px-2 sm:px-3 py-2 sm:py-3 rounded-lg border text-sm ${
                   isDark
                     ? "bg-gray-700 border-gray-600 text-gray-200"
                     : "bg-white border-gray-300 text-gray-900"
                 }`}
               />
-              <div className={clsx(textSecondary)}>{t("to")}</div>
+              <div className={clsx("text-sm", textSecondary)}>{t("to")}</div>
               <input
                 type="time"
                 value={hour.close}
                 onChange={(e) => handleTimeChange(idx, "close", e.target.value)}
                 disabled={hour.isHoliday}
-                className={`px-3 py-3 rounded-lg border text-sm ${
+                className={`px-2 sm:px-3 py-2 sm:py-3 rounded-lg border text-sm ${
                   isDark
                     ? "bg-gray-700 border-gray-600 text-gray-200"
                     : "bg-white border-gray-300 text-gray-900"
@@ -112,20 +112,19 @@ const BusinessOpeningHours = ({
             </div>
           </div>
 
-          {/* Right side: close time and checkbox (stacked vertically) */}
-          <div className="flex flex-col items-end space-y-2">
-            <label className="flex items-center gap-1 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hour.isHoliday}
-                onChange={() => handleToggleHoliday(idx)}
-                className="w-4 h-4 rounded border-gray-300"
-              />
-              <span className={isDark ? "text-gray-300" : "text-gray-700"}>
-                {t("closed")}
-              </span>
-            </label>
-          </div>
+          <label className="flex items-center gap-1.5 cursor-pointer self-start sm:self-auto">
+            <input
+              type="checkbox"
+              checked={hour.isHoliday}
+              onChange={() => handleToggleHoliday(idx)}
+              className="w-4 h-4 rounded border-gray-300"
+            />
+            <span
+              className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("closed")}
+            </span>
+          </label>
         </div>
       ))}
     </div>

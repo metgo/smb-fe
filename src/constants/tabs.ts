@@ -4,7 +4,6 @@ import {
   Box,
   Calendar,
   Clock,
-  DollarSign,
   FileText,
   Globe,
   ImageIcon,
@@ -48,12 +47,7 @@ export const eventTabs = [
 export const productTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "attributes", label: "attributes", icon: Accessibility },
-  {
-    id: "pricing",
-    label: "pricing",
-    icon: DollarSign,
-  },
-  { id: "inventory", label: "inventory", icon: Box },
+  { id: "pricing_inventory", label: "inventory", icon: Box },
   {
     id: "availability",
     label: "availability",
@@ -61,6 +55,13 @@ export const productTabs = [
   },
   { id: "delivery", label: "delivery_policy", icon: Truck },
   { id: "media", label: "media", icon: ImageIcon },
+];
+
+export const poiTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "accessibility", label: "attributes", icon: Accessibility },
+  { id: "location", label: "location_map", icon: MapPin },
+  { id: "media", label: "images", icon: ImageIcon },
 ];
 
 export const voucherTabs = [

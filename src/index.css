@@ -5,6 +5,34 @@
 @custom-variant ltr (&:is(:dir(ltr) *));
 @custom-variant rtl (&:is(:dir(rtl) *));
 
+.goog-te-banner-frame {
+  display: none !important;
+}
+.goog-logo-link {
+  display: none !important;
+}
+.goog-te-gadget {
+  font-size: 0 !important;
+}
+
+/* The "Rate this translation" tooltip */
+.goog-te-balloon-frame {
+  display: none !important;
+}
+#goog-gt-tt {
+  display: none !important;
+}
+.goog-tooltip {
+  display: none !important;
+}
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
 :root {
   --font-size: 16px;
   --background: #ffffff;
@@ -154,6 +182,12 @@ body::-webkit-scrollbar,
   .field-error {
     @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
   }
+  .details-top {
+    @apply border border-gray-200/40 p-2 rounded-2xl mb-3 bg-gray-300/10;
+  }
+  .details-content {
+    @apply flex-1 overflow-y-auto border border-gray-200/40 rounded-b-2xl p-2 bg-gray-300/10;
+  }
 }
 
 /**
@@ -205,6 +239,20 @@ body::-webkit-scrollbar,
   }
 }
 
+/* Prevent browser autofill white background on auth inputs.
+   box-shadow inset paints over the browser-forced background-color.
+   transition delays the color change long enough it's never visible. */
+input.auth-input:-webkit-autofill,
+input.auth-input:-webkit-autofill:hover,
+input.auth-input:-webkit-autofill:focus,
+input.auth-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgb(55, 65, 81) inset !important;
+  box-shadow: 0 0 0 1000px rgb(55, 65, 81) inset !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+  caret-color: white !important;
+}
+
 .db1 {
   border: 2px dotted red;
 }
@@ -214,6 +262,35 @@ html {
 }
 button {
   cursor: pointer;
+}
+
+/* NProgress – top loading bar */
+#nprogress {
+  pointer-events: none;
+}
+#nprogress .bar {
+  background: linear-gradient(to right, #facc15, #ef4444, #16a34a);
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+}
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  box-shadow:
+    0 0 10px #ef4444,
+    0 0 5px #ef4444;
+  opacity: 1;
+  transform: rotate(3deg) translate(0px, -4px);
+}
+#nprogress .spinner {
+  display: none;
 }
 
 .ck-editor__editable {

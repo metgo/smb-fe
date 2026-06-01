@@ -29,8 +29,14 @@ export const endpoints = {
 
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
-  dmos: "/dmos",
+  dmosAuthorities: "/dmos-authorities",
   changeOwner: "/admin/businesses/assign-user/",
+
+  // poi
+  poi: "/point-of-interests",
+  pois: "/point-of-interests",
+  poisStatDashboard: "/point-of-interests-stat",
+  bulkPoisUpdate: "/bulk-point-of-interests-update",
 
   // business
   business: "/businesses",
@@ -57,6 +63,7 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+  upcomingEvents: "/upcoming-events",
 
   users: "/users",
   userInfo: "/users/me",
@@ -70,7 +77,7 @@ export const endpoints = {
   //document
   docUpload: "doc-upload",
 
-  websites: "/websites",
+  websites: "/site-settings/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
 
@@ -87,22 +94,37 @@ export const endpoints = {
   trips: "/trips",
   stations: "/stations",
 
+  //voucher
+  vouchers: "/vouchers",
+  voucher: "/voucher-id",
+  postVoucher: "/vouchers",
+  searchVoucher: "/search-vouchers",
+  voucherStatDashboard: "/vouchers-stats",
+  bulkVouchersUpdate: "/bulk-vouchers-update",
+  sendemail: "/vouchers/send-email",
+  sendsms: "/vouchers/send-sms",
+
   // cmpaings
-  campaign: "",
-  postVoucher: "",
-  sendemail: "",
-  sendsms: "",
-  vouchers: "",
-  bulkVouchersUpdate: "",
-  voucherStatDashboard: "",
+  campaign: "/admin/campaign",
 
   // Admin endpoints
   dynamicPage: "/settings",
+
   // Blog Articles
   blogs: "/blogs",
   blogGenerateSeo: "/blogs/generate-seo",
-  // Website settgins
+  bloggenerateName: "/generate-blog-name",
+
+  // Website settgins & Config
+  dmos: "/dmos",
+  authorities: "/authorities",
   websiteSettings: "/site-settings",
+  partners: "/partners",
+  campaigns: "/campaigns",
+
+  // Promotions
+  promotions: "/promotions",
+  promotionGroups: "/promotion-groups",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

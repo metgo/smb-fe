@@ -62,7 +62,7 @@ const Dashboard = () => {
     <DndProvider backend={HTML5Backend}>
       <div className={`flex-1 transition-all duration-300 `}>
         <main
-          className={`overflow-y-auto pt-6 pb-12 px-4 sm:px-6 lg:px-2 max-w-400 mx-auto transition-all duration-300 ${isEditMode ? "mr-96" : ""}`}
+          className={`overflow-y-auto pt-6 pb-12 px-2 sm:px-6 lg:px-2 max-w-400 mx-auto transition-all duration-300 ${isEditMode ? "mr-96" : ""}`}
         >
           {/* Edit Mode Banner */}
           {isEditMode && (

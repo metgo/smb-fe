@@ -31,9 +31,9 @@ export function EnterOtp({ setCurrentTab, otpToken }: EnterOtpProps) {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-xl">
-        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl">
           {/* Header */}
           <AuthHeader title="enter_otp" desc="otp_instruction" />
 
@@ -47,7 +47,7 @@ export function EnterOtp({ setCurrentTab, otpToken }: EnterOtpProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-lg py-4 transition-colors"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-base sm:text-lg py-3.5 sm:py-4 transition-colors"
             >
               {isLoading ? t("verifying") : t("verify_otp")}
             </button>

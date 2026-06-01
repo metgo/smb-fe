@@ -18,6 +18,7 @@ export const documentMutationApi = createApi({
         },
       }),
     }),
+
     getDocument: builder.query<any, void | string | number>({
       query: () => ({
         url: endpoints.docUpload,

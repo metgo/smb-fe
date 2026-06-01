@@ -2,7 +2,7 @@ import { loadUserInfo } from "@/lib/storage";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface User {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

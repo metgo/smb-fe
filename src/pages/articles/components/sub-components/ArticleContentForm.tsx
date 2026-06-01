@@ -1,37 +1,19 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
-import ArticleImageGallery from "./ArticleImageGallery";
-
-const LANG_SUFFIX: Record<Language, string> = { en: "", he: "He", ar: "Ar" };
-const LANG_DIR: Record<Language, "ltr" | "rtl"> = {
-  en: "ltr",
-  he: "rtl",
-  ar: "rtl",
-};
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
-  editingLanguage: Language;
   onChange: (updates: Record<string, any>) => void;
-  images: any[];
-  primaryImageIndex: number;
-  onImageUpload: (files: FileList) => void;
-  onImageDelete: (img: any, idx: number) => void;
-  onSetPrimaryImage: (idx: number) => void;
   syncKey?: string | number;
+  editingLanguage: "en" | "he" | "ar";
 }
 
 export default function ArticleContentForm({
   formData,
-  editingLanguage,
   onChange,
-  images,
-  primaryImageIndex,
-  onImageUpload,
-  onImageDelete,
-  onSetPrimaryImage,
   syncKey,
+  editingLanguage,
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
   const {
@@ -42,23 +24,57 @@ export default function ArticleContentForm({
     textTertiary,
     borderColor,
   } = useThemeClasses();
+  // Detect which language actually has content, prioritize that
+  const detectPrimaryLang = (): "en" | "he" | "ar" => {
+    if (
+      formData.title?.trim() ||
+      formData.shortDescription?.trim() ||
+      formData.content?.trim()
+    )
+      return "en";
+    if (
+      formData.titleHe?.trim() ||
+      formData.shortDescriptionHe?.trim() ||
+      formData.contentHe?.trim()
+    )
+      return "he";
+    if (
+      formData.titleAr?.trim() ||
+      formData.shortDescriptionAr?.trim() ||
+      formData.contentAr?.trim()
+    )
+      return "ar";
+    return "en";
+  };
 
-  const suffix = LANG_SUFFIX[editingLanguage];
-  const dir = LANG_DIR[editingLanguage];
-  const langLabel =
-    editingLanguage !== "en" ? ` (${editingLanguage.toUpperCase()})` : "";
+  const primaryLang = detectPrimaryLang();
 
-  const titleField = `title${suffix}`;
-  const shortDescField = `shortDescription${suffix}`;
-  const contentField = `content${suffix}`;
+  const FIELD_MAP = {
+    en: { title: "title", shortDesc: "shortDescription", content: "content" },
+    he: {
+      title: "titleHe",
+      shortDesc: "shortDescriptionHe",
+      content: "contentHe",
+    },
+    ar: {
+      title: "titleAr",
+      shortDesc: "shortDescriptionAr",
+      content: "contentAr",
+    },
+  };
+
+  const fields = FIELD_MAP[primaryLang];
+  const titleField = fields.title;
+  const shortDescField = fields.shortDesc;
+  const contentField = fields.content;
+
+  const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Title */}
+    <div className="max-w-7xl mx-auto space-y-6">
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("title")}
-          {langLabel} <span className="text-red-500">*</span>
+          {t("title")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -73,11 +89,9 @@ export default function ArticleContentForm({
         </p>
       </div>
 
-      {/* Short Description */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("short_description")}
-          {langLabel} <span className="text-red-500">*</span>
+          {t("short_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData[shortDescField] || ""}
@@ -92,26 +106,16 @@ export default function ArticleContentForm({
         </p>
       </div>
 
-      {/* Rich Text Content */}
       <RichTextEditor
         content={formData[contentField] || ""}
         onChange={(html) => onChange({ [contentField]: html })}
-        editingLanguage={editingLanguage}
         bgPrimary={bgPrimary}
         bgSecondary={bgSecondary}
         textPrimary={textPrimary}
         textTertiary={textTertiary}
         borderColor={borderColor}
-        syncKey={`${syncKey ?? ""}-${editingLanguage}`}
-      />
-
-      {/* Image Gallery */}
-      <ArticleImageGallery
-        images={images}
-        primaryImageIndex={primaryImageIndex}
-        onImageUpload={onImageUpload}
-        onImageDelete={onImageDelete}
-        onSetPrimaryImage={onSetPrimaryImage}
+        syncKey={syncKey}
+        editingLanguage={editingLanguage}
       />
     </div>
   );

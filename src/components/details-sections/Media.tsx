@@ -1,17 +1,13 @@
 import { useEffect, type FC } from "react";
-import { Loader2, Plus, Upload, X } from "lucide-react";
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useTranslation } from "react-i18next";
+import { Loader2, Plus, Upload, X } from "lucide-react";
 
-interface MediaErrors {
-  logo?: string;
-}
-
-/* ---------- Props ---------- */
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 
 interface MediaProps {
   theme?: Theme;
-  errors?: MediaErrors;
+  errors?: { logo?: string };
   markDirty?: (step: number) => void;
   isBusiness?: boolean;
   logoImage?: IImageUpload | null;
@@ -39,7 +35,6 @@ interface MediaProps {
 /* ---------- Component ---------- */
 
 const Media: FC<MediaProps> = ({
-  theme,
   errors,
   isBusiness = false,
   markDirty,
@@ -63,6 +58,8 @@ const Media: FC<MediaProps> = ({
   handleImageUpload,
 }) => {
   const { t } = useTranslation("businesses");
+  const { isDark } = useThemeClasses();
+
   useEffect(() => {
     markDirty?.(6);
   }, [images, markDirty, imagesRef]);
@@ -83,7 +80,7 @@ const Media: FC<MediaProps> = ({
         <div>
           <label
             className={`block text-sm mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
+              isDark ? "text-gray-300" : "text-gray-700"
             }`}
           >
             {t("logo_required")} <span className="text-red-500">*</span>
@@ -126,7 +123,7 @@ const Media: FC<MediaProps> = ({
                 className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer ${
                   errors?.logo
                     ? "border-red-500"
-                    : theme === "dark"
+                    : isDark
                       ? "border-gray-700 hover:border-gray-600"
                       : "border-gray-300 hover:border-gray-400"
                 }`}
@@ -137,12 +134,12 @@ const Media: FC<MediaProps> = ({
                 <div className="text-center">
                   <Upload
                     className={`w-6 h-6 mx-auto mb-1 ${
-                      theme === "dark" ? "text-gray-600" : "text-gray-400"
+                      isDark ? "text-gray-600" : "text-gray-400"
                     }`}
                   />
                   <p
                     className={`text-xs ${
-                      theme === "dark" ? "text-gray-600" : "text-gray-500"
+                      isDark ? "text-gray-600" : "text-gray-500"
                     }`}
                   >
                     {t("upload_logo")}
@@ -171,7 +168,7 @@ const Media: FC<MediaProps> = ({
       <div>
         <label
           className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("image_gallery")}
@@ -185,7 +182,7 @@ const Media: FC<MediaProps> = ({
             <div
               key={idx}
               className={`relative aspect-square rounded-lg overflow-hidden border group ${
-                theme === "dark" ? "border-gray-700" : "border-gray-300"
+                isDark ? "border-gray-700" : "border-gray-300"
               }`}
             >
               <ImageWithFallback
@@ -220,12 +217,14 @@ const Media: FC<MediaProps> = ({
               )}
 
               {/* Set as Primary */}
-              <button
-                onClick={() => setPrimaryImage(idx)}
-                className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
-              >
-                {t("set_as_primary") || "Set as Primary"}
-              </button>
+              {idx !== primaryImageIndex && (
+                <button
+                  onClick={() => setPrimaryImage(idx)}
+                  className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
+                >
+                  {t("set_as_primary") || "Set as Primary"}
+                </button>
+              )}
             </div>
           ))}
 
@@ -233,7 +232,7 @@ const Media: FC<MediaProps> = ({
           {images?.length < 10 && (
             <div
               className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
-                theme === "dark"
+                isDark
                   ? "border-gray-700 hover:border-gray-600"
                   : "border-gray-300 hover:border-gray-400"
               }`}
@@ -253,12 +252,12 @@ const Media: FC<MediaProps> = ({
               <div className="text-center">
                 <Plus
                   className={`w-8 h-8 mx-auto mb-1 ${
-                    theme === "dark" ? "text-gray-600" : "text-gray-400"
+                    isDark ? "text-gray-600" : "text-gray-400"
                   }`}
                 />
                 <p
                   className={`text-xs ${
-                    theme === "dark" ? "text-gray-600" : "text-gray-500"
+                    isDark ? "text-gray-600" : "text-gray-500"
                   }`}
                 >
                   {t("upload_images") || "Upload"}

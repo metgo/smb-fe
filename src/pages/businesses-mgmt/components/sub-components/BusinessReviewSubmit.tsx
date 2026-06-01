@@ -44,7 +44,7 @@ interface BusinessReviewSubmitProps {
   address: string;
   geo?: {
     lat: string;
-    lng: string;
+    long: string;
   };
   t: (key: string) => string;
   setCurrentStep: (v: number) => void;
@@ -194,8 +194,8 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             {row(t("address"), address)}
             {row(
               t("geo"),
-              geo?.lat && geo?.lng
-                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.lng).toFixed(4)}`
+              geo?.lat && geo?.long
+                ? `${Number(geo.lat).toFixed(4)}, ${Number(geo.long).toFixed(4)}`
                 : null,
             )}
           </div>
@@ -255,13 +255,12 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           STEPS.IMAGES,
         )}
         <div className="flex flex-wrap gap-2 p-4">
-          {" "}
           {images?.map((img: any, index: any) => (
             <ImageWithFallback
               key={index}
               src={img?.image || img?.previewUrl}
               alt="Uploaded image"
-              className="h-50 w-60 rounded-md shadow-md object-cover"
+              className="h-32 w-full sm:h-40 sm:w-48 rounded-md shadow-md object-cover"
             />
           ))}
         </div>
@@ -281,36 +280,15 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             : [{}]
           ) // fallback to one empty object if no data
             .map((deliveryArea: any, areaIdx: any) => (
-              <div key={areaIdx} className={`p-4 rounded-lg`}>
-                <div className="grid grid-cols-12 gap-3 mb-3">
-                  {/* Area */}
-                  <div className="col-span-5">
-                    <p
-                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-                    >
-                      {row(t("delivery_area"), deliveryArea.area)}
-                    </p>
-                  </div>
-
-                  {/* Price */}
-                  <div className="col-span-3">
-                    <p
-                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-                    >
-                      {row(t("delivery_price"), deliveryArea.price)}
-                    </p>
-                  </div>
-
-                  {/* Pickup Locations Count */}
-                  <div className="col-span-4">
-                    <p
-                      className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-                    >
-                      {row(
-                        t("pickup_locations"),
-                        deliveryArea.pickUpLocation?.length ?? 0,
-                      )}
-                    </p>
+              <div key={areaIdx} className="p-4 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>{row(t("delivery_area"), deliveryArea.area)}</div>
+                  <div>{row(t("delivery_price"), deliveryArea.price)}</div>
+                  <div>
+                    {row(
+                      t("pickup_locations"),
+                      deliveryArea.pickUpLocation?.length ?? 0,
+                    )}
                   </div>
                 </div>
               </div>

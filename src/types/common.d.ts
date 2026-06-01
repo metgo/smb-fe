@@ -13,10 +13,17 @@ type TStatus =
 
 type EventStatus = "draft" | "pending" | "approved";
 type TOpMode = "CREATE" | "DUPLICATE" | "EDIT" | "VIEW" | "UPDATE" | "CLOSED";
+type TCampaign = "CASH_IN" | "CASH_BACK" | "MINI_SITE";
+
+interface IWizardStep {
+  number: number;
+  title: string;
+  icon: LucideIcon;
+}
 
 interface Geo {
   lat: string;
-  lng: string;
+  long: string;
 }
 
 interface ITags {
@@ -32,6 +39,7 @@ interface IWebsite {
   logo: string;
   dmoIds: string[];
   authorityIds: string[];
+  isActive?: boolean;
 }
 
 interface ITag {
@@ -87,7 +95,18 @@ interface IDmo {
   imagePath?: string;
   logoPath?: string;
   authorities: Authority[];
+  isActive?: boolean;
 }
+
+type EnrichedAuthority = {
+  _id: string;
+  name: string;
+  logoPath?: string;
+  dmoId: string;
+  dmoName: string;
+  dmoLogo?: string;
+  isActive?: boolean;
+};
 
 interface IDeleteTarget {
   imageUrl: string;
@@ -133,6 +152,8 @@ interface IAssociatedWebsiteIds {
 interface ISearchBusiness {
   _id: string;
   name: string;
+  nameHe: string;
+  nameAr: string;
   slug: string;
 }
 

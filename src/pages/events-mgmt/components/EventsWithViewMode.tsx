@@ -23,8 +23,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   BulkActionBar,
   ConfirmDialog,
-  ImageWithFallback,
-  ItemStatusBadge,
+  GridCard,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
@@ -37,8 +36,6 @@ import QuickSnapEventDetails from "./QuickSnapEventDetails";
 import CreateEventWizard from "./CreateEventWizard";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
-import { DeleteIconBtn } from "@/components/btns";
-import { Checkbox } from "@/components/ui/checkbox";
 import { StatusPill } from "@/components/pills";
 
 interface EventsWithViewModeProps {
@@ -97,12 +94,11 @@ export default function EventsWithViewMode({
   statusFilter,
   searchQuery,
 }: EventsWithViewModeProps) {
-  const { t, i18n } = useTranslation("events");
+  const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
-  const language = i18n.language || "en";
   const navigate = useNavigate();
-  const { bgPrimary, bgSecondary, borderColor, textTertiary, textPrimary } =
+  const { bgSecondary, borderColor, textTertiary, textPrimary, language } =
     useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
@@ -462,102 +458,59 @@ export default function EventsWithViewMode({
 
     return (
       <div className="py-4 px-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {isLoading ? (
-            Array.from({ length: 7 }).map((_, index) => (
-              <EventCardSkeleton key={index} />
-            ))
-          ) : (
-            <>
-              {displayed?.map((event) => {
-                const isChecked = selectedEvents?.has(event?._id) ?? false;
-
-                return (
-                  <div
-                    key={event._id}
-                    onClick={() => handleEventSelect(event)}
-                    className={clsx(
-                      bgPrimary,
-                      textPrimary,
-                      " relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
-                    )}
-                  >
-                    <div className="relative h-40">
-                      {event?.images?.[0]?.image ? (
-                        <ImageWithFallback
-                          src={event?.images?.[0]?.image}
-                          alt={event.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                          <Calendar className="w-20 h-20 text-white/40" />
-                        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+          {isLoading
+            ? Array.from({ length: 7 }).map((_, index) => (
+                <EventCardSkeleton key={index} />
+              ))
+            : displayed?.map((event) => (
+                <GridCard
+                  key={event._id}
+                  image={event?.images?.[0]?.image}
+                  imageAlt={event.name}
+                  imageHeight="h-36"
+                  fallbackIcon={Calendar}
+                  fallbackGradient="from-purple-400 to-pink-400"
+                  title={event.name}
+                  status={event?.status?.toLowerCase()}
+                  isChecked={selectedEvents?.has(event._id) ?? false}
+                  onCheckChange={() => toggleCheckBox(event._id)}
+                  onDelete={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                    setEventToDelete(event._id);
+                  }}
+                  onClick={() => handleEventSelect(event)}
+                  meta={[
+                    {
+                      icon: Calendar,
+                      label: extractEventDates(event?.dayDescription),
+                    },
+                    event?.address?.location && {
+                      icon: MapPin,
+                      label: extractCenterAddressText(event.address.location),
+                    },
+                  ]}
+                  footer={
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={
+                          event.isFree
+                            ? "text-emerald-600 font-medium text-xs"
+                            : "text-purple-600 font-medium text-xs"
+                        }
+                      >
+                        {event?.isFree ? t("free") : `₪ 0`}
+                      </span>
+                      {event.registrationRequired && (
+                        <span className="text-xs text-gray-500">
+                          {event.totalRegistrations}/{event.capacity}
+                        </span>
                       )}
                     </div>
-
-                    <div
-                      className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center gap-2">
-                        {selectedEvents && (
-                          <Checkbox
-                            checked={isChecked}
-                            onCheckedChange={() => toggleCheckBox(event?._id)}
-                            className={`cursor-pointer border-2 transition-colors border-teal-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500`}
-                          />
-                        )}
-                        <ItemStatusBadge
-                          status={event?.status?.toLowerCase()}
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <DeleteIconBtn
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsConfirmOpen(true);
-                            setEventToDelete(event?._id);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-2">
-                      <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                        {event.name}
-                      </h3>
-                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          {extractEventDates(event?.dayDescription)}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">
-                            {extractCenterAddressText(event?.address?.location)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span
-                          className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
-                        >
-                          {event?.isFree ? t("free") : `₪ 0`}
-                        </span>
-                        {event.registrationRequired && (
-                          <div className="text-xs text-gray-500">
-                            {event.totalRegistrations}/{event.capacity}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
+                  }
+                />
+              ))}
         </div>
 
         {events?.length > displayedListCount && (
@@ -598,7 +551,9 @@ export default function EventsWithViewMode({
                 {event.isMultiDay && (
                   <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
                 )}
-                <span className="text-sm line-clamp-2">{event.name}</span>
+                <span className="text-sm line-clamp-2">
+                  {event.name || event.nameHe || event.nameAr}
+                </span>
               </div>
             ),
           },
