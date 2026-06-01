@@ -13,10 +13,7 @@ import { SiteSettingsController } from './controller/site-filters-config.control
 import { GetSiteFiltersConfigByIdentifierIdHandler } from './queries/handler/get-site-filters-config-by-identifierId.handler';
 import { GetProductsByTopicHandler } from './queries/handler/get-products-by-topic.handler';
 import { GetProductsGroupedByTopicHandler } from './queries/handler/get-products-grouped-by-topic.handler';
-import {
-  ExternalApi,
-  ExternalApiSchema,
-} from '../external-api/schema/external-api.schema';
+
 import {
   ProductsAudit,
   ProductsAuditSchema,
@@ -36,6 +33,7 @@ import {
 } from '../buss-categories/schema/buss.category.schema';
 import { Tags, TagsSchema } from '../tags/schema/tags.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
+import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-api.schema';
 
 @Module({
   imports: [

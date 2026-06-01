@@ -1,19 +1,19 @@
+import { Logger } from 'winston';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Model } from 'mongoose';
-import { Logger } from 'winston';
 
-import { ServerErrors } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
+import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { GetSiteFiltersConfigByIdentifierIdQuery } from '../get-site-filters-config-by-identifierId.query';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
-import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @QueryHandler(GetSiteFiltersConfigByIdentifierIdQuery)
 export class GetSiteFiltersConfigByIdentifierIdHandler
@@ -35,11 +35,11 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
     try {
       const { identifierId, query } = queries;
 
-      const externalApi = await this.ExternalApiModel.findOne({
+      const siteSetting = await this.ExternalApiModel.findOne({
         identifierId,
       }).select('_id');
 
-      if (!externalApi) {
+      if (!siteSetting) {
         throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
       }
 
@@ -59,7 +59,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
           },
         ];
         const siteSettings = await this.SiteFiltersConfigModel.findOne({
-          externalApiId: externalApi._id,
+          siteSettingId: siteSetting._id,
           status: SiteFiltersConfigStatus.APPROVED,
         })
           .select(select)
@@ -244,7 +244,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
       const select
         = 'header headerDescription headerHe headerDescriptionHe headerAr headerDescriptionAr siteTopics';
       const siteSettings = await this.SiteFiltersConfigModel.findOne({
-        externalApiId: externalApi._id,
+        externalApiId: siteSetting._id,
         status: SiteFiltersConfigStatus.APPROVED,
       }).select(select);
 
@@ -279,7 +279,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
       // ]);
 
       this.logger.info('[SITE SETTINGS]: SITE SETTINGS FOUND', {
-        siteSettingsId: siteSettings._id,
+        externalApiId: siteSettings._id,
       });
 
       const { locale } = query;

@@ -10,13 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiQuery } from '@nestjs/swagger';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { GetAllFeedItemsRequest } from './request/get-all-feed-items.request';
 import { GetAllFeedItemsQuery } from './queries/get-all-feed-items.query';
-import { GetDefaultFiltersQuery } from './queries/get-default-filters.query';
 import { GetFiltersQuery } from './queries/get-filters.query';
 import { GetAllFiltersRequest } from './request/get-all-filters.request';
 import { GetSiteStatsQuery } from './queries/get-site-stats.query';
@@ -59,27 +57,6 @@ export class DashboardController {
         request.locale,
       ),
     );
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Get('default-filters')
-  @ApiEndpoint({
-    tags: ['Tourism-Feed'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    softBlockExtraDtoFields: true,
-    operation: 'Get default filter items of website',
-  })
-  @ApiQuery({
-    name: 'identifierId',
-    required: true,
-    type: String,
-    description: 'Identifier ID used to filter items out of all filters',
-  })
-  async getDefaultFilterItems(@Query('identifierId') identifierId: string) {
-    return this.queryBus.execute(new GetDefaultFiltersQuery(identifierId));
   }
 
   @HttpCode(HttpStatus.OK)

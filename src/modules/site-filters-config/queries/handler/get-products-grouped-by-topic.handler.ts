@@ -16,9 +16,9 @@ import { GetProductsGroupedByTopicQuery } from '../get-products-grouped-by-topic
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
 import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { ProductsAudit } from 'src/modules/products/schema/products-audit.schema';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CacheService } from 'src/services/cache/cache.service';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 const PRODUCTS_PER_TOPIC = 4;
 const CACHE_TTL = 20;
@@ -34,26 +34,26 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
     @InjectModel(ExternalApi.name)
-    private ExternalApiModel: Model<ExternalApi>,
+    private ExternalApiModule: Model<ExternalApi>,
     @InjectModel(Campaign.name)
     private CampaignModel: Model<Campaign>,
     private readonly cacheService: CacheService,
   ) {}
 
   async execute({
-    externalApiId,
+    siteSettingId,
     query,
   }: GetProductsGroupedByTopicQuery): Promise<any> {
     const { locale } = query;
 
-    const cacheKey = `products-grouped:${externalApiId}:${locale || 'default'}`;
+    const cacheKey = `products-grouped:${siteSettingId}:${locale || 'default'}`;
 
     const cached = this.cacheService.get<any>(cacheKey);
     if (cached) return cached;
 
     try {
       const siteSettings = await this.SiteFiltersConfigModel.findOne({
-        externalApiId,
+        siteSettingId,
         status: SiteFiltersConfigStatus.APPROVED,
       })
         .select('siteTopics')
@@ -69,7 +69,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         result = await this.groupByTopics(activeTopics, locale as Locale);
       } else {
         result = await this.groupByPrimaryCategory(
-          externalApiId,
+          siteSettingId,
           locale as Locale,
         );
       }
@@ -159,13 +159,13 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     }));
   }
 
-  private async groupByPrimaryCategory(externalApiId: string, locale: Locale) {
-    const externalApi = await this.ExternalApiModel.findById(externalApiId)
-      .select('primaryCampIds')
+  private async groupByPrimaryCategory(siteSettingId: string, locale: Locale) {
+    const siteSetting = await this.ExternalApiModule.findById(siteSettingId)
+      .select('primaryCampId')
       .lean();
 
     const campDetails = await this.CampaignModel.findById(
-      externalApi.primaryCampIds[0],
+      siteSetting.primaryCampIds?.[0],
     )
       .select('productIds dmoIds authorityIds businessIds')
       .lean();

@@ -19,7 +19,7 @@ import { GetProductsGroupedByTopicRequest } from '../requests/get-products-group
 
 @Controller('')
 export class SiteSettingsController {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(private readonly queryBus: QueryBus) { }
 
   @ApiEndpoint({
     tags: ['Site Configs'],

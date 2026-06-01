@@ -3,16 +3,8 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { CommonStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
-import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema';
-import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
-import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { ProductType } from 'src/modules/products/products.type';
-import { Tags } from 'src/modules/tags/schema/tags.schema';
-import { User } from 'src/modules/users/schema/users.schema';
+import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema';
 
 export class Image {
   image: { type: string; required: true };
@@ -81,28 +73,28 @@ export class Product extends AuditableSchema {
     images: Image[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     required: false,
   })
     collaboratorId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: User.name,
+    ref: 'User',
     required: false,
   })
     primaryUserId: mongoose.Types.ObjectId | null;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Authority.name,
+    ref: 'Authority',
     required: false,
   })
     authorityId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: DMO.name,
+    ref: 'DMO',
     required: false,
   })
     dmoId: mongoose.Types.ObjectId;
@@ -164,7 +156,7 @@ export class Product extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: BussCategory.name,
+    ref: 'BussCategory',
     required: false,
     default: null,
   })
@@ -174,7 +166,7 @@ export class Product extends AuditableSchema {
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: BussCategory.name,
+        ref: 'BussCategory',
       },
     ],
     required: false,
@@ -185,7 +177,7 @@ export class Product extends AuditableSchema {
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: BussSubCategory.name,
+        ref: 'BussSubCategory',
       },
     ],
     required: false,
@@ -196,7 +188,7 @@ export class Product extends AuditableSchema {
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: GroupType.name,
+        ref: 'GroupType',
       },
     ],
     required: false,
@@ -207,7 +199,7 @@ export class Product extends AuditableSchema {
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: Accessibility.name,
+        ref: 'Accessibility',
       },
     ],
     required: false,
@@ -218,7 +210,7 @@ export class Product extends AuditableSchema {
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: Tags.name,
+        ref: 'Tags',
       },
     ],
     required: false,

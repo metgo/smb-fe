@@ -1,17 +1,14 @@
-/* eslint-disable no-nested-ternary */
-import { NotFoundException } from '@nestjs/common';
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { CommonStatus, Locale } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { GetBlogBySlugQuery } from '../get-blog-by-slug.query';
-import { Blog } from '../../schema/blog.schema';
-import { User } from 'src/modules/users/schema/users.schema';
+import { Blog } from './schema/blog.schema';
+import { User } from '../users/schema/users.schema';
 
-@QueryHandler(GetBlogBySlugQuery)
-export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
+@Injectable()
+export class BlogService {
   constructor(
     @InjectModel(Blog.name)
     private readonly BlogModel: Model<Blog>,
@@ -19,10 +16,53 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
     private readonly UserModel: Model<User>,
   ) {}
 
-  async execute(query: GetBlogBySlugQuery): Promise<any> {
+  async getAllBlogs(externalApiId: string, locale: Locale): Promise<any[]> {
+    try {
+      const blogs = await this.BlogModel.find({
+        externalApiId,
+        status: CommonStatus.APPROVED,
+        isDeleted: { $ne: true },
+      })
+        .select(
+          '_id slug title titleHe titleAr shortDescription shortDescriptionHe shortDescriptionAr content contentHe contentAr tags tagsHe tagsAr images createdAt updatedAt createdBy updatedBy',
+        )
+        .lean()
+        .exec();
+
+      return await Promise.all(
+        blogs.map(async blog => {
+          const userId = blog.updatedBy || blog.createdBy;
+          const user = userId
+            ? await this.UserModel.findById(userId).select('firstName lastName')
+            : null;
+
+          const localized = this.localizeBlog(blog, locale);
+
+          return {
+            _id: blog._id,
+            title: localized.title,
+            slug: blog.slug,
+            shortDescription: localized.shortDescription,
+            image:
+              blog.images.find(img => img?.isPrimary) ?? blog.images[0] ?? null,
+            tags: localized.tags,
+            readTime: Math.ceil(
+              localized.content.trim().split(/\s+/).length / 200,
+            ),
+            updatedAt: blog.updatedAt || blog.createdAt,
+            updatedBy: user ? `${user?.firstName} ${user?.lastName}` : null,
+          };
+        }),
+      );
+    } catch (error) {
+      exceptionHandling(error);
+    }
+  }
+
+  async getBlogDetails(slug: string, locale: Locale): Promise<any> {
     try {
       const blog = await this.BlogModel.findOne({
-        slug: query.slug,
+        slug,
         status: CommonStatus.APPROVED,
         isDeleted: { $ne: true },
       })
@@ -41,7 +81,7 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
         ? await this.UserModel.findById(userId).select('firstName lastName')
         : null;
 
-      const localized = this.localizeBlog(blog, query.locale);
+      const localized = this.localizeBlog(blog, locale);
 
       return {
         _id: blog._id,
@@ -75,11 +115,7 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
             blog.metaDescriptionAr
             || blog.metaDescription
             || blog.metaDescriptionHe,
-          tags: blog.tagsAr?.length
-            ? blog.tagsAr
-            : blog.tags?.length
-              ? blog.tags
-              : blog.tagsHe,
+          tags: (blog.tagsAr?.length && blog.tagsAr) || (blog.tags?.length && blog.tags) || blog.tagsHe,
         };
       case Locale.ENGLISH:
         return {
@@ -96,11 +132,7 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
             blog.metaDescription
             || blog.metaDescriptionHe
             || blog.metaDescriptionAr,
-          tags: blog.tags?.length
-            ? blog.tags
-            : blog.tagsHe?.length
-              ? blog.tagsHe
-              : blog.tagsAr,
+          tags: (blog.tags?.length && blog.tags) || (blog.tagsHe?.length && blog.tagsHe) || blog.tagsAr,
         };
       case Locale.HEBREW:
       default:
@@ -118,11 +150,7 @@ export class GetBlogBySlugHandler implements IQueryHandler<GetBlogBySlugQuery> {
             blog.metaDescriptionHe
             || blog.metaDescription
             || blog.metaDescriptionAr,
-          tags: blog.tagsHe?.length
-            ? blog.tagsHe
-            : blog.tags?.length
-              ? blog.tags
-              : blog.tagsAr,
+          tags: (blog.tagsHe?.length && blog.tagsHe) || (blog.tags?.length && blog.tags) || blog.tagsAr,
         };
     }
   }

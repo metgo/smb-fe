@@ -1,9 +1,9 @@
+import { Logger } from 'winston';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ForbiddenException, Inject } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ExternalApi } from '../../schema/external-api.schema';

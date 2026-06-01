@@ -111,3 +111,9 @@ export enum PromotionMediaType {
   IMAGE = 'image',
   VIDEO = 'video',
 }
+
+export enum SiteSettingPurpose {
+  MARKETPLACE = 'MARKETPLACE',
+  TRAVELING = 'TRAVELING',
+  OTHER = 'OTHER',
+}

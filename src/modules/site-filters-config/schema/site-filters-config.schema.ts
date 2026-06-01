@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { SiteFiltersConfigStatus } from '../site-filters-config.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { PointOfInterest } from 'src/modules/point-of-interests/schema/point-of-interest.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @Schema({ _id: false })
 export class SiteCategoriesItem {

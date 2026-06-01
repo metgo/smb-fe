@@ -43,7 +43,7 @@ implements ICommandHandler<SendInquiryFundayCommand> {
     await this.mailchimpService.sendTransactionalEmail({
       to: body.email,
       templatedId: DynamicEmailTemplate.InquiryFundayToUser,
-      from_email: externalApi?.companyDetails?.email,
+      from_email: externalApi?.email,
       from_name: externalApi?.name,
       mergeVars: {
         ...emailFields,

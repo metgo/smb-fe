@@ -28,7 +28,6 @@ import {
   GroupTypeSchema,
 } from '../group-type/schema/group-type.schema';
 import { ExternalApiModule } from '../external-api/external-api.module';
-import { GetDefaultFiltersHandler } from './queries/handler/get-default-filters.handler';
 import { GetAllFeedItemsHandler } from './queries/handler/get-all-feed-items.handler';
 import { GetFiltersHandler } from './queries/handler/get-filters.handler';
 import { GetBusinessRawQueryHandler } from './queries/handler/get-business-raw-query.handler';
@@ -88,6 +87,7 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
       { name: Campaign.name, schema: CampaignSchema },
       { name: SiteFiltersConfig.name, schema: SiteFiltersConfigSchema },
       { name: Tags.name, schema: TagsSchema },
+      { name: ExternalApi.name, schema: ExternalApiSchema },
     ]),
     ExternalApiModule,
     CampaignModule,
@@ -97,7 +97,6 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
   controllers: [DashboardController],
   providers: [
     SubmitBusinessRegistrationHandler,
-    GetDefaultFiltersHandler,
     GetAllFeedItemsHandler,
     GetFiltersHandler,
     GetBusinessRawQueryHandler,

@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
-import { ExternalApiController } from 'src/modules/external-api/controllers/external-api.controller';
+import { ExternalApiController } from 'src/modules/external-api/external-api.controller';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import {
   ExternalApi,
@@ -33,6 +33,9 @@ import {
   Business,
   BusinessSchema,
 } from '../business/shared/schema/business.schema';
+import { GetSiteSettingIdentityThemeHandler } from './queries/handler/get-site-setting-identity-theme.handler';
+import { GetSiteSettingSeoHandler } from './queries/handler/get-site-setting-seo.handler';
+import { GetSiteSettingSocialContactHandler } from './queries/handler/get-site-setting-social-contact.handler';
 
 @Module({
   imports: [
@@ -58,6 +61,9 @@ import {
     FindByIdAndPopulateHandler,
     GetSiteInfoHandler,
     GetPromotionalItemsHandler,
+    GetSiteSettingIdentityThemeHandler,
+    GetSiteSettingSeoHandler,
+    GetSiteSettingSocialContactHandler,
   ],
   exports: [ExternalApiServices],
 })

@@ -1,39 +1,32 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
-import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
-import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
-import { Marketing } from 'src/modules/marketing/schema/marketing.schema';
-import { Blog } from 'src/modules/blog/schema/blog.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { ExternalApiPurpose } from '../external-api.types';
-import { normalizePhone } from 'src/common/utils/normalise-phone';
 
 @Schema({ _id: false })
 export class PromotionalItem {
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BussCategory' }],
     required: false,
   })
     categoryIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BussSubCategory' }],
     required: false,
   })
     subCategoryIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'GroupType' }],
     required: false,
   })
     groupTypesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accessibility' }],
     required: false,
   })
     accesibilitiesId: mongoose.Types.ObjectId[];
@@ -43,33 +36,84 @@ export class PromotionalItem {
 }
 
 @Schema()
-export class ExternalApi extends AuditableSchema {
-  @Prop({
-    unique: true,
-    required: true,
-    type: {
-      name: String,
-      email: String,
-      phone: String,
-      address: String,
-    },
-  })
-    companyDetails: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
+export class MediaItem {
+  @Prop({ default: '' })
+    url: string;
 
+  @Prop({ default: '' })
+    name: string;
+
+  @Prop({ default: false })
+    isActive: boolean;
+}
+
+export const MediaItemSchema = SchemaFactory.createForClass(MediaItem);
+
+@Schema()
+export class ExternalApi extends AuditableSchema {
   @Prop({ default: null })
     name: string;
-
-  @Prop({ unique: true, type: String, required: true })
-    identifierId: string;
 
   @Prop({ default: null })
     ipAddress: string;
 
+  @Prop({ default: null })
+    gaPropertyId: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Theme.name,
+    required: false,
+  })
+    themeId: mongoose.Types.ObjectId;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalBusinesses: PromotionalItem;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalEvents: PromotionalItem;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalTrips: PromotionalItem;
+
+  @Prop({ default: 0 })
+    score: number;
+
+  /* Step 1 – General Config */
+  @Prop({ unique: true, type: String, required: true })
+    identifierId: string;
+
+  @Prop({ default: '' })
+    platformCharge: number;
+
+  @Prop({ default: '' })
+    websiteNameEn: string;
+
+  @Prop({ default: '' })
+    websiteNameHe: string;
+
+  @Prop({ default: '' })
+    websiteNameAr: string;
+
+  @Prop({ default: '' })
+    sloganEn: string;
+
+  @Prop({ default: '' })
+    sloganHe: string;
+
+  @Prop({ default: '' })
+    sloganAr: string;
+
+  @Prop({ default: '' })
+    websiteUrl: string;
+
+  @Prop({ default: ExternalApiPurpose.MARKETPLACE })
+    purpose: ExternalApiPurpose;
+
+  @Prop({ default: true })
+    isActive: boolean;
+
+  /* Step 2 - Campaign Selection */
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
     required: false,
@@ -82,100 +126,186 @@ export class ExternalApi extends AuditableSchema {
   })
     primaryCampIds: mongoose.Types.ObjectId[];
 
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: Theme.name,
-    required: false,
-  })
-    themeId: mongoose.Types.ObjectId;
+  /* Step 2 – Branding & Media */
+  @Prop({ default: '' })
+    logoUrl: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Marketing.name }],
-    required: false,
-  })
-    marketingIds: mongoose.Types.ObjectId[];
+  @Prop({ default: '' })
+    faviconUrl: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Blog.name }],
-    required: false,
-  })
-    blogIds: mongoose.Types.ObjectId[];
+  @Prop({ default: '' })
+    specialSymbolUrl: string;
 
-  @Prop({ default: null })
-    welcomeBanner: string;
+  @Prop({ default: '' })
+    bgImageUrl: string;
 
-  @Prop({ default: null })
-    gaPropertyId: string;
+  /* Step 3 – Home Page Videos */
+  @Prop({ type: [MediaItemSchema], default: [] })
+    desktopVideos: MediaItem[];
 
-  @Prop({ default: ExternalApiPurpose.MARKETPLACE })
-    purpose: ExternalApiPurpose;
+  @Prop({ type: [MediaItemSchema], default: [] })
+    mobileVideos: MediaItem[];
 
-  @Prop({ type: PromotionalItem, required: false })
-    promotionalBusinesses: PromotionalItem;
+  @Prop({ type: [MediaItemSchema], default: [] })
+    desktopVideoThumbnails: MediaItem[];
 
-  @Prop({ type: PromotionalItem, required: false })
-    promotionalEvents: PromotionalItem;
+  @Prop({ type: [MediaItemSchema], default: [] })
+    mobileVideoThumbnails: MediaItem[];
 
-  @Prop({ type: PromotionalItem, required: false })
-    promotionalTrips: PromotionalItem;
+  /* Step 4 – Theme & Appearance */
+  @Prop({ default: '#0d9488' })
+    primaryColor: string;
 
-  @Prop({ type: Boolean, default: false })
-    displayBusinesses: boolean;
+  @Prop({ default: '#6366f1' })
+    secondaryColor: string;
 
-  @Prop({ type: Boolean, default: false })
-    displayEvents: boolean;
+  @Prop({ default: '#ffffff' })
+    backgroundColor: string;
 
-  @Prop({ type: Boolean, required: false })
-    displayTrips: boolean;
+  @Prop({ default: 'Inter' })
+    fontFamily: string;
 
-  @Prop({ type: Boolean, required: false })
-    displayPOI: boolean;
+  @Prop({ default: '' })
+    fontSourceUrl: string;
 
-  @Prop({ type: Boolean, required: false })
-    displayFunday: boolean;
+  @Prop({ default: 'rounded' })
+    buttonStyle: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
-    required: false,
-  })
-    categoryIds: mongoose.Types.ObjectId[];
+  @Prop({ default: '8' })
+    buttonRadius: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
-    required: false,
-  })
-    subCategoryIds: mongoose.Types.ObjectId[];
+  @Prop({ default: false })
+    darkModeEnabled: boolean;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
-    required: false,
-  })
-    groupTypesId: mongoose.Types.ObjectId[];
+  /* Step 5 – Social Media */
+  @Prop({ default: '' })
+    facebookUrl: string;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
-    required: false,
-  })
-    accesibilitiesId: mongoose.Types.ObjectId[];
+  @Prop({ default: '' })
+    instagramUrl: string;
+
+  @Prop({ default: '' })
+    twitterUrl: string;
+
+  @Prop({ default: '' })
+    youtubeUrl: string;
+
+  @Prop({ default: '' })
+    linkedinUrl: string;
+
+  @Prop({ default: '' })
+    tiktokUrl: string;
+
+  @Prop({ default: true })
+    showSocialIcons: boolean;
+
+  @Prop({ default: true })
+    socialLinksNewTab: boolean;
+
+  /* Step 6 – Contact Details */
+  @Prop({ default: '' })
+    phoneNumber: string;
+
+  @Prop({ default: '' })
+    whatsappNumber: string;
+
+  @Prop({ default: '' })
+    whatsappMessageEn: string;
+
+  @Prop({ default: '' })
+    whatsappMessageHe: string;
+
+  @Prop({ default: '' })
+    whatsappMessageAr: string;
+
+  @Prop({ default: '' })
+    email: string;
+
+  @Prop({ default: '' })
+    supportEmail: string;
+
+  @Prop({ default: '' })
+    physicalAddress: string;
+
+  @Prop({ default: '' })
+    googleMapsEmbed: string;
+
+  @Prop({ default: true })
+    enableClickToCall: boolean;
+
+  @Prop({ default: false })
+    enableWhatsappChat: boolean;
+
+  /* Step 7 – SEO & Meta */
+  @Prop({ default: '' })
+    metaTitle: string;
+
+  @Prop({ default: '' })
+    metaDescription: string;
+
+  @Prop({ default: '' })
+    metaKeywords: string;
+
+  @Prop({ default: '' })
+    ogTitle: string;
+
+  @Prop({ default: '' })
+    ogDescription: string;
+
+  @Prop({ default: '' })
+    ogImageUrl: string;
+
+  @Prop({ default: '' })
+    twitterCardTitle: string;
+
+  @Prop({ default: '' })
+    twitterCardDescription: string;
+
+  @Prop({ default: '' })
+    twitterCardImageUrl: string;
+
+  @Prop({ default: '' })
+    canonicalUrl: string;
+
+  @Prop({ default: 'User-agent: *\nAllow: /' })
+    robotsTxt: string;
+
+  @Prop({ default: '' })
+    sitemapUrl: string;
+
+  /* Step 8 – Analytics & Tracking */
+  @Prop({ default: '' })
+    googleAnalyticsId: string;
+
+  @Prop({ default: '' })
+    googleTagManagerId: string;
+
+  @Prop({ default: '' })
+    facebookPixelId: string;
+
+  @Prop({ default: '' })
+    headerScripts: string;
+
+  @Prop({ default: '' })
+    footerScripts: string;
+
+  /* Step 9 – Localization */
+  @Prop({ default: 'English' })
+    defaultLanguage: string;
+
+  @Prop({ default: false })
+    multiLanguageEnabled: boolean;
+
+  @Prop({ default: 'UTC' })
+    timezone: string;
+
+  @Prop({ default: 'USD' })
+    currency: string;
+
+  @Prop({ default: '' })
+    dateFormat: string;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;
 
 export const ExternalApiSchema = SchemaFactory.createForClass(ExternalApi);
-
-ExternalApiSchema.pre('save', function (next) {
-  if (this?.companyDetails?.phone) {
-    this.companyDetails.phone = normalizePhone(this.companyDetails.phone);
-  }
-  next();
-});
-
-ExternalApiSchema.pre('findOneAndUpdate', function (next) {
-  const update: any = this.getUpdate();
-
-  if (update?.companyDetails?.phone) {
-    update.companyDetails.phone = normalizePhone(update.companyDetails.phone);
-  }
-
-  next();
-});

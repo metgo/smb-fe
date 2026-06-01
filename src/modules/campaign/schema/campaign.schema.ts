@@ -2,16 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { CampaignStatus } from 'src/common/enum';
-import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
-import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { Product } from 'src/modules/products/schema/products.schema';
-import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
-import { Theme } from 'src/modules/themes/schema/theme.schema';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { CampaignType } from '../campaign.type';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { PointOfInterest } from 'src/modules/point-of-interests/schema/point-of-interest.schema';
 
 @Schema({ _id: false })
@@ -19,7 +11,7 @@ class Category {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: BussCategory.name,
+    ref: 'BussCategory',
   })
     id: mongoose.Types.ObjectId;
 
@@ -85,33 +77,34 @@ export class Campaign extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: ExternalApi.name,
+    ref: 'SiteSetting',
     required: false,
   })
     externalApiId: mongoose.Types.ObjectId;
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Authority.name }],
-    ref: Authority.name,
+    type: [{ type: mongoose.Schema.Types.ObjectId }],
+    ref: 'Authority',
     required: false,
   })
     authorityIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: DMO.name }],
-    ref: DMO.name,
+    type: [{ type: mongoose.Schema.Types.ObjectId }],
+    ref: 'DMO',
     required: false,
   })
     dmoIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
-    ref: Business.name,
+    type: [{ type: mongoose.Schema.Types.ObjectId }],
+    ref: 'Business',
     required: false,
   })
     businessIds: mongoose.Types.ObjectId[];
 
   @Prop({
+
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: PointOfInterest.name }],
     ref: PointOfInterest.name,
     required: false,
@@ -119,15 +112,15 @@ export class Campaign extends AuditableSchema {
     poiIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],
-    ref: Product.name,
+    type: [{ type: mongoose.Schema.Types.ObjectId }],
+    ref: 'Product',
     required: false,
   })
     productIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Rewards.name,
+    ref: 'Rewards',
     required: false,
   })
     rewardId: mongoose.Types.ObjectId;
@@ -137,7 +130,7 @@ export class Campaign extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Theme.name,
+    ref: 'Theme',
     required: false,
   })
     themeId: mongoose.Types.ObjectId;

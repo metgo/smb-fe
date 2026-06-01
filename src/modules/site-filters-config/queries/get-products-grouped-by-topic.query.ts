@@ -2,7 +2,7 @@ import { GetProductsGroupedByTopicRequest } from '../requests/get-products-group
 
 export class GetProductsGroupedByTopicQuery {
   constructor(
-    public readonly externalApiId: string,
+    public readonly siteSettingId: string,
     public readonly query: GetProductsGroupedByTopicRequest,
   ) {}
 }

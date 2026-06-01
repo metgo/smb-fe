@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { CommonStatus } from 'src/common/enum';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @Schema({ _id: false })
 export class Image {
@@ -26,6 +27,13 @@ export class Blog extends AuditableSchema {
     auto: true,
   })
     _id: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ExternalApi.name,
+    required: false,
+  })
+    externalApiId: mongoose.Types.ObjectId;
 
   @Prop({ enum: CommonStatus, required: true, default: CommonStatus.DRAFT })
     status: CommonStatus;

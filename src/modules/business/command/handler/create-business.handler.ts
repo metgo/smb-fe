@@ -1,9 +1,9 @@
+import { Logger } from 'winston';
+import mongoose, { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -70,7 +70,7 @@ implements ICommandHandler<CreateBusinessCommand> {
 
       // 3. Resolve or create the business owner user
       const siteName
-        = externalApi.name ?? externalApi.companyDetails?.name ?? 'MetGo';
+        = externalApi.websiteNameHe ?? externalApi?.websiteNameHe ?? 'MetGo';
       const user = await this.userService.createUserThroughWebsite({
         firstName: contactName,
         email: busiEmail,

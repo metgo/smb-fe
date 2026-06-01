@@ -128,8 +128,7 @@ export class ExternalApiServices {
         },
         homeHeader: externalApi?.themeId?.homeHeader,
         homeDescription: externalApi?.themeId?.homeDescription,
-        email: externalApi?.companyDetails?.email,
-        welcomeBanner: externalApi?.welcomeBanner,
+        email: externalApi?.email,
       };
     } catch (err) {
       this.logger.error(

@@ -27,12 +27,12 @@ import { GetPOIRawQuery } from '../get-poi-raw-query.query';
 import { BusinessesAudit } from 'src/modules/business/shared/schema/businesses-audit.schema';
 import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
 import { PointOfInterestsAudit } from 'src/modules/point-of-interests/schema/point-of-interest-audit.schema';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { FindByIdAndPopulateQuery } from 'src/modules/campaign/queries/find-by-id-and-populate.query';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 import { SiteFiltersConfig } from 'src/modules/site-filters-config/schema/site-filters-config.schema';
 import { SiteFiltersConfigStatus } from 'src/modules/site-filters-config/site-filters-config.type';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @QueryHandler(GetFiltersQuery)
 export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
@@ -103,9 +103,8 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
           throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
         }
 
-        // need to add if multiple primary campId exists
         campDetails = await this.queryBus.execute(
-          new FindByIdAndPopulateQuery(externalApi.primaryCampIds[0]),
+          new FindByIdAndPopulateQuery(externalApi.primaryCampIds?.[0]),
         );
 
         const siteSettings = await this.SiteFiltersConfigModel.findOne({

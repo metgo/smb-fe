@@ -652,11 +652,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     }
       = filters;
 
-    const externalApi = await this.ExternalApiModel.findById(externalApiId)
-      .select('name primaryCampIds')
+    const siteSetting = await this.ExternalApiModel.findById(externalApiId)
+      .select('primaryCampId')
       .lean();
     const campDetails = await this.CampaignModel.findOne({
-      _id: externalApi.primaryCampIds[0],
+      _id: siteSetting.primaryCampIds?.[0],
     })
       .select('productIds dmoIds authorityIds businessIds')
       .lean();
