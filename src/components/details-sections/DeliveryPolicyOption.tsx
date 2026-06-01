@@ -29,7 +29,9 @@ export interface DeliveryFormData {
 
   vendorDelivers: boolean;
   pickupAvailable: boolean;
+  globalDelivery: boolean;
   deliveryArea: DeliveryArea[];
+  globalDeliveryArea: DeliveryArea[];
   deliveryReturnExchange: string[];
   deliveryAdditionalInfo: string;
   deliverySpecificSellerInfo: string[];
@@ -63,7 +65,13 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
     data: PickupLocation;
   } | null>(null);
 
-  // Delete pickup location
+  const [globalPickupLocationModal, setGlobalPickupLocationModal] = useState<{
+    show: boolean;
+    areaIndex: number;
+    locationIndex: number | null;
+    data: PickupLocation;
+  } | null>(null);
+
   const handleDeletePickup = (areaIdx: number, pickupIdx: number) => {
     const updatedAreas = formData?.deliveryArea?.map((area, idx) => {
       if (idx === areaIdx) {
@@ -75,6 +83,19 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
       return area;
     });
     setFormData((prev) => ({ ...prev, deliveryArea: updatedAreas }));
+  };
+
+  const handleDeleteGlobalPickup = (areaIdx: number, pickupIdx: number) => {
+    const updatedAreas = formData?.globalDeliveryArea?.map((area, idx) => {
+      if (idx === areaIdx) {
+        const updatedPickups = area.pickUpLocation.filter(
+          (_, pIdx) => pIdx !== pickupIdx,
+        );
+        return { ...area, pickUpLocation: updatedPickups };
+      }
+      return area;
+    });
+    setFormData((prev) => ({ ...prev, globalDeliveryArea: updatedAreas }));
   };
 
   return (
@@ -141,9 +162,30 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
             {t("pickup_available")}
           </span>
         </label>
+
+        {!isProduct && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.globalDelivery}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  globalDelivery: e.target.checked,
+                }))
+              }
+              className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+            />
+            <span
+              className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("global_delivery")}
+            </span>
+          </label>
+        )}
       </div>
 
-      {/* Delivery Areas */}
+      {/* Delivery Areas — for Vendor Delivers / Pickup Available */}
       {(formData.vendorDelivers || formData.pickupAvailable) && (
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -177,7 +219,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                 className={`p-4 rounded-lg border ${isDark ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}
               >
                 <div className="grid grid-cols-12 gap-3 mb-3">
-                  {/* Area */}
                   <div className="col-span-5">
                     <label
                       className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
@@ -203,7 +244,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     />
                   </div>
 
-                  {/* Price */}
                   <div className="col-span-3">
                     <label
                       className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
@@ -225,7 +265,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     />
                   </div>
 
-                  {/* Add Location */}
                   <div className="col-span-3 flex items-end">
                     <button
                       onClick={() =>
@@ -247,7 +286,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     </button>
                   </div>
 
-                  {/* Delete */}
                   <div className="col-span-1 flex items-end">
                     <button
                       onClick={() =>
@@ -265,7 +303,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                   </div>
                 </div>
 
-                {/* Pickup Locations */}
                 {deliveryArea?.pickUpLocation?.length > 0 && (
                   <label
                     className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
@@ -311,6 +348,186 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                         </button>
                         <button
                           onClick={() => handleDeletePickup(areaIdx, pickupIdx)}
+                          className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
+                        >
+                          &#x2715;
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Global Delivery Areas */}
+      {formData.globalDelivery && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label
+              className={`block text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("global_delivery")} — {t("delivery_areas_pricing")}
+            </label>
+
+            <button
+              onClick={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  globalDeliveryArea: [
+                    ...(prev.globalDeliveryArea ?? []),
+                    { area: "", price: "", pickUpLocation: [] },
+                  ],
+                }))
+              }
+              className="flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              {t("add_area")}
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {formData?.globalDeliveryArea?.map((deliveryArea, areaIdx) => (
+              <div
+                key={areaIdx}
+                className={`p-4 rounded-lg border ${isDark ? "bg-gray-800/50 border-gray-700" : "bg-gray-50 border-gray-200"}`}
+              >
+                <div className="grid grid-cols-12 gap-3 mb-3">
+                  <div className="col-span-5">
+                    <label
+                      className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                    >
+                      {t("delivery_area")}
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryArea?.area}
+                      onChange={(e) => {
+                        const areas = formData.globalDeliveryArea?.map(
+                          (area, idx) =>
+                            idx === areaIdx
+                              ? { ...area, area: e.target.value }
+                              : area,
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          globalDeliveryArea: areas,
+                        }));
+                      }}
+                      placeholder={isRTL ? "ניו יורק" : "New York"}
+                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500 ${isDark ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`}
+                    />
+                  </div>
+
+                  <div className="col-span-3">
+                    <label
+                      className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                    >
+                      {t("delivery_price")}
+                    </label>
+                    <input
+                      type="number"
+                      value={deliveryArea.price}
+                      onChange={(e) => {
+                        const areas = [...formData.globalDeliveryArea];
+                        areas[areaIdx].price = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          globalDeliveryArea: areas,
+                        }));
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500 ${isDark ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"}`}
+                    />
+                  </div>
+
+                  <div className="col-span-3 flex items-end">
+                    <button
+                      onClick={() =>
+                        setGlobalPickupLocationModal({
+                          show: true,
+                          areaIndex: areaIdx,
+                          locationIndex: null,
+                          data: {
+                            address: "",
+                            isAlwaysOpen: false,
+                            openingHrs: [],
+                          },
+                        })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1 ${isDark ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+                    >
+                      <MapPin className="w-4 h-4" />
+                      {t("add_location")}
+                    </button>
+                  </div>
+
+                  <div className="col-span-1 flex items-end">
+                    <button
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          globalDeliveryArea: prev.globalDeliveryArea?.filter(
+                            (_, i) => i !== areaIdx,
+                          ),
+                        }))
+                      }
+                      className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {deliveryArea?.pickUpLocation?.length > 0 && (
+                  <label
+                    className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                  >
+                    {t("pickup_locations")} :
+                  </label>
+                )}
+                {deliveryArea?.pickUpLocation?.map((pickup, pickupIdx) => (
+                  <div
+                    key={pickupIdx}
+                    className={`border p-3 rounded-md mb-2 ${isDark ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-200"}`}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2 font-semibold">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={16} className="text-green-500" />
+                          {pickup.address}
+                        </div>
+                        {pickup.isAlwaysOpen && (
+                          <span className="text-xs flex items-center bg-green-600 px-2 mt-2 py-1 rounded-sm text-white mb-1 ml-2">
+                            {t("open_24_7")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            setGlobalPickupLocationModal({
+                              show: true,
+                              areaIndex: areaIdx,
+                              locationIndex: pickupIdx,
+                              data: pickup,
+                            })
+                          }
+                          className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
+                        >
+                          <Edit
+                            size={12}
+                            className={
+                              isDark ? "text-gray-300" : "text-gray-600"
+                            }
+                          />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteGlobalPickup(areaIdx, pickupIdx)
+                          }
                           className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
                         >
                           &#x2715;
@@ -427,6 +644,21 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
           setFormData={setFormData}
           pickupLocationModal={pickupLocationModal}
           setPickupLocationModal={setPickupLocationModal}
+        />
+      )}
+
+      {globalPickupLocationModal && (
+        <PickupLocationModal
+          isRTL={isRTL}
+          formData={{ ...formData, deliveryArea: formData.globalDeliveryArea }}
+          setFormData={(data: any) =>
+            setFormData((prev) => ({
+              ...prev,
+              globalDeliveryArea: data.deliveryArea,
+            }))
+          }
+          pickupLocationModal={globalPickupLocationModal}
+          setPickupLocationModal={setGlobalPickupLocationModal}
         />
       )}
     </div>

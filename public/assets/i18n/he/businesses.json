@@ -223,6 +223,7 @@
   "return_exchange_info": "מידע על החזר והחלפה",
   "vendor_delivers": "הספק מבצע משלוח",
   "pickup_available": "איסוף זמין",
+  "global_delivery": "משלוח גלובלי",
   "delivery_area": "אזור משלוח",
   "delivery_price": "מחיר משלוח (ILS)",
   "add_area": "הוסף אזור",
