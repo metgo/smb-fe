@@ -53,7 +53,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
     try {
       const siteSettings = await this.SiteFiltersConfigModel.findOne({
-        siteSettingId,
+        externalApiId: siteSettingId,
         status: SiteFiltersConfigStatus.APPROVED,
       })
         .select('siteTopics')
@@ -161,11 +161,11 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
   private async groupByPrimaryCategory(siteSettingId: string, locale: Locale) {
     const siteSetting = await this.ExternalApiModule.findById(siteSettingId)
-      .select('primaryCampId')
+      .select('primaryCampIds')
       .lean();
 
     const campDetails = await this.CampaignModel.findById(
-      siteSetting.primaryCampIds?.[0],
+      siteSetting?.primaryCampIds?.[0],
     )
       .select('productIds dmoIds authorityIds businessIds')
       .lean();
