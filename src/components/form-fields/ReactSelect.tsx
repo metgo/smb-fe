@@ -156,7 +156,7 @@ export default function ReactSelect({
       }}
       formatOptionLabel={(option: ItemOption) => (
         <div style={{ display: "flex", alignItems: "center", gap: optionGap }}>
-          {option.logo && (
+          {option.logo !== undefined && (
             <ImageWithFallback
               src={option.logo}
               alt={option.label}

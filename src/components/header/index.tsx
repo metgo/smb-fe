@@ -189,7 +189,7 @@ export default function Header() {
                 items={selectedParent?.authorities?.map((item) => ({
                   _id: item._id,
                   name: item.name,
-                  logo: item?.logoPath,
+                  logo: item?.logoPath ?? "",
                 }))}
               />
               <ReactSelect
@@ -373,7 +373,7 @@ export default function Header() {
             items={selectedParent?.authorities?.map((item) => ({
               _id: item._id,
               name: item.name,
-              logo: item?.logoPath,
+              logo: item?.logoPath ?? "",
             }))}
           />
           <ReactSelect

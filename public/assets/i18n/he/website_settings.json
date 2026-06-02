@@ -1,10 +1,8 @@
 {
   "general": "כללי",
-
   "page_title": "הגדרות אתר",
   "page_subtitle": "נהל מיתוג, SEO, אינטגרציות וכל הגדרות האתר הגלובליות",
   "select_website": "בחר אתר",
-
   "step_branding": "מיתוג",
   "step_videos": "סרטונים",
   "step_theme": "עיצוב",
@@ -15,7 +13,6 @@
   "step_language": "שפה",
   "step_partners": "שותפים",
   "step_publish": "פרסום",
-
   "file_uploaded": "הקובץ הועלה בהצלחה",
   "upload_failed": "ההעלאה נכשלה",
   "video_uploaded": "הסרטון הועלה בהצלחה",
@@ -26,13 +23,11 @@
   "settings_published": "ההגדרות פורסמו בהצלחה!",
   "settings_publish_failed": "פרסום ההגדרות נכשל",
   "field_required": "שדה זה הוא חובה",
-
   "generals_title": "הגדרות כלליות",
   "branding_title": "מיתוג ונכסי מדיה",
   "click_to_upload": "לחץ להעלאה",
   "select_dmo": "בחר מרכז יעד",
   "select_authority": "בחר רשות",
-
   "website_name": "שם האתר",
   "website_name_placeholder": "האתר המדהים שלי",
   "website_name_en_placeholder": "Website Name (EN)",
@@ -57,7 +52,6 @@
   "platform_charge_placeholder": "0",
   "camp_code": "קוד קמפיין",
   "camp_code_placeholder": "הזן קוד קמפיין",
-
   "website_logo": "לוגו האתר",
   "logo_hint": "PNG / SVG • מומלץ 200×60 פיקסל",
   "favicon": "פאביקון",
@@ -66,7 +60,6 @@
   "splash_logo_hint": "PNG / SVG (אופציונלי)",
   "special_symbole": "סמל מיוחד",
   "background_image": "תמונת רקע",
-
   "videos_title": "סרטוני דף הבית",
   "videos_subtitle": "העלה מספר סרטונים לכל מכשיר. רק הסרטון הפעיל יוצג בדף הבית.",
   "desktop_videos": "סרטוני שולחן עבודה",
@@ -82,7 +75,6 @@
   "upload_thumbnail": "העלה תמונה ממוזערת",
   "upload_first_thumbnail": "לחץ להעלאת התמונה הממוזערת הראשונה",
   "thumbnail_formats": "PNG / JPG / WebP",
-
   "theme_title": "התאמת עיצוב",
   "primary_color": "צבע ראשי",
   "secondary_color": "צבע משני",
@@ -97,7 +89,6 @@
   "btn_custom": "רדיוס מותאם",
   "dark_mode": "מצב לילה",
   "dark_mode_desc": "אפשר למבקרים לעבור בין מצב בהיר ומצב כהה",
-
   "social_title": "אינטגרציית רשתות חברתיות",
   "facebook_url": "קישור פייסבוק",
   "instagram_url": "קישור אינסטגרם",
@@ -108,7 +99,6 @@
   "show_social_icons": "הצג אייקוני רשתות חברתיות",
   "show_social_icons_desc": "הצג אייקונים בכותרת ובתחתית האתר",
   "open_links_new_tab": "פתח קישורים בלשונית חדשה",
-
   "contact_title": "פרטי יצירת קשר",
   "phone_number": "מספר טלפון",
   "whatsapp_number": "מספר וואטסאפ (כולל קידומת מדינה)",
@@ -124,7 +114,6 @@
   "whatsapp_message_en_placeholder": "Hello! I'd like to chat with you...",
   "whatsapp_message_he_placeholder": "שלום! רוצה לדבר איתך...",
   "whatsapp_message_ar_placeholder": "مرحباً! أريد التحدث معك...",
-
   "seo_title": "SEO ומטא מידע",
   "basic_meta": "מטא בסיסי",
   "meta_title": "כותרת מטא",
@@ -150,7 +139,6 @@
   "robots_sitemap": "Robots ומפת אתר",
   "robots_txt": "Robots.txt",
   "sitemap_url": "כתובת מפת האתר",
-
   "analytics_title": "מעקב וסקריפטים",
   "google_analytics_id": "מזהה Google Analytics (GA4)",
   "google_tag_manager_id": "מזהה Google Tag Manager",
@@ -161,7 +149,6 @@
   "header_scripts_hint": "מוזרק בתוך <head> — הימנע מסקריפטים חוסמי רינדור",
   "footer_scripts": "סקריפטי תחתית",
   "footer_scripts_hint": "מוזרק לפני </body>",
-
   "localization_title": "הגדרות אזוריות",
   "default_language": "שפת ברירת מחדל",
   "select_language": "בחר שפה…",
@@ -173,10 +160,8 @@
   "select_format": "בחר פורמט…",
   "multi_language_support": "תמיכה רב-לשונית",
   "multi_language_desc": "אפשר מספר שפות באתר הציבורי",
-
   "campaigns_title": "קמפיינים",
   "campaigns_primary_title": "קמפיין ראשי",
-
   "partners_title": "שותפים",
   "add_partner": "הוסף שותף",
   "no_partners": "אין שותפים עדיין — לחץ להוספה",
@@ -227,7 +212,6 @@
   "partner_create_failed": "יצירת השותף נכשלה",
   "partner_update_failed": "עדכון השותף נכשל",
   "partner_uploading": "מעלה...",
-
   "dmo_management": "ניהול מרכזי יעד",
   "add_dmo": "הוסף מרכז יעד",
   "no_dmos_found": "לא נמצאו מרכזי יעד",
@@ -238,7 +222,6 @@
   "authority_label": "רשות",
   "authorities_label": "רשויות",
   "view_authorities": "צפה ברשויות",
-
   "authority_management": "ניהול רשויות",
   "add_authority": "הוסף רשות",
   "no_authorities_found": "לא נמצאו רשויות",
@@ -247,12 +230,10 @@
   "authority_updated_success": "הרשות עודכנה בהצלחה",
   "authority_update_failed": "עדכון הרשות נכשל",
   "authority_create_failed": "יצירת הרשות נכשלה",
-
   "website_management": "ניהול אתרים",
   "register_website": "רשום אתר חדש",
   "no_websites_found": "לא נמצאו אתרים",
   "no_websites_desc": "אין אתרים משויכים לחשבונך.",
-
   "save_publish_title": "שמור ופרסם",
   "config_summary": "סיכום הגדרות",
   "summary_website_logo": "לוגו האתר",
@@ -265,10 +246,10 @@
   "summary_google_analytics": "Google Analytics",
   "logo_uploaded_value": "הועלה",
   "logo_not_set": "לא הוגדר",
-
   "delete_website": "מחיקת אתר",
   "delete_website_confirm": "האם אתה בטוח שברצונך למחוק אתר זה? לא ניתן לבטל פעולה זו.",
   "migrate_website_to_prod": "העברה לייצור",
   "migrate_website_to_prod_confirm": "האם אתה בטוח שברצונך להעביר אתר זה לסביבת הייצור?",
-  "migrate_to_prod": "העבר"
+  "migrate_to_prod": "העבר",
+  "completeness": "שלמות"
 }

@@ -130,7 +130,7 @@ const DEFAULT_FORM: ISiteSettingsFormData = {
   dateFormat: "",
 
   /* Step 10 */
-  primaryCampId: "",
+  primaryCampIds: [],
   campIds: [],
 };
 
@@ -152,7 +152,7 @@ const STEP_FIELDS: Record<number, (keyof ISiteSettingsFormData)[]> = {
     "gaPropertyId",
     "platformCharge",
   ],
-  2: ["primaryCampId", "campIds"],
+  2: ["primaryCampIds", "campIds"],
   3: ["logoUrl", "faviconUrl", "bgImageUrl", "specialSymbolUrl"],
   4: [
     "desktopVideos",
@@ -290,7 +290,7 @@ const buildPayload = (data: ISiteSettingsFormData) => ({
   timezone: data.timezone,
   currency: data.currency,
   dateFormat: data.dateFormat,
-  primaryCampId: data.primaryCampId,
+  primaryCampIds: data.primaryCampIds,
   campIds: data.campIds,
 });
 
@@ -421,7 +421,7 @@ export default function WebsiteConfigPage() {
       timezone: d.timezone ?? "UTC",
       currency: d.currency ?? "USD",
       dateFormat: d.dateFormat ?? "",
-      primaryCampId: d.primaryCampId ?? "",
+      primaryCampIds: d.primaryCampIds ?? [],
       campIds: d.campIds ?? [],
     });
     setUploadStates({});

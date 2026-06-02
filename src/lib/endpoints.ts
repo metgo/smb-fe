@@ -116,6 +116,7 @@ export const endpoints = {
   dmos: "/dmos",
   authorities: "/authorities",
   websiteSettings: "/site-settings",
+  websiteList: "/site-settings/list",
   partners: "/partners",
   campaigns: "/campaigns",
 
