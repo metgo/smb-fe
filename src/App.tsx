@@ -240,6 +240,16 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
+    // Allow access if user has valid QR token for orders-management
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrToken = urlParams.get("token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    if (qrToken && isOrdersManagement) {
+      // QR token allows bypass of login for orders-management page
+      return children;
+    }
+
     const isLoggedIn = !!sessionStorage.getItem("access_token");
     const userInfo = sessionStorage.getItem("user_info");
 

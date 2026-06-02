@@ -27,6 +27,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { envKeys } from "@/lib/envKeys";
 import {
   BulkActionBar,
   ConfirmDialog,
@@ -87,6 +88,12 @@ export default function OrdersMgmtPage() {
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { isDark, isRTL, language } = useThemeClasses();
 
+  // QR Token handling
+  const searchParams = new URLSearchParams(window.location.search);
+  const qrToken = searchParams.get("token");
+  const isQRMode = !!qrToken;
+  const [qrOrder, setQrOrder] = useState<any | null>(null);
+
   //view mode toggle
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -123,6 +130,34 @@ export default function OrdersMgmtPage() {
   const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
     null,
   );
+
+  // Fetch order using QR token
+  useEffect(() => {
+    if (!isQRMode || !qrToken) return;
+
+    const fetchQROrder = async () => {
+      try {
+        const response = await fetch(
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load order from QR token");
+        }
+
+        const data = await response.json();
+        if (data?.data) {
+          setQrOrder(data.data);
+          setSelectedOrder(data.data);
+          setShowOrderDetails(true); // Auto-open order details modal
+        }
+      } catch (error) {
+        toast.error("Invalid or expired QR code");
+      }
+    };
+
+    fetchQROrder();
+  }, [isQRMode, qrToken]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
@@ -1417,10 +1452,10 @@ export default function OrdersMgmtPage() {
       {selectedOrder && showOrderDetails && (
         <OrderDetailsModal
           t={t}
-          refetch={orderIdrefetch}
-          order={orderDetails}
+          refetch={isQRMode ? () => {} : orderIdrefetch}
+          order={isQRMode ? qrOrder : orderDetails}
           isLoading={isOrderDetailLoading}
-          isFetching={isOrderDetailFetching}
+          isFetching={isQRMode ? false : isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
         />
