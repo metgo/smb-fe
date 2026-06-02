@@ -33,20 +33,22 @@ interface Props {
 const viewToWizardTopics = (siteTopics: IContentTopic[]): WizardTopic[] =>
   siteTopics.map((topic) => ({
     id: Math.random().toString(36).slice(2),
-    title: topic.title || "",
-    titleHe: topic.titleHe || "",
-    titleAr: topic.titleAr || "",
-    description: topic.description || "",
-    descriptionHe: topic.descriptionHe || "",
-    descriptionAr: topic.descriptionAr || "",
+    title: topic.title || topic.titleHe || topic.titleAr || "",
+    titleHe: topic.titleHe || topic.title || "",
+    titleAr: topic.titleAr || topic.title || "",
+    description:
+      topic.description || topic.descriptionHe || topic.descriptionAr || "",
+    descriptionHe: topic.descriptionHe || topic.description || "",
+    descriptionAr: topic.descriptionAr || topic.description || "",
     categories: (topic.siteCategories ?? []).map((cat) => ({
       id: Math.random().toString(36).slice(2),
-      title: cat.title || "",
-      titleHe: cat.titleHe || "",
-      titleAr: cat.titleAr || "",
-      description: cat.description || "",
-      descriptionHe: cat.descriptionHe || "",
-      descriptionAr: cat.descriptionAr || "",
+      title: cat.title || cat.titleHe || cat.titleAr || "",
+      titleHe: cat.titleHe || cat.title || "",
+      titleAr: cat.titleAr || cat.title || "",
+      description:
+        cat.description || cat.descriptionHe || cat.descriptionAr || "",
+      descriptionHe: cat.descriptionHe || cat.description || "",
+      descriptionAr: cat.descriptionAr || cat.description || "",
       synonyms: (cat as any).synonyms ?? [],
       synonymsHe: (cat as any).synonymsHe ?? [],
       synonymsAr: (cat as any).synonymsAr ?? [],
@@ -123,6 +125,14 @@ export default function CreateViewWizard({
     }),
   });
 
+  // For updating existing views: only metadata, never overwrite topics
+  const buildMetadataPayload = (status: string) => ({
+    status,
+    viewName:
+      viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+    externalApiId,
+  });
+
   const handleNext = async () => {
     if (step === 1 && !canProceedStep1) {
       toast.error("Add at least one topic before continuing.");
@@ -163,10 +173,9 @@ export default function CreateViewWizard({
     if (savedViewId) {
       try {
         await updateContent({
-          body: { status: "DRAFT", viewName: viewName.trim() || undefined },
+          body: buildMetadataPayload("DRAFT"),
           contentId: savedViewId,
         }).unwrap();
-        toast.success("View saved as draft");
         onCreated(savedViewId, false);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to save draft");
@@ -177,7 +186,6 @@ export default function CreateViewWizard({
     try {
       const res = await createContent(buildPayload("DRAFT")).unwrap();
       const id = res._id || res.id;
-      toast.success("View saved as draft");
       onCreated(id, false);
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to save draft");
@@ -193,16 +201,13 @@ export default function CreateViewWizard({
     if (savedViewId) {
       try {
         await updateContent({
-          body: { status: "APPROVED", viewName: viewName.trim() || undefined },
+          body: buildMetadataPayload("APPROVED"),
           contentId: savedViewId,
         }).unwrap();
         try {
           await activateView({ viewId: savedViewId }).unwrap();
-          toast.success("View published and set as active");
         } catch {
-          toast.success(
-            "View saved — activate it from the View Manager when ready.",
-          );
+          // Activation failed but view is still saved
         }
         onCreated(savedViewId, true);
       } catch (error: any) {
@@ -216,11 +221,8 @@ export default function CreateViewWizard({
       const id = res._id || res.id;
       try {
         await activateView({ viewId: id }).unwrap();
-        toast.success("View published and set as active");
       } catch {
-        toast.success(
-          "View saved — activate it from the View Manager when ready.",
-        );
+        // Activation failed but view is still saved
       }
       onCreated(id, true);
     } catch (error: any) {
