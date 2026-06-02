@@ -37,6 +37,9 @@ interface ContentComposerProps {
   websiteName?: string;
   onViewSelect?: (view: IView) => void;
   onViewsRefetch?: () => void;
+  hasUnsavedContent?: boolean;
+  onSaveCurrentAsView?: () => void;
+  isSavingCurrentAsView?: boolean;
 }
 
 // ─── Draggable Topic Block ────────────────────────────────────────────────────
@@ -332,6 +335,9 @@ const ContentComposer = ({
   websiteName = "",
   onViewSelect,
   onViewsRefetch,
+  hasUnsavedContent = false,
+  onSaveCurrentAsView,
+  isSavingCurrentAsView = false,
 }: ContentComposerProps) => {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
@@ -426,6 +432,9 @@ const ContentComposer = ({
           websiteName={websiteName}
           onViewSelect={(view) => onViewSelect?.(view)}
           onRefetch={() => onViewsRefetch?.()}
+          hasUnsavedContent={hasUnsavedContent}
+          onSaveCurrentAsView={onSaveCurrentAsView}
+          isSavingCurrentAsView={isSavingCurrentAsView}
         />
       )}
 

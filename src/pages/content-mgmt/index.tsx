@@ -241,6 +241,19 @@ export default function ContentMgmtPage() {
     initialTemplateContent,
   );
 
+  const hasUnsavedContent =
+    !isLoadingViews &&
+    views.length === 0 &&
+    !!externalApiId &&
+    templateContents.some((t) =>
+      t.groups?.some((g) => (g.contents?.length ?? 0) > 0),
+    );
+
+  const handleSaveCurrentAsView = async () => {
+    await handleSubmit("DRAFT");
+    refetchViews();
+  };
+
   const [selectedBacklogIds, setSelectedBacklogIds] = useState<Set<string>>(
     new Set(),
   );
@@ -1220,6 +1233,9 @@ export default function ContentMgmtPage() {
                       websiteName={selectedWebsiteName}
                       onViewSelect={handleViewSelect}
                       onViewsRefetch={refetchViews}
+                      hasUnsavedContent={hasUnsavedContent}
+                      onSaveCurrentAsView={handleSaveCurrentAsView}
+                      isSavingCurrentAsView={isCreating || isUpdating}
                     />
                   </motion.div>
                 )}

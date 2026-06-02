@@ -30,6 +30,9 @@ interface Props {
   websiteName: string;
   onViewSelect: (view: IView) => void;
   onRefetch: () => void;
+  hasUnsavedContent?: boolean;
+  onSaveCurrentAsView?: () => void;
+  isSavingCurrentAsView?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -383,6 +386,9 @@ export default function ViewManagerPanel({
   websiteName,
   onViewSelect,
   onRefetch,
+  hasUnsavedContent = false,
+  onSaveCurrentAsView,
+  isSavingCurrentAsView = false,
 }: Props) {
   const { isDark } = useThemeClasses();
   const [showDrawer, setShowDrawer] = useState(false);
@@ -404,6 +410,15 @@ export default function ViewManagerPanel({
 
   const handleEditView = (view: IView) => {
     setEditingView(view);
+    setShowDrawer(false);
+    setShowWizard(true);
+  };
+
+  const handleOpenWizardSafely = () => {
+    if (hasUnsavedContent && onSaveCurrentAsView) {
+      onSaveCurrentAsView();
+      toast.info("Current layout saved as a draft view.");
+    }
     setShowDrawer(false);
     setShowWizard(true);
   };
@@ -477,7 +492,7 @@ export default function ViewManagerPanel({
           </button>
         ) : (
           <button
-            onClick={() => setShowWizard(true)}
+            onClick={handleOpenWizardSafely}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-teal-600 hover:bg-teal-700 text-white transition-colors shrink-0"
           >
             <Plus className="w-3 h-3" />
@@ -487,22 +502,40 @@ export default function ViewManagerPanel({
       </div>
 
       {/* No active view warning — commented out: duplicate of the main bar message + Manage button above */}
-      {/* {noActiveView && (
+      {/* {noActiveView && (...)} */}
+
+      {/* Save current layout banner — shown when no views exist but content is present */}
+      {!isLoading && views.length === 0 && hasUnsavedContent && (
         <div
           className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 rounded-lg border mt-1 text-xs",
-            isDark ? "border-amber-700/40 bg-amber-900/10 text-amber-400" : "border-amber-200 bg-amber-50 text-amber-600",
+            "flex items-center gap-2 px-3 py-2 rounded-lg border mt-1 text-xs",
+            isDark
+              ? "border-blue-700/40 bg-blue-900/10 text-blue-300"
+              : "border-blue-200 bg-blue-50 text-blue-700",
           )}
         >
-          ⚠ Activate a view to make content visible on your website.
+          <LayoutTemplate className="w-3.5 h-3.5 shrink-0" />
+          <span className="flex-1">
+            Current layout is not saved as a view — you won't be able to restore
+            it after creating a new one.
+          </span>
           <button
-            onClick={() => setShowDrawer(true)}
-            className="underline font-medium shrink-0"
+            onClick={onSaveCurrentAsView}
+            disabled={isSavingCurrentAsView}
+            className={clsx(
+              "flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium border transition-colors shrink-0 disabled:opacity-50",
+              isDark
+                ? "border-blue-600 text-blue-300 hover:bg-blue-900/40"
+                : "border-blue-300 text-blue-700 hover:bg-blue-100",
+            )}
           >
-            Manage views
+            {isSavingCurrentAsView ? (
+              <Loader className="w-3 h-3 animate-spin" />
+            ) : null}
+            Save as View
           </button>
         </div>
-      )} */}
+      )}
 
       {/* Views drawer */}
       {showDrawer && (
@@ -514,10 +547,7 @@ export default function ViewManagerPanel({
           onClose={() => setShowDrawer(false)}
           onViewSelect={onViewSelect}
           onRefetch={onRefetch}
-          onOpenWizard={() => {
-            setShowDrawer(false);
-            setShowWizard(true);
-          }}
+          onOpenWizard={handleOpenWizardSafely}
           onEditView={handleEditView}
         />
       )}
