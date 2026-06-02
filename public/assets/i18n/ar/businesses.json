@@ -224,6 +224,7 @@
   "return_exchange_info": "معلومات الإرجاع والاستبدال",
   "vendor_delivers": "التاجر يقوم بالتوصيل",
   "pickup_available": "الاستلام متاح",
+  "global_delivery": "التوصيل العالمي",
   "delivery_area": "منطقة التوصيل",
   "delivery_price": "سعر التوصيل (شيكل)",
   "add_area": "إضافة منطقة",

@@ -224,6 +224,7 @@
   "return_exchange_info": "Return & Exchange Info",
   "vendor_delivers": "Vendor Delivers",
   "pickup_available": "Pickup Available",
+  "global_delivery": "Global Delivery",
 
   "delivery_area": "Delivery Area",
   "delivery_price": "Delivery Price (ILS)",
