@@ -188,20 +188,20 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle QR verification token for orders-management access (same pattern as incomplete profile)
+  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const qrToken = urlParams.get("token");
+    const jwtToken = urlParams.get("token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-    if (qrToken && isOrdersManagement) {
-      // Store QR token in sessionStorage for use in orders-management page
-      sessionStorage.setItem("qr_token", qrToken);
+    if (jwtToken && isOrdersManagement) {
+      // Set JWT token as access_token in sessionStorage (like profile completion)
+      sessionStorage.setItem("access_token", jwtToken);
 
       const fetchVendorUserInfo = async () => {
         try {
           const response = await axios.get(
-            `${envKeys.baseUrl}/api/public/users/verify/${qrToken}`,
+            `${envKeys.baseUrl}/api/public/users/verify/${jwtToken}`,
           );
 
           const userData = response.data?.data || response.data;
@@ -222,7 +222,7 @@ function App() {
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep QR token in session even if user fetch fails, allows order management
+          // Keep JWT token in session even if user fetch fails, allows order management
         }
       };
 
@@ -286,18 +286,6 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
-    // Allow access if user has valid QR token for orders-management
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrTokenFromUrl = urlParams.get("token");
-    const qrTokenFromStorage = sessionStorage.getItem("qr_token");
-    const hasQrToken = qrTokenFromUrl || qrTokenFromStorage;
-    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
-
-    if (hasQrToken && isOrdersManagement) {
-      // QR token allows bypass of login for orders-management page
-      return children;
-    }
-
     const isLoggedIn = !!sessionStorage.getItem("access_token");
     const userInfo = sessionStorage.getItem("user_info");
 

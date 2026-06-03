@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 import UserStatsCards from "@/components/shared/UserStatsCards";
 import {
   useState,
@@ -88,9 +89,10 @@ export default function OrdersMgmtPage() {
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { isDark, isRTL, language } = useThemeClasses();
 
-  // QR Token handling
-  const qrToken = sessionStorage.getItem("qr_token");
-  const isQRMode = !!qrToken;
+  // QR Token handling - detect from URL on first load
+  const urlParams = new URLSearchParams(window.location.search);
+  const jwtToken = urlParams.get("token");
+  const isQRMode = !!jwtToken;
   const [qrOrder, setQrOrder] = useState<any | null>(null);
 
   //view mode toggle
@@ -130,34 +132,30 @@ export default function OrdersMgmtPage() {
     null,
   );
 
-  // Fetch order using QR token
+  // Fetch order using JWT token from access_token
   useEffect(() => {
-    if (!isQRMode || !qrToken) return;
+    if (!isQRMode) return;
 
     const fetchQROrder = async () => {
       try {
-        const response = await fetch(
-          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}`,
-        );
+        const accessToken = sessionStorage.getItem("access_token");
+        const response = await axios.get(`${envKeys.baseUrl}/api/orders`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
 
-        if (!response.ok) {
-          throw new Error("Failed to load order from QR token");
-        }
-
-        const data = await response.json();
-        const orderData = data?.data || data;
+        const orderData = response.data?.data?.[0];
         if (orderData) {
           setQrOrder(orderData);
           setSelectedOrder(orderData);
           setShowOrderDetails(true); // Auto-open order details modal
         }
       } catch (error) {
-        toast.error("Invalid or expired QR code");
+        toast.error("Failed to load order");
       }
     };
 
     fetchQROrder();
-  }, [isQRMode, qrToken]);
+  }, [isQRMode]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
