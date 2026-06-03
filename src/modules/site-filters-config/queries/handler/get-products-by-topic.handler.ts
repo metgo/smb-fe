@@ -195,7 +195,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       const productSelectFields
         = '_id productId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea categories tagsId';
       const productPopulate = [
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug' },
+        { path: 'businessId', select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable' },
       ];
       const baseProductQuery: any = {
         productId: { $in: allProductIds },

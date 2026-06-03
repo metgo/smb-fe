@@ -126,7 +126,10 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId',
       )
       .populate([
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug' },
+        {
+          path: 'businessId',
+          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable',
+        },
       ])
       .lean();
 
