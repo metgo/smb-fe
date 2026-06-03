@@ -1458,6 +1458,8 @@ export default function OrdersMgmtPage() {
           isFetching={isQRMode ? false : isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
+          qrToken={qrToken}
+          isQRMode={isQRMode}
         />
       )}
 

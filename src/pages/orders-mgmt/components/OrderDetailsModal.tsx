@@ -16,6 +16,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
+import { envKeys } from "@/lib/envKeys";
 
 interface OrderDetailsModalProps {
   order: any;
@@ -25,6 +26,8 @@ interface OrderDetailsModalProps {
   isLoading: any;
   isFetching: any;
   refetch: any;
+  qrToken?: string | null;
+  isQRMode?: boolean;
 }
 
 function OrderDetailsModal({
@@ -34,6 +37,8 @@ function OrderDetailsModal({
   refetch,
   isLoading,
   isFetching,
+  qrToken,
+  isQRMode,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -71,13 +76,34 @@ function OrderDetailsModal({
   };
   const onStatusChangeHandler = async (status: string) => {
     try {
-      await updateOrderStatus({
-        orderId: order?._id,
-        body: { status: status.toLowerCase() },
-      }).unwrap();
+      if (isQRMode && qrToken) {
+        // Use public API for QR mode (no auth required)
+        const response = await fetch(
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: status.toLowerCase() }),
+          },
+        );
 
-      toast.success(t("order_status_update_success"));
-      refetch();
+        if (!response.ok) {
+          throw new Error("Failed to update order status");
+        }
+
+        toast.success(t("order_status_update_success"));
+        // Refetch order to get updated status
+        window.location.reload();
+      } else {
+        // Use authenticated API for normal mode
+        await updateOrderStatus({
+          orderId: order?._id,
+          body: { status: status.toLowerCase() },
+        }).unwrap();
+
+        toast.success(t("order_status_update_success"));
+        refetch();
+      }
     } catch (error) {
       toast.error(t("order_status_update_failed"));
       console.error(error);
@@ -376,15 +402,37 @@ function OrderDetailsModal({
             try {
               if (cancelType === "order") {
                 // Cancel the entire order
-                await updateOrderStatus({
-                  orderId: order?._id,
-                  body: {
-                    status: "canceled",
-                    canceled_reason: t(reason),
-                    isQrScan: true,
-                  },
-                }).unwrap();
-                refetch();
+                if (isQRMode && qrToken) {
+                  // Use public API for QR mode
+                  const response = await fetch(
+                    `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        status: "canceled",
+                        canceled_reason: t(reason),
+                      }),
+                    },
+                  );
+
+                  if (!response.ok) {
+                    throw new Error("Failed to cancel order");
+                  }
+
+                  window.location.reload();
+                } else {
+                  // Use authenticated API for normal mode
+                  await updateOrderStatus({
+                    orderId: order?._id,
+                    body: {
+                      status: "canceled",
+                      canceled_reason: t(reason),
+                      isQrScan: true,
+                    },
+                  }).unwrap();
+                  refetch();
+                }
               }
 
               toast.success(t("order_cancelled_successfully"));
