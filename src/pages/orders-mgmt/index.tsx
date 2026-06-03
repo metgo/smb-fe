@@ -89,8 +89,7 @@ export default function OrdersMgmtPage() {
   const { isDark, isRTL, language } = useThemeClasses();
 
   // QR Token handling
-  const searchParams = new URLSearchParams(window.location.search);
-  const qrToken = searchParams.get("token");
+  const qrToken = sessionStorage.getItem("qr_token");
   const isQRMode = !!qrToken;
   const [qrOrder, setQrOrder] = useState<any | null>(null);
 
@@ -138,7 +137,7 @@ export default function OrdersMgmtPage() {
     const fetchQROrder = async () => {
       try {
         const response = await fetch(
-          `${envKeys.baseUrl}/public/orders/verify/${qrToken}`,
+          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}`,
         );
 
         if (!response.ok) {
@@ -146,9 +145,10 @@ export default function OrdersMgmtPage() {
         }
 
         const data = await response.json();
-        if (data?.data) {
-          setQrOrder(data.data);
-          setSelectedOrder(data.data);
+        const orderData = data?.data || data;
+        if (orderData) {
+          setQrOrder(orderData);
+          setSelectedOrder(orderData);
           setShowOrderDetails(true); // Auto-open order details modal
         }
       } catch (error) {
@@ -839,7 +839,7 @@ export default function OrdersMgmtPage() {
       "\n",
     );
 
-    const blob = new Blob(["﻿", csvContent], {
+    const blob = new Blob(["�", csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
@@ -932,7 +932,7 @@ export default function OrdersMgmtPage() {
       "\n",
     );
 
-    const blob = new Blob(["﻿", csvContent], {
+    const blob = new Blob(["�", csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
@@ -1458,7 +1458,6 @@ export default function OrdersMgmtPage() {
           isFetching={isQRMode ? false : isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
-          qrToken={qrToken}
           isQRMode={isQRMode}
         />
       )}

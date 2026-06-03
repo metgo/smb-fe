@@ -33,14 +33,14 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
   DmosMgmtPage,
   AuthoritiesMgmtPage,
   WebsiteConfigPage,
   PartnersPage,
   CampaignsMgmtPage,
   UsersMgmtPage,
-  PoiMgmtPage,
-  PoiDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -195,8 +195,8 @@ function App() {
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
     if (qrToken && isOrdersManagement) {
-      // Set token in session for API calls
-      sessionStorage.setItem("access_token", qrToken);
+      // Store QR token in sessionStorage for use in orders-management page
+      sessionStorage.setItem("qr_token", qrToken);
 
       const fetchVendorUserInfo = async () => {
         try {
@@ -222,7 +222,7 @@ function App() {
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep token in session even if user fetch fails, allows order management
+          // Keep QR token in session even if user fetch fails, allows order management
         }
       };
 
@@ -233,7 +233,7 @@ function App() {
   // Handle profile completion token — auto-login the user if token is in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    const token = urlParams.get("token") || urlParams.get("approveToken");
     const currentAccessToken = sessionStorage.getItem("access_token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
@@ -287,8 +287,7 @@ function App() {
     isLoginPage = false,
   }) => {
     // Allow access if user has valid QR token for orders-management
-    const urlParams = new URLSearchParams(window.location.search);
-    const qrToken = urlParams.get("token");
+    const qrToken = sessionStorage.getItem("qr_token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
     if (qrToken && isOrdersManagement) {
@@ -337,8 +336,9 @@ function App() {
       // Allow business-details with a profile completion token to bypass login
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
-      const isBusinessDetails =
-        window.location.pathname === routes.businessDetails;
+      const isBusinessDetails = window.location.pathname.startsWith(
+        routes.businessDetails,
+      );
 
       if (hasToken && isBusinessDetails) {
         return children;
@@ -399,9 +399,9 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
-        { path: routes.users, element: <UsersMgmtPage /> },
         { path: routes.poiMgmt, element: <PoiMgmtPage /> },
         { path: routes.poiDetails, element: <PoiDetailsPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],

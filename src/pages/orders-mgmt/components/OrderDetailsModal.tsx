@@ -26,7 +26,6 @@ interface OrderDetailsModalProps {
   isLoading: any;
   isFetching: any;
   refetch: any;
-  qrToken?: string | null;
   isQRMode?: boolean;
 }
 
@@ -37,7 +36,6 @@ function OrderDetailsModal({
   refetch,
   isLoading,
   isFetching,
-  qrToken,
   isQRMode,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
@@ -76,10 +74,11 @@ function OrderDetailsModal({
   };
   const onStatusChangeHandler = async (status: string) => {
     try {
-      if (isQRMode && qrToken) {
+      const qrTokenFromStorage = sessionStorage.getItem("qr_token");
+      if (isQRMode && qrTokenFromStorage) {
         // Use public API for QR mode (no auth required)
         const response = await fetch(
-          `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+          `${envKeys.baseUrl}/api/public/orders/verify/${qrTokenFromStorage}/update-status`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -402,10 +401,11 @@ function OrderDetailsModal({
             try {
               if (cancelType === "order") {
                 // Cancel the entire order
-                if (isQRMode && qrToken) {
+                const qrTokenFromStorage = sessionStorage.getItem("qr_token");
+                if (isQRMode && qrTokenFromStorage) {
                   // Use public API for QR mode
                   const response = await fetch(
-                    `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+                    `${envKeys.baseUrl}/api/public/orders/verify/${qrTokenFromStorage}/update-status`,
                     {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
