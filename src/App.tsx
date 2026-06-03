@@ -197,6 +197,7 @@ function App() {
     if (jwtToken && isOrdersManagement) {
       // Set JWT token as access_token in sessionStorage (like profile completion)
       sessionStorage.setItem("access_token", jwtToken);
+      sessionStorage.setItem("isQrMode", "true");
 
       const fetchVendorUserInfo = async () => {
         try {
@@ -324,14 +325,16 @@ function App() {
       ) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
-      // Allow business-details with a profile completion token to bypass login
+
+      // Allow routes with token to bypass login (business-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
       const isBusinessDetails = window.location.pathname.startsWith(
         routes.businessDetails,
       );
+      const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-      if (hasToken && isBusinessDetails) {
+      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
         return children;
       }
 
