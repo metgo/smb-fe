@@ -188,11 +188,57 @@ function App() {
     }
   }, [dispatch]);
 
+  // Handle QR verification token for orders-management access (same pattern as incomplete profile)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrToken = urlParams.get("token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    if (qrToken && isOrdersManagement) {
+      // Set token in session for API calls
+      sessionStorage.setItem("access_token", qrToken);
+
+      const fetchVendorUserInfo = async () => {
+        try {
+          const response = await axios.get(
+            `${envKeys.baseUrl}/api/public/users/verify/${qrToken}`,
+          );
+
+          const userData = response.data?.data || response.data;
+          if (userData) {
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to fetch vendor user info via QR token", error);
+          // Keep token in session even if user fetch fails, allows order management
+        }
+      };
+
+      fetchVendorUserInfo();
+    }
+  }, [dispatch]);
+
   // Handle profile completion token — auto-login the user if token is in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const currentAccessToken = sessionStorage.getItem("access_token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    // Skip profile completion token for QR mode
+    if (isOrdersManagement) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
