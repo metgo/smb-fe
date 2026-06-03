@@ -195,8 +195,9 @@ function App() {
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
     if (jwtToken && isOrdersManagement) {
-      // Set JWT token as access_token in sessionStorage (like profile completion)
+      // Keep the original QR token separate from the normal access token.
       sessionStorage.setItem("access_token", jwtToken);
+      sessionStorage.setItem("qr_token", jwtToken);
       sessionStorage.setItem("isQrMode", "true");
 
       const fetchVendorUserInfo = async () => {

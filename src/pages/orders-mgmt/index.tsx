@@ -94,7 +94,7 @@ export default function OrdersMgmtPage() {
   const jwtToken = urlParams.get("token");
   const storedQrMode = sessionStorage.getItem("isQrMode") === "true";
   const qrToken =
-    jwtToken || (storedQrMode ? sessionStorage.getItem("access_token") : null);
+    jwtToken || (storedQrMode ? sessionStorage.getItem("qr_token") : null);
   const isQRMode = !!qrToken;
   const [qrOrder, setQrOrder] = useState<any | null>(null);
 
