@@ -69,7 +69,7 @@ export default function Step3Assign({
   const progressPercent =
     progressTotal > 0 ? Math.round((progressDone / progressTotal) * 100) : 0;
 
-  const runAssignment = async () => {
+  const runAssignment = async (reAssignAll: boolean = false) => {
     if (!viewId) {
       toast.error(
         "View is not yet saved — please wait a moment and try again.",
@@ -79,7 +79,7 @@ export default function Step3Assign({
     setAssignState("running");
     onAssignStart();
     try {
-      await assignAll({ viewId }).unwrap();
+      await assignAll({ viewId, reAssignAll }).unwrap();
     } catch {
       setAssignState("error");
       onAssignEnd();
@@ -166,16 +166,46 @@ export default function Step3Assign({
         ))}
       </div>
 
-      {/* Assign button */}
+      {/* Assign buttons */}
       {assignState === "idle" && (
-        <button
-          onClick={runAssignment}
-          disabled={totalCategories === 0 || !viewId}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Wand2 className="w-5 h-5" />
-          Start AI Assignment
-        </button>
+        <div className="space-y-2">
+          {totalAssignedFromView > 0 ? (
+            <>
+              <button
+                onClick={() => {
+                  void runAssignment(false);
+                }}
+                disabled={totalCategories === 0 || !viewId}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Wand2 className="w-5 h-5" />
+                Continue Assignment
+              </button>
+              <button
+                onClick={() => {
+                  void runAssignment(true);
+                }}
+                disabled={totalCategories === 0 || !viewId}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Clear and reassign all categories"
+              >
+                <Wand2 className="w-5 h-5" />
+                Re-assign All
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                void runAssignment(false);
+              }}
+              disabled={totalCategories === 0 || !viewId}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Wand2 className="w-5 h-5" />
+              Start AI Assignment
+            </button>
+          )}
+        </div>
       )}
 
       {/* Progress bar */}
@@ -255,7 +285,9 @@ export default function Step3Assign({
             </p>
           </div>
           <button
-            onClick={runAssignment}
+            onClick={() => {
+              void runAssignment(false);
+            }}
             className="text-xs underline text-red-500 hover:text-red-600 shrink-0"
           >
             Retry
@@ -294,7 +326,9 @@ export default function Step3Assign({
             </p>
           </div>
           <button
-            onClick={runAssignment}
+            onClick={() => {
+              void runAssignment(false);
+            }}
             className="ms-auto text-xs underline text-green-600 hover:text-green-700 shrink-0"
           >
             Re-run

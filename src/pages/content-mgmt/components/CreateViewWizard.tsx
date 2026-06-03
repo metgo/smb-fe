@@ -206,10 +206,14 @@ export default function CreateViewWizard({
         }).unwrap();
         try {
           await activateView({ viewId: savedViewId }).unwrap();
-        } catch {
-          // Activation failed but view is still saved
+          onCreated(savedViewId, true);
+        } catch (error: any) {
+          toast.error(
+            error?.data?.message ||
+              "View saved, but it cannot go live until content is assigned.",
+          );
+          onCreated(savedViewId, false);
         }
-        onCreated(savedViewId, true);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to publish view");
       }
@@ -221,10 +225,14 @@ export default function CreateViewWizard({
       const id = res._id || res.id;
       try {
         await activateView({ viewId: id }).unwrap();
-      } catch {
-        // Activation failed but view is still saved
+        onCreated(id, true);
+      } catch (error: any) {
+        toast.error(
+          error?.data?.message ||
+            "View saved, but it cannot go live until content is assigned.",
+        );
+        onCreated(id, false);
       }
-      onCreated(id, true);
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to publish view");
     }
@@ -339,8 +347,9 @@ export default function CreateViewWizard({
         <WizardFooter
           currentStep={step}
           totalSteps={STEPS.length}
-          isSaving={isBusy || isAssigning}
-          isPublishing={isBusy || isAssigning}
+          isSaving={isBusy}
+          isPublishing={isBusy}
+          isDisabled={isAssigning}
           onPrevious={() => setStep((s) => Math.max(s - 1, 1))}
           onNext={handleNext}
           onSaveDraft={handleSaveDraft}

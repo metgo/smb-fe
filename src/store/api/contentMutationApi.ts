@@ -80,7 +80,7 @@ export const contentMutationApi = createApi({
         }[];
         unassignedCount: number;
       },
-      { viewId: string }
+      { viewId: string; reAssignAll?: boolean }
     >({
       query: (body) => ({
         url: endpoints.wizardAssignEntities,

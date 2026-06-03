@@ -354,16 +354,21 @@ export default function Step2Categories({
       const mapped = result
         .slice(0, MAX_CATEGORIES)
         .map((c: any) => makeCategory(c));
-      setTopics((prev) =>
-        prev.map((t) => (t.id === topic.id ? { ...t, categories: mapped } : t)),
-      );
-      toast.success(
-        `Generated ${mapped.length} categories for "${topic.titleHe || topic.title}"`,
-      );
+
+      return {
+        topicId: topic.id,
+        categories: mapped,
+        success: true,
+        topicLabel: topic.titleHe || topic.title,
+        count: mapped.length,
+      };
     } catch {
-      toast.error(
-        `AI not available yet — add categories for "${topic.titleHe || topic.title}" manually.`,
-      );
+      return {
+        topicId: topic.id,
+        categories: [],
+        success: false,
+        topicLabel: topic.titleHe || topic.title,
+      };
     } finally {
       setGeneratingTopicIds((prev) => {
         const next = new Set(prev);
@@ -375,11 +380,40 @@ export default function Step2Categories({
 
   const generateAll = async () => {
     setIsGeneratingAll(true);
-    await Promise.all(
+    const results = await Promise.all(
       topics
         .filter((topic) => topic.categories.length === 0)
         .map((topic) => generateForTopic(topic)),
     );
+
+    // Apply all updates at once to avoid race conditions
+    setTopics((prev) => {
+      let updated = prev;
+      for (const result of results) {
+        if (result.success) {
+          updated = updated.map((t) =>
+            t.id === result.topicId
+              ? { ...t, categories: result.categories }
+              : t,
+          );
+        }
+      }
+      return updated;
+    });
+
+    // Show toasts for all results
+    for (const result of results) {
+      if (result.success) {
+        toast.success(
+          `Generated ${result.count} categories for "${result.topicLabel}"`,
+        );
+      } else {
+        toast.error(
+          `AI not available yet — add categories for "${result.topicLabel}" manually.`,
+        );
+      }
+    }
+
     setIsGeneratingAll(false);
   };
 

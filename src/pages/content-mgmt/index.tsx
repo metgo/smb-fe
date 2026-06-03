@@ -759,7 +759,8 @@ export default function ContentMgmtPage() {
   ]);
 
   // ── Load a selected view into the composer ────────────────────────────────
-  const handleViewSelect = (view: IView) => {
+  const handleViewSelect = (view: IView | IContentTemplateResponse) => {
+    if (!view) return;
     const formattedTopics = (view.siteTopics ?? []).map((topic) => ({
       topic: topic.title,
       order: topic.order,
@@ -803,6 +804,9 @@ export default function ContentMgmtPage() {
     setTemplateContent(formattedTopics);
     setTemplateContentId(view._id);
     setContentStatus((view.status?.toLowerCase() ?? "draft") as TStatus);
+    if ("header" in view) {
+      setHeader(view.header || "<p></p>");
+    }
   };
 
   const onStatusChangeHandler = async (status: string) => {
@@ -840,7 +844,7 @@ export default function ContentMgmtPage() {
             };
 
             const filteredCategories = template?.groups
-              ?.filter((group) => group?.contents?.length > 0)
+              ?.filter((group) => group?.category?.trim())
               ?.map((group) => {
                 const idsByType = group.contents.reduce<
                   Record<string, string[]>
@@ -855,10 +859,17 @@ export default function ContentMgmtPage() {
 
                 return {
                   title: group.category,
+                  description: group.description,
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
                   icon: group.icon,
                   colors: group.colors ?? [],
+                  businessIds: idsByType.businessIds ?? [],
+                  productIds: idsByType.productIds ?? [],
+                  tripIds: idsByType.tripIds ?? [],
+                  eventIds: idsByType.eventIds ?? [],
+                  poiIds: idsByType.poiIds ?? [],
+                  fundayIds: idsByType.fundayIds ?? [],
                   ...idsByType,
                 };
               });
