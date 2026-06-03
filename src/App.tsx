@@ -205,8 +205,12 @@ function App() {
             `${envKeys.baseUrl}/api/public/users/verify/${jwtToken}`,
           );
 
-          const userData = response.data?.data || response.data;
+          const payload = response.data?.data || response.data;
+          const userData = payload?.user || payload;
           if (userData) {
+            if (payload?.accessToken) {
+              sessionStorage.setItem("access_token", payload.accessToken);
+            }
             saveUserInfo({ user: userData });
             dispatch(loginSuccess(userData));
 

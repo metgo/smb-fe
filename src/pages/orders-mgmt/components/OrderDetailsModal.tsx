@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import axios from "axios";
 import { useState } from "react";
 import { Loader, Mail, Phone } from "lucide-react";
 
@@ -16,6 +17,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
+import { envKeys } from "@/lib/envKeys";
 
 interface OrderDetailsModalProps {
   order: any;
@@ -26,6 +28,7 @@ interface OrderDetailsModalProps {
   isFetching: any;
   refetch: any;
   isQRMode?: boolean;
+  qrToken?: string | null;
 }
 
 function OrderDetailsModal({
@@ -36,6 +39,7 @@ function OrderDetailsModal({
   isLoading,
   isFetching,
   isQRMode,
+  qrToken,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -73,11 +77,17 @@ function OrderDetailsModal({
   };
   const onStatusChangeHandler = async (status: string) => {
     try {
-      // Use authenticated API (works for both normal login and QR mode with JWT)
-      await updateOrderStatus({
-        orderId: order?._id,
-        body: { status: status.toLowerCase() },
-      }).unwrap();
+      if (isQRMode && qrToken) {
+        await axios.post(
+          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}/update-status`,
+          { status: status.toLowerCase() },
+        );
+      } else {
+        await updateOrderStatus({
+          orderId: order?._id,
+          body: { status: status.toLowerCase() },
+        }).unwrap();
+      }
 
       toast.success(t("order_status_update_success"));
 
@@ -384,14 +394,22 @@ function OrderDetailsModal({
 
             try {
               if (cancelType === "order") {
-                // Cancel the entire order using authenticated API (works for both normal and QR mode with JWT)
-                await updateOrderStatus({
-                  orderId: order?._id,
-                  body: {
-                    status: "canceled",
-                    canceled_reason: t(reason),
-                  },
-                }).unwrap();
+                const body = {
+                  status: "canceled",
+                  canceled_reason: t(reason),
+                };
+
+                if (isQRMode && qrToken) {
+                  await axios.post(
+                    `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}/update-status`,
+                    body,
+                  );
+                } else {
+                  await updateOrderStatus({
+                    orderId: order?._id,
+                    body,
+                  }).unwrap();
+                }
 
                 // Reload page in QR mode, otherwise just refetch
                 if (isQRMode) {

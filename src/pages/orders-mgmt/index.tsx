@@ -92,7 +92,10 @@ export default function OrdersMgmtPage() {
   // QR Token handling - detect from URL on first load
   const urlParams = new URLSearchParams(window.location.search);
   const jwtToken = urlParams.get("token");
-  const isQRMode = !!jwtToken;
+  const storedQrMode = sessionStorage.getItem("isQrMode") === "true";
+  const qrToken =
+    jwtToken || (storedQrMode ? sessionStorage.getItem("access_token") : null);
+  const isQRMode = !!qrToken;
   const [qrOrder, setQrOrder] = useState<any | null>(null);
 
   //view mode toggle
@@ -132,18 +135,17 @@ export default function OrdersMgmtPage() {
     null,
   );
 
-  // Fetch order using JWT token from access_token
+  // Fetch the scanned order via the no-auth QR endpoint.
   useEffect(() => {
-    if (!isQRMode) return;
+    if (!isQRMode || !qrToken) return;
 
     const fetchQROrder = async () => {
       try {
-        const accessToken = sessionStorage.getItem("access_token");
-        const response = await axios.get(`${envKeys.baseUrl}/api/orders`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        const response = await axios.get(
+          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}`,
+        );
 
-        const orderData = response.data?.data?.[0];
+        const orderData = response.data?.data || response.data;
         if (orderData) {
           setQrOrder(orderData);
           setSelectedOrder(orderData);
@@ -155,7 +157,7 @@ export default function OrdersMgmtPage() {
     };
 
     fetchQROrder();
-  }, [isQRMode]);
+  }, [isQRMode, qrToken]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
@@ -219,7 +221,7 @@ export default function OrdersMgmtPage() {
     isFetching: isFetchingOrderSummary,
     isLoading: isLoadingOrderSummary,
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-    skip: !orderSummaryClick,
+    skip: !orderSummaryClick || isQRMode,
   });
 
   // Business-specific order summary query (runs only when businessOrderParams is set)
@@ -228,7 +230,7 @@ export default function OrdersMgmtPage() {
     isLoading: isLoadingBusinessOrderSummary,
     isFetching: isFetchingBusinessOrderSummary,
   } = useGetAllOrderSummaryQuery(businessOrderParams!, {
-    skip: !businessOrderParams, // skip until businessOrderParams is populated
+    skip: !businessOrderParams || isQRMode, // skip until businessOrderParams is populated
   });
 
   const ordersSummariess = orderSummaries?.data ?? [];
@@ -406,15 +408,17 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters, authorityId, dmoId, websiteId]);
 
-  const { data: orderStat, isLoading: isStatsLoading } =
-    useGetOrderStatsQuery(orderQueryParams);
+  const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
+    orderQueryParams,
+    { skip: isQRMode },
+  );
   const {
     data: orders,
     isLoading,
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams, {
-    skip: orderSummaryClick,
+    skip: orderSummaryClick || isQRMode,
   });
 
   const hasMore = orders?.meta?.hasNextPage;
@@ -861,7 +865,7 @@ export default function OrdersMgmtPage() {
   } = useGetOrderByIdQuery(
     { orderId: selectedOrder?._id ?? null },
     {
-      skip: !selectedOrder?._id, // only fetch if selectedOrder exists
+      skip: isQRMode || !selectedOrder?._id, // only fetch if selectedOrder exists
     },
   );
 
@@ -1456,6 +1460,7 @@ export default function OrdersMgmtPage() {
           isFetching={isQRMode ? false : isOrderDetailFetching}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
+          qrToken={isQRMode ? qrToken : null}
           isQRMode={isQRMode}
         />
       )}
