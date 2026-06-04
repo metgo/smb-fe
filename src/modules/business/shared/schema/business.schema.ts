@@ -295,6 +295,18 @@ export class Business extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     isPickUpAvailable: boolean;
 
+  @Prop({ type: Boolean, default: false })
+    globalDelivery: boolean;
+
+  @Prop({ type: Boolean, default: false })
+    vendorDelivers: boolean;
+
+  @Prop({ required: false })
+    globalDeliveryArea: DeliveryArea[];
+
+  @Prop({ required: false })
+    vendorDeliveryArea: DeliveryArea[];
+
   @Prop({ default: 200, required: false })
     impact: number;
 

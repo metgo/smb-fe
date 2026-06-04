@@ -6,13 +6,12 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { QueryBus } from '@nestjs/cqrs';
+import mongoose, { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
-import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerErrors } from 'src/common/constant';
 import { Currency, Locale, PaymentStatus } from 'src/common/enum';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
@@ -24,10 +23,12 @@ import {
   findOneById,
   updateById,
 } from 'src/core/helper/query-helper';
+import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
+import { Cart } from 'src/modules/cart/cart.schema';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -118,9 +119,6 @@ export class OrdersService {
     loggedInUser?: LoggedInUserInterface,
   ): Promise<any> {
     try {
-      if (!body.email && !body.phone) {
-        throw new BadRequestException('Please enter email or phone');
-      }
       const cartDetails = await this.cartService.findOneById(body.cartId);
 
       if (
@@ -130,6 +128,18 @@ export class OrdersService {
         throw new BadRequestException(
           'This cart is no longer available to checkout',
         );
+      }
+
+      if (cartDetails?.vendorProducts?.length) {
+        return await this.startVendorCartCheckout(
+          body,
+          loggedInUser,
+          cartDetails,
+        );
+      }
+
+      if (!body.email && !body.phone) {
+        throw new BadRequestException('Please enter email or phone');
       }
 
       const cartProducts = cartDetails.product
@@ -219,6 +229,71 @@ export class OrdersService {
       });
       exceptionHandling(error);
     }
+  }
+
+  private async startVendorCartCheckout(
+    body: CreateOrderDto,
+    loggedInUser: LoggedInUserInterface | undefined,
+    cartDetails: Cart,
+  ): Promise<any> {
+    const { vendorProducts } = cartDetails;
+
+    const payableAmount = vendorProducts.reduce(
+      (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+      0,
+    );
+
+    const totalDeliveryFee = vendorProducts.reduce(
+      (sum, vendor) => sum + (vendor.deliveryFee || 0),
+      0,
+    );
+
+    let totalAmountToPay = payableAmount;
+    let redeemedVouchers;
+
+    if (body?.voucher?.length) {
+      const voucherIds = body.voucher.map(voucher => voucher.id);
+      const vouchers = await this.voucherService.findByValidIds(voucherIds);
+
+      if (vouchers?.length) {
+        const sortedVoucher = sortByPriorityAndHighest(
+          totalAmountToPay,
+          vouchers,
+        );
+
+        if (sortedVoucher?.length) {
+          redeemedVouchers = await this.processVouchers(
+            loggedInUser?.id ?? null,
+            sortedVoucher,
+            totalAmountToPay,
+          );
+
+          if (redeemedVouchers?.length) {
+            const redeemedAmount = redeemedVouchers.reduce(
+              (total: number, item: { redeemedAmount: number }) => total + item.redeemedAmount,
+              0,
+            );
+            totalAmountToPay -= redeemedAmount;
+          }
+        }
+      }
+    }
+
+    const allProducts = vendorProducts.flatMap(vendor => vendor.products.map(p => ({ id: p._id.toString() })));
+
+    return await this.createOrder({
+      loggedInUser,
+      body,
+      redeemedVouchers,
+      totalAmount: totalAmountToPay,
+      payableAmount,
+      products: allProducts,
+      productDetails: [],
+      ticketDetails: [],
+      cartItemsProduct: [],
+      cartItemsTicket: [],
+      totalDeliveryFee,
+    });
   }
 
   async createOrder(orderCommand: CreateOrderCommand): Promise<any> {
@@ -432,8 +507,6 @@ export class OrdersService {
 
     // need to send emails for products
 
-    // send invoice
-
     const productInvoice = await Promise.all(
       productInfo?.map(pro => ({
         id: pro._id.toString(),
@@ -503,6 +576,11 @@ export class OrdersService {
         );
 
       const cart = await this.cartService.updateCartPostPayment(orderId);
+
+      // Split into per-vendor orders when cart was created vendor-wise
+      if (cart?.vendorProducts?.length) {
+        return await this.createVendorSplitOrders(updateOrder, cart, externalApi, languagePreference);
+      }
 
       const findCartProducts = cart?.product?.filter(
         item => item.itemType === OrderItemType.PRODUCT,
@@ -635,6 +713,339 @@ export class OrdersService {
       });
       exceptionHandling(err);
     }
+  }
+
+  private async createVendorSplitOrders(
+    parentOrder: Order,
+    cart: Cart,
+    externalApi: any,
+    languagePreference?: Locale,
+  ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    const vendorOrders = await Promise.all(
+      cart.vendorProducts.map(async vendor => {
+        const vendorOrder = new this.OrderModel({
+          products: vendor.products.map(p => ({ id: p._id })),
+          userId: parentOrder.userId,
+          email: parentOrder.email || cart.email,
+          countryCode: parentOrder.countryCode,
+          phone: parentOrder.phone || cart.phone,
+          firstName: parentOrder.firstName || cart.name,
+          lastName: parentOrder.lastName,
+          address: parentOrder.address || cart.address,
+          paymentStatus: PaymentStatus.SUCCESS,
+          status: OrderStatus.PROCESSING,
+          paymentMode: parentOrder.paymentMode,
+          voucher: parentOrder.voucher,
+          totalAmount: vendor.totalAmount,
+          creditCardPayment: vendor.totalAmount,
+          deliveryFee: vendor.deliveryFee || 0,
+          externalApiId: parentOrder.externalApiId,
+          campId: parentOrder.campId,
+          qrCodeUrl: parentOrder.qrCodeUrl,
+          paymentDate: new Date(),
+          vendorId: vendor._id,
+          parentOrderId: parentOrder._id,
+          createdBy: parentOrder.userId,
+          createdAt: new Date(),
+        });
+
+        return vendorOrder.save();
+      }),
+    );
+
+    this.logger.info(
+      '[ORDER]: VENDOR SPLIT ORDERS CREATED AFTER PAYMENT SUCCESS',
+      {
+        parentOrderId: parentOrder._id,
+        vendorOrderIds: vendorOrders.map(o => o._id),
+      },
+    );
+
+    // Deduct quantity for all product-type items across vendors
+    const allProductItems = cart.vendorProducts.flatMap(vendor => vendor.products
+      .filter(p => p.itemType === OrderItemType.PRODUCT)
+      .map(p => ({
+        id: p._id,
+        quantity: p.quantity,
+        itemType: p.itemType,
+      })));
+
+    if (allProductItems.length) {
+      await this.productsService.deductQuantity(allProductItems);
+    }
+
+    // Create order product records for each vendor order
+    const orderProductsPerVendor = await Promise.all(
+      vendorOrders.map(async (vendorOrder, index) => {
+        const vendor = cart.vendorProducts[index];
+        return Promise.all(
+          vendor.products.map(p => this.orderProductService.create({
+            itemId: new mongoose.Types.ObjectId(p._id.toString()),
+            quantity: p.quantity,
+            email: vendorOrder.email,
+            countryCode: vendorOrder.countryCode,
+            phone: vendorOrder.phone,
+            firstName: vendorOrder.firstName,
+            lastName: vendorOrder.lastName,
+            deliveryFee: vendor.deliveryFee || 0,
+            deliveryMethod: vendor.deliveryMethod,
+            deliveryArea: vendor.deliveryArea,
+            deliveryPickupLocation: vendor.deliveryPickupLocation,
+            houseNo: vendor.houseNo?.toString() || null,
+            apartment: vendor.apartment?.toString() || null,
+            city: vendor.city?.toString() || null,
+            street: vendor.street?.toString() || null,
+            isGift: false,
+            additionalInfo: vendor.additionalInfo?.toString() || null,
+            amount: 0,
+            orderId: vendorOrder.id,
+            loggedInUserId: parentOrder.userId?.toString(),
+            itemType: p.itemType,
+          })),
+        );
+      }),
+    );
+
+    if (externalApi) {
+      await this.sendEmailPostVendorOrderPayment(
+        cart,
+        parentOrder,
+        vendorOrders,
+        orderProductsPerVendor.flat(),
+        externalApi,
+        languagePreference,
+      );
+    }
+
+    return {
+      updateOrder: parentOrder,
+      getProductInformation: [],
+    };
+  }
+
+  private async sendEmailPostVendorOrderPayment(
+    cart: Cart,
+    parentOrder: Order,
+    vendorOrders: Order[],
+    allOrderProducts: OrderProduct[],
+    externalApi: any,
+    languagePreference?: Locale,
+  ) {
+    console.log(languagePreference);
+
+    const allProductIds = cart.vendorProducts.flatMap(vendor => vendor.products.map(p => p._id.toString()));
+
+    const [productInfo, businessDetails] = await Promise.all([
+      this.productsService.getProductInformationForOrders(
+        allProductIds.map(id => ({ id })),
+      ),
+      this.businessService.findBusinessEmailByIds(
+        vendorOrders.map(o => o.vendorId as any),
+      ),
+    ]);
+
+    const { bucketUrl, emailFields } = getCommonEmailFields(
+      externalApi.identifierId,
+      externalApi.themeId,
+    );
+
+    const orderEmailFields = {
+      ...emailFields,
+      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
+      WEBSITE_NAME: externalApi?.name,
+    };
+
+    const buildProductRow = (
+      product: any,
+      quantity: number,
+      price: number,
+      deliveryFee: number,
+      extraFields = '',
+    ) => `
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+        <tr>
+          <td style="padding: 10px; background: ${externalApi?.themeId?.secondaryColor}; direction: rtl; border-radius: 20px;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="padding: 0; vertical-align: middle;">
+                  <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                    style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                </td>
+                <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                  <span style="display: block; font-size: 18px; color: #333333;">${product?.name}</span>
+                  <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
+                  <span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ₪${deliveryFee}</span>
+                  ${extraFields}
+                </td>
+                <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                  <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `;
+
+    // Customer email — all products grouped by buyer email
+    const emailToGroupMap: {
+      [email: string]: { buyerName: string; productsHtml: string; totalAmount: number };
+    } = {};
+
+    allOrderProducts.forEach(orderItem => {
+      const product = productInfo?.find(
+        p => p._id.toString() === orderItem.itemId.toString(),
+      );
+      if (!product) return;
+
+      const { email } = orderItem;
+      const price = orderItem.amount || product?.price?.sellingPrice || 0;
+      const quantity = orderItem.quantity || 1;
+      const deliveryFee = orderItem.deliveryFee || 0;
+
+      const business = businessDetails?.find(b => {
+        const vendorOrder = vendorOrders.find(
+          vo => vo.vendorId?.toString() === b._id?.toString(),
+        );
+        return vendorOrder?.products?.some(
+          vp => vp.id?.toString() === orderItem.itemId?.toString(),
+        );
+      });
+
+      const extraFields = business
+        ? `<span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${business.name}</span>
+           <span style="display: block; font-size: 14px; color: #666666;">דוא"ל עסקי: ${business.busiEmail}</span>
+           <span style="display: block; font-size: 14px; color: #666666;">טלפון עסקי: ${business.phoneNumber}</span>`
+        : '';
+
+      if (!emailToGroupMap[email]) {
+        emailToGroupMap[email] = {
+          buyerName: orderItem.firstName,
+          productsHtml: '',
+          totalAmount: 0,
+        };
+      }
+
+      emailToGroupMap[email].productsHtml += buildProductRow(product, quantity, price, deliveryFee, extraFields);
+      emailToGroupMap[email].totalAmount += price * quantity + deliveryFee;
+    });
+
+    await Promise.all(
+      Object.entries(emailToGroupMap).map(([email, group]) => this.mailchimpService.sendTransactionalEmail({
+        to: email,
+        templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
+        from_email: externalApi?.companyDetails?.email,
+        from_name: externalApi?.name,
+        mergeVars: {
+          ...orderEmailFields,
+          PRODUCTS_HTML: group.productsHtml,
+          BUYERNAME: group.buyerName || '',
+          TOTALAMOUNT: group.totalAmount || 0,
+          CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+          BUSINESSADDRESS: businessDetails?.[0]?.address?.location || '',
+          QRCODEURL: parentOrder?.qrCodeUrl || '',
+        },
+      })),
+    );
+
+    // Vendor email — one per vendor
+    await Promise.all(
+      vendorOrders.map(async vendorOrder => {
+        const business = businessDetails?.find(
+          b => b._id?.toString() === vendorOrder.vendorId?.toString(),
+        );
+
+        if (!business?.busiEmail) return;
+
+        const vendorOrderProducts = allOrderProducts.filter(op => vendorOrder.products.some(
+          vp => vp.id?.toString() === op.itemId?.toString(),
+        ));
+
+        let vendorTotalAmount = 0;
+
+        const productsHtml = vendorOrderProducts
+          .map(orderItem => {
+            const product = productInfo?.find(
+              p => p._id.toString() === orderItem.itemId.toString(),
+            );
+            if (!product) return '';
+
+            const quantity = orderItem.quantity || 1;
+            const price = orderItem.amount || product?.price?.sellingPrice || 0;
+            const deliveryFee = orderItem.deliveryFee || 0;
+            const address
+              = orderItem.deliveryMethod === DeliveryMethod.DELIVER
+                ? [
+                  orderItem.houseNo,
+                  orderItem.apartment,
+                  orderItem.street,
+                  orderItem.city,
+                  orderItem.deliveryArea,
+                ]
+                  .filter(Boolean)
+                  .join(', ')
+                  || orderItem.deliveryPickupLocation
+                  || ''
+                : `מיקום העסק שלך - ${business?.address?.location}`;
+
+            vendorTotalAmount += quantity * price + deliveryFee;
+
+            return `
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 10px; background: ${externalApi?.themeId?.secondaryColor}; direction: rtl; border-radius: 20px;">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding: 0; vertical-align: middle;">
+                          <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                            style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                        </td>
+                        <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                          <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
+  orderItem.deliveryMethod === DeliveryMethod.DELIVER
+    ? 'לספק ללקוח'
+    : 'איסוף עצמי על ידי הלקוח'
+}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ₪${deliveryFee}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${address || 'לא ישים'}</span>
+                        </td>
+                        <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            `;
+          })
+          .join('');
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: business.busiEmail,
+          templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
+          from_email: externalApi?.companyDetails?.email,
+          from_name: externalApi?.name,
+          mergeVars: {
+            ...orderEmailFields,
+            BUSINESSNAME: business?.name || '',
+            BUSINESSPHONE: `${business?.countryCode}-${business?.phoneNumber}` || '',
+            BUSINESSEMAIL: business?.busiEmail || '',
+            TOTALAMOUNT: vendorTotalAmount || 0,
+            BUYERNAME: parentOrder?.firstName || '',
+            PRODUCTS_HTML: productsHtml,
+            BUYER_PHONE_NUMBER: parentOrder?.phone || '',
+            BUYER_ORDER_EMAIL: parentOrder?.email || '',
+            BUYER_ADDRESS: parentOrder?.address || '',
+            QRCODEURL: vendorOrder?.qrCodeUrl || parentOrder?.qrCodeUrl || '',
+          },
+        });
+      }),
+    );
   }
 
   async updateAfterPaymentFailure(orderId: string): Promise<Order> {
@@ -1287,6 +1698,8 @@ export class OrdersService {
             PRODUCTS_HTML: productsHtmlForEchBusiness,
             BUYER_PHONE_NUMBER: order.phone || '',
             BUYER_ORDER_EMAIL: order?.email || '',
+            BUYER_ADDRESS: order?.address || '',
+            //             QRCODEURL: order?.qrCodeUrl || '',
             QRCODEURL: '',
           },
         });

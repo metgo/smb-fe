@@ -60,7 +60,7 @@ implements IQueryHandler<GetAllProductsForMapQuery> {
       const populate = [
         {
           path: 'businessId',
-          select: '_id name nameHe nameAr address geoLocation',
+          select: '_id name nameHe nameAr address geoLocation deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
         },
         {
           path: 'categories subCategories',

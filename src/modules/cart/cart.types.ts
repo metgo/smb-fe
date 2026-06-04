@@ -30,6 +30,25 @@ export interface CartProductPayload {
   itemType: OrderItemType;
 }
 
+export interface CartVendorProductPayload {
+  _id: mongoose.Types.ObjectId;
+  products: {
+    _id: mongoose.Types.ObjectId;
+    quantity: number;
+    itemType: OrderItemType;
+  }[];
+  totalAmount: number;
+  deliveryFee: number;
+  deliveryMethod: DeliveryMethod;
+  deliveryArea: string;
+  deliveryPickupLocation: string;
+  houseNo: String,
+  apartment: String,
+  city: String,
+  street: String,
+  additionalInfo: String,
+}
+
 export interface CartProductResponse extends CartProductPayload {
   amount: number;
 }

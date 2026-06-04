@@ -77,7 +77,7 @@ implements IQueryHandler<GetAllProductsQuery> {
       let populate: any = [
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr isAlwaysOpen slug',
+          select: '_id logo name nameHe nameAr isAlwaysOpen slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
         },
         {
           path: 'categories subCategories',

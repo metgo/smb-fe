@@ -82,7 +82,7 @@ export class ProductsService {
   async getOne(slug: string, query: GetProductsQuery) {
     try {
       const select
-        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
+        = '_id productId name nameHe nameAr dmoId authorityId description descriptionHe descriptionAr images price quantity businessId deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness deliveryArea globalDelivery globalDeliveryArea vendorDelivers vendorDeliveryArea';
 
       const populate = {
         path: 'categories subCategories',
@@ -92,7 +92,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug status isDeleted',
+          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryAdditionalInfo isPickUpAvailable slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
         populate: {
           path: 'tagsId',
           select: '_id name nameHe nameAr',
@@ -114,12 +114,12 @@ export class ProductsService {
         .select(select)
         .lean();
 
-      if (product) {
-        const business = product?.businessId as any;
-        if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-          product = null;
-        }
-      }
+      // if (product) {
+      //   const business = product?.businessId as any;
+      //   if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+      //     product = null;
+      //   }
+      // }
 
       if (!product && mongoose.Types.ObjectId.isValid(slug)) {
         product = await this.ProductsAuditModel.findOne({
@@ -137,12 +137,12 @@ export class ProductsService {
           .select(select)
           .lean();
 
-        if (product) {
-          const business = product?.businessId as any;
-          if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-            product = null;
-          }
-        }
+        // if (product) {
+        //   const business = product?.businessId as any;
+        //   if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+        //     product = null;
+        //   }
+        // }
       }
 
       if (!product) {
@@ -157,6 +157,9 @@ export class ProductsService {
             deliveryArea: [],
             deliveryAdditionalInfo: '',
             isPickUpAvailable: false,
+            globalDelivery: false,
+            globalDeliveryArea: [],
+            vendorDelivers: false,
           };
 
       const response = await this.localizeProduct(product, query.locale);
@@ -184,6 +187,9 @@ export class ProductsService {
         isPickUpAvailable:
           response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
         deliverySpecificSellerInfo: response?.deliverySpecificSellerInfo,
+        vendorDelivers: useBusinessInfo?.vendorDelivers ?? false,
+        globalDelivery: useBusinessInfo?.globalDelivery ?? false,
+        globalDeliveryArea: useBusinessInfo?.globalDeliveryArea ?? [],
         categories: response?.categories,
         subCategories: response?.subCategories,
       };

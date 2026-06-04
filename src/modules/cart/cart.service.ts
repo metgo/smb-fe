@@ -26,6 +26,7 @@ import { OrderItemType } from '../orders/orders.type';
 import { GetTicketByIdQuery } from '../tickets/queries/get-ticket-by-id.query';
 import { DeleteItemFromCartDto } from './dto/delete-item-from-cart.dto';
 import { AddItemsToCartDto } from './dto/add-items-to-cart.dto';
+import { AddVendorWiseProductsToCartDto } from './dto/add-vendor-wise-products-to-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -627,6 +628,68 @@ export class CartService {
         {
           err: error.message,
         },
+      );
+      exceptionHandling(error);
+    }
+  }
+
+  async addVendorWiseProductsInCart(
+    command: AddVendorWiseProductsToCartDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      let campId: mongoose.Types.ObjectId | undefined;
+      if (command?.campCode) {
+        campId = (
+          await this.campaignService.findCampaignAndReturn(
+            'code',
+            command.campCode,
+          )
+        )?._id;
+      }
+
+      const vendorProducts = command.vendorProducts.map(vendor => ({
+        _id: new mongoose.Types.ObjectId(vendor._id),
+        products: vendor.products.map(p => ({
+          _id: new mongoose.Types.ObjectId(p._id),
+          quantity: p.quantity,
+          itemType: p.itemType,
+        })),
+        totalAmount: vendor.totalAmount,
+        deliveryFee: vendor.deliveryFee,
+        deliveryMethod: vendor.deliveryMethod,
+        deliveryArea: vendor.deliveryArea,
+        deliveryPickupLocation: vendor.deliveryPickupLocation,
+      }));
+
+      const totalAmount = vendorProducts.reduce(
+        (sum, vendor) => sum + vendor.totalAmount,
+        0,
+      );
+
+      const newCart = new this.CartModel({
+        vendorProducts,
+        name: command.name,
+        email: command.email,
+        phone: command.phone,
+        address: command.address,
+        campId,
+        totalAmount,
+        createdBy: loggedInUser?.id,
+        createdAt: new Date(),
+      });
+
+      const cart = await newCart.save();
+
+      this.logger.info(`[${command.campCode} - CART]: Vendor-wise products added to cart`, {
+        message: cart._id,
+      });
+
+      return { _id: cart._id };
+    } catch (error) {
+      this.logger.error(
+        `[${command.campCode} - CART]: FAILED TO ADD VENDOR-WISE PRODUCTS TO CART`,
+        { err: error.message },
       );
       exceptionHandling(error);
     }

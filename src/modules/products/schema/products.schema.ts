@@ -255,6 +255,18 @@ export class Product extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     isPickUpAvailable: boolean;
 
+  @Prop({ type: Boolean, default: false })
+    globalDelivery: boolean;
+
+  @Prop({ required: false })
+    globalDeliveryArea: DeliveryArea[];
+
+  @Prop({ type: Boolean, default: false })
+    vendorDelivers: boolean;
+
+  @Prop({ required: false })
+    vendorDeliveryArea: DeliveryArea[];
+
   @Prop({ default: null })
     activeStartDate: Date;
 

@@ -93,13 +93,13 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       };
 
       const select
-        = '_id productId name nameHe nameAr images price quantity businessId deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo isPickUpAvailable';
+        = '_id productId name nameHe nameAr images price quantity businessId deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo isPickUpAvailable globalDelivery globalDeliveryArea vendorDelivers';
 
       const populate = [
         {
           path: 'businessId',
           select:
-            '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable',
+            '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
         },
       ];
 
@@ -155,6 +155,9 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
               ?? useBusinessInfo?.deliveryAdditionalInfo,
             isPickUpAvailable:
               response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
+            vendorDelivers: useBusinessInfo?.vendorDelivers ?? false,
+            globalDelivery: useBusinessInfo?.globalDelivery ?? false,
+            globalDeliveryArea: useBusinessInfo?.globalDeliveryArea ?? [],
           };
         }),
       );

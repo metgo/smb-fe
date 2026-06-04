@@ -66,7 +66,7 @@ implements IQueryHandler<GetProductsByCampaignQuery> {
       const customPopulate = [
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr slug geoLocation',
+          select: '_id logo name nameHe nameAr slug geoLocation vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
         },
       ];
       const products = await this.queryBus.execute(

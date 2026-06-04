@@ -18,6 +18,7 @@ import { AddToCartDto } from 'src/modules/cart/dto/add-to-cart.dto';
 import { UpdateCartDto } from 'src/modules/cart/dto/update-cart.dto';
 import { DeleteItemFromCartDto } from './dto/delete-item-from-cart.dto';
 import { AddItemsToCartDto } from './dto/add-items-to-cart.dto';
+import { AddVendorWiseProductsToCartDto } from './dto/add-vendor-wise-products-to-cart.dto';
 
 @Controller()
 export class CartController {
@@ -56,6 +57,24 @@ export class CartController {
       req?.user,
     );
     return cart;
+  }
+
+  @ApiEndpoint({
+    tags: ['Cart'],
+    operation: 'Create cart with vendor-wise products',
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.CART.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('carts-vendor-wise')
+  async addVendorWiseProductsToCart(
+    @Body() body: AddVendorWiseProductsToCartDto,
+    @Req() req,
+  ) {
+    return this.cartService.addVendorWiseProductsInCart(body, req?.user);
   }
 
   @ApiEndpoint({

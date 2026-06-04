@@ -44,5 +44,4 @@ lerna-debug.log*
 /credentials
 openapi.yaml
 env.txt
-
 clean-branches.sh

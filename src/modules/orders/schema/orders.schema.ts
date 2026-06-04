@@ -35,6 +35,22 @@ export class Order extends AuditableSchema {
   }[];
 
   @Prop({
+    required: false,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Business',
+    default: null,
+  })
+    vendorId: mongoose.Types.ObjectId;
+
+  @Prop({
+    required: false,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order',
+    default: null,
+  })
+    parentOrderId: mongoose.Types.ObjectId;
+
+  @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: User.name,
     required: false,
