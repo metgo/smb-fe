@@ -389,7 +389,7 @@ export default function OrdersMgmtPage() {
     setPage(1);
   }, [searchTerm, filters]);
 
-  const canViewOrders = isSuperadmin || isTraveller;
+  const canViewOrders = isSuperadmin || isTraveller || qrSessionReady;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
 
   const orderQueryParams = useMemo(() => {

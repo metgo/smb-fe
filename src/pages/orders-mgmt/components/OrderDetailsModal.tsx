@@ -76,6 +76,11 @@ function OrderDetailsModal({
     }
   };
   const onStatusChangeHandler = async (status: string) => {
+    if (order?.status === "completed") {
+      toast.error(t("completed_order_status_locked"));
+      return;
+    }
+
     try {
       if (isQRMode && qrToken) {
         await axios.post(

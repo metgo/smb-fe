@@ -65,6 +65,7 @@
   "pickups": "איסופים",
   "order_status_update_success": "סטטוס ההזמנה עודכן בהצלחה",
   "order_status_update_failed": "נכשל בעדכון סטטוס ההזמנה",
+  "completed_order_status_locked": "לא ניתן לשנות הזמנה שהושלמה",
   "deliveryFee": "דמי משלוח",
   "price": "מחיר",
   "deliveries": "משלוחים",

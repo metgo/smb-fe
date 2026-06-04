@@ -26,6 +26,7 @@
   "card": "بطاقة ائتمان",
   "order_status_update_success": "تم تحديث حالة الطلب بنجاح",
   "order_status_update_failed": "فشل تحديث حالة الطلب",
+  "completed_order_status_locked": "لا يمكن تغيير الطلبات المكتملة",
   "deliveryFee": "رسوم التوصيل",
   "price": "السعر",
   "actions": "الإجراءات",

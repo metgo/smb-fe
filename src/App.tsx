@@ -207,11 +207,13 @@ function App() {
             `${envKeys.baseUrl}/public/users/verify/${jwtToken}`,
           );
 
-          const payload = response.data?.data || response.data;
+          const payload =
+            response.data?.data || response.data?.datas || response.data;
           const userData = payload?.user || payload;
           if (userData) {
-            if (payload?.accessToken) {
-              sessionStorage.setItem("access_token", payload.accessToken);
+            const accessToken = payload?.accessToken || userData?.accessToken;
+            if (accessToken) {
+              sessionStorage.setItem("access_token", accessToken);
             }
             sessionStorage.setItem("isQrVerified", "true");
             saveUserInfo({ user: userData });

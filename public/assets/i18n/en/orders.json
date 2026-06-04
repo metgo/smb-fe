@@ -49,6 +49,7 @@
   "payment_status": "Payment Status",
   "order_status_update_success": "Order status updated successfully",
   "order_status_update_failed": "Failed to update order status",
+  "completed_order_status_locked": "Completed orders cannot be changed",
   "deliveryFee": "Delivery Fee",
   "price": "Price",
 
