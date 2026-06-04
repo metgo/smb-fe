@@ -48,6 +48,7 @@ import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { QRCodeService } from 'src/services/qr-code/qr-code.service';
+import { QrTokenService } from 'src/services/qr-token/qr-token.service';
 import { ConfigService } from 'src/services/config/config.service';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
@@ -75,9 +76,42 @@ export class OrdersService {
     private readonly externalApiService: ExternalApiServices,
     private readonly cartService: CartService,
     private readonly qrCodeService: QRCodeService,
+    private readonly qrTokenService: QrTokenService,
     private readonly configService: ConfigService,
     private readonly campaignService: CampaignService,
   ) {}
+
+  async getVendorOwnerForOrder(orderId: string): Promise<{
+    userId: string;
+    email?: string;
+  } | null> {
+    const order = await findOneById(this.OrderModel, orderId);
+
+    if (!order?.products?.[0]?.id) return null;
+
+    const firstProduct = await this.productsService.findOne(
+      order.products[0].id.toString(),
+      Locale.ENGLISH,
+    );
+
+    if (!firstProduct?.businessId) return null;
+
+    const businessDetails = await this.businessService.findBusinessEmailByIds([
+      firstProduct.businessId.toString() as any,
+    ]);
+    const business = businessDetails?.[0] as any;
+    const ownerId = business?.userId?._id || business?.userId;
+
+    if (!ownerId) return null;
+
+    return {
+      userId: ownerId.toString(),
+      email:
+        business?.userId?.email
+        || business?.busiEmail
+        || business?.contactDetails?.email,
+    };
+  }
 
   async startCheckOutProcess(
     body: CreateOrderDto,
@@ -441,7 +475,7 @@ export class OrdersService {
         paymentDate: new Date(),
       };
 
-      const updateOrder = await updateById<Order>(
+      let updateOrder = await updateById<Order>(
         this.OrderModel,
         orderId,
         updatedField,
@@ -450,6 +484,18 @@ export class OrdersService {
       this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
         message: updateOrder,
       });
+
+      // Generate QR code and token for vendor email
+      try {
+        await this.generateQRCodeAndToken(orderId);
+        // Fetch updated order with qrCodeUrl
+        updateOrder = await findOneById<Order>(this.OrderModel, orderId);
+      } catch (qrError) {
+        this.logger.warn('[ORDER]: QR CODE GENERATION FAILED', {
+          orderId,
+          error: qrError instanceof Error ? qrError.message : String(qrError),
+        });
+      }
 
       const externalApi
         = await this.externalApiService.findByIdAndPopulateTheme(
@@ -619,6 +665,44 @@ export class OrdersService {
       return updateOrder;
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async updateOrderStatus(
+    id: string,
+    body: any,
+  ): Promise<Order> {
+    try {
+      const orderExists = await findOneById<Order>(this.OrderModel, id);
+
+      if (!orderExists) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      if (
+        orderExists.status === OrderStatus.COMPLETED
+        && body.status
+        && body.status !== OrderStatus.COMPLETED
+      ) {
+        throw new BadRequestException(
+          'Completed orders cannot be changed',
+        );
+      }
+
+      const updateOrder = await updateById<Order>(this.OrderModel, id, body);
+
+      if (!updateOrder) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE', {
         err: err.message,
       });
       exceptionHandling(err);
@@ -1203,9 +1287,74 @@ export class OrdersService {
             PRODUCTS_HTML: productsHtmlForEchBusiness,
             BUYER_PHONE_NUMBER: order.phone || '',
             BUYER_ORDER_EMAIL: order?.email || '',
+            QRCODEURL: '',
           },
         });
       }),
     );
+  }
+
+  async generateQRCodeAndToken(
+    orderId: string,
+    userId?: string,
+    userEmail?: string,
+    userRole?: string,
+  ): Promise<{ qrCodeUrl: string; token: string }> {
+    try {
+      let finalUserId = userId || '';
+      let finalUserEmail = userEmail || '';
+      const finalUserRole = userRole || 'traveller';
+
+      // If userId not provided, get the business owner's user ID from the order.
+      if (!finalUserId) {
+        try {
+          const vendorOwner = await this.getVendorOwnerForOrder(orderId);
+          if (vendorOwner) {
+            finalUserId = vendorOwner.userId;
+            finalUserEmail = vendorOwner.email || '';
+          }
+        } catch (err) {
+          this.logger.warn('[ORDER]: FAILED TO GET VENDOR INFO FROM PRODUCT', {
+            orderId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+
+      if (!finalUserId) {
+        throw new BadRequestException('Unable to resolve vendor user for QR');
+      }
+
+      const token = await this.qrTokenService.generateToken(
+        orderId,
+        finalUserId,
+        finalUserEmail,
+        finalUserRole,
+      );
+
+      // const { FE } = this.configService.baseUrl;
+      // const verifyUrl = `${FE}orders-management?token=${token}`;
+      const verifyUrl = `https://stg.workspace.metgo.app/orders-management?token=${token}`;
+
+      const qrCodeUrl = await this.qrCodeService.generateQRCode(
+        verifyUrl,
+        `order-${orderId}`,
+      );
+
+      await updateById(this.OrderModel, orderId, { qrCodeUrl });
+
+      this.logger.info('[ORDER]: QR CODE GENERATED', {
+        orderId,
+        qrCodeUrl,
+      });
+
+      return { qrCodeUrl, token };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error('[ORDER]: FAILED TO GENERATE QR CODE', {
+        error: errorMessage,
+      });
+      throw error;
+    }
   }
 }

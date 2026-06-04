@@ -22,7 +22,9 @@ export class BusinessService {
         businessId: { $in: ids },
         isActive: true,
         isDeleted: { $ne: true },
-      }).lean();
+      })
+        .populate('userId', '_id email')
+        .lean();
 
       const mappedBusiness = await Promise.all(
         businessDetails.map(async (business: any) => {

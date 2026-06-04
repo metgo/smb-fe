@@ -6,7 +6,9 @@ import { BusinessModule } from 'src/modules/business/business.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
+import { OrdersPublicController } from 'src/modules/orders/controllers/orders-public.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
+import { QrVerificationToken, QrVerificationTokenSchema } from 'src/modules/orders/schema/qr-verification-token.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
@@ -19,13 +21,17 @@ import { ConfigModule } from 'src/services/config/config.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
+import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-order.handler';
 
 @Module({
   imports: [
     CqrsModule,
-    MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
+    MongooseModule.forFeature([
+      { name: Order.name, schema: OrderSchema },
+      { name: QrVerificationToken.name, schema: QrVerificationTokenSchema },
+    ]),
     forwardRef(() => AuthorityModule),
     BusinessModule,
     forwardRef(() => ExternalApiModule),
@@ -39,9 +45,10 @@ import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-
     OrderProductModule,
     CartModule,
     QRCodeModule,
+    QrTokenModule,
     forwardRef(() => CampaignModule),
   ],
-  controllers: [OrdersController],
+  controllers: [OrdersController, OrdersPublicController],
   providers: [OrdersService, ExpireOrderService, CreateMiniSiteOrderHandler],
   exports: [OrdersService],
 })

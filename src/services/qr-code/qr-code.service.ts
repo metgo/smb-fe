@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { MediaServices } from 'src/modules/media/media.service';
 import { UploadDTO } from 'src/modules/media/dto/upload.dto';
 import { ReferenceType } from 'src/modules/media/media.type';
-import { Express } from 'express';
 
 import * as QRCode from 'qrcode'; // Import qrcode package
 import { LoggedInUserInterface } from '../../modules/auth/interface/login.interface';
@@ -14,7 +13,7 @@ export class QRCodeService {
   async generateQRCode(
     redirectUrl: string,
     id: string,
-    loggedInUser: LoggedInUserInterface,
+    loggedInUser?: LoggedInUserInterface,
   ): Promise<string> {
     try {
       // Generate the QR code image buffer
@@ -24,7 +23,7 @@ export class QRCodeService {
         margin: 1,
       });
 
-      const QrCodeFile: Express.Multer.File = {
+      const QrCodeFile: any = {
         fieldname: 'image',
         originalname: `qr-code-${id}.png`,
         encoding: '7bit',
@@ -37,9 +36,18 @@ export class QRCodeService {
         stream: null,
       };
 
+      // Create system user context if not provided
+      const systemUser = loggedInUser || ({
+        id: 'system',
+        firstName: 'System',
+        lastName: 'User',
+        email: 'system@metgo.local',
+        role: 'admin',
+      } as any);
+
       // Upload the QR code image
       const uploadResult = await this.mediaServices.create(
-        loggedInUser,
+        systemUser,
         [QrCodeFile],
         {
           refId: id,

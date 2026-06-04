@@ -6,6 +6,7 @@ import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { User, UserSchema } from 'src/modules/users/schema/users.schema';
 import { UsersController } from 'src/modules/users/users.controller';
+import { UsersPublicController } from 'src/modules/users/controllers/users-public.controller';
 import { UsersService } from 'src/modules/users/users.services';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { BusinessModule } from 'src/modules/business/business.module';
@@ -17,6 +18,8 @@ import { OTP, OTPSchema } from './schema/otp.schema';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
+import { OrdersModule } from 'src/modules/orders/orders.modules';
+import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
 
 @Module({
   imports: [
@@ -34,10 +37,12 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
     HashModule,
     JwtAuthModule,
     MailChimpModule,
+    QrTokenModule,
     SmsModule,
     forwardRef(() => VoucherModule),
+    forwardRef(() => OrdersModule),
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, UsersPublicController],
   providers: [UsersService],
   exports: [UsersService],
 })
