@@ -199,11 +199,12 @@ function App() {
       sessionStorage.setItem("access_token", jwtToken);
       sessionStorage.setItem("qr_token", jwtToken);
       sessionStorage.setItem("isQrMode", "true");
+      sessionStorage.setItem("isQrVerified", "false");
 
       const fetchVendorUserInfo = async () => {
         try {
           const response = await axios.get(
-            `${envKeys.baseUrl}/api/public/users/verify/${jwtToken}`,
+            `${envKeys.baseUrl}/public/users/verify/${jwtToken}`,
           );
 
           const payload = response.data?.data || response.data;
@@ -212,6 +213,7 @@ function App() {
             if (payload?.accessToken) {
               sessionStorage.setItem("access_token", payload.accessToken);
             }
+            sessionStorage.setItem("isQrVerified", "true");
             saveUserInfo({ user: userData });
             dispatch(loginSuccess(userData));
 

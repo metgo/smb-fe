@@ -79,7 +79,7 @@ function OrderDetailsModal({
     try {
       if (isQRMode && qrToken) {
         await axios.post(
-          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}/update-status`,
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
           { status: status.toLowerCase() },
         );
       } else {
@@ -401,7 +401,7 @@ function OrderDetailsModal({
 
                 if (isQRMode && qrToken) {
                   await axios.post(
-                    `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}/update-status`,
+                    `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
                     body,
                   );
                 } else {

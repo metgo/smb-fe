@@ -97,6 +97,12 @@ export default function OrdersMgmtPage() {
     jwtToken || (storedQrMode ? sessionStorage.getItem("qr_token") : null);
   const isQRMode = !!qrToken;
   const [qrOrder, setQrOrder] = useState<any | null>(null);
+  const [qrSessionReady, setQrSessionReady] = useState(
+    () =>
+      !isQRMode ||
+      (!jwtToken && sessionStorage.getItem("isQrVerified") === "true"),
+  );
+  const canUseAuthenticatedOrderApis = !isQRMode || qrSessionReady;
 
   //view mode toggle
   const [isOpen, setIsOpen] = useState(false);
@@ -135,14 +141,34 @@ export default function OrdersMgmtPage() {
     null,
   );
 
+  useEffect(() => {
+    if (!isQRMode) {
+      setQrSessionReady(true);
+      return;
+    }
+
+    const syncQrSessionReady = () => {
+      setQrSessionReady(sessionStorage.getItem("isQrVerified") === "true");
+    };
+
+    syncQrSessionReady();
+    window.addEventListener("session:updated", syncQrSessionReady);
+    window.addEventListener("storage", syncQrSessionReady);
+
+    return () => {
+      window.removeEventListener("session:updated", syncQrSessionReady);
+      window.removeEventListener("storage", syncQrSessionReady);
+    };
+  }, [isQRMode]);
+
   // Fetch the scanned order via the no-auth QR endpoint.
   useEffect(() => {
-    if (!isQRMode || !qrToken) return;
+    if (!isQRMode || !qrToken || qrSessionReady) return;
 
     const fetchQROrder = async () => {
       try {
         const response = await axios.get(
-          `${envKeys.baseUrl}/api/public/orders/verify/${qrToken}`,
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}`,
         );
 
         const orderData = response.data?.data || response.data;
@@ -157,7 +183,7 @@ export default function OrdersMgmtPage() {
     };
 
     fetchQROrder();
-  }, [isQRMode, qrToken]);
+  }, [isQRMode, qrSessionReady, qrToken]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
@@ -221,7 +247,7 @@ export default function OrdersMgmtPage() {
     isFetching: isFetchingOrderSummary,
     isLoading: isLoadingOrderSummary,
   } = useGetAllOrderSummaryQuery(orderSummaryQueryParams, {
-    skip: !orderSummaryClick || isQRMode,
+    skip: !orderSummaryClick || !canUseAuthenticatedOrderApis,
   });
 
   // Business-specific order summary query (runs only when businessOrderParams is set)
@@ -230,7 +256,7 @@ export default function OrdersMgmtPage() {
     isLoading: isLoadingBusinessOrderSummary,
     isFetching: isFetchingBusinessOrderSummary,
   } = useGetAllOrderSummaryQuery(businessOrderParams!, {
-    skip: !businessOrderParams || isQRMode, // skip until businessOrderParams is populated
+    skip: !businessOrderParams || !canUseAuthenticatedOrderApis, // skip until businessOrderParams is populated
   });
 
   const ordersSummariess = orderSummaries?.data ?? [];
@@ -410,7 +436,7 @@ export default function OrdersMgmtPage() {
 
   const { data: orderStat, isLoading: isStatsLoading } = useGetOrderStatsQuery(
     orderQueryParams,
-    { skip: isQRMode },
+    { skip: !canUseAuthenticatedOrderApis },
   );
   const {
     data: orders,
@@ -418,7 +444,7 @@ export default function OrdersMgmtPage() {
     refetch,
     isFetching,
   } = useGetAllOrdersQuery(orderQueryParams, {
-    skip: orderSummaryClick || isQRMode,
+    skip: orderSummaryClick || !canUseAuthenticatedOrderApis,
   });
 
   const hasMore = orders?.meta?.hasNextPage;
@@ -865,7 +891,7 @@ export default function OrdersMgmtPage() {
   } = useGetOrderByIdQuery(
     { orderId: selectedOrder?._id ?? null },
     {
-      skip: isQRMode || !selectedOrder?._id, // only fetch if selectedOrder exists
+      skip: !canUseAuthenticatedOrderApis || !selectedOrder?._id, // only fetch if selectedOrder exists
     },
   );
 
@@ -1454,14 +1480,16 @@ export default function OrdersMgmtPage() {
       {selectedOrder && showOrderDetails && (
         <OrderDetailsModal
           t={t}
-          refetch={isQRMode ? () => {} : orderIdrefetch}
-          order={isQRMode ? qrOrder : orderDetails}
+          refetch={canUseAuthenticatedOrderApis ? orderIdrefetch : () => {}}
+          order={canUseAuthenticatedOrderApis ? orderDetails : qrOrder}
           isLoading={isOrderDetailLoading}
-          isFetching={isQRMode ? false : isOrderDetailFetching}
+          isFetching={
+            canUseAuthenticatedOrderApis ? isOrderDetailFetching : false
+          }
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
-          qrToken={isQRMode ? qrToken : null}
-          isQRMode={isQRMode}
+          qrToken={isQRMode && !qrSessionReady ? qrToken : null}
+          isQRMode={isQRMode && !qrSessionReady}
         />
       )}
 
