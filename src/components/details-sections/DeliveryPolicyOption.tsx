@@ -135,6 +135,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                 ...prev,
                 vendorDelivers: true,
                 globalDelivery: false,
+                globalDeliveryArea: [],
               }))
             }
             className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
@@ -189,8 +190,8 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
         )}
       </div>
 
-      {/* Delivery Areas — for Vendor Delivers / Pickup Available */}
-      {(formData.vendorDelivers || formData.pickupAvailable) && (
+      {/* Delivery Areas — for Pickup Available only */}
+      {formData.pickupAvailable && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <label

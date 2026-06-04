@@ -574,7 +574,9 @@ export default function CreateBusinessWizard({
     isPickUpAvailable: formData.pickupAvailable,
     globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
-    globalDeliveryArea: formData.globalDeliveryArea,
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,

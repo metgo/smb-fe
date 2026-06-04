@@ -298,7 +298,9 @@ export default function CreateProductWizard({
 
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
+      globalDelivery: product?.globalDelivery ?? false,
       deliveryArea: product?.deliveryArea ?? [],
+      globalDeliveryArea: product?.globalDeliveryArea ?? [],
       deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
@@ -559,8 +561,13 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
+    globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
