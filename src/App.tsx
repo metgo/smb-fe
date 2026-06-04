@@ -33,14 +33,14 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
   DmosMgmtPage,
   AuthoritiesMgmtPage,
   WebsiteConfigPage,
   PartnersPage,
   CampaignsMgmtPage,
   UsersMgmtPage,
-  PoiMgmtPage,
-  PoiDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -188,11 +188,67 @@ function App() {
     }
   }, [dispatch]);
 
+  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwtToken = urlParams.get("token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    if (jwtToken && isOrdersManagement) {
+      // Keep the original QR token separate from the normal access token.
+      sessionStorage.setItem("access_token", jwtToken);
+      sessionStorage.setItem("qr_token", jwtToken);
+      sessionStorage.setItem("isQrMode", "true");
+      sessionStorage.setItem("isQrVerified", "false");
+
+      const fetchVendorUserInfo = async () => {
+        try {
+          const response = await axios.get(
+            `${envKeys.baseUrl}/public/users/verify/${jwtToken}`,
+          );
+
+          const payload =
+            response.data?.data || response.data?.datas || response.data;
+          const userData = payload?.user || payload;
+          if (userData) {
+            const accessToken = payload?.accessToken || userData?.accessToken;
+            if (accessToken) {
+              sessionStorage.setItem("access_token", accessToken);
+            }
+            sessionStorage.setItem("isQrVerified", "true");
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to fetch vendor user info via QR token", error);
+          // Keep JWT token in session even if user fetch fails, allows order management
+        }
+      };
+
+      fetchVendorUserInfo();
+    }
+  }, [dispatch]);
+
   // Handle profile completion token — auto-login the user if token is in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    const token = urlParams.get("token") || urlParams.get("approveToken");
     const currentAccessToken = sessionStorage.getItem("access_token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    // Skip profile completion token for QR mode
+    if (isOrdersManagement) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -278,13 +334,16 @@ function App() {
       ) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
-      // Allow business-details with a profile completion token to bypass login
+
+      // Allow routes with token to bypass login (business-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
-      const isBusinessDetails =
-        window.location.pathname === routes.businessDetails;
+      const isBusinessDetails = window.location.pathname.startsWith(
+        routes.businessDetails,
+      );
+      const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-      if (hasToken && isBusinessDetails) {
+      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
         return children;
       }
 
@@ -343,9 +402,9 @@ function App() {
         { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
 
         { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
-        { path: routes.users, element: <UsersMgmtPage /> },
         { path: routes.poiMgmt, element: <PoiMgmtPage /> },
         { path: routes.poiDetails, element: <PoiDetailsPage /> },
+        { path: routes.users, element: <UsersMgmtPage /> },
 
         { path: "/*", element: <DashboardPage /> },
       ],

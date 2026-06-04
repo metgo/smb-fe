@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import axios from "axios";
 import { useState } from "react";
 import { Loader, Mail, Phone } from "lucide-react";
 
@@ -16,6 +17,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
+import { envKeys } from "@/lib/envKeys";
 
 interface OrderDetailsModalProps {
   order: any;
@@ -25,6 +27,8 @@ interface OrderDetailsModalProps {
   isLoading: any;
   isFetching: any;
   refetch: any;
+  isQRMode?: boolean;
+  qrToken?: string | null;
 }
 
 function OrderDetailsModal({
@@ -34,6 +38,8 @@ function OrderDetailsModal({
   refetch,
   isLoading,
   isFetching,
+  isQRMode,
+  qrToken,
 }: OrderDetailsModalProps) {
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -70,14 +76,32 @@ function OrderDetailsModal({
     }
   };
   const onStatusChangeHandler = async (status: string) => {
+    if (order?.status === "completed") {
+      toast.error(t("completed_order_status_locked"));
+      return;
+    }
+
     try {
-      await updateOrderStatus({
-        orderId: order?._id,
-        body: { status: status.toLowerCase() },
-      }).unwrap();
+      if (isQRMode && qrToken) {
+        await axios.post(
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+          { status: status.toLowerCase() },
+        );
+      } else {
+        await updateOrderStatus({
+          orderId: order?._id,
+          body: { status: status.toLowerCase() },
+        }).unwrap();
+      }
 
       toast.success(t("order_status_update_success"));
-      refetch();
+
+      // Reload page in QR mode to refresh, otherwise just refetch
+      if (isQRMode) {
+        window.location.reload();
+      } else {
+        refetch();
+      }
     } catch (error) {
       toast.error(t("order_status_update_failed"));
       console.error(error);
@@ -375,16 +399,29 @@ function OrderDetailsModal({
 
             try {
               if (cancelType === "order") {
-                // Cancel the entire order
-                await updateOrderStatus({
-                  orderId: order?._id,
-                  body: {
-                    status: "canceled",
-                    canceled_reason: t(reason),
-                    isQrScan: true,
-                  },
-                }).unwrap();
-                refetch();
+                const body = {
+                  status: "canceled",
+                  canceled_reason: t(reason),
+                };
+
+                if (isQRMode && qrToken) {
+                  await axios.post(
+                    `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+                    body,
+                  );
+                } else {
+                  await updateOrderStatus({
+                    orderId: order?._id,
+                    body,
+                  }).unwrap();
+                }
+
+                // Reload page in QR mode, otherwise just refetch
+                if (isQRMode) {
+                  window.location.reload();
+                } else {
+                  refetch();
+                }
               }
 
               toast.success(t("order_cancelled_successfully"));
