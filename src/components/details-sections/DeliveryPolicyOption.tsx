@@ -127,15 +127,17 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
-            type="checkbox"
+            type="radio"
+            name="deliveryType"
             checked={formData.vendorDelivers}
-            onChange={(e) =>
+            onChange={() =>
               setFormData((prev) => ({
                 ...prev,
-                vendorDelivers: e.target.checked,
+                vendorDelivers: true,
+                globalDelivery: false,
               }))
             }
-            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+            className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
           />
           <span
             className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
@@ -166,15 +168,17 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
         {!isProduct && (
           <label className="flex items-center gap-2 cursor-pointer">
             <input
-              type="checkbox"
+              type="radio"
+              name="deliveryType"
               checked={formData.globalDelivery}
-              onChange={(e) =>
+              onChange={() =>
                 setFormData((prev) => ({
                   ...prev,
-                  globalDelivery: e.target.checked,
+                  globalDelivery: true,
+                  vendorDelivers: false,
                 }))
               }
-              className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              className="w-4 h-4 border-gray-300 text-teal-600 focus:ring-teal-500"
             />
             <span
               className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}

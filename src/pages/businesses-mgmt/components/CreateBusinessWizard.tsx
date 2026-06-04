@@ -570,7 +570,7 @@ export default function CreateBusinessWizard({
     //  step 6
     openingHrs: formData.operatingHours,
     // step 7
-    // vendorDelivers: formData.vendorDelivers,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
     globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
