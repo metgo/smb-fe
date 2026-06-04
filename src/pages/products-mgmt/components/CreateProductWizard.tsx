@@ -195,7 +195,10 @@ export default function CreateProductWizard({
     serviceDuration: "",
     vendorDelivers: false,
     pickupAvailable: false,
+    globalDelivery: false,
     deliveryArea: [] as any[],
+    vendorDeliveryArea: [] as any[],
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -298,7 +301,10 @@ export default function CreateProductWizard({
 
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
+      globalDelivery: product?.globalDelivery ?? false,
       deliveryArea: product?.deliveryArea ?? [],
+      vendorDeliveryArea: product?.vendorDeliveryArea ?? [],
+      globalDeliveryArea: product?.globalDeliveryArea ?? [],
       deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
@@ -559,8 +565,16 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
+    globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,

@@ -184,6 +184,7 @@ export default function CreateBusinessWizard({
     pickupAvailable: false,
     globalDelivery: false,
     deliveryArea: [] as any[],
+    vendorDeliveryArea: [] as any[],
     globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
@@ -409,6 +410,7 @@ export default function CreateBusinessWizard({
         pickupAvailable: editData.isPickUpAvailable ?? false,
         globalDelivery: editData.globalDelivery ?? false,
         deliveryArea: editData?.deliveryArea ?? [],
+        vendorDeliveryArea: editData?.vendorDeliveryArea ?? [],
         globalDeliveryArea: editData?.globalDeliveryArea ?? [],
         deliveryReturnExchange: editData.deliveryReturnExchange ?? [],
         deliveryAdditionalInfo: editData.deliveryAdditionalInfo ?? "",
@@ -570,11 +572,16 @@ export default function CreateBusinessWizard({
     //  step 6
     openingHrs: formData.operatingHours,
     // step 7
-    // vendorDelivers: formData.vendorDelivers,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
     globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
-    globalDeliveryArea: formData.globalDeliveryArea,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,

@@ -161,7 +161,7 @@ export default function ProductDetailsPage() {
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
-        return <DeliveryPolicyOptionDetails data={product} />;
+        return <DeliveryPolicyOptionDetails data={product} isProduct />;
       case "media":
         return <MediaDetails {...mediaProps} />;
       default:
