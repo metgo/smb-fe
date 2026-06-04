@@ -230,15 +230,26 @@ implements IQueryHandler<GetCombinedSearchQuery> {
             .lean(),
           this.ProductsAuditModel.find(productBaseQuery)
             .select(productSelect)
+            .populate([
+              {
+                path: 'businessId',
+                select: '_id status isDeleted',
+              },
+            ])
             .limit(10)
             .lean(),
         ],
       );
 
+      const filteredProducts = productResults.filter(p => {
+        const business = p.businessId as any;
+        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      });
+
       return {
         businesses: businessResults,
         events: eventResults,
-        products: productResults,
+        products: filteredProducts,
       };
     } catch (err) {
       exceptionHandling(err);

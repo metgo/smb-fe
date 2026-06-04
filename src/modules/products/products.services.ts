@@ -92,7 +92,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
+          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug status isDeleted',
         populate: {
           path: 'tagsId',
           select: '_id name nameHe nameAr',
@@ -114,6 +114,13 @@ export class ProductsService {
         .select(select)
         .lean();
 
+      if (product) {
+        const business = product?.businessId as any;
+        if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+          product = null;
+        }
+      }
+
       if (!product && mongoose.Types.ObjectId.isValid(slug)) {
         product = await this.ProductsAuditModel.findOne({
           productId: slug,
@@ -129,6 +136,13 @@ export class ProductsService {
           .populate(populate)
           .select(select)
           .lean();
+
+        if (product) {
+          const business = product?.businessId as any;
+          if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+            product = null;
+          }
+        }
       }
 
       if (!product) {

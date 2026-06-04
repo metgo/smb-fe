@@ -128,13 +128,18 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .populate([
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable',
+          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable status isDeleted',
         },
       ])
       .lean();
 
+    const filteredProducts = products.filter(p => {
+      const business = p.businessId as any;
+      return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+    });
+
     const productMap = new Map(
-      products.map(p => [p.productId.toString(), p]),
+      filteredProducts.map(p => [p.productId.toString(), p]),
     );
 
     const tempMap = new Map<number, any[]>();
@@ -219,14 +224,19 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
       )
       .populate([
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug' },
+        { path: 'businessId', select: '_id logo name nameHe nameAr slug status isDeleted' },
         { path: 'primaryCategoryId', select: 'name hebrewName' },
       ])
       .lean();
 
+    const filteredProducts = products.filter(p => {
+      const business = p.businessId as any;
+      return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+    });
+
     const groupMap = new Map<string, any[]>();
 
-    products.forEach(product => {
+    filteredProducts.forEach(product => {
       const cat = product.primaryCategoryId as any;
       if (!cat) return;
 
