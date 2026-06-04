@@ -178,7 +178,7 @@ export default function OrdersMgmtPage() {
           setShowOrderDetails(true); // Auto-open order details modal
         }
       } catch (error) {
-        toast.error("Failed to load order");
+        console.error("QR order fallback fetch failed", error);
       }
     };
 
