@@ -196,7 +196,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       const productSelectFields
         = '_id productId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea categories tagsId';
       const productPopulate = [
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea' },
+        { path: 'businessId', select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted' },
       ];
       const baseProductQuery: any = {
         productId: { $in: allProductIds },
@@ -492,16 +492,15 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           .lean();
       }
 
-      // const filteredProducts = products.filter(p => {
-      //   const business = p.businessId as any;
-      //   return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
-      // });
+      const filteredProducts = products.filter(p => {
+        const business = p.businessId as any;
+        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      });
 
       const productMap = new Map(
-        // filteredProducts.map(p => [p.productId.toString(), p]),
-        products.map(p => [p.productId.toString(), p]),
+        filteredProducts.map(p => [p.productId.toString(), p]),
       );
-      // console.log('products after DB filters:', filteredProducts.length);
+      console.log('products after vendor status filter:', filteredProducts.length);
 
       const flatList = productCategoryEntries
         .map(({ productId, category }) => {

@@ -99,7 +99,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         {
           path: 'businessId',
           select:
-            '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
+            '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
         },
       ];
 
@@ -120,8 +120,13 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         };
       }
 
+      const filteredProducts = productsList.data.filter((product: any) => {
+        const business = product?.businessId as any;
+        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      });
+
       const productsDeliveryInfo = await Promise.all(
-        productsList.data.map(async product => {
+        filteredProducts.map(async product => {
           const useBusinessInfo: Business = product?.deliveryInfoSameAsBusiness
             ? product?.businessId
             : {

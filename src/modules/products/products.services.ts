@@ -92,7 +92,7 @@ export class ProductsService {
       const businessPopulate = {
         path: 'businessId',
         select:
-          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryAdditionalInfo isPickUpAvailable slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
+          '_id logo name nameHe nameAr tagsId shortDescription shortDescriptionHe shortDescriptionAr address geoLocation location openingHrs isAlwaysOpen deliveryAdditionalInfo isPickUpAvailable slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
         populate: {
           path: 'tagsId',
           select: '_id name nameHe nameAr',
@@ -114,12 +114,12 @@ export class ProductsService {
         .select(select)
         .lean();
 
-      // if (product) {
-      //   const business = product?.businessId as any;
-      //   if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-      //     product = null;
-      //   }
-      // }
+      if (product) {
+        const business = product?.businessId as any;
+        if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+          product = null;
+        }
+      }
 
       if (!product && mongoose.Types.ObjectId.isValid(slug)) {
         product = await this.ProductsAuditModel.findOne({
@@ -137,12 +137,12 @@ export class ProductsService {
           .select(select)
           .lean();
 
-        // if (product) {
-        //   const business = product?.businessId as any;
-        //   if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
-        //     product = null;
-        //   }
-        // }
+        if (product) {
+          const business = product?.businessId as any;
+          if (!business || business.status !== CommonStatus.APPROVED || business.isDeleted) {
+            product = null;
+          }
+        }
       }
 
       if (!product) {

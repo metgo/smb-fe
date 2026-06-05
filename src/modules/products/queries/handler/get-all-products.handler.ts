@@ -2,7 +2,7 @@ import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 
-import { SortOrder } from 'src/common/enum';
+import { SortOrder, CommonStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import {
@@ -77,7 +77,7 @@ implements IQueryHandler<GetAllProductsQuery> {
       let populate: any = [
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr isAlwaysOpen slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
+          select: '_id logo name nameHe nameAr isAlwaysOpen slug deliveryArea vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
         },
         {
           path: 'categories subCategories',
@@ -280,8 +280,13 @@ implements IQueryHandler<GetAllProductsQuery> {
             }),
           );
 
+          const filteredByVendorStatus = mappedProducts.filter((product: any) => {
+            const business = product?.businessId as any;
+            return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+          });
+
           const localizedProducts = await Promise.all(
-            mappedProducts.map(p => this.productsService.localizeProduct(p, locale)),
+            filteredByVendorStatus.map(p => this.productsService.localizeProduct(p, locale)),
           );
 
           return {
@@ -340,8 +345,13 @@ implements IQueryHandler<GetAllProductsQuery> {
         }),
       );
 
+      const filteredByVendorStatus = mappedProducts.filter((product: any) => {
+        const business = product?.businessId as any;
+        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+      });
+
       productsList.data = await Promise.all(
-        mappedProducts.map(p => this.productsService.localizeProduct(p, locale)),
+        filteredByVendorStatus.map(p => this.productsService.localizeProduct(p, locale)),
       );
 
       return productsList;

@@ -128,19 +128,18 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .populate([
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea',
+          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
         },
       ])
       .lean();
 
-    // const filteredProducts = products.filter(p => {
-    //   const business = p.businessId as any;
-    //   return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
-    // });
+    const filteredProducts = products.filter(p => {
+      const business = p.businessId as any;
+      return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+    });
 
     const productMap = new Map(
-      products.map(p => [p.productId.toString(), p]),
-      // filteredProducts.map(p => [p.productId.toString(), p]),
+      filteredProducts.map(p => [p.productId.toString(), p]),
     );
 
     const tempMap = new Map<number, any[]>();

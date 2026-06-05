@@ -5,7 +5,7 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
-import { Locale } from 'src/common/enum';
+import { Locale, CommonStatus } from 'src/common/enum';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
@@ -110,10 +110,12 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
           businessId: { $in: allBusinessIds },
           isActive: true,
         })
-          .select('businessId name nameHe nameAr logo slug geoLocation')
+          .select('businessId name nameHe nameAr logo slug geoLocation status isDeleted')
           .lean();
         const businessAuditMap = new Map<string, any>(
-          businessAudits.map(a => [a.businessId.toString(), a]),
+          businessAudits
+            .filter((b: any) => b.status !== CommonStatus.CLOSED && !b.isDeleted)
+            .map(a => [a.businessId.toString(), a]),
         );
 
         if (query.categoryName) {
@@ -126,14 +128,15 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
           if (!matchedCat) return [];
           const shuffled = (matchedCat.productIds || [])
             .sort(() => Math.random() - 0.5)
-            .map((product: any) => this.localizeProduct(
-              this.applyProductAudit(
+            .map((product: any) => {
+              const audited = this.applyProductAudit(
                 product,
                 productAuditMap,
                 businessAuditMap,
-              ),
-              query.locale,
-            ));
+              );
+              return audited ? this.localizeProduct(audited, query.locale) : null;
+            })
+            .filter(Boolean);
           return shuffled;
         }
 
@@ -212,14 +215,15 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
                   const shuffledProducts = [...allProducts]
                     .sort(() => Math.random() - 0.5)
                     .slice(0, 4)
-                    .map((product: any) => this.localizeProduct(
-                      this.applyProductAudit(
+                    .map((product: any) => {
+                      const audited = this.applyProductAudit(
                         product,
                         productAuditMap,
                         businessAuditMap,
-                      ),
-                      locale,
-                    ));
+                      );
+                      return audited ? this.localizeProduct(audited, locale) : null;
+                    })
+                    .filter(Boolean);
 
                   return {
                     ...catRest,
@@ -396,7 +400,7 @@ implements IQueryHandler<GetSiteFiltersConfigByIdentifierIdQuery> {
     const businessAudit = businessAuditMap.get(
       merged.businessId._id.toString(),
     );
-    if (!businessAudit) return merged;
+    if (!businessAudit) return null;
 
     return {
       ...merged,
