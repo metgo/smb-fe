@@ -1,6 +1,6 @@
 {
   "businesses_management": "Businesses Management",
-  "businesses_management_desc": "Manage all businesses across the western Negev region",
+  "businesses_management_desc": "Manage all businesses",
   "total_businesses": "Total Businesses",
   "active_businesses": "Active Businesses",
   "active_users": "Active Users",
@@ -222,9 +222,9 @@
   "delivery_areas_pricing": "Delivery Areas Pricing",
   "delivery_additional_info": "Additional Delivery Information",
   "return_exchange_info": "Return & Exchange Info",
-  "vendor_delivers": "Vendor Delivers",
+  "vendor_delivers": "Price Per Product",
   "pickup_available": "Pickup Available",
-  "global_delivery": "Global Delivery",
+  "global_delivery": "Price Per Order",
 
   "delivery_area": "Delivery Area",
   "delivery_price": "Delivery Price (ILS)",
