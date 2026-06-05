@@ -168,25 +168,6 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
           </span>
         </label>
 
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.pickupAvailable}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                pickupAvailable: e.target.checked,
-              }))
-            }
-            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-          />
-          <span
-            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("pickup_available")}
-          </span>
-        </label>
-
         {!isProduct && (
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -210,6 +191,24 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
             </span>
           </label>
         )}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.pickupAvailable}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                pickupAvailable: e.target.checked,
+              }))
+            }
+            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+          />
+          <span
+            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
+            {t("pickup_available")}
+          </span>
+        </label>
       </div>
 
       {/* Vendor Delivery Areas */}
