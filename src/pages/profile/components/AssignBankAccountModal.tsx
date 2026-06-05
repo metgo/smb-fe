@@ -107,43 +107,85 @@ const AssignBankAccountModal = ({
     }
   }, [savedBankAccount]);
 
+  const labelClass = `block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`;
+  const errorClass = "text-red-500 text-xs font-normal ml-1";
+
+  const inputClass = (hasError?: boolean) =>
+    clsx(
+      "w-full px-4 py-2.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500",
+      isDark
+        ? "bg-gray-700/60 border-gray-600 text-gray-100 placeholder-gray-500"
+        : "bg-white border-gray-300 text-gray-900 placeholder-gray-400",
+      hasError && "border-red-500 focus:ring-red-400",
+    );
+
+  const selectClass = (hasError?: boolean) =>
+    clsx(
+      "w-full px-4 py-2.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed",
+      isDark
+        ? "bg-gray-700/60 border-gray-600 text-gray-100"
+        : "bg-white border-gray-300 text-gray-900",
+      hasError && "border-red-500 focus:ring-red-400",
+    );
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
-        className={`${isDark ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+        className={clsx(
+          "rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border",
+          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+        )}
       >
         {/* Modal Header */}
         <div
-          className={`sticky top-0 ${isDark ? "bg-gray-800" : "bg-white"} border-b ${isDark ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-between`}
+          className={clsx(
+            "sticky top-0 z-10 px-6 py-4 flex items-center justify-between border-b",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100",
+          )}
         >
-          <h3 className={`text-2xl ${isDark ? "text-white" : "text-gray-900"}`}>
-            {savedBankAccount
-              ? t("edit_bank_account") || "Edit Bank Account"
-              : t("add_bank_account") || "Add Bank Account"}
-          </h3>
+          <div>
+            <h3
+              className={clsx(
+                "text-lg font-semibold",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {savedBankAccount
+                ? t("edit_bank_account") || "Edit Bank Account"
+                : t("add_bank_account") || "Add Bank Account"}
+            </h3>
+            <p
+              className={clsx(
+                "text-xs mt-0.5",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            >
+              {t("bank_account_subtitle") || "Fill in the details below"}
+            </p>
+          </div>
           <button
             onClick={handleCloseBankModal}
-            className={`p-2 rounded-lg ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"} transition-colors`}
+            className={clsx(
+              "p-1.5 rounded-lg transition-colors",
+              isDark
+                ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+            )}
           >
-            <X
-              className={`w-6 h-6 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-            />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
+        <div className="px-6 py-5 space-y-4">
           {/* Bank Name */}
           <div>
-            <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t("bank_name")} *</span>
+            <label className={labelClass}>
+              {t("bank_name")} *
               {errors.bankNumber && (
-                <span className="text-red-500 text-xs">
-                  {errors.bankNumber}
-                </span>
+                <span className={errorClass}>{errors.bankNumber}</span>
               )}
             </label>
-
             <select
               value={selectedBankNumber}
               onChange={(e) => {
@@ -157,7 +199,7 @@ const AssignBankAccountModal = ({
                 }));
                 setErrors((prev) => ({ ...prev, bankNumber: undefined }));
               }}
-              className={`w-full px-4 py-3 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={selectClass(!!errors.bankNumber)}
             >
               <option value="">{t("select_bank")}</option>
               {banks.map((bank) => (
@@ -174,35 +216,29 @@ const AssignBankAccountModal = ({
 
           {/* Branch Name */}
           <div>
-            <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t("branch_name")} *</span>
+            <label className={labelClass}>
+              {t("branch_name")} *
               {errors.branchNumber && (
-                <span className="text-red-500 text-xs">
-                  {errors.branchNumber}
-                </span>
+                <span className={errorClass}>{errors.branchNumber}</span>
               )}
             </label>
-
             <select
               value={selectedBranchNumber}
               onChange={(e) => {
                 const branchNumber = e.target.value;
                 setSelectedBranchNumber(branchNumber);
-                setBankAccountData((prev) => ({
-                  ...prev,
-                  branchNumber,
-                }));
+                setBankAccountData((prev) => ({ ...prev, branchNumber }));
                 setErrors((prev) => ({ ...prev, branchNumber: undefined }));
               }}
               disabled={!selectedBank || selectedBank.branches.length === 0}
-              className={`w-full px-4 py-3 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={selectClass(!!errors.branchNumber)}
             >
               <option value="">{t("select_branch")}</option>
               {selectedBank?.branches.map((branch) => (
                 <option
                   key={branch.branchId}
                   value={branch.branchId}
-                  className=" capitalize"
+                  className="capitalize"
                 >
                   {branch.branchName}
                 </option>
@@ -212,15 +248,12 @@ const AssignBankAccountModal = ({
 
           {/* Account Number */}
           <div>
-            <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t("account_number")} *</span>
+            <label className={labelClass}>
+              {t("account_number")} *
               {errors.accountNumber && (
-                <span className="text-red-500 text-xs">
-                  {errors.accountNumber}
-                </span>
+                <span className={errorClass}>{errors.accountNumber}</span>
               )}
             </label>
-
             <input
               type="text"
               value={bankAccountData.accountNumber}
@@ -229,20 +262,16 @@ const AssignBankAccountModal = ({
                 setErrors((prev) => ({ ...prev, accountNumber: undefined }));
               }}
               placeholder="123456789"
-              className={`w-full px-4 py-3 rounded-lg border ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={inputClass(!!errors.accountNumber)}
             />
           </div>
 
           {/* BN Number */}
           <div>
-            <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t("bn_number")} *</span>
+            <label className={labelClass}>
+              {t("bn_number")} *
               {errors.bnNumber && (
-                <span className="text-red-500 text-xs">{errors.bnNumber}</span>
+                <span className={errorClass}>{errors.bnNumber}</span>
               )}
             </label>
             <input
@@ -253,25 +282,18 @@ const AssignBankAccountModal = ({
                 setErrors((prev) => ({ ...prev, bnNumber: undefined }));
               }}
               placeholder="123456789"
-              className={`w-full px-4 py-3 rounded-lg border ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={inputClass(!!errors.bnNumber)}
             />
           </div>
 
           {/* Name on Invoice */}
           <div>
-            <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t("name_on_invoice")} *</span>
+            <label className={labelClass}>
+              {t("name_on_invoice")} *
               {errors.invoiceName && (
-                <span className="text-red-500 text-xs">
-                  {errors.invoiceName}
-                </span>
+                <span className={errorClass}>{errors.invoiceName}</span>
               )}
             </label>
-
             <input
               type="text"
               value={bankAccountData.invoiceName}
@@ -280,32 +302,35 @@ const AssignBankAccountModal = ({
                 setErrors((prev) => ({ ...prev, invoiceName: undefined }));
               }}
               placeholder="MetGo LTD"
-              className={`w-full px-4 py-3 rounded-lg border ${
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={inputClass(!!errors.invoiceName)}
             />
           </div>
         </div>
 
         {/* Modal Footer */}
         <div
-          className={`sticky bottom-0 ${isDark ? "bg-gray-800" : "bg-white"} border-t ${isDark ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-end gap-3`}
+          className={clsx(
+            "sticky bottom-0 px-6 py-4 flex items-center justify-end gap-3 border-t",
+            isDark
+              ? "bg-gray-800 border-gray-700"
+              : "bg-gray-50 border-gray-100",
+          )}
         >
           <button
             onClick={handleCloseBankModal}
-            className={`px-6 py-3 rounded-lg ${
+            className={clsx(
+              "px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer",
               isDark
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-            } transition-colors cursor-pointer`}
+                ? "border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                : "border-gray-300 text-gray-700 hover:bg-gray-100",
+            )}
           >
             {t("cancel") || "Cancel"}
           </button>
           <button
             onClick={handleSaveBankAccount}
             disabled={
+              isLoading ||
               !selectedBankNumber ||
               !selectedBranchNumber ||
               !bankAccountData.accountNumber ||
@@ -313,14 +338,16 @@ const AssignBankAccountModal = ({
               !bankAccountData.invoiceName
             }
             className={clsx(
-              "flex items-center gap-2 cursor-pointer px-6 py-3 rounded-lg transition-colors",
-              isLoading
-                ? "disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black"
-                : " bg-teal-600 hover:bg-teal-700 text-white",
+              "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+              "bg-teal-600 hover:bg-teal-700 text-white",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-600",
             )}
           >
-            {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
-            <Save className="w-5 h-5" />
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
             <span>{t("save") || "Save"}</span>
           </button>
         </div>
