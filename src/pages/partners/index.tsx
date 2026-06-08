@@ -127,6 +127,7 @@ const PartnersPage = () => {
         <CreatePartnerWizard
           setIsOpen={setIsWizardOpen}
           partnerId={editPartnerId}
+          onSuccess={refetch}
         />
       )}
     </div>

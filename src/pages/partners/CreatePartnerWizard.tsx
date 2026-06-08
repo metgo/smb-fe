@@ -19,6 +19,7 @@ import {
 interface CreatePartnerWizardProps {
   setIsOpen: (v: boolean) => void;
   partnerId?: string;
+  onSuccess?: () => void;
 }
 
 interface PartnerFormData {
@@ -35,6 +36,7 @@ interface PartnerFormData {
 const CreatePartnerWizard = ({
   setIsOpen,
   partnerId,
+  onSuccess,
 }: CreatePartnerWizardProps) => {
   const { t } = useTranslation("website_settings");
   const {
@@ -169,6 +171,7 @@ const CreatePartnerWizard = ({
       }
 
       setIsOpen(false);
+      onSuccess?.();
     } catch {
       toast.error(
         partnerId ? t("partner_update_failed") : t("partner_create_failed"),
