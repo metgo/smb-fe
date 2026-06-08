@@ -419,6 +419,7 @@ export default function CreatePoiWizard({
         body: websiteAccessItemPayload,
         itemId: resolvedPoiId,
       });
+      refetch?.();
     }
   };
 
@@ -443,6 +444,7 @@ export default function CreatePoiWizard({
         body: websiteAccessItemPayload,
         itemId: resolvedPoiId,
       });
+      refetch?.();
     }
     setIsPublishing(false);
   };
