@@ -67,7 +67,7 @@ const PoiBasicInfo: FC<PoiBasicInfoProps> = ({
       <DmoAuthorityWebsiteSelector
         errors={errors}
         isEdit={!!poiId}
-        keyId="_id"
+        keyId="externalApiId"
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
