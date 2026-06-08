@@ -80,6 +80,7 @@ export function usePoiDraftSaver({
         }
         onClose();
         toast.success(isPublish ? tp("poi_published") : tp("draft_saved"));
+        return internalPoiId || poiId || undefined;
       } catch (err: any) {
         toast.error(err?.data?.message || tp("draft_failed"));
       }

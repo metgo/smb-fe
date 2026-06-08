@@ -660,11 +660,11 @@ export default function CreateEventWizard({
     }
 
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (eventId) {
+    const resolvedEventId = await saveDraft(false);
+    if (resolvedEventId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: eventId,
+        itemId: resolvedEventId,
       });
     }
     if (refetch) {
@@ -692,11 +692,11 @@ export default function CreateEventWizard({
       return;
     }
     setIsPublishing(true);
-    await saveDraft(true);
-    if (eventId) {
+    const resolvedEventId = await saveDraft(true);
+    if (resolvedEventId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: eventId,
+        itemId: resolvedEventId,
       });
     }
     setIsPublishing(false);

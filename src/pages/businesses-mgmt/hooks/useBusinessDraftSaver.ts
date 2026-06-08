@@ -86,6 +86,7 @@ export function useBusinessDraftSaver({
         }
         onClose();
         toast.success(isPublish ? t("business_published") : t("draft_saved"));
+        return internalbusinessId || businessId || undefined;
       } catch (err: any) {
         toast.error(err?.data?.message || t("draft_failed"));
       }

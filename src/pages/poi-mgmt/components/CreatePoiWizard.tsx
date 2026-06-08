@@ -413,11 +413,11 @@ export default function CreatePoiWizard({
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (poiId) {
+    const resolvedPoiId = await saveDraft(false);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
     }
   };
@@ -437,13 +437,13 @@ export default function CreatePoiWizard({
       return;
     }
     setIsPublishing(true);
-    if (poiId) {
+    const resolvedPoiId = await saveDraft(true);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
     }
-    await saveDraft(true);
     setIsPublishing(false);
   };
 
