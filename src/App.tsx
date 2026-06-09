@@ -1,4 +1,3 @@
-import { Suspense, useEffect } from "react";
 import axios from "axios";
 import {
   Outlet,
@@ -6,9 +5,10 @@ import {
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
+import { Suspense, useEffect, useMemo } from "react";
+
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
-
 import { routes } from "@/lib/routes";
 import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
@@ -353,77 +353,85 @@ function App() {
     return children;
   };
 
-  const router = createBrowserRouter([
-    {
-      element: (
-        <Suspense fallback={<SplashLoader />}>
-          <ProtectedRoute>
-            <IdleLogout />
-            <RootLayout />
-          </ProtectedRoute>
-        </Suspense>
-      ),
-      errorElement: <ErrorUiPage />,
-      children: [
-        { path: routes.dashboard, element: <DashboardPage /> },
+  const router = useMemo(
+    () =>
+      createBrowserRouter([
         {
-          path: routes.analyticsDashboard,
-          element: <AnalyticsDashboardPage />,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <ProtectedRoute>
+                <IdleLogout />
+                <RootLayout />
+              </ProtectedRoute>
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+          children: [
+            { path: routes.dashboard, element: <DashboardPage /> },
+            {
+              path: routes.analyticsDashboard,
+              element: <AnalyticsDashboardPage />,
+            },
+
+            { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
+            { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+
+            { path: routes.articleMgmt, element: <ArticlesManagement /> },
+            { path: routes.articleDetails, element: <ArticleDetails /> },
+
+            { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+            { path: routes.eventDetails, element: <EventDetailsPage /> },
+
+            { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
+            { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
+            { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+            { path: routes.eventDetails, element: <EventDetailsPage /> },
+            { path: routes.productDetails, element: <ProductDetailsPage /> },
+            { path: routes.contentMgmt, element: <ContentMgmtPage /> },
+            { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
+            { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+
+            { path: routes.profile, element: <ProfilePage /> },
+            { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+            { path: routes.partners, element: <PartnersPage /> },
+            { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
+            { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
+            { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+            { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
+
+            { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+            {
+              path: routes.notificationMgmt,
+              element: <NotificationsMgmtPage />,
+            },
+            { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
+
+            { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+            { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+            { path: routes.poiDetails, element: <PoiDetailsPage /> },
+            { path: routes.users, element: <UsersMgmtPage /> },
+
+            { path: "/*", element: <DashboardPage /> },
+          ],
         },
-
-        { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
-        { path: routes.businessDetails, element: <BusinessDetailsPage /> },
-
-        { path: routes.articleMgmt, element: <ArticlesManagement /> },
-        { path: routes.articleDetails, element: <ArticleDetails /> },
-
-        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
-        { path: routes.eventDetails, element: <EventDetailsPage /> },
-
-        { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-        { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
-        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
-        { path: routes.eventDetails, element: <EventDetailsPage /> },
-        { path: routes.productDetails, element: <ProductDetailsPage /> },
-        { path: routes.contentMgmt, element: <ContentMgmtPage /> },
-        { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
-        { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
-
-        { path: routes.profile, element: <ProfilePage /> },
-        { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
-        { path: routes.partners, element: <PartnersPage /> },
-        { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
-        { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
-        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
-        { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
-
-        { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
-        { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
-        { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
-
-        { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
-        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
-        { path: routes.poiDetails, element: <PoiDetailsPage /> },
-        { path: routes.users, element: <UsersMgmtPage /> },
-
-        { path: "/*", element: <DashboardPage /> },
-      ],
-    },
-    {
-      element: (
-        <Suspense fallback={<SplashLoader />}>
-          <ProtectedRoute isLoginPage>
-            <>
-              <RouterProgressBar />
-              <Outlet />
-            </>
-          </ProtectedRoute>
-        </Suspense>
-      ),
-      errorElement: <ErrorUiPage />,
-      children: [{ path: routes.auth, element: <AuthPage /> }],
-    },
-  ]);
+        {
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <ProtectedRoute isLoginPage>
+                <>
+                  <RouterProgressBar />
+                  <Outlet />
+                </>
+              </ProtectedRoute>
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+          children: [{ path: routes.auth, element: <AuthPage /> }],
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      ]),
+    [],
+  );
 
   return <RouterProvider router={router} />;
 }
