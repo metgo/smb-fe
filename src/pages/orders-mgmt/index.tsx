@@ -36,7 +36,7 @@ import {
   PageHeader,
   PageStats,
   ShowColumns,
-  ViewModeToggle,
+  // ViewModeToggle,
 } from "@/components/shared";
 import {
   FilterSelect,
@@ -55,7 +55,7 @@ import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
-import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
+// import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 import { formatOrderDate } from "@/helpers";
 import { routes } from "@/lib/routes";
@@ -116,7 +116,7 @@ export default function OrdersMgmtPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTermSummary, setSearchTermSummary] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  // const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -211,7 +211,7 @@ export default function OrdersMgmtPage() {
       localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
       return !prev;
     });
-    setViewMode("list");
+    // setViewMode("list");
   };
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -468,9 +468,9 @@ export default function OrdersMgmtPage() {
     skip: orderSummaryClick || !canUseAuthenticatedOrderApis,
   });
 
-  const hasMore = orders?.meta?.hasNextPage;
+  const hasMore = orders?.datas?.meta?.hasNextPage;
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
-  const totalData = orders?.totalData;
+  const totalData = orders?.datas?.totalData;
   const orderss = orders?.datas?.data ?? [];
   const totalDataSummary = orderSummaries?.totalData;
 
@@ -1341,7 +1341,7 @@ export default function OrdersMgmtPage() {
                   <FilterButton value={showFilters} onChange={setShowFilters} />
                   <ShowColumns
                     t={t}
-                    viewMode={viewMode}
+                    viewMode="list"
                     columnDefinitions={columnSettingsDefs}
                     columnVisibility={columnVisibility}
                     showColumnSettings={showColumnSettings}
@@ -1367,9 +1367,7 @@ export default function OrdersMgmtPage() {
                   </button>
                 </div>
 
-                {!orderSummaryClick && (
-                  <ViewModeToggle onChange={setViewMode} value={viewMode} />
-                )}
+                {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}
               </div>
             </div>
 
@@ -1547,58 +1545,53 @@ export default function OrdersMgmtPage() {
         {/* Orders Table */}
         {canViewOrders && (
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {viewMode === "list" ? (
-              <div
-                className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
-              >
-                {/* Loading state */}
-                {
-                  <OrderListView
-                    isLoading={
-                      orderSummaryClick
-                        ? isLoadingOrderSummary || isFetchingOrderSummary
-                        : isLoading || isFetching
-                    }
-                    storageKey={
-                      orderSummaryClick
-                        ? "orderSummaryTableColumnOrder"
-                        : "ordersTableColumnOrder"
-                    }
-                    hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
-                    orders={orderSummaryClick ? orderSummaries : orders}
-                    combinedOrders={
-                      orderSummaryClick ? combinedOrdersSummary : combinedOrders
-                    }
-                    fetchNextPage={
-                      orderSummaryClick ? fetchNextPageSummary : fetchNextPage
-                    }
-                    selectedOrders={selectedOrders}
-                    setSelectedOrders={setSelectedOrders}
-                    handleRowClick={handleRowClick}
-                    columns={orderSummaryClick ? summaryColumns : columns}
-                  />
+            <div
+              className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+            >
+              <OrderListView
+                isLoading={
+                  orderSummaryClick
+                    ? isLoadingOrderSummary || isFetchingOrderSummary
+                    : isLoading || isFetching
                 }
-              </div>
-            ) : (
-              <div className="overflow-y-auto">
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader className="w-8 h-8 animate-spin text-teal-500" />
-                  </div>
-                ) : (
-                  <OrderGridView
-                    selectedOrders={selectedOrders}
-                    setSelectedOrders={setSelectedOrders}
-                    data={combinedOrders || []}
-                    next={fetchNextPage}
-                    hasMore={hasMore}
-                    isLoading={isLoading || isFetching}
-                    onRowClick={handleRowClick}
-                    t={t}
-                  />
-                )}
-              </div>
-            )}
+                storageKey={
+                  orderSummaryClick
+                    ? "orderSummaryTableColumnOrder"
+                    : "ordersTableColumnOrder"
+                }
+                hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
+                orders={orderSummaryClick ? orderSummaries : orders}
+                combinedOrders={
+                  orderSummaryClick ? combinedOrdersSummary : combinedOrders
+                }
+                fetchNextPage={
+                  orderSummaryClick ? fetchNextPageSummary : fetchNextPage
+                }
+                selectedOrders={selectedOrders}
+                setSelectedOrders={setSelectedOrders}
+                handleRowClick={handleRowClick}
+                columns={orderSummaryClick ? summaryColumns : columns}
+              />
+            </div>
+            {/* Grid view disabled
+            <div className="overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
+                </div>
+              ) : (
+                <OrderGridView
+                  selectedOrders={selectedOrders}
+                  setSelectedOrders={setSelectedOrders}
+                  data={combinedOrders || []}
+                  next={fetchNextPage}
+                  hasMore={hasMore}
+                  isLoading={isLoading || isFetching}
+                  onRowClick={handleRowClick}
+                  t={t}
+                />
+              )}
+            </div> */}
           </div>
         )}
       </div>
