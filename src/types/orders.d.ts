@@ -9,7 +9,13 @@ type TOrderStatus =
   | "completed"
   | "canceled"
   | "shipped"
-  | "pending";
+  | "pending"
+  | "draft"
+  | "paid"
+  | "confirmed"
+  | "delivered"
+  | "partially_cancelled"
+  | "failed";
 type TOrderType = "online" | "offline";
 type TDeliveryType = "pickup" | "delivery" | "digital";
 
@@ -30,7 +36,7 @@ interface IOrder {
   deliveryType: TDeliveryType;
   createdAt: string;
   paymentDate: string;
-  products: OrderProduct;
+  products: IOrderProduct[];
   address?: string;
   campaignCode?: string;
   qrScanned: boolean;

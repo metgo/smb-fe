@@ -527,7 +527,11 @@ export default function OrdersMgmtPage() {
       label: t("product_name"),
       sortable: true,
       render: (order: any) => (
-        <div className="text-sm">{order?.product?.name}</div>
+        <div className="text-sm">
+          {Array.isArray(order?.products)
+            ? order.products.map((p: any) => p.name).filter(Boolean).join(", ") || "-"
+            : order?.products?.name ?? "-"}
+        </div>
       ),
     },
     columnVisibility.totalOrderAmount && {
@@ -1085,7 +1089,6 @@ export default function OrdersMgmtPage() {
         text: "text-blue-800 dark:text-blue-400",
         label: t("processing"),
       },
-
       completed: {
         bg: "bg-emerald-100 dark:bg-emerald-900/30",
         text: "text-emerald-800 dark:text-emerald-400",
@@ -1100,6 +1103,36 @@ export default function OrdersMgmtPage() {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
+      },
+      draft: {
+        bg: "bg-gray-100 dark:bg-gray-800",
+        text: "text-gray-800 dark:text-gray-300",
+        label: t("draft"),
+      },
+      paid: {
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-800 dark:text-green-400",
+        label: t("paid"),
+      },
+      confirmed: {
+        bg: "bg-teal-100 dark:bg-teal-900/30",
+        text: "text-teal-800 dark:text-teal-400",
+        label: t("confirmed"),
+      },
+      delivered: {
+        bg: "bg-purple-100 dark:bg-purple-900/30",
+        text: "text-purple-800 dark:text-purple-400",
+        label: t("delivered"),
+      },
+      partially_cancelled: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("partiallyCancelled"),
+      },
+      failed: {
+        bg: "bg-red-100 dark:bg-red-900/30",
+        text: "text-red-800 dark:text-red-400",
+        label: t("failed"),
       },
     };
     const badge = badges[status];

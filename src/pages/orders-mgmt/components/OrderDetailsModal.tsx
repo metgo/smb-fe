@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import axios from "axios";
 import { useState } from "react";
-import { Loader, Mail, Phone } from "lucide-react";
+import { Loader, Mail, Phone, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -45,6 +45,13 @@ function OrderDetailsModal({
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
     null,
+  );
+  const [orderProducts, setOrderProducts] = useState<IOrderProduct[]>(
+    Array.isArray(order?.products)
+      ? order.products
+      : order?.products
+        ? [order.products]
+        : [],
   );
   const [showProductModal, setShowProductModal] = useState(false);
   const [sendingTarget, setSendingTarget] = useState<
@@ -198,75 +205,87 @@ function OrderDetailsModal({
           <div
             className={`border rounded-lg overflow-hidden ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
-            <div
-              key={order?.products?._id}
-              className={`p-4 ${order?.idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${order?.status === "canceled" ? "opacity-50" : ""}`}
-            >
-              <div className="flex items-start gap-4">
-                {/* Product Image */}
-                <div
-                  onClick={() => {
-                    setSelectedProduct(order?.products);
-                    setShowProductModal(true);
-                  }}
-                  className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <ImageWithFallback
-                    src={order?.products?.images?.image}
-                    alt={order?.products?.name}
-                    className={clsx(
-                      "w-24 h-22 rounded-xl object-cover border-2",
-                      isDark ? "border-gray-600" : "border-gray-300",
-                    )}
-                  />
-                </div>
-
-                {/* Product Info */}
-                <div
-                  className="flex-1 cursor-pointer"
-                  onClick={() => {
-                    setSelectedProduct(order?.products);
-                    setShowProductModal(true);
-                  }}
-                >
-                  <p
-                    className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
+            {orderProducts?.map((product, idx) => (
+              <div
+                key={product?._id}
+                className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Product Image */}
+                  <div
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowProductModal(true);
+                    }}
+                    className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
-                    {order?.products?.name}
-                  </p>
-                  <p className={`text-sm ${textTertiary}`}>
-                    {order?.products?.vendor ? order?.products?.vendor : "-"}
-                  </p>
-                </div>
+                    <ImageWithFallback
+                      src={product?.images?.image}
+                      alt={product?.name}
+                      className={clsx(
+                        "w-24 h-22 rounded-xl object-cover border-2",
+                        isDark ? "border-gray-600" : "border-gray-300",
+                      )}
+                    />
+                  </div>
 
-                {/* Price & Actions */}
-                <div
-                  className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
-                >
-                  <div className={`text-right ${isRTL ? "text-left" : ""}`}>
+                  {/* Product Info */}
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowProductModal(true);
+                    }}
+                  >
                     <p
-                      className={`${textPrimary} ${order?.status === "canceled" ? "line-through" : ""}`}
+                      className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
                     >
-                      ₪
-                      {(
-                        order?.products?.quantity * order?.products?.amount
-                      ).toLocaleString()}
+                      {product?.name}
                     </p>
                     <p className={`text-sm ${textTertiary}`}>
-                      {order?.products?.quantity} x ₪{order?.products?.amount}
+                      {product?.vendor ? product?.vendor : "-"}
                     </p>
                   </div>
 
-                  {order?.status === "canceled" && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}
-                    >
-                      {t("cancelled") || "Cancelled"}
-                    </span>
-                  )}
+                  {/* Price & Actions */}
+                  <div
+                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
+                    <div className={`text-right ${isRTL ? "text-left" : ""}`}>
+                      <p
+                        className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
+                      >
+                        ₪{(product?.quantity * product?.amount).toLocaleString()}
+                      </p>
+                      <p className={`text-sm ${textTertiary}`}>
+                        {product?.quantity} x ₪{product?.amount}
+                      </p>
+                    </div>
+
+                    {!product?.cancelled && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCancelType("item");
+                          setItemToCancel(product);
+                          setShowCancelDialog(true);
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${isDark ? "hover:bg-red-900/30 text-red-400" : "hover:bg-red-50 text-red-500"}`}
+                        title={t("cancelProduct")}
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
+                    )}
+
+                    {product?.cancelled && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                        {t("cancelled")}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -395,33 +414,42 @@ function OrderDetailsModal({
             setItemToCancel(null);
           }}
           onConfirm={async (reason) => {
+            if (cancelType === "item" && itemToCancel) {
+              setOrderProducts((prev) =>
+                prev.map((p) =>
+                  p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
+                ),
+              );
+              setShowCancelDialog(false);
+              setItemToCancel(null);
+              return;
+            }
+
             setIsCancelling(true);
 
             try {
-              if (cancelType === "order") {
-                const body = {
-                  status: "canceled",
-                  canceled_reason: t(reason),
-                };
+              const body = {
+                status: "canceled",
+                canceled_reason: t(reason),
+              };
 
-                if (isQRMode && qrToken) {
-                  await axios.post(
-                    `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
-                    body,
-                  );
-                } else {
-                  await updateOrderStatus({
-                    orderId: order?._id,
-                    body,
-                  }).unwrap();
-                }
+              if (isQRMode && qrToken) {
+                await axios.post(
+                  `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+                  body,
+                );
+              } else {
+                await updateOrderStatus({
+                  orderId: order?._id,
+                  body,
+                }).unwrap();
+              }
 
-                // Reload page in QR mode, otherwise just refetch
-                if (isQRMode) {
-                  window.location.reload();
-                } else {
-                  refetch();
-                }
+              // Reload page in QR mode, otherwise just refetch
+              if (isQRMode) {
+                window.location.reload();
+              } else {
+                refetch();
               }
 
               toast.success(t("order_cancelled_successfully"));
