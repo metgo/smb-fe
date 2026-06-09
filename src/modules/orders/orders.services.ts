@@ -444,36 +444,37 @@ export class OrdersService {
 
     // create order products
     const cartItems = [...cartItemsProduct, ...cartItemsTicket];
-    const orderProduct = await Promise.all(
+    const orderProduct = (await Promise.all(
       order.products.map(async product => {
         const cartItem = cartItems.find(
           item => item.id.toString() === product.id.toString(),
         );
+        if (!cartItem) return null;
         return await this.orderProductService.create({
-          itemId: cartItem?.id,
-          quantity: cartItem?.quantity,
-          email: cartItem?.email,
-          countryCode: cartItem?.countryCode,
-          phone: cartItem?.phone,
-          firstName: cartItem?.firstName,
-          lastName: cartItem?.lastName,
-          deliveryFee: cartItem?.deliveryFee,
-          deliveryMethod: cartItem?.deliveryMethod,
-          deliveryArea: cartItem?.deliveryArea,
-          deliveryPickupLocation: cartItem?.deliveryPickupLocation,
-          houseNo: cartItem?.houseNo,
-          apartment: cartItem?.apartment,
-          city: cartItem?.city,
-          street: cartItem?.street,
-          isGift: cartItem?.isGift,
-          additionalInfo: cartItem?.additionalInfo,
-          amount: cartItem?.amount,
+          itemId: cartItem.id,
+          quantity: cartItem.quantity,
+          email: cartItem.email,
+          countryCode: cartItem.countryCode,
+          phone: cartItem.phone,
+          firstName: cartItem.firstName,
+          lastName: cartItem.lastName,
+          deliveryFee: cartItem.deliveryFee,
+          deliveryMethod: cartItem.deliveryMethod,
+          deliveryArea: cartItem.deliveryArea,
+          deliveryPickupLocation: cartItem.deliveryPickupLocation,
+          houseNo: cartItem.houseNo,
+          apartment: cartItem.apartment,
+          city: cartItem.city,
+          street: cartItem.street,
+          isGift: cartItem.isGift,
+          additionalInfo: cartItem.additionalInfo,
+          amount: cartItem.amount,
           orderId: order.id,
           loggedInUserId: loggedInUser?.id,
           itemType: cartItem.itemType,
         });
       }),
-    );
+    )).filter(Boolean);
 
     if (cartItemsProduct?.length) {
       await this.productsService.deductQuantity(cartItemsProduct);
