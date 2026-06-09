@@ -949,6 +949,19 @@ export default function OrdersMgmtPage() {
     },
   );
 
+  // API now returns an array of split sub-orders; normalize into a single object for the modal
+  const normalizedOrderDetails = useMemo(() => {
+    if (!orderDetails) return null;
+    if (!Array.isArray(orderDetails)) return orderDetails;
+    if (orderDetails.length === 0) return null;
+    const first = orderDetails[0];
+    return {
+      ...first,
+      _id: first.orderId,
+      products: orderDetails.map((item: any) => item.products).filter(Boolean),
+    };
+  }, [orderDetails]);
+
   const handleRowClick = (order: IOrder) => {
     if (orderSummaryClick) {
       return;
@@ -1601,7 +1614,9 @@ export default function OrdersMgmtPage() {
         <OrderDetailsModal
           t={t}
           refetch={canUseAuthenticatedOrderApis ? orderIdrefetch : () => {}}
-          order={canUseAuthenticatedOrderApis ? orderDetails : qrOrder}
+          order={
+            canUseAuthenticatedOrderApis ? normalizedOrderDetails : qrOrder
+          }
           isLoading={isOrderDetailLoading}
           isFetching={
             canUseAuthenticatedOrderApis ? isOrderDetailFetching : false

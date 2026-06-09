@@ -51,6 +51,8 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderDetails: "/order-details",
+
   orderSummary: "/orders-summary",
 
   ordersStats: "/orders-stats",

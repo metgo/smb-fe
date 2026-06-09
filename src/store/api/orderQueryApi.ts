@@ -23,7 +23,7 @@ export const orderQueryApi = createApi({
     }),
     getOrderById: builder.query<any, { orderId: string | null }>({
       query: ({ orderId }) => ({
-        url: `${endpoints.orders}/${orderId}`,
+        url: `${endpoints.orderDetails}/${orderId}`,
         method: "GET",
       }),
     }),
