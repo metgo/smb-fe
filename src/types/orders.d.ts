@@ -21,9 +21,10 @@ type TDeliveryType = "pickup" | "delivery" | "digital";
 
 interface IOrder {
   _id: string;
-  firstName: string;
+  name: string;
   email: string;
   phone: string;
+  productCount?: number;
   orderType: TOrderType;
   status: TOrderStatus;
   paymentStatus: TPaymentStatus;

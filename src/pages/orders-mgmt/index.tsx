@@ -67,12 +67,12 @@ const limit = 20;
 
 // Default columns configuration
 const defaultColumns = {
-  firstName: true,
+  name: true,
   email: true,
   phone: true,
   status: true,
   totalOrderAmount: true,
-  product_name: true,
+  productCount: true,
   deliveryFee: true,
   createdAt: true,
   paymentDate: true,
@@ -450,7 +450,7 @@ export default function OrdersMgmtPage() {
   const hasMore = orders?.meta?.hasNextPage;
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalData = orders?.totalData;
-  const orderss = orders?.data ?? [];
+  const orderss = orders?.datas?.data ?? [];
   const totalDataSummary = orderSummaries?.totalData;
 
   //update combined order when filters change so combined orders doesnt show stale value
@@ -521,17 +521,13 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
-    columnVisibility.product_name && {
+    columnVisibility.productCount && {
       key: "products",
       width: "400px",
-      label: t("product_name"),
+      label: t("productCount"),
       sortable: true,
       render: (order: any) => (
-        <div className="text-sm">
-          {Array.isArray(order?.products)
-            ? order.products.map((p: any) => p.name).filter(Boolean).join(", ") || "-"
-            : order?.products?.name ?? "-"}
-        </div>
+        <div className="text-sm">{order?.productCount ?? "-"}</div>
       ),
     },
     columnVisibility.totalOrderAmount && {
@@ -585,13 +581,11 @@ export default function OrdersMgmtPage() {
       ),
     },
 
-    columnVisibility.firstName && {
+    columnVisibility.name && {
       key: "firstName",
       label: t("purchaser_name_field"),
       sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm">{order?.firstName}</div>
-      ),
+      render: (order: IOrder) => <div className="text-sm">{order?.name}</div>,
     },
 
     columnVisibility.email && {
@@ -941,10 +935,8 @@ export default function OrdersMgmtPage() {
             value = `₪${order.totalAmount}`;
           } else if (key === "deliveryFee") {
             value = `₪${order.deliveryFee}`;
-          } else if (key === "product_name") {
-            // adjust based on your actual structure
-            value =
-              order.products?.map((p: any) => p.product_name).join(", ") || "-";
+          } else if (key === "productCount") {
+            value = `₪${order.productCount}`;
           } else if (key === "createdAt") {
             value = order.createdAt
               ? new Date(order.createdAt).toLocaleDateString()
