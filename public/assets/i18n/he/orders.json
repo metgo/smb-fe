@@ -67,7 +67,8 @@
   "order_status_update_failed": "נכשל בעדכון סטטוס ההזמנה",
   "completed_order_status_locked": "לא ניתן לשנות הזמנה שהושלמה",
   "deliveryFee": "דמי משלוח",
-  "price": "מחיר",
+  "price": "סכום כולל",
+  "totalOrderAmount": "סכום כולל",
   "deliveries": "משלוחים",
   "orders": "הזמנות",
   "downloadCSV": "הורד CSV",
@@ -203,5 +204,13 @@
   "resend_loading": "מעביר מחדש...",
   "resend_success": "הועבר מחדש בהצלחה!",
   "submitting": "שולח...",
-  "refund_success": "החזר הצליח"
+  "refund_success": "החזר הצליח",
+  "paymentStatus": "סטטוס תשלום",
+  "productCount": "מספר מוצרים",
+  "noDataToExport": "אין נתונים לייצוא",
+  "resend": "שלח מחדש",
+  "website": "אתר",
+  "column_settings": "הגדרות עמודות",
+  "reset_to_default": "איפוס לברירת מחדל",
+  "select_columns_to_display": "בחר עמודות להצגה"
 }

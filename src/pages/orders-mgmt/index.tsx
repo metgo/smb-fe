@@ -50,6 +50,7 @@ import {
   useGetOrderByIdQuery,
   useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
+import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
@@ -71,14 +72,21 @@ const defaultColumns = {
   email: true,
   phone: true,
   status: true,
+  paymentStatus: true,
+  paymentMethod: false,
   totalOrderAmount: true,
   productCount: true,
   deliveryFee: true,
-  createdAt: true,
+  createdAt: false,
   paymentDate: true,
+  website: true,
 };
 
 type ColumnVisibility = typeof defaultColumns;
+
+// Static defs for ShowColumns — keys must match defaultColumns keys so
+// columnVisibility lookups work and all columns (including hidden ones) appear.
+const columnSettingsDefs = Object.keys(defaultColumns).map((key) => ({ key }));
 
 export default function OrdersMgmtPage() {
   const navigate = useNavigate();
@@ -119,6 +127,19 @@ export default function OrdersMgmtPage() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+
+  const { data: allWebsites } = useGetAllWebsitesQuery();
+  const websiteMap = useMemo(() => {
+    if (!allWebsites) return {} as Record<string, IWebsiteRes>;
+    return allWebsites.reduce(
+      (map, w) => {
+        map[w._id] = w;
+        return map;
+      },
+      {} as Record<string, IWebsiteRes>,
+    );
+  }, [allWebsites]);
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [page, setPage] = useState(1);
@@ -522,8 +543,7 @@ export default function OrdersMgmtPage() {
     { key: "checkbox", label: "", width: "50px" },
 
     columnVisibility.productCount && {
-      key: "products",
-      width: "400px",
+      key: "productCount",
       label: t("productCount"),
       sortable: true,
       render: (order: any) => (
@@ -532,13 +552,13 @@ export default function OrdersMgmtPage() {
     },
     columnVisibility.totalOrderAmount && {
       key: "totalOrderAmount",
-      label: t("price"),
+      label: t("totalOrderAmount"),
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          {order?.totalAmount
-            ? `₪${order?.totalAmount?.toLocaleString()}`
-            : "-"}{" "}
+          {order?.totalAmount != null
+            ? `₪${order.totalAmount.toLocaleString()}`
+            : "-"}
         </div>
       ),
     },
@@ -548,8 +568,8 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          {order?.deliveryFee
-            ? `₪${order?.deliveryFee?.toLocaleString()}`
+          {order?.deliveryFee != null
+            ? `₪${order.deliveryFee.toLocaleString()}`
             : "-"}
         </div>
       ),
@@ -558,6 +578,22 @@ export default function OrdersMgmtPage() {
       key: "status",
       label: t("order_status"),
       render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
+    columnVisibility.paymentStatus && {
+      key: "paymentStatus",
+      label: t("paymentStatus"),
+      render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+    },
+    columnVisibility.paymentMethod && {
+      key: "paymentMethod",
+      label: t("paymentMethod"),
+      render: (order: IOrder) => (
+        <div className="text-sm">
+          {Array.isArray(order.paymentMethod) && order.paymentMethod.length > 0
+            ? order.paymentMethod.map((m) => t(m)).join(", ")
+            : order.paymentMethod || "-"}
+        </div>
+      ),
     },
     columnVisibility.createdAt && {
       key: "createdAt",
@@ -582,7 +618,7 @@ export default function OrdersMgmtPage() {
     },
 
     columnVisibility.name && {
-      key: "firstName",
+      key: "name",
       label: t("purchaser_name_field"),
       sortable: true,
       render: (order: IOrder) => <div className="text-sm">{order?.name}</div>,
@@ -616,6 +652,26 @@ export default function OrdersMgmtPage() {
           {order?.phone ? order.phone : "-"}
         </a>
       ),
+    },
+    columnVisibility.website && {
+      key: "website",
+      label: t("website"),
+      render: (order: IOrder) => {
+        const website = websiteMap[order.externalApiId ?? ""];
+        if (!website) return <span className="text-sm text-gray-400">-</span>;
+        return (
+          <div className="flex items-center gap-1.5">
+            {website.logoUrl && (
+              <img
+                src={website.logoUrl}
+                alt={website.websiteName}
+                className="w-5 h-5 object-contain rounded"
+              />
+            )}
+            <span className="text-sm">{website.websiteName}</span>
+          </div>
+        );
+      },
     },
   ].filter(Boolean) as {
     key: string;
@@ -1069,6 +1125,52 @@ export default function OrdersMgmtPage() {
     },
   ];
 
+  const getPaymentStatusBadge = (status: TPaymentStatus) => {
+    const badges: Record<string, { bg: string; text: string; label: string }> =
+      {
+        PENDING: {
+          bg: "bg-orange-100 dark:bg-orange-900/30",
+          text: "text-orange-800 dark:text-orange-400",
+          label: t("pending"),
+        },
+        SUCCESS: {
+          bg: "bg-emerald-100 dark:bg-emerald-900/30",
+          text: "text-emerald-800 dark:text-emerald-400",
+          label: t("success"),
+        },
+        FAILURE: {
+          bg: "bg-red-100 dark:bg-red-900/30",
+          text: "text-red-800 dark:text-red-400",
+          label: t("failed"),
+        },
+        FAILED: {
+          bg: "bg-red-100 dark:bg-red-900/30",
+          text: "text-red-800 dark:text-red-400",
+          label: t("failed"),
+        },
+        REFUNDED: {
+          bg: "bg-blue-100 dark:bg-blue-900/30",
+          text: "text-blue-800 dark:text-blue-400",
+          label: t("refunded"),
+        },
+        PARTIALLY_REFUNDED: {
+          bg: "bg-orange-100 dark:bg-orange-900/30",
+          text: "text-orange-800 dark:text-orange-400",
+          label: t("partially_refunded"),
+        },
+      };
+    const badge = badges[status];
+    if (!badge)
+      return <span className="text-xs text-gray-500">{status ?? "-"}</span>;
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}
+      >
+        {badge.label}
+      </span>
+    );
+  };
+
   const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
       pending: {
@@ -1240,7 +1342,7 @@ export default function OrdersMgmtPage() {
                   <ShowColumns
                     t={t}
                     viewMode={viewMode}
-                    columnDefinitions={columns}
+                    columnDefinitions={columnSettingsDefs}
                     columnVisibility={columnVisibility}
                     showColumnSettings={showColumnSettings}
                     setShowColumnSettings={setShowColumnSettings}

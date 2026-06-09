@@ -28,7 +28,8 @@
   "order_status_update_failed": "فشل تحديث حالة الطلب",
   "completed_order_status_locked": "لا يمكن تغيير الطلبات المكتملة",
   "deliveryFee": "رسوم التوصيل",
-  "price": "السعر",
+  "price": "المبلغ الإجمالي",
+  "totalOrderAmount": "المبلغ الإجمالي",
   "actions": "الإجراءات",
   "view_orders": "عرض الطلبات",
   "view_order_summary": "عرض ملخص الطلبات",
@@ -203,5 +204,13 @@
   "resend_loading": "جاري إعادة الإرسال...",
   "resend_success": "تم إعادة الإرسال بنجاح!",
   "submitting": "جارٍ الإرسال...",
-  "refund_success": "نجاح الاسترداد"
+  "refund_success": "نجاح الاسترداد",
+  "paymentStatus": "حالة الدفع",
+  "productCount": "عدد المنتجات",
+  "noDataToExport": "لا توجد بيانات للتصدير",
+  "resend": "إعادة إرسال",
+  "website": "الموقع",
+  "column_settings": "إعدادات الأعمدة",
+  "reset_to_default": "إعادة إلى الافتراضي",
+  "select_columns_to_display": "اختر الأعمدة للعرض"
 }

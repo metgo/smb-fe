@@ -2,6 +2,7 @@ type TPaymentStatus =
   | "PENDING"
   | "SUCCESS"
   | "FAILED"
+  | "FAILURE"
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
 type TOrderStatus =
@@ -42,6 +43,7 @@ interface IOrder {
   campaignCode?: string;
   qrScanned: boolean;
   deliveryFee: number;
+  externalApiId?: string;
 }
 
 interface IOrderProduct {
