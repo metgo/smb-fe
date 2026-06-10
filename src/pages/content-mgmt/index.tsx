@@ -223,9 +223,11 @@ export default function ContentMgmtPage() {
 
   const [productPage, setProductPage] = useState(1);
   const [poiPage, setPoiPage] = useState(1);
+  const [eventPage, setEventPage] = useState(1);
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
   const [combinedPOIs, setCombinedPOIs] = useState<any[]>([]);
+  const [combinedEvents, setCombinedEvents] = useState<any[]>([]);
 
   const defaultTabState: TabState = {
     searchQuery: "",
@@ -271,8 +273,10 @@ export default function ContentMgmtPage() {
     setSelectedBacklogIds(new Set());
     setPage(1);
     setProductPage(1);
+    setEventPage(1);
     setCombinedBusinesses([]);
     setCombinedProducts([]);
+    setCombinedEvents([]);
     setTabState({
       Businesses: {
         searchQuery: "",
@@ -464,7 +468,11 @@ export default function ContentMgmtPage() {
 
   const eventParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Events"];
-    const params: any = { status: "APPROVED", limit: BUSINESS_PAGE_LIMIT };
+    const params: any = {
+      status: "APPROVED",
+      limit: BUSINESS_PAGE_LIMIT,
+      page: eventPage,
+    };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
@@ -481,7 +489,7 @@ export default function ContentMgmtPage() {
       params.endDate = filters.dateRangeFilter.end;
     }
     return params;
-  }, [eventTab, language]);
+  }, [eventTab, language, eventPage]);
 
   const poiParams = useMemo(() => {
     const { searchQuery } = tabState["POI"];
@@ -576,9 +584,38 @@ export default function ContentMgmtPage() {
     selected === "Trips" ? tripParams : skipToken,
   );
 
-  const { data: eventData, isLoading: isLoadingEvent } = useGetAllEventsQuery(
-    selected === "Events" ? eventParams : skipToken,
-  );
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    isFetching: isFetchingEvent,
+  } = useGetAllEventsQuery(selected === "Events" ? eventParams : skipToken);
+
+  const eventHasMore = eventData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    setEventPage(1);
+    setCombinedEvents([]);
+  }, [eventTab.searchQuery, eventTab.filters]);
+
+  useEffect(() => {
+    if (!eventData?.data) return;
+    if (eventPage === 1) {
+      setCombinedEvents(eventData.data);
+    } else {
+      setCombinedEvents((prev) => {
+        const existingIds = new Set(prev.map((e: any) => e._id));
+        const newItems = eventData.data.filter(
+          (e: any) => !existingIds.has(e._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [eventData?.data, eventPage]);
+
+  const fetchNextEventPage = () => {
+    if (!eventHasMore || isFetchingEvent) return;
+    setEventPage((prev) => prev + 1);
+  };
 
   const {
     data: poiData,
@@ -678,7 +715,12 @@ export default function ContentMgmtPage() {
       hasMore: productHasMore,
     },
     Trips: { rawData: tripData, isLoading: isLoadingTrip },
-    Events: { rawData: eventData, isLoading: isLoadingEvent },
+    Events: {
+      rawData: combinedEvents,
+      isLoading: isLoadingEvent,
+      loadMore: fetchNextEventPage,
+      hasMore: eventHasMore,
+    },
     POI: {
       rawData: combinedPOIs,
       isLoading: isLoadingPOI,
@@ -690,7 +732,12 @@ export default function ContentMgmtPage() {
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (tab === "Businesses" || tab === "Products" || tab === "POI")
+    if (
+      tab === "Businesses" ||
+      tab === "Products" ||
+      tab === "POI" ||
+      tab === "Events"
+    )
       return rawData;
     return rawData?.data ?? [];
   };

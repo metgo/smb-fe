@@ -60,7 +60,7 @@ const FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
-  // "Events",
+  "Events",
   "POI",
 ];
 
