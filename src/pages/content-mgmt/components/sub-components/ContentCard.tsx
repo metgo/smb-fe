@@ -1,5 +1,5 @@
 import { useDrag } from "react-dnd";
-import { MapPin, X } from "lucide-react";
+import { MapPin, X, CalendarDays, Clock } from "lucide-react";
 import clsx from "clsx";
 
 import { getPlainTextFromRichText } from "@/helpers";
@@ -20,6 +20,11 @@ interface ContentCardProps {
     city: string;
     location?: string;
   };
+
+  startDate?: string;
+  startTime?: string;
+  isFree?: boolean;
+  eventType?: string;
 
   isExpanded?: boolean;
   viewMode?: TViewMode;
@@ -43,6 +48,10 @@ const ContentCard = ({
   categoryName,
   address,
   descripition,
+  startDate,
+  startTime,
+  isFree,
+  eventType,
   isInCategory,
   isExpanded,
   viewMode = "grid",
@@ -193,14 +202,48 @@ const ContentCard = ({
                   {categoryName}
                 </span>
               )}
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
-                <MapPin className="w-2.5 h-2.5 text-red-500" />
-                {address?.city || address?.location
-                  ? address.city
-                    ? address.city
-                    : address.location
-                  : "-"}
-              </span>
+              {(address?.city || address?.location) && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
+                  <MapPin className="w-2.5 h-2.5 text-red-500" />
+                  {address.city || address.location}
+                </span>
+              )}
+            </div>
+          )}
+          {(startDate || isFree !== undefined || eventType) && (
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              {startDate && (
+                <span className="flex items-center gap-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  <CalendarDays className="w-2.5 h-2.5" />
+                  {new Date(startDate).toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                  {startTime && (
+                    <span className="flex items-center gap-0.5 ml-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      {startTime}
+                    </span>
+                  )}
+                </span>
+              )}
+              {isFree !== undefined && (
+                <span
+                  className={clsx(
+                    "px-1.5 py-0.5 text-[10px] font-semibold rounded",
+                    isFree
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                  )}
+                >
+                  {isFree ? "Free" : "Paid"}
+                </span>
+              )}
+              {eventType && (
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  {eventType.charAt(0) + eventType.slice(1).toLowerCase()}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -259,20 +302,55 @@ const ContentCard = ({
                 >
                   {categoryName}
                 </span>
-                {address?.city && (
+                {(address?.city || address?.location) && (
                   <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
                     <MapPin className="w-2.5 h-2.5 text-red-500" />
-                    {address.city}
+                    {address.city || address.location}
                   </span>
                 )}
               </div>
             )}
           </div>
-          {descripition && (
+          {startDate || isFree !== undefined || eventType ? (
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              {startDate && (
+                <span className="flex items-center gap-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  <CalendarDays className="w-2.5 h-2.5" />
+                  {new Date(startDate).toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                  {startTime && (
+                    <span className="flex items-center gap-0.5 ml-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      {startTime}
+                    </span>
+                  )}
+                </span>
+              )}
+              {isFree !== undefined && (
+                <span
+                  className={clsx(
+                    "px-1.5 py-0.5 text-[10px] font-semibold rounded",
+                    isFree
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                  )}
+                >
+                  {isFree ? "Free" : "Paid"}
+                </span>
+              )}
+              {eventType && (
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  {eventType.charAt(0) + eventType.slice(1).toLowerCase()}
+                </span>
+              )}
+            </div>
+          ) : descripition ? (
             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
               {getPlainTextFromRichText(descripition)}
             </p>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

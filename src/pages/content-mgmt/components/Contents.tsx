@@ -487,34 +487,6 @@ const Contents = ({
                     </select>
                   </div>
                 )}
-                {/* ── POI filters ── */}
-                {currentTab === "POI" && (
-                  <div className="flex flex-col sm:col-span-4">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("primary_category")}
-                    </label>
-                    <select
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          primaryCategory: e.target.value,
-                        })
-                      }
-                      value={filters.primaryCategory}
-                      className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="">{t("all")}</option>
-                      {categoryFilter?.map((cat: any) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
                 {/* ── Event filters ── */}
                 {currentTab === "Events" && (
                   <div className="flex flex-col min-w-45">
@@ -589,7 +561,6 @@ const Contents = ({
                 (filters.hasProductFilter !== "all" ||
                   filters.primaryCategory !== "all")) ||
               (currentTab === "Products" && filters.businessId) ||
-              (currentTab === "POI" && filters.primaryCategory) ||
               (currentTab === "Events" &&
                 ((filters.registrationFilter &&
                   filters.registrationFilter !== "all") ||
@@ -732,6 +703,20 @@ const Contents = ({
                 image={item?.images?.[0]?.image}
                 categoryName={item?.primaryCategoryId?.name}
                 address={item?.address}
+                startDate={
+                  currentTab === "Events"
+                    ? item?.dayDescription?.[0]?.date
+                    : undefined
+                }
+                startTime={
+                  currentTab === "Events"
+                    ? item?.dayDescription?.[0]?.startTime
+                    : undefined
+                }
+                isFree={currentTab === "Events" ? item?.isFree : undefined}
+                eventType={
+                  currentTab === "Events" ? item?.eventType : undefined
+                }
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}
