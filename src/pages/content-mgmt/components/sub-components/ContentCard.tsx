@@ -193,14 +193,14 @@ const ContentCard = ({
                   {categoryName}
                 </span>
               )}
-              {address?.city || address?.location ? (
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
-                  <MapPin className="w-2.5 h-2.5 text-red-500" />
-                  {address.city ? address.city : address.location}
-                </span>
-              ) : (
-                "-"
-              )}
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
+                <MapPin className="w-2.5 h-2.5 text-red-500" />
+                {address?.city || address?.location
+                  ? address.city
+                    ? address.city
+                    : address.location
+                  : "-"}
+              </span>
             </div>
           )}
         </div>

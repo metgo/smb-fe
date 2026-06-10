@@ -222,8 +222,10 @@ export default function ContentMgmtPage() {
   const [page, setPage] = useState(1);
 
   const [productPage, setProductPage] = useState(1);
+  const [poiPage, setPoiPage] = useState(1);
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+  const [combinedPOIs, setCombinedPOIs] = useState<any[]>([]);
 
   const defaultTabState: TabState = {
     searchQuery: "",
@@ -482,13 +484,18 @@ export default function ContentMgmtPage() {
   }, [eventTab, language]);
 
   const poiParams = useMemo(() => {
+    const { searchQuery } = tabState["POI"];
     const params: any = {
       dmoId,
       authorityId,
       limit: BUSINESS_PAGE_LIMIT,
+      status: "APPROVED",
+      externalApiId,
+      page: poiPage,
     };
+    if (searchQuery) params.search = searchQuery;
     return params;
-  }, [poiTab, language, dmoId, authorityId]);
+  }, [poiTab, language, dmoId, authorityId, externalApiId, poiPage]);
 
   const {
     data: businessData,
@@ -573,9 +580,38 @@ export default function ContentMgmtPage() {
     selected === "Events" ? eventParams : skipToken,
   );
 
-  const { data: poiData, isLoading: isLoadingPOI } = useGetAllPOIQuery(
-    selected === "POI" ? poiParams : skipToken,
-  );
+  const {
+    data: poiData,
+    isLoading: isLoadingPOI,
+    isFetching: isFetchingPOI,
+  } = useGetAllPOIQuery(selected === "POI" ? poiParams : skipToken);
+
+  const poiHasMore = poiData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    setPoiPage(1);
+    setCombinedPOIs([]);
+  }, [poiTab.searchQuery, poiTab.filters, dmoId, authorityId, externalApiId]);
+
+  useEffect(() => {
+    if (!poiData?.data) return;
+    if (poiPage === 1) {
+      setCombinedPOIs(poiData.data);
+    } else {
+      setCombinedPOIs((prev) => {
+        const existingIds = new Set(prev.map((p: any) => p._id));
+        const newItems = poiData.data.filter(
+          (p: any) => !existingIds.has(p._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [poiData?.data, poiPage]);
+
+  const fetchNextPoiPage = () => {
+    if (!poiHasMore || isFetchingPOI) return;
+    setPoiPage((prev) => prev + 1);
+  };
 
   const currentTab = selected ?? "Businesses";
   const { searchQuery, filters } = tabState[currentTab];
@@ -643,13 +679,18 @@ export default function ContentMgmtPage() {
     },
     Trips: { rawData: tripData, isLoading: isLoadingTrip },
     Events: { rawData: eventData, isLoading: isLoadingEvent },
-    POI: { rawData: poiData, isLoading: isLoadingPOI },
+    POI: {
+      rawData: combinedPOIs,
+      isLoading: isLoadingPOI,
+      loadMore: fetchNextPoiPage,
+      hasMore: poiHasMore,
+    },
   };
   const active = dataMap[selected ?? "Businesses"];
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (tab === "POI" || tab === "Businesses" || tab === "Products")
+    if (tab === "Businesses" || tab === "Products" || tab === "POI")
       return rawData;
     return rawData?.data ?? [];
   };
@@ -1109,9 +1150,7 @@ export default function ContentMgmtPage() {
                           Products: productData?.totalData ?? 0,
                           Trips: tripData?.totalData ?? 0,
                           Events: eventData?.totalData ?? 0,
-                          POI: Array.isArray(poiData)
-                            ? poiData.length
-                            : (poiData?.totalData ?? 0),
+                          POI: poiData?.totalData ?? combinedPOIs.length,
                         }}
                         tabLoadings={{
                           Businesses: isLoading || isApiIdChanging,
