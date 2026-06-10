@@ -477,9 +477,6 @@ export default function ContentMgmtPage() {
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
     }
-    if (filters.eventTypeFilter !== "all") {
-      params.isRegistration = filters.eventTypeFilter;
-    }
 
     if (filters.dateRangeFilter.start) {
       params.startDate = filters.dateRangeFilter.start;
