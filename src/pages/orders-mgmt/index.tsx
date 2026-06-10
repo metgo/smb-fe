@@ -971,8 +971,8 @@ export default function OrdersMgmtPage() {
   const handleExportCSV = useCallback(() => {
     const ordersToExport =
       selectedOrders.size > 0
-        ? (orders?.data?.filter((o: any) => selectedOrders.has(o._id)) ?? [])
-        : (orders?.data ?? []);
+        ? combinedOrders.filter((o: any) => selectedOrders.has(o._id))
+        : combinedOrders;
 
     if (!ordersToExport.length) {
       toast.message(t("noOrdersToExport") || "No orders to export");
@@ -985,33 +985,42 @@ export default function OrdersMgmtPage() {
       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    // ✅ dynamic columns (same as business)
-    const columns = Object.entries(columnVisibility)
+    const visibleKeys = Object.entries(columnVisibility)
       .filter(([_, visible]) => visible)
       .map(([key]) => key as keyof ColumnVisibility);
 
-    const headers = columns.map((key) => t(key));
+    const headers = visibleKeys.map((key) => t(key));
 
     const csvRows = ordersToExport.map((order: IOrder) =>
-      columns
+      visibleKeys
         .map((key) => {
-          let value: any = order[key as keyof IOrder];
+          let value: any;
 
-          // ✅ custom transformations
           if (key === "totalOrderAmount") {
-            value = `₪${order.totalAmount}`;
+            value =
+              order.totalAmount != null
+                ? `₪${order.totalAmount.toLocaleString()}`
+                : "-";
           } else if (key === "deliveryFee") {
-            value = `₪${order.deliveryFee}`;
+            value =
+              order.deliveryFee != null
+                ? `₪${order.deliveryFee.toLocaleString()}`
+                : "-";
           } else if (key === "productCount") {
-            value = `₪${order.productCount}`;
+            value = order.productCount ?? "-";
           } else if (key === "createdAt") {
             value = order.createdAt
               ? new Date(order.createdAt).toLocaleDateString()
               : "-";
-          } else if (key === "paymentDate") {
-            value = order.paymentDate
-              ? new Date(order.paymentDate).toLocaleDateString()
-              : "-";
+          } else if (key === "paymentMethod") {
+            value = Array.isArray(order.paymentMethod)
+              ? order.paymentMethod.map((m: string) => t(m)).join(", ")
+              : order.paymentMethod || "-";
+          } else if (key === "website") {
+            const website = websiteMap[order.externalApiId ?? ""];
+            value = website?.websiteName ?? "-";
+          } else {
+            value = order[key as keyof IOrder];
           }
 
           return escapeCSV(value ?? "-");
@@ -1037,7 +1046,7 @@ export default function OrdersMgmtPage() {
 
     link.click();
     URL.revokeObjectURL(url);
-  }, [selectedOrders, orders, columnVisibility, t]);
+  }, [selectedOrders, combinedOrders, columnVisibility, websiteMap, t]);
 
   const promptBulkResend = useCallback(
     (recipient: "VENDOR" | "CUSTOMER") => {
