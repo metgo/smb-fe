@@ -78,7 +78,7 @@ const defaultColumns = {
   productCount: true,
   deliveryFee: true,
   createdAt: false,
-  paymentDate: true,
+  _id: true,
   website: true,
 };
 
@@ -606,14 +606,12 @@ export default function OrdersMgmtPage() {
       ),
     },
 
-    columnVisibility.paymentDate && {
-      key: "paymentDate",
-      label: t("payment_date"),
+    columnVisibility._id && {
+      key: "_id",
+      label: t("_id"),
       sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.paymentDate, language)}
-        </div>
+      render: (order: any) => (
+        <div className="text-sm">{order?._id ?? "-"}</div>
       ),
     },
 

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader, Mail, Phone, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
@@ -41,6 +41,7 @@ function OrderDetailsModal({
   isQRMode,
   qrToken,
 }: OrderDetailsModalProps) {
+  console.log("🚀 ~ OrderDetailsModal ~ order:", order);
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
   const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
@@ -53,6 +54,13 @@ function OrderDetailsModal({
         ? [order.products]
         : [],
   );
+  useEffect(() => {
+    if (!order?.products) return;
+    setOrderProducts(
+      Array.isArray(order.products) ? order.products : [order.products],
+    );
+  }, [order?.products]);
+
   const [showProductModal, setShowProductModal] = useState(false);
   const [sendingTarget, setSendingTarget] = useState<
     "VENDOR" | "CUSTOMER" | null
@@ -255,7 +263,8 @@ function OrderDetailsModal({
                       <p
                         className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
                       >
-                        ₪{(product?.quantity * product?.amount).toLocaleString()}
+                        ₪
+                        {(product?.quantity * product?.amount).toLocaleString()}
                       </p>
                       <p className={`text-sm ${textTertiary}`}>
                         {product?.quantity} x ₪{product?.amount}
