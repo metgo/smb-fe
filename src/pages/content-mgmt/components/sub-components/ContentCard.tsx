@@ -1,5 +1,5 @@
 import { useDrag } from "react-dnd";
-import { X } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 import clsx from "clsx";
 
 import { getPlainTextFromRichText } from "@/helpers";
@@ -16,6 +16,9 @@ interface ContentCardProps {
   image: string;
   categoryName: string;
   descripition: string;
+  address?: {
+    city: string;
+  };
 
   isExpanded?: boolean;
   viewMode?: TViewMode;
@@ -37,6 +40,7 @@ const ContentCard = ({
   name,
   image,
   categoryName,
+  address,
   descripition,
   isInCategory,
   isExpanded,
@@ -176,15 +180,25 @@ const ContentCard = ({
               {getPlainTextFromRichText(descripition)}
             </p>
           )}
-          {categoryName && (
-            <span
-              className={clsx(
-                "inline-block mt-1.5 px-1.5 py-0.5 text-[10px] font-semibold rounded",
-                bgTertiary,
+          {(categoryName || address?.city) && (
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              {categoryName && (
+                <span
+                  className={clsx(
+                    "inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded",
+                    bgTertiary,
+                  )}
+                >
+                  {categoryName}
+                </span>
               )}
-            >
-              {categoryName}
-            </span>
+              {address?.city && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
+                  <MapPin className="w-2.5 h-2.5 text-red-500" />
+                  {address.city}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -232,15 +246,23 @@ const ContentCard = ({
             >
               {name || "-"}
             </h4>
-            {categoryName && (
-              <span
-                className={clsx(
-                  "shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded whitespace-nowrap",
-                  bgTertiary,
+            {(categoryName || address?.city) && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span
+                  className={clsx(
+                    "shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded whitespace-nowrap",
+                    bgTertiary,
+                  )}
+                >
+                  {categoryName}
+                </span>
+                {address?.city && (
+                  <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                    <MapPin className="w-2.5 h-2.5 text-red-500" />
+                    {address.city}
+                  </span>
                 )}
-              >
-                {categoryName}
-              </span>
+              </div>
             )}
           </div>
           {descripition && (

@@ -706,6 +706,7 @@ const Contents = ({
                 descripition={item?.shortDescription}
                 image={item?.images?.[0]?.image}
                 categoryName={item?.primaryCategoryId?.name}
+                address={item?.address}
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}
