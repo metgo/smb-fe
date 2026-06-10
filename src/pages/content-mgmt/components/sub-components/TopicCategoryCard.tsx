@@ -786,7 +786,6 @@ const TopicCategoryCard = ({
           {group?.contents?.length > 0 ? (
             <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
               {group.contents.map((content: any) => {
-                console.log("🚀 ~ TopicCategoryCard ~ content:", content);
                 return (
                   <div key={content._id} className="w-44 shrink-0">
                     <ContentCard

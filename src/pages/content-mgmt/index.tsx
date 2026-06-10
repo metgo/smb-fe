@@ -423,7 +423,7 @@ export default function ContentMgmtPage() {
     if (filters.hasProductFilter !== "all")
       params.hasProductFilter = filters.hasProductFilter === "yes";
     if (filters.primaryCategory !== "all")
-      params.primaryCategory = filters.primaryCategory;
+      params.primaryCategoryId = filters.primaryCategory;
     return params;
   }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
 
