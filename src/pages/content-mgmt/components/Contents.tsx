@@ -376,7 +376,9 @@ const Contents = ({
               storageKey="contentSearchTerm"
             />
           </div>
-          <FilterButton value={showFilters} onChange={setShowFilters} />
+          {currentTab !== "POI" && (
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+          )}
           <ViewModeToggle
             onChange={setViewMode}
             value={viewMode}
