@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Image as ImageIcon,
@@ -326,6 +326,8 @@ export default function CreateProductWizard({
     }
   }, [productId, product]);
 
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
+
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
@@ -447,7 +449,7 @@ export default function CreateProductWizard({
       return;
     }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
+    await saveDraft(false, stepPayloadMap);
   };
 
   const handleNext = async () => {
@@ -582,23 +584,31 @@ export default function CreateProductWizard({
 
   const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
-      let internalProductId;
+      const payload = processedFormData;
+      if (!payload || !Object.keys(payload).length) return;
 
-      // 1️⃣ Initialize product if not created yet
-      if (!productId || opMode !== IOpMode.EDIT) {
+      let internalProductId: string | undefined;
+
+      // Resolve which product ID to use for this save
+      const existingId = productId || createdProductId;
+
+      if (!existingId || opMode === IOpMode.DUPLICATE) {
+        // First save in CREATE mode, or a DUPLICATE — initialize a new product
         const res = await initProductCreate({
           businessId: product?.businessId?._id || formData?.businessId,
         }).unwrap();
         internalProductId = res?.id;
+        // Track the created ID so subsequent saves in this session patch instead of re-creating
+        if (opMode !== IOpMode.DUPLICATE) {
+          setCreatedProductId(internalProductId ?? null);
+        }
+      } else {
+        internalProductId = existingId;
       }
 
-      // Only send payload for the current step
-      const payload = processedFormData;
-      if (!payload || !Object.keys(payload).length) return;
-
-      // 4️⃣ Update product
+      // Update product
       await updateProduct({
-        productId: internalProductId || productId!,
+        productId: internalProductId!,
         body: {
           ...payload,
           status: isPublish

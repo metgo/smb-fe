@@ -683,6 +683,22 @@ export default function CreateBusinessWizard({
       toast.error(tt("name_required"));
       return;
     }
+    if (
+      !formData.shortDescription?.trim() &&
+      !formData.shortDescriptionHe?.trim() &&
+      !formData.shortDescriptionAr?.trim()
+    ) {
+      toast.error(tt("short_description_required"));
+      return;
+    }
+    if (
+      !formData.fullDescription?.trim() &&
+      !formData.fullDescriptionHe?.trim() &&
+      !formData.fullDescriptionAr?.trim()
+    ) {
+      toast.error(tt("full_description_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
     await saveDraft(false);
     if (businessId) {
