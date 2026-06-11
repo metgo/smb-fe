@@ -44,6 +44,7 @@ export const endpoints = {
   searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
+  pendingApprovals: "/admin/pending-approvals",
 
   //products
   products: "/products",

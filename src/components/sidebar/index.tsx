@@ -34,6 +34,7 @@ import {
   Handshake,
   Gift,
   ChevronLeft,
+  CheckSquare,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -61,10 +62,19 @@ export default function Sidebar() {
 
   const { isDark, isRTL } = useThemeClasses();
   const { isTraveller, isSuperadmin } = useUserRoles();
+  const userRole = useAppSelector((state) => state.auth.userRole);
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
+
+  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin)
+  const isAdminRole = [
+    "superadmin",
+    "authorityAdmin",
+    "dmo",
+    "dmoadmin",
+  ].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -112,6 +122,17 @@ export default function Sidebar() {
       icon: BellIcon,
       isEnabled: true,
     },
+    ...(isAdminRole
+      ? [
+          {
+            id: "pending-approvals",
+            path: routes.pendingApprovals,
+            label: "Pending Approvals",
+            icon: CheckSquare,
+            isEnabled: true,
+          },
+        ]
+      : []),
     {
       id: "poi",
       path: routes.poiMgmt,

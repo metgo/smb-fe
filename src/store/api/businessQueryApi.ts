@@ -102,6 +102,15 @@ export const businessQueryApi = createApi({
         params,
       }),
     }),
+
+    getPendingApprovals: builder.query<any, { page?: number; limit?: number }>({
+      query: (params) => ({
+        url: endpoints.pendingApprovals,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Business"],
+    }),
   }),
 });
 
@@ -115,4 +124,5 @@ export const {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
   useLazyGetBusinessDeliveryInfoByIdQuery,
+  useGetPendingApprovalsQuery,
 } = businessQueryApi;

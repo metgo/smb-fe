@@ -4,6 +4,7 @@ import ProfilePage from "./profile";
 import EventsMgmtPage from "./events-mgmt";
 import ProductsMgmtPage from "./products-mgmt";
 import BusinessesMgmtPage from "./businesses-mgmt";
+import PendingApprovalsPage from "./pending-approvals";
 import MiniCampaignsMgmtPage from "./mini-campaigns-mgmt";
 import OrdersMgmtPage from "./orders-mgmt";
 import EventDetailsPage from "./events-mgmt/details";
@@ -34,6 +35,7 @@ export {
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
   BusinessesMgmtPage,
+  PendingApprovalsPage,
   BusinessDetailsPage,
   ProductsMgmtPage,
   ProductDetailsPage,
