@@ -129,11 +129,17 @@ export default function PoiDetailsPage() {
   };
 
   const renderContent = () => {
+    const poiImages: IImage[] = [...(poi?.images ?? [])].sort(
+      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
+    );
     const mediaProps = {
-      images: (poi?.images ?? []).map((img: IImage) => ({
+      images: poiImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        poiImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {

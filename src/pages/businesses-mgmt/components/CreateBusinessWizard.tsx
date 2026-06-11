@@ -193,7 +193,6 @@ export default function CreateBusinessWizard({
     // Step 8
     socialMedia: [],
   });
-  console.log("🚀 ~ CreateBusinessWizard ~ formData:", formData);
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
