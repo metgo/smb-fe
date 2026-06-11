@@ -1,9 +1,18 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Package, Store, Calendar, MapPin, AlertCircle } from "lucide-react";
+import {
+  Package,
+  Store,
+  Calendar,
+  MapPin,
+  AlertCircle,
+  Eye,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPendingApprovalsQuery } from "@/store/api/businessQueryApi";
 import { StatusPill } from "@/components/pills";
+import { routes } from "@/lib/routes";
 
 const LIMIT = 20;
 
@@ -42,12 +51,32 @@ const getItemTypeLabel = (type: string) => {
 };
 
 export default function PendingApprovalsPage() {
+  const navigate = useNavigate();
   const { isDark, borderColor, textPrimary } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [combinedItems, setCombinedItems] = useState<any[]>([]);
   const [sentinel, setSentinel] = useState<HTMLDivElement | null>(null);
   const isFetchingRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const handleViewDetails = (item: any) => {
+    switch (item.type) {
+      case "business":
+        navigate(`${routes.businessDetails}?businessId=${item._id}`);
+        break;
+      case "product":
+        navigate(`${routes.productDetails}?productId=${item._id}`);
+        break;
+      case "event":
+        navigate(`${routes.eventDetails}?eventId=${item._id}`);
+        break;
+      case "poi":
+        navigate(`${routes.poiDetails}?poiId=${item._id}`);
+        break;
+      default:
+        break;
+    }
+  };
 
   const {
     data: approvalsData,
@@ -319,6 +348,11 @@ export default function PendingApprovalsPage() {
                     >
                       Created
                     </th>
+                    <th
+                      className={`px-6 py-3 text-center text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                    >
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -362,6 +396,15 @@ export default function PendingApprovalsPage() {
                         >
                           {new Date(item.createdAt).toLocaleDateString()}
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleViewDetails(item)}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+                        >
+                          <Eye size={16} />
+                          <span className="text-sm">View</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
