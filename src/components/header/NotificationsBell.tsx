@@ -22,8 +22,14 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
-import { useMarkNotificationsAsReadMutation } from "@/store/api/notificationApi";
-import { markNotificationAsRead } from "@/features/notificationSlice";
+import {
+  useMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
+} from "@/store/api/notificationApi";
+import {
+  markNotificationAsRead,
+  setNotificationStatus,
+} from "@/features/notificationSlice";
 import {
   useApproveCategorySuggestionMutation,
   useUpdateBusinessMutation,
@@ -41,6 +47,7 @@ const NotificationsBell = () => {
   const { notifications } = useAppSelector((state) => state.notification);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [updateNotification] = useUpdateNotificationMutation();
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
   const [updateBusiness] = useUpdateBusinessMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -229,6 +236,7 @@ const NotificationsBell = () => {
                   const itemType = notification?.itemType;
                   const queryParam = `${itemType?.toLowerCase()}Id`;
                   const isApproving = approvingIds.has(notification._id);
+                  const isApproved = notification.status === "APPROVED";
 
                   const isCategorySuggestion =
                     notification.notifType === "ACTION" &&
@@ -276,8 +284,16 @@ const NotificationsBell = () => {
                           body: { status: "APPROVED" },
                         }).unwrap();
                       }
-                      await markNotificationsAsRead(notification._id);
-                      dispatch(markNotificationAsRead(notification._id));
+                      await updateNotification({
+                        notificationId: notification._id,
+                        body: { status: "APPROVED", isRead: true },
+                      }).unwrap();
+                      dispatch(
+                        setNotificationStatus({
+                          notificationId: notification._id,
+                          status: "APPROVED",
+                        }),
+                      );
                       toast.success("Approved successfully!");
                     } catch {
                       toast.error("Failed to approve. Please try again.");
@@ -395,15 +411,21 @@ const NotificationsBell = () => {
                           {canApprove && (
                             <button
                               onClick={handleApprove}
-                              disabled={isApproving}
+                              disabled={isApproving || isApproved}
                               className={clsx(
                                 "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
-                                "bg-green-600 hover:bg-green-700 text-white",
+                                isApproved
+                                  ? "bg-green-700 text-white"
+                                  : "bg-green-600 hover:bg-green-700 text-white",
                                 "disabled:opacity-60 disabled:cursor-not-allowed",
                               )}
                             >
                               <Check className="w-3 h-3" />
-                              {isApproving ? "Approving..." : "Approve"}
+                              {isApproved
+                                ? "Approved"
+                                : isApproving
+                                  ? "Approving..."
+                                  : "Approve"}
                             </button>
                           )}
 
