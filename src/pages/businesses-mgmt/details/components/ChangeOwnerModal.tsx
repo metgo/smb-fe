@@ -11,7 +11,7 @@ import {
 } from "@/store/api/masterDataApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface ChangeOwnerModalProps {
   setIsOpen: (v: boolean) => void;
@@ -28,7 +28,6 @@ export default function ChangeOwnerModal({
   refetch,
   currentOwner,
 }: ChangeOwnerModalProps) {
-  const { userRole } = useAppSelector((state) => state.auth);
   const { isDark } = useThemeClasses();
   const { t } = useTranslation("common");
   const [getUserByEmail] = useLazyGetUserByEmailQuery();
@@ -126,7 +125,7 @@ export default function ChangeOwnerModal({
         phoneNumber: phone,
         address,
         languagePreference: language,
-        role: userRole,
+        role: UserRole.TRAVELLER,
       });
     }
 
