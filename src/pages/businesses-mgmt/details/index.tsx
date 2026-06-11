@@ -413,6 +413,7 @@ export default function BusinessDetailsPage() {
         <ChangeOwnerModal
           setIsOpen={setIsOwnerChangeModalOpen}
           currentOwner={business?.owner}
+          refetch={businessDataRefetch}
         />
       )}
 

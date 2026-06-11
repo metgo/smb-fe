@@ -95,19 +95,26 @@ export default function ChangeOwnerModal({
     setIsOpen(false);
   };
 
-  const handleAssignExistingUser = () => {
+  const handleAssignExistingUser = async () => {
     if (foundUser) {
-      updateOwner({ userId: foundUser?.id, businessesId: businessId });
-      toast.success(t("owner_changed"), {
-        description: t("owner_changed_description", {
-          firstName: foundUser.firstName,
-          lastName: foundUser.lastName,
-        }),
-      });
-      if (refetch) refetch();
-      setFoundUser("");
-      handleClose();
-      setEmail("");
+      try {
+        await updateOwner({
+          userId: foundUser?.id,
+          businessesId: businessId,
+        }).unwrap();
+        toast.success(t("owner_changed"), {
+          description: t("owner_changed_description", {
+            firstName: foundUser.firstName,
+            lastName: foundUser.lastName,
+          }),
+        });
+        if (refetch) refetch();
+        setFoundUser("");
+        handleClose();
+        setEmail("");
+      } catch {
+        toast.error(t("owner_change_failed"));
+      }
     }
   };
 
