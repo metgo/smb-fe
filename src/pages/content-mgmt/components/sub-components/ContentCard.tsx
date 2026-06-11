@@ -203,7 +203,12 @@ const ContentCard = ({
                 </span>
               )}
               {(address?.city || address?.location) && (
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100">
+                <span
+                  className={clsx(
+                    "flex items-center gap-0.5 text-[10px] font-semibold",
+                    isDark ? "text-gray-100" : "text-gray-900",
+                  )}
+                >
                   <MapPin className="w-2.5 h-2.5 text-red-500" />
                   {address.city || address.location}
                 </span>
@@ -303,7 +308,12 @@ const ContentCard = ({
                   {categoryName}
                 </span>
                 {(address?.city || address?.location) && (
-                  <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                  <span
+                    className={clsx(
+                      "shrink-0 flex items-center gap-0.5 text-[10px] font-semibold whitespace-nowrap",
+                      isDark ? "text-gray-100" : "text-gray-900",
+                    )}
+                  >
                     <MapPin className="w-2.5 h-2.5 text-red-500" />
                     {address.city || address.location}
                   </span>
