@@ -39,13 +39,16 @@ const AssignBankAccountModal = ({
   );
 
   const filteredBanks = useMemo(() => {
-    if (!bankSearch.trim()) return banks;
-    const q = bankSearch.toLowerCase();
-    return banks.filter(
-      (b) =>
-        b.bankId.toLowerCase().includes(q) ||
-        b.bankName.toLowerCase().includes(q),
-    );
+    const list = !bankSearch.trim()
+      ? banks
+      : banks.filter((b) => {
+          const q = bankSearch.toLowerCase();
+          return (
+            b.bankId.toLowerCase().includes(q) ||
+            b.bankName.toLowerCase().includes(q)
+          );
+        });
+    return [...list].sort((a, b) => Number(a.bankId) - Number(b.bankId));
   }, [banks, bankSearch]);
   const [errors, setErrors] = useState<BankAccountErrors>({});
 
