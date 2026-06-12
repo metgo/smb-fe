@@ -49,6 +49,20 @@ export const notificationApi = createApi({
       }),
       invalidatesTags: ["NotificationData"],
     }),
+
+    updateNotification: builder.mutation<
+      INotification,
+      {
+        notificationId: string;
+        body: Partial<Pick<INotification, "status" | "isRead">>;
+      }
+    >({
+      query: ({ notificationId, body }) => ({
+        url: `${endpoints.notifications}/${notificationId}`,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
   }),
 });
 
@@ -57,5 +71,6 @@ export const {
   useLazyGetAllNotificationsQuery,
   useMarkNotificationsAsReadMutation,
   useBulkMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
   useGetNotificatonStatsQuery,
 } = notificationApi;
