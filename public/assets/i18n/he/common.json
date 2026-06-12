@@ -184,6 +184,9 @@
   "weekly_schedule": "לוח זמנים שבועי",
   "no_schedule_available": "אין לוח זמנים זמין",
   "not_set_opening_hours": "שעות הפעילות טרם הוגדרו",
+  "by_appointment": "בתיאום מראש",
+  "for_entire_week": "לכל השבוע",
+  "add_time_slot": "הוסף שעות",
 
   "all": "הכל",
   "select_dmo": "בחר DMO",
