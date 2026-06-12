@@ -116,6 +116,13 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
+      id: "poi",
+      path: routes.poiMgmt,
+      label: t("pois") || "Points of Interest",
+      icon: MapPin,
+      isEnabled: true,
+    },
+    {
       id: "notifications",
       path: routes.notificationMgmt,
       label: t("notifications") || "Notifications",
@@ -133,13 +140,6 @@ export default function Sidebar() {
           },
         ]
       : []),
-    {
-      id: "poi",
-      path: routes.poiMgmt,
-      label: t("pois") || "Points of Interest",
-      icon: MapPin,
-      isEnabled: true,
-    },
     {
       id: "trips",
       path: routes.trips,

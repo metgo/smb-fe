@@ -13,6 +13,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetPendingApprovalsQuery } from "@/store/api/businessQueryApi";
 import { StatusPill } from "@/components/pills";
 import { routes } from "@/lib/routes";
+import TabsSection from "@/components/shared/TabsSection";
 
 const LIMIT = 20;
 
@@ -50,14 +51,28 @@ const getItemTypeLabel = (type: string) => {
   }
 };
 
+const stripHtmlTags = (html: string | undefined) => {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "").trim();
+};
+
 export default function PendingApprovalsPage() {
   const navigate = useNavigate();
   const { isDark, borderColor, textPrimary } = useThemeClasses();
   const [page, setPage] = useState(1);
   const [combinedItems, setCombinedItems] = useState<any[]>([]);
   const [sentinel, setSentinel] = useState<HTMLDivElement | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
   const isFetchingRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const tabs = [
+    { id: "all", label: "All", icon: Package },
+    { id: "business", label: "Businesses", icon: Store },
+    { id: "product", label: "Products", icon: Package },
+    { id: "event", label: "Events", icon: Calendar },
+    { id: "poi", label: "POIs", icon: MapPin },
+  ];
 
   const handleViewDetails = (item: any) => {
     switch (item.type) {
@@ -90,6 +105,12 @@ export default function PendingApprovalsPage() {
 
   const hasMore = approvalsData?.meta?.hasNextPage;
   const total = approvalsData?.meta?.total || 0;
+  const apiCounts = approvalsData?.meta?.counts || {
+    business: 0,
+    product: 0,
+    event: 0,
+    poi: 0,
+  };
 
   // Accumulate items across pages
   useEffect(() => {
@@ -108,24 +129,40 @@ export default function PendingApprovalsPage() {
     });
   }, [approvalsData, page]);
 
-  const pendingItems = combinedItems;
+  // Filter items based on active tab
+  const filteredItems =
+    activeTab === "all"
+      ? combinedItems
+      : combinedItems.filter((item) => item.type === activeTab);
+
+  const pendingItems = filteredItems;
 
   // Keep isFetching ref in sync
   useEffect(() => {
     isFetchingRef.current = isFetching;
   }, [isFetching]);
 
+  // Auto-load more pages if current tab is empty but has more data available
+  useEffect(() => {
+    // Keep loading pages until we find items for this tab or run out of pages
+    if (
+      activeTab !== "all" &&
+      pendingItems.length === 0 &&
+      hasMore &&
+      !isFetching
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  }, [activeTab, pendingItems.length, hasMore, isFetching]);
+
   const stats = useMemo(() => {
     return {
-      business: pendingItems.filter((item: any) => item.type === "business")
-        .length,
-      product: pendingItems.filter((item: any) => item.type === "product")
-        .length,
-      event: pendingItems.filter((item: any) => item.type === "event").length,
-      poi: pendingItems.filter((item: any) => item.type === "poi").length,
-      // order: pendingItems.filter((item: any) => item.type === "order").length,
+      business: apiCounts.business,
+      product: apiCounts.product,
+      event: apiCounts.event,
+      poi: apiCounts.poi,
     };
-  }, [pendingItems]);
+  }, [apiCounts]);
 
   // Infinite scroll handler
   useEffect(() => {
@@ -300,139 +337,154 @@ export default function PendingApprovalsPage() {
               </p>
             </div>
           </div>
-        ) : pendingItems.length === 0 ? (
-          <div
-            className={`text-center py-16 rounded-lg border ${isDark ? "border-gray-700 bg-gray-800/30" : "border-gray-200 bg-gray-50"}`}
-          >
-            <div
-              className={`${isDark ? "text-gray-400" : "text-gray-600"} mb-2`}
-            >
-              ✓ All Clear
-            </div>
-            <p className={isDark ? "text-gray-500" : "text-gray-600"}>
-              No pending approvals at this time
-            </p>
-          </div>
         ) : (
-          <div className={`rounded-lg overflow-hidden border ${borderColor}`}>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr
-                    className={`${
-                      isDark ? "bg-gray-800" : "bg-gray-100"
-                    } border-b ${borderColor}`}
+          <>
+            <div className="mb-6">
+              <TabsSection
+                tabs={tabs}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+              />
+            </div>
+            {pendingItems.length === 0 ? (
+              <div
+                className={`text-center py-16 rounded-lg border ${isDark ? "border-gray-700 bg-gray-800/30" : "border-gray-200 bg-gray-50"}`}
+              >
+                <div
+                  className={`${isDark ? "text-gray-400" : "text-gray-600"} mb-2`}
+                >
+                  ✓ All Clear
+                </div>
+                <p className={isDark ? "text-gray-500" : "text-gray-600"}>
+                  No pending approvals at this time
+                </p>
+              </div>
+            ) : (
+              <div
+                className={`rounded-lg overflow-hidden border ${borderColor}`}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr
+                        className={`${
+                          isDark ? "bg-gray-800" : "bg-gray-100"
+                        } border-b ${borderColor}`}
+                      >
+                        <th
+                          className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Type
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Name
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Description
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Status
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Created
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-center text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingItems.map((item: any, idx: number) => (
+                        <tr
+                          key={`${item.type}-${item._id}-${idx}`}
+                          className={`border-b ${borderColor} ${
+                            isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"
+                          } transition`}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              {getItemTypeIcon(item.type)}
+                              <span
+                                className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                              >
+                                {getItemTypeLabel(item.type)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div
+                              className={`text-sm font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                            >
+                              {item.nameHe || item.name}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div
+                              className={`text-sm truncate max-w-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
+                            >
+                              {stripHtmlTags(
+                                item.shortDescription || item.description,
+                              ) || "-"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <StatusPill status={item.status} />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div
+                              className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {new Date(item.createdAt).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => handleViewDetails(item)}
+                              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+                            >
+                              <Eye size={16} />
+                              <span className="text-sm">View</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Infinite Scroll Sentinel */}
+                {hasMore && (
+                  <div
+                    ref={setSentinel}
+                    className={`flex items-center justify-center min-h-20 border-t ${borderColor} ${
+                      isDark ? "bg-gray-900" : "bg-gray-50"
+                    }`}
                   >
-                    <th
-                      className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Type
-                    </th>
-                    <th
-                      className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Name
-                    </th>
-                    <th
-                      className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Description
-                    </th>
-                    <th
-                      className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Status
-                    </th>
-                    <th
-                      className={`px-6 py-3 text-left text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Created
-                    </th>
-                    <th
-                      className={`px-6 py-3 text-center text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                    >
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingItems.map((item: any, idx: number) => (
-                    <tr
-                      key={`${item.type}-${item._id}-${idx}`}
-                      className={`border-b ${borderColor} ${
-                        isDark ? "hover:bg-gray-800" : "hover:bg-gray-50"
-                      } transition`}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {getItemTypeIcon(item.type)}
-                          <span
-                            className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                          >
-                            {getItemTypeLabel(item.type)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div
-                          className={`text-sm font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
-                        >
-                          {item.nameHe || item.name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div
-                          className={`text-sm truncate max-w-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}
-                        >
-                          {item.shortDescription || item.description || "-"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusPill status={item.status} />
-                      </td>
-                      <td className="px-6 py-4">
+                    {isFetching && (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                         <div
                           className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                         >
-                          {new Date(item.createdAt).toLocaleDateString()}
+                          Loading more items...
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleViewDetails(item)}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
-                        >
-                          <Eye size={16} />
-                          <span className="text-sm">View</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Infinite Scroll Sentinel */}
-            {hasMore && (
-              <div
-                ref={setSentinel}
-                className={`flex items-center justify-center min-h-20 border-t ${borderColor} ${
-                  isDark ? "bg-gray-900" : "bg-gray-50"
-                }`}
-              >
-                {isFetching && (
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <div
-                      className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      Loading more items...
-                    </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
