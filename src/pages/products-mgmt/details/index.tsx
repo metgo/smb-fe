@@ -137,12 +137,18 @@ export default function ProductDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, language, product };
+    const productImages: IImage[] = [...(product?.images ?? [])].sort(
+      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
+    );
     const mediaProps = {
       logoImage: null,
-      images: (product?.images ?? []).map((img: IImage) => ({
+      images: productImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        productImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
     switch (activeTab) {
       case "overview":
