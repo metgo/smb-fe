@@ -16,11 +16,34 @@ import {
   CreateUserWizard,
 } from "./components";
 import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
+
+const ROLE_ORDER: UserRole[] = [
+  UserRole.SUPERADMIN,
+  UserRole.ADMIN,
+  UserRole.DMOADMIN,
+  UserRole.DMO,
+  UserRole.AUTHORITY_ADMIN,
+  UserRole.AUTHORITY,
+  UserRole.TRAVELLER,
+];
 
 const LIMIT = 1000;
 
 const UsersMgmtPage = () => {
-  const [activeRole, setActiveRole] = useState<UserRole>(UserRole.SUPERADMIN);
+  const { userRole } = useAppSelector((state) => state.auth);
+
+  const visibleTabs = useMemo(() => {
+    const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
+    if (myIndex === -1) return ROLE_TABS;
+    return ROLE_TABS.filter(
+      (tab) => ROLE_ORDER.indexOf(tab.id as UserRole) >= myIndex,
+    );
+  }, [userRole]);
+
+  const [activeRole, setActiveRole] = useState<UserRole>(
+    () => (userRole as UserRole) ?? UserRole.SUPERADMIN,
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -179,7 +202,7 @@ const UsersMgmtPage = () => {
 
         {/* Tabs */}
         <TabsSection
-          tabs={ROLE_TABS}
+          tabs={visibleTabs}
           activeTab={activeRole}
           setActiveTab={handleRoleChange}
         />

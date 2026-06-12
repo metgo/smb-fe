@@ -10,6 +10,17 @@ import {
 } from "@/store/api/userMutationApi";
 import { useGetDmosQuery } from "@/store/api/masterDataApi";
 import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
+
+const ROLE_ORDER: UserRole[] = [
+  UserRole.SUPERADMIN,
+  UserRole.ADMIN,
+  UserRole.DMOADMIN,
+  UserRole.DMO,
+  UserRole.AUTHORITY_ADMIN,
+  UserRole.AUTHORITY,
+  UserRole.TRAVELLER,
+];
 
 interface UserFormData {
   firstName: string;
@@ -52,6 +63,30 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
+  const {
+    userRole,
+    dmoId: myDmoId,
+    authorityId: myAuthorityId,
+  } = useAppSelector((state) => state.auth);
+
+  // When creating, dmoadmin can only create dmo users; authorityAdmin only authority users
+  const lockedRole = !isEdit
+    ? userRole === UserRole.DMOADMIN
+      ? UserRole.DMO
+      : userRole === UserRole.AUTHORITY_ADMIN
+        ? UserRole.AUTHORITY
+        : null
+    : null;
+
+  const allowedRoleOptions = (() => {
+    if (lockedRole) return ROLE_OPTIONS.filter((r) => r.value === lockedRole);
+    const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
+    if (myIndex === -1) return ROLE_OPTIONS;
+    return ROLE_OPTIONS.filter(
+      (r) => ROLE_ORDER.indexOf(r.value as UserRole) >= myIndex,
+    );
+  })();
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<UserFormData>({
     firstName: editUser?.firstName ?? "",
@@ -60,9 +95,9 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     countryCode: editUser?.countryCode ?? "",
     phoneNumber: editUser?.phoneNumber ?? "",
     address: editUser?.address ?? "",
-    role: editUser?.role ?? UserRole.TRAVELLER,
-    dmoId: "",
-    authorityId: "",
+    role: editUser?.role ?? lockedRole ?? UserRole.TRAVELLER,
+    dmoId: lockedRole === UserRole.DMO ? myDmoId : "",
+    authorityId: lockedRole === UserRole.AUTHORITY ? myAuthorityId : "",
     languagePreference: editUser?.languagePreference ?? "en",
   });
 
@@ -247,17 +282,26 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Role *</label>
-            <select
-              value={formData.role}
-              onChange={field("role")}
-              className={inputClass}
-            >
-              {ROLE_OPTIONS.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
+            {lockedRole ? (
+              <div
+                className={`${inputClass} flex items-center justify-between opacity-70 cursor-not-allowed`}
+              >
+                <span>{allowedRoleOptions[0]?.label ?? lockedRole}</span>
+                <span className="text-xs text-teal-500 font-medium">Auto</span>
+              </div>
+            ) : (
+              <select
+                value={formData.role}
+                onChange={field("role")}
+                className={inputClass}
+              >
+                {allowedRoleOptions.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            )}
             {errors.role && <p className={errorClass}>{errors.role}</p>}
           </div>
           <div>
@@ -280,7 +324,15 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
         {needsDmo && (
           <div>
             <label className={labelClass}>DMO *</label>
-            {dmos.length > 0 ? (
+            {lockedRole === UserRole.DMO ? (
+              <input
+                type="text"
+                value={formData.dmoId}
+                readOnly
+                className={`${inputClass} opacity-70 cursor-not-allowed`}
+                placeholder="DMO ID"
+              />
+            ) : dmos.length > 0 ? (
               <select
                 value={formData.dmoId}
                 onChange={field("dmoId")}
@@ -313,8 +365,13 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
             <input
               type="text"
               value={formData.authorityId}
-              onChange={field("authorityId")}
-              className={inputClass}
+              onChange={
+                lockedRole === UserRole.AUTHORITY
+                  ? undefined
+                  : field("authorityId")
+              }
+              readOnly={lockedRole === UserRole.AUTHORITY}
+              className={`${inputClass} ${lockedRole === UserRole.AUTHORITY ? "opacity-70 cursor-not-allowed" : ""}`}
               placeholder="Authority ID"
             />
             {errors.authorityId && (
