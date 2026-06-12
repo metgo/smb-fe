@@ -27,13 +27,25 @@ const AssignBankAccountModal = ({
   const [updateProfileInfo, { isLoading }] = useUpdateProfileInfoMutation();
 
   const [selectedBankNumber, setSelectedBankNumber] = useState("");
+
   const [selectedBranchNumber, setSelectedBranchNumber] = useState("");
+  const [bankSearch, setBankSearch] = useState("");
+  const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
 
   const selectedBank = useMemo(
     () => banks.find((b) => b.bankId === selectedBankNumber),
     [banks, selectedBankNumber],
   );
 
+  const filteredBanks = useMemo(() => {
+    if (!bankSearch.trim()) return banks;
+    const q = bankSearch.toLowerCase();
+    return banks.filter(
+      (b) =>
+        b.bankId.toLowerCase().includes(q) ||
+        b.bankName.toLowerCase().includes(q),
+    );
+  }, [banks, bankSearch]);
   const [errors, setErrors] = useState<BankAccountErrors>({});
 
   const validate = (): boolean => {
@@ -97,15 +109,23 @@ const AssignBankAccountModal = ({
     if (savedBankAccount) {
       setSelectedBankNumber(savedBankAccount.bankNumber);
       setSelectedBranchNumber(savedBankAccount.branchNumber);
+
+      const matchedBank = banks.find(
+        (b) => b.bankId === savedBankAccount.bankNumber,
+      );
+      if (matchedBank) {
+        setBankSearch(`${matchedBank.bankId} - ${matchedBank.bankName}`);
+      }
+
       setBankAccountData({
         accountNumber: savedBankAccount.accountNumber,
         bnNumber: savedBankAccount.businessNumberByGovt,
         invoiceName: savedBankAccount.invoiceName,
-        bankNumber: savedBankAccount?.bankNumber,
-        branchNumber: savedBankAccount?.branchNumber,
+        bankNumber: savedBankAccount.bankNumber,
+        branchNumber: savedBankAccount.branchNumber,
       });
     }
-  }, [savedBankAccount]);
+  }, [savedBankAccount, banks]);
 
   const labelClass = `block text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`;
   const errorClass = "text-red-500 text-xs font-normal ml-1";
@@ -178,40 +198,98 @@ const AssignBankAccountModal = ({
 
         {/* Modal Body */}
         <div className="px-6 py-5 space-y-4">
-          {/* Bank Name */}
-          <div>
+          {/* Bank Name - Searchable Combobox */}
+          <div className="relative">
             <label className={labelClass}>
               {t("bank_name")} *
               {errors.bankNumber && (
                 <span className={errorClass}>{errors.bankNumber}</span>
               )}
             </label>
-            <select
-              value={selectedBankNumber}
+
+            <input
+              type="text"
+              value={bankSearch}
               onChange={(e) => {
-                const bankNumber = e.target.value;
-                setSelectedBankNumber(bankNumber);
-                setSelectedBranchNumber("");
-                setBankAccountData((prev) => ({
-                  ...prev,
-                  bankNumber,
-                  branchName: "",
-                }));
-                setErrors((prev) => ({ ...prev, bankNumber: undefined }));
+                setBankSearch(e.target.value);
+                setIsBankDropdownOpen(true);
+                // Clear selection when user edits the input
+                if (selectedBankNumber) {
+                  setSelectedBankNumber("");
+                  setSelectedBranchNumber("");
+                  setBankAccountData((prev) => ({
+                    ...prev,
+                    bankNumber: "",
+                    branchNumber: "",
+                  }));
+                }
               }}
-              className={selectClass(!!errors.bankNumber)}
-            >
-              <option value="">{t("select_bank")}</option>
-              {banks.map((bank) => (
-                <option
-                  key={bank.bankId}
-                  value={bank.bankId}
-                  className="capitalize"
-                >
-                  {bank.bankName}
-                </option>
-              ))}
-            </select>
+              onFocus={() => {
+                // setBankSearch("");
+                setIsBankDropdownOpen(true);
+                if (selectedBankNumber) {
+                  setBankSearch(""); // temporarily clear to show full list
+                }
+              }}
+              onBlur={() =>
+                setTimeout(() => {
+                  setIsBankDropdownOpen(false);
+                  if (selectedBankNumber && selectedBank) {
+                    setBankSearch(
+                      `${selectedBank.bankId} - ${selectedBank.bankName}`,
+                    );
+                  } else {
+                    setBankSearch("");
+                  }
+                }, 150)
+              }
+              placeholder={t("select_bank") || "Search by bank name or ID..."}
+              className={inputClass(!!errors.bankNumber)}
+            />
+
+            {isBankDropdownOpen && banks.length > 0 && (
+              <ul
+                className={clsx(
+                  "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
+                  isDark
+                    ? "bg-gray-700 border-gray-600 text-gray-100"
+                    : "bg-white border-gray-200 text-gray-900",
+                )}
+              >
+                {filteredBanks.map((bank) => (
+                  <li
+                    key={bank.bankId}
+                    onMouseDown={() => {
+                      setSelectedBankNumber(bank.bankId);
+                      setSelectedBranchNumber("");
+                      setBankSearch(`${bank.bankId} - ${bank.bankName}`);
+                      setBankAccountData((prev) => ({
+                        ...prev,
+                        bankNumber: bank.bankId,
+                        branchNumber: "",
+                      }));
+                      setErrors((prev) => ({
+                        ...prev,
+                        bankNumber: undefined,
+                      }));
+                      setIsBankDropdownOpen(false);
+                    }}
+                    className={clsx(
+                      "px-4 py-2.5 cursor-pointer transition-colors",
+                      isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
+                      selectedBankNumber === bank.bankId &&
+                        (isDark ? "bg-gray-600" : "bg-teal-50 font-medium"),
+                    )}
+                  >
+                    <span className="font-mono text-teal-500">
+                      {bank.bankId}
+                    </span>
+                    <span className="mx-2">—</span>
+                    {bank.bankName}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Branch Name */}
@@ -240,7 +318,7 @@ const AssignBankAccountModal = ({
                   value={branch.branchId}
                   className="capitalize"
                 >
-                  {branch.branchName}
+                  {branch.branchId} - {branch.branchName}
                 </option>
               ))}
             </select>
