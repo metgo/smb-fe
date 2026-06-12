@@ -385,7 +385,14 @@ export default function BusinessDetailsPage() {
       </div>
 
       <div className="details-top shrink-0">
-        <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
+        <DetailTitleSection
+          {...business}
+          imageSrc={
+            business?.logo?.image ||
+            business?.images?.[0]?.image ||
+            business?.images?.[1]?.image
+          }
+        />
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}

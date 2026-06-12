@@ -10,6 +10,7 @@ import {
 } from "@/store/api/userMutationApi";
 import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
 
 const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
   [UserRole.SUPERADMIN]: [
@@ -38,6 +39,7 @@ interface UserFormData {
   address: string;
   role: string;
   languagePreference: string;
+  authorityId: string;
 }
 
 interface CreateUserWizardProps {
@@ -64,6 +66,11 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
   const isEdit = !!editUser;
 
   const { userRole } = useAppSelector((state) => state.auth);
+  const { dmosAuthorities } = useCommon();
+
+  const allAuthorities = (dmosAuthorities ?? []).flatMap(
+    (dmo) => dmo.authorities ?? [],
+  );
 
   const creatableRoles =
     CREATABLE_ROLES[userRole as UserRole] ??
@@ -83,6 +90,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     address: editUser?.address ?? "",
     role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
     languagePreference: editUser?.languagePreference ?? "en",
+    authorityId: "",
   });
 
   // For admin/superadmin who have no dmoId, let them pick a DMO to scope the authority list
@@ -115,6 +123,8 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     if (!formData.countryCode.trim()) e.countryCode = "Required";
     if (!formData.phoneNumber.trim()) e.phoneNumber = "Required";
     if (!formData.role) e.role = "Required";
+    if (formData.role === UserRole.AUTHORITY && !formData.authorityId)
+      e.authorityId = "Required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -132,6 +142,10 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
       role: formData.role,
       languagePreference: formData.languagePreference,
     };
+
+    if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
+      payload.authorityId = formData.authorityId;
+    }
 
     try {
       if (isEdit && editUser) {
@@ -255,7 +269,13 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
             <label className={labelClass}>Role *</label>
             <select
               value={formData.role}
-              onChange={field("role")}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  role: e.target.value,
+                  authorityId: "",
+                }))
+              }
               className={inputClass}
             >
               {allowedRoleOptions.map((r) => (
@@ -281,6 +301,28 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
             </select>
           </div>
         </div>
+
+        {/* Authority — shown only when role is Authority */}
+        {formData.role === UserRole.AUTHORITY && (
+          <div>
+            <label className={labelClass}>Authority *</label>
+            <select
+              value={formData.authorityId}
+              onChange={field("authorityId")}
+              className={inputClass}
+            >
+              <option value="">Select authority...</option>
+              {allAuthorities.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+            {errors.authorityId && (
+              <p className={errorClass}>{errors.authorityId}</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
