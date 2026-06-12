@@ -92,16 +92,14 @@ interface IUser {
   address: string;
 }
 interface IUsersRes {
-  datas: {
-    data: IUser[];
-    totalData: number;
-    meta: {
-      page: number;
-      limit: number;
-      data: number;
-      pageCount: number;
-      hasPreviousPage: boolean;
-      hasNextPage: boolean;
-    };
+  data: IUser[];
+  totalData: number;
+  meta: {
+    page: number;
+    limit: number;
+    data: number;
+    pageCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
   };
 }

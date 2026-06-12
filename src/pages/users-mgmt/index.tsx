@@ -21,9 +21,7 @@ import { useAppSelector } from "@/hooks/hooks";
 const ROLE_ORDER: UserRole[] = [
   UserRole.SUPERADMIN,
   UserRole.ADMIN,
-  UserRole.DMOADMIN,
   UserRole.DMO,
-  UserRole.AUTHORITY_ADMIN,
   UserRole.AUTHORITY,
   UserRole.TRAVELLER,
 ];
@@ -82,9 +80,9 @@ const UsersMgmtPage = () => {
 
   const [deleteUser] = useDeleteUserMutation();
 
-  const totalData = data?.datas?.totalData ?? 0;
+  const totalData = data?.totalData ?? 0;
 
-  const hasMore = data?.datas?.meta?.hasNextPage ?? false;
+  const hasMore = data?.meta?.hasNextPage ?? false;
 
   /**
    * Merge paginated users.
@@ -98,8 +96,8 @@ const UsersMgmtPage = () => {
       return;
     }
 
-    const users = data.datas?.data ?? [];
-    const fetchedPage = data.datas?.meta?.page ?? 1;
+    const users = data.data ?? [];
+    const fetchedPage = data.meta?.page ?? 1;
 
     if (!users.length) {
       if (fetchedPage === 1) setAllUsers([]);
