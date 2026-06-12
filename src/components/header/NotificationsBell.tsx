@@ -24,12 +24,16 @@ import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
 import {
   useMarkNotificationsAsReadMutation,
+  useBulkMarkNotificationsAsReadMutation,
   useUpdateNotificationMutation,
 } from "@/store/api/notificationApi";
+
 import {
   markNotificationAsRead,
   setNotificationStatus,
+  markAllNotificationsAsRead,
 } from "@/features/notificationSlice";
+
 import {
   useApproveCategorySuggestionMutation,
   useUpdateBusinessMutation,
@@ -47,6 +51,8 @@ const NotificationsBell = () => {
   const { notifications } = useAppSelector((state) => state.notification);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [bulkMarkNotificationsAsRead, { isLoading: isMarkingAllRead }] =
+    useBulkMarkNotificationsAsReadMutation();
   const [updateNotification] = useUpdateNotificationMutation();
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
   const [updateBusiness] = useUpdateBusinessMutation();
@@ -93,6 +99,17 @@ const NotificationsBell = () => {
             <XCircle className="w-4 h-4 text-red-500" />
           </span>
         );
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n._id);
+    if (unreadIds.length === 0) return;
+    try {
+      await bulkMarkNotificationsAsRead(unreadIds).unwrap();
+      dispatch(markAllNotificationsAsRead());
+    } catch {
+      toast.error("Failed to mark all as read. Please try again.");
     }
   };
 
@@ -198,13 +215,16 @@ const NotificationsBell = () => {
               </div>
               {unreadCount > 0 && (
                 <button
+                  onClick={handleMarkAllAsRead}
+                  disabled={isMarkingAllRead}
                   className={clsx(
                     "flex items-center gap-1 text-xs font-medium transition-colors",
                     "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
-                  {t("mark_all_read")}
+                  {isMarkingAllRead ? t("marking...") : t("mark_all_read")}
                 </button>
               )}
             </div>

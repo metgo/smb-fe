@@ -27,6 +27,9 @@
   "all_caught_up": "لقد حصلت على كل شيء",
   "try_adjusting_filters": "حاول تعديل الفلاتر",
   "no_new_notifications": "لا توجد إشعارات جديدة",
+  "view_all_notifications": "عرض جميع الإشعارات",
+  "new": "جديد",
+  "marking...": "جارٍ التحديد...",
   "total_notifications": "إجمالي الإشعارات",
 
   "action_type": "نوع الإجراء",
