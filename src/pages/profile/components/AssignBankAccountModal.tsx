@@ -31,6 +31,7 @@ const AssignBankAccountModal = ({
   const [selectedBranchNumber, setSelectedBranchNumber] = useState("");
   const [bankSearch, setBankSearch] = useState("");
   const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
   const selectedBank = useMemo(
     () => banks.find((b) => b.bankId === selectedBankNumber),
@@ -293,35 +294,96 @@ const AssignBankAccountModal = ({
           </div>
 
           {/* Branch Name */}
-          <div>
+          <div className="relative">
             <label className={labelClass}>
               {t("branch_name")} *
               {errors.branchNumber && (
                 <span className={errorClass}>{errors.branchNumber}</span>
               )}
             </label>
-            <select
-              value={selectedBranchNumber}
-              onChange={(e) => {
-                const branchNumber = e.target.value;
-                setSelectedBranchNumber(branchNumber);
-                setBankAccountData((prev) => ({ ...prev, branchNumber }));
-                setErrors((prev) => ({ ...prev, branchNumber: undefined }));
-              }}
+            <button
+              type="button"
               disabled={!selectedBank || selectedBank.branches.length === 0}
-              className={selectClass(!!errors.branchNumber)}
+              onClick={() => setIsBranchDropdownOpen((v) => !v)}
+              onBlur={() =>
+                setTimeout(() => setIsBranchDropdownOpen(false), 150)
+              }
+              className={clsx(
+                selectClass(!!errors.branchNumber),
+                "text-left flex items-center justify-between",
+                !selectedBranchNumber &&
+                  (isDark ? "text-gray-500" : "text-gray-400"),
+              )}
             >
-              <option value="">{t("select_branch")}</option>
-              {selectedBank?.branches.map((branch) => (
-                <option
-                  key={branch.branchId}
-                  value={branch.branchId}
-                  className="capitalize"
+              <span>
+                {selectedBranchNumber && selectedBank
+                  ? (() => {
+                      const b = selectedBank.branches.find(
+                        (br) => br.branchId === selectedBranchNumber,
+                      );
+                      return b
+                        ? `${b.branchId} - ${b.branchName}`
+                        : t("select_branch");
+                    })()
+                  : t("select_branch")}
+              </span>
+              <svg
+                className="w-4 h-4 shrink-0 opacity-50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+
+            {isBranchDropdownOpen &&
+              selectedBank &&
+              selectedBank.branches.length > 0 && (
+                <ul
+                  className={clsx(
+                    "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
+                    isDark
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "bg-white border-gray-200 text-gray-900",
+                  )}
                 >
-                  {branch.branchId} - {branch.branchName}
-                </option>
-              ))}
-            </select>
+                  {selectedBank.branches.map((branch) => (
+                    <li
+                      key={branch.branchId}
+                      onMouseDown={() => {
+                        setSelectedBranchNumber(branch.branchId);
+                        setBankAccountData((prev) => ({
+                          ...prev,
+                          branchNumber: branch.branchId,
+                        }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          branchNumber: undefined,
+                        }));
+                        setIsBranchDropdownOpen(false);
+                      }}
+                      className={clsx(
+                        "px-4 py-2.5 cursor-pointer transition-colors",
+                        isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
+                        selectedBranchNumber === branch.branchId &&
+                          (isDark ? "bg-gray-600" : "bg-teal-50 font-medium"),
+                      )}
+                    >
+                      <span className="font-mono text-teal-500">
+                        {branch.branchId}
+                      </span>
+                      <span className="mx-2">—</span>
+                      {branch.branchName}
+                    </li>
+                  ))}
+                </ul>
+              )}
           </div>
 
           {/* Account Number */}

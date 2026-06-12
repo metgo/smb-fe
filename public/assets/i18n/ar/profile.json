@@ -27,5 +27,7 @@
   "edit_bank_account": "تعديل الحساب البنكي",
 
   "no_bank_account_added": "لم تتم إضافة أي حساب بنكي",
-  "click_add_bank_account": "انقر على \"إضافة حساب بنكي\" لإضافة معلوماتك البنكية"
+  "click_add_bank_account": "انقر على \"إضافة حساب بنكي\" لإضافة معلوماتك البنكية",
+  "bank_account_subtitle": "املأ التفاصيل أدناه",
+  "required": "مطلوب"
 }
