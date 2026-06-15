@@ -934,31 +934,6 @@ export default function OrdersMgmtPage() {
     link.click();
     URL.revokeObjectURL(url);
   }, [orderSummaries, summaryColumns, t]);
-  //order details
-  const {
-    data: orderDetails,
-    refetch: orderIdrefetch,
-    isLoading: isOrderDetailLoading,
-    isFetching: isOrderDetailFetching,
-  } = useGetOrderByIdQuery(
-    { orderId: selectedOrder?._id ?? null },
-    {
-      skip: !canUseAuthenticatedOrderApis || !selectedOrder?._id, // only fetch if selectedOrder exists
-    },
-  );
-
-  // API now returns an array of split sub-orders; normalize into a single object for the modal
-  const normalizedOrderDetails = useMemo(() => {
-    if (!orderDetails) return null;
-    if (!Array.isArray(orderDetails)) return orderDetails;
-    if (orderDetails.length === 0) return null;
-    const first = orderDetails[0];
-    return {
-      ...first,
-      _id: first.orderId,
-      products: orderDetails.map((item: any) => item.products).filter(Boolean),
-    };
-  }, [orderDetails]);
 
   const handleRowClick = (order: IOrder) => {
     if (orderSummaryClick) {
@@ -1620,16 +1595,8 @@ export default function OrdersMgmtPage() {
       {selectedOrder && showOrderDetails && (
         <OrderDetailsModal
           t={t}
-          refetch={canUseAuthenticatedOrderApis ? orderIdrefetch : () => {}}
-          order={
-            canUseAuthenticatedOrderApis ? normalizedOrderDetails : qrOrder
-          }
-          isLoading={isOrderDetailLoading}
-          isFetching={
-            canUseAuthenticatedOrderApis ? isOrderDetailFetching : false
-          }
+          orderId={selectedOrder._id}
           onClose={() => setShowOrderDetails(false)}
-          getOrderStatusBadge={getOrderStatusBadge}
           qrToken={isQRMode && !qrSessionReady ? qrToken : null}
           isQRMode={isQRMode && !qrSessionReady}
         />

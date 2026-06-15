@@ -61,3 +61,56 @@ interface IOrderProduct {
   cancelled?: boolean;
   orderedProductId?: string;
 }
+
+class ProductDto {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  quantity: number;
+  amount: number;
+  cancelled: number;
+
+  receiverEmail: string;
+  receiverCountryCode: string;
+  receiverPhone: string;
+  receiverFirstName: string;
+  receiverLastName: string | null;
+
+  deliveryMethod: string;
+  deliveryArea: string;
+  deliveryPickupLocation: string;
+
+  houseNo: string;
+  apartment: string;
+  city: string;
+  street: string;
+
+  isGift: boolean;
+  additionalInfo: string;
+}
+
+class IOrdersRes {
+  _id: string;
+  status: TOrderStatus;
+  paymentStatus: string;
+
+  buyerEmail: string;
+  buyerCountryCode: string;
+  buyerPhone: string;
+  buyerFirstName: string;
+  buyerLastName: string | null;
+  buyerAddress: string;
+
+  paymentMode: string[];
+  voucher: any[];
+
+  totalAmount: number;
+  creditCardPayment: number;
+  deliveryFee: number;
+
+  createdAt: string;
+  externalApiId: string;
+
+  products: ProductDto[];
+}

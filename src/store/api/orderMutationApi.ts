@@ -9,6 +9,14 @@ interface IBulkUpdateParams {
   emailRecipient?: string;
 }
 
+interface ICancleOrderParams {
+  orderId?: string;
+  productId?: string;
+  status: string;
+  cancelReason?: string;
+  additionalInfo?: string;
+}
+
 /* ---------------- API ---------------- */
 export const orderMutationApi = createApi({
   reducerPath: "orderMutationApi",
@@ -23,12 +31,14 @@ export const orderMutationApi = createApi({
       }),
       invalidatesTags: ["Order"],
     }),
+
     deleteOrder: builder.mutation<any, { orderId: string }>({
       query: ({ orderId }) => ({
         url: `${endpoints.orders}/${orderId}`,
         method: "DELETE",
       }),
     }),
+
     updateOrder: builder.mutation<any, { body: any; orderId: string }>({
       query: ({ body, orderId }) => ({
         url: `${endpoints.orders}/${orderId}`,
@@ -37,6 +47,7 @@ export const orderMutationApi = createApi({
       }),
       invalidatesTags: ["Order"],
     }),
+
     bulkOrdersUpdate: builder.mutation<any, IBulkUpdateParams>({
       query: (body) => ({
         url: endpoints.bulkOrdersUpdate,
@@ -44,25 +55,25 @@ export const orderMutationApi = createApi({
         data: body,
       }),
     }),
-    updateOrderStatus: builder.mutation<any, { body: any; orderId: string }>({
-      query: ({ body, orderId }) => ({
-        url: `${endpoints.orderStatus}/${orderId}`,
+
+    updateOrderStatus: builder.mutation<any, ICancleOrderParams>({
+      query: (body) => ({
+        url: `${endpoints.updateOrderStatus}`,
         method: "PATCH",
         data: body,
       }),
       invalidatesTags: ["Order"],
     }),
-    updateProductOrderStatus: builder.mutation<
-      any,
-      { body: any; orderProductId: string }
-    >({
-      query: ({ body, orderProductId }) => ({
-        url: `${endpoints.orderProductStatus}/${orderProductId}`,
+
+    productOrderCancle: builder.mutation<any, ICancleOrderParams>({
+      query: (body) => ({
+        url: `${endpoints.cancleOrderProduct}`,
         method: "PATCH",
         data: body,
       }),
       invalidatesTags: ["Order"],
     }),
+
     updateOrderConfirmation: builder.mutation<
       any,
       { body: any; orderId: string }
@@ -83,6 +94,6 @@ export const {
   useDeleteOrderMutation,
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
-  useUpdateProductOrderStatusMutation,
+  useProductOrderCancleMutation,
   useUpdateOrderConfirmationMutation,
 } = orderMutationApi;

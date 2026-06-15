@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader, Mail, Phone, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
@@ -11,6 +11,7 @@ import { ModalWrapper } from "@/components/wrapper";
 import {
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
+  useProductOrderCancleMutation,
 } from "@/store/api/orderMutationApi";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
@@ -18,48 +19,35 @@ import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 import { envKeys } from "@/lib/envKeys";
+import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
 
 interface OrderDetailsModalProps {
-  order: any;
+  orderId: string;
   onClose: () => void;
   t: (key: string) => string;
-  getOrderStatusBadge: any;
-  isLoading: any;
-  isFetching: any;
-  refetch: any;
   isQRMode?: boolean;
   qrToken?: string | null;
 }
 
 function OrderDetailsModal({
-  order,
+  orderId,
   onClose,
   t,
-  refetch,
-  isLoading,
-  isFetching,
   isQRMode,
   qrToken,
 }: OrderDetailsModalProps) {
-  console.log("🚀 ~ OrderDetailsModal ~ order:", order);
-  const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
-  const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(
+  const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
+
+  const {
+    data: orderDetails,
+    refetch,
+    isLoading,
+    isFetching,
+  } = useGetOrderByIdQuery({ orderId: orderId ?? null });
+  const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null,
   );
-  const [orderProducts, setOrderProducts] = useState<IOrderProduct[]>(
-    Array.isArray(order?.products)
-      ? order.products
-      : order?.products
-        ? [order.products]
-        : [],
-  );
-  useEffect(() => {
-    if (!order?.products) return;
-    setOrderProducts(
-      Array.isArray(order.products) ? order.products : [order.products],
-    );
-  }, [order?.products]);
 
   const [showProductModal, setShowProductModal] = useState(false);
   const [sendingTarget, setSendingTarget] = useState<
@@ -67,20 +55,21 @@ function OrderDetailsModal({
   >(null);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [productOrderCancle] = useProductOrderCancleMutation();
 
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
-  const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
+  const [itemToCancel, setItemToCancel] = useState<ProductDto | null>(null);
 
   const handleResendNotification = async (recipient: "VENDOR" | "CUSTOMER") => {
     setSendingTarget(recipient);
 
     try {
       await bulkOrdersUpdate({
-        ordersId: Array(order?.orderId),
+        ordersId: Array(orderId),
         emailRecipient: recipient,
       }).unwrap();
       toast.success(t("email_sent"));
@@ -90,8 +79,9 @@ function OrderDetailsModal({
       setSendingTarget(null);
     }
   };
+
   const onStatusChangeHandler = async (status: string) => {
-    if (order?.status === "completed") {
+    if (orderDetails?.status === "completed") {
       toast.error(t("completed_order_status_locked"));
       return;
     }
@@ -104,8 +94,8 @@ function OrderDetailsModal({
         );
       } else {
         await updateOrderStatus({
-          orderId: order?._id,
-          body: { status: status.toLowerCase() },
+          orderId: orderDetails?._id,
+          status: status.toLowerCase(),
         }).unwrap();
       }
 
@@ -122,10 +112,67 @@ function OrderDetailsModal({
       console.error(error);
     }
   };
-  return (
-    <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
-      {/* Header */}
 
+  async function handleCancleConfirm(reason: string, additionalInfo: string) {
+    if (cancelType === "item" && itemToCancel) {
+      setShowCancelDialog(false);
+      setItemToCancel(null);
+      refetch();
+      return;
+    }
+
+    setIsCancelling(true);
+
+    try {
+      const body = {
+        status: "canceled",
+        canceledReason: t(reason),
+      };
+
+      if (isQRMode && qrToken) {
+        await axios.post(
+          `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
+          body,
+        );
+      } else {
+        // await updateOrderStatus({
+        //   orderId: orderDetails?._id,
+        //   status: status.toLowerCase(),
+        //   cancelReason: t(reason),
+        //   additionalInfo: "",
+        // }).unwrap();
+
+        const res = await productOrderCancle({
+          orderId: orderDetails?._id,
+          status: status.toLowerCase(),
+          cancelReason: t(reason),
+          additionalInfo,
+        }).unwrap();
+        console.log("🚀 ~ handleCancleConfirm ~ res:", res);
+      }
+
+      // Reload page in QR mode, otherwise just refetch
+      if (isQRMode) {
+        window.location.reload();
+      } else {
+        refetch();
+      }
+      toast.success(t("order_cancelled_successfully"));
+      setShowCancelDialog(false);
+      setItemToCancel(null);
+    } catch (error) {
+      toast.error(t("cancel_failed"));
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  return (
+    <ModalWrapper
+      height="h-max"
+      onClose={onClose}
+      showSpinner={isLoading || isFetching}
+    >
       <div
         className={`flex items-center justify-between 
               ${isRTL ? "flex-row-reverse" : ""} 
@@ -136,7 +183,7 @@ function OrderDetailsModal({
           {t("order_details")}
         </h2>
         <OrderStatusChangeBtn
-          status={order?.status}
+          status={orderDetails?.status || "pending"}
           handleStatusChange={onStatusChangeHandler}
           setShowCancelDialog={setShowCancelDialog}
         />
@@ -152,7 +199,7 @@ function OrderDetailsModal({
           <div className="grid grid-cols-2 gap-4 border  rounded-md px-4 py-4">
             <InfoRow
               label={t("name") || "Name"}
-              value={`${order?.buyerFirstName || ""} ${order?.buyerLastName || ""}`}
+              value={`${orderDetails?.buyerFirstName || ""} ${orderDetails?.buyerLastName || ""}`}
             />
 
             {/* Email - Clickable */}
@@ -163,13 +210,13 @@ function OrderDetailsModal({
                 {t("purchaser_email") || "Email"}
               </p>
               <a
-                href={`mailto:${order?.buyerEmail}`}
+                href={`mailto:${orderDetails?.buyerEmail}`}
                 className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
               >
                 <div>
                   <Mail className="w-3 h-3" />
                 </div>
-                <div>{order?.buyerEmail}</div>
+                <div>{orderDetails?.buyerEmail}</div>
               </a>
             </div>
 
@@ -181,26 +228,19 @@ function OrderDetailsModal({
                 {t("purchaser_phone") || "Phone"}
               </p>
               <a
-                href={`tel:${order?.buyerPhone}`}
+                href={`tel:${orderDetails?.buyerPhone}`}
                 className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
               >
                 <Phone className="w-3 h-3" />
-                {order?.buyerPhone ? order?.buyerPhone : "-"}
+                {orderDetails?.buyerPhone ? orderDetails?.buyerPhone : "-"}
               </a>
             </div>
 
             <InfoRow
-              label={t("campaign") || "Campaign"}
-              value={
-                order?.campaign
-                  ? `${order.campaign}${order?.campaignCode ? ` (${order.campaignCode})` : ""}`
-                  : "-"
-              }
-            />
-
-            <InfoRow
               label={t("purchaser_address") || "Address"}
-              value={order?.buyerAddress ? order.buyerAddress : "-"}
+              value={
+                orderDetails?.buyerAddress ? orderDetails.buyerAddress : "-"
+              }
             />
           </div>
         </div>
@@ -213,7 +253,7 @@ function OrderDetailsModal({
           <div
             className={`border rounded-lg overflow-hidden ${isDark ? "border-gray-800" : "border-gray-200"}`}
           >
-            {orderProducts?.map((product, idx) => (
+            {orderDetails?.products?.map((product, idx) => (
               <div
                 key={product?._id}
                 className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
@@ -228,7 +268,7 @@ function OrderDetailsModal({
                     className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     <ImageWithFallback
-                      src={product?.images?.image}
+                      src={product?.image}
                       alt={product?.name}
                       className={clsx(
                         "w-24 h-22 rounded-xl object-cover border-2",
@@ -250,9 +290,9 @@ function OrderDetailsModal({
                     >
                       {product?.name}
                     </p>
-                    <p className={`text-sm ${textTertiary}`}>
+                    {/* <p className={`text-sm ${textTertiary}`}>
                       {product?.vendor ? product?.vendor : "-"}
-                    </p>
+                    </p> */}
                   </div>
 
                   {/* Price & Actions */}
@@ -311,8 +351,8 @@ function OrderDetailsModal({
                 {t("voucher_amount") || "Voucher"}
               </span>
               <span className={textPrimary}>
-                {order?.voucher && order?.voucher?.length > 0
-                  ? `₪${order?.voucher
+                {orderDetails?.voucher && orderDetails?.voucher?.length > 0
+                  ? `₪${orderDetails?.voucher
                       ?.reduce(
                         (total: number, voucher: any) =>
                           total + (voucher?.redeemedAmount || 0),
@@ -327,8 +367,8 @@ function OrderDetailsModal({
                 {t("credit_card_amount") || "Credit Card"}
               </span>
               <span className={textPrimary}>
-                {order?.creditCardPayment
-                  ? `₪${order?.creditCardPayment?.toLocaleString()}`
+                {orderDetails?.creditCardPayment
+                  ? `₪${orderDetails?.creditCardPayment?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -337,8 +377,8 @@ function OrderDetailsModal({
                 {t("delivery_fee") || "Delivery Fee"}
               </span>
               <span className={textPrimary}>
-                {order?.deliveryFee
-                  ? `₪${order?.deliveryFee?.toLocaleString()}`
+                {orderDetails?.deliveryFee
+                  ? `₪${orderDetails?.deliveryFee?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
@@ -347,14 +387,15 @@ function OrderDetailsModal({
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
               <span className={`${textPrimary}`}>
-                {order?.totalAmount
-                  ? `₪${order?.totalAmount?.toLocaleString()}`
+                {orderDetails?.totalAmount
+                  ? `₪${orderDetails?.totalAmount?.toLocaleString()}`
                   : "-"}
               </span>
             </div>
           </div>
         </div>
       </div>
+
       <div className="p-4">
         {/* Actions */}
         {userRole === UserRole.AUTHORITY ||
@@ -362,8 +403,8 @@ function OrderDetailsModal({
             <div
               className={`flex  gap-3 pt-4  border-t ${isDark ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
             >
-              {order?.status !== "canceled" &&
-                order?.status !== "completed" && (
+              {orderDetails?.status !== "canceled" &&
+                orderDetails?.status !== "completed" && (
                   <button
                     onClick={() => {
                       setCancelType("order");
@@ -412,6 +453,7 @@ function OrderDetailsModal({
             </div>
           ))}
       </div>
+
       {/* Cancellation Dialog */}
       {showCancelDialog && (
         <CancellationDialog
@@ -422,55 +464,9 @@ function OrderDetailsModal({
             setShowCancelDialog(false);
             setItemToCancel(null);
           }}
-          onConfirm={async (reason) => {
-            if (cancelType === "item" && itemToCancel) {
-              setOrderProducts((prev) =>
-                prev.map((p) =>
-                  p._id === itemToCancel._id ? { ...p, cancelled: true } : p,
-                ),
-              );
-              setShowCancelDialog(false);
-              setItemToCancel(null);
-              return;
-            }
-
-            setIsCancelling(true);
-
-            try {
-              const body = {
-                status: "canceled",
-                canceled_reason: t(reason),
-              };
-
-              if (isQRMode && qrToken) {
-                await axios.post(
-                  `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
-                  body,
-                );
-              } else {
-                await updateOrderStatus({
-                  orderId: order?._id,
-                  body,
-                }).unwrap();
-              }
-
-              // Reload page in QR mode, otherwise just refetch
-              if (isQRMode) {
-                window.location.reload();
-              } else {
-                refetch();
-              }
-
-              toast.success(t("order_cancelled_successfully"));
-
-              setShowCancelDialog(false);
-              setItemToCancel(null);
-            } catch (error) {
-              toast.error(t("cancel_failed"));
-            } finally {
-              setIsCancelling(false);
-            }
-          }}
+          onConfirm={(reason, additionalInfo) =>
+            handleCancleConfirm(reason, additionalInfo)
+          }
         />
       )}
 
