@@ -35,6 +35,18 @@ const notificationSlice = createSlice({
         n.isRead = true;
       });
     },
+
+    updateNotificationStatus: (
+      state,
+      action: PayloadAction<{ notificationId: string; status: TItemStatus }>,
+    ) => {
+      const notification = state.notifications.find(
+        (n) => n._id === action.payload.notificationId,
+      );
+      if (notification) {
+        notification.status = action.payload.status;
+      }
+    },
   },
 });
 
@@ -43,6 +55,7 @@ export const {
   addNotification,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  updateNotificationStatus,
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

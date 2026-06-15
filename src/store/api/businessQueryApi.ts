@@ -39,6 +39,25 @@ interface BusinessesForProductParams {
   endDate?: string;
 }
 
+interface ChangeHistoryParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+}
+
+interface ApproveChangesParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+  changeId: string;
+  comment?: string;
+}
+
+interface RejectChangesParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+  changeId: string;
+  reason: string;
+}
+
 export const businessQueryApi = createApi({
   reducerPath: "businessQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -111,6 +130,32 @@ export const businessQueryApi = createApi({
       }),
       providesTags: ["Business"],
     }),
+
+    getChangesByEntity: builder.query<any, ChangeHistoryParams>({
+      query: ({ entityType, entityId }) => ({
+        url: `/admin/${entityType}/${entityId}/changes`,
+        method: "GET",
+      }),
+      providesTags: ["Business"],
+    }),
+
+    approveChanges: builder.mutation<any, ApproveChangesParams>({
+      query: ({ entityType, entityId, changeId, comment }) => ({
+        url: `/admin/${entityType}/${entityId}/changes/${changeId}/approve`,
+        method: "PATCH",
+        data: { approvalComment: comment },
+      }),
+      invalidatesTags: ["Business"],
+    }),
+
+    rejectChanges: builder.mutation<any, RejectChangesParams>({
+      query: ({ entityType, entityId, changeId, reason }) => ({
+        url: `/admin/${entityType}/${entityId}/changes/${changeId}/reject`,
+        method: "PATCH",
+        data: { rejectionReason: reason },
+      }),
+      invalidatesTags: ["Business"],
+    }),
   }),
 });
 
@@ -125,4 +170,7 @@ export const {
   useGetIndividualBusinessStatsQuery,
   useLazyGetBusinessDeliveryInfoByIdQuery,
   useGetPendingApprovalsQuery,
+  useGetChangesByEntityQuery,
+  useApproveChangesMutation,
+  useRejectChangesMutation,
 } = businessQueryApi;

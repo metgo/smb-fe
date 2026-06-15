@@ -11,13 +11,18 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetPendingApprovalsQuery } from "@/store/api/businessQueryApi";
+import { useAppSelector } from "@/hooks/hooks";
+import {
+  useGetPendingApprovalsQuery,
+  useGetChangesByEntityQuery,
+} from "@/store/api/businessQueryApi";
 import { StatusPill } from "@/components/pills";
 import { routes } from "@/lib/routes";
 import TabsSection from "@/components/shared/TabsSection";
 import PageStats from "@/components/shared/PageStats";
 import PageHeader from "@/components/shared/PageHeader";
 import { ReordableDataTable } from "@/components/shared";
+import { ViewChangesModal } from "@/components/change-tracking";
 
 const LIMIT = 20;
 
@@ -64,9 +69,18 @@ export default function PendingApprovalsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("pending_approvals");
   const { isDark, language } = useThemeClasses();
+  const userRole = useAppSelector((state) => state.auth.userRole);
   const [page, setPage] = useState(1);
   const [combinedItems, setCombinedItems] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("all");
+
+  const [viewChangesState, setViewChangesState] = useState({
+    isOpen: false,
+    entityType: "business" as "business" | "product" | "event" | "poi",
+    entityId: "",
+    entityName: "",
+    changeId: "",
+  });
 
   const tabs = useMemo(
     () => [
@@ -98,11 +112,28 @@ export default function PendingApprovalsPage() {
     }
   };
 
+  const handleViewDetailsButton = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    handleViewDetails(item);
+  };
+
+  const handleViewChanges = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setViewChangesState({
+      isOpen: true,
+      entityType: item.type,
+      entityId: item._id,
+      entityName: item.name?.[language] ?? item.name?.en ?? item.name,
+      changeId: item._id,
+    });
+  };
+
   const {
     data: approvalsData,
     isLoading,
     isFetching,
     isError,
+    refetch: refetchApprovals,
   } = useGetPendingApprovalsQuery(
     {
       page,
@@ -112,6 +143,18 @@ export default function PendingApprovalsPage() {
       refetchOnMountOrArgChange: true,
     },
   );
+
+  const { data: changesData, isLoading: changesLoading } =
+    useGetChangesByEntityQuery(
+      {
+        entityType: viewChangesState.entityType,
+        entityId: viewChangesState.entityId,
+      },
+      {
+        skip: !viewChangesState.isOpen || !viewChangesState.entityId,
+        refetchOnMountOrArgChange: true,
+      },
+    );
 
   const hasMore = approvalsData?.meta?.hasNextPage;
   const total = approvalsData?.meta?.total || 0;
@@ -147,18 +190,21 @@ export default function PendingApprovalsPage() {
 
   const pendingItems = filteredItems;
 
-  // Auto-load more pages if current tab is empty but has more data available
+  // Auto-load more pages if current tab has fewer items than API count
   useEffect(() => {
-    // Keep loading pages until we find items for this tab or run out of pages
+    const currentTabCount = apiCounts[activeTab as keyof typeof apiCounts] || 0;
+    const isTabSpecific = activeTab !== "all";
+    const itemsLoadedForTab = filteredItems.length;
+
     if (
-      activeTab !== "all" &&
-      pendingItems.length === 0 &&
+      isTabSpecific &&
+      itemsLoadedForTab < currentTabCount &&
       hasMore &&
       !isFetching
     ) {
       setPage((prev) => prev + 1);
     }
-  }, [activeTab, pendingItems.length, hasMore, isFetching]);
+  }, [activeTab, filteredItems.length, hasMore, isFetching, apiCounts]);
 
   const pendingStats = useMemo(() => {
     return [
@@ -259,15 +305,28 @@ export default function PendingApprovalsPage() {
         ),
       },
       {
+        key: "changes",
+        label: t("changes"),
+        render: (item: any) => (
+          <button
+            onClick={(e) => handleViewChanges(e, item)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors whitespace-nowrap"
+          >
+            <Eye size={16} className="flex-shrink-0" />
+            <span>{t("view_changes")}</span>
+          </button>
+        ),
+      },
+      {
         key: "actions",
         label: t("action"),
         render: (item: any) => (
           <button
-            onClick={() => handleViewDetails(item)}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+            onClick={(e) => handleViewDetailsButton(e, item)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors whitespace-nowrap"
           >
-            <Eye size={16} />
-            <span className="text-sm">{t("view")}</span>
+            <Eye size={16} className="flex-shrink-0" />
+            <span>{t("view")}</span>
           </button>
         ),
       },
@@ -366,6 +425,41 @@ export default function PendingApprovalsPage() {
           </>
         )}
       </div>
+
+      <ViewChangesModal
+        isOpen={viewChangesState.isOpen}
+        onClose={() =>
+          setViewChangesState({ ...viewChangesState, isOpen: false })
+        }
+        entityType={viewChangesState.entityType}
+        entityId={viewChangesState.entityId}
+        entityName={viewChangesState.entityName}
+        changeData={
+          changesData &&
+          Array.isArray(changesData.changes) &&
+          changesData.changes.length > 0
+            ? {
+                changeId: changesData._id || undefined,
+                changes: changesData.changes || [],
+                summary: changesData.summary || "",
+                changesCount: changesData.changesCount || 0,
+                changedBy: changesData.changedBy || {
+                  firstName: "",
+                  email: "",
+                },
+                changedAt: changesData.createdAt || new Date(),
+                status: changesData.status || "PENDING",
+              }
+            : undefined
+        }
+        isLoading={changesLoading}
+        userRole={userRole as any}
+        onApprove={async () => {
+          setPage(1);
+          setCombinedItems([]);
+          await refetchApprovals();
+        }}
+      />
     </div>
   );
 }

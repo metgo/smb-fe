@@ -68,12 +68,13 @@ export default function Sidebar() {
   );
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
 
-  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin)
+  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
   const isAdminRole = [
     "superadmin",
     "authorityAdmin",
     "dmo",
     "dmoadmin",
+    "siteManager",
   ].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
