@@ -141,9 +141,7 @@ export default function EventDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, eventDetails };
-    const eventImages: IImage[] = [...(eventDetails?.images ?? [])].sort(
-      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
-    );
+    const eventImages = eventDetails?.images ?? [];
     const mediaProps = {
       images: eventImages.map((img: IImage) => ({
         previewUrl: img.image,

@@ -129,9 +129,7 @@ export default function PoiDetailsPage() {
   };
 
   const renderContent = () => {
-    const poiImages: IImage[] = [...(poi?.images ?? [])].sort(
-      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
-    );
+    const poiImages = poi?.images ?? [];
     const mediaProps = {
       images: poiImages.map((img: IImage) => ({
         previewUrl: img.image,

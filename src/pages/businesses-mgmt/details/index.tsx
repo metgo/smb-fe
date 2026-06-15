@@ -221,9 +221,7 @@ export default function BusinessDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, isDark, business };
-    const businessImages: IImage[] = [...(business?.images ?? [])].sort(
-      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
-    );
+    const businessImages = business?.images ?? [];
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
       images: businessImages.map((img: IImage) => ({

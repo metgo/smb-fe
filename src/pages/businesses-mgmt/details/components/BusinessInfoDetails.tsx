@@ -119,5 +119,9 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
     </div>
   );
 };
+console.log(
+  "🚀 ~ BusinessInfoDetails ~ BusinessInfoDetails:",
+  BusinessInfoDetails,
+);
 
 export default BusinessInfoDetails;

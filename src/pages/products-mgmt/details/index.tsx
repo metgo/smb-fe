@@ -137,9 +137,7 @@ export default function ProductDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, language, product };
-    const productImages: IImage[] = [...(product?.images ?? [])].sort(
-      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
-    );
+    const productImages = product?.images ?? [];
     const mediaProps = {
       logoImage: null,
       images: productImages.map((img: IImage) => ({
