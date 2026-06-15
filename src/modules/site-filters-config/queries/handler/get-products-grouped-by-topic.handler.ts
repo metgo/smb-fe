@@ -106,6 +106,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
     if (!productEntries.length) {
       return activeTopics.map(topic => ({
         topics: getLocalizedValue(topic, 'title', locale),
+        icon: topic.icon ?? null,
+        colors: topic.colors ?? [],
         products: [],
       }));
     }
@@ -163,6 +165,8 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
 
     return activeTopics.map((topic, i) => ({
       topics: getLocalizedValue(topic, 'title', locale),
+      icon: topic.icon ?? null,
+      colors: topic.colors ?? [],
       products: topicProductsMap.get(i),
     }));
   }
