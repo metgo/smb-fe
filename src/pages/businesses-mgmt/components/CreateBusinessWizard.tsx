@@ -246,6 +246,10 @@ export default function CreateBusinessWizard({
         JSON.stringify(initialGroupTypesId.current)
     );
   };
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
   const {
     images,
     imagesRef,
@@ -260,6 +264,18 @@ export default function CreateBusinessWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT
+        ? (updatedImages) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { images: updatedImages },
+              });
+            }
+          }
+        : undefined,
   });
 
   const {
@@ -297,10 +313,6 @@ export default function CreateBusinessWizard({
     await deleteLogoFile();
     setDeleteTargetLogo(null);
   };
-
-  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] =
-    useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
 

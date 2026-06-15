@@ -153,6 +153,10 @@ export default function CreateProductWizard({
     [],
   );
 
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
   const {
     images,
     imagesRef,
@@ -167,6 +171,15 @@ export default function CreateProductWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT && productId
+        ? (updatedImages) => {
+            updateProduct({
+              productId: productId!,
+              body: { images: updatedImages },
+            });
+          }
+        : undefined,
   });
 
   const [formData, setFormData] = useState<any>({
@@ -327,10 +340,6 @@ export default function CreateProductWizard({
   }, [productId, product]);
 
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
-
-  const [initProductCreate, { isLoading: isCreating }] =
-    useInitProductCreateMutation();
-  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
 
   const completionPercent = useMemo(() => {
     const checks = [

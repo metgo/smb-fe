@@ -141,11 +141,15 @@ export default function EventDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, eventDetails };
+    const eventImages = eventDetails?.images ?? [];
     const mediaProps = {
-      images: (eventDetails?.images ?? []).map((img: IImage) => ({
+      images: eventImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        eventImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {

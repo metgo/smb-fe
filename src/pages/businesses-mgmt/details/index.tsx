@@ -221,12 +221,16 @@ export default function BusinessDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, isDark, business };
+    const businessImages = business?.images ?? [];
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
-      images: (business?.images ?? []).map((img: IImage) => ({
+      images: businessImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        businessImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -385,14 +389,7 @@ export default function BusinessDetailsPage() {
       </div>
 
       <div className="details-top shrink-0">
-        <DetailTitleSection
-          {...business}
-          imageSrc={
-            business?.logo?.image ||
-            business?.images?.[0]?.image ||
-            business?.images?.[1]?.image
-          }
-        />
+        <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
         <PageStats
           stats={businessStats}
           isLoading={isDetailStatsLoading}
