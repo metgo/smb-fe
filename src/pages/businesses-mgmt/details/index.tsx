@@ -221,12 +221,16 @@ export default function BusinessDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, isDark, business };
+    const businessImages = business?.images ?? [];
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
-      images: (business?.images ?? []).map((img: IImage) => ({
+      images: businessImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        businessImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -413,6 +417,7 @@ export default function BusinessDetailsPage() {
         <ChangeOwnerModal
           setIsOpen={setIsOwnerChangeModalOpen}
           currentOwner={business?.owner}
+          refetch={businessDataRefetch}
         />
       )}
 

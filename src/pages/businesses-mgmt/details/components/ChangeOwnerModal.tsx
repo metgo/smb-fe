@@ -11,7 +11,7 @@ import {
 } from "@/store/api/masterDataApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
-import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface ChangeOwnerModalProps {
   setIsOpen: (v: boolean) => void;
@@ -28,7 +28,6 @@ export default function ChangeOwnerModal({
   refetch,
   currentOwner,
 }: ChangeOwnerModalProps) {
-  const { userRole } = useAppSelector((state) => state.auth);
   const { isDark } = useThemeClasses();
   const { t } = useTranslation("common");
   const [getUserByEmail] = useLazyGetUserByEmailQuery();
@@ -96,19 +95,26 @@ export default function ChangeOwnerModal({
     setIsOpen(false);
   };
 
-  const handleAssignExistingUser = () => {
+  const handleAssignExistingUser = async () => {
     if (foundUser) {
-      updateOwner({ userId: foundUser?.id, businessesId: businessId });
-      toast.success(t("owner_changed"), {
-        description: t("owner_changed_description", {
-          firstName: foundUser.firstName,
-          lastName: foundUser.lastName,
-        }),
-      });
-      if (refetch) refetch();
-      setFoundUser("");
-      handleClose();
-      setEmail("");
+      try {
+        await updateOwner({
+          userId: foundUser?.id,
+          businessesId: businessId,
+        }).unwrap();
+        toast.success(t("owner_changed"), {
+          description: t("owner_changed_description", {
+            firstName: foundUser.firstName,
+            lastName: foundUser.lastName,
+          }),
+        });
+        if (refetch) refetch();
+        setFoundUser("");
+        handleClose();
+        setEmail("");
+      } catch {
+        toast.error(t("owner_change_failed"));
+      }
     }
   };
 
@@ -126,7 +132,7 @@ export default function ChangeOwnerModal({
         phoneNumber: phone,
         address,
         languagePreference: language,
-        role: userRole,
+        role: UserRole.TRAVELLER,
       });
     }
 

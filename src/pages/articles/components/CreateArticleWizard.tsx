@@ -129,6 +129,15 @@ const CreateArticleWizard = ({
   ];
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
+  // ─── Mutations ────────────────────────────────────────────────────────────────
+  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+  const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
+    useGenerateBlogSeoMutation();
+
+  const isEditMode = !!existingArticle;
+  const isLoading = isCreating || isUpdating;
+
   const {
     images,
     imagesRef,
@@ -143,6 +152,24 @@ const CreateArticleWizard = ({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      isEditMode && existingArticle?._id
+        ? (updatedImages) => {
+            const mapped = updatedImages.map((img) => ({
+              image: img.image,
+              alt:
+                existingArticle.title ||
+                existingArticle.titleHe ||
+                existingArticle.titleAr ||
+                "",
+              isPrimary: img.isPrimary,
+            }));
+            updateBlog({
+              blogId: existingArticle._id,
+              body: { images: mapped },
+            });
+          }
+        : undefined,
   });
 
   // ─── Form state ───────────────────────────────────────────────────────────────
@@ -168,15 +195,6 @@ const CreateArticleWizard = ({
       setGalleryImages(images);
     }
   }, [existingArticle]);
-
-  // ─── Mutations ────────────────────────────────────────────────────────────────
-  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
-  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
-  const [generateBlogSeo, { isLoading: isGeneratingSeo }] =
-    useGenerateBlogSeoMutation();
-
-  const isEditMode = !!existingArticle;
-  const isLoading = isCreating || isUpdating;
 
   // ─── Handlers ─────────────────────────────────────────────────────────────────
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {

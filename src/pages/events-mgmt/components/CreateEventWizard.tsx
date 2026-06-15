@@ -228,7 +228,15 @@ export default function CreateEventWizard({
     confirmDelete,
     isImageDeleting,
     handleDeleteImage,
-  } = useFilesUpload({ initialImages: eventImages, onChange: setEventImages });
+  } = useFilesUpload({
+    initialImages: eventImages,
+    onChange: setEventImages,
+    onImagesChange: eventId
+      ? (updatedImages) => {
+          updateEvent({ eventId, body: { images: updatedImages } as any });
+        }
+      : undefined,
+  });
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});

@@ -221,14 +221,18 @@ export default function BusinessesMgmtPage() {
   }, [queryParams]);
 
   const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery(statsQueryParams);
+    useGetBusinessStatsQuery(statsQueryParams, {
+      refetchOnMountOrArgChange: true,
+    });
 
   const {
     data: businessData,
     isLoading,
     isFetching,
     refetch,
-  } = useGetAllbusinessesQuery(queryParams);
+  } = useGetAllbusinessesQuery(queryParams, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
     useBulkBusinessesUpdateMutation();

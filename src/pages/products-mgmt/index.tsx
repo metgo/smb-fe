@@ -298,14 +298,18 @@ export default function ProductsMgmtPage() {
   }, [productQueryParams]);
 
   const { data: productStats, isLoading: isStatsLoading } =
-    useGetProductStatsQuery(statsQueryParams);
+    useGetProductStatsQuery(statsQueryParams, {
+      refetchOnMountOrArgChange: true,
+    });
 
   const {
     data: productData,
     refetch,
     isFetching,
     isLoading: isLoadingProduct,
-  } = useGetAllProductsQuery(productQueryParams);
+  } = useGetAllProductsQuery(productQueryParams, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const [bulkProductsUpdate, { isLoading: isDeleting }] =
     useBulkProductsUpdateMutation();
@@ -667,7 +671,7 @@ export default function ProductsMgmtPage() {
           ) : (
             <ProductGridView
               hasMore={!!hasMore}
-              refetch={refetch}
+              refetch={refetchFromPage1}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
               isLoading={isLoadingProduct || isFetching}
@@ -701,7 +705,7 @@ export default function ProductsMgmtPage() {
       {isCreateModalOpen && (
         <CreateProductWizard
           onClose={() => setIsCreateModalOpen(false)}
-          refetch={refetch}
+          refetch={refetchFromPage1}
         />
       )}
     </>

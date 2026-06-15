@@ -246,6 +246,10 @@ export default function CreateBusinessWizard({
         JSON.stringify(initialGroupTypesId.current)
     );
   };
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
   const {
     images,
     imagesRef,
@@ -260,6 +264,18 @@ export default function CreateBusinessWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT
+        ? (updatedImages) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { images: updatedImages },
+              });
+            }
+          }
+        : undefined,
   });
 
   const {
@@ -297,10 +313,6 @@ export default function CreateBusinessWizard({
     await deleteLogoFile();
     setDeleteTargetLogo(null);
   };
-
-  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] =
-    useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
 
@@ -627,7 +639,7 @@ export default function CreateBusinessWizard({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 2: {
+      case 3: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -642,13 +654,13 @@ export default function CreateBusinessWizard({
         break;
       }
 
-      case 3:
+      case 4:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 4:
+      case 5:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -681,6 +693,22 @@ export default function CreateBusinessWizard({
       !formData.nameAr?.trim()
     ) {
       toast.error(tt("name_required"));
+      return;
+    }
+    if (
+      !formData.shortDescription?.trim() &&
+      !formData.shortDescriptionHe?.trim() &&
+      !formData.shortDescriptionAr?.trim()
+    ) {
+      toast.error(tt("short_description_required"));
+      return;
+    }
+    if (
+      !formData.fullDescription?.trim() &&
+      !formData.fullDescriptionHe?.trim() &&
+      !formData.fullDescriptionAr?.trim()
+    ) {
+      toast.error(tt("full_description_required"));
       return;
     }
     setIsDraftBtnClicked(true);

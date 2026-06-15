@@ -10,7 +10,7 @@ export const userMutationApi = createApi({
   endpoints: (builder) => ({
     createUser: builder.mutation<any, any>({
       query: (body) => ({
-        url: endpoints.userAdmin,
+        url: endpoints.createUser,
         method: "POST",
         data: body,
       }),
@@ -18,7 +18,7 @@ export const userMutationApi = createApi({
 
     updateUser: builder.mutation<any, { userId: string; body: any }>({
       query: ({ userId, body }) => ({
-        url: `${endpoints.userAdmin}/${userId}`,
+        url: `${endpoints.users}/${userId}`,
         method: "PATCH",
         data: body,
       }),

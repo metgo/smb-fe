@@ -5,6 +5,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
 import { getPlainTextFromRichText } from "@/helpers";
 import { ModalWrapper } from "@/components/wrapper";
+
 interface ProductDetailsModalProps {
   product: any;
   onClose: () => void;

@@ -68,6 +68,7 @@ export const endpoints = {
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
+  createUser: "/users/create",
   tickets: "/tickets",
 
   // Media
@@ -86,6 +87,7 @@ export const endpoints = {
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips
   trips: "/trips",
