@@ -378,6 +378,7 @@ export default function CreateBusinessWizard({
       setSelectedDmoId(dmoId);
     }
   }, []);
+
   useEffect(() => {
     // For CREATE mode, we don't load from editData
     if (opMode === IOpMode.CREATE) return;
@@ -605,7 +606,7 @@ export default function CreateBusinessWizard({
   const { markDirty, saveDraft } = useBusinessDraftSaver({
     opMode,
     onClose,
-    refetch,
+    // refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -741,10 +742,14 @@ export default function CreateBusinessWizard({
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
     const resolvedBusinessId = await saveDraft(true, processedFormData);
     if (resolvedBusinessId) {
-      await createWebsiteAccessItem({
+      const res = await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
         itemId: resolvedBusinessId,
       });
+
+      if (res) {
+        refetch();
+      }
     }
     setIsPublishing(false);
   };

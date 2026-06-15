@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 interface UseBusinessDraftSaverProps {
   opMode: IOpMode;
-  refetch: () => void;
+  // refetch: () => void;
   onClose: () => void;
   currentStep: number;
   businessId: string;
@@ -22,7 +22,7 @@ interface UseBusinessDraftSaverProps {
 export function useBusinessDraftSaver({
   opMode,
   onClose,
-  refetch,
+  // refetch,
   currentStep,
   businessId,
   setBusinessId,
@@ -82,7 +82,8 @@ export function useBusinessDraftSaver({
             `${routes.businessDetails}?businessId=${internalbusinessId}`,
           );
         } else {
-          refetch();
+          console.log(".");
+          // refetch();
         }
         onClose();
         toast.success(isPublish ? t("business_published") : t("draft_saved"));
@@ -100,7 +101,7 @@ export function useBusinessDraftSaver({
       updateBusiness,
       setBusinessId,
       isTraveller,
-      refetch,
+      // refetch,
       onClose,
       navigate,
       opMode,
