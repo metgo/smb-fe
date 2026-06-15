@@ -16,11 +16,32 @@ import {
   CreateUserWizard,
 } from "./components";
 import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
+
+const ROLE_ORDER: UserRole[] = [
+  UserRole.SUPERADMIN,
+  UserRole.ADMIN,
+  UserRole.DMO,
+  UserRole.AUTHORITY,
+  UserRole.TRAVELLER,
+];
 
 const LIMIT = 1000;
 
 const UsersMgmtPage = () => {
-  const [activeRole, setActiveRole] = useState<UserRole>(UserRole.SUPERADMIN);
+  const { userRole } = useAppSelector((state) => state.auth);
+
+  const visibleTabs = useMemo(() => {
+    const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
+    if (myIndex === -1) return ROLE_TABS;
+    return ROLE_TABS.filter(
+      (tab) => ROLE_ORDER.indexOf(tab.id as UserRole) >= myIndex,
+    );
+  }, [userRole]);
+
+  const [activeRole, setActiveRole] = useState<UserRole>(
+    () => (userRole as UserRole) ?? UserRole.SUPERADMIN,
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -59,9 +80,9 @@ const UsersMgmtPage = () => {
 
   const [deleteUser] = useDeleteUserMutation();
 
-  const totalData = data?.datas?.totalData ?? 0;
+  const totalData = data?.totalData ?? 0;
 
-  const hasMore = data?.datas?.meta?.hasNextPage ?? false;
+  const hasMore = data?.meta?.hasNextPage ?? false;
 
   /**
    * Merge paginated users.
@@ -75,8 +96,8 @@ const UsersMgmtPage = () => {
       return;
     }
 
-    const users = data.datas?.data ?? [];
-    const fetchedPage = data.datas?.meta?.page ?? 1;
+    const users = data.data ?? [];
+    const fetchedPage = data.meta?.page ?? 1;
 
     if (!users.length) {
       if (fetchedPage === 1) setAllUsers([]);
@@ -179,7 +200,7 @@ const UsersMgmtPage = () => {
 
         {/* Tabs */}
         <TabsSection
-          tabs={ROLE_TABS}
+          tabs={visibleTabs}
           activeTab={activeRole}
           setActiveTab={handleRoleChange}
         />

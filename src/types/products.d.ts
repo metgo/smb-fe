@@ -34,6 +34,8 @@ interface Product {
   businessId: {
     _id: string;
     name: string;
+    nameHe?: string;
+    nameAr?: string;
   };
 
   images: [

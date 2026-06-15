@@ -88,11 +88,13 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               className={`w-full ${
                 isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
               } py-2 rounded-lg border ${
+                isDark ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+              } ${
                 errors.email
                   ? "border-red-500"
                   : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
+                    ? "border-gray-700"
+                    : "border-gray-300"
               } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>
@@ -128,11 +130,13 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               className={`w-full ${
                 isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
               } py-2 rounded-lg border ${
+                isDark ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+              } ${
                 errors.phone
                   ? "border-red-500"
                   : isDark
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-white border-gray-300 text-gray-900"
+                    ? "border-gray-700"
+                    : "border-gray-300"
               } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>

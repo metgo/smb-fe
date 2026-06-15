@@ -8,8 +8,27 @@ import {
   useCreateUserMutation,
   useUpdateUserMutation,
 } from "@/store/api/userMutationApi";
-import { useGetDmosQuery } from "@/store/api/masterDataApi";
 import { UserRole } from "@/enums/user.types";
+import { useAppSelector } from "@/hooks/hooks";
+import { useCommon } from "@/hooks/useCommon";
+
+const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
+  [UserRole.SUPERADMIN]: [
+    UserRole.SUPERADMIN,
+    UserRole.ADMIN,
+    UserRole.DMO,
+    UserRole.AUTHORITY,
+    UserRole.TRAVELLER,
+  ],
+  [UserRole.ADMIN]: [
+    UserRole.ADMIN,
+    UserRole.DMO,
+    UserRole.AUTHORITY,
+    UserRole.TRAVELLER,
+  ],
+  [UserRole.DMO]: [UserRole.DMO, UserRole.AUTHORITY, UserRole.TRAVELLER],
+  [UserRole.AUTHORITY]: [UserRole.AUTHORITY, UserRole.TRAVELLER],
+};
 
 interface UserFormData {
   firstName: string;
@@ -19,9 +38,8 @@ interface UserFormData {
   phoneNumber: string;
   address: string;
   role: string;
-  dmoId: string;
-  authorityId: string;
   languagePreference: string;
+  authorityId: string;
 }
 
 interface CreateUserWizardProps {
@@ -36,21 +54,31 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const ROLE_OPTIONS = [
-  { value: UserRole.TRAVELLER, label: "Traveller" },
-  { value: UserRole.ADMIN, label: "Admin" },
   { value: UserRole.SUPERADMIN, label: "Super Admin" },
+  { value: UserRole.ADMIN, label: "Admin" },
   { value: UserRole.DMO, label: "DMO" },
-  { value: UserRole.DMOADMIN, label: "DMO Admin" },
   { value: UserRole.AUTHORITY, label: "Authority" },
-  { value: UserRole.AUTHORITY_ADMIN, label: "Authority Admin" },
+  { value: UserRole.TRAVELLER, label: "Traveller" },
 ];
-
-const DMO_ROLES = [UserRole.DMO, UserRole.DMOADMIN];
-const AUTHORITY_ROLES = [UserRole.AUTHORITY, UserRole.AUTHORITY_ADMIN];
 
 const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
+
+  const { userRole } = useAppSelector((state) => state.auth);
+  const { dmosAuthorities } = useCommon();
+
+  const allAuthorities = (dmosAuthorities ?? []).flatMap(
+    (dmo) => dmo.authorities ?? [],
+  );
+
+  const creatableRoles =
+    CREATABLE_ROLES[userRole as UserRole] ??
+    ROLE_OPTIONS.map((r) => r.value as UserRole);
+
+  const allowedRoleOptions = ROLE_OPTIONS.filter((r) =>
+    creatableRoles.includes(r.value as UserRole),
+  );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<UserFormData>({
@@ -60,17 +88,18 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     countryCode: editUser?.countryCode ?? "",
     phoneNumber: editUser?.phoneNumber ?? "",
     address: editUser?.address ?? "",
-    role: editUser?.role ?? UserRole.TRAVELLER,
-    dmoId: "",
-    authorityId: "",
+    role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
     languagePreference: editUser?.languagePreference ?? "en",
+    authorityId: "",
   });
 
-  const { data: dmosData } = useGetDmosQuery();
+  // For admin/superadmin who have no dmoId, let them pick a DMO to scope the authority list
+
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const isSaving = isCreating || isUpdating;
 
+  // The DMO used to derive the authority list
   const field =
     (key: keyof UserFormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -94,13 +123,8 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     if (!formData.countryCode.trim()) e.countryCode = "Required";
     if (!formData.phoneNumber.trim()) e.phoneNumber = "Required";
     if (!formData.role) e.role = "Required";
-    if (DMO_ROLES.includes(formData.role as any) && !formData.dmoId.trim())
-      e.dmoId = "Required for this role";
-    if (
-      AUTHORITY_ROLES.includes(formData.role as any) &&
-      !formData.authorityId.trim()
-    )
-      e.authorityId = "Required for this role";
+    if (formData.role === UserRole.AUTHORITY && !formData.authorityId)
+      e.authorityId = "Required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -118,10 +142,10 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
       role: formData.role,
       languagePreference: formData.languagePreference,
     };
-    if (DMO_ROLES.includes(formData.role as any))
-      payload.dmoId = formData.dmoId;
-    if (AUTHORITY_ROLES.includes(formData.role as any))
+
+    if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
       payload.authorityId = formData.authorityId;
+    }
 
     try {
       if (isEdit && editUser) {
@@ -136,10 +160,6 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
       toast.error(err?.data?.message || "Something went wrong");
     }
   };
-
-  const dmos: any[] = dmosData?.datas?.data ?? dmosData?.data ?? [];
-  const needsDmo = DMO_ROLES.includes(formData.role as any);
-  const needsAuthority = AUTHORITY_ROLES.includes(formData.role as any);
 
   return (
     <ModalWrapper
@@ -249,10 +269,16 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
             <label className={labelClass}>Role *</label>
             <select
               value={formData.role}
-              onChange={field("role")}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  role: e.target.value,
+                  authorityId: "",
+                }))
+              }
               className={inputClass}
             >
-              {ROLE_OPTIONS.map((r) => (
+              {allowedRoleOptions.map((r) => (
                 <option key={r.value} value={r.value}>
                   {r.label}
                 </option>
@@ -276,47 +302,22 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
           </div>
         </div>
 
-        {/* DMO (conditional) */}
-        {needsDmo && (
+        {/* Authority — shown only when role is Authority */}
+        {formData.role === UserRole.AUTHORITY && (
           <div>
-            <label className={labelClass}>DMO *</label>
-            {dmos.length > 0 ? (
-              <select
-                value={formData.dmoId}
-                onChange={field("dmoId")}
-                className={inputClass}
-              >
-                <option value="">Select a DMO</option>
-                {dmos.map((d: any) => (
-                  <option key={d._id} value={d._id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={formData.dmoId}
-                onChange={field("dmoId")}
-                className={inputClass}
-                placeholder="DMO ID"
-              />
-            )}
-            {errors.dmoId && <p className={errorClass}>{errors.dmoId}</p>}
-          </div>
-        )}
-
-        {/* Authority (conditional) */}
-        {needsAuthority && (
-          <div>
-            <label className={labelClass}>Authority ID *</label>
-            <input
-              type="text"
+            <label className={labelClass}>Authority *</label>
+            <select
               value={formData.authorityId}
               onChange={field("authorityId")}
               className={inputClass}
-              placeholder="Authority ID"
-            />
+            >
+              <option value="">Select authority...</option>
+              {allAuthorities.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
             {errors.authorityId && (
               <p className={errorClass}>{errors.authorityId}</p>
             )}
