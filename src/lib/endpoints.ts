@@ -87,6 +87,7 @@ export const endpoints = {
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips
   trips: "/trips",

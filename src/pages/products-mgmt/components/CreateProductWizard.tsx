@@ -78,8 +78,12 @@ export default function CreateProductWizard({
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
-  const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
+  // Only pre-select business when explicitly coming from the "create product" flow (businessName param present).
+  // When coming from "view products" (businessNameProduct param, no businessName), open the modal clean.
+  const bzIdForProdCreate = businessName
+    ? searchParams?.get("businessId")
+    : null;
 
   const { language, textPrimary, textTertiary, borderColor, isDark } =
     useThemeClasses();

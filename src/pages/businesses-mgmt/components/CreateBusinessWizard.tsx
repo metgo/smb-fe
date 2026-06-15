@@ -639,7 +639,7 @@ export default function CreateBusinessWizard({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 2: {
+      case 3: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -654,13 +654,13 @@ export default function CreateBusinessWizard({
         break;
       }
 
-      case 3:
+      case 4:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 4:
+      case 5:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }

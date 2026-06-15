@@ -20,13 +20,13 @@ interface BusinessReviewSubmitProps {
   selectedGroupTypesId: string[];
   selectedAccessiblitiesId: string[];
   formData: {
-    nameEn: string;
+    name: string;
     nameHe: string;
     nameAr: string;
-    shortDescriptionEn: string;
+    shortDescription: string;
     shortDescriptionHe: string;
     shortDescriptionAr: string;
-    fullDescriptionEn: string;
+    fullDescription: string;
     fullDescriptionHe: string;
     fullDescriptionAr: string;
     email: string;
@@ -140,7 +140,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
         <div className="p-5 space-y-4">
           {/* Names */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("name"), formData.nameEn)}
+            {row(tc("name"), formData.name)}
             {row(tc("name_he"), formData.nameHe)}
             {row(tc("name_ar"), formData.nameAr)}
           </div>
@@ -149,7 +149,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 
           {/* Short descriptions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("short_description_en"), formData.shortDescriptionEn)}
+            {row(tc("short_description_en"), formData.shortDescription)}
             {row(tc("short_description_he"), formData.shortDescriptionHe)}
             {row(tc("short_description_ar"), formData.shortDescriptionAr)}
           </div>
@@ -158,7 +158,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 
           {/* Full descriptions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("full_description_en"), formData.fullDescriptionEn)}
+            {row(tc("full_description_en"), formData.fullDescription)}
             {row(tc("full_description_he"), formData.fullDescriptionHe)}
             {row(tc("full_description_ar"), formData.fullDescriptionAr)}
           </div>

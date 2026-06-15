@@ -78,7 +78,17 @@ export function useFilesUpload({
         isPrimary: false,
       }));
 
-      setImages((prev) => [...prev, ...placeholders]);
+      setImages((prev) => {
+        // If there are no existing images, the first new image becomes primary
+        const isFirstUpload = prev.length === 0;
+        return [
+          ...prev,
+          ...placeholders.map((p, i) => ({
+            ...p,
+            isPrimary: isFirstUpload && i === 0,
+          })),
+        ];
+      });
       imagesRef.current?.scrollIntoView({ behavior: "smooth" });
 
       let finalImages: IImageUpload[] = [];
