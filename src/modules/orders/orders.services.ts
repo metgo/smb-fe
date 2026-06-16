@@ -190,7 +190,7 @@ export class OrdersService {
                 (total, item) => total + item.redeemedAmount,
                 0,
               );
-              totalAmountToPay -= redeemedAmount;
+              totalAmountToPay = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
             }
           }
         }
@@ -238,15 +238,19 @@ export class OrdersService {
   ): Promise<any> {
     const { vendorProducts } = cartDetails;
 
-    const payableAmount = vendorProducts.reduce(
-      (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
-      0,
-    );
+    const payableAmount = Math.round(
+      vendorProducts.reduce(
+        (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+        0,
+      ) * 100,
+    ) / 100;
 
-    const totalDeliveryFee = vendorProducts.reduce(
-      (sum, vendor) => sum + (vendor.deliveryFee || 0),
-      0,
-    );
+    const totalDeliveryFee = Math.round(
+      vendorProducts.reduce(
+        (sum, vendor) => sum + (vendor.deliveryFee || 0),
+        0,
+      ) * 100,
+    ) / 100;
 
     let totalAmountToPay = payableAmount;
     let redeemedVouchers;
@@ -273,7 +277,7 @@ export class OrdersService {
               (total: number, item: { redeemedAmount: number }) => total + item.redeemedAmount,
               0,
             );
-            totalAmountToPay -= redeemedAmount;
+            totalAmountToPay = Math.round((totalAmountToPay - redeemedAmount) * 100) / 100;
           }
         }
       }
