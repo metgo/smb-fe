@@ -9,7 +9,8 @@ import { useNavigate } from "react-router-dom";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
-  refetch: () => void;
+  refetch?: () => void;
+  poiDataRefetch?: () => void;
   onClose: () => void;
   currentStep: number;
   poiId: string;
@@ -23,6 +24,7 @@ export function usePoiDraftSaver({
   opMode,
   onClose,
   refetch,
+  poiDataRefetch,
   currentStep,
   poiId,
   setPoiId,
@@ -76,7 +78,8 @@ export function usePoiDraftSaver({
         if (opMode === IOpMode.DUPLICATE) {
           navigate(`${routes.poiDetails}?poiId=${internalPoiId}`);
         } else {
-          refetch();
+          poiDataRefetch?.();
+          refetch?.();
         }
         onClose();
         toast.success(isPublish ? tp("poi_published") : tp("draft_saved"));
@@ -96,6 +99,7 @@ export function usePoiDraftSaver({
       setPoiId,
       isTraveller,
       refetch,
+      poiDataRefetch,
       onClose,
       navigate,
       opMode,

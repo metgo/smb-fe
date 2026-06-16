@@ -261,6 +261,8 @@ export default function EventDetailsPage() {
           isOpen={isEditOpen}
           onClose={handleClose}
           editData={eventDetails}
+          refetch={ticketsRefetch}
+          eventDataRefetch={refetch}
         />
       )}
     </div>

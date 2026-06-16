@@ -59,6 +59,7 @@ interface CreateBusinessWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  businessDataRefetch?: any;
   opMode?: TOpMode;
   missingFields?: string[];
 }
@@ -67,6 +68,7 @@ export default function CreateBusinessWizard({
   onClose,
   editData,
   refetch,
+  businessDataRefetch,
   opMode = IOpMode.CREATE,
   missingFields = [],
 }: CreateBusinessWizardProps) {
@@ -719,6 +721,11 @@ export default function CreateBusinessWizard({
         body: websiteAccessItemPayload,
         itemId: resolvedBusinessId,
       });
+      // Refetch after save draft completes
+      // Don't await to prevent blocking the UI
+      if (businessDataRefetch) {
+        businessDataRefetch();
+      }
     }
   };
 
@@ -742,14 +749,12 @@ export default function CreateBusinessWizard({
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
     const resolvedBusinessId = await saveDraft(true, processedFormData);
     if (resolvedBusinessId) {
-      const res = await createWebsiteAccessItem({
+      await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
         itemId: resolvedBusinessId,
       });
 
-      if (res) {
-        refetch();
-      }
+      await Promise.all([refetch?.(), businessDataRefetch?.()]);
     }
     setIsPublishing(false);
   };
@@ -763,10 +768,16 @@ export default function CreateBusinessWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "business",

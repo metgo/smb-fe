@@ -243,6 +243,7 @@ export default function PoiDetailsPage() {
           editData={poi}
           onClose={() => setIsEditClicked(false)}
           refetch={refetch}
+          poiDataRefetch={poiDataRefetch}
           opMode={IOpMode.EDIT}
         />
       )}

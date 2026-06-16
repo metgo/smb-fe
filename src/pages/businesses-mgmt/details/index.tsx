@@ -200,6 +200,8 @@ export default function BusinessDetailsPage() {
   };
 
   const handleMutateData = (mode: TOpMode) => {
+    // Refetch fresh business data before opening edit modal
+    businessDataRefetch();
     setIsEditClicked(true);
     setOpMode(mode);
   };
@@ -429,6 +431,7 @@ export default function BusinessDetailsPage() {
             setMissingFieldsFromToken([]);
           }}
           refetch={refetch}
+          businessDataRefetch={businessDataRefetch}
           opMode={opMode}
           missingFields={missingFieldsFromToken}
         />
