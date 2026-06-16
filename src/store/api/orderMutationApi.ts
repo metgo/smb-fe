@@ -11,7 +11,7 @@ interface IBulkUpdateParams {
 
 interface ICancleOrderParams {
   orderId?: string;
-  productId?: string;
+  orderProductId?: string;
   status: string;
   cancelReason?: string;
   additionalInfo?: string;

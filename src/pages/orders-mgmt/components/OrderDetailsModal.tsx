@@ -1,19 +1,18 @@
 import clsx from "clsx";
 import axios from "axios";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Loader, Mail, Phone, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
+import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
-import { ModalWrapper } from "@/components/wrapper";
 import {
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
-  useProductOrderCancleMutation,
 } from "@/store/api/orderMutationApi";
-import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
@@ -55,7 +54,6 @@ function OrderDetailsModal({
   >(null);
 
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
-  const [productOrderCancle] = useProductOrderCancleMutation();
 
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
 
@@ -114,44 +112,31 @@ function OrderDetailsModal({
   };
 
   async function handleCancleConfirm(reason: string, additionalInfo: string) {
-    if (cancelType === "item" && itemToCancel) {
-      setShowCancelDialog(false);
-      setItemToCancel(null);
-      refetch();
-      return;
-    }
-
     setIsCancelling(true);
 
     try {
-      const body = {
-        status: "canceled",
-        canceledReason: t(reason),
-      };
-
       if (isQRMode && qrToken) {
         await axios.post(
           `${envKeys.baseUrl}/public/orders/verify/${qrToken}/update-status`,
-          body,
+          { status: "canceled", canceledReason: t(reason) },
         );
-      } else {
-        // await updateOrderStatus({
-        //   orderId: orderDetails?._id,
-        //   status: status.toLowerCase(),
-        //   cancelReason: t(reason),
-        //   additionalInfo: "",
-        // }).unwrap();
-
-        const res = await productOrderCancle({
+      } else if (cancelType === "order") {
+        await updateOrderStatus({
           orderId: orderDetails?._id,
-          status: status.toLowerCase(),
+          status: "canceled",
           cancelReason: t(reason),
           additionalInfo,
         }).unwrap();
-        console.log("🚀 ~ handleCancleConfirm ~ res:", res);
+      } else {
+        await updateOrderStatus({
+          orderId: orderDetails?._id,
+          orderProductId: itemToCancel?._id,
+          status: "canceled",
+          cancelReason: t(reason),
+          additionalInfo,
+        }).unwrap();
       }
 
-      // Reload page in QR mode, otherwise just refetch
       if (isQRMode) {
         window.location.reload();
       } else {
@@ -179,9 +164,13 @@ function OrderDetailsModal({
               p-4 md:p-6 
               mb-4`}
       >
-        <h2 className={`text-2xl font-semibold ${textPrimary}`}>
-          {t("order_details")}
-        </h2>
+        <div>
+          <h2 className={`text-2xl font-semibold ${textPrimary}`}>
+            {t("order_details")}
+          </h2>
+          <p className={clsx(textPrimary, "font-bold")}>#{orderId}</p>
+        </div>
+
         <OrderStatusChangeBtn
           status={orderDetails?.status || "pending"}
           handleStatusChange={onStatusChangeHandler}
@@ -311,20 +300,23 @@ function OrderDetailsModal({
                       </p>
                     </div>
 
-                    {!product?.cancelled && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCancelType("item");
-                          setItemToCancel(product);
-                          setShowCancelDialog(true);
-                        }}
-                        className={`p-2 rounded-lg transition-colors ${isDark ? "hover:bg-red-900/30 text-red-400" : "hover:bg-red-50 text-red-500"}`}
-                        title={t("cancelProduct")}
-                      >
-                        <XCircle className="w-5 h-5" />
-                      </button>
-                    )}
+                    {orderDetails?.products?.length > 1 &&
+                      orderDetails?.status !== "canceled" &&
+                      orderDetails?.status !== "completed" &&
+                      orderDetails?.status !== "shipped" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCancelType("item");
+                            setItemToCancel(product);
+                            setShowCancelDialog(true);
+                          }}
+                          className={`p-2 rounded-lg transition-colors ${isDark ? "hover:bg-red-900/30 text-red-400" : "hover:bg-red-50 text-red-500"}`}
+                          title={t("cancelProduct")}
+                        >
+                          <XCircle className="w-5 h-5" />
+                        </button>
+                      )}
 
                     {product?.cancelled && (
                       <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">

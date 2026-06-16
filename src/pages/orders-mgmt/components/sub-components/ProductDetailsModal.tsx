@@ -42,7 +42,7 @@ export default function ProductDetailsModal({
         <div className="p-6">
           <div className="flex items-center gap-4">
             <ImageWithFallback
-              src={product?.images?.image}
+              src={product?.image}
               alt={product?.name}
               className={`w-20 h-20 object-cover rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
             />

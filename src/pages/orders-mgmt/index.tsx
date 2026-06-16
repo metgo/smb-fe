@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import UserStatsCards from "@/components/shared/UserStatsCards";
 import {
   useState,
@@ -47,7 +47,6 @@ import {
 import {
   useGetAllOrdersQuery,
   useGetAllOrderSummaryQuery,
-  useGetOrderByIdQuery,
   useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
 import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
@@ -412,6 +411,7 @@ export default function OrdersMgmtPage() {
 
   const canViewOrders = isSuperadmin || isTraveller || qrSessionReady;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
+  console.log("🚀 ~ OrdersMgmtPage ~ combinedOrders:", combinedOrders);
 
   const orderQueryParams = useMemo(() => {
     const params: any = {
@@ -468,10 +468,11 @@ export default function OrdersMgmtPage() {
     skip: orderSummaryClick || !canUseAuthenticatedOrderApis,
   });
 
-  const hasMore = orders?.datas?.meta?.hasNextPage;
+  const hasMore = orders?.meta?.hasNextPage;
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
-  const totalData = orders?.datas?.totalData;
-  const orderss = orders?.datas?.data ?? [];
+  const totalData = orders?.totalData;
+  const orderss = orders?.data ?? [];
+  console.log("🚀 ~ OrdersMgmtPage ~ orderss:", orderss);
   const totalDataSummary = orderSummaries?.totalData;
 
   //update combined order when filters change so combined orders doesnt show stale value
@@ -1596,7 +1597,12 @@ export default function OrdersMgmtPage() {
         <OrderDetailsModal
           t={t}
           orderId={selectedOrder._id}
-          onClose={() => setShowOrderDetails(false)}
+          onClose={() => {
+            setShowOrderDetails(false);
+            // setCombinedOrders([]);
+            setPage(1);
+            refetch();
+          }}
           qrToken={isQRMode && !qrSessionReady ? qrToken : null}
           isQRMode={isQRMode && !qrSessionReady}
         />
