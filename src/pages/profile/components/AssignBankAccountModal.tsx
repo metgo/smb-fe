@@ -30,6 +30,7 @@ const AssignBankAccountModal = ({
 
   const [selectedBranchNumber, setSelectedBranchNumber] = useState("");
   const [bankSearch, setBankSearch] = useState("");
+  const [branchSearch, setBranchSearch] = useState("");
   const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
@@ -50,6 +51,20 @@ const AssignBankAccountModal = ({
         });
     return [...list].sort((a, b) => Number(a.bankId) - Number(b.bankId));
   }, [banks, bankSearch]);
+
+  const filteredBranches = useMemo(() => {
+    const branches = selectedBank?.branches ?? [];
+    const list = !branchSearch.trim()
+      ? branches
+      : branches.filter((br) => {
+          const q = branchSearch.toLowerCase();
+          return (
+            br.branchId.toLowerCase().includes(q) ||
+            br.branchName.toLowerCase().includes(q)
+          );
+        });
+    return [...list].sort((a, b) => Number(a.branchId) - Number(b.branchId));
+  }, [selectedBank, branchSearch]);
   const [errors, setErrors] = useState<BankAccountErrors>({});
 
   const validate = (): boolean => {
@@ -103,6 +118,9 @@ const AssignBankAccountModal = ({
       [field]: value,
       ...(field === "bankNumber" ? { branchName: "" } : {}),
     }));
+    if (field === "bankNumber") {
+      setBranchSearch("");
+    }
   };
 
   const handleCloseBankModal = () => {
@@ -119,6 +137,14 @@ const AssignBankAccountModal = ({
       );
       if (matchedBank) {
         setBankSearch(`${matchedBank.bankId} - ${matchedBank.bankName}`);
+        const matchedBranch = matchedBank.branches.find(
+          (br) => br.branchId === savedBankAccount.branchNumber,
+        );
+        if (matchedBranch) {
+          setBranchSearch(
+            `${matchedBranch.branchId} - ${matchedBranch.branchName}`,
+          );
+        }
       }
 
       setBankAccountData({
@@ -140,15 +166,6 @@ const AssignBankAccountModal = ({
       isDark
         ? "bg-gray-700/60 border-gray-600 text-gray-100 placeholder-gray-500"
         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400",
-      hasError && "border-red-500 focus:ring-red-400",
-    );
-
-  const selectClass = (hasError?: boolean) =>
-    clsx(
-      "w-full px-4 py-2.5 rounded-lg border text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed",
-      isDark
-        ? "bg-gray-700/60 border-gray-600 text-gray-100"
-        : "bg-white border-gray-300 text-gray-900",
       hasError && "border-red-500 focus:ring-red-400",
     );
 
@@ -221,6 +238,7 @@ const AssignBankAccountModal = ({
                 if (selectedBankNumber) {
                   setSelectedBankNumber("");
                   setSelectedBranchNumber("");
+                  setBranchSearch("");
                   setBankAccountData((prev) => ({
                     ...prev,
                     bankNumber: "",
@@ -267,6 +285,7 @@ const AssignBankAccountModal = ({
                       setSelectedBankNumber(bank.bankId);
                       setSelectedBranchNumber("");
                       setBankSearch(`${bank.bankId} - ${bank.bankName}`);
+                      setBranchSearch("");
                       setBankAccountData((prev) => ({
                         ...prev,
                         bankNumber: bank.bankId,
@@ -304,89 +323,92 @@ const AssignBankAccountModal = ({
                 <span className={errorClass}>{errors.branchNumber}</span>
               )}
             </label>
-            <button
-              type="button"
-              disabled={!selectedBank || selectedBank.branches.length === 0}
-              onClick={() => setIsBranchDropdownOpen((v) => !v)}
-              onBlur={() =>
-                setTimeout(() => setIsBranchDropdownOpen(false), 150)
-              }
-              className={clsx(
-                selectClass(!!errors.branchNumber),
-                "text-left flex items-center justify-between",
-                !selectedBranchNumber &&
-                  (isDark ? "text-gray-500" : "text-gray-400"),
-              )}
-            >
-              <span>
-                {selectedBranchNumber && selectedBank
-                  ? (() => {
-                      const b = selectedBank.branches.find(
-                        (br) => br.branchId === selectedBranchNumber,
-                      );
-                      return b
-                        ? `${b.branchId} - ${b.branchName}`
-                        : t("select_branch");
-                    })()
-                  : t("select_branch")}
-              </span>
-              <svg
-                className="w-4 h-4 shrink-0 opacity-50"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
 
-            {isBranchDropdownOpen &&
-              selectedBank &&
-              selectedBank.branches.length > 0 && (
-                <ul
-                  className={clsx(
-                    "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
-                    isDark
-                      ? "bg-gray-700 border-gray-600 text-gray-100"
-                      : "bg-white border-gray-200 text-gray-900",
-                  )}
-                >
-                  {selectedBank.branches.map((branch) => (
-                    <li
-                      key={branch.branchId}
-                      onMouseDown={() => {
-                        setSelectedBranchNumber(branch.branchId);
-                        setBankAccountData((prev) => ({
-                          ...prev,
-                          branchNumber: branch.branchId,
-                        }));
-                        setErrors((prev) => ({
-                          ...prev,
-                          branchNumber: undefined,
-                        }));
-                        setIsBranchDropdownOpen(false);
-                      }}
-                      className={clsx(
-                        "px-4 py-2.5 cursor-pointer transition-colors",
-                        isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
-                        selectedBranchNumber === branch.branchId &&
-                          (isDark ? "bg-gray-600" : "bg-teal-50 font-medium"),
-                      )}
-                    >
-                      <span className="font-mono text-teal-500">
-                        {branch.branchId}
-                      </span>
-                      <span className="mx-2">—</span>
-                      {branch.branchName}
-                    </li>
-                  ))}
-                </ul>
-              )}
+            <input
+              type="text"
+              value={branchSearch}
+              disabled={!selectedBank || selectedBank.branches.length === 0}
+              onChange={(e) => {
+                setBranchSearch(e.target.value);
+                setIsBranchDropdownOpen(true);
+                if (selectedBranchNumber) {
+                  setSelectedBranchNumber("");
+                  setBankAccountData((prev) => ({
+                    ...prev,
+                    branchNumber: "",
+                  }));
+                }
+              }}
+              onFocus={() => {
+                setIsBranchDropdownOpen(true);
+                if (selectedBranchNumber) {
+                  setBranchSearch("");
+                }
+              }}
+              onBlur={() =>
+                setTimeout(() => {
+                  setIsBranchDropdownOpen(false);
+                  if (selectedBranchNumber && selectedBank) {
+                    const b = selectedBank.branches.find(
+                      (br) => br.branchId === selectedBranchNumber,
+                    );
+                    setBranchSearch(b ? `${b.branchId} - ${b.branchName}` : "");
+                  } else {
+                    setBranchSearch("");
+                  }
+                }, 150)
+              }
+              placeholder={
+                !selectedBank
+                  ? t("select_bank_first") || "Select a bank first..."
+                  : t("select_branch") || "Search by branch name or ID..."
+              }
+              className={inputClass(!!errors.branchNumber)}
+            />
+
+            {isBranchDropdownOpen && filteredBranches.length > 0 && (
+              <ul
+                className={clsx(
+                  "absolute z-20 w-full mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto text-sm",
+                  isDark
+                    ? "bg-gray-700 border-gray-600 text-gray-100"
+                    : "bg-white border-gray-200 text-gray-900",
+                )}
+              >
+                {filteredBranches.map((branch) => (
+                  <li
+                    key={branch.branchId}
+                    onMouseDown={() => {
+                      setSelectedBranchNumber(branch.branchId);
+                      setBranchSearch(
+                        `${branch.branchId} - ${branch.branchName}`,
+                      );
+                      setBankAccountData((prev) => ({
+                        ...prev,
+                        branchNumber: branch.branchId,
+                      }));
+                      setErrors((prev) => ({
+                        ...prev,
+                        branchNumber: undefined,
+                      }));
+                      setIsBranchDropdownOpen(false);
+                    }}
+                    className={clsx(
+                      "px-4 py-2.5 cursor-pointer transition-colors",
+                      isDark ? "hover:bg-gray-600" : "hover:bg-teal-50",
+                      selectedBranchNumber === branch.branchId &&
+                        (isDark ? "bg-gray-600" : "bg-teal-50 font-medium"),
+                    )}
+                  >
+                    <span className="font-mono text-teal-500">
+                      {branch.branchId}
+                    </span>
+                    <span className="mx-2">—</span>
+                    {branch.branchName}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Account Number */}
