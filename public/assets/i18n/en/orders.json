@@ -110,6 +110,7 @@
   "digital": "Digital",
   "voucher": "Voucher",
   "voucher_amount": "Voucher Amount",
+  "voucher_paid_amount": "Amount paid by voucher",
   "credit_card_amount": "Credit Card Amount",
   "vendors": "Vendors",
   "campaign": "Campaign",

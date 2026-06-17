@@ -109,6 +109,7 @@
   "digital": "رقمي",
   "voucher": "قسيمة",
   "voucher_amount": "قيمة القسيمة",
+  "voucher_paid_amount": "المبلغ المدفوع بالقسيمة",
   "credit_card_amount": "قيمة بطاقة الائتمان",
   "vendors": "الموردون",
   "campaign": "حملة",

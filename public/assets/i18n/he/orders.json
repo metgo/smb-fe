@@ -107,6 +107,7 @@
   "deliver": "משלוח",
   "card": "כרטיס אשראי",
   "voucher_amount": "סכום שובר",
+  "voucher_paid_amount": "סכום ששולם בשובר",
   "credit_card_amount": "סכום כרטיס אשראי",
   "vendors": "ספקים",
   "campaign": "קמפיין",
