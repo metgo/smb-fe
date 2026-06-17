@@ -171,6 +171,7 @@ function OrderDetailsModal({
           status={orderDetails?.status || "pending"}
           handleStatusChange={onStatusChangeHandler}
           setShowCancelDialog={setShowCancelDialog}
+          allowCancel
         />
       </div>
 
