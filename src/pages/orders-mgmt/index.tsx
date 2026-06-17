@@ -420,7 +420,6 @@ export default function OrdersMgmtPage() {
 
   const canViewOrders = isSuperadmin || isTraveller || qrSessionReady;
   const [combinedOrders, setCombinedOrders] = useState<any[]>([]);
-  console.log("🚀 ~ OrdersMgmtPage ~ combinedOrders:", combinedOrders);
 
   const orderQueryParams = useMemo(() => {
     const params: any = {
@@ -481,7 +480,6 @@ export default function OrdersMgmtPage() {
   const hasMoreSummary = orderSummaries?.meta?.hasNextPage;
   const totalData = orders?.totalData;
   const orderss = orders?.data ?? [];
-  console.log("🚀 ~ OrdersMgmtPage ~ orderss:", orderss);
   const totalDataSummary = orderSummaries?.totalData;
 
   //update combined order when filters change so combined orders doesnt show stale value
