@@ -59,6 +59,7 @@ interface CreateBusinessWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  businessDataRefetch?: any;
   opMode?: TOpMode;
   missingFields?: string[];
 }
@@ -67,6 +68,7 @@ export default function CreateBusinessWizard({
   onClose,
   editData,
   refetch,
+  businessDataRefetch,
   opMode = IOpMode.CREATE,
   missingFields = [],
 }: CreateBusinessWizardProps) {
@@ -378,6 +380,7 @@ export default function CreateBusinessWizard({
       setSelectedDmoId(dmoId);
     }
   }, []);
+
   useEffect(() => {
     // For CREATE mode, we don't load from editData
     if (opMode === IOpMode.CREATE) return;
@@ -605,7 +608,7 @@ export default function CreateBusinessWizard({
   const { markDirty, saveDraft } = useBusinessDraftSaver({
     opMode,
     onClose,
-    refetch,
+    // refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -712,12 +715,17 @@ export default function CreateBusinessWizard({
       return;
     }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (businessId) {
+    const resolvedBusinessId = await saveDraft(false);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
+      // Refetch after save draft completes
+      // Don't await to prevent blocking the UI
+      if (businessDataRefetch) {
+        businessDataRefetch();
+      }
     }
   };
 
@@ -738,15 +746,16 @@ export default function CreateBusinessWizard({
     }
 
     setIsPublishing(true);
-    if (businessId) {
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+    const resolvedBusinessId = await saveDraft(true, processedFormData);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
-    }
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
 
-    await saveDraft(true, processedFormData);
+      await Promise.all([refetch?.(), businessDataRefetch?.()]);
+    }
     setIsPublishing(false);
   };
 
@@ -759,10 +768,16 @@ export default function CreateBusinessWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "business",
