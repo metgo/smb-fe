@@ -4,7 +4,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface OrderListViewProps {
   isLoading: boolean;
-  orders: any;
   hasMore: boolean;
   combinedOrders: any[];
   fetchNextPage: () => void;

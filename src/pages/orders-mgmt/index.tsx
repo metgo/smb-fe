@@ -56,7 +56,7 @@ import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
 // import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { formatOrderDate } from "@/helpers";
+import { formatOrderDate, getLngWiseStr } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
@@ -692,10 +692,17 @@ export default function OrdersMgmtPage() {
 
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
-    console.log("ROW", row?.businessName);
 
     const businessRows = [
-      { Field: "Business Name", Value: row?.businessName },
+      {
+        Field: "Business Name",
+        Value: getLngWiseStr(
+          language,
+          row?.businessName,
+          row?.businessNameHe,
+          row?.businessNameAr,
+        ),
+      },
       { Field: "Business Email", Value: row.businessEmail },
       { Field: "Country", Value: row.businessAddressCountry },
       { Field: "City", Value: row.businessAddressCity },
@@ -761,7 +768,16 @@ export default function OrdersMgmtPage() {
       key: "businessName",
       label: t("business_name"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+      render: (row: any) => (
+        <div className="text-sm">
+          {getLngWiseStr(
+            language,
+            row?.businessName,
+            row?.businessNameHe,
+            row?.businessNameAr,
+          )}
+        </div>
+      ),
     },
     {
       key: "businessAddressCity",
@@ -1566,7 +1582,6 @@ export default function OrdersMgmtPage() {
                     : "ordersTableColumnOrder"
                 }
                 hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
-                orders={orderSummaryClick ? orderSummaries : orders}
                 combinedOrders={
                   orderSummaryClick ? combinedOrdersSummary : combinedOrders
                 }
