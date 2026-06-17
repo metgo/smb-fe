@@ -153,11 +153,7 @@ function OrderDetailsModal({
   }
 
   return (
-    <ModalWrapper
-      height="h-max"
-      onClose={onClose}
-      showSpinner={isLoading || isFetching}
-    >
+    <ModalWrapper onClose={onClose} showSpinner={isLoading || isFetching}>
       <div
         className={`flex items-center justify-between 
               ${isRTL ? "flex-row-reverse" : ""} 
