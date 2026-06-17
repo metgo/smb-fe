@@ -69,7 +69,7 @@ class ProductDto {
   image: string;
   quantity: number;
   amount: number;
-  cancelled: number;
+  status: string;
 
   receiverEmail: string;
   receiverCountryCode: string;

@@ -245,7 +245,7 @@ function OrderDetailsModal({
             {orderDetails?.products?.map((product, idx) => (
               <div
                 key={product?._id}
-                className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
+                className={`p-4 ${idx > 0 ? `border-t ${isDark ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.status === "canceled" ? "opacity-50" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Product Image */}
@@ -275,7 +275,7 @@ function OrderDetailsModal({
                     }}
                   >
                     <p
-                      className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
+                      className={`${textPrimary} ${product?.status === "canceled" ? "line-through" : ""}`}
                     >
                       {product?.name}
                     </p>
@@ -290,7 +290,7 @@ function OrderDetailsModal({
                   >
                     <div className={`text-right ${isRTL ? "text-left" : ""}`}>
                       <p
-                        className={`${textPrimary} ${product?.cancelled ? "line-through" : ""}`}
+                        className={`${textPrimary} ${product?.status === "canceled" ? "line-through" : ""}`}
                       >
                         ₪
                         {(product?.quantity * product?.amount).toLocaleString()}
@@ -318,7 +318,7 @@ function OrderDetailsModal({
                         </button>
                       )}
 
-                    {product?.cancelled && (
+                    {product?.status === "canceled" && (
                       <span className="text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
                         {t("cancelled")}
                       </span>
@@ -380,7 +380,7 @@ function OrderDetailsModal({
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
               <span className={`${textPrimary}`}>
                 {orderDetails?.totalAmount
-                  ? `₪${orderDetails?.totalAmount?.toLocaleString()}`
+                  ? `₪${orderDetails?.totalAmount + orderDetails?.deliveryFee}`
                   : "-"}
               </span>
             </div>

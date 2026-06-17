@@ -99,11 +99,12 @@ export default function OrdersMgmtPage() {
   // QR Token handling - detect from URL on first load
   const urlParams = new URLSearchParams(window.location.search);
   const jwtToken = urlParams.get("token");
+  const urlOrderId = urlParams.get("orderId");
   const storedQrMode = sessionStorage.getItem("isQrMode") === "true";
   const qrToken =
     jwtToken || (storedQrMode ? sessionStorage.getItem("qr_token") : null);
   const isQRMode = !!qrToken;
-  const [qrOrder, setQrOrder] = useState<any | null>(null);
+  // const [qrOrder, setQrOrder] = useState<any | null>(null);
   const [qrSessionReady, setQrSessionReady] = useState(
     () =>
       !isQRMode ||
@@ -193,7 +194,7 @@ export default function OrdersMgmtPage() {
 
         const orderData = response.data?.data || response.data;
         if (orderData) {
-          setQrOrder(orderData);
+          // setQrOrder(orderData);
           setSelectedOrder(orderData);
           setShowOrderDetails(true); // Auto-open order details modal
         }
@@ -204,6 +205,14 @@ export default function OrdersMgmtPage() {
 
     fetchQROrder();
   }, [isQRMode, qrSessionReady, qrToken]);
+
+  // Auto-open order details modal when orderId is present in URL params
+  useEffect(() => {
+    if (urlOrderId) {
+      setSelectedOrder({ _id: urlOrderId });
+      setShowOrderDetails(true);
+    }
+  }, [urlOrderId]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
