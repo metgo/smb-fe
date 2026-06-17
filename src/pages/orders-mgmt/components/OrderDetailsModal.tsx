@@ -43,7 +43,7 @@ function OrderDetailsModal({
     refetch,
     isLoading,
     isFetching,
-  } = useGetOrderByIdQuery({ orderId: orderId ?? null });
+  } = useGetOrderByIdQuery({ orderId: orderId ?? null }, { skip: !orderId });
   const [selectedProduct, setSelectedProduct] = useState<ProductDto | null>(
     null,
   );

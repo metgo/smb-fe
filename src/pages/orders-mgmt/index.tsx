@@ -183,8 +183,9 @@ export default function OrdersMgmtPage() {
   }, [isQRMode]);
 
   // Fetch the scanned order via the no-auth QR endpoint.
+  // Only used when there's no orderId in the URL (token-only QR scan).
   useEffect(() => {
-    if (!isQRMode || !qrToken || qrSessionReady) return;
+    if (!isQRMode || !qrToken || qrSessionReady || urlOrderId) return;
 
     const fetchQROrder = async () => {
       try {
@@ -204,15 +205,17 @@ export default function OrdersMgmtPage() {
     };
 
     fetchQROrder();
-  }, [isQRMode, qrSessionReady, qrToken]);
+  }, [isQRMode, qrSessionReady, qrToken, urlOrderId]);
 
-  // Auto-open order details modal when orderId is present in URL params
+  // Auto-open order details modal when orderId is present in URL params.
+  // In QR mode, wait until auth is established before opening so the
+  // authenticated order API has a valid token to use.
   useEffect(() => {
-    if (urlOrderId) {
+    if (urlOrderId && canUseAuthenticatedOrderApis) {
       setSelectedOrder({ _id: urlOrderId });
       setShowOrderDetails(true);
     }
-  }, [urlOrderId]);
+  }, [urlOrderId, canUseAuthenticatedOrderApis]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
