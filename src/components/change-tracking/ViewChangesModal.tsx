@@ -91,6 +91,26 @@ const isImageArray = (value: any): boolean => {
   );
 };
 
+const isCoverObject = (value: any): boolean => {
+  return (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    "image" in value
+  );
+};
+
+const isEmptyObjectsArray = (value: any): boolean => {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(
+      (item) =>
+        !item || (typeof item === "object" && Object.keys(item).length === 0),
+    )
+  );
+};
+
 const ImageDisplay = ({
   images,
   isDark,
@@ -335,156 +355,188 @@ export default function ViewChangesModal({
                 </div>
 
                 {/* Changes by Category */}
-                {Object.entries(changesByCategory).map(([category, fields]) => (
-                  <div key={category}>
-                    <h3
-                      className={clsx(
-                        "text-sm font-semibold mb-3 px-2",
-                        isDark ? "text-gray-300" : "text-gray-700",
-                      )}
-                    >
-                      {t(
-                        categoryLabels[
-                          category as keyof typeof categoryLabels
-                        ] || category,
-                      )}
-                    </h3>
-                    <div className="space-y-3">
-                      {fields.map((field, idx) => (
-                        <div
-                          key={`${category}-${idx}`}
-                          className={clsx(
-                            "p-4 rounded-lg border",
-                            isDark
-                              ? "bg-gray-800 border-gray-700"
-                              : "bg-gray-50 border-gray-200",
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div>
-                              <h4
-                                className={clsx(
-                                  "text-sm font-semibold",
-                                  isDark ? "text-gray-100" : "text-gray-900",
-                                )}
-                              >
-                                {field.fieldLabel}
-                              </h4>
-                              {field.multiLanguage && (
-                                <p
-                                  className={clsx("text-xs mt-1", textTertiary)}
+                {Object.entries(changesByCategory).map(([category, fields]) => {
+                  // Filter out fields with empty object arrays
+                  const filteredFields = fields.filter(
+                    (field) =>
+                      !isEmptyObjectsArray(field.oldValue) &&
+                      !isEmptyObjectsArray(field.newValue),
+                  );
+
+                  if (filteredFields.length === 0) return null;
+
+                  return (
+                    <div key={category}>
+                      <h3
+                        className={clsx(
+                          "text-sm font-semibold mb-3 px-2",
+                          isDark ? "text-gray-300" : "text-gray-700",
+                        )}
+                      >
+                        {t(
+                          categoryLabels[
+                            category as keyof typeof categoryLabels
+                          ] || category,
+                        )}
+                      </h3>
+                      <div className="space-y-3">
+                        {filteredFields.map((field, idx) => (
+                          <div
+                            key={`${category}-${idx}`}
+                            className={clsx(
+                              "p-4 rounded-lg border",
+                              isDark
+                                ? "bg-gray-800 border-gray-700"
+                                : "bg-gray-50 border-gray-200",
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div>
+                                <h4
+                                  className={clsx(
+                                    "text-sm font-semibold",
+                                    isDark ? "text-gray-100" : "text-gray-900",
+                                  )}
                                 >
-                                  {t("languages_changed", {
-                                    languages:
-                                      field.multiLanguage.languages.join(", "),
-                                  })}
-                                </p>
-                              )}
+                                  {field.fieldLabel}
+                                </h4>
+                                {field.multiLanguage && (
+                                  <p
+                                    className={clsx(
+                                      "text-xs mt-1",
+                                      textTertiary,
+                                    )}
+                                  >
+                                    {t("languages_changed", {
+                                      languages:
+                                        field.multiLanguage.languages.join(
+                                          ", ",
+                                        ),
+                                    })}
+                                  </p>
+                                )}
+                              </div>
                             </div>
+
+                            {/* Value Comparison */}
+                            {isImageArray(field.oldValue) ||
+                            isImageArray(field.newValue) ||
+                            isCoverObject(field.oldValue) ||
+                            isCoverObject(field.newValue) ? (
+                              <div className="grid grid-cols-2 gap-3">
+                                {/* Old Images */}
+                                <div>
+                                  <p
+                                    className={clsx(
+                                      "text-xs font-medium uppercase mb-2",
+                                      textTertiary,
+                                    )}
+                                  >
+                                    {t("old_value")}
+                                  </p>
+                                  {isImageArray(field.oldValue) &&
+                                  field.oldValue.length > 0 ? (
+                                    <ImageDisplay
+                                      images={field.oldValue}
+                                      isDark={isDark}
+                                    />
+                                  ) : isCoverObject(field.oldValue) ? (
+                                    <ImageDisplay
+                                      images={[field.oldValue]}
+                                      isDark={isDark}
+                                    />
+                                  ) : (
+                                    <p
+                                      className={clsx("text-xs", textTertiary)}
+                                    >
+                                      —
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* New Images */}
+                                <div>
+                                  <p
+                                    className={clsx(
+                                      "text-xs font-medium uppercase mb-2",
+                                      textTertiary,
+                                    )}
+                                  >
+                                    {t("new_value")}
+                                  </p>
+                                  {isImageArray(field.newValue) &&
+                                  field.newValue.length > 0 ? (
+                                    <ImageDisplay
+                                      images={field.newValue}
+                                      isDark={isDark}
+                                    />
+                                  ) : isCoverObject(field.newValue) ? (
+                                    <ImageDisplay
+                                      images={[field.newValue]}
+                                      isDark={isDark}
+                                    />
+                                  ) : (
+                                    <p
+                                      className={clsx("text-xs", textTertiary)}
+                                    >
+                                      —
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-3">
+                                {/* Old Value */}
+                                <div>
+                                  <p
+                                    className={clsx(
+                                      "text-xs font-medium uppercase mb-1.5",
+                                      textTertiary,
+                                    )}
+                                  >
+                                    {t("old_value")}
+                                  </p>
+                                  <pre
+                                    className={clsx(
+                                      "p-2.5 rounded text-xs font-mono break-words overflow-auto max-h-48 whitespace-pre-wrap",
+                                      isDark
+                                        ? "bg-red-900/20 text-red-400"
+                                        : "bg-red-50 text-red-900",
+                                    )}
+                                  >
+                                    {formatValue(field.oldValue)}
+                                  </pre>
+                                </div>
+
+                                {/* New Value */}
+                                <div>
+                                  <p
+                                    className={clsx(
+                                      "text-xs font-medium uppercase mb-1.5",
+                                      textTertiary,
+                                    )}
+                                  >
+                                    {t("new_value")}
+                                  </p>
+                                  <pre
+                                    className={clsx(
+                                      "p-2.5 rounded text-xs font-mono break-words overflow-auto max-h-48 whitespace-pre-wrap",
+                                      isDark
+                                        ? "bg-green-900/20 text-green-400"
+                                        : "bg-green-50 text-green-900",
+                                    )}
+                                  >
+                                    {formatValue(field.newValue)}
+                                  </pre>
+                                </div>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Value Comparison */}
-                          {isImageArray(field.oldValue) ||
-                          isImageArray(field.newValue) ? (
-                            <div className="grid grid-cols-2 gap-3">
-                              {/* Old Images */}
-                              <div>
-                                <p
-                                  className={clsx(
-                                    "text-xs font-medium uppercase mb-2",
-                                    textTertiary,
-                                  )}
-                                >
-                                  {t("old_value")}
-                                </p>
-                                {isImageArray(field.oldValue) &&
-                                field.oldValue.length > 0 ? (
-                                  <ImageDisplay
-                                    images={field.oldValue}
-                                    isDark={isDark}
-                                  />
-                                ) : (
-                                  <p className={clsx("text-xs", textTertiary)}>
-                                    —
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* New Images */}
-                              <div>
-                                <p
-                                  className={clsx(
-                                    "text-xs font-medium uppercase mb-2",
-                                    textTertiary,
-                                  )}
-                                >
-                                  {t("new_value")}
-                                </p>
-                                {isImageArray(field.newValue) &&
-                                field.newValue.length > 0 ? (
-                                  <ImageDisplay
-                                    images={field.newValue}
-                                    isDark={isDark}
-                                  />
-                                ) : (
-                                  <p className={clsx("text-xs", textTertiary)}>
-                                    —
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-2 gap-3">
-                              {/* Old Value */}
-                              <div>
-                                <p
-                                  className={clsx(
-                                    "text-xs font-medium uppercase mb-1.5",
-                                    textTertiary,
-                                  )}
-                                >
-                                  {t("old_value")}
-                                </p>
-                                <pre
-                                  className={clsx(
-                                    "p-2.5 rounded text-xs font-mono break-words overflow-auto max-h-48 whitespace-pre-wrap",
-                                    isDark
-                                      ? "bg-red-900/20 text-red-400"
-                                      : "bg-red-50 text-red-900",
-                                  )}
-                                >
-                                  {formatValue(field.oldValue)}
-                                </pre>
-                              </div>
-
-                              {/* New Value */}
-                              <div>
-                                <p
-                                  className={clsx(
-                                    "text-xs font-medium uppercase mb-1.5",
-                                    textTertiary,
-                                  )}
-                                >
-                                  {t("new_value")}
-                                </p>
-                                <pre
-                                  className={clsx(
-                                    "p-2.5 rounded text-xs font-mono break-words overflow-auto max-h-48 whitespace-pre-wrap",
-                                    isDark
-                                      ? "bg-green-900/20 text-green-400"
-                                      : "bg-green-50 text-green-900",
-                                  )}
-                                >
-                                  {formatValue(field.newValue)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </>
             )}
           </div>

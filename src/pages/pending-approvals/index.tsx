@@ -6,6 +6,7 @@ import {
   MapPin,
   AlertCircle,
   Eye,
+  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -69,7 +70,9 @@ export default function PendingApprovalsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("pending_approvals");
   const { isDark, language } = useThemeClasses();
-  const userRole = useAppSelector((state) => state.auth.userRole);
+  const { userRole, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
   const [page, setPage] = useState(1);
   const [combinedItems, setCombinedItems] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -138,6 +141,8 @@ export default function PendingApprovalsPage() {
     {
       page,
       limit: LIMIT,
+      ...(dmoId && { dmoId }),
+      ...(authorityId && { authorityId }),
     },
     {
       refetchOnMountOrArgChange: true,
@@ -182,7 +187,7 @@ export default function PendingApprovalsPage() {
     });
   }, [approvalsData, page]);
 
-  // Filter items based on active tab
+  // Filter items based on active tab (API already filters by DMO/Authority)
   const filteredItems =
     activeTab === "all"
       ? combinedItems
@@ -305,29 +310,25 @@ export default function PendingApprovalsPage() {
         ),
       },
       {
-        key: "changes",
-        label: t("changes"),
-        render: (item: any) => (
-          <button
-            onClick={(e) => handleViewChanges(e, item)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors whitespace-nowrap"
-          >
-            <Eye size={16} className="flex-shrink-0" />
-            <span>{t("view_changes")}</span>
-          </button>
-        ),
-      },
-      {
         key: "actions",
         label: t("action"),
         render: (item: any) => (
-          <button
-            onClick={(e) => handleViewDetailsButton(e, item)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors whitespace-nowrap"
-          >
-            <Eye size={16} className="flex-shrink-0" />
-            <span>{t("view")}</span>
-          </button>
+          <div className="flex items-center gap-3 justify-start">
+            <button
+              onClick={(e) => handleViewChanges(e, item)}
+              className={`p-2 rounded-lg transition-colors ${isDark ? "bg-gray-800 hover:bg-gray-700 text-purple-400" : "bg-gray-100 hover:bg-gray-200 text-purple-600"}`}
+              title={t("view_changes")}
+            >
+              <FileText size={18} />
+            </button>
+            <button
+              onClick={(e) => handleViewDetailsButton(e, item)}
+              className={`p-2 rounded-lg transition-colors ${isDark ? "bg-gray-800 hover:bg-gray-700 text-blue-400" : "bg-gray-100 hover:bg-gray-200 text-blue-600"}`}
+              title={t("view")}
+            >
+              <Eye size={18} />
+            </button>
+          </div>
         ),
       },
     ],
