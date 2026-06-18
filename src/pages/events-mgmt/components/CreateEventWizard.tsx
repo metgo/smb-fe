@@ -55,6 +55,7 @@ interface CreateEventWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: () => void;
+  eventDataRefetch?: () => void;
 }
 
 export default function CreateEventWizard({
@@ -62,6 +63,7 @@ export default function CreateEventWizard({
   onClose,
   editData,
   refetch,
+  eventDataRefetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
@@ -470,10 +472,16 @@ export default function CreateEventWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "event",
@@ -668,11 +676,11 @@ export default function CreateEventWizard({
     }
 
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (eventId) {
+    const resolvedEventId = await saveDraft(false);
+    if (resolvedEventId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: eventId,
+        itemId: resolvedEventId,
       });
     }
     if (refetch) {
@@ -700,18 +708,16 @@ export default function CreateEventWizard({
       return;
     }
     setIsPublishing(true);
-    await saveDraft(true);
-    if (eventId) {
+    const resolvedEventId = await saveDraft(true);
+    if (resolvedEventId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: eventId,
+        itemId: resolvedEventId,
       });
+      await Promise.all([refetch?.(), eventDataRefetch?.()]);
     }
     setIsPublishing(false);
     toast.success(tc("event_published"));
-    if (refetch) {
-      refetch();
-    }
     onClose();
   };
 
