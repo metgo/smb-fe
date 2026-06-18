@@ -328,16 +328,15 @@ function App() {
     // Normal protected routes
     if (!isLoggedIn) {
       const attemptedPath = window.location.pathname + window.location.search;
-      if (
-        attemptedPath &&
-        attemptedPath.includes("/notifications-management")
-      ) {
+      if (attemptedPath && attemptedPath.includes(routes.notificationMgmt)) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
       // Allow routes with token to bypass login (business-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
+      const orderId = urlParams.get("orderId");
+
       const isBusinessDetails = window.location.pathname.startsWith(
         routes.businessDetails,
       );
@@ -345,6 +344,16 @@ function App() {
 
       if (hasToken && (isBusinessDetails || isOrdersManagement)) {
         return children;
+      }
+
+      if (orderId && isOrdersManagement) {
+        return children;
+      }
+
+      if (orderId) {
+        return (
+          <Navigate to={`${routes.ordersMgmt}?orderId=${orderId}`} replace />
+        );
       }
 
       return <Navigate to={routes.auth} replace />;

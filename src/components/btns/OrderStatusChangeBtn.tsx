@@ -11,6 +11,7 @@ interface StatusChangeBtnProps {
   status: TOrderStatus;
   handleStatusChange: (status: TOrderStatus) => void;
   setShowCancelDialog: (show: boolean) => void;
+  allowCancel?: boolean;
 }
 
 type StatusOption = {
@@ -24,6 +25,7 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   status,
   handleStatusChange,
   setShowCancelDialog,
+  allowCancel = false,
 }) => {
   const { t } = useTranslation("orders");
   const { isDark, isRTL } = useThemeClasses();
@@ -177,7 +179,10 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
               const isActive = key === currentStatus;
               const isDisabled =
-                isTraveller && restrictedStatuses.includes(key);
+                (isTraveller &&
+                  restrictedStatuses.includes(key) &&
+                  !(allowCancel && key === "canceled")) ||
+                (key === "canceled" && currentStatus === "canceled");
 
               return (
                 <button

@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import UserStatsCards from "@/components/shared/UserStatsCards";
 import {
   useState,
@@ -36,7 +36,7 @@ import {
   PageHeader,
   PageStats,
   ShowColumns,
-  ViewModeToggle,
+  // ViewModeToggle,
 } from "@/components/shared";
 import {
   FilterSelect,
@@ -47,16 +47,16 @@ import {
 import {
   useGetAllOrdersQuery,
   useGetAllOrderSummaryQuery,
-  useGetOrderByIdQuery,
   useGetOrderStatsQuery,
 } from "@/store/api/orderQueryApi";
+import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { FilterButton } from "@/components/btns";
 import { toast } from "sonner";
 import SearchInput from "@/components/shared/SearchInput";
 import OrderListView from "../products-mgmt/components/sub-components/OrderListView";
-import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
+// import OrderGridView from "../products-mgmt/components/sub-components/OrderGridView";
 import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
-import { formatOrderDate } from "@/helpers";
+import { formatOrderDate, getLngWiseStr } from "@/helpers";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
@@ -67,18 +67,25 @@ const limit = 20;
 
 // Default columns configuration
 const defaultColumns = {
-  firstName: true,
+  name: true,
   email: true,
   phone: true,
   status: true,
+  paymentStatus: true,
+  paymentMethod: false,
   totalOrderAmount: true,
-  product_name: true,
+  productCount: true,
   deliveryFee: true,
-  createdAt: true,
-  paymentDate: true,
+  createdAt: false,
+  _id: true,
+  website: true,
 };
 
 type ColumnVisibility = typeof defaultColumns;
+
+// Static defs for ShowColumns — keys must match defaultColumns keys so
+// columnVisibility lookups work and all columns (including hidden ones) appear.
+const columnSettingsDefs = Object.keys(defaultColumns).map((key) => ({ key }));
 
 export default function OrdersMgmtPage() {
   const navigate = useNavigate();
@@ -92,11 +99,12 @@ export default function OrdersMgmtPage() {
   // QR Token handling - detect from URL on first load
   const urlParams = new URLSearchParams(window.location.search);
   const jwtToken = urlParams.get("token");
+  const urlOrderId = urlParams.get("orderId");
   const storedQrMode = sessionStorage.getItem("isQrMode") === "true";
   const qrToken =
     jwtToken || (storedQrMode ? sessionStorage.getItem("qr_token") : null);
   const isQRMode = !!qrToken;
-  const [qrOrder, setQrOrder] = useState<any | null>(null);
+  // const [qrOrder, setQrOrder] = useState<any | null>(null);
   const [qrSessionReady, setQrSessionReady] = useState(
     () =>
       !isQRMode ||
@@ -108,7 +116,7 @@ export default function OrdersMgmtPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTermSummary, setSearchTermSummary] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  // const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -119,6 +127,19 @@ export default function OrdersMgmtPage() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
+
+  const { data: allWebsites } = useGetAllWebsitesQuery();
+  const websiteMap = useMemo(() => {
+    if (!allWebsites) return {} as Record<string, IWebsiteRes>;
+    return allWebsites.reduce(
+      (map, w) => {
+        map[w._id] = w;
+        return map;
+      },
+      {} as Record<string, IWebsiteRes>,
+    );
+  }, [allWebsites]);
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [page, setPage] = useState(1);
@@ -162,8 +183,9 @@ export default function OrdersMgmtPage() {
   }, [isQRMode]);
 
   // Fetch the scanned order via the no-auth QR endpoint.
+  // Only used when there's no orderId in the URL (token-only QR scan).
   useEffect(() => {
-    if (!isQRMode || !qrToken || qrSessionReady) return;
+    if (!isQRMode || !qrToken || qrSessionReady || urlOrderId) return;
 
     const fetchQROrder = async () => {
       try {
@@ -173,7 +195,7 @@ export default function OrdersMgmtPage() {
 
         const orderData = response.data?.data || response.data;
         if (orderData) {
-          setQrOrder(orderData);
+          // setQrOrder(orderData);
           setSelectedOrder(orderData);
           setShowOrderDetails(true); // Auto-open order details modal
         }
@@ -183,14 +205,24 @@ export default function OrdersMgmtPage() {
     };
 
     fetchQROrder();
-  }, [isQRMode, qrSessionReady, qrToken]);
+  }, [isQRMode, qrSessionReady, qrToken, urlOrderId]);
+
+  // Auto-open order details modal when orderId is present in URL params.
+  // In QR mode, wait until auth is established before opening so the
+  // authenticated order API has a valid token to use.
+  useEffect(() => {
+    if (urlOrderId && canUseAuthenticatedOrderApis) {
+      setSelectedOrder({ _id: urlOrderId });
+      setShowOrderDetails(true);
+    }
+  }, [urlOrderId, canUseAuthenticatedOrderApis]);
 
   const handleOrderSummaryClick = () => {
     setOrderSummaryClick((prev) => {
       localStorage.setItem("orderSummaryClick", JSON.stringify(!prev));
       return !prev;
     });
-    setViewMode("list");
+    // setViewMode("list");
   };
 
   const orderSummaryQueryParams = useMemo(() => {
@@ -521,24 +553,23 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
-    columnVisibility.product_name && {
-      key: "products",
-      width: "400px",
-      label: t("product_name"),
+    columnVisibility.productCount && {
+      key: "productCount",
+      label: t("productCount"),
       sortable: true,
       render: (order: any) => (
-        <div className="text-sm">{order?.product?.name}</div>
+        <div className="text-sm">{order?.productCount ?? "-"}</div>
       ),
     },
     columnVisibility.totalOrderAmount && {
       key: "totalOrderAmount",
-      label: t("price"),
+      label: t("totalOrderAmount"),
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          {order?.totalAmount
-            ? `₪${order?.totalAmount?.toLocaleString()}`
-            : "-"}{" "}
+          {order?.totalAmount != null
+            ? `₪${order.totalAmount.toLocaleString()}`
+            : "-"}
         </div>
       ),
     },
@@ -548,8 +579,8 @@ export default function OrdersMgmtPage() {
       sortable: true,
       render: (order: IOrder) => (
         <div className="text-sm font-medium">
-          {order?.deliveryFee
-            ? `₪${order?.deliveryFee?.toLocaleString()}`
+          {order?.deliveryFee != null
+            ? `₪${order.deliveryFee.toLocaleString()}`
             : "-"}
         </div>
       ),
@@ -558,6 +589,22 @@ export default function OrdersMgmtPage() {
       key: "status",
       label: t("order_status"),
       render: (order: IOrder) => getOrderStatusBadge(order.status),
+    },
+    columnVisibility.paymentStatus && {
+      key: "paymentStatus",
+      label: t("paymentStatus"),
+      render: (order: IOrder) => getPaymentStatusBadge(order.paymentStatus),
+    },
+    columnVisibility.paymentMethod && {
+      key: "paymentMethod",
+      label: t("paymentMethod"),
+      render: (order: IOrder) => (
+        <div className="text-sm">
+          {Array.isArray(order.paymentMethod) && order.paymentMethod.length > 0
+            ? order.paymentMethod.map((m) => t(m)).join(", ")
+            : order.paymentMethod || "-"}
+        </div>
+      ),
     },
     columnVisibility.createdAt && {
       key: "createdAt",
@@ -570,24 +617,20 @@ export default function OrdersMgmtPage() {
       ),
     },
 
-    columnVisibility.paymentDate && {
-      key: "paymentDate",
-      label: t("payment_date"),
+    columnVisibility._id && {
+      key: "_id",
+      label: t("_id"),
       sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm text-gray-500">
-          {formatOrderDate(order?.paymentDate, language)}
-        </div>
+      render: (order: any) => (
+        <div className="text-sm">{order?._id ?? "-"}</div>
       ),
     },
 
-    columnVisibility.firstName && {
-      key: "firstName",
+    columnVisibility.name && {
+      key: "name",
       label: t("purchaser_name_field"),
       sortable: true,
-      render: (order: IOrder) => (
-        <div className="text-sm">{order?.firstName}</div>
-      ),
+      render: (order: IOrder) => <div className="text-sm">{order?.name}</div>,
     },
 
     columnVisibility.email && {
@@ -619,6 +662,26 @@ export default function OrdersMgmtPage() {
         </a>
       ),
     },
+    columnVisibility.website && {
+      key: "website",
+      label: t("website"),
+      render: (order: IOrder) => {
+        const website = websiteMap[order.externalApiId ?? ""];
+        if (!website) return <span className="text-sm text-gray-400">-</span>;
+        return (
+          <div className="flex items-center gap-1.5">
+            {website.logoUrl && (
+              <img
+                src={website.logoUrl}
+                alt={website.websiteName}
+                className="w-5 h-5 object-contain rounded"
+              />
+            )}
+            <span className="text-sm">{website.websiteName}</span>
+          </div>
+        );
+      },
+    },
   ].filter(Boolean) as {
     key: string;
     label: string;
@@ -629,10 +692,17 @@ export default function OrdersMgmtPage() {
 
   const downloadAsXLS = (row: any) => {
     const workbook = XLSX?.utils?.book_new();
-    console.log("ROW", row?.businessName);
 
     const businessRows = [
-      { Field: "Business Name", Value: row?.businessName },
+      {
+        Field: "Business Name",
+        Value: getLngWiseStr(
+          language,
+          row?.businessName,
+          row?.businessNameHe,
+          row?.businessNameAr,
+        ),
+      },
       { Field: "Business Email", Value: row.businessEmail },
       { Field: "Country", Value: row.businessAddressCountry },
       { Field: "City", Value: row.businessAddressCity },
@@ -698,7 +768,16 @@ export default function OrdersMgmtPage() {
       key: "businessName",
       label: t("business_name"),
       sortable: true,
-      render: (row: any) => <div className="text-sm">{row.businessName}</div>,
+      render: (row: any) => (
+        <div className="text-sm">
+          {getLngWiseStr(
+            language,
+            row?.businessName,
+            row?.businessNameHe,
+            row?.businessNameAr,
+          )}
+        </div>
+      ),
     },
     {
       key: "businessAddressCity",
@@ -882,18 +961,6 @@ export default function OrdersMgmtPage() {
     link.click();
     URL.revokeObjectURL(url);
   }, [orderSummaries, summaryColumns, t]);
-  //order details
-  const {
-    data: orderDetails,
-    refetch: orderIdrefetch,
-    isLoading: isOrderDetailLoading,
-    isFetching: isOrderDetailFetching,
-  } = useGetOrderByIdQuery(
-    { orderId: selectedOrder?._id ?? null },
-    {
-      skip: !canUseAuthenticatedOrderApis || !selectedOrder?._id, // only fetch if selectedOrder exists
-    },
-  );
 
   const handleRowClick = (order: IOrder) => {
     if (orderSummaryClick) {
@@ -906,8 +973,8 @@ export default function OrdersMgmtPage() {
   const handleExportCSV = useCallback(() => {
     const ordersToExport =
       selectedOrders.size > 0
-        ? (orders?.data?.filter((o: any) => selectedOrders.has(o._id)) ?? [])
-        : (orders?.data ?? []);
+        ? combinedOrders.filter((o: any) => selectedOrders.has(o._id))
+        : combinedOrders;
 
     if (!ordersToExport.length) {
       toast.message(t("noOrdersToExport") || "No orders to export");
@@ -920,35 +987,42 @@ export default function OrdersMgmtPage() {
       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
 
-    // ✅ dynamic columns (same as business)
-    const columns = Object.entries(columnVisibility)
+    const visibleKeys = Object.entries(columnVisibility)
       .filter(([_, visible]) => visible)
       .map(([key]) => key as keyof ColumnVisibility);
 
-    const headers = columns.map((key) => t(key));
+    const headers = visibleKeys.map((key) => t(key));
 
     const csvRows = ordersToExport.map((order: IOrder) =>
-      columns
+      visibleKeys
         .map((key) => {
-          let value: any = order[key as keyof IOrder];
+          let value: any;
 
-          // ✅ custom transformations
           if (key === "totalOrderAmount") {
-            value = `₪${order.totalAmount}`;
-          } else if (key === "deliveryFee") {
-            value = `₪${order.deliveryFee}`;
-          } else if (key === "product_name") {
-            // adjust based on your actual structure
             value =
-              order.products?.map((p: any) => p.product_name).join(", ") || "-";
+              order.totalAmount != null
+                ? `₪${order.totalAmount.toLocaleString()}`
+                : "-";
+          } else if (key === "deliveryFee") {
+            value =
+              order.deliveryFee != null
+                ? `₪${order.deliveryFee.toLocaleString()}`
+                : "-";
+          } else if (key === "productCount") {
+            value = order.productCount ?? "-";
           } else if (key === "createdAt") {
             value = order.createdAt
               ? new Date(order.createdAt).toLocaleDateString()
               : "-";
-          } else if (key === "paymentDate") {
-            value = order.paymentDate
-              ? new Date(order.paymentDate).toLocaleDateString()
-              : "-";
+          } else if (key === "paymentMethod") {
+            value = Array.isArray(order.paymentMethod)
+              ? order.paymentMethod.map((m: string) => t(m)).join(", ")
+              : order.paymentMethod || "-";
+          } else if (key === "website") {
+            const website = websiteMap[order.externalApiId ?? ""];
+            value = website?.websiteName ?? "-";
+          } else {
+            value = order[key as keyof IOrder];
           }
 
           return escapeCSV(value ?? "-");
@@ -974,7 +1048,7 @@ export default function OrdersMgmtPage() {
 
     link.click();
     URL.revokeObjectURL(url);
-  }, [selectedOrders, orders, columnVisibility, t]);
+  }, [selectedOrders, combinedOrders, columnVisibility, websiteMap, t]);
 
   const promptBulkResend = useCallback(
     (recipient: "VENDOR" | "CUSTOMER") => {
@@ -1073,6 +1147,52 @@ export default function OrdersMgmtPage() {
     },
   ];
 
+  const getPaymentStatusBadge = (status: TPaymentStatus) => {
+    const badges: Record<string, { bg: string; text: string; label: string }> =
+      {
+        PENDING: {
+          bg: "bg-orange-100 dark:bg-orange-900/30",
+          text: "text-orange-800 dark:text-orange-400",
+          label: t("pending"),
+        },
+        SUCCESS: {
+          bg: "bg-emerald-100 dark:bg-emerald-900/30",
+          text: "text-emerald-800 dark:text-emerald-400",
+          label: t("success"),
+        },
+        FAILURE: {
+          bg: "bg-red-100 dark:bg-red-900/30",
+          text: "text-red-800 dark:text-red-400",
+          label: t("failed"),
+        },
+        FAILED: {
+          bg: "bg-red-100 dark:bg-red-900/30",
+          text: "text-red-800 dark:text-red-400",
+          label: t("failed"),
+        },
+        REFUNDED: {
+          bg: "bg-blue-100 dark:bg-blue-900/30",
+          text: "text-blue-800 dark:text-blue-400",
+          label: t("refunded"),
+        },
+        PARTIALLY_REFUNDED: {
+          bg: "bg-orange-100 dark:bg-orange-900/30",
+          text: "text-orange-800 dark:text-orange-400",
+          label: t("partially_refunded"),
+        },
+      };
+    const badge = badges[status];
+    if (!badge)
+      return <span className="text-xs text-gray-500">{status ?? "-"}</span>;
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}
+      >
+        {badge.label}
+      </span>
+    );
+  };
+
   const getOrderStatusBadge = (status: IOrder["status"]) => {
     const badges = {
       pending: {
@@ -1085,7 +1205,6 @@ export default function OrdersMgmtPage() {
         text: "text-blue-800 dark:text-blue-400",
         label: t("processing"),
       },
-
       completed: {
         bg: "bg-emerald-100 dark:bg-emerald-900/30",
         text: "text-emerald-800 dark:text-emerald-400",
@@ -1100,6 +1219,36 @@ export default function OrdersMgmtPage() {
         bg: "bg-red-100 dark:bg-red-900/30",
         text: "text-red-800 dark:text-red-400",
         label: t("cancelled"),
+      },
+      draft: {
+        bg: "bg-gray-100 dark:bg-gray-800",
+        text: "text-gray-800 dark:text-gray-300",
+        label: t("draft"),
+      },
+      paid: {
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-800 dark:text-green-400",
+        label: t("paid"),
+      },
+      confirmed: {
+        bg: "bg-teal-100 dark:bg-teal-900/30",
+        text: "text-teal-800 dark:text-teal-400",
+        label: t("confirmed"),
+      },
+      delivered: {
+        bg: "bg-purple-100 dark:bg-purple-900/30",
+        text: "text-purple-800 dark:text-purple-400",
+        label: t("delivered"),
+      },
+      partially_cancelled: {
+        bg: "bg-orange-100 dark:bg-orange-900/30",
+        text: "text-orange-800 dark:text-orange-400",
+        label: t("partiallyCancelled"),
+      },
+      failed: {
+        bg: "bg-red-100 dark:bg-red-900/30",
+        text: "text-red-800 dark:text-red-400",
+        label: t("failed"),
       },
     };
     const badge = badges[status];
@@ -1214,8 +1363,8 @@ export default function OrdersMgmtPage() {
                   <FilterButton value={showFilters} onChange={setShowFilters} />
                   <ShowColumns
                     t={t}
-                    viewMode={viewMode}
-                    columnDefinitions={columns}
+                    viewMode="list"
+                    columnDefinitions={columnSettingsDefs}
                     columnVisibility={columnVisibility}
                     showColumnSettings={showColumnSettings}
                     setShowColumnSettings={setShowColumnSettings}
@@ -1240,9 +1389,7 @@ export default function OrdersMgmtPage() {
                   </button>
                 </div>
 
-                {!orderSummaryClick && (
-                  <ViewModeToggle onChange={setViewMode} value={viewMode} />
-                )}
+                {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}
               </div>
             </div>
 
@@ -1420,58 +1567,52 @@ export default function OrdersMgmtPage() {
         {/* Orders Table */}
         {canViewOrders && (
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {viewMode === "list" ? (
-              <div
-                className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
-              >
-                {/* Loading state */}
-                {
-                  <OrderListView
-                    isLoading={
-                      orderSummaryClick
-                        ? isLoadingOrderSummary || isFetchingOrderSummary
-                        : isLoading || isFetching
-                    }
-                    storageKey={
-                      orderSummaryClick
-                        ? "orderSummaryTableColumnOrder"
-                        : "ordersTableColumnOrder"
-                    }
-                    hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
-                    orders={orderSummaryClick ? orderSummaries : orders}
-                    combinedOrders={
-                      orderSummaryClick ? combinedOrdersSummary : combinedOrders
-                    }
-                    fetchNextPage={
-                      orderSummaryClick ? fetchNextPageSummary : fetchNextPage
-                    }
-                    selectedOrders={selectedOrders}
-                    setSelectedOrders={setSelectedOrders}
-                    handleRowClick={handleRowClick}
-                    columns={orderSummaryClick ? summaryColumns : columns}
-                  />
+            <div
+              className={`${isDark ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+            >
+              <OrderListView
+                isLoading={
+                  orderSummaryClick
+                    ? isLoadingOrderSummary || isFetchingOrderSummary
+                    : isLoading || isFetching
                 }
-              </div>
-            ) : (
-              <div className="overflow-y-auto">
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader className="w-8 h-8 animate-spin text-teal-500" />
-                  </div>
-                ) : (
-                  <OrderGridView
-                    selectedOrders={selectedOrders}
-                    setSelectedOrders={setSelectedOrders}
-                    data={combinedOrders || []}
-                    next={fetchNextPage}
-                    hasMore={hasMore}
-                    isLoading={isLoading || isFetching}
-                    onRowClick={handleRowClick}
-                    t={t}
-                  />
-                )}
-              </div>
-            )}
+                storageKey={
+                  orderSummaryClick
+                    ? "orderSummaryTableColumnOrder"
+                    : "ordersTableColumnOrder"
+                }
+                hasMore={orderSummaryClick ? hasMoreSummary : hasMore}
+                combinedOrders={
+                  orderSummaryClick ? combinedOrdersSummary : combinedOrders
+                }
+                fetchNextPage={
+                  orderSummaryClick ? fetchNextPageSummary : fetchNextPage
+                }
+                selectedOrders={selectedOrders}
+                setSelectedOrders={setSelectedOrders}
+                handleRowClick={handleRowClick}
+                columns={orderSummaryClick ? summaryColumns : columns}
+              />
+            </div>
+            {/* Grid view disabled
+            <div className="overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
+                </div>
+              ) : (
+                <OrderGridView
+                  selectedOrders={selectedOrders}
+                  setSelectedOrders={setSelectedOrders}
+                  data={combinedOrders || []}
+                  next={fetchNextPage}
+                  hasMore={hasMore}
+                  isLoading={isLoading || isFetching}
+                  onRowClick={handleRowClick}
+                  t={t}
+                />
+              )}
+            </div> */}
           </div>
         )}
       </div>
@@ -1480,14 +1621,13 @@ export default function OrdersMgmtPage() {
       {selectedOrder && showOrderDetails && (
         <OrderDetailsModal
           t={t}
-          refetch={canUseAuthenticatedOrderApis ? orderIdrefetch : () => {}}
-          order={canUseAuthenticatedOrderApis ? orderDetails : qrOrder}
-          isLoading={isOrderDetailLoading}
-          isFetching={
-            canUseAuthenticatedOrderApis ? isOrderDetailFetching : false
-          }
-          onClose={() => setShowOrderDetails(false)}
-          getOrderStatusBadge={getOrderStatusBadge}
+          orderId={selectedOrder._id}
+          onClose={() => {
+            setShowOrderDetails(false);
+            // setCombinedOrders([]);
+            setPage(1);
+            refetch();
+          }}
           qrToken={isQRMode && !qrSessionReady ? qrToken : null}
           isQRMode={isQRMode && !qrSessionReady}
         />
