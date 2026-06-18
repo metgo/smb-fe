@@ -7,6 +7,7 @@ import {
   MapPin,
   Image as ImageIcon,
   Clock,
+  Compass,
   Globe,
   Tag,
   FileText,
@@ -14,6 +15,13 @@ import {
   Truck,
   LanguagesIcon,
 } from "lucide-react";
+import {
+  TourProvider,
+  TourPortal,
+  useTour,
+  BUSINESS_WIZARD_TOUR_ID,
+} from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -64,7 +72,7 @@ interface CreateBusinessWizardProps {
   missingFields?: string[];
 }
 
-export default function CreateBusinessWizard({
+function CreateBusinessWizardInner({
   onClose,
   editData,
   refetch,
@@ -75,9 +83,75 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
+  const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
   const { textPrimary, isRTL, theme } = useThemeClasses();
+
+  // ─── Tour ─────────────────────────────────────────────────────────────
+  const { startTour } = useTour();
+
+  const buildTourSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: tr("business_wizard.welcome.title"),
+        desc: tr("business_wizard.welcome.desc"),
+      },
+      {
+        id: "header",
+        target: '[data-tour="wizard-header"]',
+        placement: "bottom",
+        title: tr("business_wizard.header.title"),
+        desc: tr("business_wizard.header.desc"),
+      },
+      {
+        id: "stepper",
+        target: '[data-tour="wizard-stepper"]',
+        placement: "bottom",
+        title: tr("business_wizard.stepper.title"),
+        desc: tr("business_wizard.stepper.desc"),
+      },
+      {
+        id: "completion",
+        target: '[data-tour="wizard-completion"]',
+        placement: "left",
+        title: tr("business_wizard.completion.title"),
+        desc: tr("business_wizard.completion.desc"),
+      },
+      {
+        id: "content",
+        target: '[data-tour="wizard-content"]',
+        placement: "top",
+        title: tr("business_wizard.content.title"),
+        desc: tr("business_wizard.content.desc"),
+      },
+      {
+        id: "footer",
+        target: '[data-tour="wizard-footer"]',
+        placement: "top",
+        title: tr("business_wizard.footer.title"),
+        desc: tr("business_wizard.footer.desc"),
+      },
+      // tr is stable, safe to omit
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    ],
+    [],
+  );
+
+  // Auto-start once (only in CREATE mode — edit users already know the wizard)
+  useEffect(() => {
+    if (opMode !== "CREATE") return;
+    const timer = setTimeout(() => {
+      startTour(buildTourSteps(), {
+        tourId: BUSINESS_WIZARD_TOUR_ID,
+        autoOnce: true,
+      });
+    }, 600);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [_detecedLanguage, setDetectedLanguage] = useState("");
@@ -901,7 +975,10 @@ export default function CreateBusinessWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}>
+      <div
+        data-tour="wizard-header"
+        className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}
+      >
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="min-w-0">
             <h2 className={clsx("text-lg sm:text-2xl truncate", textPrimary)}>
@@ -923,8 +1000,11 @@ export default function CreateBusinessWizard({
             )}
           </div>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            {/* Impact Percent Indicator */}
-            <div className="relative w-10 h-10 sm:w-14 sm:h-14">
+            {/* Completion ring */}
+            <div
+              data-tour="wizard-completion"
+              className="relative w-10 h-10 sm:w-14 sm:h-14"
+            >
               <svg
                 className="w-10 h-10 sm:w-14 sm:h-14 -rotate-90"
                 viewBox="0 0 56 56"
@@ -973,17 +1053,31 @@ export default function CreateBusinessWizard({
                 </span>
               </div>
             </div>
+            {/* Tour trigger */}
+            <button
+              onClick={() => startTour(buildTourSteps())}
+              title={tr("start_tour")}
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+            </button>
             <PublishButton onClick={handlePublish} isLoading={isPublishing} />
           </div>
         </div>
 
-        <WizardStepper
-          steps={steps}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          stepsWithMissingFields={stepsWithMissingFields}
-          onStepClick={setCurrentStep}
-        />
+        <div data-tour="wizard-stepper">
+          <WizardStepper
+            steps={steps}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            stepsWithMissingFields={stepsWithMissingFields}
+            onStepClick={setCurrentStep}
+          />
+        </div>
       </div>
 
       {/* Missing fields banner — shown when opened via no-auth email link */}
@@ -995,19 +1089,23 @@ export default function CreateBusinessWizard({
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+        {renderStep()}
+      </div>
 
       {/* Footer */}
-      <WizardFooter
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        isSaving={isSaving || isCreating}
-        isPublishing={isPublishing}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
-        onPublish={handlePublish}
-      />
+      <div data-tour="wizard-footer">
+        <WizardFooter
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isSaving={isSaving || isCreating}
+          isPublishing={isPublishing}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSaveDraft={handleSaveDraft}
+          onPublish={handlePublish}
+        />
+      </div>
 
       <ConfirmDialog
         open={showClosePopup}
@@ -1023,6 +1121,18 @@ export default function CreateBusinessWizard({
           onClose();
         }}
       />
+
+      <TourPortal />
     </ModalWrapper>
+  );
+}
+
+// ─── Exported component (wraps with its own TourProvider) ─────────────────────
+
+export default function CreateBusinessWizard(props: CreateBusinessWizardProps) {
+  return (
+    <TourProvider>
+      <CreateBusinessWizardInner {...props} />
+    </TourProvider>
   );
 }
