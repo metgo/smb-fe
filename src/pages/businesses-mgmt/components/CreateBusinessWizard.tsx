@@ -457,16 +457,21 @@ export default function CreateBusinessWizard({
           };
           const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
           return days.map((day) => {
-            const entry = editData?.openingHrs?.find((h: any) => {
+            const entries = (editData?.openingHrs ?? []).filter((h: any) => {
               const d = (h.day || h.days || "").toLowerCase().trim();
               return dayNormMap[d] === day;
             });
-            return {
-              day,
-              open: entry?.open || "",
-              close: entry?.close || "",
-              isHoliday: entry?.isHoliday || false,
-            };
+            const first = entries[0];
+            const isHoliday = first?.isHoliday || false;
+            const byAppointment = first?.byAppointment || false;
+            const slots =
+              entries.length > 0 && !isHoliday
+                ? entries.map((e: any) => ({
+                    open: e.open || "",
+                    close: e.close || "",
+                  }))
+                : [{ open: "10:00", close: "17:00" }];
+            return { day, slots, isHoliday, byAppointment };
           });
         })(),
         //attributes
@@ -585,7 +590,18 @@ export default function CreateBusinessWizard({
     logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
-    openingHrs: formData.operatingHours,
+    openingHrs: (formData.operatingHours ?? []).flatMap(
+      ({ day, slots, isHoliday, byAppointment }: any) =>
+        isHoliday || !slots?.length
+          ? [{ day, open: "", close: "", isHoliday, byAppointment }]
+          : slots.map((slot: any) => ({
+              day,
+              open: slot.open,
+              close: slot.close,
+              isHoliday: false,
+              byAppointment,
+            })),
+    ),
     // step 7
     vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,

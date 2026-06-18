@@ -14,6 +14,7 @@ interface OperatingHour {
   open?: string;
   close?: string;
   isHoliday?: boolean;
+  byAppointment?: boolean;
 }
 
 interface Props {
@@ -92,12 +93,13 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
   const { t } = useTranslation("common");
   const openingHrs = business?.openingHrs || [];
 
+  // Group all entries by day, preserving multiple slots
   const normalizedHours = useMemo(() => {
     return dayOrder.map((day) => {
-      const entry = openingHrs.find(
+      const entries = openingHrs.filter(
         (e) => normalizeDay(e.day || e.days) === day,
       );
-      return { day, entry };
+      return { day, entries };
     });
   }, [openingHrs]);
 
@@ -170,8 +172,10 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
 
       {/* Days */}
       <div className="space-y-2">
-        {normalizedHours.map(({ day, entry }) => {
+        {normalizedHours.map(({ day, entries }) => {
           const isToday = day === todayKey;
+          const first = entries[0];
+          const byAppointment = first?.byAppointment ?? false;
 
           let Icon = AlertCircle;
           let color = isDark ? "text-gray-400" : "text-gray-500";
@@ -179,41 +183,61 @@ const BusinessOpeningHoursDetails: React.FC<Props> = ({
           let border = isDark ? "border-gray-700" : "border-gray-200";
           let content: React.ReactNode = t("not_set");
 
-          if (entry) {
-            if (entry.isHoliday) {
+          if (first) {
+            if (first.isHoliday) {
               Icon = CalendarCheck;
               color = isDark ? "text-amber-400" : "text-amber-600";
               bg = isDark ? "bg-amber-900/20" : "bg-amber-50";
               border = isDark ? "border-amber-800" : "border-amber-200";
-              content = t("holiday");
-            } else if (!entry.open || entry.open === "00:00") {
+              content = byAppointment
+                ? `${t("holiday")} / ${t("by_appointment")}`
+                : t("holiday");
+            } else if (!first.open || first.open === "00:00") {
               Icon = XCircle;
               color = isDark ? "text-red-400" : "text-red-600";
-              content = t("closed");
+              content = byAppointment
+                ? `${t("closed")} / ${t("by_appointment")}`
+                : t("closed");
             } else {
               Icon = CheckCircle2;
               color = isDark ? "text-green-400" : "text-green-600";
               bg = isDark ? "bg-green-900/10" : "bg-green-50";
               border = isDark ? "border-green-800/40" : "border-green-200";
 
-              const baseTime = `${formatTime(entry.open)} – ${formatTime(
-                entry.close,
-              )}`;
+              // Build time ranges for all slots
+              const timeRanges = entries
+                .filter((e) => e.open && e.open !== "00:00")
+                .map((e) => `${formatTime(e.open)} – ${formatTime(e.close)}`)
+                .join(", ");
 
-              const showOpenNow =
+              const anySlotOpen =
                 isToday &&
                 showCurrentTime &&
-                isCurrentlyOpen(entry.open, entry.close, timezone);
+                entries.some((e) => isCurrentlyOpen(e.open, e.close, timezone));
 
-              content = showOpenNow ? (
-                <span className="flex items-center gap-2">
-                  {baseTime}
+              const statusSuffix = byAppointment
+                ? ` / ${t("by_appointment")}`
+                : "";
+
+              content = anySlotOpen ? (
+                <span className="flex items-center gap-2 flex-wrap">
+                  {timeRanges}
+                  {statusSuffix && (
+                    <span
+                      className={isDark ? "text-gray-400" : "text-gray-500"}
+                    >
+                      {statusSuffix.trimStart()}
+                    </span>
+                  )}
                   <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full">
                     {t("open_now")}
                   </span>
                 </span>
               ) : (
-                baseTime
+                <span>
+                  {timeRanges}
+                  {statusSuffix}
+                </span>
               );
             }
           }
