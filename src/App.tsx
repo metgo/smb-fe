@@ -188,13 +188,16 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
+  // Handle QR verification token for orders-management and event-details access (JWT token, same as incomplete profile)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get("token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+    const isEventDetails = window.location.pathname.startsWith(
+      routes.eventDetails,
+    );
 
-    if (jwtToken && isOrdersManagement) {
+    if (jwtToken && (isOrdersManagement || isEventDetails)) {
       // Keep the original QR token separate from the normal access token.
       sessionStorage.setItem("access_token", jwtToken);
       sessionStorage.setItem("qr_token", jwtToken);
@@ -232,7 +235,7 @@ function App() {
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep JWT token in session even if user fetch fails, allows order management
+          // Keep JWT token in session even if user fetch fails, allows event management
         }
       };
 
@@ -332,7 +335,7 @@ function App() {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
-      // Allow routes with token to bypass login (business-details, orders-management QR)
+      // Allow routes with token to bypass login (business-details, event-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
       const orderId = urlParams.get("orderId");
@@ -340,9 +343,15 @@ function App() {
       const isBusinessDetails = window.location.pathname.startsWith(
         routes.businessDetails,
       );
+      const isEventDetails = window.location.pathname.startsWith(
+        routes.eventDetails,
+      );
       const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
+      if (
+        hasToken &&
+        (isBusinessDetails || isEventDetails || isOrdersManagement)
+      ) {
         return children;
       }
 
