@@ -19,7 +19,6 @@ import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
-  findOneByFieldNames,
   findOneById,
   updateById,
 } from 'src/core/helper/query-helper';
@@ -58,6 +57,15 @@ import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query'
 import { Ticket } from '../tickets/schema/tickets.schema';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
 
+function hexToRgba(hex: string, opacity: number): string {
+  if (!hex) return `rgba(0, 0, 0, ${opacity})`;
+  const cleanHex = hex.replace('#', '');
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -82,23 +90,34 @@ export class OrdersService {
     private readonly campaignService: CampaignService,
   ) {}
 
-  async getVendorOwnerForOrder(orderId: string): Promise<{
+  async getVendorOwnerForOrder(
+    orderId: string,
+    vendorId?: string,
+  ): Promise<{
     userId: string;
     email?: string;
   } | null> {
     const order = await findOneById(this.OrderModel, orderId);
 
-    if (!order?.products?.[0]?.id) return null;
+    if (!order?.products || order.products.length === 0) return null;
 
-    const firstProduct = await this.productsService.findOne(
-      order.products[0].id.toString(),
-      Locale.ENGLISH,
-    );
+    let businessId: string;
 
-    if (!firstProduct?.businessId) return null;
+    if (vendorId) {
+      // If vendorId provided, use it directly as businessId
+      businessId = vendorId;
+    } else {
+      // Default: get businessId from first product
+      const firstProduct = await this.productsService.findOne(
+        order.products[0].id.toString(),
+        Locale.ENGLISH,
+      );
+      if (!firstProduct?.businessId) return null;
+      businessId = firstProduct.businessId.toString();
+    }
 
     const businessDetails = await this.businessService.findBusinessEmailByIds([
-      firstProduct.businessId.toString() as any,
+      businessId as any,
     ]);
     const business = businessDetails?.[0] as any;
     const ownerId = business?.userId?._id || business?.userId;
@@ -112,6 +131,39 @@ export class OrdersService {
         || business?.busiEmail
         || business?.contactDetails?.email,
     };
+  }
+
+  private extractBuyerAddress(
+    orderProducts: OrderProduct[],
+    fallbackAddress: string = '',
+  ): string {
+    if (!orderProducts || orderProducts.length === 0) {
+      return fallbackAddress;
+    }
+
+    const firstProduct = orderProducts[0];
+
+    // Priority 1: Check for home delivery address (city, street, houseNo, apartment)
+    const homeDeliveryAddress = [
+      firstProduct?.houseNo,
+      firstProduct?.apartment,
+      firstProduct?.street,
+      firstProduct?.city,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    if (homeDeliveryAddress) {
+      return homeDeliveryAddress;
+    }
+
+    // Priority 2: Check for deliveryPickupLocation
+    if (firstProduct?.deliveryPickupLocation) {
+      return firstProduct.deliveryPickupLocation;
+    }
+
+    // Priority 3: Fall back to the provided address
+    return fallbackAddress;
   }
 
   async startCheckOutProcess(
@@ -323,6 +375,7 @@ export class OrdersService {
       const externalApi = await this.externalApiService.findByIdentifierId(
         body.identifierId,
       );
+
       const newOrder = new this.OrderModel();
 
       const baseUrl
@@ -362,6 +415,7 @@ export class OrdersService {
           cartItemsProduct,
           cartItemsTicket,
           loggedInUser,
+          body,
         );
       }
 
@@ -430,7 +484,33 @@ export class OrdersService {
     cartItemsProduct: CartProductResponse[] = [],
     cartItemsTicket: CartProductResponse[] = [],
     loggedInUser: LoggedInUserInterface | null,
+    body?: any,
   ) {
+    // Fetch cart to check if it has vendor products
+    let cart;
+    if (body?.cartId) {
+      cart = await this.cartService.findOneById(body.cartId);
+    }
+
+    // If cart has vendor products, use vendor split order creation
+    if (cart?.vendorProducts?.length) {
+      const parentOrder = new this.OrderModel({
+        ...command,
+        externalApiId: command?.externalApi?._id,
+        paymentDate: new Date(),
+        paymentStatus: PaymentStatus.SUCCESS,
+        status: OrderStatus.PROCESSING,
+        paymentMode: [PaymentMode.VOUCHER],
+      });
+      const savedParentOrder = await parentOrder.save();
+      return await this.createVendorSplitOrdersForVoucher(
+        savedParentOrder,
+        cart,
+        command?.externalApi,
+        body?.languagePreference,
+      );
+    }
+
     const orderWithQR = new this.OrderModel({
       ...command,
       externalApiId: command?.externalApi?._id,
@@ -448,13 +528,17 @@ export class OrdersService {
 
     // create order products
     const cartItems = [...cartItemsProduct, ...cartItemsTicket];
-    const orderProduct = (await Promise.all(
-      order.products.map(async product => {
-        const cartItem = cartItems.find(
-          item => item.id.toString() === product.id.toString(),
-        );
-        if (!cartItem) return null;
-        return await this.orderProductService.create({
+
+    const orderProduct = await Promise.all(
+      order.products
+        .map(product => {
+          const cartItem = cartItems.find(
+            item => item.id.toString() === product.id.toString(),
+          );
+          return { product, cartItem };
+        })
+        .filter(({ cartItem }) => cartItem)
+        .map(async ({ cartItem }) => await this.orderProductService.create({
           itemId: cartItem.id,
           quantity: cartItem.quantity,
           email: cartItem.email,
@@ -476,9 +560,8 @@ export class OrdersService {
           orderId: order.id,
           loggedInUserId: loggedInUser?.id,
           itemType: cartItem.itemType,
-        });
-      }),
-    )).filter(Boolean);
+        })),
+    );
 
     if (cartItemsProduct?.length) {
       await this.productsService.deductQuantity(cartItemsProduct);
@@ -527,17 +610,24 @@ export class OrdersService {
       })),
     );
 
-    await this.paymentService.sendInvoice({
-      customerName: order?.firstName,
-      customerEmail: order?.email,
-      invoiceType: 101,
-      product: [...productInvoice, ...ticketInvoice],
-      transactionId: parseInt(order._id?.toString(), 10),
-      purpose: PaymentPurpose.ORDER,
-      sumPaid: order?.totalAmount,
-      languagePreference: command?.languagePreference,
-      additionalInformation: 'Paid via Voucher',
-    });
+    try {
+      await this.paymentService.sendInvoice({
+        customerName: order?.firstName,
+        customerEmail: order?.email,
+        invoiceType: 101,
+        product: [...productInvoice, ...ticketInvoice],
+        transactionId: parseInt(order._id?.toString(), 10),
+        purpose: PaymentPurpose.ORDER,
+        sumPaid: order?.totalAmount,
+        languagePreference: command?.languagePreference,
+        additionalInformation: 'Paid via Voucher',
+      });
+    } catch (invoiceError) {
+      this.logger.warn('[ORDER]: Failed to send invoice after voucher payment', {
+        orderId: order._id,
+        error: invoiceError instanceof Error ? invoiceError.message : String(invoiceError),
+      });
+    }
 
     return order;
   }
@@ -605,40 +695,57 @@ export class OrdersService {
             findCartProducts,
           );
 
+        // Validate all products have matching cart items
+        const missingProductItems = updateOrder.products.filter(
+          product => !findCartProducts.find(
+            item => item.id.toString() === product.id.toString(),
+          ),
+        );
+
+        if (missingProductItems.length > 0) {
+          this.logger.warn('[ORDER]: Missing cart items for some products after payment', {
+            orderId: updateOrder._id,
+            missingProductIds: missingProductItems.map(p => p.id),
+          });
+        }
+
         const orderProduct = await Promise.all(
-          updateOrder.products.map(async product => {
-            const cartItem = findCartProducts.find(
-              item => item.id.toString() === product.id.toString(),
-            );
+          updateOrder.products
+            .map(product => {
+              const cartItem = findCartProducts.find(
+                item => item.id.toString() === product.id.toString(),
+              );
 
-            const productsInfo = getProductsInformation.find(
-              item => item._id.toString() === product.id.toString(),
-            );
+              const productsInfo = getProductsInformation.find(
+                item => item._id.toString() === product.id.toString(),
+              );
 
-            return await this.orderProductService.create({
+              return { product, cartItem, productsInfo };
+            })
+            .filter(({ cartItem, productsInfo }) => cartItem && productsInfo)
+            .map(async ({ cartItem, productsInfo }) => await this.orderProductService.create({
               itemId: new mongoose.Types.ObjectId(cartItem.id),
-              quantity: cartItem?.quantity,
-              email: cartItem?.email,
-              countryCode: cartItem?.countryCode,
-              phone: cartItem?.phone,
-              firstName: cartItem?.firstName,
-              lastName: cartItem?.lastName,
-              deliveryFee: cartItem?.deliveryFee,
-              deliveryMethod: cartItem?.deliveryMethod,
-              deliveryArea: cartItem?.deliveryArea,
-              deliveryPickupLocation: cartItem?.deliveryPickupLocation,
-              houseNo: cartItem?.houseNo,
-              apartment: cartItem?.apartment,
-              city: cartItem?.city,
-              street: cartItem?.street,
-              isGift: cartItem?.isGift,
-              additionalInfo: cartItem?.additionalInfo,
-              amount: productsInfo.price.sellingPrice,
+              quantity: cartItem.quantity,
+              email: cartItem.email,
+              countryCode: cartItem.countryCode,
+              phone: cartItem.phone,
+              firstName: cartItem.firstName,
+              lastName: cartItem.lastName,
+              deliveryFee: cartItem.deliveryFee,
+              deliveryMethod: cartItem.deliveryMethod,
+              deliveryArea: cartItem.deliveryArea,
+              deliveryPickupLocation: cartItem.deliveryPickupLocation,
+              houseNo: cartItem.houseNo,
+              apartment: cartItem.apartment,
+              city: cartItem.city,
+              street: cartItem.street,
+              isGift: cartItem.isGift,
+              additionalInfo: cartItem.additionalInfo,
+              amount: productsInfo.price?.sellingPrice || 0,
               loggedInUserId: updateOrder.userId,
               orderId: updateOrder.id,
               itemType: cartItem.itemType,
-            });
-          }),
+            })),
         );
 
         await this.sendEmailPostOrderPayment(
@@ -660,40 +767,57 @@ export class OrdersService {
           new GetTicketByIdsQuery(cartTickets),
         );
 
+        // Validate all tickets have matching cart items
+        const missingTicketItems = updateOrder.products.filter(
+          product => !findCartTickets.find(
+            item => item.id.toString() === product.id.toString(),
+          ),
+        );
+
+        if (missingTicketItems.length > 0) {
+          this.logger.warn('[ORDER]: Missing cart items for some tickets after payment', {
+            orderId: updateOrder._id,
+            missingTicketIds: missingTicketItems.map(p => p.id),
+          });
+        }
+
         const orderProduct = await Promise.all(
-          updateOrder.products.map(async product => {
-            const cartItem = findCartTickets.find(
-              item => item.id.toString() === product.id.toString(),
-            );
+          updateOrder.products
+            .map(product => {
+              const cartItem = findCartTickets.find(
+                item => item.id.toString() === product.id.toString(),
+              );
 
-            const ticketInfo = getTicketsInformation.find(
-              item => item._id.toString() === product.id.toString(),
-            );
+              const ticketInfo = getTicketsInformation.find(
+                item => item._id.toString() === product.id.toString(),
+              );
 
-            return await this.orderProductService.create({
+              return { product, cartItem, ticketInfo };
+            })
+            .filter(({ cartItem, ticketInfo }) => cartItem && ticketInfo)
+            .map(async ({ cartItem, ticketInfo }) => await this.orderProductService.create({
               itemId: new mongoose.Types.ObjectId(cartItem.id),
-              quantity: cartItem?.quantity,
-              email: cartItem?.email,
-              countryCode: cartItem?.countryCode,
-              phone: cartItem?.phone,
-              firstName: cartItem?.firstName,
-              lastName: cartItem?.lastName,
-              deliveryFee: cartItem?.deliveryFee,
-              deliveryMethod: cartItem?.deliveryMethod,
-              deliveryArea: cartItem?.deliveryArea,
-              deliveryPickupLocation: cartItem?.deliveryPickupLocation,
-              houseNo: cartItem?.houseNo,
-              apartment: cartItem?.apartment,
-              city: cartItem?.city,
-              street: cartItem?.street,
-              isGift: cartItem?.isGift,
-              additionalInfo: cartItem?.additionalInfo,
-              amount: ticketInfo.price.sellingPrice,
+              quantity: cartItem.quantity,
+              email: cartItem.email,
+              countryCode: cartItem.countryCode,
+              phone: cartItem.phone,
+              firstName: cartItem.firstName,
+              lastName: cartItem.lastName,
+              deliveryFee: cartItem.deliveryFee,
+              deliveryMethod: cartItem.deliveryMethod,
+              deliveryArea: cartItem.deliveryArea,
+              deliveryPickupLocation: cartItem.deliveryPickupLocation,
+              houseNo: cartItem.houseNo,
+              apartment: cartItem.apartment,
+              city: cartItem.city,
+              street: cartItem.street,
+              isGift: cartItem.isGift,
+              additionalInfo: cartItem.additionalInfo,
+              amount: ticketInfo.price?.sellingPrice || 0,
               loggedInUserId: updateOrder.userId,
               orderId: updateOrder.id,
               itemType: cartItem.itemType,
-            });
-          }),
+            })),
         );
 
         await this.sendEmailPostTicketPayment(
@@ -718,6 +842,154 @@ export class OrdersService {
       });
       exceptionHandling(err);
     }
+  }
+
+  private async createVendorSplitOrdersForVoucher(
+    parentOrder: Order,
+    cart: Cart,
+    externalApi: any,
+    languagePreference?: Locale,
+  ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    const vendorOrders = await Promise.all(
+      cart.vendorProducts.map(async vendor => {
+        const vendorOrder = new this.OrderModel({
+          products: vendor.products.map(p => ({ id: p._id })),
+          userId: parentOrder.userId,
+          email: parentOrder.email || cart.email,
+          countryCode: parentOrder.countryCode,
+          phone: parentOrder.phone || cart.phone,
+          firstName: parentOrder.firstName || cart.name,
+          lastName: parentOrder.lastName,
+          address: parentOrder.address || cart.address,
+          paymentStatus: PaymentStatus.SUCCESS,
+          status: OrderStatus.PROCESSING,
+          paymentMode: parentOrder.paymentMode,
+          voucher: parentOrder.voucher,
+          totalAmount: vendor.totalAmount,
+          creditCardPayment: 0,
+          deliveryFee: vendor.deliveryFee || 0,
+          externalApiId: parentOrder.externalApiId,
+          campId: parentOrder.campId,
+          qrCodeUrl: '',
+          paymentDate: new Date(),
+          vendorId: vendor._id,
+          parentOrderId: parentOrder._id,
+          createdBy: parentOrder.userId,
+          createdAt: new Date(),
+        });
+
+        const savedOrder = await vendorOrder.save();
+
+        try {
+          const { qrCodeUrl } = await this.generateQRCodeAndToken(
+            savedOrder._id.toString(),
+            vendor._id.toString(),
+          );
+          await updateById(this.OrderModel, savedOrder._id.toString(), { qrCodeUrl });
+          savedOrder.qrCodeUrl = qrCodeUrl;
+        } catch (qrError) {
+          this.logger.warn('[ORDER]: VENDOR QR CODE GENERATION FAILED', {
+            vendorOrderId: savedOrder._id,
+            vendorId: vendor._id,
+            error: qrError instanceof Error ? qrError.message : String(qrError),
+          });
+        }
+
+        return savedOrder;
+      }),
+    );
+
+    this.logger.info(
+      '[ORDER]: VENDOR SPLIT ORDERS CREATED FROM VOUCHER PAYMENT',
+      {
+        parentOrderId: parentOrder._id,
+        vendorOrderIds: vendorOrders.map(o => o._id),
+      },
+    );
+
+    // Deduct quantity for all product-type items
+    const allProductItems = cart.vendorProducts.flatMap(vendor => vendor.products
+      .filter(p => p.itemType === OrderItemType.PRODUCT)
+      .map(p => ({
+        id: p._id,
+        quantity: p.quantity,
+        itemType: p.itemType,
+      })));
+
+    if (allProductItems.length) {
+      await this.productsService.deductQuantity(allProductItems);
+    }
+
+    // Get product information for calculating amounts
+    const productInfoMap = {};
+    if (allProductItems.length) {
+      const productInfo = await this.productsService.getProductInformationForOrders(allProductItems);
+      productInfo.forEach(p => {
+        productInfoMap[p._id.toString()] = p;
+      });
+    }
+
+    // Create order product records for each vendor order
+    const orderProductsPerVendor = await Promise.all(
+      vendorOrders.map(async (vendorOrder, index) => {
+        const vendor = cart.vendorProducts[index];
+        const totalQty = vendor.products.reduce((sum, prod) => sum + prod.quantity, 0);
+        return Promise.all(
+          vendor.products.map(p => {
+            const productDeliveryFee = totalQty > 0
+              ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+              : 0;
+            const productInfo = productInfoMap[p._id.toString()];
+            const amount = productInfo?.price?.sellingPrice || 0;
+            return this.orderProductService.create({
+              itemId: new mongoose.Types.ObjectId(p._id.toString()),
+              quantity: p.quantity,
+              email: vendorOrder.email,
+              countryCode: vendorOrder.countryCode,
+              phone: vendorOrder.phone,
+              firstName: vendorOrder.firstName,
+              lastName: vendorOrder.lastName,
+              deliveryFee: productDeliveryFee,
+              deliveryMethod: vendor.deliveryMethod,
+              deliveryArea: vendor.deliveryArea,
+              deliveryPickupLocation: vendor.deliveryPickupLocation,
+              houseNo: vendor.houseNo?.toString() || null,
+              apartment: vendor.apartment?.toString() || null,
+              city: vendor.city?.toString() || null,
+              street: vendor.street?.toString() || null,
+              isGift: false,
+              additionalInfo: vendor.additionalInfo?.toString() || null,
+              amount,
+              orderId: vendorOrder.id,
+              loggedInUserId: parentOrder.userId?.toString(),
+              itemType: p.itemType,
+            });
+          }),
+        );
+      }),
+    );
+
+    if (externalApi) {
+      await this.sendEmailPostVendorOrderPayment(
+        cart,
+        parentOrder,
+        vendorOrders,
+        orderProductsPerVendor.flat(),
+        externalApi,
+        languagePreference,
+      );
+    }
+
+    await this.OrderModel.findByIdAndDelete(parentOrder._id);
+
+    this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT FROM VOUCHER', {
+      parentOrderId: parentOrder._id,
+    });
+
+    return {
+      updateOrder: parentOrder,
+      getProductInformation: [],
+    };
   }
 
   private async createVendorSplitOrders(
@@ -746,7 +1018,7 @@ export class OrdersService {
           deliveryFee: vendor.deliveryFee || 0,
           externalApiId: parentOrder.externalApiId,
           campId: parentOrder.campId,
-          qrCodeUrl: parentOrder.qrCodeUrl,
+          qrCodeUrl: '', // Will be set after order is saved
           paymentDate: new Date(),
           vendorId: vendor._id,
           parentOrderId: parentOrder._id,
@@ -754,7 +1026,25 @@ export class OrdersService {
           createdAt: new Date(),
         });
 
-        return vendorOrder.save();
+        const savedOrder = await vendorOrder.save();
+
+        // Generate vendor-specific QR code
+        try {
+          const { qrCodeUrl } = await this.generateQRCodeAndToken(
+            savedOrder._id.toString(),
+            vendor._id.toString(), // Pass vendorId for vendor-specific token
+          );
+          await updateById(this.OrderModel, savedOrder._id.toString(), { qrCodeUrl });
+          savedOrder.qrCodeUrl = qrCodeUrl;
+        } catch (qrError) {
+          this.logger.warn('[ORDER]: VENDOR QR CODE GENERATION FAILED', {
+            vendorOrderId: savedOrder._id,
+            vendorId: vendor._id,
+            error: qrError instanceof Error ? qrError.message : String(qrError),
+          });
+        }
+
+        return savedOrder;
       }),
     );
 
@@ -779,34 +1069,52 @@ export class OrdersService {
       await this.productsService.deductQuantity(allProductItems);
     }
 
+    // Get product information for calculating amounts
+    const productInfoMap = {};
+    if (allProductItems.length) {
+      const productInfo = await this.productsService.getProductInformationForOrders(allProductItems);
+      productInfo.forEach(p => {
+        productInfoMap[p._id.toString()] = p;
+      });
+    }
+
     // Create order product records for each vendor order
     const orderProductsPerVendor = await Promise.all(
       vendorOrders.map(async (vendorOrder, index) => {
         const vendor = cart.vendorProducts[index];
+        const totalQty = vendor.products.reduce((sum, prod) => sum + prod.quantity, 0);
         return Promise.all(
-          vendor.products.map(p => this.orderProductService.create({
-            itemId: new mongoose.Types.ObjectId(p._id.toString()),
-            quantity: p.quantity,
-            email: vendorOrder.email,
-            countryCode: vendorOrder.countryCode,
-            phone: vendorOrder.phone,
-            firstName: vendorOrder.firstName,
-            lastName: vendorOrder.lastName,
-            deliveryFee: vendor.deliveryFee || 0,
-            deliveryMethod: vendor.deliveryMethod,
-            deliveryArea: vendor.deliveryArea,
-            deliveryPickupLocation: vendor.deliveryPickupLocation,
-            houseNo: vendor.houseNo?.toString() || null,
-            apartment: vendor.apartment?.toString() || null,
-            city: vendor.city?.toString() || null,
-            street: vendor.street?.toString() || null,
-            isGift: false,
-            additionalInfo: vendor.additionalInfo?.toString() || null,
-            amount: 0,
-            orderId: vendorOrder.id,
-            loggedInUserId: parentOrder.userId?.toString(),
-            itemType: p.itemType,
-          })),
+          vendor.products.map(p => {
+            // Divide delivery fee proportionally by quantity for all models
+            const productDeliveryFee = totalQty > 0
+              ? ((vendor.deliveryFee || 0) * p.quantity) / totalQty
+              : 0;
+            const productInfo = productInfoMap[p._id.toString()];
+            const amount = productInfo?.price?.sellingPrice || 0;
+            return this.orderProductService.create({
+              itemId: new mongoose.Types.ObjectId(p._id.toString()),
+              quantity: p.quantity,
+              email: vendorOrder.email,
+              countryCode: vendorOrder.countryCode,
+              phone: vendorOrder.phone,
+              firstName: vendorOrder.firstName,
+              lastName: vendorOrder.lastName,
+              deliveryFee: productDeliveryFee,
+              deliveryMethod: vendor.deliveryMethod,
+              deliveryArea: vendor.deliveryArea,
+              deliveryPickupLocation: vendor.deliveryPickupLocation,
+              houseNo: vendor.houseNo?.toString() || null,
+              apartment: vendor.apartment?.toString() || null,
+              city: vendor.city?.toString() || null,
+              street: vendor.street?.toString() || null,
+              isGift: false,
+              additionalInfo: vendor.additionalInfo?.toString() || null,
+              amount,
+              orderId: vendorOrder.id,
+              loggedInUserId: parentOrder.userId?.toString(),
+              itemType: p.itemType,
+            });
+          }),
         );
       }),
     );
@@ -821,6 +1129,12 @@ export class OrdersService {
         languagePreference,
       );
     }
+
+    await this.OrderModel.findByIdAndDelete(parentOrder._id);
+
+    this.logger.info('[ORDER]: PARENT COMBO ORDER DELETED AFTER VENDOR SPLIT', {
+      parentOrderId: parentOrder._id,
+    });
 
     return {
       updateOrder: parentOrder,
@@ -851,12 +1165,12 @@ export class OrdersService {
 
     const { bucketUrl, emailFields } = getCommonEmailFields(
       externalApi.identifierId,
-      externalApi.themeId,
+      externalApi,
     );
 
     const orderEmailFields = {
       ...emailFields,
-      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BUTTON_LINK: externalApi?.websiteUrl,
       BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
       WEBSITE_NAME: externalApi?.name,
@@ -866,26 +1180,28 @@ export class OrdersService {
       product: any,
       quantity: number,
       price: number,
-      deliveryFee: number,
       extraFields = '',
-    ) => `
+    ) => {
+      const totalPrice = quantity * price;
+      const productImage = product?.images?.[0]?.image || 'https://placehold.net/400x400.png';
+      return `
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
         <tr>
-          <td style="padding: 10px; background: ${externalApi?.themeId?.secondaryColor}; direction: rtl; border-radius: 20px;">
+          <td style="padding: 10px; background: ${hexToRgba(externalApi?.primaryColor, 0.3)}; direction: rtl; border-radius: 20px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
               <tr>
                 <td style="padding: 0; vertical-align: middle;">
-                  <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                  <img src="${productImage}" alt="${product?.name}"
                     style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                 </td>
                 <td style="padding: 0 10px; vertical-align: middle;" width="100%">
                   <span style="display: block; font-size: 18px; color: #333333;">${product?.name}</span>
                   <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
-                  <span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ₪${deliveryFee}</span>
+                  <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalPrice}</span>
                   ${extraFields}
                 </td>
                 <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                  <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                  <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalPrice}</span>
                 </td>
               </tr>
             </table>
@@ -893,10 +1209,29 @@ export class OrdersService {
         </tr>
       </table>
     `;
+    };
 
-    // Customer email — all products grouped by buyer email
+    // Customer email — group products by vendor with QR codes
     const emailToGroupMap: {
-      [email: string]: { buyerName: string; productsHtml: string; totalAmount: number };
+      [email: string]: {
+        buyerName: string;
+        vendorGroups: {
+          vendorId: string;
+          vendorName: string;
+          vendorEmail: string;
+          vendorPhone: string;
+          productsHtml: string;
+          qrCodeUrl: string;
+          color: string;
+          subtotal: number;
+          vendorDeliveryFee: number;
+          totalQuantity: number;
+          perUnitDeliveryFee: number;
+          isPricePerProduct: boolean;
+        }[];
+        totalAmount: number;
+        totalDeliveryFee: number;
+      };
     } = {};
 
     allOrderProducts.forEach(orderItem => {
@@ -919,40 +1254,120 @@ export class OrdersService {
         );
       });
 
-      const extraFields = business
-        ? `<span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${business.name}</span>
-           <span style="display: block; font-size: 14px; color: #666666;">דוא"ל עסקי: ${business.busiEmail}</span>
-           <span style="display: block; font-size: 14px; color: #666666;">טלפון עסקי: ${business.phoneNumber}</span>`
-        : '';
-
       if (!emailToGroupMap[email]) {
         emailToGroupMap[email] = {
           buyerName: orderItem.firstName,
-          productsHtml: '',
+          vendorGroups: [],
           totalAmount: 0,
+          totalDeliveryFee: 0,
         };
       }
 
-      emailToGroupMap[email].productsHtml += buildProductRow(product, quantity, price, deliveryFee, extraFields);
-      emailToGroupMap[email].totalAmount += price * quantity + deliveryFee;
+      if (business) {
+        const vendorId = business._id?.toString();
+        let vendorGroup = emailToGroupMap[email].vendorGroups.find(
+          vg => vg.vendorId === vendorId,
+        );
+
+        if (!vendorGroup) {
+          const vendorOrder = vendorOrders.find(
+            vo => vo.vendorId?.toString() === vendorId,
+          );
+          const isPricePerProduct = business?.vendorDelivers === true;
+          vendorGroup = {
+            vendorId,
+            vendorName: business.name || '',
+            vendorEmail: business.busiEmail || '',
+            vendorPhone: business.phoneNumber || '',
+            productsHtml: '',
+            qrCodeUrl: vendorOrder?.qrCodeUrl || '',
+            color: externalApi?.primaryColor || '#000000',
+            subtotal: 0,
+            vendorDeliveryFee: 0,
+            totalQuantity: 0,
+            perUnitDeliveryFee: 0,
+            isPricePerProduct,
+          };
+          emailToGroupMap[email].vendorGroups.push(vendorGroup);
+        }
+
+        vendorGroup.productsHtml += buildProductRow(product, quantity, price, '');
+        vendorGroup.subtotal += price * quantity;
+        vendorGroup.vendorDeliveryFee += deliveryFee;
+        vendorGroup.totalQuantity += quantity;
+        vendorGroup.perUnitDeliveryFee = vendorGroup.totalQuantity > 0
+          ? Math.round((vendorGroup.vendorDeliveryFee / vendorGroup.totalQuantity) * 100)
+            / 100
+          : 0;
+      }
+
+      emailToGroupMap[email].totalAmount += price * quantity;
+      emailToGroupMap[email].totalDeliveryFee += deliveryFee;
     });
 
     await Promise.all(
-      Object.entries(emailToGroupMap).map(([email, group]) => this.mailchimpService.sendTransactionalEmail({
-        to: email,
-        templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
-        from_email: externalApi?.companyDetails?.email,
-        from_name: externalApi?.name,
-        mergeVars: {
-          ...orderEmailFields,
-          PRODUCTS_HTML: group.productsHtml,
-          BUYERNAME: group.buyerName || '',
-          TOTALAMOUNT: group.totalAmount || 0,
-          CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
-          BUSINESSADDRESS: businessDetails?.[0]?.address?.location || '',
-          QRCODEURL: parentOrder?.qrCodeUrl || '',
-        },
-      })),
+      Object.entries(emailToGroupMap).map(([email, group]) => {
+        const vendorsWithQrHtml = group.vendorGroups
+          .map(vendor => {
+            const vendorTotal = vendor.subtotal + vendor.vendorDeliveryFee;
+            return `
+            <div style="margin-bottom: 30px; padding: 20px; background: #ffffff; border-radius: 10px; border: 1px solid #e0e0e0;">
+              <div style="border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 15px;">
+                <span style="display: block; font-size: 18px; font-weight: bold; color: #333333; text-align: right;">${vendor.vendorName}</span>
+                <span style="display: block; font-size: 13px; color: #666666; text-align: right; margin-top: 8px;">דוא"ל: ${vendor.vendorEmail}</span>
+                <span style="display: block; font-size: 13px; color: #666666; text-align: right;">טלפון: ${vendor.vendorPhone}</span>
+              </div>
+              ${vendor.productsHtml}
+              <div style="margin-top: 15px; padding: 12px; background: ${hexToRgba(externalApi?.primaryColor, 0.05)}; border-radius: 6px; direction: rtl;">
+                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">סה״כ מוצרים: ₪${vendor.subtotal}</span>
+                <span style="display: block; font-size: 13px; color: #666666; margin-bottom: 6px;">דמי משלוח: ${vendor.isPricePerProduct ? `₪${vendor.perUnitDeliveryFee} × ${vendor.totalQuantity} = ₪${vendor.vendorDeliveryFee}` : `₪${vendor.vendorDeliveryFee}`}</span>
+                <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">סה״כ עבור ${vendor.vendorName}: ₪${vendorTotal}</span>
+              </div>
+              <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+                <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333; direction: rtl;">סרוק את ה-QR לאיסוף עצמי:</p>
+                <img src="${vendor.qrCodeUrl}" alt="QR" style="width: 150px; height: 150px; margin: 10px auto; display: block; border: 3px solid ${vendor.color};">
+              </div>
+            </div>
+          `;
+          })
+          .join('');
+
+        // Commented out: Total shipping costs summary (redundant with vendor-level breakdown)
+        // const totalDeliveryFeeHtml = group.totalDeliveryFee > 0
+        //   ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"
+        //       style="margin-top: 20px;">
+        //       <tr>
+        //         <td style="padding: 15px; background:
+        //           ${hexToRgba(externalApi?.primaryColor, 0.1)}; direction: rtl;
+        //           border-radius: 10px;">
+        //           <span style="display: block; font-size: 16px; font-weight: bold;
+        //             color: #333333;">דמי משלוח כוללים</span>
+        //           <span style="display: block; font-size: 14px; color: #666666;
+        //             margin-top: 5px;">סה״כ: ₪${group.totalDeliveryFee}</span>
+        //         </td>
+        //       </tr>
+        //     </table>`
+        //   : '';
+        const totalDeliveryFeeHtml = '';
+
+        return this.mailchimpService.sendTransactionalEmail({
+          to: email,
+          templatedId: DynamicEmailTemplate.OrderConfirmationForClientMultiVendor,
+          from_email: externalApi?.companyDetails?.email,
+          from_name: externalApi?.name,
+          subject: 'הזמנתך התקבלה',
+          mergeVars: {
+            ...orderEmailFields,
+            VENDORS_WITH_QR_HTML: vendorsWithQrHtml,
+            DELIVERY_FEE_SUMMARY: totalDeliveryFeeHtml,
+            BUYERNAME: group.buyerName || '',
+            TOTALAMOUNT: group.totalAmount + group.totalDeliveryFee || 0,
+            CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+            ORDER_HISTORY_LINK: `${externalApi?.websiteUrl}/order-history`,
+            COLOR: externalApi?.primaryColor || '#000000',
+          },
+        });
+      }),
     );
 
     // Vendor email — one per vendor
@@ -968,7 +1383,11 @@ export class OrdersService {
           vp => vp.id?.toString() === op.itemId?.toString(),
         ));
 
+        const vendor = cart.vendorProducts.find(v => v._id?.toString() === vendorOrder.vendorId?.toString());
+        const isPricePerProduct = vendor?.isPricePerProduct === true;
+
         let vendorTotalAmount = 0;
+        let totalVendorDeliveryFee = 0;
 
         const productsHtml = vendorOrderProducts
           .map(orderItem => {
@@ -979,7 +1398,12 @@ export class OrdersService {
 
             const quantity = orderItem.quantity || 1;
             const price = orderItem.amount || product?.price?.sellingPrice || 0;
+            const totalProductPrice = quantity * price;
             const deliveryFee = orderItem.deliveryFee || 0;
+            const totalWithDelivery = isPricePerProduct
+              ? totalProductPrice + deliveryFee
+              : totalProductPrice;
+            const vendorProductImage = product?.images?.[0]?.image || 'https://placehold.net/400x400.png';
             const address
               = orderItem.deliveryMethod === DeliveryMethod.DELIVER
                 ? [
@@ -995,31 +1419,37 @@ export class OrdersService {
                   || ''
                 : `מיקום העסק שלך - ${business?.address?.location}`;
 
-            vendorTotalAmount += quantity * price + deliveryFee;
+            vendorTotalAmount += totalProductPrice + (isPricePerProduct ? deliveryFee : 0);
+            totalVendorDeliveryFee += deliveryFee;
+
+            const shippingFeeHtml = isPricePerProduct
+              ? `<span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ${quantity} × ₪${Math.round((deliveryFee / quantity) * 100) / 100} = ₪${deliveryFee}</span>`
+              : '';
 
             return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="padding: 10px; background: ${externalApi?.themeId?.secondaryColor}; direction: rtl; border-radius: 20px;">
+                  <td style="padding: 10px; background: ${hexToRgba(externalApi?.primaryColor, 0.3)}; direction: rtl; border-radius: 20px;">
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
                         <td style="padding: 0; vertical-align: middle;">
-                          <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                          <img src="${vendorProductImage}" alt="${product?.name}"
                             style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                         </td>
                         <td style="padding: 0 10px; vertical-align: middle;" width="100%">
                           <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
   orderItem.deliveryMethod === DeliveryMethod.DELIVER
     ? 'לספק ללקוח'
     : 'איסוף עצמי על ידי הלקוח'
 }</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">דמי משלוח: ₪${deliveryFee}</span>
+                          ${shippingFeeHtml}
                           <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${address || 'לא ישים'}</span>
                         </td>
                         <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalWithDelivery}</span>
                         </td>
                       </tr>
                     </table>
@@ -1030,6 +1460,29 @@ export class OrdersService {
           })
           .join('');
 
+        const orderShippingFeeHtml = !isPricePerProduct && totalVendorDeliveryFee > 0
+          ? `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 20px;">
+              <tr>
+                <td style="padding: 15px; background: ${hexToRgba(externalApi?.primaryColor, 0.1)}; direction: rtl; border-radius: 10px;">
+                  <span style="display: block; font-size: 16px; font-weight: bold; color: #333333;">דמי משלוח כוללים</span>
+                  <span style="display: block; font-size: 14px; color: #666666; margin-top: 5px;">סה״כ: ₪${totalVendorDeliveryFee}</span>
+                </td>
+              </tr>
+            </table>`
+          : '';
+
+        const buyerAddress = this.extractBuyerAddress(
+          vendorOrderProducts,
+          parentOrder?.address || '',
+        );
+
+        const { FE } = this.configService.baseUrl;
+        const workspaceLink = FE;
+
+        if (!isPricePerProduct) {
+          vendorTotalAmount += totalVendorDeliveryFee;
+        }
+
         await this.mailchimpService.sendTransactionalEmail({
           to: business.busiEmail,
           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
@@ -1037,16 +1490,18 @@ export class OrdersService {
           from_name: externalApi?.name,
           mergeVars: {
             ...orderEmailFields,
+            WEBSITE_NAME: externalApi?.name,
             BUSINESSNAME: business?.name || '',
             BUSINESSPHONE: `${business?.countryCode}-${business?.phoneNumber}` || '',
             BUSINESSEMAIL: business?.busiEmail || '',
             TOTALAMOUNT: vendorTotalAmount || 0,
             BUYERNAME: parentOrder?.firstName || '',
-            PRODUCTS_HTML: productsHtml,
+            PRODUCTS_HTML: productsHtml + orderShippingFeeHtml,
             BUYER_PHONE_NUMBER: parentOrder?.phone || '',
             BUYER_ORDER_EMAIL: parentOrder?.email || '',
-            BUYER_ADDRESS: parentOrder?.address || '',
-            QRCODEURL: vendorOrder?.qrCodeUrl || parentOrder?.qrCodeUrl || '',
+            BUYER_ADDRESS: buyerAddress,
+            QRCODEURL: '',
+            WORKSPACE_LINK: workspaceLink,
           },
         });
       }),
@@ -1125,11 +1580,18 @@ export class OrdersService {
     }
   }
 
-  async findOneById(id: string): Promise<Order> {
+  async findOneById(id: string, populate?: string): Promise<Order> {
     try {
-      const order = await findOneByFieldNames<Order>(this.OrderModel, {
+      let query = this.OrderModel.findOne({
         _id: id,
+        deletedAt: { $in: [null] },
       });
+
+      if (populate) {
+        query = query.populate(populate);
+      }
+
+      const order = await query;
 
       if (!order) {
         throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
@@ -1244,12 +1706,12 @@ export class OrdersService {
 
     const { bucketUrl, emailFields } = getCommonEmailFields(
       externalApi.identifierId,
-      externalApi.themeId,
+      externalApi,
     );
 
     const orderEmailFields = {
       ...emailFields,
-      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BUTTON_LINK: externalApi?.websiteUrl,
       BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
       WEBSITE_NAME: externalApi?.name,
@@ -1309,7 +1771,7 @@ export class OrdersService {
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
                 <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
+  externalApi?.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
@@ -1354,7 +1816,7 @@ export class OrdersService {
             PRODUCTS_HTML: productsHtml,
             BUYERNAME: group.buyerName || '',
             TOTALAMOUNT: group.totalAmount || 0,
-            CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+            CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
             BUSINESSADDRESS: eventDetails[0]?.address?.location || '',
             QRCODEURL: order?.qrCodeUrl || '',
           },
@@ -1393,7 +1855,7 @@ export class OrdersService {
     //             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
     //             <tr>
     //               <td style="padding: 10px; background: ${
-    //   externalApi?.themeId.secondaryColor
+    //   externalApi?.secondaryColor
     // }; direction: rtl; border-radius: 20px;">
     //                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
     //                   <tr>
@@ -1463,12 +1925,12 @@ export class OrdersService {
 
     const { bucketUrl, emailFields } = getCommonEmailFields(
       externalApi.identifierId,
-      externalApi.themeId,
+      externalApi,
     );
 
     const orderEmailFields = {
       ...emailFields,
-      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BUTTON_LINK: externalApi?.websiteUrl,
       BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
       WEBSITE_NAME: externalApi?.name,
@@ -1537,11 +1999,13 @@ export class OrdersService {
       Object.entries(emailToProductsMap).map(async ([email, group]) => {
         const productsHtml = group.products
           .map(
-            product => `
+            product => {
+              const totalPrice = product.quantity * product.price;
+              return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
+  externalApi?.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
@@ -1558,6 +2022,7 @@ export class OrdersService {
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
   product?.quantity
 }</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${product.quantity} × ₪${product.price} = ₪${totalPrice}</span>
   <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${product?.deliveryFee}</span>
   <span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${
@@ -1570,17 +2035,16 @@ export class OrdersService {
  טלפון עסקי: ${product?.businessPhone}</span>
                         </td>
                         <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
-  product?.price
-}</span>
+                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalPrice}</span>
                         </td>
-                       
+
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
-              `,
+              `;
+            },
           )
           .join('');
 
@@ -1594,7 +2058,9 @@ export class OrdersService {
             PRODUCTS_HTML: productsHtml,
             BUYERNAME: group.buyerName || '',
             TOTALAMOUNT: group.totalAmount || 0,
-            CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+            CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+            ORDER_HISTORY_LINK: `${externalApi?.websiteUrl}/order-history`,
+            CUSTOMER_QRCODEURL: order?.qrCodeUrl || '',
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
             QRCODEURL: order?.qrCodeUrl || '',
           },
@@ -1623,6 +2089,7 @@ export class OrdersService {
             const price
               = matchingProduct.amount || product.price?.sellingPrice || 0;
             const deliveryFee = matchingProduct.deliveryFee || 0;
+            const totalProductPrice = quantity * price;
             const address
               = matchingProduct.deliveryMethod === DeliveryMethod.DELIVER
                 ? [
@@ -1638,7 +2105,7 @@ export class OrdersService {
                   || ''
                 : `מיקום העסק שלך - ${business?.address?.location}`;
 
-            const totalPriceForThisProduct = quantity * price + deliveryFee;
+            const totalPriceForThisProduct = totalProductPrice + deliveryFee;
 
             businessTotalAmount += totalPriceForThisProduct;
 
@@ -1646,7 +2113,7 @@ export class OrdersService {
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
                 <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
+  externalApi?.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
@@ -1663,6 +2130,7 @@ export class OrdersService {
 }</span>
                         <span style="display: block; font-size: 14px; color: #666666;">כמות:
                             ${quantity}</span>
+                        <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
                         <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
   matchingProduct.deliveryMethod
                           === DeliveryMethod.DELIVER
@@ -1671,12 +2139,12 @@ export class OrdersService {
 }</span>
 <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${deliveryFee}</span>
-  <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
+  <span style="display: block; font-size: 14px; color: #666666;">כתובת: ${
   address || 'לא ישים'
 }</span>
                       </td>
                       <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalProductPrice}</span>
                       </td>
                     </tr>
                   </table>
@@ -1686,6 +2154,14 @@ export class OrdersService {
               `;
           })
           .join('');
+
+        const buyerAddress = this.extractBuyerAddress(
+          orderProduct,
+          order?.address || '',
+        );
+
+        const { FE } = this.configService.baseUrl;
+        const workspaceLink = FE;
 
         await this.mailchimpService.sendTransactionalEmail({
           to: business?.busiEmail,
@@ -1703,9 +2179,9 @@ export class OrdersService {
             PRODUCTS_HTML: productsHtmlForEchBusiness,
             BUYER_PHONE_NUMBER: order.phone || '',
             BUYER_ORDER_EMAIL: order?.email || '',
-            BUYER_ADDRESS: order?.address || '',
-            //             QRCODEURL: order?.qrCodeUrl || '',
+            BUYER_ADDRESS: buyerAddress,
             QRCODEURL: '',
+            WORKSPACE_LINK: workspaceLink,
           },
         });
       }),
@@ -1714,29 +2190,28 @@ export class OrdersService {
 
   async generateQRCodeAndToken(
     orderId: string,
-    userId?: string,
+    vendorId?: string,
     userEmail?: string,
     userRole?: string,
   ): Promise<{ qrCodeUrl: string; token: string }> {
     try {
-      let finalUserId = userId || '';
+      let finalUserId = '';
       let finalUserEmail = userEmail || '';
       const finalUserRole = userRole || 'traveller';
 
-      // If userId not provided, get the business owner's user ID from the order.
-      if (!finalUserId) {
-        try {
-          const vendorOwner = await this.getVendorOwnerForOrder(orderId);
-          if (vendorOwner) {
-            finalUserId = vendorOwner.userId;
-            finalUserEmail = vendorOwner.email || '';
-          }
-        } catch (err) {
-          this.logger.warn('[ORDER]: FAILED TO GET VENDOR INFO FROM PRODUCT', {
-            orderId,
-            error: err instanceof Error ? err.message : String(err),
-          });
+      // Get the business owner's user ID for specific vendor
+      try {
+        const vendorOwner = await this.getVendorOwnerForOrder(orderId, vendorId);
+        if (vendorOwner) {
+          finalUserId = vendorOwner.userId;
+          finalUserEmail = vendorOwner.email || '';
         }
+      } catch (err) {
+        this.logger.warn('[ORDER]: FAILED TO GET VENDOR INFO', {
+          orderId,
+          vendorId,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
 
       if (!finalUserId) {
@@ -1750,16 +2225,13 @@ export class OrdersService {
         finalUserRole,
       );
 
-      // const { FE } = this.configService.baseUrl;
-      // const verifyUrl = `${FE}orders-management?token=${token}`;
-      const verifyUrl = `https://stg.workspace.metgo.app/orders-management?token=${token}`;
+      const { FE } = this.configService.baseUrl;
+      const workspaceLink = `${FE}orders-management?token=${token}&orderId=${orderId}`;
 
       const qrCodeUrl = await this.qrCodeService.generateQRCode(
-        verifyUrl,
+        workspaceLink,
         `order-${orderId}`,
       );
-
-      await updateById(this.OrderModel, orderId, { qrCodeUrl });
 
       this.logger.info('[ORDER]: QR CODE GENERATED', {
         orderId,

@@ -18,6 +18,7 @@ import { User } from 'src/modules/users/schema/users.schema';
 export class DeliveryArea {
   area: string;
   price: string;
+  deliveryPolicy?: 'price_per_order' | 'price_per_product';
   pickUpLocation: {
     address: string;
     isAlwaysOpen: boolean;

@@ -49,10 +49,10 @@ export class UsersPublicController {
         || '';
 
       // Verify QR token and get orderId
-      const orderId = await this.qrTokenService.verifyToken(token, clientIp);
+      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
 
       const vendorOwner = await this.ordersService.getVendorOwnerForOrder(
-        orderId,
+        decodedToken.orderId,
       );
 
       if (!vendorOwner?.userId) {

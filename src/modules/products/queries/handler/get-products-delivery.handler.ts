@@ -100,6 +100,14 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
           path: 'businessId',
           select:
             '_id name nameHe nameAr deliveryArea deliveryAdditionalInfo isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
+          populate: [
+            {
+              path: 'vendorDeliveryArea',
+              options: {
+                select: 'area price deliveryPolicy pickUpLocation',
+              },
+            },
+          ],
         },
       ];
 
@@ -161,6 +169,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
             isPickUpAvailable:
               response?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
             vendorDelivers: useBusinessInfo?.vendorDelivers ?? false,
+            vendorDeliveryArea: useBusinessInfo?.vendorDeliveryArea ?? [],
             globalDelivery: useBusinessInfo?.globalDelivery ?? false,
             globalDeliveryArea: useBusinessInfo?.globalDeliveryArea ?? [],
           };

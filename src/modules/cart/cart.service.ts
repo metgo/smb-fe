@@ -660,6 +660,12 @@ export class CartService {
         deliveryMethod: vendor.deliveryMethod,
         deliveryArea: vendor.deliveryArea,
         deliveryPickupLocation: vendor.deliveryPickupLocation,
+        houseNo: vendor.houseNo,
+        apartment: vendor.apartment,
+        city: vendor.city,
+        street: vendor.street,
+        additionalInfo: vendor.additionalInfo,
+        isPricePerProduct: vendor.isPricePerProduct,
       }));
 
       const totalAmount = vendorProducts.reduce(

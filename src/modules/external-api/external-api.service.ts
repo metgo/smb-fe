@@ -6,6 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
+import { ConfigService } from 'src/services/config/config.service';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -22,6 +23,7 @@ export class ExternalApiServices {
     private readonly logger: Logger,
     @InjectModel(ExternalApi.name)
     private readonly ExternalApiModel: Model<ExternalApi>,
+    private readonly configService: ConfigService,
   ) {}
 
   async getById(id: string) {
@@ -63,6 +65,7 @@ export class ExternalApiServices {
       const externalApi = await this.ExternalApiModel.findOne({
         identifierId,
       }).populate(populate);
+
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
       }

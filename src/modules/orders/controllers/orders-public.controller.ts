@@ -48,8 +48,11 @@ export class OrdersPublicController {
         || req.socket.remoteAddress
         || '';
 
-      const orderId = await this.qrTokenService.verifyToken(token, clientIp);
-      const order = await this.ordersService.findOneById(orderId);
+      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
+      const order = await this.ordersService.findOneById(
+        decodedToken.orderId,
+        'vendorId',
+      );
 
       if (!order) {
         return responseHelper(
@@ -98,8 +101,8 @@ export class OrdersPublicController {
         || req.socket.remoteAddress
         || '';
 
-      const orderId = await this.qrTokenService.verifyToken(token, clientIp);
-      const order = await this.ordersService.findOneById(orderId);
+      const decodedToken = await this.qrTokenService.verifyToken(token, clientIp);
+      const order = await this.ordersService.findOneById(decodedToken.orderId);
 
       if (!order) {
         return responseHelper(
@@ -112,13 +115,25 @@ export class OrdersPublicController {
         );
       }
 
+      // Verify vendor owns this order
+      if (order.vendorId?.toString() !== decodedToken.userId) {
+        return responseHelper(
+          response,
+          HttpStatus.FORBIDDEN,
+          'Not authorized to update this order',
+          null,
+          null,
+          null,
+        );
+      }
+
       const updateData = {
         status: body.status,
         updatedAt: new Date(),
       };
 
       const updatedOrder = await this.ordersService.updateOrderStatus(
-        orderId,
+        decodedToken.orderId,
         updateData,
       );
 

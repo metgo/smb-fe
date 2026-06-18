@@ -16,6 +16,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { ConfigModule } from 'src/services/config/config.module';
 import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
 import { GetSiteInfoHandler } from './queries/handler/get-site-info.handler';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
@@ -54,6 +55,7 @@ import { GetSiteSettingSocialContactHandler } from './queries/handler/get-site-s
     MailChimpModule,
     forwardRef(() => UsersModule),
     PaymentsModule,
+    ConfigModule,
   ],
   controllers: [ExternalApiController],
   providers: [

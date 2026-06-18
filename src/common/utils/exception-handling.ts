@@ -64,6 +64,6 @@ export const exceptionHandling = err => {
   if (err instanceof UnprocessableEntityException) {
     throw new UnprocessableEntityException(err.message);
   } else {
-    throw new Error(err);
+    throw new InternalServerErrorException(err?.message || 'Internal server error');
   }
 };

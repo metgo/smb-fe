@@ -19,6 +19,7 @@ export class QrTokenService {
     userId: string,
     userEmail: string,
     userRole: string,
+    vendorId?: string,
     expiryDays: number = 30,
   ): Promise<string> {
     // Generate JWT token with user and order info
@@ -26,6 +27,7 @@ export class QrTokenService {
       {
         orderId,
         userId,
+        vendorId,
         email: userEmail,
         role: userRole,
       },
@@ -47,7 +49,10 @@ export class QrTokenService {
     return token;
   }
 
-  async verifyToken(token: string, ipAddress?: string): Promise<string> {
+  async verifyToken(
+    token: string,
+    ipAddress?: string,
+  ): Promise<{ orderId: string; userId: string; vendorId?: string; email: string; role: string }> {
     try {
       // Verify JWT signature
       const decoded = this.jwtService.verify(token, {
@@ -74,12 +79,12 @@ export class QrTokenService {
         },
       );
 
-      return decoded.orderId;
+      return decoded;
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
+      if ((error as any).name === 'TokenExpiredError') {
         throw new BadRequestException('QR verification token has expired');
       }
-      if (error.name === 'JsonWebTokenError') {
+      if ((error as any).name === 'JsonWebTokenError') {
         throw new BadRequestException('Invalid QR verification token');
       }
       throw error;

@@ -84,6 +84,10 @@ class AddVendorPorductsToCart {
   @ApiProperty()
     additionalInfo: string;
 
+  @IsOptional()
+  @ApiProperty()
+    isPricePerProduct?: boolean;
+
   @ApiProperty({
     type: AddProductToCart,
     required: true,

@@ -73,25 +73,40 @@ export class PaymentsService {
       = this.configService.cardCom;
 
     const { BE } = this.configService.baseUrl;
+    const isMockPayment = this.configService.get('MOCK_CARDCOM_PAYMENT') === 'true';
 
     try {
-      const cardComResponse = await axios.post(
-        URL,
-        {
-          TerminalNumber: TERMINAL_NUMBER,
-          ApiName: API_NAME,
-          Amount: amount,
-          ISOCoinId: 1,
-          SuccessRedirectUrl: `${BE}${SUCCESS}?languagePreference=${languagePreference}`,
-          FailedRedirectUrl: `${BE}${FAILURE}?languagePreference=${languagePreference}`,
-          WebHookUrl: `${BE}${INDICATOR}?languagePreference=${languagePreference}`,
-        },
-        {
-          headers: {
-            ContentType: 'application/json',
+      let cardComResponse;
+
+      if (isMockPayment) {
+        this.logger.info('[CARDCOM]: Using mock payment mode');
+        cardComResponse = {
+          data: {
+            ResponseCode: 0,
+            Description: 'OK',
+            LowProfileId: `MOCK_${Date.now()}`,
+            Url: `${BE}payment/success?LowProfileId=MOCK_${Date.now()}&languagePreference=${languagePreference}`,
           },
-        },
-      );
+        };
+      } else {
+        cardComResponse = await axios.post(
+          URL,
+          {
+            TerminalNumber: TERMINAL_NUMBER,
+            ApiName: API_NAME,
+            Amount: amount,
+            ISOCoinId: 1,
+            SuccessRedirectUrl: `${BE}${SUCCESS}?languagePreference=${languagePreference}`,
+            FailedRedirectUrl: `${BE}${FAILURE}?languagePreference=${languagePreference}`,
+            WebHookUrl: `${BE}${INDICATOR}?languagePreference=${languagePreference}`,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+      }
 
       this.logger.info(`[CARDCOM-REQUST]: ${cardComResponse}`);
 
@@ -161,6 +176,12 @@ export class PaymentsService {
         paymentRequestId,
       });
 
+      // Handle mock payments - if payment doesn't exist, create it as success
+      if (!existingPayment) {
+        this.logger.info('[PAYMENT]: Mock payment success - no payment record found');
+        return;
+      }
+
       if (existingPayment.status === PaymentStatus.SUCCESS) {
         return;
       }
@@ -193,6 +214,9 @@ export class PaymentsService {
       //   },
       // });
 
+      // Skip invoice generation for mock payments (localhost testing)
+      const isMockPayment = paymentRequestId?.startsWith('MOCK_');
+
       if (payments?.purpose === PaymentPurpose.VOUCHER) {
         const voucherDetails
           = await this.voucherService.updateAfterPaymentSuccess({
@@ -201,22 +225,24 @@ export class PaymentsService {
             languagePreference,
           });
 
-        const invoiceDetail = await this.sendInvoice({
-          customerName: payments?.customerName,
-          customerEmail: payments?.customerEmail,
-          invoiceType: 3,
-          voucherDetails,
-          transactionId: paymentRequestId,
-          purpose: PaymentPurpose.VOUCHER,
-          sumPaid: payments?.amount,
-          languagePreference,
-          additionalInformation: '',
-        });
-
-        if (invoiceDetail?.InvoiceLink) {
-          await updateById<Payment>(this.PaymentModel, payments._id, {
-            invoiceURL: invoiceDetail.InvoiceLink,
+        if (!isMockPayment) {
+          const invoiceDetail = await this.sendInvoice({
+            customerName: payments?.customerName,
+            customerEmail: payments?.customerEmail,
+            invoiceType: 3,
+            voucherDetails,
+            transactionId: paymentRequestId,
+            purpose: PaymentPurpose.VOUCHER,
+            sumPaid: payments?.amount,
+            languagePreference,
+            additionalInformation: '',
           });
+
+          if (invoiceDetail?.InvoiceLink) {
+            await updateById<Payment>(this.PaymentModel, payments._id, {
+              invoiceURL: invoiceDetail.InvoiceLink,
+            });
+          }
         }
       }
 
@@ -228,28 +254,30 @@ export class PaymentsService {
           );
 
         if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
-          const invoiceDetail = await this.sendInvoice({
-            customerName: payments?.customerName,
-            customerEmail: payments?.customerEmail,
-            invoiceType: 101,
-            product: [
-              {
-                id: getProductInformation[0]?._id?.toString(),
-                price: payments?.amount,
-                name: getProductInformation[0]?.name,
-              },
-            ],
-            transactionId: paymentRequestId,
-            purpose: PaymentPurpose.ORDER,
-            sumPaid: payments?.amount,
-            languagePreference,
-            additionalInformation: 'Paid via Credit Card',
-          });
-
-          if (invoiceDetail?.InvoiceLink) {
-            await updateById<Payment>(this.PaymentModel, payments._id, {
-              invoiceURL: invoiceDetail.InvoiceLink,
+          if (!isMockPayment) {
+            const invoiceDetail = await this.sendInvoice({
+              customerName: payments?.customerName,
+              customerEmail: payments?.customerEmail,
+              invoiceType: 101,
+              product: [
+                {
+                  id: getProductInformation[0]?._id?.toString(),
+                  price: payments?.amount,
+                  name: getProductInformation[0]?.name,
+                },
+              ],
+              transactionId: paymentRequestId,
+              purpose: PaymentPurpose.ORDER,
+              sumPaid: payments?.amount,
+              languagePreference,
+              additionalInformation: 'Paid via Credit Card',
             });
+
+            if (invoiceDetail?.InvoiceLink) {
+              await updateById<Payment>(this.PaymentModel, payments._id, {
+                invoiceURL: invoiceDetail.InvoiceLink,
+              });
+            }
           }
         }
 
@@ -277,22 +305,24 @@ export class PaymentsService {
             );
           }
 
-          const invoiceDetail = await this.sendInvoice({
-            customerName: payments?.customerName,
-            customerEmail: payments?.customerEmail,
-            invoiceType: 101,
-            product,
-            transactionId: paymentRequestId,
-            purpose: PaymentPurpose.ORDER,
-            sumPaid: updateOrder?.totalAmount,
-            languagePreference,
-            additionalInformation: 'Paid via Voucher and Credit Card',
-          });
-
-          if (invoiceDetail?.InvoiceLink) {
-            await updateById<Payment>(this.PaymentModel, payments._id, {
-              invoiceURL: invoiceDetail.InvoiceLink,
+          if (!isMockPayment) {
+            const invoiceDetail = await this.sendInvoice({
+              customerName: payments?.customerName,
+              customerEmail: payments?.customerEmail,
+              invoiceType: 101,
+              product,
+              transactionId: paymentRequestId,
+              purpose: PaymentPurpose.ORDER,
+              sumPaid: updateOrder?.totalAmount,
+              languagePreference,
+              additionalInformation: 'Paid via Voucher and Credit Card',
             });
+
+            if (invoiceDetail?.InvoiceLink) {
+              await updateById<Payment>(this.PaymentModel, payments._id, {
+                invoiceURL: invoiceDetail.InvoiceLink,
+              });
+            }
           }
         }
       }

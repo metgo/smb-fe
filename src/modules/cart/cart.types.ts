@@ -47,6 +47,7 @@ export interface CartVendorProductPayload {
   city: String,
   street: String,
   additionalInfo: String,
+  isPricePerProduct?: boolean,
 }
 
 export interface CartProductResponse extends CartProductPayload {
