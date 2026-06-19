@@ -104,10 +104,13 @@ export default function CreateProductWizard({
 
   const initialBusinessData = useMemo(() => {
     if (product?.businessId || bzIdForProdCreate) {
+      const biz = product?.businessId;
       return [
         {
-          _id: product?.businessId?._id ?? bzIdForProdCreate,
-          name: product?.businessId?.name || businessName,
+          _id: biz?._id ?? bzIdForProdCreate,
+          name: biz?.name || businessName,
+          nameHe: biz?.nameHe || businessName,
+          nameAr: biz?.nameAr || businessName,
           slug: "",
         },
       ];
