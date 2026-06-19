@@ -214,10 +214,12 @@ export default function CreateProductWizard({
     additionalImages: [],
     serviceDuration: "",
     vendorDelivers: false,
-    pickupAvailable: false,
-    globalDelivery: false,
-    deliveryArea: [] as any[],
     vendorDeliveryArea: [] as any[],
+
+    pickupAvailable: false,
+    deliveryArea: [] as any[],
+
+    globalDelivery: false,
     globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
@@ -246,13 +248,19 @@ export default function CreateProductWizard({
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
-      if (isSameAsBusiness && businessId) {
+      const effectiveBusinessId = businessId || formData.businessId;
+      if (isSameAsBusiness && effectiveBusinessId) {
         try {
-          const { data } = await getBusinessDelivery({ businessId });
+          const { data } = await getBusinessDelivery({
+            businessId: effectiveBusinessId,
+          });
 
           setFormData((prev: any) => ({
             ...prev,
             vendorDelivers: data?.vendorDelivers ?? false,
+            vendorDeliveryArea: data?.vendorDeliveryArea ?? [],
+            globalDelivery: data?.globalDelivery ?? false,
+            globalDeliveryArea: data?.globalDeliveryArea ?? [],
             pickupAvailable: data?.isPickUpAvailable ?? false,
             deliveryArea: data?.deliveryArea ?? [],
             deliveryReturnExchange: data?.deliveryReturnExchange ?? [],
@@ -266,7 +274,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
+  }, [isSameAsBusiness, businessId, formData.businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -318,7 +326,7 @@ export default function CreateProductWizard({
       enableHomeDelivery: product?.enableHomeDelivery || false,
       enableStorePickup: product?.enableStorePickup || false,
       serviceDuration: product?.serviceDuration || "",
-
+      deliveryInfoSameAsBusiness: product?.deliveryInfoSameAsBusiness ?? false,
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
       globalDelivery: product?.globalDelivery ?? false,
@@ -584,12 +592,15 @@ export default function CreateProductWizard({
 
     serviceDuration: formData.serviceDuration,
     vendorDelivers: formData.vendorDelivers,
-    isPickUpAvailable: formData.pickupAvailable,
-    globalDelivery: formData.globalDelivery,
-    deliveryArea: formData.deliveryArea,
     vendorDeliveryArea: formData.vendorDelivers
       ? formData.vendorDeliveryArea
       : [],
+
+    isPickUpAvailable: formData.pickupAvailable,
+    deliveryArea: formData.deliveryArea,
+
+    globalDelivery: formData.globalDelivery,
+
     globalDeliveryArea: formData.globalDelivery
       ? formData.globalDeliveryArea
       : [],
