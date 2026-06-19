@@ -151,44 +151,6 @@ export default function CreateProductWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
-  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
-  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
-    [],
-  );
-
-  const [initProductCreate, { isLoading: isCreating }] =
-    useInitProductCreateMutation();
-  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
-
-  const {
-    images,
-    imagesRef,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useFilesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-    onImagesChange:
-      opMode === IOpMode.EDIT && productId
-        ? (updatedImages) => {
-            updateProduct({
-              productId: productId!,
-              body: { images: updatedImages },
-            });
-          }
-        : undefined,
-  });
-
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
     name: "",
@@ -230,6 +192,48 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
+  const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
+    setIsSameAsBusiness(v);
+    setFormData((prev: any) => ({ ...prev, deliveryInfoSameAsBusiness: v }));
+  }, []);
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("he");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
+
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    setPrimaryImage,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useFilesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT && productId
+        ? (updatedImages) => {
+            updateProduct({
+              productId: productId!,
+              body: { images: updatedImages },
+            });
+          }
+        : undefined,
+  });
+
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
@@ -348,8 +352,10 @@ export default function CreateProductWizard({
     initialGroupTypesId.current = loadedGroupTypes;
 
     if (opMode === IOpMode.EDIT) {
+      setIsSameAsBusiness(product?.deliveryInfoSameAsBusiness ?? false);
       setGalleryImages(product?.images);
     } else {
+      setIsSameAsBusiness(false);
       setGalleryImages([]);
     }
   }, [productId, product]);
@@ -591,6 +597,7 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    deliveryInfoSameAsBusiness: isSameAsBusiness,
     vendorDelivers: formData.vendorDelivers,
     vendorDeliveryArea: formData.vendorDelivers
       ? formData.vendorDeliveryArea
@@ -734,7 +741,7 @@ export default function CreateProductWizard({
             formData={formData}
             setFormData={setFormData}
             isSameAsBusiness={isSameAsBusiness}
-            setIsSameAsBusiness={setIsSameAsBusiness}
+            setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
       case 7:
