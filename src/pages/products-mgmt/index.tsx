@@ -212,9 +212,10 @@ export default function ProductsMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColumnSettings]);
 
-  // ─── Reset page when filters/search change ─────────
+  // ─── Reset page and clear products when filters/search change ─────────
   useEffect(() => {
     setPage(1);
+    setCombinedProducts([]);
   }, [
     searchTerm,
     filters,
@@ -280,7 +281,6 @@ export default function ProductsMgmtPage() {
     return params;
   }, [
     page,
-    status,
     searchTerm,
     filters,
     language,
