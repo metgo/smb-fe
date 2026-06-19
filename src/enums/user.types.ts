@@ -3,7 +3,6 @@ export const UserRole = {
   ADMIN: "admin",
   SUPERADMIN: "superadmin",
   DMO: "dmo",
-  DMOADMIN: "dmoadmin",
   AUTHORITY: "authority",
   AUTHORITY_ADMIN: "authorityAdmin",
   SITE_MANAGER: "siteManager",

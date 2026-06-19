@@ -240,6 +240,7 @@ export default function DmoAuthorityWebsiteSelector({
           <FormFieldWrapper
             required
             label={t("select_dmo")}
+            hint={t("your_geographic_location")}
             error={errors.dmoId}
           >
             <SelectField

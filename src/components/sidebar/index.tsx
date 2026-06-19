@@ -503,8 +503,8 @@ export default function Sidebar() {
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
-                  !(sub.id === "users" && !isSuperadmin),
+                  !(isTraveller && sub.id === "users") &&
+                  !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}

@@ -26,8 +26,13 @@ import {
   useGetAllNotificationsQuery,
   useGetNotificatonStatsQuery,
   useMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
 } from "@/store/api/notificationApi";
-import { useApproveCategorySuggestionMutation } from "@/store/api/businessMutationApi";
+import {
+  useApproveCategorySuggestionMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
+import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { toast } from "sonner";
 import { useSocket } from "@/providers/SocketProvider";
 
@@ -40,7 +45,10 @@ export default function NotificationsMgmtPage() {
   const { t: tc } = useTranslation("common");
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [updateNotification] = useUpdateNotificationMutation();
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [updateProduct] = useUpdateProductMutation();
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -378,6 +386,25 @@ export default function NotificationsMgmtPage() {
                       const itemType = notification?.itemType;
                       if (!itemType) return null;
                       const queryParam = `${itemType.toLowerCase()}Id`;
+                      const isApproved = notification.status === "APPROVED";
+                      const canApprove =
+                        notification.notifType === "ACTION" &&
+                        notification.status !== "CLOSED" &&
+                        (itemType === "BUSINESS" || itemType === "PRODUCT");
+
+                      const markApprovedLocally = () => {
+                        setAllNotifications((prev) =>
+                          prev.map((item) =>
+                            item._id === notification._id
+                              ? {
+                                  ...item,
+                                  status: "APPROVED",
+                                  isRead: true,
+                                }
+                              : item,
+                          ),
+                        );
+                      };
 
                       const handleNavigate = async () => {
                         await markNotificationsAsRead(notification._id);
@@ -444,14 +471,17 @@ export default function NotificationsMgmtPage() {
                                 {timeAgo(notification.createdAt)}
                               </p>
 
-                              {notification?.notifType === "ACTION" &&
-                                notification.actionData?.suggestedCategory &&
-                                notification.status !== "CLOSED" && (
-                                  <div className="mt-3 flex items-center gap-2">
-                                    <button
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        try {
+                              {canApprove && (
+                                <div className="mt-3 flex items-center gap-2">
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (isApproved) return;
+                                      try {
+                                        if (
+                                          notification.actionData
+                                            ?.suggestedCategory
+                                        ) {
                                           await approveCategorySuggestion({
                                             itemId: notification.itemId,
                                             itemType: notification.itemType,
@@ -460,22 +490,45 @@ export default function NotificationsMgmtPage() {
                                                 ?.suggestedCategory || "",
                                             notificationId: notification._id,
                                           }).unwrap();
-                                          toast.success(
-                                            "Category approved and assigned!",
-                                          );
-                                          refetchNotifList();
-                                        } catch (err) {
-                                          toast.error(
-                                            "Failed to approve category.",
-                                          );
+                                        } else if (itemType === "BUSINESS") {
+                                          await updateBusiness({
+                                            businessId: notification.itemId,
+                                            body: { status: "APPROVED" },
+                                          }).unwrap();
+                                        } else if (itemType === "PRODUCT") {
+                                          await updateProduct({
+                                            productId: notification.itemId,
+                                            body: { status: "APPROVED" },
+                                          }).unwrap();
                                         }
-                                      }}
-                                      className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition"
-                                    >
-                                      Approve
-                                    </button>
-                                  </div>
-                                )}
+                                        await updateNotification({
+                                          notificationId: notification._id,
+                                          body: {
+                                            status: "APPROVED",
+                                            isRead: true,
+                                          },
+                                        }).unwrap();
+                                        markApprovedLocally();
+                                        toast.success("Approved successfully!");
+                                        refetchNotifList();
+                                      } catch (err) {
+                                        toast.error(
+                                          "Failed to approve. Please try again.",
+                                        );
+                                      }
+                                    }}
+                                    disabled={isApproved}
+                                    className={clsx(
+                                      "px-3 py-1.5 text-xs font-medium text-white rounded-lg transition",
+                                      isApproved
+                                        ? "bg-green-700 opacity-60 cursor-not-allowed"
+                                        : "bg-green-600 hover:bg-green-700",
+                                    )}
+                                  >
+                                    {isApproved ? "Approved" : "Approve"}
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

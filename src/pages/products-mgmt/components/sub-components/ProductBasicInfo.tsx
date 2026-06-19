@@ -9,7 +9,6 @@ interface ProductBasicInfoProps {
   setSelectedFormLanguage: (lang: Language) => void;
   formData: {
     businessId: string;
-
     name: string;
     nameHe: string;
     nameAr: string;

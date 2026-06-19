@@ -47,6 +47,7 @@ interface CreatePoiWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  poiDataRefetch?: any;
   opMode?: TOpMode;
 }
 
@@ -54,6 +55,7 @@ export default function CreatePoiWizard({
   onClose,
   editData,
   refetch,
+  poiDataRefetch,
   opMode = IOpMode.CREATE,
 }: CreatePoiWizardProps) {
   const { t } = useTranslation("poi");
@@ -341,6 +343,7 @@ export default function CreatePoiWizard({
     opMode,
     onClose,
     refetch,
+    poiDataRefetch,
     currentStep,
     poiId,
     setPoiId,
@@ -352,10 +355,16 @@ export default function CreatePoiWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "poi",
@@ -413,12 +422,13 @@ export default function CreatePoiWizard({
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (poiId) {
+    const resolvedPoiId = await saveDraft(false);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
+      refetch?.();
     }
   };
 
@@ -437,13 +447,14 @@ export default function CreatePoiWizard({
       return;
     }
     setIsPublishing(true);
-    if (poiId) {
+    const resolvedPoiId = await saveDraft(true);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
+      await Promise.all([poiDataRefetch?.(), refetch?.()]);
     }
-    await saveDraft(true);
     setIsPublishing(false);
   };
 

@@ -18,4 +18,5 @@ interface OpeningHrPayload {
   open: string;
   close: string;
   isHoliday: boolean;
+  byAppointment: boolean;
 }

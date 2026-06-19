@@ -23,11 +23,19 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { itemEndpoint } from "@/lib/utils";
 import { routes } from "@/lib/routes";
-import { useMarkNotificationsAsReadMutation } from "@/store/api/notificationApi";
 import {
+  useMarkNotificationsAsReadMutation,
+  useBulkMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
+} from "@/store/api/notificationApi";
+
+import {
+  markAllNotificationsAsRead,
   markNotificationAsRead,
+  setNotificationStatus,
   updateNotificationStatus,
 } from "@/features/notificationSlice";
+
 import {
   useApproveCategorySuggestionMutation,
   useUpdateBusinessMutation,
@@ -49,6 +57,9 @@ const NotificationsBell = () => {
   const userRole = useAppSelector((state) => state.auth.userRole);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [bulkMarkNotificationsAsRead, { isLoading: isMarkingAllRead }] =
+    useBulkMarkNotificationsAsReadMutation();
+  const [updateNotification] = useUpdateNotificationMutation();
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
   const [updateBusiness] = useUpdateBusinessMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -125,6 +136,17 @@ const NotificationsBell = () => {
             <XCircle className="w-4 h-4 text-red-500" />
           </span>
         );
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n._id);
+    if (unreadIds.length === 0) return;
+    try {
+      await bulkMarkNotificationsAsRead(unreadIds).unwrap();
+      dispatch(markAllNotificationsAsRead());
+    } catch {
+      toast.error("Failed to mark all as read. Please try again.");
     }
   };
 
@@ -230,13 +252,16 @@ const NotificationsBell = () => {
               </div>
               {unreadCount > 0 && (
                 <button
+                  onClick={handleMarkAllAsRead}
+                  disabled={isMarkingAllRead}
                   className={clsx(
                     "flex items-center gap-1 text-xs font-medium transition-colors",
                     "text-blue-500 hover:text-blue-600 dark:hover:text-blue-400",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
-                  {t("mark_all_read")}
+                  {isMarkingAllRead ? t("marking...") : t("mark_all_read")}
                 </button>
               )}
             </div>
@@ -276,9 +301,8 @@ const NotificationsBell = () => {
 
                   const isAdmin =
                     userRole === UserRole.SUPERADMIN ||
-                    userRole === UserRole.AUTHORITY_ADMIN ||
+                    userRole === UserRole.AUTHORITY ||
                     userRole === UserRole.DMO ||
-                    userRole === UserRole.DMOADMIN ||
                     userRole === UserRole.SITE_MANAGER;
 
                   const canApprove =
@@ -355,8 +379,16 @@ const NotificationsBell = () => {
                           body: { status: "APPROVED" },
                         }).unwrap();
                       }
-                      await markNotificationsAsRead(notification._id);
-                      dispatch(markNotificationAsRead(notification._id));
+                      await updateNotification({
+                        notificationId: notification._id,
+                        body: { status: "APPROVED", isRead: true },
+                      }).unwrap();
+                      dispatch(
+                        setNotificationStatus({
+                          notificationId: notification._id,
+                          status: "APPROVED",
+                        }),
+                      );
                       toast.success("Approved successfully!");
                     } catch {
                       toast.error("Failed to approve. Please try again.");
@@ -474,15 +506,21 @@ const NotificationsBell = () => {
                           {canApprove && (
                             <button
                               onClick={handleApprove}
-                              disabled={isApproving}
+                              disabled={isApproving || isApproved}
                               className={clsx(
                                 "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
-                                "bg-green-600 hover:bg-green-700 text-white",
+                                isApproved
+                                  ? "bg-green-700 text-white"
+                                  : "bg-green-600 hover:bg-green-700 text-white",
                                 "disabled:opacity-60 disabled:cursor-not-allowed",
                               )}
                             >
                               <Check className="w-3 h-3" />
-                              {isApproving ? "Approving..." : "Approve"}
+                              {isApproved
+                                ? "Approved"
+                                : isApproving
+                                  ? "Approving..."
+                                  : "Approve"}
                             </button>
                           )}
 
@@ -499,9 +537,8 @@ const NotificationsBell = () => {
                               itemType === "EVENT" ||
                               itemType === "POI") &&
                             (userRole === UserRole.SUPERADMIN ||
-                              userRole === UserRole.AUTHORITY_ADMIN ||
+                              userRole === UserRole.AUTHORITY ||
                               userRole === UserRole.DMO ||
-                              userRole === UserRole.DMOADMIN ||
                               userRole === UserRole.SITE_MANAGER) && (
                               <button
                                 onClick={handleViewChanges}

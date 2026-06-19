@@ -78,8 +78,12 @@ export default function CreateProductWizard({
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
-  const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
+  // Only pre-select business when explicitly coming from the "create product" flow (businessName param present).
+  // When coming from "view products" (businessNameProduct param, no businessName), open the modal clean.
+  const bzIdForProdCreate = businessName
+    ? searchParams?.get("businessId")
+    : null;
 
   const { language, textPrimary, textTertiary, borderColor, isDark } =
     useThemeClasses();
@@ -153,6 +157,10 @@ export default function CreateProductWizard({
     [],
   );
 
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
   const {
     images,
     imagesRef,
@@ -167,6 +175,15 @@ export default function CreateProductWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT && productId
+        ? (updatedImages) => {
+            updateProduct({
+              productId: productId!,
+              body: { images: updatedImages },
+            });
+          }
+        : undefined,
   });
 
   const [formData, setFormData] = useState<any>({
@@ -327,10 +344,6 @@ export default function CreateProductWizard({
   }, [productId, product]);
 
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
-
-  const [initProductCreate, { isLoading: isCreating }] =
-    useInitProductCreateMutation();
-  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
 
   const completionPercent = useMemo(() => {
     const checks = [

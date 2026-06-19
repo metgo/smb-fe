@@ -212,9 +212,13 @@
   "weekly_schedule": "الجدول الأسبوعي",
   "no_schedule_available": "لا يوجد جدول متاح",
   "not_set_opening_hours": "لم يتم تحديد ساعات العمل بعد",
+  "by_appointment": "بموعد مسبق",
+  "for_entire_week": "لكامل الأسبوع",
+  "add_time_slot": "أضف وقتاً",
 
   "all": "الكل",
   "select_dmo": "اختر منظمة تسويق الوجهة (DMO)",
+  "your_geographic_location": "موقعك الجغرافي",
   "select_authority": "اختر الجهة المسؤولة",
   "select_website": "اختر الموقع",
   "website_visibility": "رؤية الموقع",

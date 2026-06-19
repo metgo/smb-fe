@@ -29,10 +29,13 @@ export function Login({ setCurrentTab }: LoginProps) {
   const [password, setPassword] = useState("");
   const [login, { isLoading }] = useLoginMutation();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const data = await login({ email: username, password }).unwrap();
+      const data = await login({
+        email: username.trim(),
+        password: password.trim(),
+      }).unwrap();
       if (typeof window !== "undefined") {
         sessionStorage.setItem(
           "user_info",

@@ -30,6 +30,20 @@ const notificationSlice = createSlice({
       }
     },
 
+    setNotificationStatus: (
+      state,
+      action: PayloadAction<{ notificationId: string; status: TItemStatus }>,
+    ) => {
+      const notification = state.notifications.find(
+        (n) => n._id === action.payload.notificationId,
+      );
+
+      if (notification) {
+        notification.status = action.payload.status;
+        notification.isRead = true;
+      }
+    },
+
     markAllNotificationsAsRead: (state) => {
       state.notifications.forEach((n) => {
         n.isRead = true;
@@ -54,6 +68,7 @@ export const {
   setNotifications,
   addNotification,
   markNotificationAsRead,
+  setNotificationStatus,
   markAllNotificationsAsRead,
   updateNotificationStatus,
 } = notificationSlice.actions;
