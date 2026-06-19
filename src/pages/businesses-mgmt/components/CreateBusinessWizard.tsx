@@ -638,6 +638,9 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        if (!selectedAuthorityId?.trim())
+          newErrors.authorityId = t("required_field");
         if (
           !formData.name?.trim() &&
           !formData.nameAr?.trim() &&
@@ -805,6 +808,7 @@ export default function CreateBusinessWizard({
       t,
       formData,
       errors,
+      setErrors,
       setCurrentStep,
       address,
       geo,
