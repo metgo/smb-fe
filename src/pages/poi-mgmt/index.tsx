@@ -4,15 +4,14 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 import { routes } from "@/lib/routes";
-import { PoiGridView, PoiListView, CreatePoiWizard } from "./components";
-
 import {
-  Download,
-  CheckCircle,
-  AlertCircle,
-  MapPin,
-  Landmark,
-} from "lucide-react";
+  PoiGridView,
+  PoiListView,
+  CreatePoiWizard,
+  ExportPoiButton,
+} from "./components";
+
+import { CheckCircle, AlertCircle, MapPin, Landmark } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
@@ -260,49 +259,6 @@ export default function PoiMgmtPage() {
     [selectedPois, bulkPoisUpdate, refetch, tc],
   );
 
-  const handleExport = useCallback(() => {
-    const poisToExport =
-      selectedPois.size > 0
-        ? (poiData?.data?.filter((p: any) => selectedPois.has(p._id)) ?? [])
-        : (poiData?.data ?? []);
-    if (!poisToExport.length) {
-      toast.info(t("no_pois_to_export"));
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-    const headers = [
-      "Name",
-      "Short Description",
-      "Address",
-      "Status",
-      "Impact Score",
-    ];
-    const csvRows = poisToExport.map((poi: any) =>
-      [
-        poi.name || "-",
-        poi.shortDescription || "-",
-        poi.address?.location || "-",
-        poi.status || "-",
-        poi.impact ?? 0,
-      ]
-        .map(escapeCSV)
-        .join(","),
-    );
-    const csvContent = [headers.join(","), ...csvRows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `pois_export_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [selectedPois, poiData, t]);
-
   const poiStats = useMemo(
     () => [
       {
@@ -381,13 +337,12 @@ export default function PoiMgmtPage() {
                   resetToDefault={() => setColumnVisibility(defaultColumns)}
                 />
 
-                <button
-                  onClick={handleExport}
-                  className={`px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${isDark ? "border-gray-700 hover:bg-gray-800 text-gray-300" : "border-gray-300 hover:bg-gray-100 text-gray-700"}`}
-                >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span className="hidden sm:inline">{t("export")}</span>
-                </button>
+                <ExportPoiButton
+                  pois={combinedPois}
+                  selectedPois={selectedPois}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
               </div>
 
               <ViewModeToggle

@@ -152,5 +152,6 @@
   "submit_for_approval": "Submit for Approval",
 
   "no_products": "not found",
-  "no_products_desc": "Start by creating your first product"
+  "no_products_desc": "Start by creating your first product",
+  "export": "Export"
 }

@@ -8,10 +8,10 @@ import {
   BusinessGridView,
   BusinessListView,
   CreateBusinessWizard,
+  ExportBusinessButton,
 } from "./components";
 
 import {
-  Download,
   CheckCircle,
   AlertCircle,
   UtensilsCrossed,
@@ -341,61 +341,6 @@ export default function BusinessesMgmtPage() {
     [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
   );
 
-  // ─── Export Logic (extracted for clarity) ─────────
-  const handleExport = useCallback(() => {
-    const businessesToExport =
-      selectedBusinesses.size > 0
-        ? (businessData?.data?.filter((b: any) =>
-            selectedBusinesses.has(b._id),
-          ) ?? [])
-        : (businessData?.data ?? []);
-
-    if (!businessesToExport.length) {
-      toast.info(t("noBusinessesToExport") || "No businesses to export");
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const columns = Object.entries(columnVisibility)
-      .filter(([_, visible]) => visible)
-      .map(([key]) => key as keyof IBusinessColumnVisibility);
-
-    const headers = columns.map((key) => t(key));
-    const csvRows = businessesToExport.map((business: any) =>
-      columns
-        .map((key) => {
-          let value: any = business[key];
-          if (key === "associatedWebsites") {
-            value = business.associatedWebsites?.[0]?.url || "-";
-          } else if (key === "categories" && Array.isArray(value)) {
-            value = value.join(", ");
-          } else if (key === "tripCount" && value == null) {
-            value = Math.floor((business.productCount * business.impact) / 10);
-          }
-          return escapeCSV(value ?? "-");
-        })
-        .join(","),
-    );
-
-    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
-      "\n",
-    );
-    const blob = new Blob(["﻿", csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `businesses_export_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [selectedBusinesses, businessData, columnVisibility, t]);
-
   // ─── Stats Cards ─────────
   const businessStats = useMemo(
     () => [
@@ -492,17 +437,12 @@ export default function BusinessesMgmtPage() {
                   resetToDefault={resetToDefault}
                 />
 
-                <button
-                  onClick={handleExport}
-                  className={`px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span className="hidden sm:inline">{t("export")}</span>
-                </button>
+                <ExportBusinessButton
+                  businesses={combinedBusinesses}
+                  selectedBusinesses={selectedBusinesses}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
               </div>
 
               <ViewModeToggle
