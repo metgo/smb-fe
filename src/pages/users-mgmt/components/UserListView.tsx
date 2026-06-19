@@ -5,6 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
+import { UserRole } from "@/enums/user.types";
 
 interface UserListViewProps {
   users: IUser[];
@@ -13,6 +14,7 @@ interface UserListViewProps {
   fetchNextPage: () => void;
   onEdit: (user: IUser) => void;
   onDelete: (user: IUser) => void;
+  activeRole?: string;
 }
 
 const UserListView: React.FC<UserListViewProps> = ({
@@ -22,10 +24,11 @@ const UserListView: React.FC<UserListViewProps> = ({
   fetchNextPage,
   onEdit,
   onDelete,
+  activeRole,
 }) => {
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
-  const columns = [
+  const baseColumns = [
     {
       key: "name",
       label: "Name",
@@ -101,44 +104,100 @@ const UserListView: React.FC<UserListViewProps> = ({
         <span className={clsx("text-xs", textTertiary)}>{user.address}</span>
       ),
     },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (user: IUser) => (
-        <span className={clsx("text-xs", textTertiary)}>
-          {formatLastLogin(user.lastLogin)}
-        </span>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (user: IUser) => (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(user);
-            }}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-            title="Edit user"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(user);
-            }}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-            title="Delete user"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
-    },
   ];
+
+  const dmoColumn = {
+    key: "dmo",
+    label: "DMO",
+    render: (user: IUser) =>
+      user.dmo?.name ? (
+        <div className="flex items-center gap-2">
+          {user.dmo.logoPath && (
+            <img
+              src={user.dmo.logoPath}
+              alt={user.dmo.name}
+              className="w-5 h-5 rounded-full object-cover shrink-0"
+            />
+          )}
+          <span className={clsx("text-sm truncate", textSecondary)}>
+            {user.dmo.name}
+          </span>
+        </div>
+      ) : (
+        <span className={clsx("text-sm", textTertiary)}>—</span>
+      ),
+  };
+
+  const authorityColumn = {
+    key: "authority",
+    label: "Authority",
+    render: (user: IUser) =>
+      user.authority?.name ? (
+        <div className="flex items-center gap-2">
+          {user.authority.logoPath && (
+            <img
+              src={user.authority.logoPath}
+              alt={user.authority.name}
+              className="w-5 h-5 rounded-full object-cover shrink-0"
+            />
+          )}
+          <span className={clsx("text-sm truncate", textSecondary)}>
+            {user.authority.name}
+          </span>
+        </div>
+      ) : (
+        <span className={clsx("text-sm", textTertiary)}>—</span>
+      ),
+  };
+
+  const lastLoginColumn = {
+    key: "lastLogin",
+    label: "Last Login",
+    render: (user: IUser) => (
+      <span className={clsx("text-xs", textTertiary)}>
+        {formatLastLogin(user.lastLogin)}
+      </span>
+    ),
+  };
+
+  const actionsColumn = {
+    key: "actions",
+    label: "Actions",
+    render: (user: IUser) => (
+      <div className="flex items-center gap-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(user);
+          }}
+          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+          title="Edit user"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(user);
+          }}
+          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+          title="Delete user"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    ),
+  };
+
+  let columns: any[] = baseColumns;
+
+  if (activeRole === UserRole.DMO) {
+    columns = [...baseColumns, dmoColumn, lastLoginColumn, actionsColumn];
+  } else if (activeRole === UserRole.AUTHORITY) {
+    columns = [...baseColumns, authorityColumn, lastLoginColumn, actionsColumn];
+  } else {
+    columns = [...baseColumns, lastLoginColumn, actionsColumn];
+  }
 
   return (
     <ReordableDataTable
