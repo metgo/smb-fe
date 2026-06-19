@@ -215,7 +215,7 @@ export default function ProductsMgmtPage() {
   // ─── Reset page and clear products when filters/search change ─────────
   useEffect(() => {
     setPage(1);
-    setCombinedProducts(productData?.data);
+    setCombinedProducts([]);
   }, [
     searchTerm,
     filters,
