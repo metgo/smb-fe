@@ -16,6 +16,7 @@ import RootLayout from "@/components/RootLayout";
 import {
   AuthPage,
   BusinessesMgmtPage,
+  PendingApprovalsPage,
   ProductsMgmtPage,
   MiniCampaignsMgmtPage,
   EventsMgmtPage,
@@ -384,6 +385,10 @@ function App() {
 
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
             { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+            {
+              path: routes.pendingApprovals,
+              element: <PendingApprovalsPage />,
+            },
 
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
