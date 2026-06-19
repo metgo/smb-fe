@@ -88,6 +88,14 @@ class ProductDto {
 
   isGift: boolean;
   additionalInfo: string;
+
+  business?: {
+    _id: string;
+    nameEn: string;
+    nameHe: string;
+    nameAr: string;
+    logoUrl: string;
+  };
 }
 
 class IOrdersRes {
