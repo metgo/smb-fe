@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Loader, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +40,7 @@ interface UserFormData {
   role: string;
   languagePreference: string;
   authorityId: string;
+  dmoId: string;
 }
 
 interface CreateUserWizardProps {
@@ -81,6 +82,33 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [dmoDropdownOpen, setDmoDropdownOpen] = useState(false);
+  const [authorityDropdownOpen, setAuthorityDropdownOpen] = useState(false);
+  const dmoDropdownRef = useRef<HTMLDivElement>(null);
+  const authorityDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dmoDropdownRef.current &&
+        !dmoDropdownRef.current.contains(e.target as Node)
+      ) {
+        setDmoDropdownOpen(false);
+      }
+      if (
+        authorityDropdownRef.current &&
+        !authorityDropdownRef.current.contains(e.target as Node)
+      ) {
+        setAuthorityDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const scrollFieldIntoView = (ref: React.RefObject<HTMLDivElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const [formData, setFormData] = useState<UserFormData>({
     firstName: editUser?.firstName ?? "",
     lastName: editUser?.lastName ?? "",
@@ -91,6 +119,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
     languagePreference: editUser?.languagePreference ?? "en",
     authorityId: "",
+    dmoId: "",
   });
 
   // For admin/superadmin who have no dmoId, let them pick a DMO to scope the authority list
@@ -123,6 +152,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     if (!formData.countryCode.trim()) e.countryCode = "Required";
     if (!formData.phoneNumber.trim()) e.phoneNumber = "Required";
     if (!formData.role) e.role = "Required";
+    if (formData.role === UserRole.DMO && !formData.dmoId) e.dmoId = "Required";
     if (formData.role === UserRole.AUTHORITY && !formData.authorityId)
       e.authorityId = "Required";
     setErrors(e);
@@ -143,6 +173,9 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
       languagePreference: formData.languagePreference,
     };
 
+    if (formData.role === UserRole.DMO && formData.dmoId) {
+      payload.dmoId = formData.dmoId;
+    }
     if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
       payload.authorityId = formData.authorityId;
     }
@@ -274,6 +307,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                   ...prev,
                   role: e.target.value,
                   authorityId: "",
+                  dmoId: "",
                 }))
               }
               className={inputClass}
@@ -302,22 +336,231 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
           </div>
         </div>
 
+        {/* DMO — shown only when role is DMO */}
+        {formData.role === UserRole.DMO && (
+          <div ref={dmoDropdownRef}>
+            <label className={labelClass}>DMO *</label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setDmoDropdownOpen((o) => !o);
+                  scrollFieldIntoView(dmoDropdownRef);
+                }}
+                className={`${inputClass} flex items-center justify-between gap-2 text-left`}
+              >
+                {formData.dmoId ? (
+                  (() => {
+                    const selected = dmosAuthorities?.find(
+                      (d) => d._id === formData.dmoId,
+                    );
+                    return (
+                      <span className="flex items-center gap-2">
+                        {selected?.logoPath ? (
+                          <img
+                            src={selected.logoPath}
+                            alt={selected.name}
+                            className="w-5 h-5 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <span className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
+                            <svg
+                              className="w-3 h-3 text-gray-500"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                            </svg>
+                          </span>
+                        )}
+                        {selected?.name}
+                      </span>
+                    );
+                  })()
+                ) : (
+                  <span className={isDark ? "text-gray-500" : "text-gray-400"}>
+                    Select DMO...
+                  </span>
+                )}
+                <svg
+                  className={`w-4 h-4 shrink-0 transition-transform ${dmoDropdownOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {dmoDropdownOpen && (
+                <ul
+                  className={`absolute z-50 w-full bottom-full mb-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto ${
+                    isDark
+                      ? "bg-gray-800 border-gray-600"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  {(dmosAuthorities ?? []).map((dmo) => (
+                    <li
+                      key={dmo._id}
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, dmoId: dmo._id }));
+                        setDmoDropdownOpen(false);
+                      }}
+                      className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
+                        formData.dmoId === dmo._id
+                          ? isDark
+                            ? "bg-teal-700 text-white"
+                            : "bg-teal-50 text-teal-700"
+                          : isDark
+                            ? "text-gray-200 hover:bg-gray-700"
+                            : "text-gray-800 hover:bg-gray-50"
+                      }`}
+                    >
+                      {dmo.logoPath ? (
+                        <img
+                          src={dmo.logoPath}
+                          alt={dmo.name}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
+                          <svg
+                            className="w-3 h-3 text-gray-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                          </svg>
+                        </span>
+                      )}
+                      {dmo.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {errors.dmoId && <p className={errorClass}>{errors.dmoId}</p>}
+          </div>
+        )}
+
         {/* Authority — shown only when role is Authority */}
         {formData.role === UserRole.AUTHORITY && (
-          <div>
+          <div ref={authorityDropdownRef}>
             <label className={labelClass}>Authority *</label>
-            <select
-              value={formData.authorityId}
-              onChange={field("authorityId")}
-              className={inputClass}
-            >
-              <option value="">Select authority...</option>
-              {allAuthorities.map((a) => (
-                <option key={a._id} value={a._id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthorityDropdownOpen((o) => !o);
+                  scrollFieldIntoView(authorityDropdownRef);
+                }}
+                className={`${inputClass} flex items-center justify-between gap-2 text-left`}
+              >
+                {formData.authorityId ? (
+                  (() => {
+                    const selected = allAuthorities.find(
+                      (a) => a._id === formData.authorityId,
+                    );
+                    return (
+                      <span className="flex items-center gap-2">
+                        {selected?.logoPath ? (
+                          <img
+                            src={selected.logoPath}
+                            alt={selected.name}
+                            className="w-5 h-5 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <span className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
+                            <svg
+                              className="w-3 h-3 text-gray-500"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                            </svg>
+                          </span>
+                        )}
+                        {selected?.name}
+                      </span>
+                    );
+                  })()
+                ) : (
+                  <span className={isDark ? "text-gray-500" : "text-gray-400"}>
+                    Select authority...
+                  </span>
+                )}
+                <svg
+                  className={`w-4 h-4 shrink-0 transition-transform ${authorityDropdownOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {authorityDropdownOpen && (
+                <ul
+                  className={`absolute z-50 w-full bottom-full mb-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto ${
+                    isDark
+                      ? "bg-gray-800 border-gray-600"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  {allAuthorities.map((a) => (
+                    <li
+                      key={a._id}
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          authorityId: a._id,
+                        }));
+                        setAuthorityDropdownOpen(false);
+                      }}
+                      className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
+                        formData.authorityId === a._id
+                          ? isDark
+                            ? "bg-teal-700 text-white"
+                            : "bg-teal-50 text-teal-700"
+                          : isDark
+                            ? "text-gray-200 hover:bg-gray-700"
+                            : "text-gray-800 hover:bg-gray-50"
+                      }`}
+                    >
+                      {a.logoPath ? (
+                        <img
+                          src={a.logoPath}
+                          alt={a.name}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
+                          <svg
+                            className="w-3 h-3 text-gray-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                          </svg>
+                        </span>
+                      )}
+                      {a.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             {errors.authorityId && (
               <p className={errorClass}>{errors.authorityId}</p>
             )}
