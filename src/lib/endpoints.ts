@@ -101,7 +101,6 @@ export const endpoints = {
   //voucher
   vouchers: "/vouchers",
   voucher: "/voucher-id",
-  postVoucher: "/vouchers",
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
