@@ -43,9 +43,7 @@ import { FilterByStatus } from "@/components/filter-fields";
 
 // Constants & Types
 const LIMIT = 20;
-const STORAGE_KEY = "business_query_state";
 const COLUMNS_STORAGE_KEY = "businessesTableColumns";
-const SEARCH_STORAGE_KEY = "businessSearchTerm";
 
 const defaultColumns: IBusinessColumnVisibility = {
   impact: true,
@@ -118,19 +116,6 @@ export default function BusinessesMgmtPage() {
   const hasSavedFilters =
     filters.hasProductFilter !== "all" || filters.status !== "all";
 
-  // ─── Load persisted state on mount (safe, no render loop) ─────────
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (saved?.filters) setFilters(saved.filters);
-      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
-      if (saved?.page) setPage(saved.page);
-      if (saved?.viewMode) setViewMode(saved.viewMode);
-    } catch (e) {
-      console.error("Failed to load saved state:", e);
-    }
-  }, []);
-
   // Load column visibility
   useEffect(() => {
     try {
@@ -143,12 +128,6 @@ export default function BusinessesMgmtPage() {
       console.error("Failed to load column settings:", e);
     }
   }, []);
-
-  // ─── Persist state to localStorage (debounced via effect) ─────────
-  useEffect(() => {
-    const queryState = { page, filters, searchTerm, viewMode };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [page, filters, searchTerm, viewMode]);
 
   useEffect(() => {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
@@ -187,9 +166,7 @@ export default function BusinessesMgmtPage() {
       locale: language,
       externalApiId: websiteId,
     };
-    const finalSearchTerm =
-      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
+    if (searchTerm) params.search = searchTerm;
     if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
@@ -266,8 +243,6 @@ export default function BusinessesMgmtPage() {
   );
 
   const clearFilter = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SEARCH_STORAGE_KEY);
     setFilters({ status: "all", hasProductFilter: "all" });
     setSearchTerm("");
     setPage(1);
@@ -408,7 +383,6 @@ export default function BusinessesMgmtPage() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
@@ -435,16 +409,7 @@ export default function BusinessesMgmtPage() {
               </div>
 
               <ViewModeToggle
-                onChange={(mode) => {
-                  setViewMode(mode);
-                  localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify({
-                      ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
-                      viewMode: mode,
-                    }),
-                  );
-                }}
+                onChange={setViewMode}
                 value={viewMode}
                 tableName="businessViewMode"
               />

@@ -42,6 +42,8 @@ import {
   PartnersPage,
   CampaignsMgmtPage,
   UsersMgmtPage,
+  WebsiteCrashesPage,
+  WebsiteCrashDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -424,6 +426,14 @@ function App() {
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },
+            {
+              path: routes.websiteCrashes,
+              element: <WebsiteCrashesPage />,
+            },
+            {
+              path: routes.websiteCrashDetails,
+              element: <WebsiteCrashDetailsPage />,
+            },
 
             { path: "/*", element: <DashboardPage /> },
           ],
