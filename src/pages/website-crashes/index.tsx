@@ -42,7 +42,6 @@ function CrashCard({
     isDark,
     bgSecondary,
     borderColor,
-    textPrimary,
     textSecondary,
     textTertiary,
     hoverBg,

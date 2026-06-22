@@ -39,7 +39,7 @@ function Row({
 }
 
 export function CrashUserTab({ crash }: { crash: IWebsiteCrash }) {
-  const { isDark, borderColor, bgSecondary, textSecondary } = useThemeClasses();
+  const { borderColor, bgSecondary, textSecondary } = useThemeClasses();
 
   if (!crash.user) {
     return (
