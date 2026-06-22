@@ -21,7 +21,7 @@ const FormFieldWrapper = ({
   return (
     <div>
       <label
-        className={`block text-sm font-medium mb-3 space-x-1 items-center ${textSecondary}`}
+        className={`flex text-sm font-medium mb-3 space-x-1 items-center ${textSecondary}`}
       >
         {label} {required && <span className="text-red-500">*</span>}
         {hint && <span className={`text-xs ${textTertiary}`}>({hint})</span>}

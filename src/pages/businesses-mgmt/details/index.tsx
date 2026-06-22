@@ -55,6 +55,7 @@ import {
   BUSINESS_DETAILS_TOUR_ID,
 } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
+import { getLngWiseStr } from "@/helpers";
 
 // ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
 
@@ -160,7 +161,7 @@ function BusinessDetailsPageInner() {
 
   const { isTraveller } = useUserRoles();
 
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -320,13 +321,25 @@ function BusinessDetailsPageInner() {
   }, [isEditClicked]);
 
   const onCreateProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(displayName || "")}`,
     );
   };
   const onViewProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(displayName || "")}`,
     );
   };
 

@@ -683,9 +683,8 @@ export default function CreateEventWizard({
         itemId: resolvedEventId,
       });
     }
-    if (refetch) {
-      refetch();
-    }
+    refetch?.();
+    eventDataRefetch?.();
   };
 
   const handlePrevious = () => {

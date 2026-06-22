@@ -43,6 +43,7 @@ import {
   MonthFilter,
   OrderDetailsModal,
   QRScannerModal,
+  ExportOrdersButton,
 } from "./components";
 import {
   useGetAllOrdersQuery,
@@ -76,8 +77,8 @@ const defaultColumns = {
   totalOrderAmount: true,
   productCount: true,
   deliveryFee: true,
-  createdAt: false,
-  _id: true,
+  createdAt: true,
+  _id: false,
   website: true,
 };
 
@@ -90,6 +91,7 @@ const columnSettingsDefs = Object.keys(defaultColumns).map((key) => ({ key }));
 export default function OrdersMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("orders");
+  const { t: tc } = useTranslation("common");
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
@@ -262,10 +264,8 @@ export default function OrdersMgmtPage() {
     limit,
     searchTermSummary,
     summaryFilters,
-    // filters,
     authorityId,
     dmoId,
-    // websiteId,
   ]);
   const [businessOrderParams, setBusinessOrderParams] = useState<{
     page: number;
@@ -902,65 +902,6 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: any) => React.ReactNode;
   }[];
-  const handleExportCSVSummary = useCallback(() => {
-    const dataToExport = orderSummaries?.data ?? []; // adjust if your data source is different
-
-    if (!dataToExport.length) {
-      toast.message(t("noDataToExport") || "No data to export");
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    // ✅ remove actions column
-    const columns = summaryColumns
-      .filter((col) => col.key !== "actions")
-      .map((col) => col.key);
-
-    const headers = summaryColumns
-      .filter((col) => col.key !== "actions")
-      .map((col) => col.label);
-
-    const csvRows = dataToExport.map((row: any) =>
-      columns
-        .map((key) => {
-          let value = row[key];
-
-          // ✅ match your UI formatting
-          if (key === "totalAmount") {
-            value = value ? `₪${value.toLocaleString()}` : "-";
-          } else if (key === "totalAmountPaidByCreditCard") {
-            value = value ? `₪${value.toLocaleString()}` : "-";
-          }
-
-          return escapeCSV(value ?? "-");
-        })
-        .join(","),
-    );
-
-    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
-      "\n",
-    );
-
-    const blob = new Blob(["�", csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `summary_export_${new Date()
-      .toISOString()
-      .slice(0, 10)}.csv`;
-
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [orderSummaries, summaryColumns, t]);
 
   const handleRowClick = (order: IOrder) => {
     if (orderSummaryClick) {
@@ -969,86 +910,6 @@ export default function OrdersMgmtPage() {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
-
-  const handleExportCSV = useCallback(() => {
-    const ordersToExport =
-      selectedOrders.size > 0
-        ? combinedOrders.filter((o: any) => selectedOrders.has(o._id))
-        : combinedOrders;
-
-    if (!ordersToExport.length) {
-      toast.message(t("noOrdersToExport") || "No orders to export");
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const visibleKeys = Object.entries(columnVisibility)
-      .filter(([_, visible]) => visible)
-      .map(([key]) => key as keyof ColumnVisibility);
-
-    const headers = visibleKeys.map((key) => t(key));
-
-    const csvRows = ordersToExport.map((order: IOrder) =>
-      visibleKeys
-        .map((key) => {
-          let value: any;
-
-          if (key === "totalOrderAmount") {
-            value =
-              order.totalAmount != null
-                ? `₪${order.totalAmount.toLocaleString()}`
-                : "-";
-          } else if (key === "deliveryFee") {
-            value =
-              order.deliveryFee != null
-                ? `₪${order.deliveryFee.toLocaleString()}`
-                : "-";
-          } else if (key === "productCount") {
-            value = order.productCount ?? "-";
-          } else if (key === "createdAt") {
-            value = order.createdAt
-              ? new Date(order.createdAt).toLocaleDateString()
-              : "-";
-          } else if (key === "paymentMethod") {
-            value = Array.isArray(order.paymentMethod)
-              ? order.paymentMethod.map((m: string) => t(m)).join(", ")
-              : order.paymentMethod || "-";
-          } else if (key === "website") {
-            const website = websiteMap[order.externalApiId ?? ""];
-            value = website?.websiteName ?? "-";
-          } else {
-            value = order[key as keyof IOrder];
-          }
-
-          return escapeCSV(value ?? "-");
-        })
-        .join(","),
-    );
-
-    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
-      "\n",
-    );
-
-    const blob = new Blob(["�", csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `orders_export_${new Date()
-      .toISOString()
-      .slice(0, 10)}.csv`;
-
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [selectedOrders, combinedOrders, columnVisibility, websiteMap, t]);
 
   const promptBulkResend = useCallback(
     (recipient: "VENDOR" | "CUSTOMER") => {
@@ -1371,22 +1232,15 @@ export default function OrdersMgmtPage() {
                     setColumnVisibility={setColumnVisibility}
                     resetToDefault={() => setColumnVisibility(defaultColumns)}
                   />
-                  <button
-                    onClick={
-                      orderSummaryClick
-                        ? handleExportCSVSummary
-                        : handleExportCSV
-                    }
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-sm ${
-                      isDark
-                        ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                        : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-                    }`}
-                    title={t("downloadCSV")}
-                  >
-                    <Download className="w-4 h-4 shrink-0" />
-                    <span className="hidden sm:inline">{t("downloadCSV")}</span>
-                  </button>
+                  <ExportOrdersButton
+                    orders={combinedOrders}
+                    selectedOrders={selectedOrders}
+                    columnVisibility={columnVisibility}
+                    websiteMap={websiteMap}
+                    isSummaryMode={orderSummaryClick}
+                    summaryData={combinedOrdersSummary}
+                    t={tc}
+                  />
                 </div>
 
                 {/* <ViewModeToggle onChange={setViewMode} value={viewMode} /> */}

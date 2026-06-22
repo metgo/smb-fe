@@ -212,6 +212,9 @@
   "weekly_schedule": "الجدول الأسبوعي",
   "no_schedule_available": "لا يوجد جدول متاح",
   "not_set_opening_hours": "لم يتم تحديد ساعات العمل بعد",
+  "by_appointment": "بموعد مسبق",
+  "for_entire_week": "لكامل الأسبوع",
+  "add_time_slot": "أضف وقتاً",
 
   "all": "الكل",
   "select_dmo": "اختر منظمة تسويق الوجهة (DMO)",
@@ -393,5 +396,6 @@
   "website_delete_failed": "فشل حذف الموقع",
 
   "deactivate_website": "تعطيل الموقع",
-  "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟"
+  "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟",
+  "pending_approvals": "الموافقات المعلقة"
 }
