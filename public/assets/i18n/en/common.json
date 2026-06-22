@@ -371,5 +371,6 @@
   "website_delete_failed": "Failed to delete website",
 
   "deactivate_website": "Deactivate Website",
-  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?"
+  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
+  "pending_approvals": "Pending Approvals"
 }

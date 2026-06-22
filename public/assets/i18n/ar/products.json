@@ -145,5 +145,6 @@
   "save_as_draft": "حفظ كمسودة",
   "submit_for_approval": "إرسال للموافقة",
   "no_products": "لا توجد منتجات",
-  "no_products_desc": "ابدأ بإنشاء منتجك الأول"
+  "no_products_desc": "ابدأ بإنشاء منتجك الأول",
+  "export": "تصدير"
 }

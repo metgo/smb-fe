@@ -13,6 +13,7 @@ import {
 } from "@/components/shared";
 import {
   CreateProductWizard,
+  ExportProductsButton,
   ProductGridView,
   ProductListView,
 } from "./components";
@@ -482,6 +483,12 @@ export default function ProductsMgmtPage() {
                   setShowColumnSettings={setShowColumnSettings}
                   setColumnVisibility={setColumnVisibility}
                   resetToDefault={resetToDefault}
+                />
+                <ExportProductsButton
+                  products={combinedProducts}
+                  selectedProducts={selectedProducts}
+                  columnVisibility={columnVisibility}
+                  t={t}
                 />
               </div>
 

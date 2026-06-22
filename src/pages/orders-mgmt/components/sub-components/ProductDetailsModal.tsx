@@ -1,11 +1,11 @@
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ImageWithFallback } from "@/components/shared";
-import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
-import { ModalWrapper } from "@/components/wrapper";
-import { Link } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import { ModalWrapper } from "@/components/wrapper";
+import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getLngWiseStr, getPlainTextFromRichText } from "@/helpers";
 
 interface ProductDetailsModalProps {
   product: ProductDto;

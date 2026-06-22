@@ -135,7 +135,7 @@ export default function Sidebar() {
           {
             id: "pending-approvals",
             path: routes.pendingApprovals,
-            label: "Pending Approvals",
+            label: t("pending_approvals") || "Pending Approvals",
             icon: CheckSquare,
             isEnabled: true,
           },
