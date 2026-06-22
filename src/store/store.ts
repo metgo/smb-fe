@@ -36,6 +36,7 @@ import { blogMutationApi } from "./api/blogMutationApi";
 import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
+import { websiteCrashApi } from "./api/websiteCrashApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
@@ -84,6 +85,7 @@ export const store = configureStore({
     [websiteSettingsApi.reducerPath]: websiteSettingsApi.reducer,
     [promotionsApi.reducerPath]: promotionsApi.reducer,
     [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
+    [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -118,6 +120,7 @@ export const store = configureStore({
       websiteSettingsApi.middleware,
       promotionsApi.middleware,
       websiteConfigApi.middleware,
+      websiteCrashApi.middleware,
       nprogressMiddleware,
     ),
 });
