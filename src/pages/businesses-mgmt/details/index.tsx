@@ -47,6 +47,7 @@ import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { envKeys } from "@/lib/envKeys";
+import { getLngWiseStr } from "@/helpers";
 
 export default function BusinessDetailsPage() {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export default function BusinessDetailsPage() {
 
   const { isTraveller } = useUserRoles();
 
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -189,13 +190,25 @@ export default function BusinessDetailsPage() {
   }, [isEditClicked]);
 
   const onCreateProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(displayName || "")}`,
     );
   };
   const onViewProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(displayName || "")}`,
     );
   };
 

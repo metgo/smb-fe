@@ -180,6 +180,7 @@ export default function BusinessesMgmtPage() {
   // ─── Reset page when filters/search change ─────────
   useEffect(() => {
     setPage(1);
+    setCombinedBusinesses(businessData?.data);
   }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
 
   // ─── Query Parameters (memoized, stable reference) ─────────
@@ -253,7 +254,7 @@ export default function BusinessesMgmtPage() {
       const newItems = businessData?.data?.filter(
         (b: any) => !existingIds.has(b._id),
       );
-      return newItems.length ? [...prev, ...newItems] : prev;
+      return newItems?.length ? [...prev, ...newItems] : prev;
     });
   }, [businessData, page]);
 
@@ -350,7 +351,7 @@ export default function BusinessesMgmtPage() {
           ) ?? [])
         : (businessData?.data ?? []);
 
-    if (!businessesToExport.length) {
+    if (!businessesToExport?.length) {
       toast.info(t("noBusinessesToExport") || "No businesses to export");
       return;
     }
@@ -606,7 +607,7 @@ export default function BusinessesMgmtPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-2">
-          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
+          {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
