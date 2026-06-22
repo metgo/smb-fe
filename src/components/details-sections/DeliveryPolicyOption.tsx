@@ -151,6 +151,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
             type="radio"
             name="deliveryType"
             checked={formData.vendorDelivers}
+            disabled={isSameAsBusiness}
             onChange={() =>
               setFormData((prev) => ({
                 ...prev,
@@ -174,6 +175,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
               type="radio"
               name="deliveryType"
               checked={formData.globalDelivery}
+              disabled={isSameAsBusiness}
               onChange={() =>
                 setFormData((prev) => ({
                   ...prev,
@@ -220,21 +222,23 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
             >
               {t("vendor_delivers")} — {t("delivery_areas_pricing")}
             </label>
-            <button
-              onClick={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  vendorDeliveryArea: [
-                    ...(prev.vendorDeliveryArea ?? []),
-                    { area: "", price: "", pickUpLocation: [] },
-                  ],
-                }))
-              }
-              className="flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              {t("add_area")}
-            </button>
+            {!isSameAsBusiness && (
+              <button
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    vendorDeliveryArea: [
+                      ...(prev.vendorDeliveryArea ?? []),
+                      { area: "", price: "", pickUpLocation: [] },
+                    ],
+                  }))
+                }
+                className="flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                {t("add_area")}
+              </button>
+            )}
           </div>
           <div className="space-y-4">
             {formData?.vendorDeliveryArea?.map((deliveryArea, areaIdx) => (
@@ -252,6 +256,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     <input
                       type="text"
                       value={deliveryArea?.area}
+                      disabled={isSameAsBusiness}
                       onChange={(e) => {
                         const areas = formData.vendorDeliveryArea?.map(
                           (area, idx) =>
@@ -277,6 +282,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     <input
                       type="number"
                       value={deliveryArea.price}
+                      disabled={isSameAsBusiness}
                       onChange={(e) => {
                         const areas = [...formData.vendorDeliveryArea];
                         areas[areaIdx].price = e.target.value;
@@ -290,6 +296,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                   </div>
                   <div className="col-span-3 flex items-end">
                     <button
+                      disabled={isSameAsBusiness}
                       onClick={() =>
                         setVendorPickupLocationModal({
                           show: true,
@@ -308,21 +315,23 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                       {t("add_location")}
                     </button>
                   </div>
-                  <div className="col-span-1 flex items-end">
-                    <button
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          vendorDeliveryArea: prev.vendorDeliveryArea?.filter(
-                            (_, i) => i !== areaIdx,
-                          ),
-                        }))
-                      }
-                      className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {!isSameAsBusiness && (
+                    <div className="col-span-1 flex items-end">
+                      <button
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            vendorDeliveryArea: prev.vendorDeliveryArea?.filter(
+                              (_, i) => i !== areaIdx,
+                            ),
+                          }))
+                        }
+                        className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {deliveryArea?.pickUpLocation?.length > 0 && (
                   <label
@@ -348,34 +357,36 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            setVendorPickupLocationModal({
-                              show: true,
-                              areaIndex: areaIdx,
-                              locationIndex: pickupIdx,
-                              data: pickup,
-                            })
-                          }
-                          className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
-                        >
-                          <Edit
-                            size={12}
-                            className={
-                              isDark ? "text-gray-300" : "text-gray-600"
+                      {!isSameAsBusiness && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              setVendorPickupLocationModal({
+                                show: true,
+                                areaIndex: areaIdx,
+                                locationIndex: pickupIdx,
+                                data: pickup,
+                              })
                             }
-                          />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteVendorPickup(areaIdx, pickupIdx)
-                          }
-                          className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
-                        >
-                          &#x2715;
-                        </button>
-                      </div>
+                            className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
+                          >
+                            <Edit
+                              size={12}
+                              className={
+                                isDark ? "text-gray-300" : "text-gray-600"
+                              }
+                            />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteVendorPickup(areaIdx, pickupIdx)
+                            }
+                            className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
+                          >
+                            &#x2715;
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -572,21 +583,23 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
               {t("global_delivery")} — {t("delivery_areas_pricing")}
             </label>
 
-            <button
-              onClick={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  globalDeliveryArea: [
-                    ...(prev.globalDeliveryArea ?? []),
-                    { area: "", price: "", pickUpLocation: [] },
-                  ],
-                }))
-              }
-              className="flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              {t("add_area")}
-            </button>
+            {!isSameAsBusiness && (
+              <button
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    globalDeliveryArea: [
+                      ...(prev.globalDeliveryArea ?? []),
+                      { area: "", price: "", pickUpLocation: [] },
+                    ],
+                  }))
+                }
+                className="flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                {t("add_area")}
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -605,6 +618,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     <input
                       type="text"
                       value={deliveryArea?.area}
+                      disabled={isSameAsBusiness}
                       onChange={(e) => {
                         const areas = formData.globalDeliveryArea?.map(
                           (area, idx) =>
@@ -631,6 +645,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     <input
                       type="number"
                       value={deliveryArea.price}
+                      disabled={isSameAsBusiness}
                       onChange={(e) => {
                         const areas = [...formData.globalDeliveryArea];
                         areas[areaIdx].price = e.target.value;
@@ -645,6 +660,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
 
                   <div className="col-span-3 flex items-end">
                     <button
+                      disabled={isSameAsBusiness}
                       onClick={() =>
                         setGlobalPickupLocationModal({
                           show: true,
@@ -664,21 +680,23 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                     </button>
                   </div>
 
-                  <div className="col-span-1 flex items-end">
-                    <button
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          globalDeliveryArea: prev.globalDeliveryArea?.filter(
-                            (_, i) => i !== areaIdx,
-                          ),
-                        }))
-                      }
-                      className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {!isSameAsBusiness && (
+                    <div className="col-span-1 flex items-end">
+                      <button
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            globalDeliveryArea: prev.globalDeliveryArea?.filter(
+                              (_, i) => i !== areaIdx,
+                            ),
+                          }))
+                        }
+                        className="w-8 p-2 rounded-lg bg-red-600 text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {deliveryArea?.pickUpLocation?.length > 0 && (
@@ -705,34 +723,36 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            setGlobalPickupLocationModal({
-                              show: true,
-                              areaIndex: areaIdx,
-                              locationIndex: pickupIdx,
-                              data: pickup,
-                            })
-                          }
-                          className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
-                        >
-                          <Edit
-                            size={12}
-                            className={
-                              isDark ? "text-gray-300" : "text-gray-600"
+                      {!isSameAsBusiness && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              setGlobalPickupLocationModal({
+                                show: true,
+                                areaIndex: areaIdx,
+                                locationIndex: pickupIdx,
+                                data: pickup,
+                              })
                             }
-                          />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteGlobalPickup(areaIdx, pickupIdx)
-                          }
-                          className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
-                        >
-                          &#x2715;
-                        </button>
-                      </div>
+                            className="text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
+                          >
+                            <Edit
+                              size={12}
+                              className={
+                                isDark ? "text-gray-300" : "text-gray-600"
+                              }
+                            />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteGlobalPickup(areaIdx, pickupIdx)
+                            }
+                            className="text-red-600 hover:text-red-800 text-sm cursor-pointer"
+                          >
+                            &#x2715;
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
