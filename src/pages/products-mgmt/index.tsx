@@ -43,7 +43,6 @@ import { FilterByStatus } from "@/components/filter-fields";
 // Constants & Types
 // ─────────────────────────────────────────────────────────────
 const LIMIT = 20;
-const STORAGE_KEY = "product_query_state";
 const COLUMNS_STORAGE_KEY = "productsTableColumns";
 const SEARCH_STORAGE_KEY = "productSearchTerm";
 
@@ -143,19 +142,6 @@ export default function ProductsMgmtPage() {
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const hasSavedFilters = filters.businessId !== "" || filters.status !== "all";
 
-  // ─── Load persisted state on mount ─────────
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (saved?.filters) setFilters(saved.filters);
-      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
-      if (saved?.page) setPage(saved.page);
-      if (saved?.viewMode) setViewMode(saved.viewMode);
-    } catch (e) {
-      console.error("Failed to load saved state:", e);
-    }
-  }, []);
-
   // Load column visibility
   useEffect(() => {
     try {
@@ -168,22 +154,6 @@ export default function ProductsMgmtPage() {
       console.error("Failed to load column settings:", e);
     }
   }, []);
-
-  // ─── Persist state to localStorage ─────────
-  useEffect(() => {
-    const { status, locale, businessId } = filters;
-    if (
-      status !== "all" ||
-      locale !== language ||
-      businessId !== "" ||
-      searchTerm !== ""
-    ) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ filters, searchTerm, page, viewMode }),
-      );
-    }
-  }, [filters, language, searchTerm, page, viewMode]);
 
   useEffect(() => {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
@@ -370,11 +340,10 @@ export default function ProductsMgmtPage() {
 
   const clearAllFilters = useCallback(() => {
     setFilters({ status: "all", locale: language, businessId: "" });
-    localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SEARCH_STORAGE_KEY);
     setSearchTerm("");
     setPage(1);
-    setCombinedProducts(productData?.data);
+    setCombinedProducts([]);
   }, [language]);
 
   const resetToDefault = useCallback(() => {
@@ -519,13 +488,6 @@ export default function ProductsMgmtPage() {
               <ViewModeToggle
                 onChange={(mode) => {
                   setViewMode(mode);
-                  localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify({
-                      ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
-                      viewMode: mode,
-                    }),
-                  );
                 }}
                 value={viewMode}
                 tableName="productViewMode"
