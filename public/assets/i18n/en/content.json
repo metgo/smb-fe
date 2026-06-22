@@ -74,5 +74,11 @@
   "no": "No",
   "primary_category": "Primary Category",
   "active_filters": "Active Filters",
-  "clear_all": "Clear All"
+  "clear_all": "Clear All",
+  "registration": "Registration",
+  "date_range": "Date Range",
+  "filter_by_business": "Filter by Business",
+  "select_business": "Select Business",
+  "isTrip": "Is Trip",
+  "available": "available"
 }

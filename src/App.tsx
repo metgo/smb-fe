@@ -1,4 +1,3 @@
-import { Suspense, useEffect } from "react";
 import axios from "axios";
 import {
   Outlet,
@@ -6,9 +5,10 @@ import {
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
+import { Suspense, useEffect, useMemo } from "react";
+
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
-
 import { routes } from "@/lib/routes";
 import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
@@ -16,6 +16,7 @@ import RootLayout from "@/components/RootLayout";
 import {
   AuthPage,
   BusinessesMgmtPage,
+  PendingApprovalsPage,
   ProductsMgmtPage,
   MiniCampaignsMgmtPage,
   EventsMgmtPage,
@@ -33,14 +34,14 @@ import {
   WebsiteMgmtPage,
   DynamicPageMgmtPage,
   PromotionsMgmtPage,
+  PoiMgmtPage,
+  PoiDetailsPage,
   DmosMgmtPage,
   AuthoritiesMgmtPage,
   WebsiteConfigPage,
   PartnersPage,
   CampaignsMgmtPage,
   UsersMgmtPage,
-  PoiMgmtPage,
-  PoiDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -188,11 +189,67 @@ function App() {
     }
   }, [dispatch]);
 
+  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwtToken = urlParams.get("token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    if (jwtToken && isOrdersManagement) {
+      // Keep the original QR token separate from the normal access token.
+      sessionStorage.setItem("access_token", jwtToken);
+      sessionStorage.setItem("qr_token", jwtToken);
+      sessionStorage.setItem("isQrMode", "true");
+      sessionStorage.setItem("isQrVerified", "false");
+
+      const fetchVendorUserInfo = async () => {
+        try {
+          const response = await axios.get(
+            `${envKeys.baseUrl}/public/users/verify/${jwtToken}`,
+          );
+
+          const payload =
+            response.data?.data || response.data?.datas || response.data;
+          const userData = payload?.user || payload;
+          if (userData) {
+            const accessToken = payload?.accessToken || userData?.accessToken;
+            if (accessToken) {
+              sessionStorage.setItem("access_token", accessToken);
+            }
+            sessionStorage.setItem("isQrVerified", "true");
+            saveUserInfo({ user: userData });
+            dispatch(loginSuccess(userData));
+
+            // Clean token from URL now that it's stored in session
+            const newUrl =
+              window.location.pathname +
+              window.location.search
+                .replace(/[?&]token=[^&]*/, "")
+                .replace(/^&/, "?");
+            window.history.replaceState({}, "", newUrl);
+
+            // Notify other components like SocketProvider
+            window.dispatchEvent(new Event("session:updated"));
+          }
+        } catch (error) {
+          console.error("Failed to fetch vendor user info via QR token", error);
+          // Keep JWT token in session even if user fetch fails, allows order management
+        }
+      };
+
+      fetchVendorUserInfo();
+    }
+  }, [dispatch]);
+
   // Handle profile completion token — auto-login the user if token is in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    const token = urlParams.get("token") || urlParams.get("approveToken");
     const currentAccessToken = sessionStorage.getItem("access_token");
+    const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+    // Skip profile completion token for QR mode
+    if (isOrdersManagement) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -272,20 +329,32 @@ function App() {
     // Normal protected routes
     if (!isLoggedIn) {
       const attemptedPath = window.location.pathname + window.location.search;
-      if (
-        attemptedPath &&
-        attemptedPath.includes("/notifications-management")
-      ) {
+      if (attemptedPath && attemptedPath.includes(routes.notificationMgmt)) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
-      // Allow business-details with a profile completion token to bypass login
+
+      // Allow routes with token to bypass login (business-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
-      const isBusinessDetails =
-        window.location.pathname === routes.businessDetails;
+      const orderId = urlParams.get("orderId");
 
-      if (hasToken && isBusinessDetails) {
+      const isBusinessDetails = window.location.pathname.startsWith(
+        routes.businessDetails,
+      );
+      const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+
+      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
         return children;
+      }
+
+      if (orderId && isOrdersManagement) {
+        return children;
+      }
+
+      if (orderId) {
+        return (
+          <Navigate to={`${routes.ordersMgmt}?orderId=${orderId}`} replace />
+        );
       }
 
       return <Navigate to={routes.auth} replace />;
@@ -294,77 +363,92 @@ function App() {
     return children;
   };
 
-  const router = createBrowserRouter([
-    {
-      element: (
-        <Suspense fallback={<SplashLoader />}>
-          <ProtectedRoute>
-            <IdleLogout />
-            <RootLayout />
-          </ProtectedRoute>
-        </Suspense>
-      ),
-      errorElement: <ErrorUiPage />,
-      children: [
-        { path: routes.dashboard, element: <DashboardPage /> },
+  const router = useMemo(
+    () =>
+      createBrowserRouter([
         {
-          path: routes.analyticsDashboard,
-          element: <AnalyticsDashboardPage />,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <ProtectedRoute>
+                <IdleLogout />
+                <RootLayout />
+              </ProtectedRoute>
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+          children: [
+            { path: routes.dashboard, element: <DashboardPage /> },
+            {
+              path: routes.analyticsDashboard,
+              element: <AnalyticsDashboardPage />,
+            },
+
+            { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
+            { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+            {
+              path: routes.pendingApprovals,
+              element: <PendingApprovalsPage />,
+            },
+
+            { path: routes.articleMgmt, element: <ArticlesManagement /> },
+            { path: routes.articleDetails, element: <ArticleDetails /> },
+
+            { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+            { path: routes.eventDetails, element: <EventDetailsPage /> },
+
+            { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
+            {
+              path: routes.miniCampaignMgmt,
+              element: <MiniCampaignsMgmtPage />,
+            },
+            { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+            { path: routes.eventDetails, element: <EventDetailsPage /> },
+            { path: routes.productDetails, element: <ProductDetailsPage /> },
+            { path: routes.contentMgmt, element: <ContentMgmtPage /> },
+            { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
+            { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
+
+            { path: routes.profile, element: <ProfilePage /> },
+            { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
+            { path: routes.partners, element: <PartnersPage /> },
+            { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
+            { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
+            { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
+            { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
+
+            { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+            {
+              path: routes.notificationMgmt,
+              element: <NotificationsMgmtPage />,
+            },
+            { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
+
+            { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
+            { path: routes.poiMgmt, element: <PoiMgmtPage /> },
+            { path: routes.poiDetails, element: <PoiDetailsPage /> },
+            { path: routes.users, element: <UsersMgmtPage /> },
+
+            { path: "/*", element: <DashboardPage /> },
+          ],
         },
-
-        { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
-        { path: routes.businessDetails, element: <BusinessDetailsPage /> },
-
-        { path: routes.articleMgmt, element: <ArticlesManagement /> },
-        { path: routes.articleDetails, element: <ArticleDetails /> },
-
-        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
-        { path: routes.eventDetails, element: <EventDetailsPage /> },
-
-        { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
-        { path: routes.miniCampaignMgmt, element: <MiniCampaignsMgmtPage /> },
-        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
-        { path: routes.eventDetails, element: <EventDetailsPage /> },
-        { path: routes.productDetails, element: <ProductDetailsPage /> },
-        { path: routes.contentMgmt, element: <ContentMgmtPage /> },
-        { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },
-        { path: routes.voucherDetails, element: <VoucherDetailsPage /> },
-
-        { path: routes.profile, element: <ProfilePage /> },
-        { path: routes.dmoMgmt, element: <DmosMgmtPage /> },
-        { path: routes.partners, element: <PartnersPage /> },
-        { path: routes.campaignMgmt, element: <CampaignsMgmtPage /> },
-        { path: routes.authorityMgmt, element: <AuthoritiesMgmtPage /> },
-        { path: routes.websiteMgmt, element: <WebsiteMgmtPage /> },
-        { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
-
-        { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
-        { path: routes.notificationMgmt, element: <NotificationsMgmtPage /> },
-        { path: routes.dynamicPages, element: <DynamicPageMgmtPage /> },
-
-        { path: routes.promotionMgmt, element: <PromotionsMgmtPage /> },
-        { path: routes.users, element: <UsersMgmtPage /> },
-        { path: routes.poiMgmt, element: <PoiMgmtPage /> },
-        { path: routes.poiDetails, element: <PoiDetailsPage /> },
-
-        { path: "/*", element: <DashboardPage /> },
-      ],
-    },
-    {
-      element: (
-        <Suspense fallback={<SplashLoader />}>
-          <ProtectedRoute isLoginPage>
-            <>
-              <RouterProgressBar />
-              <Outlet />
-            </>
-          </ProtectedRoute>
-        </Suspense>
-      ),
-      errorElement: <ErrorUiPage />,
-      children: [{ path: routes.auth, element: <AuthPage /> }],
-    },
-  ]);
+        {
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <ProtectedRoute isLoginPage>
+                <>
+                  <RouterProgressBar />
+                  <Outlet />
+                </>
+              </ProtectedRoute>
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+          children: [{ path: routes.auth, element: <AuthPage /> }],
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      ]),
+    [],
+  );
 
   return <RouterProvider router={router} />;
 }

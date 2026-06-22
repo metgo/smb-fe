@@ -304,7 +304,7 @@ export default function ProfilePage() {
 
       <Activity mode={showBankModal ? "visible" : "hidden"}>
         <AssignBankAccountModal
-          isDark
+          isDark={isDark}
           banks={banks}
           refetch={refetch}
           userId={userInfo?.id || ""}

@@ -18,7 +18,7 @@ interface WebsiteAccessItemProps {
 export const commonMutationApi = createApi({
   reducerPath: "commonMutationApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["common"],
+  tagTypes: ["common", "Business", "POI", "Event"],
   endpoints: (builder) => ({
     createWebsiteAccessItem: builder.mutation<
       any,
@@ -29,7 +29,7 @@ export const commonMutationApi = createApi({
         method: "PATCH",
         data: body,
       }),
-      invalidatesTags: ["common"],
+      invalidatesTags: ["common", "Business", "POI", "Event"],
     }),
   }),
 });

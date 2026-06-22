@@ -24,5 +24,7 @@
   "add_bank_account": "Add Bank Account",
   "edit_bank_account": "Edit Bank Account",
   "no_bank_account_added": "No bank account details added",
-  "click_add_bank_account": "Click \"Add Bank Account\" to add your banking information"
+  "click_add_bank_account": "Click \"Add Bank Account\" to add your banking information",
+  "bank_account_subtitle": "Fill in the details below",
+  "required": "Required"
 }

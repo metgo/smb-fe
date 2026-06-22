@@ -121,6 +121,20 @@ interface IWebsiteRes {
   isActive: boolean;
 }
 
+interface IWebsiteListRes {
+  _id: string;
+  websiteName: string;
+  slogan: string;
+  logo: string;
+  url: string;
+  score: number;
+  identifierId: string;
+  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
+  isActive: boolean;
+  primaryColor: string;
+  secondaryColor: string;
+}
+
 interface ISiteSettingsFormData {
   /* Step 1 - General Config */
   websiteNameEn: string;
@@ -210,7 +224,7 @@ interface ISiteSettingsFormData {
   dateFormat: string;
 
   /* Step 10 – Campaigns */
-  primaryCampId: string;
+  primaryCampIds: string[];
   campIds: string[];
 }
 
@@ -316,7 +330,7 @@ interface IWebsiteConfigRes {
   currency: string;
   dateFormat: string;
 
-  primaryCampId: string;
+  primaryCampIds: string[];
   campIds: string[];
 
   partners: PartnerItem[];

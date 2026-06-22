@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Image as ImageIcon,
@@ -78,8 +78,12 @@ export default function CreateProductWizard({
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
-  const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
+  // Only pre-select business when explicitly coming from the "create product" flow (businessName param present).
+  // When coming from "view products" (businessNameProduct param, no businessName), open the modal clean.
+  const bzIdForProdCreate = businessName
+    ? searchParams?.get("businessId")
+    : null;
 
   const { language, textPrimary, textTertiary, borderColor, isDark } =
     useThemeClasses();
@@ -100,10 +104,13 @@ export default function CreateProductWizard({
 
   const initialBusinessData = useMemo(() => {
     if (product?.businessId || bzIdForProdCreate) {
+      const biz = product?.businessId;
       return [
         {
-          _id: product?.businessId?._id ?? bzIdForProdCreate,
-          name: product?.businessId?.name || businessName,
+          _id: biz?._id ?? bzIdForProdCreate,
+          name: biz?.name || businessName,
+          nameHe: biz?.nameHe || businessName,
+          nameAr: biz?.nameAr || businessName,
           slug: "",
         },
       ];
@@ -144,31 +151,6 @@ export default function CreateProductWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
-  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
-  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
-    [],
-  );
-
-  const {
-    images,
-    imagesRef,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useFilesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
     name: "",
@@ -194,8 +176,13 @@ export default function CreateProductWizard({
     additionalImages: [],
     serviceDuration: "",
     vendorDelivers: false,
+    vendorDeliveryArea: [] as any[],
+
     pickupAvailable: false,
     deliveryArea: [] as any[],
+
+    globalDelivery: false,
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -205,6 +192,48 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
+  const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
+    setIsSameAsBusiness(v);
+    setFormData((prev: any) => ({ ...prev, deliveryInfoSameAsBusiness: v }));
+  }, []);
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("he");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
+
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    setPrimaryImage,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useFilesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT && productId
+        ? (updatedImages) => {
+            updateProduct({
+              productId: productId!,
+              body: { images: updatedImages },
+            });
+          }
+        : undefined,
+  });
+
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
@@ -223,13 +252,19 @@ export default function CreateProductWizard({
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
-      if (isSameAsBusiness && businessId) {
+      const effectiveBusinessId = businessId || formData.businessId;
+      if (isSameAsBusiness && effectiveBusinessId) {
         try {
-          const { data } = await getBusinessDelivery({ businessId });
+          const { data } = await getBusinessDelivery({
+            businessId: effectiveBusinessId,
+          });
 
           setFormData((prev: any) => ({
             ...prev,
             vendorDelivers: data?.vendorDelivers ?? false,
+            vendorDeliveryArea: data?.vendorDeliveryArea ?? [],
+            globalDelivery: data?.globalDelivery ?? false,
+            globalDeliveryArea: data?.globalDeliveryArea ?? [],
             pickupAvailable: data?.isPickUpAvailable ?? false,
             deliveryArea: data?.deliveryArea ?? [],
             deliveryReturnExchange: data?.deliveryReturnExchange ?? [],
@@ -243,7 +278,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
+  }, [isSameAsBusiness, businessId, formData.businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -295,10 +330,13 @@ export default function CreateProductWizard({
       enableHomeDelivery: product?.enableHomeDelivery || false,
       enableStorePickup: product?.enableStorePickup || false,
       serviceDuration: product?.serviceDuration || "",
-
+      deliveryInfoSameAsBusiness: product?.deliveryInfoSameAsBusiness ?? false,
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
+      globalDelivery: product?.globalDelivery ?? false,
       deliveryArea: product?.deliveryArea ?? [],
+      vendorDeliveryArea: product?.vendorDeliveryArea ?? [],
+      globalDeliveryArea: product?.globalDeliveryArea ?? [],
       deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
@@ -314,15 +352,15 @@ export default function CreateProductWizard({
     initialGroupTypesId.current = loadedGroupTypes;
 
     if (opMode === IOpMode.EDIT) {
+      setIsSameAsBusiness(product?.deliveryInfoSameAsBusiness ?? false);
       setGalleryImages(product?.images);
     } else {
+      setIsSameAsBusiness(false);
       setGalleryImages([]);
     }
   }, [productId, product]);
 
-  const [initProductCreate, { isLoading: isCreating }] =
-    useInitProductCreateMutation();
-  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -441,7 +479,7 @@ export default function CreateProductWizard({
       return;
     }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
+    await saveDraft(false, stepPayloadMap);
   };
 
   const handleNext = async () => {
@@ -559,8 +597,20 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    deliveryInfoSameAsBusiness: isSameAsBusiness,
+    vendorDelivers: formData.vendorDelivers,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+
     isPickUpAvailable: formData.pickupAvailable,
     deliveryArea: formData.deliveryArea,
+
+    globalDelivery: formData.globalDelivery,
+
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -568,23 +618,31 @@ export default function CreateProductWizard({
 
   const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
-      let internalProductId;
+      const payload = processedFormData;
+      if (!payload || !Object.keys(payload).length) return;
 
-      // 1️⃣ Initialize product if not created yet
-      if (!productId || opMode !== IOpMode.EDIT) {
+      let internalProductId: string | undefined;
+
+      // Resolve which product ID to use for this save
+      const existingId = productId || createdProductId;
+
+      if (!existingId || opMode === IOpMode.DUPLICATE) {
+        // First save in CREATE mode, or a DUPLICATE — initialize a new product
         const res = await initProductCreate({
           businessId: product?.businessId?._id || formData?.businessId,
         }).unwrap();
         internalProductId = res?.id;
+        // Track the created ID so subsequent saves in this session patch instead of re-creating
+        if (opMode !== IOpMode.DUPLICATE) {
+          setCreatedProductId(internalProductId ?? null);
+        }
+      } else {
+        internalProductId = existingId;
       }
 
-      // Only send payload for the current step
-      const payload = processedFormData;
-      if (!payload || !Object.keys(payload).length) return;
-
-      // 4️⃣ Update product
+      // Update product
       await updateProduct({
-        productId: internalProductId || productId!,
+        productId: internalProductId!,
         body: {
           ...payload,
           status: isPublish
@@ -683,7 +741,7 @@ export default function CreateProductWizard({
             formData={formData}
             setFormData={setFormData}
             isSameAsBusiness={isSameAsBusiness}
-            setIsSameAsBusiness={setIsSameAsBusiness}
+            setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
       case 7:

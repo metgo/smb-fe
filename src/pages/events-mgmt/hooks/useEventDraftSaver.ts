@@ -91,6 +91,7 @@ export function useEventDraftSaver({
         });
 
         toast.success(isPublish ? t("event_published") : t("draft_saved"));
+        return internalEventId || eventId || undefined;
       } catch (err: any) {
         toast.error(t("draft_failed"));
       }

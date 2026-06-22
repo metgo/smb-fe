@@ -9,6 +9,8 @@
   "draft_failed": "Failed to save draft",
   "fill_all_fields": "Fill all required fields before proceeding",
   "name_required": "Please enter a name before saving",
+  "short_description_required": "Please enter a short description before saving",
+  "full_description_required": "Please enter a full description before saving",
   "image_upload_info": "Image upload has started. Please wait…",
   "image_upload_success": "Image uploaded successfully",
   "image_upload_failed": "Image upload failed",

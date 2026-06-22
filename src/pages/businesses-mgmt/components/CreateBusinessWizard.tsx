@@ -59,6 +59,7 @@ interface CreateBusinessWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  businessDataRefetch?: any;
   opMode?: TOpMode;
   missingFields?: string[];
 }
@@ -67,6 +68,7 @@ export default function CreateBusinessWizard({
   onClose,
   editData,
   refetch,
+  businessDataRefetch,
   opMode = IOpMode.CREATE,
   missingFields = [],
 }: CreateBusinessWizardProps) {
@@ -182,7 +184,10 @@ export default function CreateBusinessWizard({
     operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
+    globalDelivery: false,
     deliveryArea: [] as any[],
+    vendorDeliveryArea: [] as any[],
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -243,6 +248,10 @@ export default function CreateBusinessWizard({
         JSON.stringify(initialGroupTypesId.current)
     );
   };
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
   const {
     images,
     imagesRef,
@@ -257,6 +266,18 @@ export default function CreateBusinessWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT
+        ? (updatedImages) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { images: updatedImages },
+              });
+            }
+          }
+        : undefined,
   });
 
   const {
@@ -294,10 +315,6 @@ export default function CreateBusinessWizard({
     await deleteLogoFile();
     setDeleteTargetLogo(null);
   };
-
-  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] =
-    useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
 
@@ -363,6 +380,7 @@ export default function CreateBusinessWizard({
       setSelectedDmoId(dmoId);
     }
   }, []);
+
   useEffect(() => {
     // For CREATE mode, we don't load from editData
     if (opMode === IOpMode.CREATE) return;
@@ -405,7 +423,10 @@ export default function CreateBusinessWizard({
         type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
         pickupAvailable: editData.isPickUpAvailable ?? false,
+        globalDelivery: editData.globalDelivery ?? false,
         deliveryArea: editData?.deliveryArea ?? [],
+        vendorDeliveryArea: editData?.vendorDeliveryArea ?? [],
+        globalDeliveryArea: editData?.globalDeliveryArea ?? [],
         deliveryReturnExchange: editData.deliveryReturnExchange ?? [],
         deliveryAdditionalInfo: editData.deliveryAdditionalInfo ?? "",
         deliverySpecificSellerInfo: editData.deliverySpecificSellerInfo ?? [],
@@ -436,16 +457,21 @@ export default function CreateBusinessWizard({
           };
           const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
           return days.map((day) => {
-            const entry = editData?.openingHrs?.find((h: any) => {
+            const entries = (editData?.openingHrs ?? []).filter((h: any) => {
               const d = (h.day || h.days || "").toLowerCase().trim();
               return dayNormMap[d] === day;
             });
-            return {
-              day,
-              open: entry?.open || "",
-              close: entry?.close || "",
-              isHoliday: entry?.isHoliday || false,
-            };
+            const first = entries[0];
+            const isHoliday = first?.isHoliday || false;
+            const byAppointment = first?.byAppointment || false;
+            const slots =
+              entries.length > 0 && !isHoliday
+                ? entries.map((e: any) => ({
+                    open: e.open || "",
+                    close: e.close || "",
+                  }))
+                : [{ open: "10:00", close: "17:00" }];
+            return { day, slots, isHoliday, byAppointment };
           });
         })(),
         //attributes
@@ -564,11 +590,29 @@ export default function CreateBusinessWizard({
     logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
-    openingHrs: formData.operatingHours,
+    openingHrs: (formData.operatingHours ?? []).flatMap(
+      ({ day, slots, isHoliday, byAppointment }: any) =>
+        isHoliday || !slots?.length
+          ? [{ day, open: "", close: "", isHoliday, byAppointment }]
+          : slots.map((slot: any) => ({
+              day,
+              open: slot.open,
+              close: slot.close,
+              isHoliday: false,
+              byAppointment,
+            })),
+    ),
     // step 7
-    // vendorDelivers: formData.vendorDelivers,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
+    globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -580,7 +624,7 @@ export default function CreateBusinessWizard({
   const { markDirty, saveDraft } = useBusinessDraftSaver({
     opMode,
     onClose,
-    refetch,
+    // refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -594,6 +638,9 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        if (!selectedAuthorityId?.trim())
+          newErrors.authorityId = t("required_field");
         if (
           !formData.name?.trim() &&
           !formData.nameAr?.trim() &&
@@ -614,7 +661,7 @@ export default function CreateBusinessWizard({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 2: {
+      case 3: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -629,13 +676,13 @@ export default function CreateBusinessWizard({
         break;
       }
 
-      case 3:
+      case 4:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 4:
+      case 5:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -670,13 +717,34 @@ export default function CreateBusinessWizard({
       toast.error(tt("name_required"));
       return;
     }
+    if (
+      !formData.shortDescription?.trim() &&
+      !formData.shortDescriptionHe?.trim() &&
+      !formData.shortDescriptionAr?.trim()
+    ) {
+      toast.error(tt("short_description_required"));
+      return;
+    }
+    if (
+      !formData.fullDescription?.trim() &&
+      !formData.fullDescriptionHe?.trim() &&
+      !formData.fullDescriptionAr?.trim()
+    ) {
+      toast.error(tt("full_description_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (businessId) {
+    const resolvedBusinessId = await saveDraft(false);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
+      // Refetch after save draft completes
+      // Don't await to prevent blocking the UI
+      if (businessDataRefetch) {
+        businessDataRefetch();
+      }
     }
   };
 
@@ -697,15 +765,16 @@ export default function CreateBusinessWizard({
     }
 
     setIsPublishing(true);
-    if (businessId) {
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+    const resolvedBusinessId = await saveDraft(true, processedFormData);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
-    }
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
 
-    await saveDraft(true, processedFormData);
+      await Promise.all([refetch?.(), businessDataRefetch?.()]);
+    }
     setIsPublishing(false);
   };
 
@@ -718,10 +787,16 @@ export default function CreateBusinessWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "business",
@@ -733,6 +808,7 @@ export default function CreateBusinessWizard({
       t,
       formData,
       errors,
+      setErrors,
       setCurrentStep,
       address,
       geo,

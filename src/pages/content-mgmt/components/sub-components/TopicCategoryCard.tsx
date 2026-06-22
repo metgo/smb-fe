@@ -785,19 +785,21 @@ const TopicCategoryCard = ({
         <div className="mt-4 px-2 pb-1">
           {group?.contents?.length > 0 ? (
             <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
-              {group.contents.map((content: any) => (
-                <div key={content._id} className="w-44 shrink-0">
-                  <ContentCard
-                    _id={content._id}
-                    name={content.name}
-                    descripition={content.desc}
-                    image={content.imageUrl}
-                    categoryName=""
-                    isInCategory
-                    handleRemove={handleRemoveContent}
-                  />
-                </div>
-              ))}
+              {group.contents.map((content: any) => {
+                return (
+                  <div key={content._id} className="w-44 shrink-0">
+                    <ContentCard
+                      _id={content._id}
+                      name={content.name}
+                      descripition={content.desc}
+                      image={content.imageUrl}
+                      categoryName=""
+                      isInCategory
+                      handleRemove={handleRemoveContent}
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div

@@ -8,10 +8,10 @@ import {
   BusinessGridView,
   BusinessListView,
   CreateBusinessWizard,
+  ExportBusinessButton,
 } from "./components";
 
 import {
-  Download,
   CheckCircle,
   AlertCircle,
   UtensilsCrossed,
@@ -153,14 +153,6 @@ export default function BusinessesMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  // useEffect(() => {
-  //   if (searchTerm) {
-  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-  //   } else {
-  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
-  //   }
-  // }, [searchTerm]);
-
   // ─── Close column dropdown on outside click ─────────
   useEffect(() => {
     if (!showColumnSettings) return;
@@ -179,6 +171,7 @@ export default function BusinessesMgmtPage() {
   // ─── Reset page when filters/search change ─────────
   useEffect(() => {
     setPage(1);
+    setCombinedBusinesses(businessData?.data);
   }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
 
   // ─── Query Parameters (memoized, stable reference) ─────────
@@ -220,14 +213,18 @@ export default function BusinessesMgmtPage() {
   }, [queryParams]);
 
   const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery(statsQueryParams);
+    useGetBusinessStatsQuery(statsQueryParams, {
+      refetchOnMountOrArgChange: true,
+    });
 
   const {
     data: businessData,
     isLoading,
     isFetching,
     refetch,
-  } = useGetAllbusinessesQuery(queryParams);
+  } = useGetAllbusinessesQuery(queryParams, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
     useBulkBusinessesUpdateMutation();
@@ -248,7 +245,7 @@ export default function BusinessesMgmtPage() {
       const newItems = businessData?.data?.filter(
         (b: any) => !existingIds.has(b._id),
       );
-      return newItems.length ? [...prev, ...newItems] : prev;
+      return newItems?.length ? [...prev, ...newItems] : prev;
     });
   }, [businessData, page]);
 
@@ -287,10 +284,6 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedBusinesses.size) return;
-    console.log(
-      "🚀 ~ BusinessesMgmtPage ~ selectedBusinesses:",
-      selectedBusinesses,
-    );
 
     const toastId = toast.loading(tc("business_delete_loading"));
     try {
@@ -335,61 +328,6 @@ export default function BusinessesMgmtPage() {
     },
     [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
   );
-
-  // ─── Export Logic (extracted for clarity) ─────────
-  const handleExport = useCallback(() => {
-    const businessesToExport =
-      selectedBusinesses.size > 0
-        ? (businessData?.data?.filter((b: any) =>
-            selectedBusinesses.has(b._id),
-          ) ?? [])
-        : (businessData?.data ?? []);
-
-    if (!businessesToExport.length) {
-      toast.info(t("noBusinessesToExport") || "No businesses to export");
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const columns = Object.entries(columnVisibility)
-      .filter(([_, visible]) => visible)
-      .map(([key]) => key as keyof IBusinessColumnVisibility);
-
-    const headers = columns.map((key) => t(key));
-    const csvRows = businessesToExport.map((business: any) =>
-      columns
-        .map((key) => {
-          let value: any = business[key];
-          if (key === "associatedWebsites") {
-            value = business.associatedWebsites?.[0]?.url || "-";
-          } else if (key === "categories" && Array.isArray(value)) {
-            value = value.join(", ");
-          } else if (key === "tripCount" && value == null) {
-            value = Math.floor((business.productCount * business.impact) / 10);
-          }
-          return escapeCSV(value ?? "-");
-        })
-        .join(","),
-    );
-
-    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
-      "\n",
-    );
-    const blob = new Blob(["﻿", csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `businesses_export_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [selectedBusinesses, businessData, columnVisibility, t]);
 
   // ─── Stats Cards ─────────
   const businessStats = useMemo(
@@ -487,17 +425,12 @@ export default function BusinessesMgmtPage() {
                   resetToDefault={resetToDefault}
                 />
 
-                <button
-                  onClick={handleExport}
-                  className={`px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span className="hidden sm:inline">{t("export")}</span>
-                </button>
+                <ExportBusinessButton
+                  businesses={combinedBusinesses}
+                  selectedBusinesses={selectedBusinesses}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
               </div>
 
               <ViewModeToggle
@@ -601,7 +534,7 @@ export default function BusinessesMgmtPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-2">
-          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
+          {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >

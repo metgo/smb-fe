@@ -34,6 +34,7 @@ import {
   Handshake,
   Gift,
   ChevronLeft,
+  CheckSquare,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -61,10 +62,20 @@ export default function Sidebar() {
 
   const { isDark, isRTL } = useThemeClasses();
   const { isTraveller, isSuperadmin } = useUserRoles();
+  const userRole = useAppSelector((state) => state.auth.userRole);
   const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelector(
     (state) => state.ui,
   );
   const showLabels = !isSidebarCollapsed || isMobileSidebarOpen;
+
+  // Check if user is an admin role (superadmin, authority_admin, dmo, dmoadmin, siteManager)
+  const isAdminRole = [
+    "superadmin",
+    "authorityAdmin",
+    "dmo",
+    "dmoadmin",
+    "siteManager",
+  ].includes(userRole);
 
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -106,19 +117,30 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
-      isEnabled: true,
-    },
-    {
       id: "poi",
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
       isEnabled: true,
     },
+    {
+      id: "notifications",
+      path: routes.notificationMgmt,
+      label: t("notifications") || "Notifications",
+      icon: BellIcon,
+      isEnabled: true,
+    },
+    ...(isAdminRole
+      ? [
+          {
+            id: "pending-approvals",
+            path: routes.pendingApprovals,
+            label: t("pending_approvals") || "Pending Approvals",
+            icon: CheckSquare,
+            isEnabled: true,
+          },
+        ]
+      : []),
     {
       id: "trips",
       path: routes.trips,
@@ -481,8 +503,8 @@ export default function Sidebar() {
               subItems: item.subItems?.filter(
                 (sub) =>
                   !(isTraveller && sub.id === "content-mgmt") &&
-                  !(sub.id === "dynamic-pages" && !isSuperadmin) &&
-                  !(sub.id === "users" && !isSuperadmin),
+                  !(isTraveller && sub.id === "users") &&
+                  !(sub.id === "dynamic-pages" && !isSuperadmin),
               ),
             }))
             ?.map((item) => renderMenuItem(item))}
