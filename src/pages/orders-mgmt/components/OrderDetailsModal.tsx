@@ -273,9 +273,12 @@ function OrderDetailsModal({
                     >
                       {product?.name}
                     </p>
-                    <p className={`text-sm line-clamp-2 ${textTertiary}`}>
-                      {product?.description ? product?.description : "-"}
-                    </p>
+                    <div
+                      className={`text-sm line-clamp-2 ${textTertiary}`}
+                      dangerouslySetInnerHTML={{
+                        __html: product?.description || "-",
+                      }}
+                    />
                   </div>
 
                   {/* Price & Actions */}

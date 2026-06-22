@@ -154,14 +154,6 @@ export default function BusinessesMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  // useEffect(() => {
-  //   if (searchTerm) {
-  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-  //   } else {
-  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
-  //   }
-  // }, [searchTerm]);
-
   // ─── Close column dropdown on outside click ─────────
   useEffect(() => {
     if (!showColumnSettings) return;
@@ -292,10 +284,6 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedBusinesses.size) return;
-    console.log(
-      "🚀 ~ BusinessesMgmtPage ~ selectedBusinesses:",
-      selectedBusinesses,
-    );
 
     const toastId = toast.loading(tc("business_delete_loading"));
     try {

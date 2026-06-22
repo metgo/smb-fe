@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import { useState, useRef, useEffect } from "react";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { getPlainTextFromRichText } from "@/helpers";
 
 type IColumnVisibility = {
   images: boolean;
@@ -72,6 +73,9 @@ export default function ExportProductsButton({
           value !== null
         ) {
           value = value.name ?? value._id ?? value;
+        }
+        if ((key === "description" || key === "shortDescription") && value) {
+          value = getPlainTextFromRichText(value);
         }
         if (key === "updatedAt" && value) {
           value = new Date(value).toLocaleDateString();
