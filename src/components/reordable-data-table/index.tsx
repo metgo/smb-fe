@@ -126,14 +126,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       initialLoadRef.current = false;
       return;
     }
-    const visibleKeys = columns.map((c) => c.key as string);
+    const visibleKeys = columnKeys.split("|");
     setColumnOrder((prev) => {
       const kept = prev.filter((k) => visibleKeys.includes(k));
       const added = visibleKeys.filter((k) => !prev.includes(k));
       const next = [...kept, ...added];
       return prev.join("|") === next.join("|") ? prev : next;
     });
-  }, [columnKeys, columns]);
+  }, [columnKeys]);
 
   // Sort
   const [sortConfig, setSortConfig] = useState<{

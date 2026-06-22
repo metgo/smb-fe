@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import * as Slider from "@radix-ui/react-slider";
 import {
   X,
@@ -10,10 +10,9 @@ import {
   CheckCircle,
   Package,
   Download,
-  Send,
 } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 
-import { toast } from "sonner";
 import {
   BulkActionBar,
   PageHeader,
@@ -75,7 +74,6 @@ const VouchersList = ({
   const navigate = useNavigate();
   const { t } = useTranslation("vouchers");
   const { t: tt } = useTranslation("toast");
-  const { t: tc } = useTranslation("common");
 
   const { textPrimary, isDark } = useThemeClasses();
   const { isSuperadmin } = useUserRoles();
@@ -143,224 +141,191 @@ const VouchersList = ({
     [voucherStatsResponse, t],
   );
 
-  const columns = [
-    ...(isSuperadmin ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+  const columns = useMemo(
+    () =>
+      [
+        ...(isSuperadmin
+          ? [{ key: "checkbox", label: "", width: "50px" }]
+          : []),
 
-    {
-      key: "code",
-      label: t("code"),
-      sortable: true,
-      render: (voucher: IVoucherItem) => (
-        <span
-          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-        >
-          {voucher.code}
-        </span>
-      ),
-    },
-
-    {
-      key: "assignee",
-      label: t("assignee"),
-      sortable: true,
-      render: (voucher: IVoucherItem) => (
-        <span
-          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-        >
-          {voucher?.assigneeInfo?.name || "-"}
-        </span>
-      ),
-    },
-
-    {
-      key: "contact",
-      label: t("contact"),
-      sortable: false,
-      render: (voucher: IVoucherItem) => (
-        <div className="flex items-center gap-2">
-          {voucher?.assigneeInfo?.email ? (
-            <TooltipWrapper infoText={voucher?.assigneeInfo?.email} side="top">
-              <a
-                href={`mailto:${voucher?.assigneeInfo?.email}`}
-                onClick={(e) => e.stopPropagation()}
-                className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
-              >
-                <Mail className="w-4 h-4" />
-              </a>
-            </TooltipWrapper>
-          ) : (
-            <span>-</span>
-          )}
-          {voucher?.assigneeInfo?.phone ? (
-            <TooltipWrapper infoText={voucher?.assigneeInfo?.phone} side="top">
-              <a
-                href={`tel:${voucher?.assigneeInfo?.phone}`}
-                onClick={(e) => e.stopPropagation()}
-                className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
-              >
-                <Phone className="w-4 h-4" />
-              </a>
-            </TooltipWrapper>
-          ) : (
-            <span>-</span>
-          )}
-        </div>
-      ),
-    },
-
-    {
-      key: "status",
-      label: t("status"),
-      sortable: true,
-      render: (voucher: any) => (
-        <span
-          className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
-            voucher.status,
-          )}`}
-        >
-          {getStatusLabel(voucher.status)}
-        </span>
-      ),
-    },
-
-    {
-      key: "amount",
-      label: t("amount"),
-      sortable: true,
-      render: (voucher: IVoucherItem) => (
-        <span
-          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-        >
-          ₪{voucher.amount}
-        </span>
-      ),
-    },
-
-    {
-      key: "remainingAmount",
-      label: t("remaining"),
-      sortable: true,
-      render: (voucher: any) => (
-        <span
-          className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-        >
-          ₪{voucher.remainingAmount}
-        </span>
-      ),
-    },
-
-    {
-      key: "createdAt",
-      label: t("created_at"),
-      sortable: true,
-      render: (voucher: any) => {
-        const textColor = isDark ? "text-gray-100" : "text-gray-900";
-        return (
-          <span className={`text-sm ${textColor}`}>
-            {formatDate(voucher?.creatorInfo?.createdAt)}
-          </span>
-        );
-      },
-    },
-    {
-      key: "expireDate",
-      label: t("expiry"),
-      sortable: true,
-      render: (voucher: IVoucherItem) => {
-        const expired = isExpired(voucher.expireDate);
-        const expiringSoon = isExpiringSoon(voucher.expireDate);
-        const textColor = expired
-          ? isDark
-            ? "text-red-400"
-            : "text-red-600"
-          : expiringSoon
-            ? isDark
-              ? "text-orange-400"
-              : "text-orange-400"
-            : isDark
-              ? "text-gray-100"
-              : "text-gray-900";
-
-        return (
-          <div className="flex items-center gap-2">
-            <span className={`text-sm ${textColor}`}>
-              {formatDate(voucher.expireDate)}
+        {
+          key: "code",
+          label: t("code"),
+          sortable: true,
+          render: (voucher: IVoucherItem) => (
+            <span
+              className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+            >
+              {voucher.code}
             </span>
-            {expiringSoon && !expired && (
-              <span title={t("expiring_soon")}>
-                <Clock
-                  className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
-                />
+          ),
+        },
+
+        {
+          key: "assignee",
+          label: t("assignee"),
+          sortable: true,
+          render: (voucher: IVoucherItem) => (
+            <span
+              className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+            >
+              {voucher?.assigneeInfo?.name || "-"}
+            </span>
+          ),
+        },
+
+        {
+          key: "contact",
+          label: t("contact"),
+          sortable: false,
+          render: (voucher: IVoucherItem) => (
+            <div className="flex items-center gap-2">
+              {voucher?.assigneeInfo?.email ? (
+                <TooltipWrapper
+                  infoText={voucher?.assigneeInfo?.email}
+                  side="top"
+                >
+                  <a
+                    href={`mailto:${voucher?.assigneeInfo?.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
+                  >
+                    <Mail className="w-4 h-4" />
+                  </a>
+                </TooltipWrapper>
+              ) : (
+                <span>-</span>
+              )}
+              {voucher?.assigneeInfo?.phone ? (
+                <TooltipWrapper
+                  infoText={voucher?.assigneeInfo?.phone}
+                  side="top"
+                >
+                  <a
+                    href={`tel:${voucher?.assigneeInfo?.phone}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`p-1 transition-colors ${isDark ? "text-gray-400 hover:text-teal-400" : "text-gray-600 hover:text-teal-600"}`}
+                  >
+                    <Phone className="w-4 h-4" />
+                  </a>
+                </TooltipWrapper>
+              ) : (
+                <span>-</span>
+              )}
+            </div>
+          ),
+        },
+
+        {
+          key: "status",
+          label: t("status"),
+          sortable: true,
+          render: (voucher: any) => (
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${getStatusColor(
+                voucher.status,
+              )}`}
+            >
+              {getStatusLabel(voucher.status)}
+            </span>
+          ),
+        },
+
+        {
+          key: "amount",
+          label: t("amount"),
+          sortable: true,
+          render: (voucher: IVoucherItem) => (
+            <span
+              className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+            >
+              ₪{voucher.amount}
+            </span>
+          ),
+        },
+
+        {
+          key: "remainingAmount",
+          label: t("remaining"),
+          sortable: true,
+          render: (voucher: any) => (
+            <span
+              className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+            >
+              ₪{voucher.remainingAmount}
+            </span>
+          ),
+        },
+
+        {
+          key: "createdAt",
+          label: t("created_at"),
+          sortable: true,
+          render: (voucher: any) => {
+            const textColor = isDark ? "text-gray-100" : "text-gray-900";
+            return (
+              <span className={`text-sm ${textColor}`}>
+                {formatDate(voucher?.creatorInfo?.createdAt)}
               </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "campaign",
-      label: t("campaign"),
-      sortable: true,
-      render: (voucher: any) => (
-        <span
-          className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {voucher.campId || "-"}
-        </span>
-      ),
-    },
+            );
+          },
+        },
+        {
+          key: "expireDate",
+          label: t("expiry"),
+          sortable: true,
+          render: (voucher: IVoucherItem) => {
+            const expired = isExpired(voucher.expireDate);
+            const expiringSoon = isExpiringSoon(voucher.expireDate);
+            const textColor = expired
+              ? isDark
+                ? "text-red-400"
+                : "text-red-600"
+              : expiringSoon
+                ? isDark
+                  ? "text-orange-400"
+                  : "text-orange-400"
+                : isDark
+                  ? "text-gray-100"
+                  : "text-gray-900";
 
-    {
-      key: "actions",
-      label: tc("action"),
-      render: (voucher: IVoucherItem) => (
-        <div className="flex items-center gap-2 z-50">
-          <TooltipWrapper infoText={t("send_email")} side="top">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSendSingleEmail(voucher._id);
-              }}
-              disabled={!voucher?.assigneeInfo?.email}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
-                !voucher?.assigneeInfo?.email
-                  ? "opacity-30 cursor-not-allowed bg-blue-500/10 text-blue-400"
-                  : isDark
-                    ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500 hover:text-white hover:scale-110 active:scale-95"
-                    : "bg-blue-100 text-blue-900 hover:bg-blue-500 hover:text-white hover:scale-110 active:scale-95"
-              }`}
+            return (
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${textColor}`}>
+                  {formatDate(voucher.expireDate)}
+                </span>
+                {expiringSoon && !expired && (
+                  <span title={t("expiring_soon")}>
+                    <Clock
+                      className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-500"}`}
+                    />
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+        {
+          key: "campaign",
+          label: t("campaign"),
+          sortable: true,
+          render: (voucher: any) => (
+            <span
+              className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
-              <Mail className="w-3.5 h-3.5" />
-            </button>
-          </TooltipWrapper>
-
-          <TooltipWrapper infoText={t("send_sms")} side="top">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSendSingleSMS(voucher._id);
-              }}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
-                !voucher?.assigneeInfo?.phone
-                  ? "opacity-30 cursor-not-allowed bg-green-500/10 text-green-600"
-                  : isDark
-                    ? "bg-green-500/15 text-green-400 hover:bg-green-500 hover:text-white hover:scale-110 active:scale-95"
-                    : "bg-green-100 text-green-600 hover:bg-green-500 hover:text-white hover:scale-110 active:scale-95"
-              }`}
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
-          </TooltipWrapper>
-        </div>
-      ),
-    },
-  ].filter(Boolean) as {
-    key: string;
-    label: string;
-    width?: string;
-    sortable?: boolean;
-    render?: (row: any) => React.ReactNode;
-  }[];
+              {voucher.campId || "-"}
+            </span>
+          ),
+        },
+      ].filter(Boolean) as {
+        key: string;
+        label: string;
+        width?: string;
+        sortable?: boolean;
+        render?: (row: any) => React.ReactNode;
+      }[],
+    [isSuperadmin, isDark, t],
+  );
 
   const handleVoucherClick = (voucherId: string) => {
     navigate(`${routes.voucherDetails}?voucherId=${voucherId}`, {
@@ -525,28 +490,7 @@ const VouchersList = ({
     }
   };
 
-  const handleSendSingleEmail = async (voucherId: string): Promise<void> => {
-    try {
-      await sendEmail({ voucherIds: [voucherId] }).unwrap();
-      toast.success(
-        tt("emails_sent_successfully") || "Email sent successfully",
-      );
-    } catch (error) {
-      toast.error(t("failed_to_send_emails") || "Failed to send email");
-    }
-  };
-
-  const handleSendSingleSMS = async (voucherId: string): Promise<void> => {
-    try {
-      await sendSMS({ voucherIds: [voucherId] }).unwrap();
-      toast.success(tt("sms_sent_successfully") || "SMS sent successfully");
-    } catch (error) {
-      toast.error(t("failed_to_send_sms") || "Failed to send SMS");
-    }
-  };
-
   const [showFilters, setShowFilters] = useState(false);
-
   const handleExportCSVVouchers = useCallback(() => {
     const vouchersList = combinedVouchers ?? [];
     if (!vouchersList.length) {

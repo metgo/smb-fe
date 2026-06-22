@@ -74,9 +74,12 @@ const UsersMgmtPage = () => {
     [page, activeRole, search],
   );
 
-  const { data, isFetching, isLoading } = useGetUsersQuery(queryParams, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isFetching, isLoading, refetch } = useGetUsersQuery(
+    queryParams,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const [deleteUser] = useDeleteUserMutation();
 
@@ -242,6 +245,7 @@ const UsersMgmtPage = () => {
             fetchNextPage={fetchNextPage}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            activeRole={activeRole}
           />
         ) : (
           <div id="users-scroll-container" className="h-full overflow-y-auto">
@@ -298,6 +302,7 @@ const UsersMgmtPage = () => {
         <CreateUserWizard
           editUser={wizardUser}
           onClose={() => setWizardUser(undefined)}
+          onSuccess={refetch}
         />
       )}
 

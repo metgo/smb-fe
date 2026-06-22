@@ -46,6 +46,7 @@ interface UserFormData {
 interface CreateUserWizardProps {
   onClose: () => void;
   editUser?: IUser | null;
+  onSuccess?: () => void;
 }
 
 const LANGUAGE_OPTIONS = [
@@ -62,7 +63,11 @@ const ROLE_OPTIONS = [
   { value: UserRole.TRAVELLER, label: "Traveller" },
 ];
 
-const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
+const CreateUserWizard = ({
+  onClose,
+  editUser,
+  onSuccess,
+}: CreateUserWizardProps) => {
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
@@ -81,11 +86,41 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
     creatableRoles.includes(r.value as UserRole),
   );
 
+  const [formData, setFormData] = useState<UserFormData>({
+    firstName: editUser?.firstName ?? "",
+    lastName: editUser?.lastName ?? "",
+    email: editUser?.email ?? "",
+    countryCode: editUser?.countryCode ?? "",
+    phoneNumber: editUser?.phoneNumber ?? "",
+    address: editUser?.address ?? "",
+    role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
+    languagePreference: editUser?.languagePreference ?? "en",
+    authorityId: editUser?.authority?._id ?? "",
+    dmoId: editUser?.dmo?._id ?? "",
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dmoDropdownOpen, setDmoDropdownOpen] = useState(false);
   const [authorityDropdownOpen, setAuthorityDropdownOpen] = useState(false);
   const dmoDropdownRef = useRef<HTMLDivElement>(null);
   const authorityDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (editUser) {
+      setFormData({
+        firstName: editUser.firstName ?? "",
+        lastName: editUser.lastName ?? "",
+        email: editUser.email ?? "",
+        countryCode: editUser.countryCode ?? "",
+        phoneNumber: editUser.phoneNumber ?? "",
+        address: editUser.address ?? "",
+        role: editUser.role ?? UserRole.TRAVELLER,
+        languagePreference: editUser.languagePreference ?? "en",
+        authorityId: editUser.authority?._id ?? "",
+        dmoId: editUser.dmo?._id ?? "",
+      });
+    }
+  }, [editUser]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -109,18 +144,6 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
   const scrollFieldIntoView = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const [formData, setFormData] = useState<UserFormData>({
-    firstName: editUser?.firstName ?? "",
-    lastName: editUser?.lastName ?? "",
-    email: editUser?.email ?? "",
-    countryCode: editUser?.countryCode ?? "",
-    phoneNumber: editUser?.phoneNumber ?? "",
-    address: editUser?.address ?? "",
-    role: editUser?.role ?? allowedRoleOptions[0]?.value ?? UserRole.TRAVELLER,
-    languagePreference: editUser?.languagePreference ?? "en",
-    authorityId: "",
-    dmoId: "",
-  });
 
   // For admin/superadmin who have no dmoId, let them pick a DMO to scope the authority list
 
@@ -136,8 +159,13 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
 
   const inputClass = `w-full px-3 py-2 border rounded-lg text-sm ${
     isDark
-      ? "text-white border-gray-600 placeholder-gray-500"
+      ? "text-white border-gray-600 placeholder-gray-500 bg-gray-900"
       : "bg-white text-black border-gray-300"
+  }`;
+  const disabledInputClass = `w-full px-3 py-2 border rounded-lg text-sm ${
+    isDark
+      ? "text-gray-500 border-gray-700 placeholder-gray-600 bg-gray-800 cursor-not-allowed"
+      : "bg-gray-100 text-gray-600 border-gray-300 cursor-not-allowed"
   }`;
   const labelClass = `block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`;
   const errorClass = "text-red-500 text-xs mt-1";
@@ -169,26 +197,46 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
       countryCode: formData.countryCode,
       phoneNumber: formData.phoneNumber,
       address: formData.address,
-      role: formData.role,
       languagePreference: formData.languagePreference,
     };
 
-    if (formData.role === UserRole.DMO && formData.dmoId) {
-      payload.dmoId = formData.dmoId;
-    }
-    if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
-      payload.authorityId = formData.authorityId;
+    // Only include role when creating, not when editing
+    if (!isEdit) {
+      payload.role = formData.role;
+
+      if (formData.role === UserRole.DMO && formData.dmoId) {
+        payload.dmoId = formData.dmoId;
+      }
+      if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
+        payload.authorityId = formData.authorityId;
+      }
+    } else {
+      // When editing, allow updating dmoId/authorityId but not role
+      if (formData.dmoId) {
+        payload.dmoId = formData.dmoId;
+      }
+      if (formData.authorityId) {
+        payload.authorityId = formData.authorityId;
+      }
     }
 
     try {
       if (isEdit && editUser) {
         await updateUser({ userId: editUser._id, body: payload }).unwrap();
         toast.success("User updated successfully");
+
+        // Trigger refetch immediately to ensure fresh data in parent
+        onSuccess?.();
+
+        // Close modal after a brief moment to allow refetch to start
+        setTimeout(() => {
+          onClose();
+        }, 50);
       } else {
         await createUser(payload).unwrap();
         toast.success("User created successfully");
+        onClose();
       }
-      onClose();
     } catch (err: any) {
       toast.error(err?.data?.message || "Something went wrong");
     }
@@ -242,16 +290,24 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
 
         {/* Email */}
         <div>
-          <label className={labelClass}>Email *</label>
+          <label className={labelClass}>
+            Email *{" "}
+            {isEdit && <span className="text-xs text-gray-500">(locked)</span>}
+          </label>
           <input
             type="email"
             value={formData.email}
             onChange={field("email")}
-            className={inputClass}
+            className={isEdit ? disabledInputClass : inputClass}
             placeholder="john.doe@example.com"
             disabled={isEdit}
           />
           {errors.email && <p className={errorClass}>{errors.email}</p>}
+          {isEdit && (
+            <p className="text-xs text-gray-500 mt-1">
+              Email cannot be changed after creation
+            </p>
+          )}
         </div>
 
         {/* Phone */}
@@ -299,10 +355,16 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
         {/* Role & Language */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Role *</label>
+            <label className={labelClass}>
+              Role *{" "}
+              {isEdit && (
+                <span className="text-xs text-gray-500">(locked)</span>
+              )}
+            </label>
             <select
               value={formData.role}
               onChange={(e) =>
+                !isEdit &&
                 setFormData((prev) => ({
                   ...prev,
                   role: e.target.value,
@@ -310,7 +372,8 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                   dmoId: "",
                 }))
               }
-              className={inputClass}
+              disabled={isEdit}
+              className={isEdit ? disabledInputClass : inputClass}
             >
               {allowedRoleOptions.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -319,6 +382,11 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
               ))}
             </select>
             {errors.role && <p className={errorClass}>{errors.role}</p>}
+            {isEdit && (
+              <p className="text-xs text-gray-500 mt-1">
+                Role cannot be changed after creation
+              </p>
+            )}
           </div>
           <div>
             <label className={labelClass}>Language Preference</label>
@@ -354,12 +422,13 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                     const selected = dmosAuthorities?.find(
                       (d) => d._id === formData.dmoId,
                     );
+                    const dmoData = selected || editUser?.dmo;
                     return (
                       <span className="flex items-center gap-2">
-                        {selected?.logoPath ? (
+                        {dmoData?.logoPath ? (
                           <img
-                            src={selected.logoPath}
-                            alt={selected.name}
+                            src={dmoData.logoPath}
+                            alt={dmoData.name}
                             className="w-5 h-5 rounded-full object-cover shrink-0"
                           />
                         ) : (
@@ -373,7 +442,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                             </svg>
                           </span>
                         )}
-                        {selected?.name}
+                        {dmoData?.name}
                       </span>
                     );
                   })()
@@ -467,12 +536,13 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                     const selected = allAuthorities.find(
                       (a) => a._id === formData.authorityId,
                     );
+                    const authorityData = selected || editUser?.authority;
                     return (
                       <span className="flex items-center gap-2">
-                        {selected?.logoPath ? (
+                        {authorityData?.logoPath ? (
                           <img
-                            src={selected.logoPath}
-                            alt={selected.name}
+                            src={authorityData.logoPath}
+                            alt={authorityData.name}
                             className="w-5 h-5 rounded-full object-cover shrink-0"
                           />
                         ) : (
@@ -486,7 +556,7 @@ const CreateUserWizard = ({ onClose, editUser }: CreateUserWizardProps) => {
                             </svg>
                           </span>
                         )}
-                        {selected?.name}
+                        {authorityData?.name}
                       </span>
                     );
                   })()
