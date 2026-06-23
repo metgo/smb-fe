@@ -15,7 +15,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
   { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "canceled", label: "Cancelled" },
 ];
 
 const getStatusColor = (status: string) => {
@@ -26,7 +26,7 @@ const getStatusColor = (status: string) => {
     case "pending":
       return "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700";
     case "refunded":
-    case "cancelled":
+    case "canceled":
       return "bg-red-500/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700";
     default:
       return "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700";
@@ -163,7 +163,8 @@ const StatusCell: React.FC<StatusCellProps> = ({
   const [open, setOpen] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const isThisUpdating = isUpdating && updatingId === ticket._id;
+  const ticketOrderId = ticket.orderProductId ?? ticket._id;
+  const isThisUpdating = isUpdating && updatingId === ticketOrderId;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
