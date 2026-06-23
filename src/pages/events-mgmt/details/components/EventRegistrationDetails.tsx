@@ -182,7 +182,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
   const handleSelect = async (value: string) => {
     setOpen(false);
     if (value === ticket.status) return;
-    if (value === "cancelled") {
+    if (value === "canceled") {
       setShowCancelDialog(true);
       return;
     }
@@ -190,7 +190,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
   };
 
   const handleCancelConfirm = async (reason: string) => {
-    await onUpdate(ticket.orderProductId ?? ticket._id, "cancelled", reason);
+    await onUpdate(ticket.orderProductId ?? ticket._id, "canceled", reason);
     setShowCancelDialog(false);
   };
 
