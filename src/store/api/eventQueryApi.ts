@@ -104,6 +104,17 @@ export const eventQueryApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+
+    getPublicEventTicket: builder.query<
+      any,
+      { eventId: string; ticketId: string }
+    >({
+      query: ({ eventId, ticketId }) => ({
+        url: `${endpoints.publicEventTicket}/${eventId}/${ticketId}`,
+        method: "GET",
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -116,4 +127,6 @@ export const {
   useGetAllUpcomingEventsQuery,
   useGetEventTicketsQuery,
   useLazyGetEventTicketsQuery,
+  useGetPublicEventTicketQuery,
+  useLazyGetPublicEventTicketQuery,
 } = eventQueryApi;

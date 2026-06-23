@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import {
   Calendar,
   Clock,
@@ -14,8 +13,7 @@ import {
   Ticket,
 } from "lucide-react";
 
-import { envKeys } from "@/lib/envKeys";
-import { endpoints } from "@/lib/endpoints";
+import { useGetPublicEventTicketQuery } from "@/store/api/eventQueryApi";
 
 interface TicketDay {
   date: string;
@@ -106,27 +104,13 @@ export default function PublicTicketPage() {
     ticketId: string;
   }>();
 
-  const [ticket, setTicket] = useState<IPublicTicket | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, isError } = useGetPublicEventTicketQuery(
+    { eventId: eventId!, ticketId: ticketId! },
+    { skip: !eventId || !ticketId },
+  );
+  const ticket = data as IPublicTicket | undefined;
 
-  useEffect(() => {
-    if (!eventId || !ticketId) {
-      setError("Invalid ticket link.");
-      setLoading(false);
-      return;
-    }
-
-    axios
-      .get(
-        `${envKeys.baseUrl}${endpoints.publicEventTicket}/${eventId}/${ticketId}`,
-      )
-      .then((res) => setTicket(res.data))
-      .catch(() => setError("Ticket not found or the link is invalid."))
-      .finally(() => setLoading(false));
-  }, [eventId, ticketId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -137,7 +121,7 @@ export default function PublicTicketPage() {
     );
   }
 
-  if (error || !ticket) {
+  if (isError || !ticket) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
@@ -145,7 +129,9 @@ export default function PublicTicketPage() {
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             Ticket Not Found
           </h2>
-          <p className="text-gray-500 text-sm">{error}</p>
+          <p className="text-gray-500 text-sm">
+            Ticket not found or the link is invalid.
+          </p>
         </div>
       </div>
     );
