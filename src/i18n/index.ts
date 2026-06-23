@@ -20,6 +20,7 @@ i18n
       "products",
       "poi",
       "campaign",
+      "tour",
     ],
     defaultNS: "common",
 

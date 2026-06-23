@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   Calendar,
@@ -554,24 +554,6 @@ export default function EventsWithViewMode({
                 <span className="text-sm line-clamp-2">
                   {event.name || event.nameHe || event.nameAr}
                 </span>
-              </div>
-            ),
-          },
-          {
-            key: "website",
-            label: t("websites"),
-            render: (event) => (
-              <div className="flex flex-col">
-                {event?.associatedWebsites?.map((item: any) => (
-                  <Link
-                    key={item._id}
-                    to={item?.url}
-                    target="_blank"
-                    className="text-xs sm:text-sm underline text-blue-500 hover:font-bold"
-                  >
-                    {item.name || "-"}
-                  </Link>
-                ))}
               </div>
             ),
           },

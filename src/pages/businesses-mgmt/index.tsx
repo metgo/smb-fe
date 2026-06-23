@@ -18,6 +18,7 @@ import {
   Landmark,
   Theater,
   Map,
+  Compass,
 } from "lucide-react";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
@@ -39,8 +40,16 @@ import SearchInput from "@/components/shared/SearchInput";
 import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
 import { FilterByStatus } from "@/components/filter-fields";
+import {
+  TourProvider,
+  TourPortal,
+  useTour,
+  BUSINESS_LIST_TOUR_ID,
+} from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 
-// Constants & Types
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const LIMIT = 20;
 const COLUMNS_STORAGE_KEY = "businessesTableColumns";
 
@@ -79,11 +88,13 @@ const columnDefinitions: Array<{
   { key: "categories", isDefault: false },
 ];
 
-// Main Component
-export default function BusinessesMgmtPage() {
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+function BusinessesMgmtPageInner() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("toast");
+  const { t: tt } = useTranslation("tour");
   const { isDark, language, bgSecondary, borderColor } = useThemeClasses();
 
   // Auth state
@@ -114,6 +125,94 @@ export default function BusinessesMgmtPage() {
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const hasSavedFilters =
     filters.hasProductFilter !== "all" || filters.status !== "all";
+
+  // ─── Tour integration ─────────────────────────────────────────────────
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    startTour,
+    refreshTargetRect,
+  } = useTour();
+
+  const buildSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "business_list.welcome.title",
+        desc: "business_list.welcome.desc",
+      },
+      {
+        id: "page-header",
+        target: '[data-tour="page-header"]',
+        placement: "bottom",
+        title: "business_list.page_header.title",
+        desc: "business_list.page_header.desc",
+      },
+      {
+        id: "stats",
+        target: '[data-tour="stats"]',
+        placement: "bottom",
+        title: "business_list.stats.title",
+        desc: "business_list.stats.desc",
+      },
+      {
+        id: "search",
+        target: '[data-tour="search"]',
+        placement: "bottom",
+        title: "business_list.search.title",
+        desc: "business_list.search.desc",
+      },
+      {
+        id: "toolbar",
+        target: '[data-tour="toolbar"]',
+        placement: "bottom",
+        title: "business_list.toolbar.title",
+        desc: "business_list.toolbar.desc",
+      },
+      {
+        id: "filter-panel",
+        target: '[data-tour="filter-panel"]',
+        placement: "bottom",
+        title: "business_list.filter_panel.title",
+        desc: "business_list.filter_panel.desc",
+      },
+      {
+        id: "business-list",
+        target: '[data-tour="business-list"]',
+        placement: "top",
+        title: "business_list.business_list.title",
+        desc: "business_list.business_list.desc",
+      },
+    ],
+    [],
+  );
+
+  // Auto-start once per user
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTour(buildSteps(), {
+        tourId: BUSINESS_LIST_TOUR_ID,
+        autoOnce: true,
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [startTour, buildSteps]);
+
+  // Open the filter panel while the tour is on the "filter-panel" step so the
+  // spotlight can focus on the revealed panel; leave other step state unchanged.
+  useEffect(() => {
+    if (!isTourOpen) return;
+    const stepId = tourSteps[currentStep]?.id;
+    if (stepId === "filter-panel") {
+      setShowFilters(true);
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 40);
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
   // Load column visibility
   useEffect(() => {
@@ -361,23 +460,28 @@ export default function BusinessesMgmtPage() {
         <div
           className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
         >
-          <PageHeader
-            title={t("businesses_management")}
-            description={t("businesses_management_desc")}
-            btnLabel={t("add_business")}
-            onClick={() => setIsCreateModalOpen(true)}
-            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            totalCount={totalData ?? 0}
-          />
-          <PageStats
-            stats={businessStats}
-            isLoading={isStatsLoading}
-            className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-4"
-          />
+          <div data-tour="page-header">
+            <PageHeader
+              title={t("businesses_management")}
+              description={t("businesses_management_desc")}
+              btnLabel={t("add_business")}
+              onClick={() => setIsCreateModalOpen(true)}
+              h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+              totalCount={totalData ?? 0}
+            />
+          </div>
+
+          <div data-tour="stats">
+            <PageStats
+              stats={businessStats}
+              isLoading={isStatsLoading}
+              className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-4"
+            />
+          </div>
 
           {/* Search & Actions */}
           <div className="py-3 flex flex-col gap-2">
-            <div className="flex-1 relative">
+            <div className="flex-1 relative" data-tour="search">
               <SearchInput
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
@@ -385,7 +489,10 @@ export default function BusinessesMgmtPage() {
               />
             </div>
 
-            <div className="flex items-center  justify-between gap-2 w-full">
+            <div
+              className="flex items-center justify-between gap-2 w-full"
+              data-tour="toolbar"
+            >
               <div className="flex items-center gap-2">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
                 <ShowColumns
@@ -407,18 +514,39 @@ export default function BusinessesMgmtPage() {
                 />
               </div>
 
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="businessViewMode"
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                  }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
+                </button>
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="businessViewMode"
+                />
+              </div>
             </div>
           </div>
 
           {/* Filters Panel */}
           {(showFilters || hasSavedFilters) && (
             <div
-              className={`border-t py-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
+              data-tour="filter-panel"
+              className={`border-t py-2 ${
+                isTourOpen && tourSteps[currentStep]?.id === "filter-panel"
+                  ? "z-10001 relative"
+                  : ""
+              } ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
             >
               <div className="flex flex-wrap items-start gap-3 px-3 w-full">
                 <FilterByStatus filters={filters} setFilters={setFilters} />
@@ -498,7 +626,7 @@ export default function BusinessesMgmtPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto mt-2">
+        <div className="flex-1 overflow-y-auto mt-2" data-tour="business-list">
           {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
@@ -557,6 +685,18 @@ export default function BusinessesMgmtPage() {
           />
         )}
       </div>
+
+      <TourPortal />
     </>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function BusinessesMgmtPage() {
+  return (
+    <TourProvider>
+      <BusinessesMgmtPageInner />
+    </TourProvider>
   );
 }
