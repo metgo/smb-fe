@@ -46,6 +46,8 @@ export const routes = {
   promotionMgmt: "/promotions-management",
 
   users: "/users",
+
+  publicTicket: "/ticket",
 };
 
 export type RouteKey = keyof typeof routes;

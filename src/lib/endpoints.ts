@@ -64,6 +64,9 @@ export const endpoints = {
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
 
+  // public
+  publicEventTicket: "/public/event-tickets",
+
   // events
   events: "/events",
   eventsStats: "/events-stats",

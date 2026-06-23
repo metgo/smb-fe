@@ -54,6 +54,7 @@ import {
 import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
+import PublicTicketPage from "./pages/public-ticket";
 import { UserRole } from "./enums/user.types";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
@@ -445,6 +446,15 @@ function App() {
           ),
           errorElement: <ErrorUiPage />,
           children: [{ path: routes.auth, element: <AuthPage /> }],
+        },
+        {
+          path: `${routes.publicTicket}/:eventId/:ticketId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicTicketPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
       ]),
