@@ -26,6 +26,7 @@ interface ExportOrdersButtonProps {
   isSummaryMode: boolean;
   summaryData: any[];
   t: (key: string) => string;
+  tc: (key: string) => string;
 }
 
 export default function ExportOrdersButton({
@@ -36,6 +37,7 @@ export default function ExportOrdersButton({
   isSummaryMode,
   summaryData,
   t,
+  tc,
 }: ExportOrdersButtonProps) {
   const { isDark } = useThemeClasses();
   const [open, setOpen] = useState(false);
@@ -116,7 +118,7 @@ export default function ExportOrdersButton({
       [t("business_address_location")]: row.businessAddressLocation ?? "-",
       [t("total_no_of_orders")]: row.totalNoOfOrders ?? "-",
       [t("total_amount")]: row.totalAmount
-        ? `₪${((row.totalAmount || 0) + (row.totalDeliveryFee || 0)).toLocaleString()}`
+        ? `₪${(row.totalAmount || 0).toLocaleString()}`
         : "-",
       [t("total_amount_paid_by_credit_card")]: row.totalAmountPaidByCreditCard
         ? `₪${row.totalAmountPaidByCreditCard.toLocaleString()}`
@@ -177,7 +179,7 @@ export default function ExportOrdersButton({
     <div className="relative" ref={ref}>
       <button onClick={() => setOpen((v) => !v)} className={btnBase}>
         <Download className="w-4 h-4 shrink-0" />
-        <span className="hidden sm:inline">{t("export")}</span>
+        <span className="hidden sm:inline">{tc("export")}</span>
       </button>
 
       {open && (
