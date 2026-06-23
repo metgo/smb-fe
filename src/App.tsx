@@ -376,6 +376,15 @@ function App() {
     () =>
       createBrowserRouter([
         {
+          path: `${routes.publicTicket}/:eventId/:ticketId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicTicketPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+        },
+        {
           element: (
             <Suspense fallback={<SplashLoader />}>
               <ProtectedRoute>
@@ -446,15 +455,6 @@ function App() {
           ),
           errorElement: <ErrorUiPage />,
           children: [{ path: routes.auth, element: <AuthPage /> }],
-        },
-        {
-          path: `${routes.publicTicket}/:eventId/:ticketId`,
-          element: (
-            <Suspense fallback={<SplashLoader />}>
-              <PublicTicketPage />
-            </Suspense>
-          ),
-          errorElement: <ErrorUiPage />,
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
       ]),
