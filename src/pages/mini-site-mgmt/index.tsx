@@ -379,8 +379,6 @@ export default function MiniSiteMgmtPage() {
                   <SearchInput
                     setSearchTerm={setSearchTerm}
                     searchTerm={searchTerm}
-                    isDark={isDark}
-                    isRTL={isRTL}
                     placeholder={t("search_campaigns")}
                   />
                 </div>

@@ -134,7 +134,6 @@ export default function MiniSiteDetailsPage() {
 
         {/* Tabs */}
         <TabsSection
-          t={t}
           tabs={miniSiteTabs}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
