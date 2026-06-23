@@ -669,7 +669,7 @@ function BusinessesMgmtPageInner() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-2" data-tour="business-list">
-          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
+          {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >

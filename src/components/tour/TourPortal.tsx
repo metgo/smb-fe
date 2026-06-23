@@ -170,6 +170,7 @@ function TourCard() {
           pointerEvents: "all",
           ...cardPos,
         }}
+        dir={isRTL ? "rtl" : "ltr"}
         className={`rounded-2xl shadow-2xl overflow-hidden select-none ${
           isDark
             ? "bg-gray-900 border border-gray-700/60 shadow-black/40"
@@ -267,9 +268,7 @@ function TourCard() {
             {t("nav.skip")}
           </button>
 
-          <div
-            className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
-          >
+          <div className="flex items-center gap-2">
             {!isFirst && (
               <button
                 onClick={prevStep}
