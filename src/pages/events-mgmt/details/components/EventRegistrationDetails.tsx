@@ -273,12 +273,8 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const LIMIT = 10;
-  const [page, setPage] = useState(1);
   const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [totalData, setTotalData] = useState(0);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
 
@@ -290,43 +286,22 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const loadPage = useCallback(
-    async (pageNum: number, reset = false, search = "") => {
+  const load = useCallback(
+    async (search = "") => {
       if (!eventId) return;
       const result = await fetchTickets(
-        { eventId, page: pageNum, limit: LIMIT, ...(search ? { search } : {}) },
+        { eventId, ...(search ? { search } : {}) },
         false,
       ).unwrap();
-      setHasNextPage(result.meta.hasNextPage);
       setTotalData(result.totalData);
-      setAllTickets((prev) =>
-        reset ? result.data : [...prev, ...result.data],
-      );
-      setPage(pageNum);
+      setAllTickets(result.data);
     },
     [eventId, fetchTickets],
   );
 
   useEffect(() => {
-    loadPage(1, true, debouncedSearch);
-  }, [loadPage, debouncedSearch]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isLoadingTickets) {
-          loadPage(page + 1, false, debouncedSearch);
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasNextPage, isLoadingTickets, page, loadPage, debouncedSearch]);
+    load(debouncedSearch);
+  }, [load, debouncedSearch]);
 
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateEventTicketStatusMutation();
@@ -344,7 +319,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           status: t(status, { defaultValue: status }),
         }),
       );
-      await loadPage(1, true, debouncedSearch);
+      await load(debouncedSearch);
     } catch {
       toast.error(t("failed_to_update_order_status"));
     } finally {
@@ -449,7 +424,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   };
 
   return (
-    <div className="p-4 max-h-[75vh] overflow-y-auto">
+    <div className="max-h-[75vh]">
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
@@ -475,7 +450,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           />
         </div>
 
-        {filteredTickets.length === 0 ? (
+        {filteredTickets.length === 0 && isLoadingTickets ? (
+          <div className="flex justify-center py-16">
+            <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filteredTickets.length === 0 ? (
           <div className="text-center py-16">
             <Users
               className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`}
@@ -585,14 +564,6 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                 },
               ]}
             />
-          </div>
-        )}
-
-        <div ref={sentinelRef} className="h-1" />
-
-        {isLoadingTickets && (
-          <div className="flex justify-center py-4">
-            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </section>
