@@ -317,10 +317,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       t("full_name"),
       t("phone"),
       t("email"),
-      t("ticket_type"),
+      t("ticket_name"),
       t("payment_mode"),
+      t("amount"),
       t("status"),
-      t("registration_date"),
+      t("purchased_date"),
     ];
     const rows = filteredTickets.map((ticket) => [
       `${ticket.firstName} ${ticket.lastName || ""}`.trim(),
@@ -328,8 +329,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       ticket.email,
       ticket.ticketName,
       ticket.paymentMode?.join(", "),
+      ticket.amount != null ? `₪${ticket.amount}` : "-",
       ticket.status,
-      new Date(ticket.createdAt).toLocaleDateString(),
+      ticket.paymentDate
+        ? new Date(ticket.paymentDate).toLocaleDateString()
+        : "-",
     ]);
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -367,10 +371,11 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                 <th>${t("full_name")}</th>
                 <th>${t("phone")}</th>
                 <th>${t("email")}</th>
-                <th>${t("ticket_type")}</th>
+                <th>${t("ticket_name")}</th>
                 <th>${t("payment_mode")}</th>
+                <th>${t("amount")}</th>
                 <th>${t("status")}</th>
-                <th>${t("registration_date")}</th>
+                <th>${t("purchased_date")}</th>
               </tr>
             </thead>
             <tbody>
@@ -383,8 +388,9 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   <td>${ticket.email || "-"}</td>
                   <td>${ticket.ticketName || "-"}</td>
                   <td>${ticket.paymentMode?.join(", ") || "-"}</td>
+                  <td>${ticket.amount != null ? `₪${ticket.amount}` : "-"}</td>
                   <td>${ticket.status || "-"}</td>
-                  <td>${new Date(ticket.createdAt).toLocaleDateString()}</td>
+                  <td>${ticket.paymentDate ? new Date(ticket.paymentDate).toLocaleDateString() : "-"}</td>
                 </tr>
               `,
                 )
@@ -473,12 +479,21 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   ),
                 },
                 {
-                  key: "ticket_type",
-                  label: t("ticket_type"),
+                  key: "ticket_name",
+                  label: t("ticket_name"),
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm text-gray-500">
-                      {ticket.ticketName || "-"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {ticket.ticketImage?.[0]?.image && (
+                        <img
+                          src={ticket.ticketImage[0].image}
+                          alt={ticket.ticketName}
+                          className="w-8 h-8 rounded object-cover shrink-0"
+                        />
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {ticket.ticketName || "-"}
+                      </span>
+                    </div>
                   ),
                 },
                 {
@@ -487,6 +502,16 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   render: (ticket: IEventTicket) => (
                     <span className="text-sm text-gray-500 capitalize">
                       {ticket.paymentMode?.join(", ") || "-"}
+                    </span>
+                  ),
+                },
+                {
+                  key: "amount",
+                  label: t("amount"),
+                  sortable: true,
+                  render: (ticket: IEventTicket) => (
+                    <span className="text-sm font-medium">
+                      {ticket.amount != null ? `₪${ticket.amount}` : "-"}
                     </span>
                   ),
                 },
@@ -504,15 +529,16 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   ),
                 },
                 {
-                  key: "registration_date",
-                  label: t("registration_date"),
+                  key: "purchased_date",
+                  label: t("purchased_date"),
                   sortable: true,
                   render: (ticket: IEventTicket) =>
-                    new Date(ticket.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }),
+                    ticket.paymentDate
+                      ? new Date(ticket.paymentDate).toLocaleDateString(
+                          "en-US",
+                          { month: "short", day: "numeric", year: "numeric" },
+                        )
+                      : "-",
                 },
               ]}
             />
