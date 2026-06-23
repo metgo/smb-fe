@@ -291,6 +291,22 @@
 
   "completed": "Completed",
   "processing": "Purchased",
+  "purchased": "Purchased",
+
+  "public_ticket_loading": "Loading ticket...",
+  "ticket_not_found": "Ticket Not Found",
+  "ticket_invalid_link": "Ticket not found or the link is invalid.",
+  "event_ticket_header": "Event Ticket",
+  "attendee": "Attendee",
+  "payment": "Payment",
+  "method": "Method",
+  "date": "Date",
+  "ticket_id_label": "Ticket ID",
+  "mark_as_completed": "Mark as Completed",
+  "completed_checkmark": "Completed ✓",
+  "payment_successful": "Payment Successful",
+  "payment_failed_label": "Payment Failed",
+  "payment_pending_label": "Payment Pending",
 
   "cancel_order": "Cancel Order",
   "cancel_order_reason_prompt": "Please provide a reason for cancelling this order.",

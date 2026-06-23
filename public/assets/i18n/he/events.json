@@ -320,6 +320,22 @@
 
   "completed": "הושלם",
   "processing": "נרכש",
+  "purchased": "נרכש",
+
+  "public_ticket_loading": "טוען כרטיס...",
+  "ticket_not_found": "הכרטיס לא נמצא",
+  "ticket_invalid_link": "הכרטיס לא נמצא או הקישור אינו תקין.",
+  "event_ticket_header": "כרטיס אירוע",
+  "attendee": "משתתף",
+  "payment": "תשלום",
+  "method": "שיטת תשלום",
+  "date": "תאריך",
+  "ticket_id_label": "מזהה כרטיס",
+  "mark_as_completed": "סמן כהושלם",
+  "completed_checkmark": "הושלם ✓",
+  "payment_successful": "התשלום בוצע בהצלחה",
+  "payment_failed_label": "התשלום נכשל",
+  "payment_pending_label": "התשלום בהמתנה",
 
   "cancel_order": "ביטול הזמנה",
   "cancel_order_reason_prompt": "אנא ספק סיבה לביטול הזמנה זו.",
