@@ -111,6 +111,7 @@ export const endpoints = {
 
   // cmpaings
   campaign: "/admin/campaign",
+  campaignDetails: "/campaign-details",
 
   // Admin endpoints
   dynamicPage: "/settings",

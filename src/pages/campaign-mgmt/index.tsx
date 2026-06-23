@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Globe, Megaphone } from "lucide-react";
+import { Globe, Megaphone, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -12,11 +13,17 @@ import {
   TabsSection,
 } from "@/components/shared";
 import { useGetAllCampaignsQuery } from "@/store/api/websiteConfigApi";
+import {
+  useDeleteCampaignMutation,
+  useUpdateCampaignMutation,
+} from "@/store/api/campaignApi";
 import EntityCardsSkeleton from "@/components/skeletons/EntityCardSkeleton";
+import CreateCampaignWizard from "./components/CreateCampaignWizard";
 
 const ALL_TAB = "__all__";
 
 const CampaignsMgmtPage = () => {
+  const { t } = useTranslation("campaign");
   const { allWebsites } = useCommon();
   const {
     data: campaigns,
@@ -26,9 +33,16 @@ const CampaignsMgmtPage = () => {
   } = useGetAllCampaignsQuery();
   const { bgPrimary, isDark, textTertiary } = useThemeClasses();
 
+  const [deleteCampaign] = useDeleteCampaignMutation();
+  const [updateCampaign] = useUpdateCampaignMutation();
+
   const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(
+    null,
+  );
 
   const allCampaigns = campaigns ?? [];
 
@@ -39,13 +53,14 @@ const CampaignsMgmtPage = () => {
 
   const handleToggleActive = async (campaign: ICampaignRes) => {
     try {
-      // TODO: call update mutation when available
-      toast.success(
-        `Campaign ${campaign.isActive ? "deactivated" : "activated"}`,
-      );
+      await updateCampaign({
+        id: campaign._id,
+        body: { isActive: !campaign.isActive } as any,
+      }).unwrap();
+      toast.success(campaign.isActive ? t("deactivated") : t("activated"));
       refetch();
     } catch {
-      toast.error("Failed to update campaign");
+      toast.error(t("toggle_failed"));
     }
   };
 
@@ -53,19 +68,31 @@ const CampaignsMgmtPage = () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      // TODO: call delete mutation when available
-      toast.success("Campaign deleted successfully");
+      await deleteCampaign(deleteTarget).unwrap();
+      toast.success(t("deleted"));
       refetch();
+    } catch {
+      toast.error(t("delete_failed"));
     } finally {
       setIsDeleting(false);
       setDeleteTarget(null);
     }
   };
 
+  const handleWizardClose = () => {
+    setShowWizard(false);
+    setEditingCampaignId(null);
+  };
+
+  const handleEdit = (campaign: ICampaignRes) => {
+    setEditingCampaignId(campaign._id);
+    setShowWizard(true);
+  };
+
   const activeWebsite = (allWebsites ?? []).find((w) => w._id === activeTab);
 
   const websiteTabs = [
-    { id: ALL_TAB, label: "All", icon: Globe },
+    { id: ALL_TAB, label: t("all"), icon: Globe },
     ...(allWebsites ?? []).map((w) => ({
       id: w._id,
       label: w.name,
@@ -77,9 +104,11 @@ const CampaignsMgmtPage = () => {
     <div className="flex flex-col h-full overflow-y-auto pt-10 md:pt-0">
       <div className={clsx("sticky top-0 z-10", bgPrimary)}>
         <PageHeader
-          title="Campaign Management"
+          title={t("campaign_management")}
           h1Gradient="text-transparent bg-gradient-to-r from-violet-500 to-purple-500"
           totalCount={visibleCampaigns.length}
+          btnLabel={t("new_campaign")}
+          onClick={() => setShowWizard(true)}
         />
 
         <TabsSection
@@ -94,15 +123,24 @@ const CampaignsMgmtPage = () => {
           <EntityCardsSkeleton count={10} />
         ) : (
           <>
-            {visibleCampaigns.length === 0 && (!isLoading || !isFetching) ? (
+            {visibleCampaigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                 <Megaphone className="w-12 h-12 mb-4 text-gray-300" />
-                <p className="text-lg font-medium mb-1">No campaigns found</p>
-                <p className="text-sm text-gray-400">
-                  {activeTab === ALL_TAB
-                    ? "No campaigns available."
-                    : "No campaigns for this website."}
+                <p className="text-lg font-medium mb-1">
+                  {t("no_campaigns_found")}
                 </p>
+                <p className="text-sm text-gray-400 mb-6">
+                  {activeTab === ALL_TAB
+                    ? t("no_campaigns_available")
+                    : t("no_campaigns_for_website")}
+                </p>
+                <button
+                  onClick={() => setShowWizard(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition-colors cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t("create_first_campaign")}
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4 p-1">
@@ -116,7 +154,7 @@ const CampaignsMgmtPage = () => {
                     }
                     isActive={campaign.isActive ?? true}
                     onToggleActive={() => handleToggleActive(campaign)}
-                    onEdit={() => console.log("edit", campaign._id)}
+                    onEdit={() => handleEdit(campaign)}
                     onDelete={() => setDeleteTarget(campaign._id)}
                     onMigrateToProd={() => console.log("migrate", campaign._id)}
                   >
@@ -180,12 +218,21 @@ const CampaignsMgmtPage = () => {
         )}
       </div>
 
+      {showWizard && (
+        <CreateCampaignWizard
+          onClose={handleWizardClose}
+          refetch={refetch}
+          campaignId={editingCampaignId ?? undefined}
+          opMode={editingCampaignId ? "EDIT" : "CREATE"}
+        />
+      )}
+
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Delete Campaign"
-        message="Are you sure you want to delete this campaign? This action cannot be undone."
+        title={t("delete_campaign")}
+        message={t("delete_campaign_message")}
         variant="danger"
-        confirmText="Delete"
+        confirmText={t("delete")}
         loading={isDeleting}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

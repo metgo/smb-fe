@@ -12,7 +12,15 @@ i18n
     supportedLngs: ["he", "ar", "en"],
     debug: false,
 
-    ns: ["common", "dashboard", "events", "businesses", "products", "poi"],
+    ns: [
+      "common",
+      "dashboard",
+      "events",
+      "businesses",
+      "products",
+      "poi",
+      "campaign",
+    ],
     defaultNS: "common",
 
     interpolation: {

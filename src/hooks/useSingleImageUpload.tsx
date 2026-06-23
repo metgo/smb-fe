@@ -40,7 +40,7 @@ export const useSingleImageUpload = ({
   }, [initialImage, image]);
 
   /* ---------------- File select ---------------- */
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = (file: File, autoUpload = false) => {
     setImage({
       id: Date.now(),
       file,
@@ -48,6 +48,7 @@ export const useSingleImageUpload = ({
       progress: 0,
       status: "idle",
     });
+    if (autoUpload) uploadImage(file);
   };
 
   /* ---------------- Signed URL ---------------- */
@@ -63,13 +64,14 @@ export const useSingleImageUpload = ({
   };
 
   /* ---------------- Upload ---------------- */
-  const uploadImage = async () => {
-    if (!image?.file) return;
+  const uploadImage = async (fileOverride?: File) => {
+    const file = fileOverride ?? image?.file;
+    if (!file) return;
 
     try {
       setImage((prev) => prev && { ...prev, status: "uploading", progress: 0 });
 
-      const webpFile = await convertToWebP(image.file);
+      const webpFile = await convertToWebP(file);
       const { signedUrl, gcsURL } = await generateSignedUrl(webpFile);
 
       await uploadWithProgress(webpFile, signedUrl, (progress) => {
@@ -120,11 +122,11 @@ export const useSingleImageUpload = ({
 
     try {
       await deleteMedia({ imageUrl: image.gcsURL });
-      removeImage();
       toast.success(t("image_deleted"));
     } catch {
       toast.error(t("delete_failed"));
     } finally {
+      removeImage();
       setDeleteTarget(null);
     }
   };

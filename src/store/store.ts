@@ -39,6 +39,7 @@ import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
+import { campaignApi } from "./api/campaignApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
@@ -90,6 +91,7 @@ export const store = configureStore({
     [promotionsApi.reducerPath]: promotionsApi.reducer,
     [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
     [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
+    [campaignApi.reducerPath]: campaignApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -127,6 +129,7 @@ export const store = configureStore({
       promotionsApi.middleware,
       websiteConfigApi.middleware,
       websiteCrashApi.middleware,
+      campaignApi.middleware,
       nprogressMiddleware,
     ),
 });
