@@ -18,7 +18,6 @@ import {
   Landmark,
   Theater,
   Map,
-  Compass,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -52,9 +51,7 @@ import type { TourStep } from "@/components/tour";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const LIMIT = 20;
-const STORAGE_KEY = "business_query_state";
 const COLUMNS_STORAGE_KEY = "businessesTableColumns";
-const SEARCH_STORAGE_KEY = "businessSearchTerm";
 
 const defaultColumns: IBusinessColumnVisibility = {
   impact: true,
@@ -219,19 +216,6 @@ function BusinessesMgmtPageInner() {
     }
   }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
-  // ─── Load persisted state on mount (safe, no render loop) ─────────
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (saved?.filters) setFilters(saved.filters);
-      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
-      if (saved?.page) setPage(saved.page);
-      if (saved?.viewMode) setViewMode(saved.viewMode);
-    } catch (e) {
-      console.error("Failed to load saved state:", e);
-    }
-  }, []);
-
   // Load column visibility
   useEffect(() => {
     try {
@@ -244,12 +228,6 @@ function BusinessesMgmtPageInner() {
       console.error("Failed to load column settings:", e);
     }
   }, []);
-
-  // ─── Persist state to localStorage (debounced via effect) ─────────
-  useEffect(() => {
-    const queryState = { page, filters, searchTerm, viewMode };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [page, filters, searchTerm, viewMode]);
 
   useEffect(() => {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
@@ -288,9 +266,7 @@ function BusinessesMgmtPageInner() {
       locale: language,
       externalApiId: websiteId,
     };
-    const finalSearchTerm =
-      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
+    if (searchTerm) params.search = searchTerm;
     if (filters.status !== "all") params.status = filters.status;
     if (filters.hasProductFilter !== "all") {
       params.hasProductFilter = filters.hasProductFilter === "yes";
@@ -367,8 +343,6 @@ function BusinessesMgmtPageInner() {
   );
 
   const clearFilter = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SEARCH_STORAGE_KEY);
     setFilters({ status: "all", hasProductFilter: "all" });
     setSearchTerm("");
     setPage(1);
@@ -514,7 +488,6 @@ function BusinessesMgmtPageInner() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
@@ -543,40 +516,11 @@ function BusinessesMgmtPageInner() {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <ViewModeToggle
-                  onChange={(mode) => {
-                    setViewMode(mode);
-                    localStorage.setItem(
-                      STORAGE_KEY,
-                      JSON.stringify({
-                        ...JSON.parse(
-                          localStorage.getItem(STORAGE_KEY) || "{}",
-                        ),
-                        viewMode: mode,
-                      }),
-                    );
-                  }}
-                  value={viewMode}
-                  tableName="businessViewMode"
-                />
-
-                {/* Tour trigger */}
-                <button
-                  onClick={() => startTour(buildSteps())}
-                  title={tt("start_tour")}
-                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
-                  }`}
-                >
-                  <Compass className="w-4 h-4" />
-                  <span className="hidden sm:inline text-sm font-medium">
-                    {tt("start_tour")}
-                  </span>
-                </button>
-              </div>
+              <ViewModeToggle
+                onChange={setViewMode}
+                value={viewMode}
+                tableName="businessViewMode"
+              />
             </div>
           </div>
 

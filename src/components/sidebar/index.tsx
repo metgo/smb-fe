@@ -35,6 +35,7 @@ import {
   Gift,
   ChevronLeft,
   CheckSquare,
+  AlertTriangle,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -316,6 +317,17 @@ export default function Sidebar() {
           icon: File,
           isEnabled: false,
         },
+        ...(isSuperadmin
+          ? [
+              {
+                id: "website-crashes",
+                path: routes.websiteCrashes,
+                label: "Website Crashes",
+                icon: AlertTriangle,
+                isEnabled: true,
+              },
+            ]
+          : []),
       ],
     },
   ];
