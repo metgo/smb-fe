@@ -44,6 +44,17 @@ export const eventQueryApi = createApi({
       providesTags: ["Event"],
     }),
 
+    getEventTickets: builder.query<
+      any[],
+      { eventId: string; firstName?: string; phone?: string; email?: string }
+    >({
+      query: ({ eventId, ...params }) => ({
+        url: `${endpoints.eventTickets}/${eventId}`,
+        method: "GET",
+        params,
+      }),
+    }),
+
     getAllEvents: builder.query<any, EventListParams>({
       query: (params) => ({
         url: `${endpoints.events}?sortBy=DESC`,
@@ -84,4 +95,5 @@ export const {
   useLazyGetEventByIdQuery,
   useGetEventsStatsQuery,
   useGetAllUpcomingEventsQuery,
+  useGetEventTicketsQuery,
 } = eventQueryApi;

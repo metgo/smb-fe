@@ -74,6 +74,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   tickets: "/tickets",
+  eventTickets: "/event-tickets",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

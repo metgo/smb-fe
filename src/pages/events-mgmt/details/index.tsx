@@ -17,6 +17,7 @@ import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
   useGetEventsStatsQuery,
+  useGetEventTicketsQuery,
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -85,6 +86,9 @@ export default function EventDetailsPage() {
   );
   const { data: eventStatsData, isLoading: isStatsLoading } =
     useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
+  const { data: eventTickets = [] } = useGetEventTicketsQuery(
+    eventId ? { eventId } : skipToken,
+  );
 
   const [updateEvent] = useUpdateEventMutation();
 
@@ -215,8 +219,7 @@ export default function EventDetailsPage() {
         return (
           <EventRegistrationDetails
             eventDetails={eventDetails}
-            registrantSearchQuery=""
-            setRegistrantSearchQuery={() => {}}
+            eventTickets={eventTickets}
           />
         );
       default:
