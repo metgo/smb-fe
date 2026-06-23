@@ -1,16 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { Search, Users, ChevronDown, X, AlertCircle } from "lucide-react";
+import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 import { ExportBtns } from "@/components/btns";
 import { useAppSelector } from "@/hooks/hooks";
 import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
-import { useGetEventTicketsQuery } from "@/store/api/eventQueryApi";
-import { skipToken } from "@reduxjs/toolkit/query";
+import { useLazyGetEventTicketsQuery } from "@/store/api/eventQueryApi";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
@@ -64,6 +63,7 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
   onCancel,
   isLoading,
 }) => {
+  const { t } = useTranslation("events");
   const [reason, setReason] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -88,7 +88,7 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
                 isDark ? "text-white" : "text-gray-900",
               )}
             >
-              Cancel Order
+              {t("cancel_order")}
             </h3>
             <p
               className={clsx(
@@ -96,7 +96,7 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Please provide a reason for cancelling this order.
+              {t("cancel_order_reason_prompt")}
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
           ref={inputRef}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Enter cancel reason..."
+          placeholder={t("cancel_reason_placeholder")}
           rows={3}
           className={clsx(
             "w-full rounded-lg border px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30",
@@ -126,14 +126,14 @@ const CancelDialog: React.FC<CancelDialogProps> = ({
                 : "bg-gray-100 hover:bg-gray-200 text-gray-700",
             )}
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             onClick={() => onConfirm(reason)}
             disabled={!reason.trim() || isLoading}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Updating..." : "Confirm Cancel"}
+            {isLoading ? t("updating") : t("confirm_cancel")}
           </button>
         </div>
       </div>
@@ -160,6 +160,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
   isUpdating,
   updatingId,
 }) => {
+  const { t } = useTranslation("events");
   const [open, setOpen] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -206,7 +207,9 @@ const StatusCell: React.FC<StatusCellProps> = ({
             isThisUpdating && "opacity-60 cursor-not-allowed",
           )}
         >
-          {isThisUpdating ? "Updating..." : ticket.status}
+          {isThisUpdating
+            ? t("updating")
+            : t(ticket.status, { defaultValue: ticket.status })}
           {!isThisUpdating && <ChevronDown className="w-3 h-3" />}
         </button>
 
@@ -236,7 +239,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
                     "text-red-500 hover:text-red-500",
                 )}
               >
-                {opt.label}
+                {t(opt.value)}
               </button>
             ))}
           </div>
@@ -257,26 +260,73 @@ const StatusCell: React.FC<StatusCellProps> = ({
 
 interface EventRegistrationDetailsProps {
   eventDetails: any;
-  eventTickets: IEventTicket[];
 }
 
 const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   eventDetails,
-  eventTickets: initialTickets,
 }) => {
   const { t } = useTranslation("events");
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  const LIMIT = 10;
+  const [page, setPage] = useState(1);
+  const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalData, setTotalData] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
   const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
-  const { data: liveTickets, refetch } = useGetEventTicketsQuery(
-    eventId ? { eventId } : skipToken,
+
+  const [fetchTickets, { isFetching: isLoadingTickets }] =
+    useLazyGetEventTicketsQuery();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const loadPage = useCallback(
+    async (pageNum: number, reset = false, search = "") => {
+      if (!eventId) return;
+      const result = await fetchTickets(
+        { eventId, page: pageNum, limit: LIMIT, ...(search ? { search } : {}) },
+        false,
+      ).unwrap();
+      setHasNextPage(result.meta.hasNextPage);
+      setTotalData(result.totalData);
+      setAllTickets((prev) =>
+        reset ? result.data : [...prev, ...result.data],
+      );
+      setPage(pageNum);
+    },
+    [eventId, fetchTickets],
   );
 
-  const eventTickets: IEventTicket[] = liveTickets ?? initialTickets;
+  useEffect(() => {
+    loadPage(1, true, debouncedSearch);
+  }, [loadPage, debouncedSearch]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isLoadingTickets) {
+          loadPage(page + 1, false, debouncedSearch);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isLoadingTickets, page, loadPage, debouncedSearch]);
 
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateEventTicketStatusMutation();
@@ -289,27 +339,20 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
     setUpdatingId(orderId);
     try {
       await updateStatus({ orderId, status, cancelReason }).unwrap();
-      toast.success(`Order status updated to ${status}`);
-      refetch();
+      toast.success(
+        t("order_status_updated", {
+          status: t(status, { defaultValue: status }),
+        }),
+      );
+      await loadPage(1, true, debouncedSearch);
     } catch {
-      toast.error("Failed to update order status");
+      toast.error(t("failed_to_update_order_status"));
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const filteredTickets = useMemo(() => {
-    if (!searchQuery.trim()) return eventTickets;
-    const q = searchQuery.toLowerCase();
-    return eventTickets.filter(
-      (t) =>
-        t.firstName?.toLowerCase().includes(q) ||
-        t.lastName?.toLowerCase().includes(q) ||
-        t.email?.toLowerCase().includes(q) ||
-        t.phone?.includes(q) ||
-        t.ticketName?.toLowerCase().includes(q),
-    );
-  }, [eventTickets, searchQuery]);
+  const filteredTickets = allTickets;
 
   const exportToCSV = () => {
     if (!eventDetails) return;
@@ -410,7 +453,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
-            {t("registrants")} ({filteredTickets.length})
+            {t("registrants")} ({totalData})
           </h3>
           <ExportBtns exportToCSV={exportToCSV} exportToPDF={exportToPDF} />
         </div>
@@ -542,6 +585,14 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                 },
               ]}
             />
+          </div>
+        )}
+
+        <div ref={sentinelRef} className="h-1" />
+
+        {isLoadingTickets && (
+          <div className="flex justify-center py-4">
+            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </section>

@@ -286,5 +286,16 @@
   "no_scheduled_notifications": "No Scheduled Notifications",
   "no_scheduled_notifications_desc": "No notifications have been scheduled for this event yet",
   "delivery_channels": "DELIVERY CHANNELS",
-  "notification": "Notification"
+  "notification": "Notification",
+
+  "completed": "Completed",
+  "processing": "Processing",
+
+  "cancel_order": "Cancel Order",
+  "cancel_order_reason_prompt": "Please provide a reason for cancelling this order.",
+  "cancel_reason_placeholder": "Enter cancel reason...",
+  "updating": "Updating...",
+  "confirm_cancel": "Confirm Cancel",
+  "order_status_updated": "Order status updated to {{status}}",
+  "failed_to_update_order_status": "Failed to update order status"
 }

@@ -315,5 +315,16 @@
   "notification": "התראה",
   "event_notifications": "התראות אירוע",
   "no_images_uploaded": "לא הועלו תמונות",
-  "upload_image_info": "העלה תמונות כדי ליצור גלריית אירוע"
+  "upload_image_info": "העלה תמונות כדי ליצור גלריית אירוע",
+
+  "completed": "הושלם",
+  "processing": "בעיבוד",
+
+  "cancel_order": "ביטול הזמנה",
+  "cancel_order_reason_prompt": "אנא ספק סיבה לביטול הזמנה זו.",
+  "cancel_reason_placeholder": "הזן סיבת ביטול...",
+  "updating": "מעדכן...",
+  "confirm_cancel": "אשר ביטול",
+  "order_status_updated": "סטטוס ההזמנה עודכן ל-{{status}}",
+  "failed_to_update_order_status": "עדכון סטטוס ההזמנה נכשל"
 }

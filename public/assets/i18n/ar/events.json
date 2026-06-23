@@ -315,5 +315,16 @@
   "notification": "إشعار",
   "event_notifications": "إشعارات الحدث",
   "no_images_uploaded": "لم يتم رفع أي صور",
-  "upload_image_info": "قم برفع الصور لإنشاء معرض صور للحدث"
+  "upload_image_info": "قم برفع الصور لإنشاء معرض صور للحدث",
+
+  "completed": "مكتمل",
+  "processing": "قيد المعالجة",
+
+  "cancel_order": "إلغاء الطلب",
+  "cancel_order_reason_prompt": "يرجى تقديم سبب لإلغاء هذا الطلب.",
+  "cancel_reason_placeholder": "أدخل سبب الإلغاء...",
+  "updating": "جارٍ التحديث...",
+  "confirm_cancel": "تأكيد الإلغاء",
+  "order_status_updated": "تم تحديث حالة الطلب إلى {{status}}",
+  "failed_to_update_order_status": "فشل تحديث حالة الطلب"
 }
