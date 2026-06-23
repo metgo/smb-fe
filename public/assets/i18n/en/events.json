@@ -158,7 +158,7 @@
   "no_tickets_yet": "No Tickets Yet",
   "no_tickets_yet_desc": "You haven't created any tickets yet. Create your first ticket to start selling.",
   "create_first_ticket": "Create First Ticket",
-  "ticket_name": "Ticket Name",
+  "ticket_name": "Ticket",
   "ticket_type": "Ticket Type",
   "vip": "VIP",
   "marked_price": "Marked Price",
@@ -231,6 +231,7 @@
   "registration_date": "Registration Date",
   "purchased_date": "Purchased Date",
   "payment_mode": "Payment Mode",
+  "payment_status": "Payment Status",
   "amount": "Amount",
   "registration_attendance_trend": "Registration Attendance Trend",
   "show_daily_breakdown": "Show Daily Breakdown",
@@ -289,7 +290,7 @@
   "notification": "Notification",
 
   "completed": "Completed",
-  "processing": "Processing",
+  "processing": "Purchased",
 
   "cancel_order": "Cancel Order",
   "cancel_order_reason_prompt": "Please provide a reason for cancelling this order.",

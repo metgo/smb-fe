@@ -170,7 +170,7 @@
   "no_tickets_yet_desc": "עדיין לא יצרת כרטיסים. צור את הכרטיס הראשון שלך כדי להתחיל למכור.",
   "create_first_ticket": "יצירת כרטיס ראשון",
 
-  "ticket_name": "שם הכרטיס",
+  "ticket_name": "כרטיס",
   "ticket_type": "סוג הכרטיס",
   "vip": "VIP",
   "marked_price": "מחיר סימולתי",
@@ -244,6 +244,7 @@
   "registration_date": "תאריך הרשמה",
   "purchased_date": "תאריך רכישה",
   "payment_mode": "אמצעי תשלום",
+  "payment_status": "סטטוס תשלום",
   "amount": "סכום",
   "registration_attendance_trend": "מגמת הרשמה ונוכחות",
   "show_daily_breakdown": "הצג פירוט יומי",
@@ -318,7 +319,7 @@
   "upload_image_info": "העלה תמונות כדי ליצור גלריית אירוע",
 
   "completed": "הושלם",
-  "processing": "בעיבוד",
+  "processing": "נרכש",
 
   "cancel_order": "ביטול הזמנה",
   "cancel_order_reason_prompt": "אנא ספק סיבה לביטול הזמנה זו.",

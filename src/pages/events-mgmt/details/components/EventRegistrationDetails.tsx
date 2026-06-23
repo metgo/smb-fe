@@ -12,7 +12,6 @@ import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi
 import { useLazyGetEventTicketsQuery } from "@/store/api/eventQueryApi";
 
 const STATUS_OPTIONS = [
-  { value: "pending", label: "Pending" },
   { value: "completed", label: "Completed" },
   { value: "canceled", label: "Cancelled" },
 ];
@@ -48,6 +47,7 @@ interface IEventTicket {
   orderProductId?: string;
   amount?: number;
   quantity?: number;
+  paymentStatus?: string;
 }
 
 interface CancelDialogProps {
@@ -477,7 +477,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   label: t("full_name"),
                   sortable: true,
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm font-medium">
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
                       {`${ticket.firstName} ${ticket.lastName || ""}`.trim()}
                     </span>
                   ),
@@ -486,7 +491,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   key: "phone",
                   label: t("phone"),
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm text-gray-500">
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
                       {ticket.phone || "-"}
                     </span>
                   ),
@@ -495,7 +505,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   key: "email",
                   label: t("email"),
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm text-gray-500">
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
                       {ticket.email || "-"}
                     </span>
                   ),
@@ -512,7 +527,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                           className="w-8 h-8 rounded object-cover shrink-0"
                         />
                       )}
-                      <span className="text-sm text-gray-500">
+                      <span
+                        className={clsx(
+                          "text-sm",
+                          isDark ? "text-gray-400" : "text-gray-500",
+                        )}
+                      >
                         {ticket.ticketName || "-"}
                       </span>
                     </div>
@@ -522,7 +542,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   key: "payment_mode",
                   label: t("payment_mode"),
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm text-gray-500 capitalize">
+                    <span
+                      className={clsx(
+                        "text-sm capitalize",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
                       {ticket.paymentMode?.join(", ") || "-"}
                     </span>
                   ),
@@ -532,7 +557,12 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   label: t("amount"),
                   sortable: true,
                   render: (ticket: IEventTicket) => (
-                    <span className="text-sm font-medium">
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
                       {ticket.amount != null ? `₪${ticket.amount}` : "-"}
                     </span>
                   ),
@@ -551,16 +581,51 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                   ),
                 },
                 {
+                  key: "payment_status",
+                  label: t("payment_status"),
+                  render: (ticket: IEventTicket) =>
+                    ticket.paymentStatus ? (
+                      <span
+                        className={clsx(
+                          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+                          isDark ? "text-white" : "text-gray-500",
+                          getStatusColor(ticket.paymentStatus),
+                        )}
+                      >
+                        {t(ticket.paymentStatus, {
+                          defaultValue: ticket.paymentStatus,
+                        })}
+                      </span>
+                    ) : (
+                      <span
+                        className={clsx(
+                          "text-sm",
+                          isDark ? "text-gray-400" : "text-gray-500",
+                        )}
+                      >
+                        -
+                      </span>
+                    ),
+                },
+                {
                   key: "purchased_date",
                   label: t("purchased_date"),
                   sortable: true,
-                  render: (ticket: IEventTicket) =>
-                    ticket.paymentDate
-                      ? new Date(ticket.paymentDate).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric", year: "numeric" },
-                        )
-                      : "-",
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      {ticket.paymentDate
+                        ? new Date(ticket.paymentDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" },
+                          )
+                        : "-"}
+                    </span>
+                  ),
                 },
               ]}
             />
