@@ -550,6 +550,7 @@ export default function OrdersMgmtPage() {
   // Column visibility
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
@@ -808,7 +809,7 @@ export default function OrdersMgmtPage() {
       label: t("total_amount"),
       sortable: true,
       render: (row: any) => {
-        const total = (row.totalAmount || 0) + (row.totalDeliveryFee || 0);
+        const total = row.totalAmount || 0;
 
         return (
           <div className="text-sm font-medium">
@@ -1239,7 +1240,8 @@ export default function OrdersMgmtPage() {
                     websiteMap={websiteMap}
                     isSummaryMode={orderSummaryClick}
                     summaryData={combinedOrdersSummary}
-                    t={tc}
+                    t={t}
+                    tc={tc}
                   />
                 </div>
 
@@ -1448,25 +1450,6 @@ export default function OrdersMgmtPage() {
                 columns={orderSummaryClick ? summaryColumns : columns}
               />
             </div>
-            {/* Grid view disabled
-            <div className="overflow-y-auto">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader className="w-8 h-8 animate-spin text-teal-500" />
-                </div>
-              ) : (
-                <OrderGridView
-                  selectedOrders={selectedOrders}
-                  setSelectedOrders={setSelectedOrders}
-                  data={combinedOrders || []}
-                  next={fetchNextPage}
-                  hasMore={hasMore}
-                  isLoading={isLoading || isFetching}
-                  onRowClick={handleRowClick}
-                  t={t}
-                />
-              )}
-            </div> */}
           </div>
         )}
       </div>

@@ -224,14 +224,14 @@ function TourCard() {
               isDark ? "text-white" : "text-gray-900"
             }`}
           >
-            {step.title}
+            {t(step.title)}
           </h3>
           <p
             className={`text-[13px] leading-relaxed ${
               isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
-            {step.desc}
+            {t(step.desc)}
           </p>
         </div>
 

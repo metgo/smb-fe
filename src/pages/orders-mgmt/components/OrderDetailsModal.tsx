@@ -17,6 +17,7 @@ import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 import { envKeys } from "@/lib/envKeys";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
+import { getPlainTextFromRichText } from "@/helpers";
 
 interface OrderDetailsModalProps {
   orderId: string;
@@ -273,12 +274,10 @@ function OrderDetailsModal({
                     >
                       {product?.name}
                     </p>
-                    <div
-                      className={`text-sm line-clamp-2 ${textTertiary}`}
-                      dangerouslySetInnerHTML={{
-                        __html: product?.description || "-",
-                      }}
-                    />
+                    <p className={`text-sm line-clamp-2 ${textTertiary}`}>
+                      {" "}
+                      {getPlainTextFromRichText(product?.description)}{" "}
+                    </p>
                   </div>
 
                   {/* Price & Actions */}
@@ -375,11 +374,19 @@ function OrderDetailsModal({
               className={`flex justify-between pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-300"}`}
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
-              <span className={`${textPrimary}`}>
-                {orderDetails?.totalAmount
-                  ? `₪${orderDetails?.totalAmount + orderDetails?.deliveryFee}`
-                  : "-"}
-              </span>
+              {orderDetails?.paymentMode.includes("voucher") ? (
+                <span className={`${textPrimary}`}>
+                  {orderDetails?.totalAmount
+                    ? `₪${orderDetails?.totalAmount}`
+                    : "-"}
+                </span>
+              ) : (
+                <span className={`${textPrimary}`}>
+                  {orderDetails?.totalAmount
+                    ? `₪${orderDetails?.totalAmount + orderDetails?.deliveryFee}`
+                    : "-"}
+                </span>
+              )}
             </div>
           </div>
         </div>

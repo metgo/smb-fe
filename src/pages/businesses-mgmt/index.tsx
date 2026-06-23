@@ -18,6 +18,7 @@ import {
   Landmark,
   Theater,
   Map,
+  Compass,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -140,53 +141,51 @@ function BusinessesMgmtPageInner() {
       {
         id: "welcome",
         placement: "center",
-        title: tt("business_list.welcome.title"),
-        desc: tt("business_list.welcome.desc"),
+        title: "business_list.welcome.title",
+        desc: "business_list.welcome.desc",
       },
       {
         id: "page-header",
         target: '[data-tour="page-header"]',
         placement: "bottom",
-        title: tt("business_list.page_header.title"),
-        desc: tt("business_list.page_header.desc"),
+        title: "business_list.page_header.title",
+        desc: "business_list.page_header.desc",
       },
       {
         id: "stats",
         target: '[data-tour="stats"]',
         placement: "bottom",
-        title: tt("business_list.stats.title"),
-        desc: tt("business_list.stats.desc"),
+        title: "business_list.stats.title",
+        desc: "business_list.stats.desc",
       },
       {
         id: "search",
         target: '[data-tour="search"]',
         placement: "bottom",
-        title: tt("business_list.search.title"),
-        desc: tt("business_list.search.desc"),
+        title: "business_list.search.title",
+        desc: "business_list.search.desc",
       },
       {
         id: "toolbar",
         target: '[data-tour="toolbar"]',
         placement: "bottom",
-        title: tt("business_list.toolbar.title"),
-        desc: tt("business_list.toolbar.desc"),
+        title: "business_list.toolbar.title",
+        desc: "business_list.toolbar.desc",
       },
       {
         id: "filter-panel",
         target: '[data-tour="filter-panel"]',
         placement: "bottom",
-        title: tt("business_list.filter_panel.title"),
-        desc: tt("business_list.filter_panel.desc"),
+        title: "business_list.filter_panel.title",
+        desc: "business_list.filter_panel.desc",
       },
       {
         id: "business-list",
         target: '[data-tour="business-list"]',
         placement: "top",
-        title: tt("business_list.business_list.title"),
-        desc: tt("business_list.business_list.desc"),
+        title: "business_list.business_list.title",
+        desc: "business_list.business_list.desc",
       },
-      // tt is stable (i18next), safe to omit from deps
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     ],
     [],
   );
@@ -516,11 +515,27 @@ function BusinessesMgmtPageInner() {
                 />
               </div>
 
-              <ViewModeToggle
-                onChange={setViewMode}
-                value={viewMode}
-                tableName="businessViewMode"
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isDark
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+                  }`}
+                >
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
+                </button>
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="businessViewMode"
+                />
+              </div>
             </div>
           </div>
 
