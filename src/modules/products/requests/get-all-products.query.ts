@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
+  IsEnum, IsOptional, IsString,
 } from 'class-validator';
 import { SortOrder } from 'src/common/enum';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 
 export class GetAllProductsRequest extends LocaleFilterQuery {
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     campCode: string;
 
   @ApiProperty({

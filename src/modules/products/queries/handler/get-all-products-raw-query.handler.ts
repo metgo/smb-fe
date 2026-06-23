@@ -9,7 +9,6 @@ import {
   buildHebrewSearchRegex,
   normalizeHebrewSearch,
 } from 'src/core/helper/atlas-search.util';
-import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 
@@ -19,13 +18,11 @@ implements IQueryHandler<GetAllProductsRawQuery> {
   constructor(
     @InjectModel(BussCategory.name)
     private CategoryModel: Model<BussCategory>,
-    private campaignService: CampaignService,
   ) {}
 
   async execute(queries: GetAllProductsRawQuery): Promise<any> {
     try {
       const {
-        campCode,
         businessId,
         categoriesId,
         subCategoriesId,
@@ -37,19 +34,19 @@ implements IQueryHandler<GetAllProductsRawQuery> {
         vendorDelivers,
       } = queries;
 
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        campCode,
-      );
+      // const campDetails = await this.campaignService.findCampaignAndReturn(
+      //   'code',
+      //   campCode,
+      // );
 
-      if (
-        !campDetails?.productIds?.length
-        && !campDetails?.dmoIds?.length
-        && !campDetails?.authorityIds?.length
-        && !campDetails?.businessIds?.length
-      ) {
-        return { data: [] };
-      }
+      // if (
+      //   !campDetails?.productIds?.length
+      //   && !campDetails?.dmoIds?.length
+      //   && !campDetails?.authorityIds?.length
+      //   && !campDetails?.businessIds?.length
+      // ) {
+      //   return { data: [] };
+      // }
 
       let findQuery: any = {
         status: CommonStatus.APPROVED,
@@ -74,21 +71,21 @@ implements IQueryHandler<GetAllProductsRawQuery> {
 
       const orConditions = [];
 
-      if (campDetails?.dmoIds?.length) {
-        orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-      }
+      // if (campDetails?.dmoIds?.length) {
+      //   orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+      // }
 
-      if (campDetails?.authorityIds?.length) {
-        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
-      }
+      // if (campDetails?.authorityIds?.length) {
+      //   orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
+      // }
 
-      if (campDetails?.businessIds?.length) {
-        orConditions.push({ businessId: { $in: campDetails.businessIds } });
-      }
+      // if (campDetails?.businessIds?.length) {
+      //   orConditions.push({ businessId: { $in: campDetails.businessIds } });
+      // }
 
-      if (campDetails?.productIds?.length) {
-        orConditions.push({ productId: { $in: campDetails.productIds } });
-      }
+      // if (campDetails?.productIds?.length) {
+      //   orConditions.push({ productId: { $in: campDetails.productIds } });
+      // }
 
       if (orConditions.length) {
         findQuery = {

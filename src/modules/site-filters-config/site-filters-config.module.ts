@@ -13,6 +13,7 @@ import { SiteSettingsController } from './controller/site-filters-config.control
 import { GetSiteFiltersConfigByIdentifierIdHandler } from './queries/handler/get-site-filters-config-by-identifierId.handler';
 import { GetProductsByTopicHandler } from './queries/handler/get-products-by-topic.handler';
 import { GetProductsGroupedByTopicHandler } from './queries/handler/get-products-grouped-by-topic.handler';
+import { GetSiteConfigByIdentifierIdHandler } from './queries/handler/get-site-config-by-identifierId.handler';
 
 import {
   ProductsAudit,
@@ -34,6 +35,10 @@ import {
 import { Tags, TagsSchema } from '../tags/schema/tags.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
 import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-api.schema';
+import {
+  PointOfInterest,
+  PointOfInterestSchema,
+} from '../point-of-interests/schema/point-of-interest.schema';
 
 @Module({
   imports: [
@@ -46,6 +51,7 @@ import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: Tags.name, schema: TagsSchema },
       { name: Campaign.name, schema: CampaignSchema },
+      { name: PointOfInterest.name, schema: PointOfInterestSchema },
     ]),
     ConfigModule,
     UsersModule,
@@ -57,6 +63,7 @@ import { ExternalApi, ExternalApiSchema } from '../external-api/schema/external-
     GetSiteFiltersConfigByIdentifierIdHandler,
     GetProductsByTopicHandler,
     GetProductsGroupedByTopicHandler,
+    GetSiteConfigByIdentifierIdHandler,
   ],
   controllers: [SiteSettingsController],
 })

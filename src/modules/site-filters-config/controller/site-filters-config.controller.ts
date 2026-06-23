@@ -16,6 +16,8 @@ import { GetProductsByTopicQuery } from '../queries/get-products-by-topic.query'
 import { GetProductsByTopicRequest } from '../requests/get-products-by-topic.request';
 import { GetProductsGroupedByTopicQuery } from '../queries/get-products-grouped-by-topic.query';
 import { GetProductsGroupedByTopicRequest } from '../requests/get-products-grouped-by-topic.request';
+import { GetSiteConfigByIdentifierIdQuery } from '../queries/get-site-config-by-identifierId.query';
+import { GetSiteConfigByIdentifierIdRequest } from '../requests/get-site-config-by-identifierId.request';
 
 @Controller('')
 export class SiteSettingsController {
@@ -41,6 +43,26 @@ export class SiteSettingsController {
     );
 
     return siteSetting;
+  }
+
+  @ApiEndpoint({
+    tags: ['Site Configs'],
+    response: {
+      status: HttpStatus.OK,
+      description: `Site Config ${ServerSuccess.LISTED}`,
+    },
+    softBlockExtraDtoFields: true,
+    params: [{ name: 'identifierId', type: 'string', required: true }],
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('site-filter-config/site/:identifierId')
+  async getSiteConfigByIdentifierId(
+    @Param('identifierId') identifierId: string,
+    @Query() query: GetSiteConfigByIdentifierIdRequest,
+  ) {
+    return this.queryBus.execute(
+      new GetSiteConfigByIdentifierIdQuery(identifierId, query),
+    );
   }
 
   @ApiEndpoint({
