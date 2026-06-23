@@ -172,6 +172,27 @@ export default function PublicTicketPage() {
 
   const fullName = `${ticket.firstName} ${ticket.lastName ?? ""}`.trim();
 
+  const isCompleted = ticket.status?.toLowerCase() === "completed";
+
+  const isExpired = (() => {
+    const days = ticket.ticketDayDescription?.length
+      ? ticket.ticketDayDescription
+      : ticket.eventDayDescription;
+    if (!days?.length) return false;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const hasActiveDay = days.some((day) => {
+      const dayStr = day.date.slice(0, 10);
+      if (dayStr > todayStr) return true;
+      if (dayStr === todayStr) {
+        const [endH, endM] = day.endTime.split(":").map(Number);
+        return now.getHours() * 60 + now.getMinutes() < endH * 60 + endM;
+      }
+      return false;
+    });
+    return !hasActiveDay;
+  })();
+
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-teal-50">
       <div className="max-w-md mx-auto px-4 py-8">
@@ -185,6 +206,20 @@ export default function PublicTicketPage() {
 
         {/* Ticket card */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          {/* Scanned banner */}
+          {isCompleted && (
+            <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
+              {t("ticket_scanned")}
+            </div>
+          )}
+
+          {/* Expired banner */}
+          {isExpired && !isCompleted && (
+            <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
+              {t("ticket_expired")}
+            </div>
+          )}
+
           {/* Event cover image */}
           {coverImage && (
             <div className="relative h-48 w-full overflow-hidden">
@@ -246,18 +281,22 @@ export default function PublicTicketPage() {
           <div className="px-5 pb-6 space-y-5">
             {/* Ticket name + type */}
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
-                  {t("ticket_name")}
-                </p>
-                <p className="text-gray-800 font-semibold text-base">
-                  {ticket.ticketName}
-                </p>
-                {ticket.ticketDescription && (
-                  <p className="text-gray-500 text-xs mt-0.5">
-                    {ticket.ticketDescription}
-                  </p>
+              <div className="flex items-start gap-2.5 min-w-0">
+                {ticket.ticketImages?.[0]?.image && (
+                  <img
+                    src={ticket.ticketImages[0].image}
+                    alt={ticket.ticketName}
+                    className="w-12 h-12 rounded-lg object-cover shrink-0"
+                  />
                 )}
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
+                    {t("ticket_name")}
+                  </p>
+                  <p className="text-gray-800 font-semibold text-base">
+                    {ticket.ticketName}
+                  </p>
+                </div>
               </div>
               <div className="text-right shrink-0">
                 <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 capitalize">
@@ -277,6 +316,30 @@ export default function PublicTicketPage() {
                 </p>
                 <div className="space-y-1.5">
                   {ticket.eventDayDescription.map((day, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 text-sm text-gray-600"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+                      <span>{formatDate(day.date)}</span>
+                      <Clock className="w-3.5 h-3.5 text-teal-500 shrink-0 ml-1" />
+                      <span>
+                        {day.startTime} – {day.endTime}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Ticket dates */}
+            {ticket.ticketDayDescription?.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
+                  {t("ticket_days")}
+                </p>
+                <div className="space-y-1.5">
+                  {ticket.ticketDayDescription.map((day, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-2 text-sm text-gray-600"

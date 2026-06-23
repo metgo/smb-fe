@@ -331,9 +331,11 @@
   "method": "שיטת תשלום",
   "date": "תאריך",
   "ticket_id_label": "מזהה כרטיס",
+  "ticket_scanned": "כרטיס זה נסרק",
+  "ticket_expired": "כרטיס זה פג תוקף",
   "mark_as_completed": "סמן כהושלם",
   "completed_checkmark": "הושלם ✓",
-  "payment_successful": "התשלום בוצע בהצלחה",
+  "payment_successful": "ההזמנה הצליחה",
   "payment_failed_label": "התשלום נכשל",
   "payment_pending_label": "התשלום בהמתנה",
 
