@@ -132,6 +132,9 @@ export const endpoints = {
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
 
+  // Website error report
+  websiteCrashes: "/website-crashes",
+
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
   googleMapRouteDirection:

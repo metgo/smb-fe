@@ -194,7 +194,7 @@
   "download_csv": "Download CSV",
 
   "error_title": "Oh no, something went wrong!",
-  "error_description": "An unexpected error has occurred. Please try again later or contact support if the issue persists.",
+  "error_description": "An unexpected error has occurred. An error report has been sent — we'll look into it and push a fix as soon as possible.",
   "go_back_home": "Go Back Home",
   "reload_page": "Reload Page",
 

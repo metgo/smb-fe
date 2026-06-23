@@ -49,6 +49,8 @@ export const routes = {
   promotionMgmt: "/promotions-management",
 
   users: "/users",
+  websiteCrashes: "/website-crashes",
+  websiteCrashDetails: "/website-crash-details",
 };
 
 export type RouteKey = keyof typeof routes;

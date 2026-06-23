@@ -28,6 +28,8 @@ import CampaignsMgmtPage from "./campaign-mgmt";
 import UsersMgmtPage from "./users-mgmt";
 import PoiMgmtPage from "./poi-mgmt";
 import PoiDetailsPage from "./poi-mgmt/details";
+import WebsiteCrashesPage from "./website-crashes";
+import WebsiteCrashDetailsPage from "./website-crashes/details";
 
 export {
   AuthPage,
@@ -60,4 +62,6 @@ export {
   UsersMgmtPage,
   PoiMgmtPage,
   PoiDetailsPage,
+  WebsiteCrashesPage,
+  WebsiteCrashDetailsPage,
 };
