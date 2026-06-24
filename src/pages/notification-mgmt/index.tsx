@@ -575,7 +575,8 @@ export default function NotificationsMgmtPage() {
                                     {isApproved ? "Approved" : "Approve"}
                                   </button>
 
-                                  {!isApproved &&
+                                  {(notification.status === "PENDING" ||
+                                    notification.status === "DRAFT") &&
                                     (notification.changesCount as number) >
                                       0 && (
                                       <button
