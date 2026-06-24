@@ -99,6 +99,7 @@ export const BusinessContentForm = ({
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
+          maxLength={150}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
           {t("char_count", {
@@ -124,6 +125,7 @@ export const BusinessContentForm = ({
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
+          maxLength={500}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
           {t("char_count", {

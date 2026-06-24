@@ -446,6 +446,21 @@ export default function CreateProductWizard({
           !formData.shortDescriptionHe
         )
           newErrors.shortDescEn = t("field_required");
+
+        if (
+          (formData.shortDescription || "").length > 150 ||
+          (formData.shortDescriptionHe || "").length > 150 ||
+          (formData.shortDescriptionAr || "").length > 150
+        )
+          newErrors.shortDescEn = tp("exceeds_char_limit", { limit: 150 });
+
+        if (
+          (formData.fullDescription || "").length > 500 ||
+          (formData.fullDescriptionHe || "").length > 500 ||
+          (formData.fullDescriptionAr || "").length > 500
+        )
+          newErrors.fullDescription = tp("exceeds_char_limit", { limit: 500 });
+
         break;
       case 2:
         if (!formData.primaryCategory)

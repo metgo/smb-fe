@@ -231,6 +231,7 @@ const BusinessTranslateButton = ({
                     onChange({ [shortDescription]: e.target.value })
                   }
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={150}
                 />
                 <p className={`text-xs ${textTertiary} mt-1`}>
                   {t("char_count", {
@@ -255,6 +256,7 @@ const BusinessTranslateButton = ({
                     onChange({ [fullDescription]: e.target.value })
                   }
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={500}
                 />
                 <p className={`text-xs ${textTertiary} mt-1`}>
                   {t("char_count", {
