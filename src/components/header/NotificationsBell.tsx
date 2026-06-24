@@ -531,7 +531,8 @@ const NotificationsBell = () => {
                             </div>
                           )}
 
-                          {!isApproved &&
+                          {(notification.status === "PENDING" ||
+                            notification.status === "DRAFT") &&
                             (itemType === "BUSINESS" ||
                               itemType === "PRODUCT" ||
                               itemType === "EVENT" ||
@@ -539,7 +540,8 @@ const NotificationsBell = () => {
                             (userRole === UserRole.SUPERADMIN ||
                               userRole === UserRole.AUTHORITY ||
                               userRole === UserRole.DMO ||
-                              userRole === UserRole.SITE_MANAGER) && (
+                              userRole === UserRole.SITE_MANAGER) &&
+                            (notification.changesCount as number) > 0 && (
                               <button
                                 onClick={handleViewChanges}
                                 className={clsx(
