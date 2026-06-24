@@ -694,6 +694,26 @@ export default function CreateEventWizard({
   const handlePublish = async () => {
     let allValid = true;
     setIsPublishBtnClicked(true);
+
+    if (
+      (shortDescription || "").length > 150 ||
+      (shortDescriptionHe || "").length > 150 ||
+      (shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (fullDescription || "").length > 500 ||
+      (fullDescriptionHe || "").length > 500 ||
+      (fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     for (let i = 1; i <= 8; i++) {
       if (!validateStep(i)) {
         allValid = false;

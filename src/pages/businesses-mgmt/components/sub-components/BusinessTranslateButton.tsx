@@ -180,7 +180,7 @@ const BusinessTranslateButton = ({
         <button
           onClick={handleTranslate}
           disabled={isTranslating}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-60 transition-colors text-sm font-medium "
+          className="items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-60 transition-colors text-sm font-medium "
         >
           <Languages className="w-4 h-4 animate-pulse" />
           {isTranslating ? t("translating") : t("auto_translate")}
