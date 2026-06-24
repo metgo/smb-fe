@@ -732,20 +732,6 @@ function CreateBusinessWizardInner({
         )
           newErrors.fullDescription = t("required_field");
 
-        if (
-          (formData.shortDescription || "").length > 150 ||
-          (formData.shortDescriptionHe || "").length > 150 ||
-          (formData.shortDescriptionAr || "").length > 150
-        )
-          newErrors.shortDescription = tc("exceeds_char_limit", { limit: 150 });
-
-        if (
-          (formData.fullDescription || "").length > 500 ||
-          (formData.fullDescriptionHe || "").length > 500 ||
-          (formData.fullDescriptionAr || "").length > 500
-        )
-          newErrors.fullDescription = tc("exceeds_char_limit", { limit: 500 });
-
         break;
       case 3: {
         if (formData.email?.trim() === "") {
@@ -836,6 +822,26 @@ function CreateBusinessWizardInner({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     // Validate all steps
     let allValid = true;
     for (let i = 1; i <= 5; i++) {

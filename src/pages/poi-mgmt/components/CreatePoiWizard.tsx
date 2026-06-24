@@ -396,20 +396,6 @@ export default function CreatePoiWizard({
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
 
-        if (
-          (formData.shortDescription || "").length > 150 ||
-          (formData.shortDescriptionHe || "").length > 150 ||
-          (formData.shortDescriptionAr || "").length > 150
-        )
-          newErrors.shortDescription = tc("exceeds_char_limit", { limit: 150 });
-
-        if (
-          (formData.content || "").length > 500 ||
-          (formData.contentHe || "").length > 500 ||
-          (formData.contentAr || "").length > 500
-        )
-          newErrors.fullDescription = tc("exceeds_char_limit", { limit: 500 });
-
         break;
 
       case 6:
@@ -450,6 +436,26 @@ export default function CreatePoiWizard({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.content || "").length > 500 ||
+      (formData.contentHe || "").length > 500 ||
+      (formData.contentAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     let allValid = true;
     for (let i = 1; i <= 6; i++) {
       if (!validateStep(i)) {

@@ -447,20 +447,6 @@ export default function CreateProductWizard({
         )
           newErrors.shortDescEn = t("field_required");
 
-        if (
-          (formData.shortDescription || "").length > 150 ||
-          (formData.shortDescriptionHe || "").length > 150 ||
-          (formData.shortDescriptionAr || "").length > 150
-        )
-          newErrors.shortDescEn = tp("exceeds_char_limit", { limit: 150 });
-
-        if (
-          (formData.fullDescription || "").length > 500 ||
-          (formData.fullDescriptionHe || "").length > 500 ||
-          (formData.fullDescriptionAr || "").length > 500
-        )
-          newErrors.fullDescription = tp("exceeds_char_limit", { limit: 500 });
-
         break;
       case 2:
         if (!formData.primaryCategory)
@@ -514,6 +500,25 @@ export default function CreateProductWizard({
   };
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
 
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
