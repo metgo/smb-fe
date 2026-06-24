@@ -9,6 +9,7 @@ import {
   XCircle,
   CheckCheck,
   X,
+  Eye,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -32,9 +33,12 @@ import {
   useApproveCategorySuggestionMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
+import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { toast } from "sonner";
 import { useSocket } from "@/providers/SocketProvider";
+import { ViewChangesModal } from "@/components/change-tracking";
+import { useAppSelector } from "@/hooks/hooks";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
@@ -43,6 +47,7 @@ export default function NotificationsMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("notifications");
   const { t: tc } = useTranslation("common");
+  const userRole = useAppSelector((state) => state.auth.userRole);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
   const [updateNotification] = useUpdateNotificationMutation();
@@ -62,6 +67,24 @@ export default function NotificationsMgmtPage() {
   const [selectedNotifications, setSelectedNotifications] = useState<
     Set<string>
   >(new Set());
+
+  const [viewChangesState, setViewChangesState] = useState({
+    isOpen: false,
+    entityType: "business" as "business" | "product" | "event" | "poi",
+    entityId: "",
+    entityName: "",
+  });
+
+  const { data: changesData, isLoading: changesLoading } =
+    useGetChangesByEntityQuery(
+      {
+        entityType: viewChangesState.entityType,
+        entityId: viewChangesState.entityId,
+      },
+      {
+        skip: !viewChangesState.isOpen || !viewChangesState.entityId,
+      },
+    );
 
   const QueryParams = useMemo(() => {
     const params: any = {
@@ -406,6 +429,30 @@ export default function NotificationsMgmtPage() {
                         );
                       };
 
+                      const handleViewChanges = async (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        await markNotificationsAsRead(notification._id);
+
+                        const typeMap: Record<
+                          string,
+                          "business" | "product" | "event" | "poi"
+                        > = {
+                          BUSINESS: "business",
+                          PRODUCT: "product",
+                          EVENT: "event",
+                          POI: "poi",
+                        };
+
+                        setViewChangesState({
+                          isOpen: true,
+                          entityType: typeMap[itemType] || "business",
+                          entityId: notification.itemId,
+                          entityName:
+                            notification?.content?.[language]?.title ||
+                            itemType,
+                        });
+                      };
+
                       const handleNavigate = async () => {
                         await markNotificationsAsRead(notification._id);
                         refetchNotifStats();
@@ -472,7 +519,7 @@ export default function NotificationsMgmtPage() {
                               </p>
 
                               {canApprove && (
-                                <div className="mt-3 flex items-center gap-2">
+                                <div className="mt-3 flex items-center gap-2 flex-wrap">
                                   <button
                                     onClick={async (e) => {
                                       e.stopPropagation();
@@ -527,6 +574,18 @@ export default function NotificationsMgmtPage() {
                                   >
                                     {isApproved ? "Approved" : "Approve"}
                                   </button>
+
+                                  {!isApproved &&
+                                    (notification.changesCount as number) >
+                                      0 && (
+                                      <button
+                                        onClick={handleViewChanges}
+                                        className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition flex items-center gap-1"
+                                      >
+                                        <Eye size={14} />
+                                        View Changes
+                                      </button>
+                                    )}
                                 </div>
                               )}
                             </div>
@@ -541,6 +600,40 @@ export default function NotificationsMgmtPage() {
           </div>
         </div>
       </div>
+
+      <ViewChangesModal
+        isOpen={viewChangesState.isOpen}
+        onClose={() =>
+          setViewChangesState({ ...viewChangesState, isOpen: false })
+        }
+        entityType={viewChangesState.entityType}
+        entityId={viewChangesState.entityId}
+        entityName={viewChangesState.entityName}
+        changeData={
+          changesData &&
+          Array.isArray(changesData.changes) &&
+          changesData.changes.length > 0
+            ? {
+                changeId: changesData._id || undefined,
+                changes: changesData.changes || [],
+                summary: changesData.summary || "",
+                changesCount: changesData.changesCount || 0,
+                changedBy: changesData.changedBy || {
+                  firstName: "",
+                  email: "",
+                },
+                changedAt: changesData.changedAt || new Date(),
+                status: changesData.status || "PENDING",
+              }
+            : undefined
+        }
+        isLoading={changesLoading}
+        userRole={userRole as any}
+        onApprove={() => {
+          setViewChangesState({ ...viewChangesState, isOpen: false });
+          refetchNotifList();
+        }}
+      />
     </div>
   );
 }
