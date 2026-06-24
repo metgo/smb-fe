@@ -47,7 +47,7 @@ export const routes = {
 
   users: "/users",
 
-  publicTicket: "/ticket",
+  publicTicket: "/verify-ticket",
 };
 
 export type RouteKey = keyof typeof routes;
