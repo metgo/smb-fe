@@ -76,6 +76,8 @@
   "documents": "מסמכים",
   "version": "גרסה",
   "max_characters": "מקסימום תווים",
+  "char_count": "{{count}} / {{limit}} תווים",
+  "exceeds_char_limit": "חורג ממגבלה של {{limit}} תווים",
   "website_config": "תצורת אתר",
   "dmos": "ארגוני ניהול יעד",
   "authorities": "רשויות",

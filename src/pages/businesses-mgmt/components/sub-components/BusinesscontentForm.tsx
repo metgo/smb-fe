@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -82,10 +83,15 @@ export const BusinessContentForm = ({
         </p>
       </div>
 
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("short_description")} <span className="text-red-500">*</span>
-        </label>
+      <FormFieldWrapper
+        label={t("short_description")}
+        required
+        error={
+          (formData[shortDescField] || "").length > 150
+            ? t("exceeds_char_limit", { limit: 150 })
+            : undefined
+        }
+      >
         <textarea
           value={formData[shortDescField] || ""}
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
@@ -95,14 +101,22 @@ export const BusinessContentForm = ({
           dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[shortDescField] || "").length} {t("characters")}
+          {t("char_count", {
+            count: (formData[shortDescField] || "").length,
+            limit: 150,
+          })}
         </p>
-      </div>
+      </FormFieldWrapper>
 
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("full_description")} <span className="text-red-500">*</span>
-        </label>
+      <FormFieldWrapper
+        label={t("full_description")}
+        required
+        error={
+          (formData[descField] || "").length > 500
+            ? t("exceeds_char_limit", { limit: 500 })
+            : undefined
+        }
+      >
         <textarea
           value={formData[descField] || ""}
           onChange={(e) => onChange({ [descField]: e.target.value })}
@@ -112,9 +126,12 @@ export const BusinessContentForm = ({
           dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[descField] || "").length} {t("characters")}
+          {t("char_count", {
+            count: (formData[descField] || "").length,
+            limit: 500,
+          })}
         </p>
-      </div>
+      </FormFieldWrapper>
     </div>
   );
 };

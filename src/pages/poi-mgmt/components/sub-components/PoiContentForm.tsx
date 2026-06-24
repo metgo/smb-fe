@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
@@ -81,10 +82,15 @@ export default function PoiContentForm({
         </p>
       </div>
 
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {tc("short_description")} <span className="text-red-500">*</span>
-        </label>
+      <FormFieldWrapper
+        label={tc("short_description")}
+        required
+        error={
+          (formData[shortDescField] || "").length > 150
+            ? tc("exceeds_char_limit", { limit: 150 })
+            : undefined
+        }
+      >
         <textarea
           value={formData[shortDescField] || ""}
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
@@ -94,13 +100,21 @@ export default function PoiContentForm({
           dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[shortDescField] || "").length} {t("characters")}
+          {tc("char_count", {
+            count: (formData[shortDescField] || "").length,
+            limit: 150,
+          })}
         </p>
-      </div>
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {tc("full_description")} <span className="text-red-500">*</span>
-        </label>
+      </FormFieldWrapper>
+      <FormFieldWrapper
+        label={tc("full_description")}
+        required
+        error={
+          (formData[contentField] || "").length > 500
+            ? tc("exceeds_char_limit", { limit: 500 })
+            : undefined
+        }
+      >
         <textarea
           value={formData[contentField] || ""}
           onChange={(e) => onChange({ [contentField]: e.target.value })}
@@ -110,9 +124,12 @@ export default function PoiContentForm({
           dir={dir}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[contentField] || "").length} {t("characters")}
+          {tc("char_count", {
+            count: (formData[contentField] || "").length,
+            limit: 500,
+          })}
         </p>
-      </div>
+      </FormFieldWrapper>
     </div>
   );
 }

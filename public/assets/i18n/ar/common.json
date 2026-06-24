@@ -104,6 +104,8 @@
   "documents": "المستندات",
   "version": "الإصدار",
   "max_characters": "الحد الأقصى للحروف",
+  "char_count": "{{count}} / {{limit}} حرف",
+  "exceeds_char_limit": "يتجاوز الحد المسموح به {{limit}} حرف",
   "website_config": "إعدادات الموقع",
   "dmos": "منظمات إدارة الوجهات",
   "authorities": "السلطات",
