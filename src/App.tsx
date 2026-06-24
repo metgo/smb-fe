@@ -302,7 +302,13 @@ function App() {
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
     const userInfo = sessionStorage.getItem("user_info");
+    const isPublicTicket = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
 
+    if (isPublicTicket) {
+      return children;
+    }
     let user: any = null;
     if (userInfo) {
       try {
@@ -376,7 +382,7 @@ function App() {
     () =>
       createBrowserRouter([
         {
-          path: `${routes.publicTicket}/:eventId/:ticketId`,
+          path: `${routes.publicTicket}/:eventId/:ticketId/`,
           element: (
             <Suspense fallback={<SplashLoader />}>
               <PublicTicketPage />
