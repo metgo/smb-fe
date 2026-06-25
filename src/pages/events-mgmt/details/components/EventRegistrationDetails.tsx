@@ -16,18 +16,40 @@ const STATUS_OPTIONS = [
   { value: "canceled", label: "Cancelled" },
 ];
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string, isDark: boolean) => {
   switch (status?.toLowerCase()) {
     case "paid":
+    case "success":
     case "completed":
-      return "bg-green-500/20 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700";
+      return clsx(
+        "bg-green-500/20",
+        isDark
+          ? "text-green-400 border-green-700"
+          : "text-green-600 border-green-300",
+      );
     case "pending":
-      return "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700";
+      return clsx(
+        "bg-yellow-500/20",
+        isDark
+          ? "text-yellow-400 border-yellow-700"
+          : "text-yellow-600 border-yellow-300",
+      );
+    case "failure":
+      return clsx(
+        "bg-red-500/20",
+        isDark ? "text-red-400 border-red-700" : "text-red-600 border-red-300",
+      );
     case "refunded":
     case "canceled":
-      return "bg-red-500/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700";
+      return clsx(
+        "bg-red-500/20",
+        isDark ? "text-red-400 border-red-700" : "text-red-600 border-red-300",
+      );
     default:
-      return "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700";
+      return clsx(
+        "bg-blue-500/20",
+        isDark ? "text-white border-gray-700" : "text-gray-600 border-gray-300",
+      );
   }
 };
 
@@ -195,6 +217,23 @@ const StatusCell: React.FC<StatusCellProps> = ({
     setShowCancelDialog(false);
   };
 
+  if (!ticket.status) {
+    const fallback =
+      ticket.paymentStatus === "pending" || ticket.paymentStatus === "failure"
+        ? ticket.paymentStatus
+        : "failure";
+    return (
+      <span
+        className={clsx(
+          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+          getStatusColor(fallback, isDark),
+        )}
+      >
+        {t(fallback, { defaultValue: fallback })}
+      </span>
+    );
+  }
+
   return (
     <>
       <div ref={dropdownRef} className="relative inline-block">
@@ -203,7 +242,7 @@ const StatusCell: React.FC<StatusCellProps> = ({
           disabled={isThisUpdating}
           className={clsx(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-opacity capitalize",
-            getStatusColor(ticket.status),
+            getStatusColor(ticket.status, isDark),
             isThisUpdating && "opacity-60 cursor-not-allowed",
           )}
         >
@@ -589,7 +628,7 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
                         className={clsx(
                           "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
                           isDark ? "text-white" : "text-gray-500",
-                          getStatusColor(ticket.paymentStatus),
+                          getStatusColor(ticket.paymentStatus ?? "", isDark),
                         )}
                       >
                         {t(ticket.paymentStatus, {
