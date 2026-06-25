@@ -101,6 +101,7 @@ export default function NotificationsMgmtPage() {
     data: notifications,
     refetch: refetchNotifList,
     isFetching,
+    isError: isNotifError,
   } = useGetAllNotificationsQuery(QueryParams);
   const { data: notifStats, refetch: refetchNotifStats } =
     useGetNotificatonStatsQuery();
@@ -121,7 +122,12 @@ export default function NotificationsMgmtPage() {
     };
   }, [socket]);
 
-  const hasMore = notifications?.meta?.hasNextPage || false;
+  const hasMore =
+    !isNotifError &&
+    notifications?.meta?.hasNextPage &&
+    notifications?.data?.length > 0
+      ? true
+      : false;
 
   const {
     isDark,
@@ -138,27 +144,36 @@ export default function NotificationsMgmtPage() {
   } = useThemeClasses();
 
   useEffect(() => {
-    if (!notifications?.data) return;
+    if (!notifications?.data || notifications.data.length === 0) return;
     if (page === 1) {
       setAllNotifications(notifications.data);
     } else {
       setAllNotifications((prev) => {
+        if (!prev || prev.length === 0) return notifications.data;
         const existingIds = new Set(prev.map((b) => b._id));
         const newItems = notifications.data.filter(
           (b: any) => !existingIds.has(b._id),
         );
-        return [...prev, ...newItems];
+        return newItems.length > 0 ? [...prev, ...newItems] : prev;
       });
     }
-  }, [notifications?.data, page]);
+  }, [notifications, page]);
+
+  // Fallback: stop loading if we've accumulated too many items or hit an error
+  useEffect(() => {
+    if (isNotifError) {
+      setPage(1); // Reset to page 1 on error
+    }
+  }, [isNotifError]);
 
   useEffect(() => {
     setPage(1);
   }, [readFilter, typeFilter, itemTypeFilter]);
 
   const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
+    if (!hasMore || isFetching || isNotifError) return;
     setPage((prev) => prev + 1);
+    // RTK Query will automatically refetch when QueryParams (with updated page) changes
   };
 
   const getNotificationIcon = (type: TNotifType) => {
@@ -295,7 +310,10 @@ export default function NotificationsMgmtPage() {
         </div>
 
         {/* Scrollable Notifications List */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6">
+        <div
+          id="scrollableDiv"
+          className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6"
+        >
           <div className="max-w-400 mx-auto">
             {allNotifications?.length === 0 ? (
               <div
