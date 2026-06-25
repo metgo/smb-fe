@@ -92,6 +92,7 @@ export const endpoints = {
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationCount: "/notifications/count",
   notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips

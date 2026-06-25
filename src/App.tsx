@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useRef, useMemo } from "react";
 
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
@@ -53,11 +53,17 @@ import { useSocket } from "./providers/SocketProvider";
 import {
   addNotification,
   setNotifications,
+  incrementUnreadCount,
+  setUnreadCount,
 } from "./features/notificationSlice";
-import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
+import {
+  useLazyGetAllNotificationsQuery,
+  notificationApi,
+} from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import { UserRole } from "./enums/user.types";
+import { store } from "./store/store";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -104,10 +110,15 @@ function App() {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const { notifications } = useAppSelector((state) => state.notification);
+  const { notifications, unreadCount } = useAppSelector(
+    (state) => state.notification,
+  );
   const latestCreatedAt = notifications?.[0]?.createdAt;
 
   const [getLatestNotification] = useLazyGetAllNotificationsQuery();
+  const countRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!socket) return;
@@ -118,6 +129,11 @@ function App() {
 
         if (response?.data) {
           dispatch(setNotifications(response.data));
+        }
+
+        // Set initial unread count from API response
+        if ((response as any)?.totalUnread !== undefined) {
+          dispatch(setUnreadCount((response as any).totalUnread));
         }
       } catch (error) {
         console.error("Initial notification fetch failed", error);
@@ -141,6 +157,33 @@ function App() {
           response.data.reverse().forEach((notif: INotification) => {
             dispatch(addNotification(notif));
           });
+
+          // Increment count locally for each new notification (instant + accurate)
+          const newNotificationsCount = response.data.length;
+          for (let i = 0; i < newNotificationsCount; i++) {
+            dispatch(incrementUnreadCount());
+          }
+
+          // Debounced API verification: only verify if count < 100 and batch calls
+          const currentCount = store.getState().notification.unreadCount;
+          if (currentCount < 100) {
+            // Clear existing timeout to debounce
+            if (countRefreshTimeoutRef.current) {
+              clearTimeout(countRefreshTimeoutRef.current);
+            }
+
+            // Set new debounced timeout (300ms)
+            countRefreshTimeoutRef.current = setTimeout(() => {
+              // Only call API if still < 100 (in case more notifications arrived)
+              const finalCount = store.getState().notification.unreadCount;
+              if (finalCount < 100) {
+                store.dispatch(
+                  notificationApi.endpoints.getNotificationCount.initiate(),
+                );
+              }
+              countRefreshTimeoutRef.current = null;
+            }, 300);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch new notifications", error);
@@ -158,8 +201,12 @@ function App() {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("notification", handleNotification);
+      // Cleanup debounce timer
+      if (countRefreshTimeoutRef.current) {
+        clearTimeout(countRefreshTimeoutRef.current);
+      }
     };
-  }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
+  }, [socket, dispatch, getLatestNotification, latestCreatedAt, unreadCount]);
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {

@@ -34,6 +34,7 @@ import {
   markNotificationAsRead,
   setNotificationStatus,
   updateNotificationStatus,
+  decrementUnreadCount,
 } from "@/features/notificationSlice";
 
 import {
@@ -100,7 +101,7 @@ const NotificationsBell = () => {
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
 
-  const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
+  const { unreadCount } = useAppSelector((state) => state.notification);
 
   const getNotificationIcon = (type: TNotifType) => {
     const base =
@@ -145,6 +146,8 @@ const NotificationsBell = () => {
     try {
       await bulkMarkNotificationsAsRead(unreadIds).unwrap();
       dispatch(markAllNotificationsAsRead());
+      // Decrement count by the number of notifications marked as read
+      dispatch(decrementUnreadCount(unreadIds.length));
     } catch {
       toast.error("Failed to mark all as read. Please try again.");
     }
