@@ -245,7 +245,7 @@ export default function CreateEventWizard({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    { number: 2, icon: Languages, title: tp("translation") },
+    // { number: 2, icon: Languages, title: tp("translation") },
     { number: 3, icon: Calendar, title: t("step_2_date_time") },
     { number: 4, icon: Users, title: t("step_3_registration") },
     { number: 5, icon: Ticket, title: t("step_4_tickets") },
@@ -843,12 +843,12 @@ export default function CreateEventWizard({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        {currentStep === 2 && (
+        {/* {currentStep === 2 && (
           <ProductTranslateButton
             formData={translationFormData}
             onChange={handleTranslateChange}
           />
-        )}
+        )} */}
         {currentStep === 1 && (
           <EventBasicInformation
             formData={translationFormData}

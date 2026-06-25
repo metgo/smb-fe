@@ -294,7 +294,7 @@ export default function CreatePoiWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: t("step_translation"), icon: LanguagesIcon },
+    // { number: 2, title: t("step_translation"), icon: LanguagesIcon },
     { number: 3, title: t("step_contact_info"), icon: Users },
     { number: 4, title: t("step_media"), icon: ImageIcon },
     { number: 5, title: t("step_attributes"), icon: Tag },
@@ -516,10 +516,10 @@ export default function CreatePoiWizard({
             />
           </div>
         );
-      case 2:
-        return (
-          <PoiTranslateButton formData={formData} onChange={handleChange} />
-        );
+      // case 2:
+      //   return (
+      //     <PoiTranslateButton formData={formData} onChange={handleChange} />
+      //   );
       case 3:
         return (
           <PoiContactInfo
