@@ -47,6 +47,8 @@ export const routes = {
   promotionMgmt: "/promotions-management",
 
   users: "/users",
+
+  publicTicket: "/verify-ticket",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
 };
