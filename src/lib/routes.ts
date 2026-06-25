@@ -5,6 +5,7 @@ export const routes = {
 
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
+  pendingApprovals: "/pending-approvals",
 
   articleMgmt: "/articles-management",
   articleDetails: "/article-details",
@@ -48,6 +49,8 @@ export const routes = {
   users: "/users",
 
   publicTicket: "/verify-ticket",
+  websiteCrashes: "/website-crashes",
+  websiteCrashDetails: "/website-crash-details",
 };
 
 export type RouteKey = keyof typeof routes;

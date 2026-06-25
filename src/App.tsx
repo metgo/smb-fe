@@ -16,6 +16,7 @@ import RootLayout from "@/components/RootLayout";
 import {
   AuthPage,
   BusinessesMgmtPage,
+  PendingApprovalsPage,
   ProductsMgmtPage,
   MiniCampaignsMgmtPage,
   EventsMgmtPage,
@@ -41,6 +42,8 @@ import {
   PartnersPage,
   CampaignsMgmtPage,
   UsersMgmtPage,
+  WebsiteCrashesPage,
+  WebsiteCrashDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -251,8 +254,12 @@ function App() {
     const currentAccessToken = sessionStorage.getItem("access_token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-    // Skip profile completion token for QR mode
-    if (isOrdersManagement) return;
+    const isPublicTicketPath = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
+
+    // Skip for QR mode and public ticket pages
+    if (isOrdersManagement || isPublicTicketPath) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -382,7 +389,7 @@ function App() {
     () =>
       createBrowserRouter([
         {
-          path: `${routes.publicTicket}/:eventId/:ticketId/`,
+          path: `${routes.publicTicket}/:eventId/:ticketId`,
           element: (
             <Suspense fallback={<SplashLoader />}>
               <PublicTicketPage />
@@ -409,6 +416,10 @@ function App() {
 
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
             { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+            {
+              path: routes.pendingApprovals,
+              element: <PendingApprovalsPage />,
+            },
 
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
@@ -444,6 +455,14 @@ function App() {
             { path: routes.poiMgmt, element: <PoiMgmtPage /> },
             { path: routes.poiDetails, element: <PoiDetailsPage /> },
             { path: routes.users, element: <UsersMgmtPage /> },
+            {
+              path: routes.websiteCrashes,
+              element: <WebsiteCrashesPage />,
+            },
+            {
+              path: routes.websiteCrashDetails,
+              element: <WebsiteCrashDetailsPage />,
+            },
 
             { path: "/*", element: <DashboardPage /> },
           ],

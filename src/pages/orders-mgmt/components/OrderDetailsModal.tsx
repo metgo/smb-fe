@@ -13,12 +13,11 @@ import {
   useBulkOrdersUpdateMutation,
   useUpdateOrderStatusMutation,
 } from "@/store/api/orderMutationApi";
-import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
 import { ImageWithFallback } from "@/components/shared";
 import OrderStatusChangeBtn from "@/components/btns/OrderStatusChangeBtn";
 import { envKeys } from "@/lib/envKeys";
 import { useGetOrderByIdQuery } from "@/store/api/orderQueryApi";
+import { getPlainTextFromRichText } from "@/helpers";
 
 interface OrderDetailsModalProps {
   orderId: string;
@@ -35,7 +34,6 @@ function OrderDetailsModal({
   isQRMode,
   qrToken,
 }: OrderDetailsModalProps) {
-  const { userRole } = useAppSelector((state) => state.auth);
   const { textTertiary, textPrimary, isRTL, isDark } = useThemeClasses();
 
   const {
@@ -276,9 +274,10 @@ function OrderDetailsModal({
                     >
                       {product?.name}
                     </p>
-                    {/* <p className={`text-sm ${textTertiary}`}>
-                      {product?.vendor ? product?.vendor : "-"}
-                    </p> */}
+                    <p className={`text-sm line-clamp-2 ${textTertiary}`}>
+                      {" "}
+                      {getPlainTextFromRichText(product?.description)}{" "}
+                    </p>
                   </div>
 
                   {/* Price & Actions */}
@@ -375,11 +374,19 @@ function OrderDetailsModal({
               className={`flex justify-between pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-300"}`}
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
-              <span className={`${textPrimary}`}>
-                {orderDetails?.totalAmount
-                  ? `₪${orderDetails?.totalAmount + orderDetails?.deliveryFee}`
-                  : "-"}
-              </span>
+              {orderDetails?.paymentMode.includes("voucher") ? (
+                <span className={`${textPrimary}`}>
+                  {orderDetails?.totalAmount
+                    ? `₪${orderDetails?.totalAmount}`
+                    : "-"}
+                </span>
+              ) : (
+                <span className={`${textPrimary}`}>
+                  {orderDetails?.totalAmount
+                    ? `₪${orderDetails?.totalAmount + orderDetails?.deliveryFee}`
+                    : "-"}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -387,62 +394,57 @@ function OrderDetailsModal({
 
       <div className="p-4">
         {/* Actions */}
-        {(userRole === UserRole.AUTHORITY ||
-          userRole === UserRole.DMO ||
-          userRole === UserRole.SUPERADMIN ||
-          userRole === UserRole.TRAVELLER) && (
-          <div
-            className={`flex  gap-3 pt-4  border-t ${isDark ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+        <div
+          className={`flex  gap-3 pt-4  border-t ${isDark ? "border-gray-800" : "border-gray-200"} ${isRTL ? "flex-row-reverse" : ""}`}
+        >
+          {orderDetails?.status !== "canceled" &&
+            orderDetails?.status !== "completed" && (
+              <button
+                onClick={() => {
+                  setCancelType("order");
+                  setItemToCancel(null);
+                  setShowCancelDialog(true);
+                }}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              >
+                {t("cancel_order") || "Cancel Order"}
+              </button>
+            )}
+
+          <button
+            onClick={() => handleResendNotification("VENDOR")}
+            disabled={sendingTarget !== null}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDark
+                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            {orderDetails?.status !== "canceled" &&
-              orderDetails?.status !== "completed" && (
-                <button
-                  onClick={() => {
-                    setCancelType("order");
-                    setItemToCancel(null);
-                    setShowCancelDialog(true);
-                  }}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                >
-                  {t("cancel_order") || "Cancel Order"}
-                </button>
-              )}
+            {sendingTarget === "VENDOR" ? (
+              <Loader className="w-4 h-4 animate-spin inline mr-2" />
+            ) : null}
+            {sendingTarget === "VENDOR"
+              ? t("sending") || "Sending..."
+              : t("resend_order_vendor") || "Resend Notification"}
+          </button>
 
-            <button
-              onClick={() => handleResendNotification("VENDOR")}
-              disabled={sendingTarget !== null}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                isDark
-                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {sendingTarget === "VENDOR" ? (
-                <Loader className="w-4 h-4 animate-spin inline mr-2" />
-              ) : null}
-              {sendingTarget === "VENDOR"
-                ? t("sending") || "Sending..."
-                : t("resend_order_vendor") || "Resend Notification"}
-            </button>
-
-            <button
-              onClick={() => handleResendNotification("CUSTOMER")}
-              disabled={sendingTarget !== null}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                isDark
-                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {sendingTarget === "CUSTOMER" ? (
-                <Loader className="w-4 h-4 animate-spin inline mr-2" />
-              ) : null}
-              {sendingTarget === "CUSTOMER"
-                ? t("sending") || "Sending..."
-                : t("resend_order_customer") || "Resend Notification"}
-            </button>
-          </div>
-        )}
+          <button
+            onClick={() => handleResendNotification("CUSTOMER")}
+            disabled={sendingTarget !== null}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDark
+                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            } ${sendingTarget !== null ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {sendingTarget === "CUSTOMER" ? (
+              <Loader className="w-4 h-4 animate-spin inline mr-2" />
+            ) : null}
+            {sendingTarget === "CUSTOMER"
+              ? t("sending") || "Sending..."
+              : t("resend_order_customer") || "Resend Notification"}
+          </button>
+        </div>
       </div>
 
       {/* Cancellation Dialog */}

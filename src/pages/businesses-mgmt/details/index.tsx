@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   Bookmark,
   ChevronDown,
+  Compass,
   Edit,
   Eye,
   MousePointer,
@@ -47,8 +48,111 @@ import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { envKeys } from "@/lib/envKeys";
+import {
+  TourProvider,
+  TourPortal,
+  useTour,
+  BUSINESS_DETAILS_TOUR_ID,
+} from "@/components/tour";
+import type { TourStep } from "@/components/tour";
+import { getLngWiseStr } from "@/helpers";
 
-export default function BusinessDetailsPage() {
+// ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
+
+function TourTrigger() {
+  const { startTour } = useTour();
+  const { t } = useTranslation("tour");
+  const { isDark } = useThemeClasses();
+  const { t: tb } = useTranslation("businesses");
+
+  const buildSteps = (): TourStep[] => [
+    {
+      id: "welcome",
+      placement: "center",
+      title: "business_details.welcome.title",
+      desc: "business_details.welcome.desc",
+    },
+    {
+      id: "status",
+      target: '[data-tour="status-btn"]',
+      placement: "bottom",
+      title: "business_details.status.title",
+      desc: "business_details.status.desc",
+    },
+    {
+      id: "actions",
+      target: '[data-tour="actions-dropdown"]',
+      placement: "left",
+      title: "business_details.actions.title",
+      desc: "business_details.actions.desc",
+    },
+    {
+      id: "header",
+      target: '[data-tour="business-header"]',
+      placement: "bottom",
+      title: "business_details.header.title",
+      desc: "business_details.header.desc",
+    },
+    {
+      id: "stats",
+      target: '[data-tour="business-stats"]',
+      placement: "bottom",
+      title: "business_details.stats.title",
+      desc: "business_details.stats.desc",
+    },
+    {
+      id: "tabs",
+      target: '[data-tour="tabs-section"]',
+      placement: "bottom",
+      title: "business_details.tabs.title",
+      desc: "business_details.tabs.desc",
+    },
+    {
+      id: "content",
+      target: '[data-tour="tab-content"]',
+      placement: "top",
+      title: "business_details.content.title",
+      desc: "business_details.content.desc",
+    },
+  ];
+
+  const handleManualStart = () => {
+    startTour(buildSteps());
+  };
+
+  // Auto-start once per user
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTour(buildSteps(), {
+        tourId: BUSINESS_DETAILS_TOUR_ID,
+        autoOnce: true,
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <button
+      onClick={handleManualStart}
+      title={t("start_tour")}
+      className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+        isDark
+          ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+          : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+      }`}
+    >
+      <Compass className="w-4 h-4" />
+      <span className="hidden sm:inline text-sm font-medium">
+        {tb("tour") ?? t("start_tour")}
+      </span>
+    </button>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+function BusinessDetailsPageInner() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -57,9 +161,37 @@ export default function BusinessDetailsPage() {
 
   const { isTraveller } = useUserRoles();
 
-  const { isDark, isRTL } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── Tour integration ────────────────────────────────────────────────────
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    refreshTargetRect,
+  } = useTour();
+
+  // Open the actions dropdown while the tour is on the "actions" step so the
+  // spotlight can focus on the revealed menu items; close it on any other step.
+  useEffect(() => {
+    if (!isTourOpen) {
+      setIsDropdownOpen(false);
+      return;
+    }
+    const stepId = tourSteps[currentStep]?.id;
+    if (stepId === "actions") {
+      setIsDropdownOpen(true);
+      // Wait one frame for React to render the dropdown, then re-measure.
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 40);
+      });
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setIsDropdownOpen(false);
+    }
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -189,13 +321,25 @@ export default function BusinessDetailsPage() {
   }, [isEditClicked]);
 
   const onCreateProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(displayName || "")}`,
     );
   };
   const onViewProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(displayName || "")}`,
     );
   };
 
@@ -289,12 +433,16 @@ export default function BusinessDetailsPage() {
       <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
         <BackToListBtn navPath={routes.businessMgmt} />
         <div className="flex items-center gap-2">
-          <StatusChangeBtn
-            handleStatusChange={onStatusChangeHandler}
-            status={business?.status}
-          />
+          {/* Status */}
+          <div data-tour="status-btn">
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={business?.status}
+            />
+          </div>
 
-          <div className="relative" ref={dropdownRef}>
+          {/* Actions dropdown */}
+          <div className="relative" ref={dropdownRef} data-tour="actions-btn">
             <button
               onClick={() => setIsDropdownOpen((prev) => !prev)}
               className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
@@ -311,7 +459,10 @@ export default function BusinessDetailsPage() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                data-tour="actions-dropdown"
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
+                  isTourOpen ? "z-10001" : "z-50"
+                } ${
                   isDark
                     ? "bg-gray-900 border-gray-700"
                     : "bg-white border-gray-200"
@@ -387,29 +538,37 @@ export default function BusinessDetailsPage() {
               </div>
             )}
           </div>
+
+          {/* Tour trigger */}
+          <TourTrigger />
         </div>
       </div>
 
-      <div className="details-top shrink-0">
+      <div className="details-top shrink-0" data-tour="business-header">
         <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
-        <PageStats
-          stats={businessStats}
-          isLoading={isDetailStatsLoading}
-          className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
-          wrapperClassName=" my-2 sm:my-4"
-        />
+        <div data-tour="business-stats">
+          <PageStats
+            stats={businessStats}
+            isLoading={isDetailStatsLoading}
+            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+            wrapperClassName=" my-2 sm:my-4"
+          />
+        </div>
       </div>
 
       {/* Content */}
       <div className="mt-2 sm:mt-4 flex flex-col flex-1 min-h-0">
-        <div className="shrink-0">
+        <div className="shrink-0" data-tour="tabs-section">
           <TabsSection
             tabs={businessTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-        <div className="details-content flex-1 overflow-y-auto min-h-0">
+        <div
+          className="details-content flex-1 overflow-y-auto min-h-0"
+          data-tour="tab-content"
+        >
           {renderContent()}
         </div>
       </div>
@@ -436,6 +595,18 @@ export default function BusinessDetailsPage() {
           missingFields={missingFieldsFromToken}
         />
       )}
+
+      <TourPortal />
     </div>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function BusinessDetailsPage() {
+  return (
+    <TourProvider>
+      <BusinessDetailsPageInner />
+    </TourProvider>
   );
 }

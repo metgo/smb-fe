@@ -11,6 +11,7 @@ import {
   Tag,
   ExternalLink,
   Check,
+  Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,9 +30,10 @@ import {
 } from "@/store/api/notificationApi";
 
 import {
+  markAllNotificationsAsRead,
   markNotificationAsRead,
   setNotificationStatus,
-  markAllNotificationsAsRead,
+  updateNotificationStatus,
 } from "@/features/notificationSlice";
 
 import {
@@ -39,6 +41,9 @@ import {
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
+import { ViewChangesModal } from "@/components/change-tracking";
+import { UserRole } from "@/enums/user.types";
 
 const NotificationsBell = () => {
   const navigate = useNavigate();
@@ -49,6 +54,7 @@ const NotificationsBell = () => {
 
   const { isNotificationOpen } = useAppSelector((state) => state.ui);
   const { notifications } = useAppSelector((state) => state.notification);
+  const userRole = useAppSelector((state) => state.auth.userRole);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
   const [bulkMarkNotificationsAsRead, { isLoading: isMarkingAllRead }] =
@@ -59,6 +65,37 @@ const NotificationsBell = () => {
   const [updateProduct] = useUpdateProductMutation();
 
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
+  const [viewChangesState, setViewChangesState] = useState({
+    isOpen: false,
+    entityType: "business" as "business" | "product" | "event" | "poi",
+    entityId: "",
+    entityName: "",
+    changeId: "",
+    notificationId: "",
+  });
+
+  const { data: changesData, isLoading: changesLoading } =
+    useGetChangesByEntityQuery(
+      {
+        entityType: viewChangesState.entityType,
+        entityId: viewChangesState.entityId,
+      },
+      {
+        skip: !viewChangesState.isOpen || !viewChangesState.entityId,
+      },
+    );
+
+  // Update notification status when changes are fetched
+  useEffect(() => {
+    if (changesData && viewChangesState.notificationId) {
+      dispatch(
+        updateNotificationStatus({
+          notificationId: viewChangesState.notificationId,
+          status: changesData.status || "PENDING",
+        }),
+      );
+    }
+  }, [changesData, viewChangesState.notificationId, dispatch]);
 
   const { isRTL, isDark, textPrimary, textSecondary, textTertiary, language } =
     useThemeClasses();
@@ -262,10 +299,22 @@ const NotificationsBell = () => {
                     notification.notifType === "ACTION" &&
                     !!notification.actionData?.suggestedCategory;
 
+                  const isAdmin =
+                    userRole === UserRole.SUPERADMIN ||
+                    userRole === UserRole.AUTHORITY ||
+                    userRole === UserRole.DMO ||
+                    userRole === UserRole.SITE_MANAGER;
+
                   const canApprove =
+                    isAdmin &&
                     notification.notifType === "ACTION" &&
+                    notification.status !== "APPROVED" &&
                     notification.status !== "CLOSED" &&
-                    (itemType === "BUSINESS" || itemType === "PRODUCT");
+                    notification.status !== "REJECTED" &&
+                    (itemType === "BUSINESS" ||
+                      itemType === "PRODUCT" ||
+                      itemType === "EVENT" ||
+                      itemType === "POI");
 
                   const handleViewDetails = async (e: React.MouseEvent) => {
                     e.stopPropagation();
@@ -277,6 +326,32 @@ const NotificationsBell = () => {
                         `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
                       );
                     }
+                  };
+
+                  const handleViewChanges = async (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    await markNotificationsAsRead(notification._id);
+                    dispatch(markNotificationAsRead(notification._id));
+
+                    const typeMap: Record<
+                      string,
+                      "business" | "product" | "event" | "poi"
+                    > = {
+                      BUSINESS: "business",
+                      PRODUCT: "product",
+                      EVENT: "event",
+                      POI: "poi",
+                    };
+
+                    setViewChangesState({
+                      isOpen: true,
+                      entityType: typeMap[itemType] || "business",
+                      entityId: notification.itemId,
+                      entityName:
+                        notification?.content?.[language]?.title || itemType,
+                      changeId: notification.itemId,
+                      notificationId: notification._id,
+                    });
                   };
 
                   const handleApprove = async (e: React.MouseEvent) => {
@@ -427,7 +502,7 @@ const NotificationsBell = () => {
                         </p>
 
                         {/* Action buttons */}
-                        <div className="flex items-center gap-2 mt-2.5">
+                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
                           {canApprove && (
                             <button
                               onClick={handleApprove}
@@ -448,6 +523,36 @@ const NotificationsBell = () => {
                                   : "Approve"}
                             </button>
                           )}
+
+                          {isApproved && isAdmin && (
+                            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-500 text-white">
+                              <Check className="w-3 h-3" />
+                              Approved
+                            </div>
+                          )}
+
+                          {(notification.status === "PENDING" ||
+                            notification.status === "DRAFT") &&
+                            (itemType === "BUSINESS" ||
+                              itemType === "PRODUCT" ||
+                              itemType === "EVENT" ||
+                              itemType === "POI") &&
+                            (userRole === UserRole.SUPERADMIN ||
+                              userRole === UserRole.AUTHORITY ||
+                              userRole === UserRole.DMO ||
+                              userRole === UserRole.SITE_MANAGER) &&
+                            (notification.changesCount as number) > 0 && (
+                              <button
+                                onClick={handleViewChanges}
+                                className={clsx(
+                                  "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors",
+                                  "bg-purple-600 hover:bg-purple-700 text-white",
+                                )}
+                              >
+                                <Eye className="w-3 h-3" />
+                                View Changes
+                              </button>
+                            )}
 
                           {itemEndpoint[itemType] && (
                             <button
@@ -496,6 +601,41 @@ const NotificationsBell = () => {
           </div>
         </>
       )}
+
+      <ViewChangesModal
+        isOpen={viewChangesState.isOpen}
+        onClose={() =>
+          setViewChangesState({ ...viewChangesState, isOpen: false })
+        }
+        entityType={viewChangesState.entityType}
+        entityId={viewChangesState.entityId}
+        entityName={viewChangesState.entityName}
+        notificationId={viewChangesState.notificationId}
+        changeData={
+          changesData &&
+          Array.isArray(changesData.changes) &&
+          changesData.changes.length > 0
+            ? {
+                changeId: changesData._id || undefined,
+                changes: changesData.changes || [],
+                summary: changesData.summary || "",
+                changesCount: changesData.changesCount || 0,
+                changedBy: changesData.changedBy || {
+                  firstName: "",
+                  email: "",
+                },
+                changedAt: changesData.changedAt || new Date(),
+                status: changesData.status || "PENDING",
+              }
+            : undefined
+        }
+        isLoading={changesLoading}
+        userRole={userRole as any}
+        onApprove={() => {
+          dispatch(toggleNotification());
+          setViewChangesState({ ...viewChangesState, isOpen: false });
+        }}
+      />
     </div>
   );
 };

@@ -34,6 +34,7 @@ interface BusinessBasicInfosProps {
     data: BusinessFormData | ((prev: BusinessFormData) => BusinessFormData),
   ) => void;
   errors: FormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   businessId: string;
@@ -51,6 +52,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setFormData,
   markDirty,
   errors,
+  setErrors,
   selectedDmoId,
   setSelectDmoId,
   selectedAuthorityId,
@@ -83,6 +85,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
       <DmoAuthorityWebsiteSelector
         errors={errors}
+        setErrors={setErrors}
         isEdit={!!businessId}
         keyId="externalApiId"
         selectedDmoId={selectedDmoId}

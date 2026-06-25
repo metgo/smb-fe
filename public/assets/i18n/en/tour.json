@@ -1,0 +1,100 @@
+{
+  "start_tour": "Take a Tour",
+
+  "business_details": {
+    "welcome": {
+      "title": "Welcome to Business Details",
+      "desc": "This page gives you complete control over a business — track performance, manage content, update settings, and more. Let's walk through the key areas together."
+    },
+    "status": {
+      "title": "Status Control",
+      "desc": "Instantly activate, suspend, or archive a business. Changes apply platform-wide the moment you save them."
+    },
+    "actions": {
+      "title": "Actions Menu",
+      "desc": "Four shortcuts live here — Edit updates the full business profile, Change Owner transfers management to another user, Create Product links a new product to this business, and View Products opens its product list."
+    },
+    "header": {
+      "title": "Business Identity",
+      "desc": "The business name, logo, primary category, and profile completion score. A higher completion score improves visibility and trust on the platform."
+    },
+    "stats": {
+      "title": "Real-Time Analytics",
+      "desc": "Live data on page views, unique visitors, clicks, bookmarks, shares, average engagement time, and conversion rate — your business performance at a glance."
+    },
+    "tabs": {
+      "title": "Section Navigation",
+      "desc": "Switch between Overview, Attributes, Contact, Location, Media, Social Networks, Delivery Policy, and Opening Hours using these tabs."
+    },
+    "content": {
+      "title": "Section Details",
+      "desc": "Each tab reveals the full content for that section. To edit any field, open the Actions menu and select 'Edit'."
+    }
+  },
+
+  "business_wizard": {
+    "welcome": {
+      "title": "Welcome to the Business Wizard",
+      "desc": "This step-by-step wizard guides you through creating or editing a complete business profile. You can save a draft at any time and publish when ready."
+    },
+    "header": {
+      "title": "Wizard Header",
+      "desc": "Shows your current step and its title. The completion ring tracks real-time profile strength — publish once all required fields are filled."
+    },
+    "stepper": {
+      "title": "Step Navigator",
+      "desc": "10 steps cover every aspect of a business: basic info, translations, contact, location, attributes, media, opening hours, delivery, online presence, and a final review. Click any step to jump directly to it."
+    },
+    "completion": {
+      "title": "Completion Tracker",
+      "desc": "This ring updates live as you fill in fields. Green = 70%+, amber = 40–69%, red = below 40%. Reach 100% for the strongest profile visibility."
+    },
+    "content": {
+      "title": "Step Content",
+      "desc": "Fill in the details for the current step here. Required fields are marked — steps 1–5 must be completed before you can publish."
+    },
+    "footer": {
+      "title": "Footer Navigation",
+      "desc": "Previous and Next move between steps. Save Draft stores your progress without publishing. Publish submits the business for review."
+    }
+  },
+
+  "business_list": {
+    "welcome": {
+      "title": "Welcome to Business Management",
+      "desc": "Manage your entire business portfolio from one place — browse, filter, create, and track performance. Let's walk through the key features."
+    },
+    "page_header": {
+      "title": "Page Overview",
+      "desc": "The live business count sits next to the title. Hit 'Add Business' to register a new business through the step-by-step creation wizard."
+    },
+    "stats": {
+      "title": "Portfolio Snapshot",
+      "desc": "Six live metrics: total registered businesses, active ones, total products, average impact score, pending approvals, and average profile completion rate."
+    },
+    "search": {
+      "title": "Smart Search",
+      "desc": "Find any business instantly by name, email, or phone number. Results refresh as you type — no submit needed."
+    },
+    "toolbar": {
+      "title": "Toolbar",
+      "desc": "Four tools in one row — open the Filter panel, show or hide table columns, export the current view to CSV, and switch between list and grid display."
+    },
+    "filter_panel": {
+      "title": "Filter Panel",
+      "desc": "Narrow results by status (Active, Pending, Archived) or by whether a business has products. Active filters appear as removable chips above the list."
+    },
+    "business_list": {
+      "title": "Business List",
+      "desc": "Click any row to open the full business profile. Use the checkboxes to select multiple businesses and apply bulk actions — status change or deletion — in one go."
+    }
+  },
+
+  "nav": {
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip Tour",
+    "finish": "Let's Go",
+    "step_of": "Step {{current}} of {{total}}"
+  }
+}

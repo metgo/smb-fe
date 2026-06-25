@@ -44,6 +44,7 @@ export const endpoints = {
   searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
+  pendingApprovals: "/admin/pending-approvals",
 
   //products
   products: "/products",
@@ -104,7 +105,6 @@ export const endpoints = {
   //voucher
   vouchers: "/vouchers",
   voucher: "/voucher-id",
-  postVoucher: "/vouchers",
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
@@ -133,6 +133,9 @@ export const endpoints = {
   // Promotions
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
+
+  // Website error report
+  websiteCrashes: "/website-crashes",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

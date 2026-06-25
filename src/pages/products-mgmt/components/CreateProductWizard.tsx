@@ -104,10 +104,13 @@ export default function CreateProductWizard({
 
   const initialBusinessData = useMemo(() => {
     if (product?.businessId || bzIdForProdCreate) {
+      const biz = product?.businessId;
       return [
         {
-          _id: product?.businessId?._id ?? bzIdForProdCreate,
-          name: product?.businessId?.name || businessName,
+          _id: biz?._id ?? bzIdForProdCreate,
+          name: biz?.name || businessName,
+          nameHe: biz?.nameHe || businessName,
+          nameAr: biz?.nameAr || businessName,
           slug: "",
         },
       ];
@@ -148,6 +151,51 @@ export default function CreateProductWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
+  const [formData, setFormData] = useState<any>({
+    businessId: businessId,
+    name: "",
+    nameHe: "",
+    nameAr: "",
+    shortDescription: "",
+    shortDescriptionHe: "",
+    shortDescriptionAr: "",
+    fullDescription: "",
+    fullDescriptionHe: "",
+    fullDescriptionAr: "",
+    type: "",
+    categories: [],
+    subCategories: [],
+    markedPrice: "",
+    sellingPrice: "",
+    quantity: "",
+    isUnlimited: false,
+    startDate: "",
+    endDate: "",
+    logo: null as IImage | null,
+    images: null as TImages | null,
+    additionalImages: [],
+    serviceDuration: "",
+    vendorDelivers: false,
+    vendorDeliveryArea: [] as any[],
+
+    pickupAvailable: false,
+    deliveryArea: [] as any[],
+
+    globalDelivery: false,
+    globalDeliveryArea: [] as any[],
+    deliveryAdditionalInfo: "",
+    deliveryReturnExchange: [] as string[],
+    deliverySpecificSellerInfo: [] as string[],
+
+    primaryCategory: "",
+    tags: [],
+    accessibility: [] as string[],
+    groupTypes: [] as string[],
+  });
+  const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
+    setIsSameAsBusiness(v);
+    setFormData((prev: any) => ({ ...prev, deliveryInfoSameAsBusiness: v }));
+  }, []);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] =
@@ -186,45 +234,6 @@ export default function CreateProductWizard({
         : undefined,
   });
 
-  const [formData, setFormData] = useState<any>({
-    businessId: businessId,
-    name: "",
-    nameHe: "",
-    nameAr: "",
-    shortDescription: "",
-    shortDescriptionHe: "",
-    shortDescriptionAr: "",
-    fullDescription: "",
-    fullDescriptionHe: "",
-    fullDescriptionAr: "",
-    type: "",
-    categories: [],
-    subCategories: [],
-    markedPrice: "",
-    sellingPrice: "",
-    quantity: "",
-    isUnlimited: false,
-    startDate: "",
-    endDate: "",
-    logo: null as IImage | null,
-    images: null as TImages | null,
-    additionalImages: [],
-    serviceDuration: "",
-    vendorDelivers: false,
-    pickupAvailable: false,
-    globalDelivery: false,
-    deliveryArea: [] as any[],
-    vendorDeliveryArea: [] as any[],
-    globalDeliveryArea: [] as any[],
-    deliveryAdditionalInfo: "",
-    deliveryReturnExchange: [] as string[],
-    deliverySpecificSellerInfo: [] as string[],
-
-    primaryCategory: "",
-    tags: [],
-    accessibility: [] as string[],
-    groupTypes: [] as string[],
-  });
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
@@ -243,13 +252,19 @@ export default function CreateProductWizard({
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
-      if (isSameAsBusiness && businessId) {
+      const effectiveBusinessId = businessId || formData.businessId;
+      if (isSameAsBusiness && effectiveBusinessId) {
         try {
-          const { data } = await getBusinessDelivery({ businessId });
+          const { data } = await getBusinessDelivery({
+            businessId: effectiveBusinessId,
+          });
 
           setFormData((prev: any) => ({
             ...prev,
             vendorDelivers: data?.vendorDelivers ?? false,
+            vendorDeliveryArea: data?.vendorDeliveryArea ?? [],
+            globalDelivery: data?.globalDelivery ?? false,
+            globalDeliveryArea: data?.globalDeliveryArea ?? [],
             pickupAvailable: data?.isPickUpAvailable ?? false,
             deliveryArea: data?.deliveryArea ?? [],
             deliveryReturnExchange: data?.deliveryReturnExchange ?? [],
@@ -263,7 +278,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
+  }, [isSameAsBusiness, businessId, formData.businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -315,7 +330,7 @@ export default function CreateProductWizard({
       enableHomeDelivery: product?.enableHomeDelivery || false,
       enableStorePickup: product?.enableStorePickup || false,
       serviceDuration: product?.serviceDuration || "",
-
+      deliveryInfoSameAsBusiness: product?.deliveryInfoSameAsBusiness ?? false,
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
       globalDelivery: product?.globalDelivery ?? false,
@@ -337,8 +352,10 @@ export default function CreateProductWizard({
     initialGroupTypesId.current = loadedGroupTypes;
 
     if (opMode === IOpMode.EDIT) {
+      setIsSameAsBusiness(product?.deliveryInfoSameAsBusiness ?? false);
       setGalleryImages(product?.images);
     } else {
+      setIsSameAsBusiness(false);
       setGalleryImages([]);
     }
   }, [productId, product]);
@@ -580,13 +597,17 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    deliveryInfoSameAsBusiness: isSameAsBusiness,
     vendorDelivers: formData.vendorDelivers,
-    isPickUpAvailable: formData.pickupAvailable,
-    globalDelivery: formData.globalDelivery,
-    deliveryArea: formData.deliveryArea,
     vendorDeliveryArea: formData.vendorDelivers
       ? formData.vendorDeliveryArea
       : [],
+
+    isPickUpAvailable: formData.pickupAvailable,
+    deliveryArea: formData.deliveryArea,
+
+    globalDelivery: formData.globalDelivery,
+
     globalDeliveryArea: formData.globalDelivery
       ? formData.globalDeliveryArea
       : [],
@@ -720,7 +741,7 @@ export default function CreateProductWizard({
             formData={formData}
             setFormData={setFormData}
             isSameAsBusiness={isSameAsBusiness}
-            setIsSameAsBusiness={setIsSameAsBusiness}
+            setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
       case 7:

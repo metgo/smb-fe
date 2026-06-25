@@ -18,7 +18,7 @@ export const voucherMutationApi = createApi({
     // In your RTK Query api slice
     createVoucher: builder.mutation<any, any>({
       query: (payload) => ({
-        url: endpoints.postVoucher,
+        url: endpoints.vouchers,
         method: "POST",
         data: payload,
       }),

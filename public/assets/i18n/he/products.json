@@ -148,5 +148,6 @@
   "submit_for_approval": "שלח לאישור",
 
   "no_products": "לא נמצאו מוצרים",
-  "no_products_desc": "התחל ביצירת המוצר הראשון שלך"
+  "no_products_desc": "התחל ביצירת המוצר הראשון שלך",
+  "export": "ייצוא"
 }
