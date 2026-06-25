@@ -164,7 +164,7 @@ export default function CreatePoiWizard({
   const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
   const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -297,11 +297,11 @@ export default function CreatePoiWizard({
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_translation"), icon: LanguagesIcon },
-    { number: 2, title: t("step_contact_info"), icon: Users },
-    { number: 3, title: t("step_media"), icon: ImageIcon },
-    { number: 4, title: t("step_attributes"), icon: Tag },
-    { number: 5, title: t("step_location"), icon: MapPin },
-    { number: 6, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 3, title: t("step_contact_info"), icon: Users },
+    { number: 4, title: t("step_media"), icon: ImageIcon },
+    { number: 5, title: t("step_attributes"), icon: Tag },
+    { number: 6, title: t("step_location"), icon: MapPin },
+    { number: 7, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   const addr = parseAddress(address);
@@ -400,7 +400,7 @@ export default function CreatePoiWizard({
 
         break;
 
-      case 5:
+      case 6:
         if (!addr.location) newErrors.address = t("required_field");
         break;
     }
@@ -459,7 +459,7 @@ export default function CreatePoiWizard({
     }
 
     let allValid = true;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 6; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -522,7 +522,7 @@ export default function CreatePoiWizard({
         return (
           <PoiTranslateButton formData={formData} onChange={handleChange} />
         );
-      case 2:
+      case 3:
         return (
           <PoiContactInfo
             t={t}
@@ -532,7 +532,7 @@ export default function CreatePoiWizard({
             markDirty={markDirty}
           />
         );
-      case 3:
+      case 4:
         return (
           <PoiMedia
             markDirty={markDirty}
@@ -562,7 +562,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 4:
+      case 5:
         return (
           <PoiAttributes
             formData={formData}
@@ -575,7 +575,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 5:
+      case 6:
         return (
           <PoiLocation
             t={t}
@@ -585,7 +585,7 @@ export default function CreatePoiWizard({
             setAddress={setAddress}
           />
         );
-      case 6:
+      case 7:
         return (
           <PoiReviewSubmit
             t={t}

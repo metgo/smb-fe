@@ -426,12 +426,11 @@ export default function CreateProductWizard({
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
     { number: 2, title: tp("translation"), icon: LanguagesIcon },
-
-    { number: 2, title: t("product_segmentation"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: CreditCard },
-    { number: 4, title: t("product_media"), icon: ImageIcon },
-    { number: 5, title: t("product_delivery_service"), icon: Truck },
-    { number: 6, title: t("product_review"), icon: Eye },
+    { number: 3, title: t("product_segmentation"), icon: Package },
+    { number: 4, title: t("product_pricing"), icon: CreditCard },
+    { number: 5, title: t("product_media"), icon: ImageIcon },
+    { number: 6, title: t("product_delivery_service"), icon: Truck },
+    { number: 7, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -450,11 +449,11 @@ export default function CreateProductWizard({
           newErrors.shortDescEn = t("field_required");
 
         break;
-      case 2:
+      case 3:
         if (!formData.primaryCategory)
           newErrors.categories = t("select_at_least_one_category");
         break;
-      case 3:
+      case 4:
         if (!formData.sellingPrice || parseFloat(formData.sellingPrice) <= 0) {
           newErrors.sellingPrice = t("invalid_price");
         }
@@ -465,7 +464,7 @@ export default function CreateProductWizard({
           newErrors.quantity = t("invalid_quantity");
         }
         break;
-      case 4:
+      case 5:
         break;
     }
     setErrors(newErrors);
@@ -523,7 +522,7 @@ export default function CreateProductWizard({
     }
 
     let allValid = true;
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -734,7 +733,7 @@ export default function CreateProductWizard({
         return (
           <ProductTranslateButton formData={formData} onChange={handleChange} />
         );
-      case 2:
+      case 3:
         return (
           <Attributes
             name={formData.nameHe || formData.name || formData.nameAr}
@@ -752,11 +751,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 3:
-        return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <Media {...mediaProps} {...commonProps} />;
+        return <ProductPricingAvailability {...commonProps} />;
       case 5:
+        return <Media {...mediaProps} {...commonProps} />;
+      case 6:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -766,7 +765,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
-      case 6:
+      case 7:
         return (
           <ProductReviewSubmit
             {...commonProps}

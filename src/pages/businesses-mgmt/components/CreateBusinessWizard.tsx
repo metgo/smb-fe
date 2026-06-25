@@ -165,17 +165,17 @@ function CreateBusinessWizardInner({
       name: 1,
       shortDescription: 1,
       description: 1,
-      busiEmail: 2,
-      phoneNumber: 2,
-      contactDetails: 2,
-      contactName: 2,
-      address: 3,
-      primaryCategoryId: 4,
-      tags: 4,
-      logo: 5,
-      images: 5,
-      openingHrs: 6,
-      socialMedia: 8,
+      busiEmail: 3,
+      phoneNumber: 3,
+      contactDetails: 3,
+      contactName: 3,
+      address: 4,
+      primaryCategoryId: 5,
+      tags: 5,
+      logo: 6,
+      images: 6,
+      openingHrs: 7,
+      socialMedia: 9,
     };
     return stepMap[field] ?? 1;
   };
@@ -391,7 +391,7 @@ function CreateBusinessWizardInner({
 
   const addr = parseAddress(address);
 
-  const totalSteps = 9;
+  const totalSteps = 10;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -601,15 +601,14 @@ function CreateBusinessWizardInner({
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: tc("translation"), icon: LanguagesIcon },
-
-    { number: 2, title: t("step_contact_ownership"), icon: Users },
-    { number: 3, title: t("step_location"), icon: MapPin },
-    { number: 4, title: t("step_attributes"), icon: Tag },
-    { number: 5, title: t("step_media"), icon: ImageIcon },
-    { number: 6, title: t("step_operating_hours"), icon: Clock },
-    { number: 7, title: t("step_delivery_policy"), icon: Truck },
-    { number: 8, title: t("step_online_info"), icon: Globe },
-    { number: 9, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 3, title: t("step_contact_ownership"), icon: Users },
+    { number: 4, title: t("step_location"), icon: MapPin },
+    { number: 5, title: t("step_attributes"), icon: Tag },
+    { number: 6, title: t("step_media"), icon: ImageIcon },
+    { number: 7, title: t("step_operating_hours"), icon: Clock },
+    { number: 8, title: t("step_delivery_policy"), icon: Truck },
+    { number: 9, title: t("step_online_info"), icon: Globe },
+    { number: 10, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   // Draft Save Payload per Step
@@ -734,7 +733,7 @@ function CreateBusinessWizardInner({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 2: {
+      case 3: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -749,13 +748,13 @@ function CreateBusinessWizardInner({
         break;
       }
 
-      case 3:
+      case 4:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 4:
+      case 5:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -845,7 +844,7 @@ function CreateBusinessWizardInner({
 
     // Validate all steps
     let allValid = true;
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -957,9 +956,9 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 2:
-        return <BusinessContactOwership {...commonProps} />;
       case 3:
+        return <BusinessContactOwership {...commonProps} />;
+      case 4:
         return (
           <BusinessLocation
             {...commonProps}
@@ -970,7 +969,7 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 4:
+      case 5:
         return (
           <Attributes
             selectedFormLanguage={selectedFormLanguage}
@@ -990,15 +989,15 @@ function CreateBusinessWizardInner({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 5:
-        return <Media {...mediaProps} business={editData} isBusiness={true} />;
       case 6:
-        return <BusinessOpeningHours {...commonProps} />;
+        return <Media {...mediaProps} business={editData} isBusiness={true} />;
       case 7:
-        return <DeliveryPolicyOption {...commonProps} />;
+        return <BusinessOpeningHours {...commonProps} />;
       case 8:
-        return <BusinessOnlinePresence {...commonProps} />;
+        return <DeliveryPolicyOption {...commonProps} />;
       case 9:
+        return <BusinessOnlinePresence {...commonProps} />;
+      case 10:
         return (
           <BusinessReviewSubmit
             {...commonProps}
