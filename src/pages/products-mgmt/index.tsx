@@ -1,8 +1,13 @@
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Package, Settings2, ArrowUpDown, ArrowUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
+import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import {
   BulkActionBar,
   ConfirmDialog,
@@ -14,38 +19,26 @@ import {
 import {
   CreateProductWizard,
   ExportProductsButton,
+  ProductFiltersPanel,
   ProductGridView,
   ProductListView,
 } from "./components";
-
-import {
-  useGetAllProductsQuery,
-  useGetProductStatsQuery,
-} from "@/store/api/productQueryApi";
-import SearchInput from "@/components/shared/SearchInput";
-import { FilterButton } from "@/components/btns";
-import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
 import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ReactSelect } from "@/components/form-fields";
-import { useAppSelector } from "@/hooks/hooks";
-import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { formatILS } from "@/helpers/formatter";
-import { skipToken } from "@reduxjs/toolkit/query";
-import FilterChips from "@/components/shared/FilterChips";
+import SearchInput from "@/components/shared/SearchInput";
+import { FilterButton } from "@/components/btns";
+import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
 import EmptyState from "@/components/shared/EmptyState";
-import { FilterByStatus } from "@/components/filter-fields";
+import { formatILS } from "@/helpers/formatter";
 
-// ─────────────────────────────────────────────────────────────
-// Constants & Types
-// ─────────────────────────────────────────────────────────────
-const LIMIT = 20;
+import { useProductFilters } from "./hooks/useProductFilters";
+import { useProductListData } from "./hooks/useProductListData";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const COLUMNS_STORAGE_KEY = "productsTableColumns";
-const SEARCH_STORAGE_KEY = "productSearchTerm";
 
 type IColumnVisibility = {
   images: boolean;
@@ -92,13 +85,11 @@ const columnDefinitions: Array<{
   { key: "updatedAt", isDefault: false },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// Main Component
-// ─────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function ProductsMgmtPage() {
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
-  const { t: tb } = useTranslation("businesses");
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -109,31 +100,38 @@ export default function ProductsMgmtPage() {
   const { dmoId, authorityId, startDate, endDate } = useAppSelector(
     (state) => state.auth,
   );
+  const { isDark, bgSecondary, borderColor, language } = useThemeClasses();
 
+  // ─── Filter & Search (persisted to localStorage) ─────────────────────
   const {
-    isDark,
-    language,
-    bgPrimary,
-    bgSecondary,
-    borderColor,
-    textTertiary,
-  } = useThemeClasses();
+    filters,
+    setFilters,
+    searchTerm,
+    setSearchTerm,
+    clearFilter,
+    hasSavedFilters,
+  } = useProductFilters();
 
-  // ─── Local State ─────────────────────────────────────────
+  // ─── Data fetching & infinite scroll ─────────────────────────────────
+  const {
+    combinedProducts,
+    productStats,
+    isLoading,
+    isFetching,
+    isStatsLoading,
+    refetchFromPage1,
+    hasMore,
+    totalData,
+    fetchNextPage,
+  } = useProductListData(filters, searchTerm, urlBusinessId);
+
+  // ─── UI State ─────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showFilters, setShowFilters] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(),
   );
-  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
-    status: "all" as const,
-    locale: language,
-    businessId: "",
-  });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -141,9 +139,8 @@ export default function ProductsMgmtPage() {
     useState<IColumnVisibility>(defaultColumns);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const hasSavedFilters = filters.businessId !== "" || filters.status !== "all";
 
-  // Load column visibility
+  // ─── Column visibility (persisted to localStorage) ────────────────────
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
@@ -160,15 +157,7 @@ export default function ProductsMgmtPage() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  // useEffect(() => {
-  //   if (searchTerm) {
-  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-  //   } else {
-  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
-  //   }
-  // }, [searchTerm]);
-
-  // ─── Close column dropdown on outside click ─────────
+  // ─── Close column dropdown on outside click ────────────────────────────
   useEffect(() => {
     if (!showColumnSettings) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -183,23 +172,8 @@ export default function ProductsMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColumnSettings]);
 
-  // ─── Reset page and clear products when filters/search change ─────────
-  useEffect(() => {
-    setPage(1);
-    setCombinedProducts([]);
-  }, [
-    searchTerm,
-    filters,
-    language,
-    urlBusinessId,
-    dmoId,
-    authorityId,
-    startDate,
-    endDate,
-  ]);
-
-  // ─── Business Data Fetching ─────────
-  const { data: businessData, isLoading: _isBusinessesLoading } =
+  // ─── Business Data for Filter Panel ──────────────────────────────────
+  const { data: businessData, isLoading: isBusinessesLoading } =
     useGetBusinessForProductQuery(
       !urlBusinessId
         ? {
@@ -229,95 +203,11 @@ export default function ProductsMgmtPage() {
     },
   });
 
-  // ─── Query Parameters (memoized) ─────────
-  const productQueryParams = useMemo(() => {
-    const params: Record<string, any> = {
-      page,
-      limit: LIMIT,
-      locale: language,
-      dmoId,
-      authorityId,
-      startDate,
-      endDate,
-    };
-    const finalSearchTerm =
-      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
-    if (filters.status !== "all") params.status = filters?.status;
-
-    // Priority: URL param > filter > none
-    const effectiveBusinessId = urlBusinessId || filters.businessId || "";
-    if (effectiveBusinessId) params.businessId = effectiveBusinessId;
-
-    return params;
-  }, [
-    page,
-    searchTerm,
-    filters,
-    language,
-    urlBusinessId,
-    dmoId,
-    authorityId,
-    startDate,
-    endDate,
-  ]);
-
-  // ─── API Queries ─────────
-  const statsQueryParams = useMemo(() => {
-    const { page, limit, status, locale, ...rest } = productQueryParams;
-    return rest;
-  }, [productQueryParams]);
-
-  const { data: productStats, isLoading: isStatsLoading } =
-    useGetProductStatsQuery(statsQueryParams, {
-      refetchOnMountOrArgChange: true,
-    });
-
-  const {
-    data: productData,
-    refetch,
-    isFetching,
-    isLoading: isLoadingProduct,
-  } = useGetAllProductsQuery(productQueryParams, {
-    refetchOnMountOrArgChange: true,
-  });
-
+  // ─── Mutations ─────────────────────────────────────────────────────────
   const [bulkProductsUpdate, { isLoading: isDeleting }] =
     useBulkProductsUpdateMutation();
 
-  const hasMore = productData?.meta?.hasNextPage;
-  const totalData = productData?.totalData;
-
-  // ─── Infinite Scroll: Merge new data safely ─────────
-  useEffect(() => {
-    if (!productData?.data?.length) {
-      setCombinedProducts([]);
-      return;
-    }
-    setCombinedProducts((prev) => {
-      if (page === 1) return productData?.data;
-      const existingIds = new Set(prev.map((p) => p._id));
-      const newItems = productData?.data.filter(
-        (p: any) => !existingIds.has(p._id),
-      );
-      return newItems.length ? [...prev, ...newItems] : prev;
-    });
-  }, [productData, page]);
-
-  const fetchNextPage = useCallback(() => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => prev + 1);
-  }, [hasMore, isFetching]);
-
-  const refetchFromPage1 = useCallback(() => {
-    if (page === 1) {
-      refetch();
-    } else {
-      setPage(1);
-    }
-  }, [page, refetch]);
-
-  // ─── Handlers (memoized) ─────────
+  // ─── Handlers ─────────────────────────────────────────────────────────
   const handleCreateNew = useCallback(() => {
     setIsCreateModalOpen(true);
   }, []);
@@ -331,21 +221,6 @@ export default function ProductsMgmtPage() {
   const removeQueryParams = useCallback(() => {
     navigate({}, { replace: true });
   }, [navigate]);
-
-  const clearFilter = useCallback((filterKey: keyof typeof filters) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterKey]: filterKey === "businessId" ? "" : "all",
-    }));
-  }, []);
-
-  const clearAllFilters = useCallback(() => {
-    setFilters({ status: "all", locale: language, businessId: "" });
-    localStorage.removeItem(SEARCH_STORAGE_KEY);
-    setSearchTerm("");
-    setPage(1);
-    setCombinedProducts([]);
-  }, [language]);
 
   const resetToDefault = useCallback(() => {
     setColumnVisibility(defaultColumns);
@@ -368,7 +243,7 @@ export default function ProductsMgmtPage() {
       if (results?.data) {
         toast.success(tc("product_deleted_success"), { id: toastId });
         setSelectedProducts(new Set());
-        refetch();
+        refetchFromPage1();
       }
     } catch (error: any) {
       toast.error(error?.message || tc("product_delete_failed"), {
@@ -378,7 +253,7 @@ export default function ProductsMgmtPage() {
       setIsConfirmOpen(false);
       setIsBulkDelete(false);
     }
-  }, [selectedProducts, bulkProductsUpdate, refetch, tc]);
+  }, [selectedProducts, bulkProductsUpdate, refetchFromPage1, tc]);
 
   const handleBulkStatusChange = useCallback(
     async (status: TStatus) => {
@@ -392,7 +267,7 @@ export default function ProductsMgmtPage() {
         if (results?.data) {
           toast.success(tc("product_status_update_success"), { id: toastId });
           setSelectedProducts(new Set());
-          refetch();
+          refetchFromPage1();
         }
       } catch (error: any) {
         toast.error(error?.message || tc("product_status_update_failed"), {
@@ -400,10 +275,10 @@ export default function ProductsMgmtPage() {
         });
       }
     },
-    [selectedProducts, bulkProductsUpdate, refetch, tc],
+    [selectedProducts, bulkProductsUpdate, refetchFromPage1, tc],
   );
 
-  // ─── Stats Cards (memoized) ─────────
+  // ─── Stats Cards ───────────────────────────────────────────────────────
   const salesStats = useMemo(
     () => [
       {
@@ -438,11 +313,14 @@ export default function ProductsMgmtPage() {
     [productStats, t],
   );
 
-  // ─── Render ─────────
+  // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
-      <div className="h-[calc(100vh-7rem)] flex flex-col overflow-hidden pt-10">
-        <div className="shrink-0">
+      <div className="flex flex-col pt-10 md:pt-0">
+        {/* Sticky Header */}
+        <div
+          className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
+        >
           <PageHeader
             title={t("products_management")}
             description={t("products_management_desc")}
@@ -451,27 +329,24 @@ export default function ProductsMgmtPage() {
             onClick={handleCreateNew}
             totalCount={totalData ?? 0}
           />
+
           <PageStats
             stats={salesStats}
             isLoading={isStatsLoading}
             className="sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4"
           />
-        </div>
 
-        <div className="shrink-0 space-y-2 mb-2 mt-4">
-          {/* Toolbar */}
-          <div className="flex flex-col gap-2">
-            {/* Search */}
+          {/* Search & Actions */}
+          <div className="py-3 flex flex-col gap-2">
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t("search_products")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
-            <div className="flex items-center justify-between gap-2 relative">
+            <div className="flex items-center justify-between gap-2 w-full">
               <div className="flex items-center gap-2">
                 <FilterButton value={showFilters} onChange={setShowFilters} />
                 <ShowColumns
@@ -493,9 +368,7 @@ export default function ProductsMgmtPage() {
               </div>
 
               <ViewModeToggle
-                onChange={(mode) => {
-                  setViewMode(mode);
-                }}
+                onChange={setViewMode}
                 value={viewMode}
                 tableName="productViewMode"
               />
@@ -504,106 +377,33 @@ export default function ProductsMgmtPage() {
 
           {/* Filters Panel */}
           {(showFilters || urlBusinessId || hasSavedFilters) && (
-            <div
-              className={`rounded-md border py-2 px-3 ${borderColor} ${bgPrimary}`}
-            >
-              <div className="flex flex-wrap gap-3 items-start w-full">
-                <FilterByStatus filters={filters} setFilters={setFilters} />
-
-                {!urlBusinessId && (
-                  <div className="flex flex-col flex-1 min-w-35">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("filter_by_business")}
-                    </label>
-                    <ReactSelect
-                      isClearable
-                      value={filters.businessId}
-                      onChange={(businessId: string) =>
-                        setFilters((prev) => ({ ...prev, businessId }))
-                      }
-                      items={
-                        businesses?.map((item: any) => ({
-                          _id: item._id,
-                          name: item.name,
-                        })) ?? []
-                      }
-                      placeholder={t("select_business")}
-                      onSearch={searchBusiness}
-                      isLoading={isSearching || _isBusinessesLoading}
-                    />
-                  </div>
-                )}
-
-                {(filters.status !== "all" ||
-                  filters.businessId !== "" ||
-                  urlBusinessName ||
-                  urlBusinessNameProduct) && (
-                  <div className="flex flex-col w-full sm:w-auto">
-                    <label className={`block text-sm mb-1 ${textTertiary}`}>
-                      {tb("active_filters")}:
-                    </label>
-                    <div className="flex flex-wrap gap-1.5 items-center">
-                      {filters.status !== "all" && (
-                        <FilterChips
-                          label={t(filters.status)}
-                          onRemove={() => clearFilter("status")}
-                        />
-                      )}
-                      {urlBusinessId && urlBusinessName && (
-                        <FilterChips
-                          label={urlBusinessName ?? ""}
-                          onRemove={removeQueryParams}
-                        />
-                      )}
-                      {urlBusinessId && !urlBusinessName && (
-                        <FilterChips
-                          label={urlBusinessNameProduct ?? ""}
-                          onRemove={removeQueryParams}
-                        />
-                      )}
-                      {filters.businessId && (
-                        <FilterChips
-                          label={
-                            businesses?.find(
-                              (b: any) => b._id === filters.businessId,
-                            )?.name || filters.businessId
-                          }
-                          onRemove={() => clearFilter("businessId")}
-                        />
-                      )}
-                      {(filters.status !== "all" ||
-                        filters.businessId !== "") && (
-                        <button
-                          onClick={clearAllFilters}
-                          className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
-                        >
-                          {t("clear_all")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {selectedProducts.size > 0 && (
-            <BulkActionBar
-              selectedItemCount={selectedProducts.size}
-              handleBulkStatusChange={handleBulkStatusChange}
-              handleBulkDelete={promptBulkDelete}
-              hancleClearSelection={() => setSelectedProducts(new Set())}
+            <ProductFiltersPanel
+              filters={filters}
+              setFilters={setFilters}
+              hasSavedFilters={hasSavedFilters}
+              clearFilter={clearFilter}
+              urlBusinessId={urlBusinessId}
+              urlBusinessName={urlBusinessName}
+              urlBusinessNameProduct={urlBusinessNameProduct}
+              removeQueryParams={removeQueryParams}
+              businesses={businesses ?? []}
+              searchBusiness={searchBusiness}
+              isSearching={isSearching}
+              isBusinessesLoading={isBusinessesLoading}
             />
           )}
+
+          <BulkActionBar
+            selectedItemCount={selectedProducts.size}
+            handleBulkStatusChange={handleBulkStatusChange}
+            handleBulkDelete={promptBulkDelete}
+            hancleClearSelection={() => setSelectedProducts(new Set())}
+          />
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {!isLoadingProduct &&
-          !isFetching &&
-          combinedProducts?.length === 0 ? (
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto mt-2">
+          {!isLoading && !isFetching && combinedProducts?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
@@ -611,12 +411,8 @@ export default function ProductsMgmtPage() {
                 <EmptyState searchQuery={searchTerm} />
               ) : (
                 <div className="text-center">
-                  <Package
-                    className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`}
-                  />
-                  <p className={`${textTertiary} mb-6`}>
-                    {t("no_products_desc")}
-                  </p>
+                  <Package className={`w-16 h-16 mx-auto mb-4 opacity-30`} />
+                  <p className={`opacity-50 mb-6`}>{t("no_products_desc")}</p>
                   <button
                     onClick={handleCreateNew}
                     className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
@@ -631,7 +427,7 @@ export default function ProductsMgmtPage() {
               hasMore={!!hasMore}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
-              isLoading={isLoadingProduct || isFetching}
+              isLoading={isLoading || isFetching}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               columnVisibility={columnVisibility}
@@ -643,7 +439,7 @@ export default function ProductsMgmtPage() {
               refetch={refetchFromPage1}
               fetchNextPage={fetchNextPage}
               products={combinedProducts}
-              isLoading={isLoadingProduct || isFetching}
+              isLoading={isLoading || isFetching}
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
             />
