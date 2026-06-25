@@ -42,6 +42,8 @@ import {
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
+import { useUpdatePoiMutation } from "@/store/api/poiMutationApi";
 import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
 import { ViewChangesModal } from "@/components/change-tracking";
 import { UserRole } from "@/enums/user.types";
@@ -64,6 +66,8 @@ const NotificationsBell = () => {
   const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
   const [updateBusiness] = useUpdateBusinessMutation();
   const [updateProduct] = useUpdateProductMutation();
+  const [updateEvent] = useUpdateEventMutation();
+  const [updatePoi] = useUpdatePoiMutation();
 
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [viewChangesState, setViewChangesState] = useState({
@@ -379,6 +383,16 @@ const NotificationsBell = () => {
                       } else if (itemType === "PRODUCT") {
                         await updateProduct({
                           productId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      } else if (itemType === "EVENT") {
+                        await updateEvent({
+                          eventId: notification.itemId,
+                          body: { status: "APPROVED" },
+                        }).unwrap();
+                      } else if (itemType === "POI") {
+                        await updatePoi({
+                          poiId: notification.itemId,
                           body: { status: "APPROVED" },
                         }).unwrap();
                       }
