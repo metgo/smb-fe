@@ -20,7 +20,6 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
@@ -31,6 +30,7 @@ import {
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
+import { CreateEventWizardNew } from "../components";
 
 const findEventType = (type: string) => {
   switch (type) {
@@ -257,7 +257,7 @@ export default function EventDetailsPage() {
 
       {/* Edit Modal */}
       {isEditOpen && (
-        <CreateEventWizard
+        <CreateEventWizardNew
           isOpen={isEditOpen}
           onClose={handleClose}
           editData={eventDetails}

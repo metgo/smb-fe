@@ -33,7 +33,7 @@ import {
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
 import QuickSnapEventDetails from "./QuickSnapEventDetails";
-import CreateEventWizard from "./CreateEventWizard";
+import CreateEventWizardNew from "./wizard/CreateEventWizardNew";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/pills";
@@ -794,7 +794,7 @@ export default function EventsWithViewMode({
       )}
 
       {isEditModalOpen && (
-        <CreateEventWizard
+        <CreateEventWizardNew
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}
