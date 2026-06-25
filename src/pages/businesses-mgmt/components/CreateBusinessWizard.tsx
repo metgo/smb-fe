@@ -13,6 +13,7 @@ import {
   FileText,
   Users,
   Truck,
+  LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
 import {
@@ -61,7 +62,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
-// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
+import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -267,9 +268,9 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-  // const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-  //   setFormData((prev: any) => ({ ...prev, ...updates }));
-  // }, []);
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
   const detectAndAssignLanguageFields = (data: any): any => {
     const name = data.name?.trim() || "";
     const shortDescription = data.shortDescription?.trim() || "";
@@ -599,7 +600,7 @@ function CreateBusinessWizardInner({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    // { number: 2, title: tc("translation"), icon: LanguagesIcon },
+    { number: 2, title: tc("translation"), icon: LanguagesIcon },
 
     { number: 2, title: t("step_contact_ownership"), icon: Users },
     { number: 3, title: t("step_location"), icon: MapPin },
@@ -948,13 +949,13 @@ function CreateBusinessWizardInner({
           />
         );
 
-      // case 2:
-      //   return (
-      //     <BusinessTranslateButton
-      //       formData={formData}
-      //       onChange={handleChange}
-      //     />
-      //   );
+      case 2:
+        return (
+          <BusinessTranslateButton
+            formData={formData}
+            onChange={handleChange}
+          />
+        );
 
       case 2:
         return <BusinessContactOwership {...commonProps} />;

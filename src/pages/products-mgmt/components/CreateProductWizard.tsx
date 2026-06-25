@@ -12,6 +12,7 @@ import {
   Eye,
   CreditCard,
   FileText,
+  LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
 import {
@@ -50,6 +51,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
+import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 // import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
@@ -234,9 +236,9 @@ export default function CreateProductWizard({
         : undefined,
   });
 
-  // const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-  //   setFormData((prev: any) => ({ ...prev, ...updates }));
-  // }, []);
+  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+    setFormData((prev: any) => ({ ...prev, ...updates }));
+  }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -423,7 +425,7 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    // { number: 2, title: tp("translation"), icon: LanguagesIcon },
+    { number: 2, title: tp("translation"), icon: LanguagesIcon },
 
     { number: 2, title: t("product_segmentation"), icon: Package },
     { number: 3, title: t("product_pricing"), icon: CreditCard },
@@ -728,10 +730,10 @@ export default function CreateProductWizard({
             presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
           />
         );
-      // case 2:
-      //   return (
-      //     <ProductTranslateButton formData={formData} onChange={handleChange} />
-      //   );
+      case 2:
+        return (
+          <ProductTranslateButton formData={formData} onChange={handleChange} />
+        );
       case 2:
         return (
           <Attributes

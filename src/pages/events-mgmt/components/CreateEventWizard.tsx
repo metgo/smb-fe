@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Loader,
   Mail,
+  Languages,
   // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -49,6 +50,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
 import Media from "@/components/details-sections/Media";
+import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -245,7 +247,7 @@ export default function CreateEventWizard({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    // { number: 2, icon: Languages, title: tp("translation") },
+    { number: 2, icon: Languages, title: tp("translation") },
     { number: 2, icon: Calendar, title: t("step_2_date_time") },
     { number: 3, icon: Users, title: t("step_3_registration") },
     { number: 4, icon: Ticket, title: t("step_4_tickets") },
@@ -843,12 +845,12 @@ export default function CreateEventWizard({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        {/* {currentStep === 2 && (
+        {currentStep === 2 && (
           <ProductTranslateButton
             formData={translationFormData}
             onChange={handleTranslateChange}
           />
-        )} */}
+        )}
         {currentStep === 1 && (
           <EventBasicInformation
             formData={translationFormData}
