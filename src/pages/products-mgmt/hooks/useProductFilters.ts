@@ -65,11 +65,8 @@ export function useProductFilters() {
   }, []);
 
   const hasSavedFilters = useMemo(
-    () =>
-      filters.status !== "all" ||
-      filters.businessId !== "" ||
-      searchTerm.trim() !== "",
-    [filters, searchTerm],
+    () => filters.status !== "all" || filters.businessId !== "",
+    [filters],
   );
 
   return {
