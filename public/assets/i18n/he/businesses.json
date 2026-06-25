@@ -1,6 +1,6 @@
 {
   "businesses_management": "ניהול עסקים",
-  "businesses_management_desc": "ניהול כל העסקים באזור הנגב המערבי",
+  "businesses_management_desc": "ניהול כל העסקים",
   "total_businesses": "סה\"כ עסקים",
   "active_businesses": "עסקים פעילים",
   "active_users": "משתמשים פעילים",
@@ -221,8 +221,9 @@
   "delivery_areas_pricing": "תמחור אזורי משלוח",
   "delivery_additional_info": "מידע משלוחים נוסף",
   "return_exchange_info": "מידע על החזר והחלפה",
-  "vendor_delivers": "הספק מבצע משלוח",
+  "vendor_delivers": "מחיר לכל מוצר",
   "pickup_available": "איסוף זמין",
+  "global_delivery": "מחיר לכל הזמנה",
   "delivery_area": "אזור משלוח",
   "delivery_price": "מחיר משלוח (ILS)",
   "add_area": "הוסף אזור",
@@ -295,5 +296,6 @@
   "user_not_in_system_alert": "אינו במערכת שלנו. אנא ספק את המידע שלו כדי לשלוח הזמנה.",
   "download": "הורד קוד QR",
   "scanToVisit": "סרוק כדי לבקר",
-  "last_active": "פעילות אחרונה"
+  "last_active": "פעילות אחרונה",
+  "tour": "סיור מודרך"
 }

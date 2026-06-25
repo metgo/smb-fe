@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  AlertTriangle,
   Bell,
   Box,
   Calendar,
@@ -8,6 +9,7 @@ import {
   Globe,
   ImageIcon,
   MapPin,
+  Monitor,
   Ticket,
   Truck,
   Users,
@@ -69,4 +71,11 @@ export const voucherTabs = [
   { id: "assignee", label: "assignee_and_creator", icon: Users },
   { id: "timeline", label: "usage_timeline", icon: Clock },
   { id: "transactions", label: "transactions_and_usage", icon: Truck },
+];
+
+export const crashTabs = [
+  { id: "error", label: "Error", icon: AlertTriangle },
+  { id: "stack", label: "Stack Trace", icon: FileText },
+  { id: "user", label: "User", icon: Users },
+  { id: "device", label: "Device & Browser", icon: Monitor },
 ];

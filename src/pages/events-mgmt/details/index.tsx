@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
 
 import {
@@ -20,7 +20,6 @@ import {
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { CreateEventWizard } from "../components";
 import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import {
@@ -31,6 +30,7 @@ import {
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
+import { CreateEventWizardNew } from "../components";
 
 const findEventType = (type: string) => {
   switch (type) {
@@ -49,12 +49,26 @@ export default function EventDetailsPage() {
   const { t } = useTranslation("events");
 
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const eventId = searchParams.get("eventId") || "";
+  const tokenFromUrl = searchParams.get("token"); // QR code has token
+  const tabFromUrl = searchParams.get("tab") || "overview";
+  const isFromQRCode = !!tokenFromUrl; // Only from QR code if token exists
 
   const { bgPrimary } = useThemeClasses();
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [isEditOpen, setIsEditOpen] = useState(false);
+
+  // Handle tab change and update URL only if coming from QR code
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    if (isFromQRCode) {
+      const params = new URLSearchParams(searchParams);
+      params.set("tab", tab);
+      navigate(`?${params.toString()}`, { replace: true });
+    }
+  };
 
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
@@ -79,6 +93,16 @@ export default function EventDetailsPage() {
       setEventDays(eventDetails?.dayDescription ?? []);
     }
   }, [eventDetails]);
+
+  // Sync activeTab with URL tab parameter only if from QR code
+  useEffect(() => {
+    if (isFromQRCode) {
+      const tabParam = searchParams.get("tab");
+      if (tabParam && tabParam !== activeTab) {
+        setActiveTabState(tabParam);
+      }
+    }
+  }, [searchParams, isFromQRCode, activeTab]);
 
   const handleClose = () => {
     setIsEditOpen(false);
@@ -141,11 +165,15 @@ export default function EventDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, eventDetails };
+    const eventImages = eventDetails?.images ?? [];
     const mediaProps = {
-      images: (eventDetails?.images ?? []).map((img: IImage) => ({
+      images: eventImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        eventImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -184,13 +212,7 @@ export default function EventDetailsPage() {
           />
         );
       case "registration":
-        return (
-          <EventRegistrationDetails
-            eventDetails={eventDetails}
-            registrantSearchQuery=""
-            setRegistrantSearchQuery={() => {}}
-          />
-        );
+        return <EventRegistrationDetails eventDetails={eventDetails} />;
       default:
         return null;
     }
@@ -253,10 +275,12 @@ export default function EventDetailsPage() {
 
       {/* Edit Modal */}
       {isEditOpen && (
-        <CreateEventWizard
+        <CreateEventWizardNew
           isOpen={isEditOpen}
           onClose={handleClose}
           editData={eventDetails}
+          refetch={ticketsRefetch}
+          eventDataRefetch={refetch}
         />
       )}
     </div>

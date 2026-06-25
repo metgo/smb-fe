@@ -71,6 +71,17 @@ export const eventMutationApi = createApi({
         method: "DELETE",
       }),
     }),
+
+    updateEventTicketStatus: builder.mutation<
+      any,
+      { orderId: string; status: string; cancelReason?: string }
+    >({
+      query: ({ orderId, status, cancelReason }) => ({
+        url: `${endpoints.eventTickets}/order-status`,
+        method: "PATCH",
+        params: { orderId, status, ...(cancelReason ? { cancelReason } : {}) },
+      }),
+    }),
   }),
 });
 
@@ -81,4 +92,5 @@ export const {
   useDeleteTicketMutation,
   useCreateTicketMutation,
   useDeleteEventMutation,
+  useUpdateEventTicketStatusMutation,
 } = eventMutationApi;

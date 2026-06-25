@@ -2,15 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { routes } from "./routes";
 import { UserRole } from "@/enums/user.types";
-import {
-  User,
-  Shield,
-  ShieldCheck,
-  Map,
-  MapPin,
-  Building2,
-  Building,
-} from "lucide-react";
+import { User, Shield, ShieldCheck, Map, Building2 } from "lucide-react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -110,9 +102,7 @@ export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
 export const ROLE_TABS = [
   { id: UserRole.SUPERADMIN, label: "Super Admins", icon: ShieldCheck },
   { id: UserRole.ADMIN, label: "Admins", icon: Shield },
-  { id: UserRole.DMOADMIN, label: "DMO Admins", icon: MapPin },
   { id: UserRole.DMO, label: "DMOs", icon: Map },
-  { id: UserRole.AUTHORITY_ADMIN, label: "Authority Admins", icon: Building },
   { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
   { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
 ];

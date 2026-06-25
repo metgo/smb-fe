@@ -7,6 +7,7 @@ import {
   MapPin,
   Image as ImageIcon,
   Clock,
+  Compass,
   Globe,
   Tag,
   FileText,
@@ -14,6 +15,8 @@ import {
   Truck,
   LanguagesIcon,
 } from "lucide-react";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -59,23 +62,76 @@ interface CreateBusinessWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  businessDataRefetch?: any;
   opMode?: TOpMode;
   missingFields?: string[];
 }
 
-export default function CreateBusinessWizard({
+function CreateBusinessWizardInner({
   onClose,
   editData,
   refetch,
+  businessDataRefetch,
   opMode = IOpMode.CREATE,
   missingFields = [],
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
+  const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
   const { textPrimary, isRTL, theme } = useThemeClasses();
+
+  // ─── Tour ─────────────────────────────────────────────────────────────
+  const { startTour } = useTour();
+
+  const buildTourSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "business_wizard.welcome.title",
+        desc: "business_wizard.welcome.desc",
+      },
+      {
+        id: "header",
+        target: '[data-tour="wizard-header"]',
+        placement: "bottom",
+        title: "business_wizard.header.title",
+        desc: "business_wizard.header.desc",
+      },
+      {
+        id: "stepper",
+        target: '[data-tour="wizard-stepper"]',
+        placement: "bottom",
+        title: "business_wizard.stepper.title",
+        desc: "business_wizard.stepper.desc",
+      },
+      {
+        id: "completion",
+        target: '[data-tour="wizard-completion"]',
+        placement: "left",
+        title: "business_wizard.completion.title",
+        desc: "business_wizard.completion.desc",
+      },
+      {
+        id: "content",
+        target: '[data-tour="wizard-content"]',
+        placement: "top",
+        title: "business_wizard.content.title",
+        desc: "business_wizard.content.desc",
+      },
+      {
+        id: "footer",
+        target: '[data-tour="wizard-footer"]',
+        placement: "top",
+        title: "business_wizard.footer.title",
+        desc: "business_wizard.footer.desc",
+      },
+    ],
+    [],
+  );
 
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [_detecedLanguage, setDetectedLanguage] = useState("");
@@ -182,7 +238,10 @@ export default function CreateBusinessWizard({
     operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
+    globalDelivery: false,
     deliveryArea: [] as any[],
+    vendorDeliveryArea: [] as any[],
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -243,6 +302,10 @@ export default function CreateBusinessWizard({
         JSON.stringify(initialGroupTypesId.current)
     );
   };
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
   const {
     images,
     imagesRef,
@@ -257,6 +320,18 @@ export default function CreateBusinessWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT
+        ? (updatedImages) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { images: updatedImages },
+              });
+            }
+          }
+        : undefined,
   });
 
   const {
@@ -294,10 +369,6 @@ export default function CreateBusinessWizard({
     await deleteLogoFile();
     setDeleteTargetLogo(null);
   };
-
-  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] =
-    useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
 
@@ -363,6 +434,7 @@ export default function CreateBusinessWizard({
       setSelectedDmoId(dmoId);
     }
   }, []);
+
   useEffect(() => {
     // For CREATE mode, we don't load from editData
     if (opMode === IOpMode.CREATE) return;
@@ -405,7 +477,10 @@ export default function CreateBusinessWizard({
         type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
         pickupAvailable: editData.isPickUpAvailable ?? false,
+        globalDelivery: editData.globalDelivery ?? false,
         deliveryArea: editData?.deliveryArea ?? [],
+        vendorDeliveryArea: editData?.vendorDeliveryArea ?? [],
+        globalDeliveryArea: editData?.globalDeliveryArea ?? [],
         deliveryReturnExchange: editData.deliveryReturnExchange ?? [],
         deliveryAdditionalInfo: editData.deliveryAdditionalInfo ?? "",
         deliverySpecificSellerInfo: editData.deliverySpecificSellerInfo ?? [],
@@ -436,16 +511,21 @@ export default function CreateBusinessWizard({
           };
           const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
           return days.map((day) => {
-            const entry = editData?.openingHrs?.find((h: any) => {
+            const entries = (editData?.openingHrs ?? []).filter((h: any) => {
               const d = (h.day || h.days || "").toLowerCase().trim();
               return dayNormMap[d] === day;
             });
-            return {
-              day,
-              open: entry?.open || "",
-              close: entry?.close || "",
-              isHoliday: entry?.isHoliday || false,
-            };
+            const first = entries[0];
+            const isHoliday = first?.isHoliday || false;
+            const byAppointment = first?.byAppointment || false;
+            const slots =
+              entries.length > 0 && !isHoliday
+                ? entries.map((e: any) => ({
+                    open: e.open || "",
+                    close: e.close || "",
+                  }))
+                : [{ open: "10:00", close: "17:00" }];
+            return { day, slots, isHoliday, byAppointment };
           });
         })(),
         //attributes
@@ -564,11 +644,29 @@ export default function CreateBusinessWizard({
     logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
-    openingHrs: formData.operatingHours,
+    openingHrs: (formData.operatingHours ?? []).flatMap(
+      ({ day, slots, isHoliday, byAppointment }: any) =>
+        isHoliday || !slots?.length
+          ? [{ day, open: "", close: "", isHoliday, byAppointment }]
+          : slots.map((slot: any) => ({
+              day,
+              open: slot.open,
+              close: slot.close,
+              isHoliday: false,
+              byAppointment,
+            })),
+    ),
     // step 7
-    // vendorDelivers: formData.vendorDelivers,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
+    globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -580,7 +678,7 @@ export default function CreateBusinessWizard({
   const { markDirty, saveDraft } = useBusinessDraftSaver({
     opMode,
     onClose,
-    refetch,
+    // refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -594,6 +692,9 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        if (!selectedAuthorityId?.trim())
+          newErrors.authorityId = t("required_field");
         if (
           !formData.name?.trim() &&
           !formData.nameAr?.trim() &&
@@ -614,7 +715,7 @@ export default function CreateBusinessWizard({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 2: {
+      case 3: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -629,13 +730,13 @@ export default function CreateBusinessWizard({
         break;
       }
 
-      case 3:
+      case 4:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 4:
+      case 5:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -670,13 +771,34 @@ export default function CreateBusinessWizard({
       toast.error(tt("name_required"));
       return;
     }
+    if (
+      !formData.shortDescription?.trim() &&
+      !formData.shortDescriptionHe?.trim() &&
+      !formData.shortDescriptionAr?.trim()
+    ) {
+      toast.error(tt("short_description_required"));
+      return;
+    }
+    if (
+      !formData.fullDescription?.trim() &&
+      !formData.fullDescriptionHe?.trim() &&
+      !formData.fullDescriptionAr?.trim()
+    ) {
+      toast.error(tt("full_description_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (businessId) {
+    const resolvedBusinessId = await saveDraft(false);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
+      // Refetch after save draft completes
+      // Don't await to prevent blocking the UI
+      if (businessDataRefetch) {
+        businessDataRefetch();
+      }
     }
   };
 
@@ -697,15 +819,16 @@ export default function CreateBusinessWizard({
     }
 
     setIsPublishing(true);
-    if (businessId) {
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+    const resolvedBusinessId = await saveDraft(true, processedFormData);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
-    }
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
 
-    await saveDraft(true, processedFormData);
+      await Promise.all([refetch?.(), businessDataRefetch?.()]);
+    }
     setIsPublishing(false);
   };
 
@@ -718,10 +841,16 @@ export default function CreateBusinessWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "business",
@@ -733,6 +862,7 @@ export default function CreateBusinessWizard({
       t,
       formData,
       errors,
+      setErrors,
       setCurrentStep,
       address,
       geo,
@@ -845,7 +975,10 @@ export default function CreateBusinessWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}>
+      <div
+        data-tour="wizard-header"
+        className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}
+      >
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="min-w-0">
             <h2 className={clsx("text-lg sm:text-2xl truncate", textPrimary)}>
@@ -867,8 +1000,11 @@ export default function CreateBusinessWizard({
             )}
           </div>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            {/* Impact Percent Indicator */}
-            <div className="relative w-10 h-10 sm:w-14 sm:h-14">
+            {/* Completion ring */}
+            <div
+              data-tour="wizard-completion"
+              className="relative w-10 h-10 sm:w-14 sm:h-14"
+            >
               <svg
                 className="w-10 h-10 sm:w-14 sm:h-14 -rotate-90"
                 viewBox="0 0 56 56"
@@ -917,17 +1053,31 @@ export default function CreateBusinessWizard({
                 </span>
               </div>
             </div>
+            {/* Tour trigger */}
+            <button
+              onClick={() => startTour(buildTourSteps())}
+              title={tr("start_tour")}
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+            </button>
             <PublishButton onClick={handlePublish} isLoading={isPublishing} />
           </div>
         </div>
 
-        <WizardStepper
-          steps={steps}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          stepsWithMissingFields={stepsWithMissingFields}
-          onStepClick={setCurrentStep}
-        />
+        <div data-tour="wizard-stepper">
+          <WizardStepper
+            steps={steps}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            stepsWithMissingFields={stepsWithMissingFields}
+            onStepClick={setCurrentStep}
+          />
+        </div>
       </div>
 
       {/* Missing fields banner — shown when opened via no-auth email link */}
@@ -939,19 +1089,23 @@ export default function CreateBusinessWizard({
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+        {renderStep()}
+      </div>
 
       {/* Footer */}
-      <WizardFooter
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        isSaving={isSaving || isCreating}
-        isPublishing={isPublishing}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
-        onPublish={handlePublish}
-      />
+      <div data-tour="wizard-footer">
+        <WizardFooter
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isSaving={isSaving || isCreating}
+          isPublishing={isPublishing}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSaveDraft={handleSaveDraft}
+          onPublish={handlePublish}
+        />
+      </div>
 
       <ConfirmDialog
         open={showClosePopup}
@@ -967,6 +1121,18 @@ export default function CreateBusinessWizard({
           onClose();
         }}
       />
+
+      <TourPortal />
     </ModalWrapper>
+  );
+}
+
+// ─── Exported component (wraps with its own TourProvider) ─────────────────────
+
+export default function CreateBusinessWizard(props: CreateBusinessWizardProps) {
+  return (
+    <TourProvider>
+      <CreateBusinessWizardInner {...props} />
+    </TourProvider>
   );
 }

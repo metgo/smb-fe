@@ -172,9 +172,13 @@
   "weekly_schedule": "Weekly Schedule",
   "no_schedule_available": "No schedule available",
   "not_set_opening_hours": "Business hours haven't been set yet",
+  "by_appointment": "By appointment",
+  "for_entire_week": "for entire week",
+  "add_time_slot": "Add time slot",
 
   "all": "All",
   "select_dmo": "Select DMO",
+  "your_geographic_location": "Your geographic location",
   "select_authority": "Select Authority",
   "select_website": "Select Website",
   "website_visibility": "Website Visibility",
@@ -185,7 +189,7 @@
   "download_csv": "Download CSV",
 
   "error_title": "Oh no, something went wrong!",
-  "error_description": "An unexpected error has occurred. Please try again later or contact support if the issue persists.",
+  "error_description": "An unexpected error has occurred. An error report has been sent — we'll look into it and push a fix as soon as possible.",
   "go_back_home": "Go Back Home",
   "reload_page": "Reload Page",
 
@@ -367,5 +371,6 @@
   "website_delete_failed": "Failed to delete website",
 
   "deactivate_website": "Deactivate Website",
-  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?"
+  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
+  "pending_approvals": "Pending Approvals"
 }

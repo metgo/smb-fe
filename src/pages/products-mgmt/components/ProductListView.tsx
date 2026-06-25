@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { getPlainTextFromRichText } from "@/helpers";
+import { getPlainTextFromRichText, getLngWiseStr } from "@/helpers";
 import { StatusPill } from "@/components/pills";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 
@@ -319,7 +319,12 @@ const ProductListView: React.FC<ProductListViewProps> = ({
       label: t("business_name"),
       render: (product: any) => (
         <div className={`${textPrimary} line-clamp-1`}>
-          {product.businessId?.name}
+          {getLngWiseStr(
+            language,
+            product.businessId?.nameHe,
+            product?.businessId?.name,
+            product?.businessId?.nameAr,
+          )}{" "}
         </div>
       ),
     },

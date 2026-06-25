@@ -2,6 +2,7 @@ type TPaymentStatus =
   | "PENDING"
   | "SUCCESS"
   | "FAILED"
+  | "FAILURE"
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
 type TOrderStatus =
@@ -9,15 +10,22 @@ type TOrderStatus =
   | "completed"
   | "canceled"
   | "shipped"
-  | "pending";
+  | "pending"
+  | "draft"
+  | "paid"
+  | "confirmed"
+  | "delivered"
+  | "partially_cancelled"
+  | "failed";
 type TOrderType = "online" | "offline";
 type TDeliveryType = "pickup" | "delivery" | "digital";
 
 interface IOrder {
   _id: string;
-  firstName: string;
+  name: string;
   email: string;
   phone: string;
+  productCount?: number;
   orderType: TOrderType;
   status: TOrderStatus;
   paymentStatus: TPaymentStatus;
@@ -30,11 +38,12 @@ interface IOrder {
   deliveryType: TDeliveryType;
   createdAt: string;
   paymentDate: string;
-  products: OrderProduct;
+  products: IOrderProduct[];
   address?: string;
   campaignCode?: string;
   qrScanned: boolean;
   deliveryFee: number;
+  externalApiId?: string;
 }
 
 interface IOrderProduct {
@@ -51,4 +60,65 @@ interface IOrderProduct {
   category: string;
   cancelled?: boolean;
   orderedProductId?: string;
+}
+
+class ProductDto {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  quantity: number;
+  amount: number;
+  status: string;
+
+  receiverEmail: string;
+  receiverCountryCode: string;
+  receiverPhone: string;
+  receiverFirstName: string;
+  receiverLastName: string | null;
+
+  deliveryMethod: string;
+  deliveryArea: string;
+  deliveryPickupLocation: string;
+
+  houseNo: string;
+  apartment: string;
+  city: string;
+  street: string;
+
+  isGift: boolean;
+  additionalInfo: string;
+
+  business?: {
+    _id: string;
+    nameEn: string;
+    nameHe: string;
+    nameAr: string;
+    logoUrl: string;
+  };
+}
+
+class IOrdersRes {
+  _id: string;
+  status: TOrderStatus;
+  paymentStatus: string;
+
+  buyerEmail: string;
+  buyerCountryCode: string;
+  buyerPhone: string;
+  buyerFirstName: string;
+  buyerLastName: string | null;
+  buyerAddress: string;
+
+  paymentMode: string[];
+  voucher: any[];
+
+  totalAmount: number;
+  creditCardPayment: number;
+  deliveryFee: number;
+
+  createdAt: string;
+  externalApiId: string;
+
+  products: ProductDto[];
 }

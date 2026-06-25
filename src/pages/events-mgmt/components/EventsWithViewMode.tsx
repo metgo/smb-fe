@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   Calendar,
@@ -33,7 +33,7 @@ import {
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
 import QuickSnapEventDetails from "./QuickSnapEventDetails";
-import CreateEventWizard from "./CreateEventWizard";
+import CreateEventWizardNew from "./wizard/CreateEventWizardNew";
 import { useLazyGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import EmptyState from "@/components/shared/EmptyState";
 import { StatusPill } from "@/components/pills";
@@ -558,24 +558,6 @@ export default function EventsWithViewMode({
             ),
           },
           {
-            key: "website",
-            label: t("websites"),
-            render: (event) => (
-              <div className="flex flex-col">
-                {event?.associatedWebsites?.map((item: any) => (
-                  <Link
-                    key={item._id}
-                    to={item?.url}
-                    target="_blank"
-                    className="text-xs sm:text-sm underline text-blue-500 hover:font-bold"
-                  >
-                    {item.name || "-"}
-                  </Link>
-                ))}
-              </div>
-            ),
-          },
-          {
             key: "date",
             label: t("date"),
             sortable: true,
@@ -812,7 +794,7 @@ export default function EventsWithViewMode({
       )}
 
       {isEditModalOpen && (
-        <CreateEventWizard
+        <CreateEventWizardNew
           isOpen={isEditModalOpen}
           editData={editData}
           onClose={() => setIsEditModalOpen(false)}

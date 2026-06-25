@@ -44,6 +44,7 @@ export const endpoints = {
   searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
+  pendingApprovals: "/admin/pending-approvals",
 
   //products
   products: "/products",
@@ -51,6 +52,8 @@ export const endpoints = {
 
   //orders
   orders: "/orders",
+  orderDetails: "/order-details",
+
   orderSummary: "/orders-summary",
 
   ordersStats: "/orders-stats",
@@ -59,6 +62,11 @@ export const endpoints = {
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
+  cancleOrderProduct: "/cancel-order-product",
+  updateOrderStatus: "/update-order-status",
+
+  // public
+  publicEventTicket: "/public/event-tickets",
 
   // events
   events: "/events",
@@ -68,7 +76,9 @@ export const endpoints = {
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
+  createUser: "/users/create",
   tickets: "/tickets",
+  eventTickets: "/event-tickets",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
@@ -90,6 +100,7 @@ export const endpoints = {
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips
   trips: "/trips",
@@ -98,7 +109,6 @@ export const endpoints = {
   //voucher
   vouchers: "/vouchers",
   voucher: "/voucher-id",
-  postVoucher: "/vouchers",
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
@@ -120,12 +130,16 @@ export const endpoints = {
   dmos: "/dmos",
   authorities: "/authorities",
   websiteSettings: "/site-settings",
+  websiteList: "/site-settings/list",
   partners: "/partners",
   campaigns: "/campaigns",
 
   // Promotions
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
+
+  // Website error report
+  websiteCrashes: "/website-crashes",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

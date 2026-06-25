@@ -77,7 +77,7 @@ export default function BusinessListView({
       sortable: true,
       label: t("shortDescription"),
       render: (business: any) => (
-        <div className={`${textPrimary} line-clamp-1`}>
+        <div className={`${textPrimary} line-clamp-1 max-w-40`}>
           {getPlainTextFromRichText(business?.shortDescription)}
         </div>
       ),

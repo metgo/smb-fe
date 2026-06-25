@@ -169,8 +169,8 @@ export default function Header() {
             {/* Center: selects — desktop only */}
             <div className="hidden lg:flex items-center gap-3 flex-1 justify-center">
               <ReactSelect
-                isClearable={userRole !== "authority"}
-                isDisabled={userRole === "authority"}
+                isClearable={userRole !== "authority" && userRole !== "dmo"}
+                isDisabled={userRole === "authority" || userRole === "dmo"}
                 value={dmoId}
                 onChange={(value) => dispatch(setDmo(value))}
                 placeholder={t("select_dmo")}
@@ -181,7 +181,7 @@ export default function Header() {
                 }))}
               />
               <ReactSelect
-                isClearable
+                isClearable={userRole !== "authority"}
                 value={authorityId}
                 isDisabled={userRole === "authority"}
                 onChange={(value) => dispatch(setAuthority(value))}
@@ -189,7 +189,7 @@ export default function Header() {
                 items={selectedParent?.authorities?.map((item) => ({
                   _id: item._id,
                   name: item.name,
-                  logo: item?.logoPath,
+                  logo: item?.logoPath ?? "",
                 }))}
               />
               <ReactSelect
@@ -353,8 +353,8 @@ export default function Header() {
             </button>
           </div>
           <ReactSelect
-            isClearable={userRole !== "authority"}
-            isDisabled={userRole === "authority"}
+            isClearable={userRole !== "authority" && userRole !== "dmo"}
+            isDisabled={userRole === "authority" || userRole === "dmo"}
             value={dmoId}
             onChange={(value) => dispatch(setDmo(value))}
             placeholder={t("select_dmo")}
@@ -365,15 +365,15 @@ export default function Header() {
             }))}
           />
           <ReactSelect
-            isClearable
+            isClearable={userRole !== "dmo"}
             value={authorityId}
-            isDisabled={userRole === "authority"}
+            isDisabled={userRole === "authority" || userRole === "dmo"}
             onChange={(value) => dispatch(setAuthority(value))}
             placeholder={t("select_authority")}
             items={selectedParent?.authorities?.map((item) => ({
               _id: item._id,
               name: item.name,
-              logo: item?.logoPath,
+              logo: item?.logoPath ?? "",
             }))}
           />
           <ReactSelect

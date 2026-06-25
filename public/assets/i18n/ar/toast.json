@@ -6,6 +6,8 @@
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
   "name_required": "يرجى إدخال اسم قبل الحفظ",
+  "short_description_required": "يرجى إدخال وصف قصير قبل الحفظ",
+  "full_description_required": "يرجى إدخال وصف كامل قبل الحفظ",
   "image_upload_info": "بدأ تحميل الصورة. يرجى الانتظار…",
   "image_upload_success": "تم تحميل الصورة بنجاح",
   "image_upload_failed": "فشل تحميل الصورة",

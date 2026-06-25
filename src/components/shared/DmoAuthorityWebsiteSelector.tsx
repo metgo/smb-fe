@@ -15,6 +15,7 @@ type Props = {
   selectedDmoId: string;
   selectedAuthorityId: string;
   errors: Record<string, string>;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   dmoSectionRef: React.RefObject<HTMLDivElement | null>;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
@@ -25,6 +26,7 @@ type Props = {
 
 export default function DmoAuthorityWebsiteSelector({
   errors,
+  setErrors,
   isEdit,
   selectedDmoId,
   setSelectDmoId,
@@ -240,6 +242,7 @@ export default function DmoAuthorityWebsiteSelector({
           <FormFieldWrapper
             required
             label={t("select_dmo")}
+            hint={t("your_geographic_location")}
             error={errors.dmoId}
           >
             <SelectField
@@ -248,6 +251,13 @@ export default function DmoAuthorityWebsiteSelector({
               onChange={(v) => {
                 setSelectDmoId(v);
                 setSelectAuthorityId("");
+                if (setErrors && v) {
+                  setErrors((prev: Record<string, string>) => {
+                    const updated = { ...prev };
+                    delete updated.dmoId;
+                    return updated;
+                  });
+                }
               }}
               placeholder={t("select_dmo")}
               options={
@@ -263,11 +273,20 @@ export default function DmoAuthorityWebsiteSelector({
         </div>
 
         <div className="flex-1 w-full">
-          <FormFieldWrapper label={t("select_authority")}>
+          <FormFieldWrapper required label={t("select_authority")}>
             <SelectField
               value={selectedAuthorityId}
               isDisabled={userRole === UserRole.AUTHORITY}
-              onChange={setSelectAuthorityId}
+              onChange={(v) => {
+                setSelectAuthorityId(v);
+                if (setErrors && v) {
+                  setErrors((prev: Record<string, string>) => {
+                    const updated = { ...prev };
+                    delete updated.authorityId;
+                    return updated;
+                  });
+                }
+              }}
               placeholder={t("select_authority")}
               options={
                 selectedDmos?.authorities?.map((a) => ({

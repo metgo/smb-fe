@@ -41,18 +41,18 @@ const Step10Campaigns = ({
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {campaigns.map((camp) => {
-            const selected = formData.primaryCampId === camp._id;
+            const isSelected = formData.primaryCampIds.includes(camp._id);
             return (
               <button
                 key={camp._id}
                 type="button"
                 onClick={() =>
-                  onChange("primaryCampId", selected ? "" : camp._id)
+                  onChange("primaryCampIds", isSelected ? [""] : [camp._id])
                 }
                 className={clsx(
                   "relative rounded-xl overflow-hidden text-left transition-all duration-150 focus:outline-none",
                   cardClasses,
-                  selected
+                  isSelected
                     ? "ring-2 ring-teal-500 shadow-lg shadow-teal-500/20"
                     : clsx(
                         "ring-1 hover:ring-2 hover:ring-teal-400/60",
@@ -83,7 +83,7 @@ const Step10Campaigns = ({
                 </div>
 
                 {/* Selected badge */}
-                {selected && (
+                {isSelected && (
                   <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center shadow">
                     <Check className="w-3 h-3 text-white" strokeWidth={3} />
                   </span>
