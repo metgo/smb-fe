@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Loader,
   Mail,
-  Languages,
+  // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -35,7 +35,7 @@ import {
 } from "./sub-components";
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
-import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
+// import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
@@ -246,12 +246,12 @@ export default function CreateEventWizard({
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
     // { number: 2, icon: Languages, title: tp("translation") },
-    { number: 3, icon: Calendar, title: t("step_2_date_time") },
-    { number: 4, icon: Users, title: t("step_3_registration") },
-    { number: 5, icon: Ticket, title: t("step_4_tickets") },
-    { number: 6, icon: Mail, title: t("messaging") },
-    { number: 7, icon: Image, title: t("step_5_media") },
-    { number: 8, icon: CheckCircle, title: t("step_6_review") },
+    { number: 2, icon: Calendar, title: t("step_2_date_time") },
+    { number: 3, icon: Users, title: t("step_3_registration") },
+    { number: 4, icon: Ticket, title: t("step_4_tickets") },
+    { number: 5, icon: Mail, title: t("messaging") },
+    { number: 6, icon: Image, title: t("step_5_media") },
+    { number: 7, icon: CheckCircle, title: t("step_6_review") },
   ];
 
   useEffect(() => {
@@ -444,7 +444,7 @@ export default function CreateEventWizard({
           newErrors.shortDescription = t("required_field");
         }
         break;
-      case 3:
+      case 2:
         if (!isMultiDay && !startDate)
           newErrors.startDate = t("required_field");
         if (isMultiDay && eventDays?.some((d) => !d.date))
@@ -454,11 +454,11 @@ export default function CreateEventWizard({
         if (eventFormat !== "physical" && !onlineLink)
           newErrors.onlineLink = t("required_field");
         break;
-      case 4:
+      case 3:
         if (capacityType === "limited" && capacity <= 0)
           newErrors.capacity = "Must be greater than 0";
         break;
-      case 5:
+      case 4:
         if (localTickets?.length === 0 && registrationRequired) {
           newErrors.tickets = t("at_least_one_ticket_required");
         }
@@ -587,11 +587,11 @@ export default function CreateEventWizard({
 
   const stepPayloadMap = {
     1: () => eventBasicInfoPayload,
-    2: () => eventBasicInfoPayload,
-    3: () => eventDateTimePayload,
-    4: () => eventRegistrationPayload,
-    6: () => eventMsgSchedulePayload,
-    7: () => eventMediaPayload,
+    // 2: () => eventBasicInfoPayload, // translation step (commented out)
+    2: () => eventDateTimePayload,
+    3: () => eventRegistrationPayload,
+    5: () => eventMsgSchedulePayload,
+    6: () => eventMediaPayload,
   };
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
@@ -613,7 +613,7 @@ export default function CreateEventWizard({
 
   useEffect(() => {
     if (images.length) {
-      handleMarkDirty(7);
+      handleMarkDirty(6);
     }
   }, [images, handleMarkDirty]);
 
@@ -646,7 +646,7 @@ export default function CreateEventWizard({
         setFullDescriptionHe(updates.fullDescriptionHe);
       if ("fullDescriptionAr" in updates)
         setFullDescriptionAr(updates.fullDescriptionAr);
-      handleMarkDirty(2);
+      handleMarkDirty(1);
     },
     [handleMarkDirty],
   );
@@ -714,7 +714,7 @@ export default function CreateEventWizard({
       return;
     }
 
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 7; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -758,7 +758,7 @@ export default function CreateEventWizard({
   };
 
   const handleSpecificStepJump = (stepId: number) => {
-    if (stepId !== 7) {
+    if (stepId !== 6) {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -878,7 +878,7 @@ export default function CreateEventWizard({
             isBusinessLoading={isBusinessesLoading || isBusinessSearching}
           />
         )}
-        {currentStep === 3 && (
+        {currentStep === 2 && (
           <EventDateTimeFormat
             geo={geo}
             setGeo={setGeo}
@@ -925,7 +925,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 3 && (
           <EventRegistrationCapacity
             markDirty={handleMarkDirty}
             currentStep={currentStep}
@@ -941,7 +941,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 5 && (
+        {currentStep === 4 && (
           <EventTickets
             tickets={localTickets}
             eventId={eventId}
@@ -957,7 +957,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 6 && (
+        {currentStep === 5 && (
           <NotificationsTimeline
             markDirty={handleMarkDirty}
             notifications={notifications}
@@ -974,7 +974,7 @@ export default function CreateEventWizard({
             capacity={capacity}
           />
         )}
-        {currentStep === 7 && (
+        {currentStep === 6 && (
           <Media
             images={images}
             imagesRef={imagesRef}
@@ -989,7 +989,7 @@ export default function CreateEventWizard({
           />
         )}
 
-        {currentStep === 8 && (
+        {currentStep === 7 && (
           <EventReviewPublish
             images={images}
             setCurrentStep={setCurrentStep}

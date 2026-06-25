@@ -13,7 +13,7 @@ import {
   FileText,
   Users,
   Truck,
-  LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
 import {
   TourProvider,
@@ -61,7 +61,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
-import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
+// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -267,9 +267,9 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+  // const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+  //   setFormData((prev: any) => ({ ...prev, ...updates }));
+  // }, []);
   const detectAndAssignLanguageFields = (data: any): any => {
     const name = data.name?.trim() || "";
     const shortDescription = data.shortDescription?.trim() || "";
@@ -601,14 +601,14 @@ function CreateBusinessWizardInner({
     { number: 1, title: t("step_basic_info"), icon: FileText },
     // { number: 2, title: tc("translation"), icon: LanguagesIcon },
 
-    { number: 3, title: t("step_contact_ownership"), icon: Users },
-    { number: 4, title: t("step_location"), icon: MapPin },
-    { number: 5, title: t("step_attributes"), icon: Tag },
-    { number: 6, title: t("step_media"), icon: ImageIcon },
-    { number: 7, title: t("step_operating_hours"), icon: Clock },
-    { number: 8, title: t("step_delivery_policy"), icon: Truck },
-    { number: 9, title: t("step_online_info"), icon: Globe },
-    { number: 10, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 2, title: t("step_contact_ownership"), icon: Users },
+    { number: 3, title: t("step_location"), icon: MapPin },
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_media"), icon: ImageIcon },
+    { number: 6, title: t("step_operating_hours"), icon: Clock },
+    { number: 7, title: t("step_delivery_policy"), icon: Truck },
+    { number: 8, title: t("step_online_info"), icon: Globe },
+    { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   // Draft Save Payload per Step
@@ -733,7 +733,7 @@ function CreateBusinessWizardInner({
           newErrors.fullDescription = t("required_field");
 
         break;
-      case 3: {
+      case 2: {
         if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
         }
@@ -748,13 +748,13 @@ function CreateBusinessWizardInner({
         break;
       }
 
-      case 4:
+      case 3:
         if (!addr.location) {
           newErrors.address = t("required_field");
         }
         break;
 
-      case 5:
+      case 4:
         if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
@@ -844,7 +844,7 @@ function CreateBusinessWizardInner({
 
     // Validate all steps
     let allValid = true;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -956,9 +956,9 @@ function CreateBusinessWizardInner({
       //     />
       //   );
 
-      case 3:
+      case 2:
         return <BusinessContactOwership {...commonProps} />;
-      case 4:
+      case 3:
         return (
           <BusinessLocation
             {...commonProps}
@@ -969,7 +969,7 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 5:
+      case 4:
         return (
           <Attributes
             selectedFormLanguage={selectedFormLanguage}
@@ -989,15 +989,15 @@ function CreateBusinessWizardInner({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 6:
+      case 5:
         return <Media {...mediaProps} business={editData} isBusiness={true} />;
-      case 7:
+      case 6:
         return <BusinessOpeningHours {...commonProps} />;
-      case 8:
+      case 7:
         return <DeliveryPolicyOption {...commonProps} />;
-      case 9:
+      case 8:
         return <BusinessOnlinePresence {...commonProps} />;
-      case 10:
+      case 9:
         return (
           <BusinessReviewSubmit
             {...commonProps}

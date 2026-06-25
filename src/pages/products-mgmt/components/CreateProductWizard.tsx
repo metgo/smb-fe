@@ -12,7 +12,7 @@ import {
   Eye,
   CreditCard,
   FileText,
-  LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
@@ -50,7 +50,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "./sub-components/ProductTranslateButton";
+// import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -234,9 +234,9 @@ export default function CreateProductWizard({
         : undefined,
   });
 
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+  // const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
+  //   setFormData((prev: any) => ({ ...prev, ...updates }));
+  // }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -425,11 +425,11 @@ export default function CreateProductWizard({
     { number: 1, title: t("product_basic_info"), icon: FileText },
     // { number: 2, title: tp("translation"), icon: LanguagesIcon },
 
-    { number: 3, title: t("product_segmentation"), icon: Package },
-    { number: 4, title: t("product_pricing"), icon: CreditCard },
-    { number: 5, title: t("product_media"), icon: ImageIcon },
-    { number: 6, title: t("product_delivery_service"), icon: Truck },
-    { number: 7, title: t("product_review"), icon: Eye },
+    { number: 2, title: t("product_segmentation"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: CreditCard },
+    { number: 4, title: t("product_media"), icon: ImageIcon },
+    { number: 5, title: t("product_delivery_service"), icon: Truck },
+    { number: 6, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
@@ -521,7 +521,7 @@ export default function CreateProductWizard({
     }
 
     let allValid = true;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -732,7 +732,7 @@ export default function CreateProductWizard({
       //   return (
       //     <ProductTranslateButton formData={formData} onChange={handleChange} />
       //   );
-      case 3:
+      case 2:
         return (
           <Attributes
             name={formData.nameHe || formData.name || formData.nameAr}
@@ -750,11 +750,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 4:
+      case 3:
         return <ProductPricingAvailability {...commonProps} />;
-      case 5:
+      case 4:
         return <Media {...mediaProps} {...commonProps} />;
-      case 6:
+      case 5:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -764,7 +764,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
-      case 7:
+      case 6:
         return (
           <ProductReviewSubmit
             {...commonProps}
