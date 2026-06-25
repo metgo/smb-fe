@@ -68,9 +68,9 @@ export function useEventWizardState({
   const [shortDescription, setShortDescription] = useState("");
   const [shortDescriptionHe, setShortDescriptionHe] = useState("");
   const [shortDescriptionAr, setShortDescriptionAr] = useState("");
-  const [fullDescription, setFullDescription] = useState("<p></p>");
-  const [fullDescriptionHe, setFullDescriptionHe] = useState("<p></p>");
-  const [fullDescriptionAr, setFullDescriptionAr] = useState("<p></p>");
+  const [fullDescription, setFullDescription] = useState("");
+  const [fullDescriptionHe, setFullDescriptionHe] = useState("");
+  const [fullDescriptionAr, setFullDescriptionAr] = useState("");
   const [eventLanguage, setEventLanguage] = useState<Language>("en");
   const [eventStatus, setEventStatus] = useState<EventStatus>("draft");
   const [internalNotes, setInternalNotes] = useState("");
