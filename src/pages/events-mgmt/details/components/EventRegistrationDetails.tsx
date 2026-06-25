@@ -1,55 +1,372 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { Search, Users } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Search, Users, ChevronDown, AlertCircle } from "lucide-react";
 import { ReordableDataTable } from "@/components/shared";
 import { ExportBtns } from "@/components/btns";
 import { useAppSelector } from "@/hooks/hooks";
+import { useUpdateEventTicketStatusMutation } from "@/store/api/eventMutationApi";
+import { useLazyGetEventTicketsQuery } from "@/store/api/eventQueryApi";
 
-const getPaymentStatusColor = (status: string) => {
-  switch (status) {
+const STATUS_OPTIONS = [
+  { value: "completed", label: "Completed" },
+  { value: "canceled", label: "Cancelled" },
+];
+
+const getStatusColor = (status: string, isDark: boolean) => {
+  switch (status?.toLowerCase()) {
     case "paid":
-      return "bg-green-500/20 text-green-500";
+    case "success":
+    case "completed":
+      return clsx(
+        "bg-green-500/20",
+        isDark
+          ? "text-green-400 border-green-700"
+          : "text-green-600 border-green-300",
+      );
     case "pending":
-      return "bg-yellow-500/20 text-yellow-500";
+      return clsx(
+        "bg-yellow-500/20",
+        isDark
+          ? "text-yellow-400 border-yellow-700"
+          : "text-yellow-600 border-yellow-300",
+      );
+    case "failure":
+      return clsx(
+        "bg-red-500/20",
+        isDark ? "text-red-400 border-red-700" : "text-red-600 border-red-300",
+      );
     case "refunded":
-      return "bg-red-500/20 text-red-500";
+    case "canceled":
+      return clsx(
+        "bg-red-500/20",
+        isDark ? "text-red-400 border-red-700" : "text-red-600 border-red-300",
+      );
     default:
-      return "bg-gray-500/20 text-gray-500";
+      return clsx(
+        "bg-blue-500/20",
+        isDark ? "text-white border-gray-700" : "text-gray-600 border-gray-300",
+      );
   }
+};
+
+interface IEventTicket {
+  _id: string;
+  createdAt: string;
+  vendorId: string;
+  status: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string | null;
+  paymentMode: string[];
+  paymentDate: string | null;
+  ticketName: string;
+  ticketImage: { image: string }[];
+  orderProductId?: string;
+  amount?: number;
+  quantity?: number;
+  paymentStatus?: string;
+}
+
+interface CancelDialogProps {
+  isDark: boolean;
+  onConfirm: (reason: string) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}
+
+const CancelDialog: React.FC<CancelDialogProps> = ({
+  isDark,
+  onConfirm,
+  onCancel,
+  isLoading,
+}) => {
+  const { t } = useTranslation("events");
+  const [reason, setReason] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div
+        className={clsx(
+          "w-full max-w-md mx-4 rounded-xl border shadow-xl p-6",
+          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+        )}
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+          <div>
+            <h3
+              className={clsx(
+                "font-semibold text-base",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {t("cancel_order")}
+            </h3>
+            <p
+              className={clsx(
+                "text-sm mt-1",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            >
+              {t("cancel_order_reason_prompt")}
+            </p>
+          </div>
+        </div>
+
+        <textarea
+          ref={inputRef}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={t("cancel_reason_placeholder")}
+          rows={3}
+          className={clsx(
+            "w-full rounded-lg border px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30",
+            isDark
+              ? "bg-gray-900 border-gray-600 text-white placeholder-gray-500"
+              : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400",
+          )}
+        />
+
+        <div className="flex gap-3 mt-4 justify-end">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className={clsx(
+              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              isDark
+                ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700",
+            )}
+          >
+            {t("cancel")}
+          </button>
+          <button
+            onClick={() => onConfirm(reason)}
+            disabled={!reason.trim() || isLoading}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? t("updating") : t("confirm_cancel")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface StatusCellProps {
+  ticket: IEventTicket;
+  isDark: boolean;
+  onUpdate: (
+    orderId: string,
+    status: string,
+    cancelReason?: string,
+  ) => Promise<void>;
+  isUpdating: boolean;
+  updatingId: string | null;
+}
+
+const StatusCell: React.FC<StatusCellProps> = ({
+  ticket,
+  isDark,
+  onUpdate,
+  isUpdating,
+  updatingId,
+}) => {
+  const { t } = useTranslation("events");
+  const [open, setOpen] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const ticketOrderId = ticket.orderProductId ?? ticket._id;
+  const isThisUpdating = isUpdating && updatingId === ticketOrderId;
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelect = async (value: string) => {
+    setOpen(false);
+    if (value === ticket.status) return;
+    if (value === "canceled") {
+      setShowCancelDialog(true);
+      return;
+    }
+    await onUpdate(ticket.orderProductId ?? ticket._id, value);
+  };
+
+  const handleCancelConfirm = async (reason: string) => {
+    await onUpdate(ticket.orderProductId ?? ticket._id, "canceled", reason);
+    setShowCancelDialog(false);
+  };
+
+  if (!ticket.status) {
+    const fallback =
+      ticket.paymentStatus === "pending" || ticket.paymentStatus === "failure"
+        ? ticket.paymentStatus
+        : "failure";
+    return (
+      <span
+        className={clsx(
+          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+          getStatusColor(fallback, isDark),
+        )}
+      >
+        {t(fallback, { defaultValue: fallback })}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <div ref={dropdownRef} className="relative inline-block">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          disabled={isThisUpdating}
+          className={clsx(
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-opacity capitalize",
+            getStatusColor(ticket.status, isDark),
+            isThisUpdating && "opacity-60 cursor-not-allowed",
+          )}
+        >
+          {isThisUpdating
+            ? t("updating")
+            : t(ticket.status, { defaultValue: ticket.status })}
+          {!isThisUpdating && <ChevronDown className="w-3 h-3" />}
+        </button>
+
+        {open && (
+          <div
+            className={clsx(
+              "absolute z-20 top-full mt-1 left-0 min-w-32.5 rounded-lg border shadow-lg overflow-hidden",
+              isDark
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-200",
+            )}
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleSelect(opt.value)}
+                className={clsx(
+                  "w-full text-left px-3 py-2 text-xs transition-colors capitalize",
+                  ticket.status === opt.value
+                    ? isDark
+                      ? "bg-gray-700 font-semibold text-white"
+                      : "bg-gray-100 font-semibold text-gray-900"
+                    : isDark
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-700 hover:bg-gray-50",
+                  opt.value === "cancelled" &&
+                    "text-red-500 hover:text-red-500",
+                )}
+              >
+                {t(opt.value)}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showCancelDialog && (
+        <CancelDialog
+          isDark={isDark}
+          isLoading={isThisUpdating}
+          onConfirm={handleCancelConfirm}
+          onCancel={() => setShowCancelDialog(false)}
+        />
+      )}
+    </>
+  );
 };
 
 interface EventRegistrationDetailsProps {
   eventDetails: any;
-  registrantSearchQuery: string;
-  setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
   eventDetails,
-  registrantSearchQuery,
-  setRegistrantSearchQuery,
 }) => {
-  const filteredRegistrants: any[] = [];
   const { t } = useTranslation("events");
   const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textSecondary, textTertiary, isDark } =
-    useThemeClasses();
+  const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
-  const [showDailyBreakdown, setShowDailyBreakdown] = useState(true);
-  const [_selectedRegistrant, setSelectedRegistrant] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  if (!eventDetails) return null;
+  const [allTickets, setAllTickets] = useState<IEventTicket[]>([]);
+  const [totalData, setTotalData] = useState(0);
+
+  const eventId = eventDetails?._id ?? eventDetails?.vendorId ?? "";
+
+  const [fetchTickets, { isFetching: isLoadingTickets }] =
+    useLazyGetEventTicketsQuery();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const load = useCallback(
+    async (search = "") => {
+      if (!eventId) return;
+      const result = await fetchTickets(
+        { eventId, ...(search ? { search } : {}) },
+        false,
+      ).unwrap();
+      setTotalData(result.totalData);
+      setAllTickets(result.data);
+    },
+    [eventId, fetchTickets],
+  );
+
+  useEffect(() => {
+    load(debouncedSearch);
+  }, [load, debouncedSearch]);
+
+  const [updateStatus, { isLoading: isUpdating }] =
+    useUpdateEventTicketStatusMutation();
+
+  const handleStatusUpdate = async (
+    orderId: string,
+    status: string,
+    cancelReason?: string,
+  ) => {
+    setUpdatingId(orderId);
+    try {
+      await updateStatus({ orderId, status, cancelReason }).unwrap();
+      toast.success(
+        t("order_status_updated", {
+          status: t(status, { defaultValue: status }),
+        }),
+      );
+      await load(debouncedSearch);
+    } catch {
+      toast.error(t("failed_to_update_order_status"));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const filteredTickets = allTickets;
 
   const exportToCSV = () => {
     if (!eventDetails) return;
@@ -57,40 +374,37 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
       t("full_name"),
       t("phone"),
       t("email"),
-      t("quantity"),
-      t("ticket_type"),
-      `${t("total")} ${t("price")}`,
-      t("payment_status"),
-      t("registration_date"),
-      t("source_website"),
+      t("ticket_name"),
+      t("payment_mode"),
+      t("amount"),
+      t("status"),
+      t("purchased_date"),
     ];
-    const rows = filteredRegistrants.map((reg) => [
-      reg.fullName,
-      reg.phone,
-      reg.email,
-      reg.quantity,
-      reg.ticketType,
-      `₪${reg.totalPrice}`,
-      reg.paymentStatus,
-      reg.registrationDate,
-      reg.sourceWebsite,
+    const rows = filteredTickets.map((ticket) => [
+      `${ticket.firstName} ${ticket.lastName || ""}`.trim(),
+      ticket.phone,
+      ticket.email,
+      ticket.ticketName,
+      ticket.paymentMode?.join(", "),
+      ticket.amount != null ? `₪${ticket.amount}` : "-",
+      ticket.status,
+      ticket.paymentDate
+        ? new Date(ticket.paymentDate).toLocaleDateString()
+        : "-",
     ]);
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${eventDetails?.name.replace(/\s+/g, "_")}_registrants.csv`;
+    a.download = `${eventDetails?.name?.replace(/\s+/g, "_") ?? "event"}_registrants.csv`;
     a.click();
   };
 
   const exportToPDF = () => {
     if (!eventDetails) return;
-
-    // Create a simple HTML document for PDF printing
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -107,35 +421,33 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
         </head>
         <body>
           <h1>${eventDetails?.name}</h1>
-          <p><strong>${t("total_registrations")}:</strong> ${filteredRegistrants.length}</p>
+          <p><strong>${t("total_registrations")}:</strong> ${filteredTickets.length}</p>
           <table>
             <thead>
               <tr>
                 <th>${t("full_name")}</th>
                 <th>${t("phone")}</th>
                 <th>${t("email")}</th>
-                <th>${t("quantity")}</th>
-                <th>${t("ticket_type")}</th>
-                <th>${t("total")}</th>
-                <th>${t("payment_status")}</th>
-                <th>${t("reg_date")}</th>
-                <th>${t("source_website")}</th>
+                <th>${t("ticket_name")}</th>
+                <th>${t("payment_mode")}</th>
+                <th>${t("amount")}</th>
+                <th>${t("status")}</th>
+                <th>${t("purchased_date")}</th>
               </tr>
             </thead>
             <tbody>
-              ${filteredRegistrants
+              ${filteredTickets
                 .map(
-                  (reg) => `
+                  (ticket) => `
                 <tr>
-                  <td>${reg.fullName}</td>
-                  <td>${reg.phone}</td>
-                  <td>${reg.email}</td>
-                  <td>${reg.quantity}</td>
-                  <td>${reg.ticketType}</td>
-                  <td>₪${reg.totalPrice}</td>
-                  <td>${reg.paymentStatus}</td>
-                  <td>${reg.registrationDate}</td>
-                  <td>${reg.sourceWebsite}</td>
+                  <td>${`${ticket.firstName} ${ticket.lastName || ""}`.trim()}</td>
+                  <td>${ticket.phone || "-"}</td>
+                  <td>${ticket.email || "-"}</td>
+                  <td>${ticket.ticketName || "-"}</td>
+                  <td>${ticket.paymentMode?.join(", ") || "-"}</td>
+                  <td>${ticket.amount != null ? `₪${ticket.amount}` : "-"}</td>
+                  <td>${ticket.status || "-"}</td>
+                  <td>${ticket.paymentDate ? new Date(ticket.paymentDate).toLocaleDateString() : "-"}</td>
                 </tr>
               `,
                 )
@@ -145,154 +457,21 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
         </body>
       </html>
     `;
-
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.print();
   };
 
   return (
-    <div className="p-8 max-h-[75vh] overflow-y-auto">
-      {/* Metrics Snapshot */}
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          {eventDetails?.isMultiDay && eventDetails?.dailyMetrics && (
-            <button
-              onClick={() => setShowDailyBreakdown(!showDailyBreakdown)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
-                isDark
-                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
-            >
-              {showDailyBreakdown
-                ? t("show_summary")
-                : t("show_daily_breakdown")}
-            </button>
-          )}
-        </div>
-
-        {eventDetails?.dailyMetrics && (
-          <div className="space-y-6">
-            <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
-              {t("daily_breakdown")}
-            </h4>
-            {eventDetails?.dailyMetrics.map((day: any, idx: number) => (
-              <div
-                key={idx}
-                className={`p-6 rounded-2xl border ${
-                  isDark
-                    ? "border-gray-700 bg-gray-800/30"
-                    : "border-gray-200 bg-gray-50"
-                }`}
-              >
-                <div className={`text-lg font-semibold mb-4 ${textPrimary}`}>
-                  {new Date(day.date).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </div>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <div className={`text-sm ${textTertiary}`}>
-                      {t("registrations")}
-                    </div>
-                    <div className={`text-2xl font-bold ${textPrimary}`}>
-                      {day.registrations}
-                    </div>
-                  </div>
-                  <div>
-                    <div className={`text-sm ${textTertiary}`}>
-                      {t("attendance")}
-                    </div>
-                    <div className={`text-2xl font-bold ${textPrimary}`}>
-                      {day.attendance}
-                    </div>
-                  </div>
-                  <div>
-                    <div className={`text-sm ${textTertiary}`}>
-                      {t("revenue")}
-                    </div>
-                    <div className={`text-2xl font-bold ${textPrimary}`}>
-                      ₪{(day.revenue / 1000).toFixed(1)}K
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Trend Chart */}
-        {eventDetails?.dailyMetrics &&
-          eventDetails?.dailyMetrics.length > 1 && (
-            <div
-              className={`mt-8 p-6 rounded-2xl ${isDark ? "bg-gray-800/50" : "bg-gray-50"}`}
-            >
-              <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
-                {t("registration_attendance_trend")}
-              </h4>
-              <div style={{ height: "280px" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={eventDetails?.dailyMetrics}>
-                    <CartesianGrid
-                      strokeDasharray="4 4"
-                      stroke={isDark ? "#374151" : "#e5e7eb"}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      stroke={isDark ? "#9ca3af" : "#6b7280"}
-                      tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      }
-                    />
-                    <YAxis stroke={isDark ? "#9ca3af" : "#6b7280"} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: isDark ? "#1f2937" : "#ffffff",
-                        border: `1px solid ${isDark ? "#374151" : "#e5e7eb"}`,
-                        borderRadius: "12px",
-                        padding: "12px",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="registrations"
-                      stroke="#14b8a6"
-                      strokeWidth={3}
-                      dot={{ fill: "#14b8a6", r: 6 }}
-                      name={t("registrations")}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey=" tickAttendance"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      dot={{ fill: "#8b5cf6", r: 6 }}
-                      name={t("attendance")}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-      </section>
-
-      {/* Registrants Table */}
+    <div className="max-h-[75vh]">
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`text-2xl font-semibold ${textPrimary}`}>
-            {t("registrants")} ({filteredRegistrants.length})
+            {t("registrants")} ({totalData})
           </h3>
           <ExportBtns exportToCSV={exportToCSV} exportToPDF={exportToPDF} />
         </div>
 
-        {/* Search */}
         <div className="relative mb-6">
           <Search
             className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-5 h-5 ${textTertiary}`}
@@ -300,8 +479,8 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           <input
             type="text"
             placeholder={t("search_registrants_placeholder")}
-            value={registrantSearchQuery}
-            onChange={(e) => setRegistrantSearchQuery(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${
               isDark
                 ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
@@ -310,13 +489,17 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
           />
         </div>
 
-        {filteredRegistrants?.length === 0 ? (
+        {filteredTickets.length === 0 && isLoadingTickets ? (
+          <div className="flex justify-center py-16">
+            <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filteredTickets.length === 0 ? (
           <div className="text-center py-16">
             <Users
               className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`}
             />
             <p className={`text-lg ${textTertiary}`}>
-              {registrantSearchQuery
+              {searchQuery
                 ? t("no_registrants_match")
                 : t("no_registrants_yet")}
             </p>
@@ -324,110 +507,165 @@ const EventRegistrationDetails: React.FC<EventRegistrationDetailsProps> = ({
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
             <ReordableDataTable
-              rowKey="id"
-              data={filteredRegistrants}
-              onRowClick={(item) => setSelectedRegistrant?.(item)}
-              storageKey="registrantsTableColumnOrder"
+              rowKey="_id"
+              data={filteredTickets}
+              storageKey="eventTicketsTableColumnOrder"
               columns={[
                 {
                   key: "full_name",
                   label: t("full_name"),
                   sortable: true,
-                  render: (reg) => (
-                    <span className="text-sm font-medium">{reg.fullName}</span>
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
+                      {`${ticket.firstName} ${ticket.lastName || ""}`.trim()}
+                    </span>
                   ),
                 },
                 {
                   key: "phone",
                   label: t("phone"),
-                  render: (reg) => (
-                    <span className="text-sm text-gray-500">
-                      {reg.phone || "-"}
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      {ticket.phone || "-"}
                     </span>
                   ),
                 },
                 {
                   key: "email",
                   label: t("email"),
-                  render: (reg) => (
-                    <span className="text-sm text-gray-500">
-                      {reg.email || "-"}
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      {ticket.email || "-"}
                     </span>
                   ),
                 },
                 {
-                  key: "quantity",
-                  label: t("quantity"),
-                  sortable: true,
-                  render: (reg) => (
-                    <div className="text-right text-sm font-medium">
-                      {reg.quantity}
+                  key: "ticket_name",
+                  label: t("ticket_name"),
+                  render: (ticket: IEventTicket) => (
+                    <div className="flex items-center gap-2">
+                      {ticket.ticketImage?.[0]?.image && (
+                        <img
+                          src={ticket.ticketImage[0].image}
+                          alt={ticket.ticketName}
+                          className="w-8 h-8 rounded object-cover shrink-0"
+                        />
+                      )}
+                      <span
+                        className={clsx(
+                          "text-sm",
+                          isDark ? "text-gray-400" : "text-gray-500",
+                        )}
+                      >
+                        {ticket.ticketName || "-"}
+                      </span>
                     </div>
                   ),
                 },
                 {
-                  key: "ticket_type",
-                  label: t("ticket_type"),
-                  render: (reg) => (
-                    <span className="text-sm text-gray-500">
-                      {reg.ticketType || "-"}
+                  key: "payment_mode",
+                  label: t("payment_mode"),
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm capitalize",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      {ticket.paymentMode?.join(", ") || "-"}
                     </span>
                   ),
                 },
                 {
-                  key: "total",
-                  label: t("total"),
+                  key: "amount",
+                  label: t("amount"),
                   sortable: true,
-                  render: (reg) => (
-                    <div className="text-right font-medium">
-                      ₪{reg.totalPrice}
-                    </div>
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm font-medium",
+                        isDark ? "text-gray-100" : "text-gray-900",
+                      )}
+                    >
+                      {ticket.amount != null ? `₪${ticket.amount}` : "-"}
+                    </span>
                   ),
                 },
                 {
                   key: "status",
                   label: t("status"),
-                  render: (reg) => (
-                    <span
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium ${getPaymentStatusColor(
-                        reg.paymentStatus,
-                      )}`}
-                    >
-                      {reg.paymentStatus === "paid"
-                        ? t("paid")
-                        : reg.paymentStatus === "pending"
-                          ? t("pending")
-                          : t("refunded")}
-                    </span>
+                  render: (ticket: IEventTicket) => (
+                    <StatusCell
+                      ticket={ticket}
+                      isDark={isDark}
+                      onUpdate={handleStatusUpdate}
+                      isUpdating={isUpdating}
+                      updatingId={updatingId}
+                    />
                   ),
                 },
                 {
-                  key: "registration_date",
-                  label: t("registration_date"),
-                  sortable: true,
-                  render: (reg) =>
-                    new Date(reg.registrationDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }),
+                  key: "payment_status",
+                  label: t("payment_status"),
+                  render: (ticket: IEventTicket) =>
+                    ticket.paymentStatus ? (
+                      <span
+                        className={clsx(
+                          "inline-flex px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+                          isDark ? "text-white" : "text-gray-500",
+                          getStatusColor(ticket.paymentStatus ?? "", isDark),
+                        )}
+                      >
+                        {t(ticket.paymentStatus, {
+                          defaultValue: ticket.paymentStatus,
+                        })}
+                      </span>
+                    ) : (
+                      <span
+                        className={clsx(
+                          "text-sm",
+                          isDark ? "text-gray-400" : "text-gray-500",
+                        )}
+                      >
+                        -
+                      </span>
+                    ),
                 },
-                ...(eventDetails?.isMultiDay
-                  ? [
-                      {
-                        key: "days",
-                        label: t("days"),
-                        render: (reg: any) =>
-                          reg.attendingDays ? (
-                            <span className="text-sm text-gray-500">
-                              {reg.attendingDays.length} {t("days")}
-                            </span>
-                          ) : (
-                            "-"
-                          ),
-                      },
-                    ]
-                  : []),
+                {
+                  key: "purchased_date",
+                  label: t("purchased_date"),
+                  sortable: true,
+                  render: (ticket: IEventTicket) => (
+                    <span
+                      className={clsx(
+                        "text-sm",
+                        isDark ? "text-gray-400" : "text-gray-500",
+                      )}
+                    >
+                      {ticket.paymentDate
+                        ? new Date(ticket.paymentDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" },
+                          )
+                        : "-"}
+                    </span>
+                  ),
+                },
               ]}
             />
           </div>

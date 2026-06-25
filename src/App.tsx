@@ -57,6 +57,7 @@ import {
 import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
+import PublicTicketPage from "./pages/public-ticket";
 import { UserRole } from "./enums/user.types";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
@@ -191,13 +192,16 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
+  // Handle QR verification token for orders-management and event-details access (JWT token, same as incomplete profile)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get("token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+    const isEventDetails = window.location.pathname.startsWith(
+      routes.eventDetails,
+    );
 
-    if (jwtToken && isOrdersManagement) {
+    if (jwtToken && (isOrdersManagement || isEventDetails)) {
       // Keep the original QR token separate from the normal access token.
       sessionStorage.setItem("access_token", jwtToken);
       sessionStorage.setItem("qr_token", jwtToken);
@@ -235,7 +239,7 @@ function App() {
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep JWT token in session even if user fetch fails, allows order management
+          // Keep JWT token in session even if user fetch fails, allows event management
         }
       };
 
@@ -250,8 +254,12 @@ function App() {
     const currentAccessToken = sessionStorage.getItem("access_token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-    // Skip profile completion token for QR mode
-    if (isOrdersManagement) return;
+    const isPublicTicketPath = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
+
+    // Skip for QR mode and public ticket pages
+    if (isOrdersManagement || isPublicTicketPath) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -301,7 +309,13 @@ function App() {
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
     const userInfo = sessionStorage.getItem("user_info");
+    const isPublicTicket = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
 
+    if (isPublicTicket) {
+      return children;
+    }
     let user: any = null;
     if (userInfo) {
       try {
@@ -335,7 +349,7 @@ function App() {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
-      // Allow routes with token to bypass login (business-details, orders-management QR)
+      // Allow routes with token to bypass login (business-details, event-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
       const orderId = urlParams.get("orderId");
@@ -343,9 +357,15 @@ function App() {
       const isBusinessDetails = window.location.pathname.startsWith(
         routes.businessDetails,
       );
+      const isEventDetails = window.location.pathname.startsWith(
+        routes.eventDetails,
+      );
       const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
+      if (
+        hasToken &&
+        (isBusinessDetails || isEventDetails || isOrdersManagement)
+      ) {
         return children;
       }
 
@@ -368,6 +388,15 @@ function App() {
   const router = useMemo(
     () =>
       createBrowserRouter([
+        {
+          path: `${routes.publicTicket}/:eventId/:ticketId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicTicketPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+        },
         {
           element: (
             <Suspense fallback={<SplashLoader />}>
