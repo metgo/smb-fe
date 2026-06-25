@@ -35,12 +35,7 @@ import {
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_LIST_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useBusinessFilters } from "./hooks/useBusinessFilters";
@@ -194,17 +189,6 @@ function BusinessesMgmtPageInner() {
     ],
     [],
   );
-
-  // Auto-start once per user
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      startTour(buildSteps(), {
-        tourId: BUSINESS_LIST_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [startTour, buildSteps]);
 
   // Open filter panel when tour lands on that step
   useEffect(() => {
