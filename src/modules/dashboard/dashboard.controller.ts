@@ -15,6 +15,8 @@ import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { GetAllFeedItemsRequest } from './request/get-all-feed-items.request';
 import { GetAllFeedItemsQuery } from './queries/get-all-feed-items.query';
+import { GetFeedMarkersRequest } from './request/get-feed-markers.request';
+import { GetFeedMarkersQuery } from './queries/get-feed-markers.query';
 import { GetFiltersQuery } from './queries/get-filters.query';
 import { GetAllFiltersRequest } from './request/get-all-filters.request';
 import { GetSiteStatsQuery } from './queries/get-site-stats.query';
@@ -56,6 +58,23 @@ export class DashboardController {
         request.limit,
         request.locale,
       ),
+    );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('feed/markers')
+  @ApiEndpoint({
+    tags: ['Tourism-Feed'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_LISTED,
+    },
+    softBlockExtraDtoFields: true,
+    operation: 'Get all feed item markers for map',
+  })
+  async getFeedMarkers(@Query() request: GetFeedMarkersRequest) {
+    return this.queryBus.execute(
+      new GetFeedMarkersQuery(request.identifierId, request.campCode),
     );
   }
 

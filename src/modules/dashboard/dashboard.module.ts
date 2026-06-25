@@ -52,6 +52,7 @@ import {
   PointOfInterestsAuditSchema,
 } from '../point-of-interests/schema/point-of-interest-audit.schema';
 import { GetSiteStatsHandler } from './queries/handler/get-site-stats.handler';
+import { GetFeedMarkersHandler } from './queries/handler/get-feed-markers.handler';
 import { GAModule } from 'src/services/google-analytics/ga.module';
 import { Order, OrderSchema } from '../orders/schema/orders.schema';
 import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
@@ -105,6 +106,7 @@ import { GoogleSheetsModule } from 'src/services/google-sheets/google-sheets.mod
     GetTripRawQueryHandler,
     GetProductRawQueryHandler,
     GetSiteStatsHandler,
+    GetFeedMarkersHandler,
   ],
 })
 export class DashboardModule {}

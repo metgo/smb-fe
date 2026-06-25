@@ -1,13 +1,12 @@
+import { Logger } from 'winston';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { Trip } from '../../schema/trips.schema';
 import { GetTripBySlugQuery } from '../get-trip-by-slug.query';
 import { TripStatus } from '../../trips.types';
@@ -19,42 +18,16 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
     private readonly logger: Logger,
     @InjectModel(Trip.name)
     private readonly tripModel: Model<Trip>,
-    private campaignService: CampaignService,
   ) {}
 
   async execute(queries: GetTripBySlugQuery): Promise<any> {
     try {
       const { slug, query } = queries;
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        query.campCode,
-      );
 
-      if (!campDetails?.dmoIds?.length && !campDetails?.authorityIds?.length) {
-        return {};
-      }
-
-      let findQuery: any = {
+      const findQuery: any = {
         slug,
         status: TripStatus.APPROVED,
       };
-
-      const orConditions = [];
-
-      if (campDetails?.dmoIds?.length) {
-        orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-      }
-
-      if (campDetails?.authorityIds?.length) {
-        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
-      }
-
-      if (orConditions.length) {
-        findQuery = {
-          ...findQuery,
-          $or: orConditions,
-        };
-      }
 
       let populate;
       let select;
@@ -74,9 +47,9 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
           {
             path: 'stations._id',
             select:
-              'name description images logo groupTypesId accessibilitiesId primaryCategoryId bussCategoriesId bussSubCategoriesId geoLocation',
+              'name slug description images primaryCategoryId  geoLocation',
             populate: {
-              path: 'groupTypesId accessibilitiesId primaryCategoryId bussCategoriesId bussSubCategoriesId',
+              path: 'primaryCategoryId',
               select: 'name hebrewName',
             },
           },
@@ -108,9 +81,14 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
       const stations = tripObj.stations.map((station: any) => {
         const stationData = station._id;
 
+        if (!stationData) {
+          return { order: station.order, type: station.type };
+        }
+
         const {
           groupTypesId = [],
           accessibilitiesId = [],
+          images = [],
           ...rest
         } = stationData;
 
@@ -123,6 +101,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
         return {
           ...rest,
           _id: stationData._id,
+          image: images[0]?.image ?? null,
           order: station.order,
           type: station.type,
         };
