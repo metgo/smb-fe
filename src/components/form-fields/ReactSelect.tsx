@@ -1,4 +1,5 @@
 import Select from "react-select";
+import { ShoppingBag, MapPin, Layers } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "../shared";
@@ -7,6 +8,19 @@ export type ItemOption = {
   value: string;
   label: string;
   logo?: string | undefined;
+  purpose?: string;
+};
+
+const PURPOSE_ICON: Record<string, React.ReactNode> = {
+  MARKETPLACE: <ShoppingBag className="w-3.5 h-3.5 shrink-0 text-orange-400" />,
+  TRAVELING: <MapPin className="w-3.5 h-3.5 shrink-0 text-teal-500" />,
+  OTHER: <Layers className="w-3.5 h-3.5 shrink-0 text-gray-400" />,
+};
+
+const PURPOSE_LABEL: Record<string, string> = {
+  MARKETPLACE: "Marketplace",
+  TRAVELING: "Travel",
+  OTHER: "Other",
 };
 
 type Props = {
@@ -14,6 +28,7 @@ type Props = {
     _id: string;
     name: string;
     logo?: string | undefined;
+    purpose?: string;
   }[];
   value?: string | null;
   onChange: (value: string) => void;
@@ -53,6 +68,7 @@ export default function ReactSelect({
       value: site._id,
       label: site.name,
       logo: site.logo,
+      purpose: site.purpose,
     })) || [];
 
   const selectedOption = options.find((o) => o.value === value) || null;
@@ -167,7 +183,24 @@ export default function ReactSelect({
               }}
             />
           )}
-          <span className="font-semibold">{option.label}</span>
+          <span className="font-semibold flex-1 min-w-0 truncate">
+            {option.label}
+          </span>
+          {option.purpose && PURPOSE_ICON[option.purpose] && (
+            <span
+              className="flex items-center gap-1 ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+              style={{
+                backgroundColor: isDark
+                  ? "rgba(255,255,255,0.07)"
+                  : "rgba(0,0,0,0.05)",
+              }}
+            >
+              {PURPOSE_ICON[option.purpose]}
+              <span className="hidden sm:inline" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>
+                {PURPOSE_LABEL[option.purpose]}
+              </span>
+            </span>
+          )}
         </div>
       )}
     />

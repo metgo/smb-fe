@@ -58,8 +58,9 @@ interface ContentsProps {
   currentTab: string;
   loadMore?: () => void;
   hasMore?: boolean;
+  hiddenTabs?: string[];
 }
-const FILTER_OPTIONS = [
+const ALL_FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
@@ -178,7 +179,13 @@ const Contents = ({
   loadMore,
   hasMore,
   templateContents,
+  hiddenTabs = [],
 }: ContentsProps) => {
+  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs)
+  const FILTER_OPTIONS = ALL_FILTER_OPTIONS.filter(
+    (tab) => !hiddenTabs.includes(tab),
+  );
+  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS)
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
