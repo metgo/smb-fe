@@ -49,7 +49,7 @@ export const notificationApi = createApi({
       invalidatesTags: ["NotificationData"],
     }),
 
-    bulkMarkNotificationsAsRead: builder.mutation<void, string[]>({
+    bulkMarkNotificationsAsRead: builder.mutation<void, string[] | undefined>({
       query: (ids) => ({
         url: endpoints.notificationsBulkMarkRead,
         method: "PATCH",

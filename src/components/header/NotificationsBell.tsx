@@ -34,7 +34,7 @@ import {
   markNotificationAsRead,
   setNotificationStatus,
   updateNotificationStatus,
-  decrementUnreadCount,
+  setUnreadCount,
 } from "@/features/notificationSlice";
 
 import {
@@ -145,13 +145,12 @@ const NotificationsBell = () => {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n._id);
-    if (unreadIds.length === 0) return;
+    if (unreadCount === 0) return;
     try {
-      await bulkMarkNotificationsAsRead(unreadIds).unwrap();
+      // Call with undefined to mark all unread as read
+      await bulkMarkNotificationsAsRead(undefined).unwrap();
       dispatch(markAllNotificationsAsRead());
-      // Decrement count by the number of notifications marked as read
-      dispatch(decrementUnreadCount(unreadIds.length));
+      dispatch(setUnreadCount(0));
     } catch {
       toast.error("Failed to mark all as read. Please try again.");
     }
