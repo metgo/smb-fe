@@ -700,8 +700,11 @@ const Contents = ({
                 _id={item._id}
                 name={item?.name}
                 descripition={item?.shortDescription}
-                // image={item?.images?.[0]?.image}
-                image={item?.images}
+                image={
+                  typeof item?.images === "string"
+                    ? item?.images
+                    : item?.images?.[0]?.image
+                }
                 categoryName={item?.primaryCategoryId?.name}
                 address={item?.address}
                 startDate={
