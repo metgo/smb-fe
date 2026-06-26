@@ -48,6 +48,7 @@ export const endpoints = {
 
   //products
   products: "/products",
+  contentManagementProducts: "/content-management-products",
   bulkProductsUpdate: "/bulk-products-update",
 
   //orders
