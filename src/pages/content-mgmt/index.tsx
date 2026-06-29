@@ -174,7 +174,8 @@ export default function ContentMgmtPage() {
         phone: `+972-5${Math.floor(Math.random() * 10)}-${Math.floor(1000000 + Math.random() * 9000000)}`,
         emailStatus: emailSuccess ? "success" : "failed",
         smsStatus: smsSuccess ? "success" : "failed",
-        errorMessage: !emailSuccess || !smsSuccess ? "Network timeout" : undefined,
+        errorMessage:
+          !emailSuccess || !smsSuccess ? "Network timeout" : undefined,
       };
     });
 
@@ -190,9 +191,9 @@ export default function ContentMgmtPage() {
   const selectedWebsite = (associatedWebsite as IWebsite[]).find(
     (w) => w._id === externalApiId,
   );
-  console.log("🚀 ~ ContentMgmtPage ~ selectedWebsite:", selectedWebsite)
+  console.log("🚀 ~ ContentMgmtPage ~ selectedWebsite:", selectedWebsite);
   const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
-  console.log("🚀 ~ ContentMgmtPage ~ isMarketplace:", isMarketplace)
+  console.log("🚀 ~ ContentMgmtPage ~ isMarketplace:", isMarketplace);
   const selectedWebsiteName = selectedWebsite?.name ?? "";
 
   const marketplaceHiddenTabs = isMarketplace ? ["Businesses", "POI"] : [];
@@ -212,11 +213,12 @@ export default function ContentMgmtPage() {
           isDark ? "bg-gray-900" : "bg-gray-50",
         )}
       >
-        <Spinner isLoading={template.isTemplateFetching || template.isTemplateLoading} />
+        <Spinner
+          isLoading={template.isTemplateFetching || template.isTemplateLoading}
+        />
 
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-hidden flex flex-col">
-
             {/* ── Page Header ── */}
             <div
               className={clsx(
@@ -328,7 +330,6 @@ export default function ContentMgmtPage() {
 
             {/* ── Two-panel layout ── */}
             <div className="flex gap-0 flex-1 overflow-hidden min-h-0">
-
               {/* ── LEFT: Contents ── */}
               <AnimatePresence initial={false}>
                 {panel.effectiveFocus !== "right" && (
@@ -337,7 +338,9 @@ export default function ContentMgmtPage() {
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={panel.effectiveFocus === "left" ? "expanded" : "half"}
+                    animate={
+                      panel.effectiveFocus === "left" ? "expanded" : "half"
+                    }
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -439,7 +442,9 @@ export default function ContentMgmtPage() {
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={panel.effectiveFocus === "right" ? "expanded" : "half"}
+                    animate={
+                      panel.effectiveFocus === "right" ? "expanded" : "half"
+                    }
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -471,7 +476,9 @@ export default function ContentMgmtPage() {
                       onViewsRefetch={template.refetchViews}
                       hasUnsavedContent={template.hasUnsavedContent}
                       onSaveCurrentAsView={template.handleSaveCurrentAsView}
-                      isSavingCurrentAsView={template.isCreating || template.isUpdating}
+                      isSavingCurrentAsView={
+                        template.isCreating || template.isUpdating
+                      }
                     />
                   </motion.div>
                 )}

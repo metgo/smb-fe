@@ -46,7 +46,8 @@ const makeInitialTabState = (): Record<string, TabState> =>
 
 export function useContentTabs(externalApiId: string | null) {
   const [selected, setSelected] = useState<string>("Businesses");
-  const [tabState, setTabState] = useState<Record<string, TabState>>(makeInitialTabState);
+  const [tabState, setTabState] =
+    useState<Record<string, TabState>>(makeInitialTabState);
 
   useEffect(() => {
     if (!externalApiId) return;

@@ -28,7 +28,13 @@ const initialTemplateContent: IContentTemplate[] = [
     isPrimary: false,
     isHideTopic: false,
     groups: [
-      { isPrimary: false, isHideCategory: false, category: "", icon: "", contents: [] },
+      {
+        isPrimary: false,
+        isHideCategory: false,
+        category: "",
+        icon: "",
+        contents: [],
+      },
     ],
   },
   {
@@ -36,7 +42,13 @@ const initialTemplateContent: IContentTemplate[] = [
     isPrimary: false,
     isHideTopic: false,
     groups: [
-      { isPrimary: false, isHideCategory: false, category: "", icon: "", contents: [] },
+      {
+        isPrimary: false,
+        isHideCategory: false,
+        category: "",
+        icon: "",
+        contents: [],
+      },
     ],
   },
 ];
@@ -113,9 +125,12 @@ export function useContentTemplate({
 
   const [header, setHeader] = useState("<p></p>");
   const [contentStatus, setContentStatus] = useState<TStatus>("draft");
-  const [templateContentId, setTemplateContentId] = useState<string | null>(null);
-  const [templateContents, setTemplateContent] =
-    useState<IContentTemplate[]>(initialTemplateContent);
+  const [templateContentId, setTemplateContentId] = useState<string | null>(
+    null,
+  );
+  const [templateContents, setTemplateContent] = useState<IContentTemplate[]>(
+    initialTemplateContent,
+  );
 
   const businessInitializedRef = useRef(false);
   const productInitializedRef = useRef(false);
@@ -128,7 +143,9 @@ export function useContentTemplate({
     data: templateContentsData,
     isLoading: isTemplateLoading,
     isFetching: isTemplateFetching,
-  } = useGetContentByExternalIdQuery(externalApiId ? { externalApiId } : skipToken);
+  } = useGetContentByExternalIdQuery(
+    externalApiId ? { externalApiId } : skipToken,
+  );
 
   const {
     data: viewsData,
@@ -355,16 +372,16 @@ export function useContentTemplate({
             const filteredCategories = template?.groups
               ?.filter((group) => group?.category?.trim())
               ?.map((group) => {
-                const idsByType = group.contents.reduce<Record<string, string[]>>(
-                  (acc, item) => {
-                    const key =
-                      TYPE_TO_KEY[item.contentType ?? "business"] ?? "businessIds";
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(item._id);
-                    return acc;
-                  },
-                  {},
-                );
+                const idsByType = group.contents.reduce<
+                  Record<string, string[]>
+                >((acc, item) => {
+                  const key =
+                    TYPE_TO_KEY[item.contentType ?? "business"] ??
+                    "businessIds";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(item._id);
+                  return acc;
+                }, {});
                 return {
                   title: group.category,
                   description: group.description,
@@ -382,7 +399,8 @@ export function useContentTemplate({
                 };
               });
 
-            if (!filteredCategories || filteredCategories.length === 0) return null;
+            if (!filteredCategories || filteredCategories.length === 0)
+              return null;
 
             return {
               title: template.topic,
@@ -439,7 +457,9 @@ export function useContentTemplate({
     !isLoadingViews &&
     views.length === 0 &&
     !!externalApiId &&
-    templateContents.some((t) => t.groups?.some((g) => (g.contents?.length ?? 0) > 0));
+    templateContents.some((t) =>
+      t.groups?.some((g) => (g.contents?.length ?? 0) > 0),
+    );
 
   return {
     header,

@@ -90,12 +90,18 @@ export function useContentData({
 
   const eventParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Events"];
-    const params: any = { status: "APPROVED", limit: PAGE_LIMIT, page: eventPage };
+    const params: any = {
+      status: "APPROVED",
+      limit: PAGE_LIMIT,
+      page: eventPage,
+    };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all")
       params.isRegistration = filters.registrationFilter;
-    if (filters.dateRangeFilter.start) params.startDate = filters.dateRangeFilter.start;
-    if (filters.dateRangeFilter.end) params.endDate = filters.dateRangeFilter.end;
+    if (filters.dateRangeFilter.start)
+      params.startDate = filters.dateRangeFilter.start;
+    if (filters.dateRangeFilter.end)
+      params.endDate = filters.dateRangeFilter.end;
     return params;
   }, [eventTab, eventPage]);
 
@@ -165,7 +171,13 @@ export function useContentData({
   useEffect(() => {
     setPage(1);
     setCombinedBusinesses([]);
-  }, [businessTab.searchQuery, businessTab.filters, dmoId, authorityId, externalApiId]);
+  }, [
+    businessTab.searchQuery,
+    businessTab.filters,
+    dmoId,
+    authorityId,
+    externalApiId,
+  ]);
 
   useEffect(() => {
     if (!businessData?.data) return;
@@ -275,7 +287,12 @@ export function useContentData({
 
   const dataMap: Record<
     string,
-    { rawData: any; isLoading: boolean; loadMore?: () => void; hasMore?: boolean }
+    {
+      rawData: any;
+      isLoading: boolean;
+      loadMore?: () => void;
+      hasMore?: boolean;
+    }
   > = {
     Businesses: {
       rawData: combinedBusinesses,
