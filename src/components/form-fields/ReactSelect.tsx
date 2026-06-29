@@ -17,11 +17,11 @@ const PURPOSE_ICON: Record<string, React.ReactNode> = {
   OTHER: <Layers className="w-3.5 h-3.5 shrink-0 text-gray-400" />,
 };
 
-const PURPOSE_LABEL: Record<string, string> = {
-  MARKETPLACE: "Marketplace",
-  TRAVELING: "Travel",
-  OTHER: "Other",
-};
+// const PURPOSE_LABEL: Record<string, string> = {
+//   MARKETPLACE: "Marketplace",
+//   TRAVELING: "Travel",
+//   OTHER: "Other",
+// };
 
 type Props = {
   items?: {
@@ -196,9 +196,9 @@ export default function ReactSelect({
               }}
             >
               {PURPOSE_ICON[option.purpose]}
-              <span className="hidden sm:inline" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>
+              {/* <span className="hidden sm:inline" style={{ color: isDark ? "#9ca3af" : "#6b7280" }}>
                 {PURPOSE_LABEL[option.purpose]}
-              </span>
+              </span> */}
             </span>
           )}
         </div>

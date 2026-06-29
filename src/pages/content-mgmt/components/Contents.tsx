@@ -181,11 +181,11 @@ const Contents = ({
   templateContents,
   hiddenTabs = [],
 }: ContentsProps) => {
-  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs)
+  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs);
   const FILTER_OPTIONS = ALL_FILTER_OPTIONS.filter(
     (tab) => !hiddenTabs.includes(tab),
   );
-  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS)
+  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS);
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
@@ -328,27 +328,30 @@ const Contents = ({
   ]);
 
   // ─── Selection handler ────────────────────────────────────────────────────
-  const handleSelect = useCallback((item: any, isMulti: boolean) => {
-    setSelectedItems((prev) => {
-      const next = new Map(prev);
-      if (isMulti) {
-        // Ctrl/Cmd/Shift: toggle this item
-        if (next.has(item._id)) {
-          next.delete(item._id);
+  const handleSelect = useCallback(
+    (item: any, isMulti: boolean) => {
+      setSelectedItems((prev) => {
+        const next = new Map(prev);
+        if (isMulti) {
+          // Ctrl/Cmd/Shift: toggle this item
+          if (next.has(item._id)) {
+            next.delete(item._id);
+          } else {
+            next.set(item._id, item);
+          }
         } else {
-          next.set(item._id, item);
+          // Plain click: if it's the only selected item, deselect it; otherwise select only it
+          if (next.has(item._id)) {
+            next.delete(item._id);
+          } else {
+            next.set(item._id, item);
+          }
         }
-      } else {
-        // Plain click: if it's the only selected item, deselect it; otherwise select only it
-        if (next.has(item._id)) {
-          next.delete(item._id);
-        } else {
-          next.set(item._id, item);
-        }
-      }
-      return next;
-    });
-  }, []);
+        return next;
+      });
+    },
+    [setSelectedItems],
+  );
 
   const handleClick = useCallback(
     (e: React.MouseEvent, item: any) => {
@@ -358,15 +361,18 @@ const Contents = ({
     [handleSelect],
   );
 
-  const handleContextMenu = useCallback((item: any) => {
-    // Right-click selects the card if not already in selection
-    setSelectedItems((prev) => {
-      if (prev.has(item._id)) return prev; // already selected — keep selection
-      const next = new Map();
-      next.set(item._id, item);
-      return next;
-    });
-  }, []);
+  const handleContextMenu = useCallback(
+    (item: any) => {
+      // Right-click selects the card if not already in selection
+      setSelectedItems((prev) => {
+        if (prev.has(item._id)) return prev; // already selected — keep selection
+        const next = new Map();
+        next.set(item._id, item);
+        return next;
+      });
+    },
+    [setSelectedItems],
+  );
 
   // Click on the empty area of the list clears the selection
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
