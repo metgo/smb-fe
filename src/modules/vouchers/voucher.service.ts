@@ -61,6 +61,10 @@ export class VoucherService {
     private readonly logger: Logger,
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    @InjectModel('Ticket')
+    private readonly TicketModel: Model<any>,
+    @InjectModel('Event')
+    private readonly EventModel: Model<any>,
     private readonly campaignService: CampaignService,
     private readonly orderService: OrdersService,
     private readonly smsService: SmsService,
@@ -120,6 +124,116 @@ export class VoucherService {
       ) {
         throw new ForbiddenException(
           'This voucher cannot be used for this product',
+        );
+      }
+
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new PaymentRequiredException(ServerErrors.VOUCHER.UNPAID);
+      }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
+      }
+
+      if (!voucher.remainingAmount) {
+        throw new UnprocessableEntityException(ServerErrors.VOUCHER.NO_BALANCE);
+      }
+
+      return {
+        _id: voucher._id,
+        code: voucher.code,
+        remainingAmount: voucher.remainingAmount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async getOneByCodeAndTicket(query: GetOneVoucherInterface) {
+    try {
+      const { code, productId: ticketId } = query;
+
+      const findQuery: any = {
+        code: code.trim(),
+        isDeleted: { $ne: true },
+      };
+
+      const populate = {
+        path: 'campId',
+        select: 'code name whitelist blacklist',
+      };
+
+      const voucher: any = await this.VoucherModel.findOne(findQuery)
+        .select('_id code remainingAmount expireDate paymentStatus campId')
+        .populate(populate)
+        .exec();
+
+      if (!voucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      const campDetails = voucher?.campId;
+
+      if (
+        !campDetails?.whitelist?.event?.length
+        && !campDetails?.whitelist?.business?.length
+      ) {
+        throw new ForbiddenException(
+          'This voucher cannot be used for this event',
+        );
+      }
+
+      const ticketDetail = await this.TicketModel.findById(ticketId).select(
+        'eventId',
+      );
+
+      if (!ticketDetail || !ticketDetail.eventId) {
+        throw new NotFoundException('Ticket not found');
+      }
+
+      const { eventId } = ticketDetail;
+      const eventDetail = await this.EventModel.findById(eventId).select(
+        'businessId',
+      );
+
+      if (!eventDetail) {
+        throw new NotFoundException('Event not found');
+      }
+
+      const eventIdStr = eventId.toString();
+      const businessIdStr = eventDetail?.businessId?.toString();
+
+      const isEventWhitelisted = campDetails.whitelist.event?.some(
+        (id: any) => id.toString() === eventIdStr,
+      );
+
+      const isBusinessWhitelisted = campDetails.whitelist.business?.some(
+        (id: any) => id.toString() === businessIdStr,
+      );
+
+      const isEventBlacklisted = campDetails.blacklist?.event?.some(
+        (id: any) => id.toString() === eventIdStr,
+      );
+
+      const isBusinessBlacklisted = campDetails.blacklist?.business?.some(
+        (id: any) => id.toString() === businessIdStr,
+      );
+
+      if (isEventBlacklisted || isBusinessBlacklisted) {
+        throw new ForbiddenException(
+          'This voucher cannot be used for this event',
+        );
+      }
+
+      if (!isEventWhitelisted && !isBusinessWhitelisted) {
+        throw new ForbiddenException(
+          'This voucher cannot be used for this event',
         );
       }
 

@@ -160,7 +160,10 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
                     })),
                   productIds: (cat.productIds || [])
                     .filter(Boolean)
-                    .map((item: any) => ({ ...this.localizeItem(item, locale), serviceType: ServicesTypes.PRODUCT })),
+                    .map((item: any) => ({
+                      ...this.localizeItem(item, locale),
+                      serviceType: ServicesTypes.PRODUCT,
+                    })),
                   eventIds: (cat.eventIds || [])
                     .filter(Boolean)
                     .map(({ images, ...item }: any) => ({

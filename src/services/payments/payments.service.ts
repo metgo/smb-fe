@@ -39,7 +39,7 @@ export class PaymentsService {
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
-  ) {}
+  ) { }
 
   async createPayment(insertField: any) {
     try {
@@ -215,7 +215,7 @@ export class PaymentsService {
       // });
 
       // Skip invoice generation for mock payments (localhost testing)
-      const isMockPayment = paymentRequestId?.startsWith('MOCK_');
+      // const isMockPayment = paymentRequestId?.startsWith('MOCK_');
 
       if (payments?.purpose === PaymentPurpose.VOUCHER) {
         const voucherDetails
@@ -225,17 +225,22 @@ export class PaymentsService {
             languagePreference,
           });
 
-        if (!isMockPayment) {
-          const invoiceDetail = await this.sendInvoice({
-            customerName: payments?.customerName,
-            customerEmail: payments?.customerEmail,
-            invoiceType: 3,
-            voucherDetails,
-            transactionId: paymentRequestId,
-            purpose: PaymentPurpose.VOUCHER,
-            sumPaid: payments?.amount,
-            languagePreference,
-            additionalInformation: '',
+        // if (!isMockPayment) {
+        const invoiceDetail = await this.sendInvoice({
+          customerName: payments?.customerName,
+          customerEmail: payments?.customerEmail,
+          invoiceType: 3,
+          voucherDetails,
+          transactionId: paymentRequestId,
+          purpose: PaymentPurpose.VOUCHER,
+          sumPaid: payments?.amount,
+          languagePreference,
+          additionalInformation: '',
+        });
+
+        if (invoiceDetail?.InvoiceLink) {
+          await updateById<Payment>(this.PaymentModel, payments._id, {
+            invoiceURL: invoiceDetail.InvoiceLink,
           });
 
           if (invoiceDetail?.InvoiceLink) {
@@ -245,6 +250,7 @@ export class PaymentsService {
           }
         }
       }
+      // }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
         const { updateOrder, getProductInformation }
@@ -254,23 +260,28 @@ export class PaymentsService {
           );
 
         if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
-          if (!isMockPayment) {
-            const invoiceDetail = await this.sendInvoice({
-              customerName: payments?.customerName,
-              customerEmail: payments?.customerEmail,
-              invoiceType: 101,
-              product: [
-                {
-                  id: getProductInformation[0]?._id?.toString(),
-                  price: payments?.amount,
-                  name: getProductInformation[0]?.name,
-                },
-              ],
-              transactionId: paymentRequestId,
-              purpose: PaymentPurpose.ORDER,
-              sumPaid: payments?.amount,
-              languagePreference,
-              additionalInformation: 'Paid via Credit Card',
+          // if (!isMockPayment) {
+          const invoiceDetail = await this.sendInvoice({
+            customerName: payments?.customerName,
+            customerEmail: payments?.customerEmail,
+            invoiceType: 101,
+            product: [
+              {
+                id: getProductInformation[0]?._id?.toString(),
+                price: payments?.amount,
+                name: getProductInformation[0]?.name,
+              },
+            ],
+            transactionId: paymentRequestId,
+            purpose: PaymentPurpose.ORDER,
+            sumPaid: payments?.amount,
+            languagePreference,
+            additionalInformation: 'Paid via Credit Card',
+          });
+
+          if (invoiceDetail?.InvoiceLink) {
+            await updateById<Payment>(this.PaymentModel, payments._id, {
+              invoiceURL: invoiceDetail.InvoiceLink,
             });
 
             if (invoiceDetail?.InvoiceLink) {
@@ -280,6 +291,7 @@ export class PaymentsService {
             }
           }
         }
+        // }
 
         if (updateOrder?.totalAmount !== updateOrder?.creditCardPayment) {
           const product = [
@@ -305,17 +317,22 @@ export class PaymentsService {
             );
           }
 
-          if (!isMockPayment) {
-            const invoiceDetail = await this.sendInvoice({
-              customerName: payments?.customerName,
-              customerEmail: payments?.customerEmail,
-              invoiceType: 101,
-              product,
-              transactionId: paymentRequestId,
-              purpose: PaymentPurpose.ORDER,
-              sumPaid: updateOrder?.totalAmount,
-              languagePreference,
-              additionalInformation: 'Paid via Voucher and Credit Card',
+          // if (!isMockPayment) {
+          const invoiceDetail = await this.sendInvoice({
+            customerName: payments?.customerName,
+            customerEmail: payments?.customerEmail,
+            invoiceType: 101,
+            product,
+            transactionId: paymentRequestId,
+            purpose: PaymentPurpose.ORDER,
+            sumPaid: updateOrder?.totalAmount,
+            languagePreference,
+            additionalInformation: 'Paid via Voucher and Credit Card',
+          });
+
+          if (invoiceDetail?.InvoiceLink) {
+            await updateById<Payment>(this.PaymentModel, payments._id, {
+              invoiceURL: invoiceDetail.InvoiceLink,
             });
 
             if (invoiceDetail?.InvoiceLink) {
@@ -326,6 +343,7 @@ export class PaymentsService {
           }
         }
       }
+      // }
     } catch (err) {
       this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err.message}`, {
         err: err.message,

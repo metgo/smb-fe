@@ -89,7 +89,7 @@ export class VoucherController {
       description: ServerSuccess.VOUCHER.LISTED,
     },
     operation:
-      'Get voucher detail by anyone using valid code if it is eligible for product buying',
+      'Get voucher detail by anyone using valid code if it is eligible for product or event ticket',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -97,7 +97,7 @@ export class VoucherController {
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'This voucher cannot be used for this product',
+    description: 'This voucher cannot be used for this product or event',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -122,6 +122,52 @@ export class VoucherController {
     @Query() query: GetVoucherQuery,
   ) {
     const voucher = await this.voucherService.getOneByCodeAndProduct({
+      code,
+      productId: query.productId,
+      locale: query.locale,
+    });
+    return voucher;
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    operation: 'Get voucher detail by anyone using valid code for event tickets',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: `${ServerErrors.CAMPAIGN.NOT_FOUND} /  Ticket not found`,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'This voucher cannot be used for this event',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: ServerErrors.VOUCHER.NOT_FOUND,
+  })
+  @ApiResponse({
+    status: HttpStatus.PAYMENT_REQUIRED,
+    description: ServerErrors.VOUCHER.UNPAID,
+  })
+  @ApiResponse({
+    status: HttpStatus.GONE,
+    description: ServerErrors.VOUCHER.EXPIRED,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: ServerErrors.VOUCHER.NO_BALANCE,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('vouchers/:code/ticket')
+  async getVoucherDetailByCodeForTicket(
+    @Param('code') code: string,
+    @Query() query: GetVoucherQuery,
+  ) {
+    const voucher = await this.voucherService.getOneByCodeAndTicket({
       code,
       productId: query.productId,
       locale: query.locale,

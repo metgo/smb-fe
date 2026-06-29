@@ -51,19 +51,25 @@ export class QRCodeService {
         [QrCodeFile],
         {
           refId: id,
-          reference: ReferenceType.Order, // need to update if other
+          reference: ReferenceType.Order,
         } as UploadDTO,
       );
 
       const qrCodeUrl = uploadResult[0]?.image;
       if (!qrCodeUrl) {
-        throw new Error('QR code upload failed');
+        throw new Error(`QR code upload failed: no image URL returned. Upload result: ${JSON.stringify(uploadResult)}`);
       }
 
       return qrCodeUrl;
     } catch (error) {
-      console.error('Error generating and uploading QR Code:', error);
-      throw new Error('Error generating QR code');
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('Error generating and uploading QR Code:', {
+        id,
+        redirectUrl,
+        error: errorMsg,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw new Error(`Error generating QR code for ${id}: ${errorMsg}`);
     }
   }
 }

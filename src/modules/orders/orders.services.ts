@@ -66,6 +66,21 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+function isEventExpired(dayDescription: { date: Date }[]): boolean {
+  if (!dayDescription || dayDescription.length === 0) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastEventDate = dayDescription[dayDescription.length - 1].date;
+  const eventDateOnly = new Date(lastEventDate);
+  eventDateOnly.setHours(0, 0, 0, 0);
+
+  return eventDateOnly < today;
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -74,6 +89,8 @@ export class OrdersService {
     private readonly queryBus: QueryBus,
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
+    @InjectModel(OrderProduct.name)
+    private OrderProductModel: Model<OrderProduct>,
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
@@ -88,7 +105,7 @@ export class OrdersService {
     private readonly qrTokenService: QrTokenService,
     private readonly configService: ConfigService,
     private readonly campaignService: CampaignService,
-  ) {}
+  ) { }
 
   async getVendorOwnerForOrder(
     orderId: string,
@@ -119,6 +136,7 @@ export class OrdersService {
     const businessDetails = await this.businessService.findBusinessEmailByIds([
       businessId as any,
     ]);
+
     const business = businessDetails?.[0] as any;
     const ownerId = business?.userId?._id || business?.userId;
 
@@ -210,6 +228,22 @@ export class OrdersService {
           ? this.queryBus.execute(new GetTicketByIdsQuery(cartTickets))
           : [],
       ]);
+
+      // Check if any events are expired
+      if (ticketsFromDB?.length) {
+        const eventIds = ticketsFromDB.map((ticket: any) => ticket.eventId?.toString()).filter(Boolean);
+        if (eventIds?.length) {
+          const events = await this.queryBus.execute(new GetEventByIdsQuery(eventIds));
+          const expiredEvents = events?.filter((event: any) => isEventExpired(event.dayDescription));
+
+          if (expiredEvents?.length) {
+            const expiredEventNames = expiredEvents.map((e: any) => e.name).join(', ');
+            throw new BadRequestException(
+              `The following events have already ended and tickets cannot be purchased: ${expiredEventNames}`,
+            );
+          }
+        }
+      }
 
       const combinedItems = [...productsFromDB, ...ticketsFromDB];
 
@@ -405,6 +439,8 @@ export class OrdersService {
         deliveryFee: totalDeliveryFee,
         qrCodeUrl,
         campId: campDetails._id,
+        // For event ticket purchases, set vendorId to eventId
+        vendorId: ticketDetails?.[0]?.eventId ?? null,
       };
 
       if (totalAmount <= 0) {
@@ -507,7 +543,6 @@ export class OrdersService {
         savedParentOrder,
         cart,
         command?.externalApi,
-        body?.languagePreference,
       );
     }
 
@@ -579,7 +614,6 @@ export class OrdersService {
         order,
         orderProduct,
         command?.externalApi,
-        command?.languagePreference,
       );
     }
 
@@ -674,7 +708,7 @@ export class OrdersService {
 
       // Split into per-vendor orders when cart was created vendor-wise
       if (cart?.vendorProducts?.length) {
-        return await this.createVendorSplitOrders(updateOrder, cart, externalApi, languagePreference);
+        return await this.createVendorSplitOrders(updateOrder, cart, externalApi);
       }
 
       const findCartProducts = cart?.product?.filter(
@@ -753,7 +787,6 @@ export class OrdersService {
           updateOrder,
           orderProduct,
           externalApi,
-          languagePreference,
         );
       }
 
@@ -781,7 +814,7 @@ export class OrdersService {
           });
         }
 
-        const orderProduct = await Promise.all(
+        const orderProductArrays = await Promise.all(
           updateOrder.products
             .map(product => {
               const cartItem = findCartTickets.find(
@@ -795,30 +828,67 @@ export class OrdersService {
               return { product, cartItem, ticketInfo };
             })
             .filter(({ cartItem, ticketInfo }) => cartItem && ticketInfo)
-            .map(async ({ cartItem, ticketInfo }) => await this.orderProductService.create({
-              itemId: new mongoose.Types.ObjectId(cartItem.id),
-              quantity: cartItem.quantity,
-              email: cartItem.email,
-              countryCode: cartItem.countryCode,
-              phone: cartItem.phone,
-              firstName: cartItem.firstName,
-              lastName: cartItem.lastName,
-              deliveryFee: cartItem.deliveryFee,
-              deliveryMethod: cartItem.deliveryMethod,
-              deliveryArea: cartItem.deliveryArea,
-              deliveryPickupLocation: cartItem.deliveryPickupLocation,
-              houseNo: cartItem.houseNo,
-              apartment: cartItem.apartment,
-              city: cartItem.city,
-              street: cartItem.street,
-              isGift: cartItem.isGift,
-              additionalInfo: cartItem.additionalInfo,
-              amount: ticketInfo.price?.sellingPrice || 0,
-              loggedInUserId: updateOrder.userId,
-              orderId: updateOrder.id,
-              itemType: cartItem.itemType,
-            })),
+            .map(async ({ cartItem, ticketInfo }) => {
+              // For EVENT TICKETS ONLY: create one orderProduct per ticket (quantity: 1 each)
+              // This ensures each ticket has its own QR code and tracking
+              // Note: This logic is ONLY for tickets (itemType === TICKET), not for products
+              if (cartItem.itemType !== OrderItemType.TICKET) {
+                // Fallback to single record for non-tickets (safety check)
+                return [
+                  await this.orderProductService.create({
+                    itemId: new mongoose.Types.ObjectId(cartItem.id),
+                    quantity: cartItem.quantity,
+                    email: cartItem.email,
+                    countryCode: cartItem.countryCode,
+                    phone: cartItem.phone,
+                    firstName: cartItem.firstName,
+                    lastName: cartItem.lastName,
+                    deliveryFee: cartItem.deliveryFee,
+                    deliveryMethod: cartItem.deliveryMethod,
+                    deliveryArea: cartItem.deliveryArea,
+                    deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                    houseNo: cartItem.houseNo,
+                    apartment: cartItem.apartment,
+                    city: cartItem.city,
+                    street: cartItem.street,
+                    isGift: cartItem.isGift,
+                    additionalInfo: cartItem.additionalInfo,
+                    amount: ticketInfo.price?.sellingPrice || 0,
+                    loggedInUserId: updateOrder.userId,
+                    orderId: updateOrder.id,
+                    itemType: cartItem.itemType,
+                  }),
+                ];
+              }
+
+              const ticketQuantity = cartItem.quantity || 1;
+              const orderProductPromises = Array.from({ length: ticketQuantity }, () => this.orderProductService.create({
+                itemId: new mongoose.Types.ObjectId(cartItem.id),
+                quantity: 1, // Always 1 per TICKET
+                email: cartItem.email,
+                countryCode: cartItem.countryCode,
+                phone: cartItem.phone,
+                firstName: cartItem.firstName,
+                lastName: cartItem.lastName,
+                deliveryFee: cartItem.deliveryFee,
+                deliveryMethod: cartItem.deliveryMethod,
+                deliveryArea: cartItem.deliveryArea,
+                deliveryPickupLocation: cartItem.deliveryPickupLocation,
+                houseNo: cartItem.houseNo,
+                apartment: cartItem.apartment,
+                city: cartItem.city,
+                street: cartItem.street,
+                isGift: cartItem.isGift,
+                additionalInfo: cartItem.additionalInfo,
+                amount: ticketInfo.price?.sellingPrice || 0,
+                loggedInUserId: updateOrder.userId,
+                orderId: updateOrder.id,
+                itemType: cartItem.itemType,
+              }));
+              return Promise.all(orderProductPromises);
+            }),
         );
+        const orderProduct = orderProductArrays.flat();
 
         await this.sendEmailPostTicketPayment(
           getTicketsInformation,
@@ -848,7 +918,6 @@ export class OrdersService {
     parentOrder: Order,
     cart: Cart,
     externalApi: any,
-    languagePreference?: Locale,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
@@ -976,7 +1045,6 @@ export class OrdersService {
         vendorOrders,
         orderProductsPerVendor.flat(),
         externalApi,
-        languagePreference,
       );
     }
 
@@ -996,7 +1064,6 @@ export class OrdersService {
     parentOrder: Order,
     cart: Cart,
     externalApi: any,
-    languagePreference?: Locale,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
@@ -1018,6 +1085,7 @@ export class OrdersService {
           deliveryFee: vendor.deliveryFee || 0,
           externalApiId: parentOrder.externalApiId,
           campId: parentOrder.campId,
+          // qrCodeUrl: parentOrder.qrCodeUrl,
           qrCodeUrl: '', // Will be set after order is saved
           paymentDate: new Date(),
           vendorId: vendor._id,
@@ -1126,7 +1194,6 @@ export class OrdersService {
         vendorOrders,
         orderProductsPerVendor.flat(),
         externalApi,
-        languagePreference,
       );
     }
 
@@ -1148,10 +1215,7 @@ export class OrdersService {
     vendorOrders: Order[],
     allOrderProducts: OrderProduct[],
     externalApi: any,
-    languagePreference?: Locale,
   ) {
-    console.log(languagePreference);
-
     const allProductIds = cart.vendorProducts.flatMap(vendor => vendor.products.map(p => p._id.toString()));
 
     const [productInfo, businessDetails] = await Promise.all([
@@ -1297,7 +1361,7 @@ export class OrdersService {
         vendorGroup.totalQuantity += quantity;
         vendorGroup.perUnitDeliveryFee = vendorGroup.totalQuantity > 0
           ? Math.round((vendorGroup.vendorDeliveryFee / vendorGroup.totalQuantity) * 100)
-            / 100
+          / 100
           : 0;
       }
 
@@ -1415,8 +1479,8 @@ export class OrdersService {
                 ]
                   .filter(Boolean)
                   .join(', ')
-                  || orderItem.deliveryPickupLocation
-                  || ''
+                || orderItem.deliveryPickupLocation
+                || ''
                 : `מיקום העסק שלך - ${business?.address?.location}`;
 
             vendorTotalAmount += totalProductPrice + (isPricePerProduct ? deliveryFee : 0);
@@ -1440,8 +1504,7 @@ export class OrdersService {
                           <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
                           <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
-  orderItem.deliveryMethod === DeliveryMethod.DELIVER
+                          <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${orderItem.deliveryMethod === DeliveryMethod.DELIVER
     ? 'לספק ללקוח'
     : 'איסוף עצמי על ידי הלקוח'
 }</span>
@@ -1496,6 +1559,7 @@ export class OrdersService {
             BUSINESSEMAIL: business?.busiEmail || '',
             TOTALAMOUNT: vendorTotalAmount || 0,
             BUYERNAME: parentOrder?.firstName || '',
+            // PRODUCTS_HTML: productsHtml,
             PRODUCTS_HTML: productsHtml + orderShippingFeeHtml,
             BUYER_PHONE_NUMBER: parentOrder?.phone || '',
             BUYER_ORDER_EMAIL: parentOrder?.email || '',
@@ -1696,18 +1760,54 @@ export class OrdersService {
     externalApi: any,
     languagePreference?: Locale,
   ) {
-    console.log(languagePreference);
+    this.logger.info('[EMAIL]: STARTING TICKET PAYMENT EMAIL FLOW', {
+      ticketCount: productInfo?.length,
+      orderId: order?._id,
+      languagePreference,
+    });
 
     const eventIds = productInfo.map(pro => pro.eventId);
+    const uniqueEventIds = [
+      ...new Set(eventIds.filter(Boolean).map(eventId => String(eventId))),
+    ];
+    const isSingleEventOrder = uniqueEventIds.length === 1;
+    this.logger.info('[EMAIL]: EVENT IDS TO FETCH', {
+      eventIds,
+    });
 
     const eventDetails = await this.queryBus.execute(
       new GetEventByIdsQuery(eventIds),
     );
+    this.logger.info('[EMAIL]: EVENT DETAILS FETCHED', {
+      eventDetailsCount: eventDetails?.length,
+      firstEventUserId: eventDetails?.[0]?.userId ? JSON.stringify(eventDetails?.[0]?.userId) : 'NOT_POPULATED',
+    });
 
     const { bucketUrl, emailFields } = getCommonEmailFields(
       externalApi.identifierId,
       externalApi,
     );
+
+    // Format event date and time for display
+    const eventDate = eventDetails[0]?.dayDescription?.[0]?.date
+      ? new Date(eventDetails[0].dayDescription[0].date).toLocaleDateString('he-IL')
+      : '';
+    const eventStartTime = eventDetails[0]?.dayDescription?.[0]?.startTime || '';
+    const eventEndTime = eventDetails[0]?.dayDescription?.[0]?.endTime || '';
+    const cleanString = (str: string) => {
+      if (!str) return '';
+      // Remove everything after special characters
+      const cleaned = str.split(/[<>"&]/)[0];
+      return cleaned.trim();
+    };
+    const eventLocation = cleanString(eventDetails[0]?.address?.location || '');
+    const eventCity = cleanString(eventDetails[0]?.address?.city || '');
+    const eventLocationForBusinessAddress = cleanString(eventDetails[0]?.address?.location || '');
+
+    // Only show time when the whole order belongs to one event.
+    const EVENT_TIME = (isSingleEventOrder && eventStartTime && eventEndTime)
+      ? `${eventStartTime} - ${eventEndTime}`
+      : '';
 
     const orderEmailFields = {
       ...emailFields,
@@ -1716,7 +1816,15 @@ export class OrdersService {
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
       WEBSITE_NAME: externalApi?.name,
       BUSINESSNAME: eventDetails[0].name || '',
+      EVENT_DATE: eventDate,
+      EVENT_START_TIME: eventStartTime || '',
+      EVENT_END_TIME: eventEndTime || '',
+      EVENT_TIME,
+      EVENT_LOCATION: eventLocation,
+      EVENT_CITY: eventCity,
     };
+
+    const { FE } = this.configService.baseUrl;
 
     type EmailOrderGroup = {
       buyerName: string;
@@ -1726,75 +1834,212 @@ export class OrdersService {
         name: string;
         price: number;
         deliveryFee: number;
+        qrCodeUrl?: string;
       }[];
       totalAmount: number;
     };
 
     const emailToProductsMap: { [email: string]: EmailOrderGroup } = {};
 
-    orderProduct.forEach(orderItem => {
-      const { email } = orderItem;
-      const product = productInfo.find(
-        p => p._id.toString() === orderItem.itemId.toString(),
-      );
+    // Process orderProducts sequentially to avoid QR generation rate limiting
+    // eslint-disable-next-line no-await-in-loop
+    for (let idx = 0; idx < orderProduct.length; idx++) {
+      const orderItem = orderProduct[idx];
+      // eslint-disable-next-line no-await-in-loop
+      await (async () => {
+        const { email } = orderItem;
+        const product = productInfo.find(
+          p => p._id.toString() === orderItem.itemId.toString(),
+        );
 
-      if (!product) return;
+        if (!product) return;
 
-      if (!emailToProductsMap[email]) {
-        emailToProductsMap[email] = {
-          buyerName: orderItem.firstName,
-          products: [],
-          totalAmount: 0,
-        };
-      }
+        if (!emailToProductsMap[email]) {
+          emailToProductsMap[email] = {
+            buyerName: orderItem.firstName,
+            products: [],
+            totalAmount: 0,
+          };
+        }
 
-      const price = orderItem?.amount || product?.price?.sellingPrice;
-      const quantity = orderItem?.quantity || 1;
-      const deliveryFee = orderItem?.deliveryFee || 0;
+        const price = orderItem?.amount || product?.price?.sellingPrice;
+        const quantity = orderItem?.quantity || 1;
+        const deliveryFee = orderItem?.deliveryFee || 0;
 
-      emailToProductsMap[email].products.push({
-        quantity,
-        image: product?.images[0]?.image,
-        name: product?.name,
-        price,
-        deliveryFee,
-      });
+        // Find the correct event details for this specific ticket
+        const eventDetailsForThisTicket = eventDetails.find(
+          e => e._id.toString() === product.eventId.toString(),
+        );
 
-      emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
+        if (!eventDetailsForThisTicket) {
+          this.logger.warn('[EMAIL]: EVENT DETAILS NOT FOUND FOR TICKET', {
+            productId: product._id,
+            eventId: product.eventId,
+          });
+          return;
+        }
+
+        // Use event image for tickets (ticket image may be empty)
+        const ticketImageUrl = product?.images?.[0]?.image;
+        const eventImageUrl = eventDetailsForThisTicket?.images?.[0]?.image;
+        const finalImageUrl = ticketImageUrl || eventImageUrl || '';
+
+        this.logger.info('[EMAIL]: PRODUCT IMAGE DEBUG', {
+          productId: product._id,
+          productName: product?.name,
+          ticketImageUrl,
+          eventImageUrl,
+          finalImageUrl,
+          eventId: eventDetailsForThisTicket._id,
+        });
+
+        // Generate unique QR code for each ticket (if quantity > 1, create multiple QR codes)
+        const qrCodeUrls: string[] = [];
+
+        try {
+          this.logger.info('[EMAIL]: QR GENERATION START', {
+            eventId: eventDetailsForThisTicket?._id,
+            quantity,
+          });
+
+          // Generate QR codes for each ticket sequentially - even if event creator is missing
+          const successfulCodes = [];
+          // eslint-disable-next-line no-restricted-syntax
+          for (let qrIdx = 0; qrIdx < quantity; qrIdx++) {
+            try {
+              const ticketNum = qrIdx + 1;
+              this.logger.info('[EMAIL]: GENERATING QR CODE FOR TICKET', { ticketNum });
+
+              // Generate QR code URL pointing to verify-ticket page
+              const eventDetailsUrl = `${FE}verify-ticket/${eventDetailsForThisTicket?._id}/${orderItem._id}`;
+              this.logger.info('[EMAIL]: QR CODE URL GENERATED', { ticketNum, eventDetailsUrl });
+
+              // Add small delay between QR generations to avoid rate limiting
+              if (qrIdx > 0) {
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+
+              this.logger.info('[EMAIL]: GENERATING QR CODE', { ticketNum, urlLength: eventDetailsUrl?.length });
+
+              // eslint-disable-next-line no-await-in-loop
+              const qrCodeUrl = await this.qrCodeService.generateQRCode(
+                eventDetailsUrl,
+                `event-${eventDetailsForThisTicket?._id}-${orderItem._id}-ticket${ticketNum}`,
+              );
+              this.logger.info('[EMAIL]: QR CODE GENERATED SUCCESSFULLY', { ticketNum, qrCodeUrl });
+              successfulCodes.push(qrCodeUrl);
+            } catch (ticketQrError) {
+              this.logger.error('[EMAIL]: QR CODE GENERATION FAILED FOR TICKET', {
+                ticketNum: qrIdx + 1,
+                reason: ticketQrError instanceof Error ? ticketQrError.message : String(ticketQrError),
+              });
+            }
+          }
+
+          this.logger.info('[EMAIL]: ALL QR CODES GENERATED', {
+            quantity,
+            generatedCount: successfulCodes.length,
+            codes: successfulCodes,
+          });
+          qrCodeUrls.push(...successfulCodes);
+        } catch (qrError) {
+          this.logger.error('[EMAIL]: FAILED TO GENERATE TICKET QR CODE', {
+            eventId: eventDetailsForThisTicket?._id,
+            orderProductId: orderItem._id,
+            quantity,
+            error: qrError instanceof Error ? qrError.message : String(qrError),
+            stack: qrError instanceof Error ? qrError.stack : undefined,
+          });
+        }
+
+        // Add one product entry per ticket with its corresponding QR code
+        // Add even if QR generation failed (QR code will be empty string)
+        for (let i = 0; i < quantity; i++) {
+          const qrUrl = qrCodeUrls[i] || '';
+          emailToProductsMap[email].products.push({
+            quantity: 1,
+            image: finalImageUrl,
+            name: product?.name,
+            price,
+            deliveryFee: 0, // Delivery fee counted once in total, not per ticket
+            qrCodeUrl: qrUrl,
+          });
+
+          this.logger.info('[EMAIL]: TICKET PRODUCT ADDED', {
+            ticketNum: i + 1,
+            qrUrl,
+            hasQrUrl: !!qrUrl,
+          });
+        }
+
+        this.logger.info('[EMAIL]: PRODUCTS ADDED TO EMAIL MAP', {
+          email,
+          productsCount: emailToProductsMap[email].products.length,
+          qrCodesGenerated: qrCodeUrls.length,
+          quantityOrdered: quantity,
+          allQrUrls: qrCodeUrls,
+        });
+
+        // Always save QR codes to orderProduct record, even if empty
+        // This ensures the orderProduct is marked as processed
+        try {
+          const qrUrlString = qrCodeUrls.length > 0 ? qrCodeUrls.join('|') : null;
+          await updateById(
+            this.OrderProductModel,
+            orderItem._id.toString(),
+            { qrCodeUrl: qrUrlString },
+          );
+          this.logger.info('[EMAIL]: QR CODE SAVED TO ORDER PRODUCT', {
+            orderProductId: orderItem._id,
+            qrCodeUrl: qrUrlString,
+            qrCount: qrCodeUrls.length,
+          });
+        } catch (error) {
+          this.logger.error('[EMAIL]: FAILED TO SAVE QR CODE TO ORDER PRODUCT', {
+            orderProductId: orderItem._id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+
+        emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
+      })();
+    }
+
+    this.logger.info('[EMAIL]: SENDING CUSTOMER EMAILS', {
+      emailCount: Object.keys(emailToProductsMap).length,
+      emails: Object.keys(emailToProductsMap),
     });
 
     await Promise.all(
       Object.entries(emailToProductsMap).map(async ([email, group]) => {
+        this.logger.info('[EMAIL]: SENDING TO CUSTOMER', { email });
         const productsHtml = group.products
           .map(
             product => `
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
-                <td style="padding: 10px; background: ${
-  externalApi?.secondaryColor
-}; direction: rtl; border-radius: 20px;">
+                <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
-                      <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product?.image || ''}" alt="${
-  product?.name
-}"
-                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                      <td style="padding: 0; vertical-align: top; text-align: center; width: 120px; padding-left: 10px;">
+                        <img src="${product?.image || ''}" alt="${product?.name
+}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block;">
                       </td>
-                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                        <span style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
+                      <td style="padding: 0; vertical-align: top; padding-left: 10px;">
+                        <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 5px;">${product?.name
 }</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
-  product?.quantity
+                        <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity
 }</span>
-<span style="display: block; font-size: 14px; color: #666666;">
-דמי משלוח: ₪${product?.deliveryFee}</span>
+                        <span style="display: block; font-size: 16px; color: #333333;">₪${product?.price
+}</span>
                       </td>
-                      <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
-  product?.price
-}</span>
+                      <td style="padding: 0; vertical-align: top; text-align: center; width: 110px; padding-left: 10px;">
+                        ${product?.qrCodeUrl ? `
+                          ${product?.qrCodeUrl.split('|').map((qrUrl, idx) => `
+                            <img src="${qrUrl}" alt="QR Code ${idx + 1}" style="width: 100px; height: 100px; border: 3px solid ${externalApi?.primaryColor}; margin-bottom: 10px;">
+                          `).join('')}
+                        ` : ''}
                       </td>
                     </tr>
                   </table>
@@ -1805,107 +2050,119 @@ export class OrdersService {
           )
           .join('');
 
-        await this.mailchimpService.sendTransactionalEmail({
-          to: email,
-          templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
-          from_email: externalApi?.companyDetails?.email,
-          from_name: externalApi?.name,
-          mergeVars: {
-            ...orderEmailFields,
-            EVENT_NAME: eventDetails[0].name || '',
-            PRODUCTS_HTML: productsHtml,
-            BUYERNAME: group.buyerName || '',
-            TOTALAMOUNT: group.totalAmount || 0,
-            CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
-            BUSINESSADDRESS: eventDetails[0]?.address?.location || '',
-            QRCODEURL: order?.qrCodeUrl || '',
-          },
-        });
+        try {
+          await this.mailchimpService.sendTransactionalEmail({
+            to: email,
+            templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
+            from_email: externalApi?.companyDetails?.email,
+            from_name: externalApi?.name,
+            mergeVars: {
+              ...orderEmailFields,
+              EVENT_NAME: eventDetails[0].name || '',
+              PRODUCTS_HTML: productsHtml,
+              BUYERNAME: group.buyerName || '',
+              TOTALAMOUNT: group.totalAmount || 0,
+              CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+              BUSINESSADDRESS: eventLocationForBusinessAddress || '',
+            },
+          });
+          this.logger.info('[EMAIL]: CUSTOMER EMAIL SENT', { email });
+        } catch (err) {
+          this.logger.error('[EMAIL]: FAILED TO SEND CUSTOMER EMAIL', {
+            email,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
       }),
     );
 
-    // SEND TO BUSINESS OWNER
-    //     await Promise.all(
-    //       businessDetails.map(async business => {
-    //         const relevantProducts = productInfo.filter(
-    //           product => product.businessId.toString() === business._id.toString(),
-    //         );
+    const eventCreatorUserData = eventDetails[0]?.userId;
+    this.logger.info('[EMAIL]: EVENT CREATOR DEBUG', {
+      eventCreatorUserId: eventDetails[0]?.userId?._id,
+      eventCreatorUserIdType: typeof eventDetails[0]?.userId?._id,
+      eventDetailsUserId: JSON.stringify(eventDetails[0]?.userId),
+    });
+    if (eventCreatorUserData) {
+      const eventCreatorEmailForCreator = eventDetails[0]?.userId?.email;
+      this.logger.info('[EMAIL]: EVENT CREATOR EMAIL DEBUG', {
+        eventCreatorEmailForCreator,
+        eventCreatorUser: JSON.stringify(eventDetails[0]?.userId),
+      });
+      if (eventCreatorEmailForCreator) {
+        let eventCreatorTotalAmount = 0;
+        const productsHtmlForEventCreator = orderProduct
+          .map(orderItem => {
+            const product = productInfo.find(
+              p => p._id.toString() === orderItem.itemId.toString(),
+            );
 
-    //         let businessTotalAmount = 0;
+            if (!product) return '';
 
-    //         const productsHtmlForEchBusiness = relevantProducts
-    //           .map(product => {
-    //             const matchingProduct = orderProduct.find(
-    //               p => p.itemId.toString() === product._id.toString(),
-    //             );
+            const quantity = orderItem.quantity || 1;
+            const price = orderItem.amount || product.price?.sellingPrice || 0;
+            const deliveryFee = orderItem.deliveryFee || 0;
 
-    //             if (!matchingProduct) return '';
+            const totalPriceForThisProduct = quantity * price + deliveryFee;
+            eventCreatorTotalAmount += totalPriceForThisProduct;
 
-    //             const quantity = matchingProduct.quantity || 1;
-    //             const price
-    //               = matchingProduct.amount || product.price?.sellingPrice || 0;
-    //             const deliveryFee = matchingProduct.deliveryFee || 0;
-    //             const address = matchingProduct?.deliveryPickupLocation || '';
+            return `
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0; vertical-align: middle;">
+                      <img src="${product?.images?.[0]?.image || ''}" alt="${product?.name}"
+                        style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                    </td>
+                    <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                      <span style="display: block; font-size: 16px; color: #333333;">${product?.name}</span>
+                      <span style="display: block; font-size: 14px; color: #666666;">כמות: ${quantity}</span>
+                    </td>
+                    <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                      <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+            `;
+          })
+          .join('');
 
-    //             const totalPriceForThisProduct = quantity * price + deliveryFee;
-
-    //             businessTotalAmount += totalPriceForThisProduct;
-
-    //             return `
-    //             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-    //             <tr>
-    //               <td style="padding: 10px; background: ${
-    //   externalApi?.secondaryColor
-    // }; direction: rtl; border-radius: 20px;">
-    //                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
-    //                   <tr>
-    //                     <td style="padding: 0; vertical-align: middle;">
-    //                       <img src="${product.images?.[0]?.image || ''}" alt="${
-    //   product?.name
-    // }"
-    //                         style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-    //                     </td>
-    //                     <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-    //                       <span
-    //                         style="display: block; font-size: 16px; color: #333333;">${
-    //   product?.name
-    // }</span>
-    //                       <span style="display: block; font-size: 14px; color: #666666;">כמות:
-    //                           ${quantity}</span>
-    //                       <span style="display: block; font-size: 14px; color: #666666;">
-    // דמי משלוח: ₪${deliveryFee}</span>
-    // <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
-    //   address || 'לא ישים'
-    // }</span>
-    //                     </td>
-    //                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-    //                       <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
-    //                     </td>
-    //                   </tr>
-    //                 </table>
-    //               </td>
-    //             </tr>
-    //           </table>
-    //             `;
-    //           })
-    //           .join('');
-
-    //         await this.mailchimpService.sendTransactionalEmail({
-    //           to: business?.busiEmail,
-    //           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
-    //           from_email: externalApi?.companyDetails?.email,
-    //           from_name: externalApi?.name,
-    //           mergeVars: {
-    //             ...orderEmailFields,
-    //             TOTALAMOUNT: businessTotalAmount,
-    //             BUYERNAME: order?.firstName,
-    //             PRODUCTS_HTML: productsHtmlForEchBusiness,
-    //             BUYER_PHONE_NUMBER: order.phone,
-    //             BUYER_ORDER_EMAIL: order.email,
-    //           },
-    //         });
-    //       }),
-    //     );
+        try {
+          const creatorMergeVars = {
+            ...orderEmailFields,
+            EVENT_NAME: eventDetails[0]?.name || '',
+            TOTALAMOUNT: eventCreatorTotalAmount,
+            BUYERNAME: order?.firstName,
+            PRODUCTS_HTML: productsHtmlForEventCreator,
+            BUYER_PHONE_NUMBER: order.phone,
+            BUYER_ORDER_EMAIL: order.email,
+            BUSINESSADDRESS: eventLocationForBusinessAddress || '',
+          };
+          this.logger.info('[EMAIL]: CREATOR EMAIL MERGE VARS', {
+            eventCreatorEmail: eventDetails[0]?.userId?.email,
+            mergeVars: JSON.stringify(creatorMergeVars),
+          });
+          await this.mailchimpService.sendTransactionalEmail({
+            to: eventCreatorEmailForCreator,
+            templatedId: DynamicEmailTemplate.TicketConfirmationForEventCreator,
+            from_email: externalApi?.companyDetails?.email,
+            from_name: externalApi?.name,
+            subject: `הודעת מכירת כרטיס - ${eventDetails[0]?.name}`,
+            mergeVars: creatorMergeVars,
+          });
+          this.logger.info('[EMAIL]: EVENT CREATOR EMAIL SENT', { eventCreatorEmailForCreator });
+        } catch (err) {
+          this.logger.error('[EMAIL]: FAILED TO SEND EVENT CREATOR EMAIL', {
+            eventCreatorEmailForCreator,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    }
   }
 
   async sendEmailPostOrderPayment(
@@ -1913,10 +2170,7 @@ export class OrdersService {
     order: Order,
     orderProduct: OrderProduct[],
     externalApi: any,
-    languagePreference?: Locale,
   ) {
-    console.log(languagePreference);
-
     const businessIds = productInfo.map(pro => pro.businessId);
 
     const businessDetails = await this.businessService.findBusinessEmailByIds(
@@ -2004,32 +2258,26 @@ export class OrdersService {
               return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="padding: 10px; background: ${
-  externalApi?.secondaryColor
+                  <td style="padding: 10px; background: ${externalApi?.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
                         <td style="padding: 0; vertical-align: middle;">
-                          <img src="${product?.image || ''}" alt="${
-  product?.name
+                          <img src="${product?.image || ''}" alt="${product?.name
 }"
                             style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                         </td>
                         <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                          <span style="display: block; font-size: 18px; color: #333333;">${
-  product?.name
+                          <span style="display: block; font-size: 18px; color: #333333;">${product?.name
 }</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
-  product?.quantity
+                          <span style="display: block; font-size: 14px; color: #666666;">כמות: ${product?.quantity
 }</span>
                           <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${product.quantity} × ₪${product.price} = ₪${totalPrice}</span>
   <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${product?.deliveryFee}</span>
-  <span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${
-  product?.businessName
+  <span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${product?.businessName
 }</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">דוא"ל עסקי: ${
-  product?.businessEmail
+                          <span style="display: block; font-size: 14px; color: #666666;">דוא"ל עסקי: ${product?.businessEmail
 }</span>
   <span style="display: block; font-size: 14px; color: #666666;">
  טלפון עסקי: ${product?.businessPhone}</span>
@@ -2101,10 +2349,11 @@ export class OrdersService {
                 ]
                   .filter(Boolean)
                   .join(', ')
-                  || matchingProduct.deliveryPickupLocation
-                  || ''
+                || matchingProduct.deliveryPickupLocation
+                || ''
                 : `מיקום העסק שלך - ${business?.address?.location}`;
 
+            // const totalPriceForThisProduct = quantity * price + deliveryFee;
             const totalPriceForThisProduct = totalProductPrice + deliveryFee;
 
             businessTotalAmount += totalPriceForThisProduct;
@@ -2112,39 +2361,34 @@ export class OrdersService {
             return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
-                <td style="padding: 10px; background: ${
-  externalApi?.secondaryColor
+                <td style="padding: 10px; background: ${externalApi?.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                       <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product.images?.[0]?.image || ''}" alt="${
-  product?.name
+                        <img src="${product.images?.[0]?.image || ''}" alt="${product?.name
 }"
                           style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                       </td>
                       <td style="padding: 0 10px; vertical-align: middle;" width="100%">
                         <span
-                          style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
+                          style="display: block; font-size: 16px; color: #333333;">${product?.name
 }</span>
                         <span style="display: block; font-size: 14px; color: #666666;">כמות:
                             ${quantity}</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${
-  matchingProduct.deliveryMethod
-                          === DeliveryMethod.DELIVER
+                            <span style="display: block; font-size: 14px; color: #666666;">סה״כ מחיר: ${quantity} × ₪${price} = ₪${totalProductPrice}</span>
+                        <span style="display: block; font-size: 14px; color: #666666;">שיטת משלוח: ${matchingProduct.deliveryMethod
+                === DeliveryMethod.DELIVER
     ? 'לספק ללקוח'
     : 'איסוף עצמי על ידי הלקוח'
 }</span>
 <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${deliveryFee}</span>
-  <span style="display: block; font-size: 14px; color: #666666;">כתובת: ${
-  address || 'לא ישים'
+<span style="display: block; font-size: 14px; color: #666666;">כתובת: ${address || 'לא ישים'
 }</span>
                       </td>
                       <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalProductPrice}</span>
+                           <span dir="rtl" style="font-size: 16px; color: #333333;">₪${totalProductPrice}</span>
                       </td>
                     </tr>
                   </table>

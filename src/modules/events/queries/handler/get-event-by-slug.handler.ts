@@ -62,6 +62,11 @@ implements IQueryHandler<GetEventBySlugQuery> {
 
       const orConditions = [];
 
+      // Check if event is in campaign's whitelist
+      if (campDetails?.whitelist?.event?.length) {
+        orConditions.push({ eventId: { $in: campDetails.whitelist.event } });
+      }
+
       if (campDetails?.dmoIds?.length) {
         orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
       }

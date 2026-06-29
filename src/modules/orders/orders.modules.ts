@@ -9,6 +9,7 @@ import { OrdersController } from 'src/modules/orders/orders.controller';
 import { OrdersPublicController } from 'src/modules/orders/controllers/orders-public.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import { QrVerificationToken, QrVerificationTokenSchema } from 'src/modules/orders/schema/qr-verification-token.schema';
+import { OrderProduct, OrderProductSchema } from 'src/modules/order-product/schema/order-product.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ExpireOrderService } from 'src/modules/orders/expire-orders.services';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
@@ -31,6 +32,7 @@ import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-
     MongooseModule.forFeature([
       { name: Order.name, schema: OrderSchema },
       { name: QrVerificationToken.name, schema: QrVerificationTokenSchema },
+      { name: OrderProduct.name, schema: OrderProductSchema },
     ]),
     forwardRef(() => AuthorityModule),
     BusinessModule,

@@ -25,13 +25,35 @@ export class GcpBucketService {
     }
 
     const mediaName = `${nanoid(16)}${extname(file.originalname)}`;
-    const mediaNamespace = `${new Date().getUTCFullYear()}/${new Date().getMonth()}`;
+    const year = new Date().getUTCFullYear();
+    const month = String(new Date().getUTCMonth() + 1).padStart(2, '0');
+    const mediaNamespace = `${year}/${month}`;
     const relativePath = join(mediaNamespace, mediaName);
 
-    await this.storage.upload(relativePath, file.buffer);
+    try {
+      await this.storage.upload(relativePath, file.buffer);
+      const mediaUrl = this.storage.getUrl(relativePath);
 
-    const mediaUrl = this.storage.getUrl(relativePath);
-    return mediaUrl;
+      if (!mediaUrl) {
+        throw new Error('GCP storage returned empty URL');
+      }
+
+      console.log('[GCP]: Upload successful', {
+        originalName: file.originalname,
+        relativePath,
+        mediaUrl,
+      });
+      return mediaUrl;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('[GCP]: Upload failed', {
+        originalName: file.originalname,
+        relativePath,
+        fileSize: file.size,
+        error: errorMsg,
+      });
+      throw new UnprocessableEntityException(`GCP upload failed: ${errorMsg}`);
+    }
   }
 
   async update(existingUrl: string, file: Express.Multer.File) {

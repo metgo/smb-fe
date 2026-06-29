@@ -32,6 +32,7 @@ export const DynamicEmailTemplate = {
   OrderConfirmationForClientMultiVendor: 'order-confirmation-client-with-multi-vendor-qr',
   OrderConfirmationForClientMiniSite: 'create-minisite-orders-for-client',
   TicketConfirmationForCustomers: 'ticket-confirmation-for-customers',
+  TicketConfirmationForEventCreator: 'ticket-confirmation-for-event-creator',
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
   InquiryFundayToUser: 'inquiry-funday',
   InquiryFundayToOwner: 'inquiry-funday-for-client',

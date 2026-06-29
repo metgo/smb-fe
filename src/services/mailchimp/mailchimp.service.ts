@@ -81,6 +81,10 @@ export class MailChimpService {
         ],
       };
 
+      if (body.subject) {
+        message.subject = body.subject;
+      }
+
       const response = await mailchimpTransaction.messages.sendTemplate({
         template_name: body.templatedId,
         template_content: [],

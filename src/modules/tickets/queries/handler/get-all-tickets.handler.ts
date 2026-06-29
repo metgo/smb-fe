@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { Ticket } from '../../schema/tickets.schema';
@@ -27,7 +27,7 @@ export class GetAllTicketsHandler implements IQueryHandler<GetAllTicketsQuery> {
       const query: any = {
         $and: [
           { isDeleted: { $ne: true } },
-          ...(eventId ? [{ eventId }] : []),
+          ...(eventId ? [{ eventId: new mongoose.Types.ObjectId(eventId) }] : []),
           ...(status ? [{ status }] : []),
           ...(type ? [{ type }] : []),
 

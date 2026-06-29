@@ -19,7 +19,9 @@ export class GetEventsByIdHandler implements IQueryHandler<GetEventByIdsQuery> {
         eventId: { $in: queries.ids },
         isActive: true,
         isDeleted: { $ne: true },
-      }).lean();
+      })
+        .populate('userId', 'email firstName lastName')
+        .lean();
 
       const mappedEvents = await Promise.all(
         eventDetails.map(async (event: any) => {

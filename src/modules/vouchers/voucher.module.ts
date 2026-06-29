@@ -21,11 +21,17 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
 import { CartModule } from 'src/modules/cart/cart.modules';
 import { GetByCodeHandler } from './queries/handler/get-by-code.handler';
 import { SmsModule } from 'src/services/sms/sms.module';
+import { TicketSchema } from 'src/modules/tickets/schema/tickets.schema';
+import { EventSchema } from 'src/modules/events/schema/events.schema';
 
 @Module({
   imports: [
     CqrsModule,
-    MongooseModule.forFeature([{ name: 'Voucher', schema: VoucherSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Voucher', schema: VoucherSchema },
+      { name: 'Ticket', schema: TicketSchema },
+      { name: 'Event', schema: EventSchema },
+    ]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => CampaignModule),
     forwardRef(() => DMOModule),

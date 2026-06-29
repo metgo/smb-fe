@@ -102,6 +102,9 @@ export class OrderProduct extends AuditableSchema {
   @Prop({ type: Number, default: 0 })
     deliveryFee: number;
 
+  @Prop({ default: null })
+    qrCodeUrl: string;
+
   @Prop({
     type: {
       by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
