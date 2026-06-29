@@ -644,41 +644,43 @@ const TopicCategoryCard = ({
                 <span className="bg-gray-300 rounded-full w-6 h-6 text-center">
                   {group.contents.length}
                 </span>
-                <div className="relative group/ai">
-                  <button
-                    type="button"
-                    title="Auto Fill with AI"
-                    aria-label="Auto Fill with AI"
-                    onClick={handleAiAutoFill}
-                    disabled={isAiLoading}
-                    className={clsx(
-                      "h-7 w-7 rounded-md border flex items-center justify-center transition-colors",
-                      isAiLoading
-                        ? isDark
-                          ? "border-gray-700 text-gray-500 cursor-wait"
-                          : "border-gray-200 text-gray-400 cursor-wait"
-                        : isDark
-                          ? "border-purple-600/70 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400"
-                          : "border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-500",
-                    )}
-                  >
-                    {isAiLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                  <div
-                    className={clsx(
-                      "absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover/ai:opacity-100 pointer-events-none transition-opacity z-20",
-                      isDark
-                        ? "bg-gray-700 text-gray-200"
-                        : "bg-gray-800 text-white",
-                    )}
-                  >
-                    Auto Fill with AI
+                {externalApiId && (
+                  <div className="relative group/ai">
+                    <button
+                      type="button"
+                      title="Auto Fill with AI"
+                      aria-label="Auto Fill with AI"
+                      onClick={handleAiAutoFill}
+                      disabled={isAiLoading}
+                      className={clsx(
+                        "h-7 w-7 rounded-md border flex items-center justify-center transition-colors",
+                        isAiLoading
+                          ? isDark
+                            ? "border-gray-700 text-gray-500 cursor-wait"
+                            : "border-gray-200 text-gray-400 cursor-wait"
+                          : isDark
+                            ? "border-purple-600/70 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400"
+                            : "border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-500",
+                      )}
+                    >
+                      {isAiLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <div
+                      className={clsx(
+                        "absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover/ai:opacity-100 pointer-events-none transition-opacity z-20",
+                        isDark
+                          ? "bg-gray-700 text-gray-200"
+                          : "bg-gray-800 text-white",
+                      )}
+                    >
+                      Auto Fill with AI
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </>
           )}

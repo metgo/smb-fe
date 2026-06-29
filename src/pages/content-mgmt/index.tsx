@@ -30,7 +30,7 @@ import {
 import { Spinner } from "@/components/shared";
 import { PublishButton } from "@/components/btns";
 import DraftButton from "@/components/btns/DraftButton";
-import { ConfirmDialog } from "@/components/shared";
+// import { ConfirmDialog } from "@/components/shared";
 
 import {
   usePanelLayout,
@@ -500,7 +500,7 @@ export default function ContentMgmtPage() {
           results={sendResults}
         />
 
-        {template.blocker.state === "blocked" && (
+        {/* {template.blocker.state === "blocked" && (
           <ConfirmDialog
             open
             title="No Active View"
@@ -511,7 +511,7 @@ export default function ContentMgmtPage() {
             onConfirm={() => template.blocker.proceed?.()}
             onCancel={() => template.blocker.reset?.()}
           />
-        )}
+        )} */}
       </div>
     </DndProvider>
   );

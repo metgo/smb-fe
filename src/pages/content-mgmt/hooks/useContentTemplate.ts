@@ -156,13 +156,15 @@ export function useContentTemplate({
   const views: IView[] = Array.isArray(viewsData) ? viewsData : [];
   const hasActiveView = views.some((v) => v.isActive);
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      !!externalApiId &&
-      views.length > 0 &&
-      !hasActiveView &&
-      currentLocation.pathname !== nextLocation.pathname,
-  );
+  // const blocker = useBlocker(
+  //   ({ currentLocation, nextLocation }) =>
+  //     !!externalApiId &&
+  //     views.length > 0 &&
+  //     !hasActiveView &&
+  //     currentLocation.pathname !== nextLocation.pathname,
+  // );
+
+  const blocker = useBlocker(() => false);
 
   // ── Reset on website change ─────────────────────────────────────────────────
   useEffect(() => {
