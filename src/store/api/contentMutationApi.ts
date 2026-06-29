@@ -91,7 +91,11 @@ export const contentMutationApi = createApi({
     }),
 
     aiSuggestCategoryEntities: builder.mutation<
-      { businesses: IAiSuggestedEntity[]; products: IAiSuggestedEntity[] },
+      {
+        businesses: IAiSuggestedEntity[];
+        products: IAiSuggestedEntity[];
+        aiUnavailable?: boolean;
+      },
       {
         categoryName: string;
         categoryDescription: string;
@@ -99,7 +103,7 @@ export const contentMutationApi = createApi({
       }
     >({
       query: (body) => ({
-        url: "/businesses/ai-suggest-category-entities",
+        url: "/ai/suggest-category-entities",
         method: "POST",
         data: body,
       }),
