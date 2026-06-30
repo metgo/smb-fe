@@ -131,6 +131,7 @@ export class GetFeedMarkersHandler implements IQueryHandler<GetFeedMarkersQuery>
 
       return items.map((item: any) => ({
         _id: item._id,
+        businessId: item.businessId,
         slug: item.slug,
         serviceType: ServicesTypes.BUSINESS,
         geoLocation: item.geoLocation ?? { lat: null, long: null },

@@ -13,6 +13,9 @@ export class FeedMarkerItem {
   @ApiProperty({ type: String })
     _id: string;
 
+  @ApiProperty({ type: String, nullable: true })
+    businessId?: string;
+
   @ApiProperty({ type: String })
     slug: string;
 

@@ -63,6 +63,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       locale,
       hasDelivery,
       search,
+      lat,
+      lng,
+      radius,
     } = query;
 
     try {
@@ -88,13 +91,14 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         .select('siteTopics')
         .lean();
 
+      const nearbyBusinessIdsPromise: Promise<Types.ObjectId[] | null>
+        = lat != null && lng != null && radius != null
+          ? this.getBusinessIdsWithinRadius(lat, lng, radius)
+          : Promise.resolve(null);
+
       if (search) {
         normalizedBase = normalizeArabicSearch(normalizeHebrewSearch(search));
-        searchTerms = [
-          ...new Set(
-            [search, normalizedBase].filter(Boolean),
-          ),
-        ];
+        searchTerms = [...new Set([search, normalizedBase].filter(Boolean))];
 
         const regexMap = new Map(
           searchTerms.map(t => [t, buildHebrewSearchRegex(t)]),
@@ -123,7 +127,10 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         });
       }
 
-      const siteSettings = await siteSettingsPromise;
+      const [siteSettings, nearbyBusinessIds] = await Promise.all([
+        siteSettingsPromise,
+        nearbyBusinessIdsPromise,
+      ]);
 
       let siteCategories: any[] = [];
 
@@ -160,6 +167,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           externalApiId,
           hasDelivery,
           searchOrConditions,
+          nearbyBusinessIds,
         );
         return fallbackResult;
       }
@@ -196,7 +204,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       const productSelectFields
         = '_id productId name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea categories tagsId';
       const productPopulate = [
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted' },
+        {
+          path: 'businessId',
+          select:
+            '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea geoLocation status isDeleted',
+        },
       ];
       const baseProductQuery: any = {
         productId: { $in: allProductIds },
@@ -207,6 +219,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },
         ],
+        ...(nearbyBusinessIds !== null && {
+          businessId: { $in: nearbyBusinessIds },
+        }),
         ...(groupTypesId?.length && { groupTypesId: { $in: groupTypesId } }),
         ...(accessibilitiesId?.length && {
           accessibilitiesId: { $in: accessibilitiesId },
@@ -401,7 +416,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
               .catch(() => []);
           }
 
-          const allBizIds = [...bizNameResults, ...bizShortDescResults, ...bizByTagResults];
+          const allBizIds = [
+            ...bizNameResults,
+            ...bizShortDescResults,
+            ...bizByTagResults,
+          ];
           matchingBusinessIds = allBizIds.filter(
             (b: any, i: number) => allBizIds.findIndex(
               (x: any) => x._id.toString() === b._id.toString(),
@@ -494,13 +513,20 @@ implements IQueryHandler<GetProductsByTopicQuery> {
 
       const filteredProducts = products.filter(p => {
         const business = p.businessId as any;
-        return business && business.status === CommonStatus.APPROVED && !business.isDeleted;
+        return (
+          business
+          && business.status === CommonStatus.APPROVED
+          && !business.isDeleted
+        );
       });
 
       const productMap = new Map(
         filteredProducts.map(p => [p.productId.toString(), p]),
       );
-      console.log('products after vendor status filter:', filteredProducts.length);
+      console.log(
+        'products after vendor status filter:',
+        filteredProducts.length,
+      );
 
       const flatList = productCategoryEntries
         .map(({ productId, category }) => {
@@ -544,9 +570,12 @@ implements IQueryHandler<GetProductsByTopicQuery> {
             delete rest.businessId.nameHe;
             delete rest.businessId.nameAr;
 
-            rest.businessId.vendorDelivers = rest.businessId.vendorDelivers ?? false;
-            rest.businessId.globalDelivery = rest.businessId.globalDelivery ?? false;
-            rest.businessId.globalDeliveryArea = rest.businessId.globalDeliveryArea ?? [];
+            rest.businessId.vendorDelivers
+              = rest.businessId.vendorDelivers ?? false;
+            rest.businessId.globalDelivery
+              = rest.businessId.globalDelivery ?? false;
+            rest.businessId.globalDeliveryArea
+              = rest.businessId.globalDeliveryArea ?? [];
           }
 
           const localizedBase = localizeFields(
@@ -575,6 +604,38 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         new Map(flatList.map(item => [item._id.toString(), item])).values(),
       );
       console.log('final unique products:', uniqueFlatList.length);
+
+      if (!search && lat != null && lng != null) {
+        const distKm = (lat2: number, lng2: number): number => {
+          const R = 6371;
+          const dLat = ((lat2 - lat) * Math.PI) / 180;
+          const dLng = ((lng2 - lng) * Math.PI) / 180;
+          const a
+            = Math.sin(dLat / 2) ** 2
+            + Math.cos((lat * Math.PI) / 180)
+              * Math.cos((lat2 * Math.PI) / 180)
+              * Math.sin(dLng / 2) ** 2;
+          return 2 * R * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
+        };
+
+        uniqueFlatList.sort((a: any, b: any) => {
+          const aGeo = a.businessId?.geoLocation;
+          const bGeo = b.businessId?.geoLocation;
+          const aLat = parseFloat(aGeo?.lat);
+          const aLng = parseFloat(aGeo?.long);
+          const bLat = parseFloat(bGeo?.lat);
+          const bLng = parseFloat(bGeo?.long);
+          const aDist
+            = !Number.isNaN(aLat) && !Number.isNaN(aLng)
+              ? distKm(aLat, aLng)
+              : Infinity;
+          const bDist
+            = !Number.isNaN(bLat) && !Number.isNaN(bLng)
+              ? distKm(bLat, bLng)
+              : Infinity;
+          return aDist - bDist;
+        });
+      }
 
       if (
         atlasRankedIds.length > 0
@@ -656,6 +717,7 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     externalApiId: string,
     hasDelivery?: boolean,
     searchOrConditions?: any[],
+    nearbyBusinessIds?: Types.ObjectId[] | null,
   ): Promise<any> {
     const {
       groupTypesId, accessibilitiesId, tagsId, page, limit, locale,
@@ -750,6 +812,9 @@ implements IQueryHandler<GetProductsByTopicQuery> {
       isActive: true,
       isDeleted: { $ne: true },
       $and: andConditions,
+      ...(nearbyBusinessIds != null && {
+        businessId: { $in: nearbyBusinessIds },
+      }),
       ...(tagIds.length && { tagsId: { $in: tagIds } }),
       ...(groupTypesId?.length && { groupTypesId: { $in: groupTypesId } }),
       ...(accessibilitiesId?.length && {
@@ -763,7 +828,11 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         '_id productId name nameHe nameAr description descriptionHe descriptionAr slug images price quantity businessId deliveryArea',
       )
       .populate([
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug vendorDelivers globalDelivery globalDeliveryArea' },
+        {
+          path: 'businessId',
+          select:
+            '_id logo name nameHe nameAr slug vendorDelivers globalDelivery globalDeliveryArea geoLocation',
+        },
       ])
       .lean();
 
@@ -801,9 +870,12 @@ implements IQueryHandler<GetProductsByTopicQuery> {
         delete rest.businessId.nameHe;
         delete rest.businessId.nameAr;
 
-        rest.businessId.vendorDelivers = rest.businessId.vendorDelivers ?? false;
-        rest.businessId.globalDelivery = rest.businessId.globalDelivery ?? false;
-        rest.businessId.globalDeliveryArea = rest.businessId.globalDeliveryArea ?? [];
+        rest.businessId.vendorDelivers
+          = rest.businessId.vendorDelivers ?? false;
+        rest.businessId.globalDelivery
+          = rest.businessId.globalDelivery ?? false;
+        rest.businessId.globalDeliveryArea
+          = rest.businessId.globalDeliveryArea ?? [];
       }
 
       return {
@@ -816,5 +888,41 @@ implements IQueryHandler<GetProductsByTopicQuery> {
     });
 
     return paginateData(page, limit, flatList);
+  }
+
+  private async getBusinessIdsWithinRadius(
+    lat: number,
+    lng: number,
+    radius: number,
+  ): Promise<Types.ObjectId[]> {
+    const businesses = await this.BusinessModel.find({
+      'geoLocation.lat': { $exists: true },
+      'geoLocation.long': { $exists: true },
+      status: CommonStatus.APPROVED,
+      isDeleted: { $ne: true },
+    })
+      .select('_id geoLocation')
+      .lean();
+
+    const toRad = (val: number) => (val * Math.PI) / 180;
+
+    return businesses
+      .filter((b: any) => {
+        const bLat = parseFloat(b.geoLocation?.lat);
+        const bLng = parseFloat(b.geoLocation?.long);
+        if (Number.isNaN(bLat) || Number.isNaN(bLng)) return false;
+        const dLat = toRad(bLat - lat);
+        const dLng = toRad(bLng - lng);
+        const a
+          = Math.sin(dLat / 2) ** 2
+          + Math.cos(toRad(lat))
+            * Math.cos(toRad(bLat))
+            * Math.sin(dLng / 2) ** 2;
+        const distKm
+          = 2 * 6371 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
+
+        return distKm <= radius;
+      })
+      .map((b: any) => b._id);
   }
 }

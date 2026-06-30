@@ -130,7 +130,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
       .populate([
         {
           path: 'businessId',
-          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea status isDeleted',
+          select: '_id logo name nameHe nameAr slug deliveryArea isPickUpAvailable vendorDelivers vendorDeliveryArea globalDelivery globalDeliveryArea geoLocation status isDeleted',
         },
       ])
       .lean();
@@ -228,7 +228,7 @@ implements IQueryHandler<GetProductsGroupedByTopicQuery> {
         '_id productId name nameHe nameAr slug description descriptionHe descriptionAr shortDescription shortDescriptionHe shortDescriptionAr images price quantity businessId primaryCategoryId',
       )
       .populate([
-        { path: 'businessId', select: '_id logo name nameHe nameAr slug status isDeleted deliveryArea isPickUpAvailable vendorDelivers globalDelivery globalDeliveryArea' },
+        { path: 'businessId', select: '_id logo name nameHe nameAr slug status isDeleted deliveryArea isPickUpAvailable vendorDelivers globalDelivery globalDeliveryArea geoLocation' },
         { path: 'primaryCategoryId', select: 'name hebrewName' },
       ])
       .lean();
