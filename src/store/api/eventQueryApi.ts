@@ -115,6 +115,19 @@ export const eventQueryApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+
+    getSessionsByEventId: builder.query<
+      IEventSessionListResponse,
+      { eventId: string }
+    >({
+      query: ({ eventId }) => ({
+        url: endpoints.eventSessions,
+        method: "GET",
+        params: { eventId },
+      }),
+      providesTags: ["Event"],
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -129,4 +142,5 @@ export const {
   useLazyGetEventTicketsQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
+  useGetSessionsByEventIdQuery,
 } = eventQueryApi;

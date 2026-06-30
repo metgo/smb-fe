@@ -44,6 +44,7 @@ import {
   UsersMgmtPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  EventSessionMgmtPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -476,8 +477,14 @@ function App() {
 
             { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
             { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
+
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },
+            {
+              path: routes.eventSessionMgmt,
+              element: <EventSessionMgmtPage />,
+            },
+
             { path: routes.productDetails, element: <ProductDetailsPage /> },
             { path: routes.contentMgmt, element: <ContentMgmtPage /> },
             { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },

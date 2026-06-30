@@ -137,7 +137,7 @@ export function useEventWizardState({
   const [editingNotification, setEditingNotification] =
     useState<NotificationData | null>(null);
 
-  // ─── Step 7: Media ───────────────────────────────────────────────────
+  // ─── Step 8: Media ───────────────────────────────────────────────────
   const [eventImages, setEventImages] = useState<TImages>([]);
 
   // ─── API: Mutations ──────────────────────────────────────────────────

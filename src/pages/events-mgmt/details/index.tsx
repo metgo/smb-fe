@@ -1,15 +1,24 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Calendar, DollarSign, Edit, Ticket, Users } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  DollarSign,
+  Edit,
+  LayoutList,
+  Ticket,
+  Users,
+} from "lucide-react";
 
 import {
   EventDateTimeDetails,
   EventInfoDetails,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
+  EventSessionDetails,
   EventTicketDetails,
 } from "./components";
 import { routes } from "@/lib/routes";
@@ -55,7 +64,9 @@ export default function EventDetailsPage() {
   const tabFromUrl = searchParams.get("tab") || "overview";
   const isFromQRCode = !!tokenFromUrl; // Only from QR code if token exists
 
-  const { bgPrimary } = useThemeClasses();
+  const { bgPrimary, isRTL, isDark } = useThemeClasses();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -83,6 +94,7 @@ export default function EventDetailsPage() {
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
+
   const { data: eventStatsData, isLoading: isStatsLoading } =
     useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
 
@@ -213,6 +225,8 @@ export default function EventDetailsPage() {
         );
       case "registration":
         return <EventRegistrationDetails eventDetails={eventDetails} />;
+      case "sessions":
+        return <EventSessionDetails eventId={eventId} />;
       default:
         return null;
     }
@@ -230,13 +244,58 @@ export default function EventDetailsPage() {
             handleStatusChange={onStatusChangeHandler}
             status={eventDetails?.status}
           />
-          <button
-            onClick={() => setIsEditOpen(true)}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
-          >
-            <Edit className="w-4 h-4" />
-            {t("edit")}
-          </button>
+
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
+              }`}
+            >
+              <span className="text-sm font-medium">{t("actions")}</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                  isDark
+                    ? "bg-gray-900 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <button
+                  onClick={() => setIsEditOpen(true)}
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-indigo-400 hover:bg-gray-800"
+                      : "text-indigo-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <Edit className="w-4 h-4" />
+                  {t("edit")}
+                </button>
+
+                <button
+                  onClick={() =>
+                    navigate(`${routes.eventSessionMgmt}?eventId=${eventId}`)
+                  }
+                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${
+                    isDark
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <LayoutList className="w-4 h-4 shrink-0" />
+                  {t("create_session")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

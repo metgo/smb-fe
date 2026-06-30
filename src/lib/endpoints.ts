@@ -71,6 +71,7 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+  eventSession: "/event-sessions",
   upcomingEvents: "/upcoming-events",
 
   users: "/users",
@@ -79,6 +80,7 @@ export const endpoints = {
   createUser: "/users/create",
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  eventSessions: "/event-sessions",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

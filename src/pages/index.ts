@@ -28,6 +28,7 @@ import PoiMgmtPage from "./poi-mgmt";
 import PoiDetailsPage from "./poi-mgmt/details";
 import WebsiteCrashesPage from "./website-crashes";
 import WebsiteCrashDetailsPage from "./website-crashes/details";
+import EventSessionMgmtPage from "./event-session-mgmt";
 
 export {
   AuthPage,
@@ -43,6 +44,7 @@ export {
   ProductDetailsPage,
   EventsMgmtPage,
   EventDetailsPage,
+  EventSessionMgmtPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
   NotificationsMgmtPage,

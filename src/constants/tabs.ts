@@ -8,6 +8,7 @@ import {
   FileText,
   Globe,
   ImageIcon,
+  LayoutList,
   MapPin,
   Monitor,
   Ticket,
@@ -44,6 +45,7 @@ export const eventTabs = [
     label: "schedual_notification",
     icon: Bell,
   },
+  { id: "sessions", label: "sessions", icon: LayoutList },
 ];
 
 export const productTabs = [
