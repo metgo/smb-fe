@@ -41,11 +41,38 @@ export default function DmoAuthorityWebsiteSelector({
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark, selectInputClasses } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { userRole, dmoId } = useAppSelector((state) => state.auth);
+
+  // Auto-select DMO user's own DMO on mount
+  useEffect(() => {
+    if (userRole === UserRole.DMO && dmoId && !selectedDmoId) {
+      setSelectDmoId(dmoId);
+    }
+  }, [userRole, dmoId, selectedDmoId, setSelectDmoId]);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
+
+  // Filter DMO options: Show all for superadmin/authority, only user's DMO for DMO users
+  const filteredDmoOptions = useMemo(() => {
+    if (userRole === UserRole.DMO && dmoId) {
+      return (
+        dmosAuthorities
+          ?.filter((d) => d._id === dmoId)
+          ?.map((d) => ({
+            label: d.name,
+            value: d._id,
+          })) ?? []
+      );
+    }
+    return (
+      dmosAuthorities?.map((d) => ({
+        label: d.name,
+        value: d._id,
+      })) ?? []
+    );
+  }, [userRole, dmoId, dmosAuthorities]);
 
   const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
     const result = {
@@ -246,7 +273,9 @@ export default function DmoAuthorityWebsiteSelector({
             error={errors.dmoId}
           >
             <SelectField
-              isDisabled={userRole === UserRole.AUTHORITY}
+              isDisabled={
+                userRole === UserRole.AUTHORITY || userRole === UserRole.DMO
+              }
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
@@ -260,12 +289,7 @@ export default function DmoAuthorityWebsiteSelector({
                 }
               }}
               placeholder={t("select_dmo")}
-              options={
-                dmosAuthorities?.map((d) => ({
-                  label: d.name,
-                  value: d._id,
-                })) ?? []
-              }
+              options={filteredDmoOptions}
               error={errors.dmoId}
               selectInputClasses={selectInputClasses}
             />
