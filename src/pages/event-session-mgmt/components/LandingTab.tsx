@@ -1,7 +1,15 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useRef, useState, useEffect } from "react";
-import { Pencil, Trash, Upload, X, Loader2 } from "lucide-react";
+import {
+  Pencil,
+  Trash,
+  Upload,
+  X,
+  Loader2,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -17,6 +25,7 @@ import {
 } from "@/store/api/eventSessionApi";
 import { routes } from "@/lib/routes";
 import { PublishButton } from "@/components/btns";
+import { DEFAULT_CONFIG } from "../data";
 
 interface LandingTabProps {
   config: IAdminConfig;
@@ -28,7 +37,8 @@ const CARD_HEAD = "flex items-center justify-between mb-3.5";
 export function LandingTab({ config, onChange }: LandingTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
-  const { isDark, textTertiary, inputClasses, cardClasses } = useThemeClasses();
+  const { isDark, textTertiary, inputClasses, cardClasses, isRTL } =
+    useThemeClasses();
   const update = (patch: Partial<IAdminConfig>) =>
     onChange({ ...config, ...patch });
 
@@ -45,17 +55,31 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
     skip: !sessionId,
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    previewUrl,
+    gcsUrl,
+    progress,
+    status,
+    handleFileSelect,
+    deleteFile,
+    reset: resetImage,
+  } = useFileUpload({
+    initialUrl: config.images?.[0]?.image,
+  });
+
+  useEffect(() => {
+    if (!sessionId) {
+      onChange(DEFAULT_CONFIG);
+      resetImage();
+    }
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (existingSession) {
       onChange(existingSession);
     }
   }, [existingSession]);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { previewUrl, gcsUrl, progress, status, handleFileSelect, deleteFile } =
-    useFileUpload({
-      initialUrl: config.images?.[0]?.image,
-    });
 
   useEffect(() => {
     const currentUrl = config.images?.[0]?.image ?? "";
@@ -180,7 +204,7 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
 
             {previewUrl ? (
               <div
-                className="relative rounded-xl overflow-hidden border group aspect-video"
+                className="relative rounded-xl overflow-hidden border group h-40 db1"
                 style={{ borderColor: isDark ? "#374151" : "#e5e7eb" }}
               >
                 <img
@@ -238,23 +262,6 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
               }}
             />
           </div>
-
-          <div className={CARD}>
-            <div className="flex items-center gap-4">
-              <PublishButton
-                onClick={handleSubmit}
-                isLoading={isCreating || isUpdating}
-              />
-              <button
-                className="border border-gray-600 rounded-lg  px-4 py-2"
-                onClick={() =>
-                  navigate(`${routes.eventDetails}?eventId=${eventId}`)
-                }
-              >
-                {t("back_btn")}
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className="space-y-4">
@@ -294,7 +301,7 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
                           : "border-gray-200",
                     )}
                   >
-                    <span className="flex w-full h-4 rounded-md overflow-hidden">
+                    <span className="flex w-full h-4 overflow-hidden">
                       {th.swatch.map((c, i) => (
                         <span
                           key={i}
@@ -430,6 +437,28 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className={CARD}>
+            <div className="flex justify-end items-center gap-4">
+              <PublishButton
+                onClick={handleSubmit}
+                isLoading={isCreating || isUpdating}
+              />
+              <button
+                className="border border-gray-600 rounded-lg  px-4 py-2 hover:bg-gray-700/50 transition-colors text-sm font-medium"
+                onClick={() =>
+                  navigate(`${routes.eventDetails}?eventId=${eventId}`)
+                }
+              >
+                {t("back_btn")}
+                {isRTL ? (
+                  <ArrowLeft className="w-4 h-4 inline-block mr-2" />
+                ) : (
+                  <ArrowRight className="w-4 h-4 inline-block ml-2" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

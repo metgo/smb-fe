@@ -23,7 +23,7 @@ export function RegistrationsTab({
   const TD = clsx("py-2.75 px-3 border-b align-top", borderColor);
 
   return (
-    <div className="flex flex-col gap-4.5 max-w-220 mx-auto">
+    <div className="flex flex-col gap-4.5">
       <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
         <div className="flex items-center justify-between mb-3.5">
           <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">

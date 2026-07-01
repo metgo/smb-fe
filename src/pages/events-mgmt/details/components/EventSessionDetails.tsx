@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Edit, LayoutList, Layers, Plus } from "lucide-react";
+import { Edit, LayoutList, Layers, Plus, Eye } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { routes } from "@/lib/routes";
 import { useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
@@ -240,18 +240,32 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
                     )}
                   </div>
 
-                  <button
-                    title={t("event_sessions_edit_title")}
-                    onClick={() => handleEditSession(session._id)}
-                    className={clsx(
-                      "p-1.5 rounded-md transition-colors text-blue-400 shrink-0",
-                      isDark
-                        ? "hover:bg-blue-500/20 hover:text-blue-300"
-                        : "hover:bg-blue-50 hover:text-blue-600",
-                    )}
-                  >
-                    <Edit size={16} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      title={t("event_sessions_edit_title")}
+                      onClick={() => handleEditSession(session._id)}
+                      className={clsx(
+                        "p-1.5 rounded-md transition-colors text-blue-400 shrink-0",
+                        isDark
+                          ? "hover:bg-blue-500/20 hover:text-blue-300"
+                          : "hover:bg-blue-50 hover:text-blue-600",
+                      )}
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      title={t("event_sessions_edit_title")}
+                      onClick={() => handleEditSession(session._id)}
+                      className={clsx(
+                        "p-1.5 rounded-md transition-colors text-green-400 shrink-0",
+                        isDark
+                          ? "hover:bg-green-500/20 hover:text-green-300"
+                          : "hover:bg-green-50 hover:text-green-600",
+                      )}
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 text-xs">

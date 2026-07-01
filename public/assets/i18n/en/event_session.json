@@ -236,5 +236,14 @@
   "event_sessions_count_other": "sessions",
   "event_sessions_toggle_title": "Click to toggle status",
   "event_sessions_status_active": "Active",
-  "event_sessions_status_inactive": "Inactive"
+  "event_sessions_status_inactive": "Inactive",
+
+  "page_title": "Event Session Management",
+  "page_description": "Manage sessions, capacity, analytics, notifications and registrations for your events",
+
+  "wizard_step_review": "Review",
+  "wizard_edit_btn": "Edit",
+  "wizard_no_images": "No images added.",
+  "wizard_no_instructors": "No instructors added.",
+  "wizard_no_rooms": "No rooms added."
 }

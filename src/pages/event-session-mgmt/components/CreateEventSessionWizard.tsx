@@ -176,7 +176,7 @@ export function CreateEventSessionWizard({
     { number: 3, title: t("instructors_title"), icon: Users },
     { number: 4, title: t("rooms_title"), icon: DoorOpen },
     { number: 5, title: t("dates_title"), icon: CalendarDays },
-    { number: 6, title: "Review", icon: Eye },
+    { number: 6, title: t("wizard_step_review"), icon: Eye },
   ];
 
   const reviewSectionHeader = (
@@ -212,7 +212,7 @@ export function CreateEventSessionWizard({
         )}
       >
         <Pencil className="w-3 h-3" />
-        Edit
+        {t("wizard_edit_btn")}
       </button>
     </div>
   );
@@ -454,7 +454,7 @@ export function CreateEventSessionWizard({
               <div className="px-5 py-4">
                 {(ev.images || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
-                    No images added.
+                    {t("wizard_no_images")}
                   </p>
                 ) : (
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
@@ -490,7 +490,7 @@ export function CreateEventSessionWizard({
               <div className="px-5 py-4">
                 {(ev.instructors || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
-                    No instructors added.
+                    {t("wizard_no_instructors")}
                   </p>
                 ) : (
                   <div className="flex flex-col gap-2">
@@ -529,7 +529,7 @@ export function CreateEventSessionWizard({
               <div className="px-5 py-4">
                 {(ev.rooms || []).length === 0 ? (
                   <p className={clsx("text-sm", textTertiary)}>
-                    No rooms added.
+                    {t("wizard_no_rooms")}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">

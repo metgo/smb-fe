@@ -236,5 +236,14 @@
   "event_sessions_count_other": "סשנים",
   "event_sessions_toggle_title": "לחץ לשינוי סטטוס",
   "event_sessions_status_active": "פעיל",
-  "event_sessions_status_inactive": "לא פעיל"
+  "event_sessions_status_inactive": "לא פעיל",
+
+  "page_title": "ניהול מפגשי אירועים",
+  "page_description": "נהלו מפגשים, תפוסה, אנליטיקה, התראות והרשמות לאירועים שלכם",
+
+  "wizard_step_review": "סקירה",
+  "wizard_edit_btn": "עריכה",
+  "wizard_no_images": "לא נוספו תמונות.",
+  "wizard_no_instructors": "לא נוספו מנחים.",
+  "wizard_no_rooms": "לא נוספו חדרים."
 }

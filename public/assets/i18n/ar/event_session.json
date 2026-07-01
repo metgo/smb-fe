@@ -236,5 +236,14 @@
   "event_sessions_count_other": "جلسات",
   "event_sessions_toggle_title": "انقر لتغيير الحالة",
   "event_sessions_status_active": "نشط",
-  "event_sessions_status_inactive": "غير نشط"
+  "event_sessions_status_inactive": "غير نشط",
+
+  "page_title": "إدارة جلسات الأحداث",
+  "page_description": "إدارة الجلسات والطاقة الاستيعابية والتحليلات والإشعارات والتسجيلات لفعالياتك",
+
+  "wizard_step_review": "مراجعة",
+  "wizard_edit_btn": "تعديل",
+  "wizard_no_images": "لم تتم إضافة صور.",
+  "wizard_no_instructors": "لم تتم إضافة مدربين.",
+  "wizard_no_rooms": "لم تتم إضافة غرف."
 }

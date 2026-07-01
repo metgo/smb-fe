@@ -34,7 +34,7 @@ export function AnalyticsTab({ config, records, bookings }: AnalyticsTabProps) {
   const maxEv = Math.max(1, ...Object.values(perEvent));
 
   return (
-    <div className="flex flex-col gap-4.5 max-w-220 mx-auto">
+    <div className="flex flex-col gap-4.5">
       <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3 mb-4.5">
         <Stat label={t("stat_total_regs")} value={confirmed} />
         <Stat label={t("stat_actual_attended")} value={attended} />

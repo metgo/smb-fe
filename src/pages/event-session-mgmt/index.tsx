@@ -1,20 +1,42 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   LandingTab,
-  ThemeTab,
   CapacityTab,
   AnalyticsTab,
   NotifyTab,
   RegistrationsTab,
 } from "./components";
 import { useTranslation } from "react-i18next";
-import { LS, store, encodeToken, shortToken } from "./data";
+import { store } from "./data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { TabsSection } from "@/components/shared";
-import { Layout, Users, BarChart2, Bell, ClipboardList } from "lucide-react";
+import { TabsSection, PageHeader } from "@/components/shared";
+import {
+  Layout,
+  Users,
+  BarChart2,
+  Bell,
+  ClipboardList,
+  Compass,
+} from "lucide-react";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
+import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
 
-export default function EventSessionMgmtPage() {
+// ─── Tab → tour step mapping ──────────────────────────────────────────────────
+
+const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
+  landing: "landing",
+  capacity: "capacity",
+  analytics: "analytics",
+  notify: "notify",
+  regs: "regs",
+};
+
+// ─── Inner component (needs TourProvider above it) ────────────────────────────
+
+function EventSessionMgmtPageInner() {
   const { t } = useTranslation("event_session");
+  const { t: tt } = useTranslation("tour");
   const { isDark, bgSecondary, textPrimary } = useThemeClasses();
 
   const [tab, setTab] = useState<TTabId>("landing");
@@ -29,19 +51,19 @@ export default function EventSessionMgmtPage() {
   );
   const [holds, setHolds] = useState<THolds>(() => store.getHolds());
 
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === LS.holds) setHolds(store.getHolds());
-      if (e.key === LS.bookings) setBookings(store.getBookings());
-      if (e.key === LS.records) setRecords(store.getRecords());
-    };
-    window.addEventListener("storage", onStorage);
-    const iv = setInterval(() => setHolds(store.getHolds()), 1000);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      clearInterval(iv);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const onStorage = (e: StorageEvent) => {
+  //     if (e.key === LS.holds) setHolds(store.getHolds());
+  //     if (e.key === LS.bookings) setBookings(store.getBookings());
+  //     if (e.key === LS.records) setRecords(store.getRecords());
+  //   };
+  //   window.addEventListener("storage", onStorage);
+  //   const iv = setInterval(() => setHolds(store.getHolds()), 1000);
+  //   return () => {
+  //     window.removeEventListener("storage", onStorage);
+  //     clearInterval(iv);
+  //   };
+  // }, []);
 
   function onChange(c: IAdminConfig) {
     setConfigState(c);
@@ -62,66 +84,188 @@ export default function EventSessionMgmtPage() {
     setHolds(store.getHolds());
   }
 
-  function onPreview() {
-    const token = encodeToken({
-      jti: "preview_" + shortToken(5),
-      code: "PREVIEW",
-      name: "",
-      email: "",
-      phone: "",
-      exp: Date.now() + 36e5,
-    });
-    location.hash = "/b/" + token;
-  }
+  // ─── Tour integration ───────────────────────────────────────────────────────
+
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    startTour,
+    refreshTargetRect,
+  } = useTour();
+
+  const buildSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "event_session.welcome.title",
+        desc: "event_session.welcome.desc",
+      },
+      {
+        id: "page-header",
+        target: '[data-tour="page-header"]',
+        placement: "bottom",
+        title: "event_session.page_header.title",
+        desc: "event_session.page_header.desc",
+      },
+      {
+        id: "tabs-nav",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.tabs_nav.title",
+        desc: "event_session.tabs_nav.desc",
+      },
+      {
+        id: "landing",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.landing.title",
+        desc: "event_session.landing.desc",
+      },
+      {
+        id: "capacity",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.capacity.title",
+        desc: "event_session.capacity.desc",
+      },
+      {
+        id: "analytics",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.analytics.title",
+        desc: "event_session.analytics.desc",
+      },
+      {
+        id: "notify",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.notify.title",
+        desc: "event_session.notify.desc",
+      },
+      {
+        id: "regs",
+        target: '[data-tour="tabs-nav"]',
+        placement: "bottom",
+        title: "event_session.regs.title",
+        desc: "event_session.regs.desc",
+      },
+    ],
+    [],
+  );
+
+  // Auto-switch tab when tour reaches a tab-specific step
+  useEffect(() => {
+    if (!isTourOpen) return;
+    const stepId = tourSteps[currentStep]?.id;
+    if (!stepId) return;
+    const targetTab = STEP_TAB_MAP[stepId];
+    if (targetTab) {
+      setTab(targetTab);
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 60);
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
+
+  // ─── Tabs ───────────────────────────────────────────────────────────────────
 
   const tabs = [
-    // { id: 'content', label: t('tab_content'), icon: FileText },
     { id: "landing", label: t("tab_landing"), icon: Layout },
-    // { id: 'theme', label: t('tab_theme'), icon: Palette },
     { id: "capacity", label: t("tab_capacity"), icon: Users },
     { id: "analytics", label: t("tab_analytics"), icon: BarChart2 },
     { id: "notify", label: t("tab_notify"), icon: Bell },
     { id: "regs", label: t("tab_regs"), icon: ClipboardList },
   ];
 
-  return (
-    <div className={`min-h-screen ${bgSecondary} ${textPrimary}`}>
-      <nav
-        className={`px-6 border-b sticky top-0 z-19 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-      >
-        <TabsSection
-          tabs={tabs}
-          activeTab={tab}
-          setActiveTab={(id) => setTab(id as TTabId)}
-        />
-      </nav>
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
-      <div className="max-w-270 mx-auto p-6 max-[560px]:p-4">
-        {/* {tab === 'content' && (
-          <ContentTab config={config} onChange={onChange} />
-        )} */}
-        {tab === "landing" && (
-          <LandingTab config={config} onChange={onChange} />
-        )}
-        {tab === "theme" && (
-          <ThemeTab config={config} onChange={onChange} onPreview={onPreview} />
-        )}
-        {tab === "capacity" && (
-          <CapacityTab
-            config={config}
-            records={records}
-            bookings={bookings}
-            holds={holds}
+  return (
+    <>
+      <div className={`min-h-screen ${bgSecondary} ${textPrimary}`}>
+        {/* Page header */}
+        <div className=" px-2 pt-4" data-tour="page-header">
+          <PageHeader
+            title={t("page_title")}
+            description={t("page_description")}
+            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-purple-600 to-pink-600"
           />
-        )}
-        {tab === "analytics" && (
-          <AnalyticsTab config={config} records={records} bookings={bookings} />
-        )}
-        {tab === "notify" && <NotifyTab config={config} records={records} />}
-        {tab === "regs" && (
-          <RegistrationsTab records={records} onResetData={onResetData} />
-        )}
+        </div>
+
+        {/* Sticky tabs nav */}
+        <nav
+          data-tour="tabs-nav"
+          className={`px-2 border-b-2 sticky top-0 z-19`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <TabsSection
+                tabs={tabs}
+                activeTab={tab}
+                setActiveTab={(id) => setTab(id as TTabId)}
+              />
+            </div>
+
+            {/* Tour trigger */}
+            <button
+              onClick={() =>
+                startTour(buildSteps(), {
+                  tourId: EVENT_SESSION_TOUR_ID,
+                })
+              }
+              title={tt("start_tour")}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
+                isDark
+                  ? "border-gray-600 text-gray-400 hover:text-teal-400 hover:border-teal-600 hover:bg-gray-700/50"
+                  : "border-gray-300 text-gray-500 hover:text-teal-600 hover:border-teal-400 hover:bg-teal-50"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+              <span className="hidden sm:inline">{tt("start_tour")}</span>
+            </button>
+          </div>
+        </nav>
+
+        {/* Tab content */}
+        <div data-tour="tab-content" className=" p-4">
+          {tab === "landing" && (
+            <LandingTab config={config} onChange={onChange} />
+          )}
+          {tab === "capacity" && (
+            <CapacityTab
+              config={config}
+              records={records}
+              bookings={bookings}
+              holds={holds}
+            />
+          )}
+          {tab === "analytics" && (
+            <AnalyticsTab
+              config={config}
+              records={records}
+              bookings={bookings}
+            />
+          )}
+          {tab === "notify" && <NotifyTab config={config} records={records} />}
+          {tab === "regs" && (
+            <RegistrationsTab records={records} onResetData={onResetData} />
+          )}
+        </div>
       </div>
-    </div>
+
+      <TourPortal />
+    </>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function EventSessionMgmtPage() {
+  return (
+    <TourProvider>
+      <EventSessionMgmtPageInner />
+    </TourProvider>
   );
 }

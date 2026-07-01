@@ -2,7 +2,6 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import { Stat } from "./Stat";
-import { eventSlotRows } from "../utils";
 import { activeHoldCount, fmtDate, fmtTime, slotKey } from "../data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
@@ -29,7 +28,22 @@ export function CapacityTab({
     borderColor,
   );
   const TD = clsx("py-2.75 px-3 border-b align-top", borderColor);
-  const rows = eventSlotRows(config);
+  const rows: ISlotRow[] = config.sessions.flatMap((session, si) => {
+    const rooms = (session.rooms ?? []).length ? session.rooms! : [""];
+    return session.dates.flatMap((d, di) =>
+      d.slots.flatMap((s, ki) =>
+        rooms.map((room) => ({
+          eventId: String(si),
+          eventName: session.name,
+          date: d.date,
+          time: s.time,
+          room,
+          capacity: s.capacity,
+          key: slotKey(String(si), String(di), String(ki), room),
+        })),
+      ),
+    );
+  });
 
   const arrivedByKey: Record<string, number> = {};
   records.forEach((r) => {
@@ -53,7 +67,7 @@ export function CapacityTab({
   );
 
   return (
-    <div className="flex flex-col gap-4.5 max-w-220 mx-auto">
+    <div className="flex flex-col gap-4.5">
       <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3 mb-4.5">
         <Stat label={t("stat_total_capacity")} value={tot.cap} />
         <Stat label={t("stat_registered")} value={tot.booked} />
