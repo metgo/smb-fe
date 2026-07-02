@@ -31,6 +31,7 @@ interface IAdminConfig {
   isActive: boolean;
   selectionMode: "radio" | "checkbox";
   liveEventIds: string[];
+  ticketIds: string[];
   sessions: IEventSession[];
 }
 
@@ -97,4 +98,52 @@ interface IEventSessionListResponse {
     hasPreviousPage: boolean;
     hasNextPage: boolean;
   };
+}
+
+//  Event session ticktets
+interface ITicketResponse {
+  success: boolean;
+  data: TicketData;
+}
+
+interface TicketData {
+  eventId: string;
+  wrapperId: string;
+  wrapperName: string;
+  tickets: Ticket[];
+  totalTickets: number;
+  totalSessionWrappers: number;
+  assignedTickets: number;
+  availableTickets: number;
+}
+
+interface ITicket {
+  ticketId: string;
+  name: string;
+  description: string;
+  type: "FREE" | "PAID";
+  price: TicketPrice;
+  quantity: TicketQuantity;
+  status: "active" | "inactive";
+  dayDescription: {
+    date: string;
+    startTime: string;
+    endTime: string;
+  }[];
+  images: { image: string }[];
+}
+
+interface TicketPrice {
+  markedPrice: number;
+  discountAmount: number;
+  discountPercent: number;
+  sellingPrice: number;
+}
+
+interface TicketQuantity {
+  initial: number;
+  sold: number;
+  remaining: number;
+  isUnlimited: boolean;
+  perUserLimit: number;
 }

@@ -47,8 +47,19 @@ export const eventSessionApi = createApi({
       providesTags: ["EventSession"],
     }),
 
+    genSessionPrivewLink: builder.query<
+      { success: boolean; data: { previewLink: string } },
+      string
+    >({
+      query: (sessionId) => ({
+        url: `${endpoints.eventSessionPreviwLink}/${sessionId}`,
+        method: "GET",
+      }),
+      providesTags: ["EventSession"],
+    }),
+
     createEventSession: builder.mutation<
-      IEventSession,
+      IAdminConfig & { _id: string },
       CreateEventSessionPayload
     >({
       query: (body) => ({
@@ -87,4 +98,5 @@ export const {
   useCreateEventSessionMutation,
   useUpdateEventSessionMutation,
   useDeleteEventSessionMutation,
+  useGenSessionPrivewLinkQuery,
 } = eventSessionApi;

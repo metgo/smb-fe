@@ -73,6 +73,17 @@
   "choose_theme_help": "ששה סגנונות מוכנים. כל דף האורחים מתעדכן מיד.",
   "theme_selected_badge": "✓ נבחר",
 
+  "event_header_label": "אירוע",
+  "preview_btn": "תצוגה מקדימה",
+  "multi_select_tickets_title": "כרטיסים המוצגים בדף",
+  "multi_select_tickets_help": "בחרו אילו כרטיסים יוצגו לאורחים לבחירה בדף הנחיתה.",
+  "multi_select_tickets_empty": "לא נמצאו כרטיסים עבור אירוע זה.",
+  "view_more_tickets_btn": "הצג עוד {{count}} כרטיסים",
+  "done_btn": "סיום",
+
+  "required_badge": "חובה",
+  "publish_requirements_error": "הוסיפו תמונת רקע, בחרו לפחות כרטיס אחד, והפעילו לפחות מפגש אחד לפני הפרסום.",
+
   "stat_total_capacity": "קיבולת כוללת",
   "stat_registered": "נרשמו",
   "stat_held_now": "מוחזק כעת",
@@ -89,6 +100,7 @@
   "col_arrived": "הגיעו",
   "col_remaining": "נותר",
   "pill_full": "מלא",
+  "remaining_of_capacity": "{{remaining}} מתוך {{capacity}}",
 
   "stat_total_regs": "סה״כ הרשמות",
   "stat_actual_attended": "הגיעו בפועל",

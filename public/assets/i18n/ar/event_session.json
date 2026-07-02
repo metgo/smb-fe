@@ -73,6 +73,17 @@
   "choose_theme_help": "ستة أنماط جاهزة. تتحدث صفحة الضيوف فورًا.",
   "theme_selected_badge": "✓ محدد",
 
+  "event_header_label": "الفعالية",
+  "preview_btn": "معاينة",
+  "multi_select_tickets_title": "التذاكر المعروضة في الصفحة",
+  "multi_select_tickets_help": "اختر التذاكر التي يمكن للضيوف اختيارها في صفحة الهبوط.",
+  "multi_select_tickets_empty": "لم يتم العثور على تذاكر لهذه الفعالية.",
+  "view_more_tickets_btn": "عرض {{count}} تذاكر إضافية",
+  "done_btn": "تم",
+
+  "required_badge": "مطلوب",
+  "publish_requirements_error": "أضف صورة خلفية، واختر تذكرة واحدة على الأقل، وفعّل جلسة واحدة على الأقل قبل النشر.",
+
   "stat_total_capacity": "الطاقة الاستيعابية الكلية",
   "stat_registered": "المسجلون",
   "stat_held_now": "محجوز حاليًا",
@@ -89,6 +100,7 @@
   "col_arrived": "الحضور",
   "col_remaining": "المتبقي",
   "pill_full": "ممتلئ",
+  "remaining_of_capacity": "{{remaining}} من {{capacity}}",
 
   "stat_total_regs": "إجمالي التسجيلات",
   "stat_actual_attended": "حضروا فعليًا",

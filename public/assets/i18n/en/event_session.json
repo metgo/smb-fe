@@ -73,6 +73,17 @@
   "choose_theme_help": "Six ready-made styles. The guest page updates instantly.",
   "theme_selected_badge": "✓ Selected",
 
+  "event_header_label": "Event",
+  "preview_btn": "Preview",
+  "multi_select_tickets_title": "Tickets shown on page",
+  "multi_select_tickets_help": "Select which tickets guests can choose from on the landing page.",
+  "multi_select_tickets_empty": "No tickets found for this event.",
+  "view_more_tickets_btn": "View {{count}} more tickets",
+  "done_btn": "Done",
+
+  "required_badge": "Required",
+  "publish_requirements_error": "Add a background image, select at least one ticket, and enable at least one session before publishing.",
+
   "stat_total_capacity": "Total Capacity",
   "stat_registered": "Registered",
   "stat_held_now": "Currently Held",
@@ -89,6 +100,7 @@
   "col_arrived": "Attended",
   "col_remaining": "Remaining",
   "pill_full": "Full",
+  "remaining_of_capacity": "{{remaining}} out of {{capacity}}",
 
   "stat_total_regs": "Total Registrations",
   "stat_actual_attended": "Actually Attended",

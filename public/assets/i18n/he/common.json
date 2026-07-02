@@ -135,6 +135,9 @@
 
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק את הכרטיס הזה?",
+
+  "delete_session": "מחיקת מפגש",
+  "delete_session_confirm": "האם אתה בטוח שברצונך למחוק את המפגש הזה?",
   "deletd_notification": "מחיקת התראה",
   "delete_notification_cofirm": "האם אתה בטוח שברצונך למחוק התראה זו?",
   "unsaved_changes": "שינויים שלא נשמרו",

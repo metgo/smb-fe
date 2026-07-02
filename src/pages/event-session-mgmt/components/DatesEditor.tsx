@@ -36,6 +36,7 @@ export function DatesEditor({
   labels,
 }: DatesEditorProps) {
   const { isDark, textTertiary, inputClasses, cardClasses } = useThemeClasses();
+  const today = new Date().toISOString().split("T")[0];
 
   const INPUT = clsx(
     "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2",
@@ -93,6 +94,7 @@ export function DatesEditor({
               type="date"
               className={clsx(INPUT, "max-w-50")}
               value={d.date}
+              min={today}
               onChange={(e) => onPatchDate(di, { date: e.target.value })}
             />
             {event.dates.length > 1 ? (

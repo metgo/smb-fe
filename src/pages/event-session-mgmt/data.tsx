@@ -120,6 +120,7 @@ export const DEFAULT_CONFIG: IAdminConfig = {
   ],
   isActive: true,
   liveEventIds: ["ev_soundbath", "ev_breath", "ev_yoga"],
+  ticketIds: [],
 };
 
 // seed a few existing bookings so availability looks realistic

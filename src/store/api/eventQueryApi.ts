@@ -44,6 +44,17 @@ export const eventQueryApi = createApi({
       providesTags: ["Event"],
     }),
 
+    getAllSessionTicket: builder.query<
+      ITicketResponse,
+      { eventId: string; wrapperId?: string }
+    >({
+      query: (params) => ({
+        url: `${endpoints.ticketsForEventSession}/${params.eventId}?wrapperId=${params.wrapperId || ""}`,
+        method: "GET",
+      }),
+      providesTags: ["Event"],
+    }),
+
     getEventTickets: builder.query<
       {
         data: any[];
@@ -133,6 +144,7 @@ export const eventQueryApi = createApi({
 
 export const {
   useGetAllTicketQuery,
+  useGetAllSessionTicketQuery,
   useGetAllEventsQuery,
   useGetEventByIdQuery,
   useLazyGetEventByIdQuery,

@@ -139,6 +139,9 @@
 
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد من حذف هذه التذكرة؟",
+
+  "delete_session": "حذف الجلسة",
+  "delete_session_confirm": "هل أنت متأكد من حذف هذه الجلسة؟",
   "deletd_notification": "حذف الإشعار",
   "delete_notification_cofirm": "هل أنت متأكد من حذف هذا الإشعار؟",
   "unsaved_changes": "تغييرات غير محفوظة",

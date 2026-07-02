@@ -124,6 +124,9 @@
 
   "delete_ticket": "Delete Ticket",
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
+
+  "delete_session": "Delete Session",
+  "delete_session_confirm": "Are you sure you want to delete this session?",
   "deletd_notification": "Delete Notification",
   "delete_notification_cofirm": "Are you sure you want to delete this notification?",
   "notifications": "Notifications",

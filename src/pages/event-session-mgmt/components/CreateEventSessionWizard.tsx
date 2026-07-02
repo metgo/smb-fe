@@ -28,6 +28,21 @@ interface CreateEventSessionWizardProps {
   editIndex: number;
 }
 
+function blankSession(t: (key: string) => string): IEventSession {
+  return {
+    name: t("new_session_name"),
+    tagline: "",
+    description: "",
+    images: [],
+    imagesLables: [],
+    roomLabel: t("default_room_label"),
+    rooms: [],
+    instructors: [],
+    isActive: true,
+    dates: [{ date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] }],
+  };
+}
+
 export function CreateEventSessionWizard({
   config,
   onChange,
@@ -48,7 +63,7 @@ export function CreateEventSessionWizard({
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
-    "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2",
+    "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2 border",
     inputClasses,
     isDark
       ? "focus:border-blue-400 focus:ring-blue-400/10"
@@ -72,15 +87,32 @@ export function CreateEventSessionWizard({
     ? "text-blue-400 hover:bg-gray-700"
     : "text-blue-600 hover:bg-white";
 
-  const ev = config.sessions[editIndex] ?? null;
+  const isNew = editIndex === -1;
+  const [draftSession, setDraftSession] = useState<IEventSession>(() =>
+    blankSession(t),
+  );
+
+  const ev = isNew ? draftSession : (config.sessions[editIndex] ?? null);
   const update = (patch: Partial<IAdminConfig>) =>
     onChange({ ...config, ...patch });
-  const updateSession = (patch: Partial<IEventSession>) =>
+  const updateSession = (patch: Partial<IEventSession>) => {
+    if (isNew) {
+      setDraftSession((prev) => ({ ...prev, ...patch }));
+      return;
+    }
     update({
       sessions: config.sessions.map((e, i) =>
         i === editIndex ? { ...e, ...patch } : e,
       ),
     });
+  };
+
+  function handleDone() {
+    if (isNew) {
+      update({ sessions: [...config.sessions, draftSession] });
+    }
+    setIsOpen(false);
+  }
 
   function addDate() {
     if (!ev) return;
@@ -591,7 +623,10 @@ export function CreateEventSessionWizard({
   if (!ev) return null;
 
   return (
-    <ModalWrapper onClose={() => setIsOpen(false)}>
+    <ModalWrapper
+      onClose={() => setIsOpen(false)}
+      height="max-sm:h-[90vh] md:max-h-[90vh] md:min-h-[60vh]"
+    >
       <div
         className={`px-4 py-3 md:p-6 border-b ${borderColor} flex items-center justify-between gap-3`}
       >
@@ -629,7 +664,7 @@ export function CreateEventSessionWizard({
         onPrevious={() => setCurrentStep((p) => p - 1)}
         onNext={() => setCurrentStep((p) => p + 1)}
         isPublishButton={false}
-        onDone={() => setIsOpen(false)}
+        onDone={handleDone}
         onPublish={() => {}}
       />
     </ModalWrapper>

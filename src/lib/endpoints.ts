@@ -72,7 +72,9 @@ export const endpoints = {
   events: "/events",
   eventsStats: "/events-stats",
   eventSession: "/event-sessions",
+  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   upcomingEvents: "/upcoming-events",
+  eventSessionPreviwLink: "/event-sessions/preview-link",
 
   users: "/users",
   userInfo: "/users/me",

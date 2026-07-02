@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Stat } from "./Stat";
@@ -43,6 +44,16 @@ export function CapacityTab({
         })),
       ),
     );
+  });
+
+  const groups: { eventName: string; date: string; rows: ISlotRow[] }[] = [];
+  rows.forEach((r) => {
+    const last = groups[groups.length - 1];
+    if (last && last.eventName === r.eventName && last.date === r.date) {
+      last.rows.push(r);
+    } else {
+      groups.push({ eventName: r.eventName, date: r.date, rows: [r] });
+    }
   });
 
   const arrivedByKey: Record<string, number> = {};
@@ -96,11 +107,8 @@ export function CapacityTab({
           <table className="w-full border-collapse text-[13.5px] [&>tbody>tr:last-child>td]:border-b-0">
             <thead>
               <tr>
-                <th className={TH}>{t("col_session")}</th>
-                <th className={TH}>{t("col_date")}</th>
                 <th className={TH}>{t("col_time")}</th>
                 <th className={TH}>{t("col_room")}</th>
-                <th className={TH}>{t("col_capacity")}</th>
                 <th className={TH}>{t("col_booked")}</th>
                 <th className={TH}>{t("col_held")}</th>
                 <th className={TH}>{t("col_arrived")}</th>
@@ -108,43 +116,59 @@ export function CapacityTab({
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => {
-                const booked = bookings[r.key] || 0;
-                const held = activeHoldCount(holds, r.key);
-                const arrived = arrivedByKey[r.key] || 0;
-                const remaining = Math.max(0, r.capacity - booked - held);
-                const full = r.capacity - booked - held <= 0;
-                return (
-                  <tr key={i}>
-                    <td className={TD}>{r.eventName}</td>
-                    <td className={TD}>
-                      {fmtDate(r.date, undefined, language)}
-                    </td>
-                    <td className={TD}>{fmtTime(r.time)}</td>
-                    <td className={TD}>{r.room || "—"}</td>
-                    <td className={TD}>{r.capacity}</td>
-                    <td className={TD}>{booked}</td>
-                    <td className={TD}>{held || "—"}</td>
-                    <td className={TD}>{arrived || "—"}</td>
-                    <td className={TD}>
-                      <span
-                        className={clsx(
-                          "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
-                          full
-                            ? isDark
-                              ? "bg-red-900/60 text-red-300"
-                              : "bg-red-100 text-red-700"
-                            : isDark
-                              ? "bg-green-900/60 text-green-300"
-                              : "bg-green-100 text-green-700",
-                        )}
-                      >
-                        {full ? t("pill_full") : remaining}
-                      </span>
+              {groups.map((g, gi) => (
+                <Fragment key={gi}>
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className={clsx(
+                        "py-2 px-3 text-[12.5px] font-bold border-b",
+                        isDark ? "bg-gray-800/60" : "bg-gray-50",
+                        borderColor,
+                      )}
+                    >
+                      {g.eventName} · {fmtDate(g.date, undefined, language)}
                     </td>
                   </tr>
-                );
-              })}
+                  {g.rows.map((r, i) => {
+                    const booked = bookings[r.key] || 0;
+                    const held = activeHoldCount(holds, r.key);
+                    const arrived = arrivedByKey[r.key] || 0;
+                    const remaining = Math.max(0, r.capacity - booked - held);
+                    const full = r.capacity - booked - held <= 0;
+                    return (
+                      <tr key={i}>
+                        <td className={TD}>{fmtTime(r.time)}</td>
+                        <td className={TD}>{r.room || "—"}</td>
+                        <td className={TD}>{booked}</td>
+                        <td className={TD}>{held || "—"}</td>
+                        <td className={TD}>{arrived || "—"}</td>
+                        <td className={TD}>
+                          <span
+                            className={clsx(
+                              "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
+                              full
+                                ? isDark
+                                  ? "bg-red-900/60 text-red-300"
+                                  : "bg-red-100 text-red-700"
+                                : isDark
+                                  ? "bg-green-900/60 text-green-300"
+                                  : "bg-green-100 text-green-700",
+                            )}
+                          >
+                            {full
+                              ? t("pill_full")
+                              : t("remaining_of_capacity", {
+                                  remaining,
+                                  capacity: r.capacity,
+                                })}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </Fragment>
+              ))}
             </tbody>
           </table>
         </div>
