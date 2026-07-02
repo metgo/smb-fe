@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import type React from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -26,12 +27,13 @@ const UserListView: React.FC<UserListViewProps> = ({
   onDelete,
   activeRole,
 }) => {
+  const { t } = useTranslation("user");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
   const baseColumns = [
     {
       key: "name",
-      label: "Name",
+      label: t("name"),
       render: (user: IUser) => {
         const fullName = `${user.firstName} ${user.lastName}`;
         const initials =
@@ -61,7 +63,7 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "email",
-      label: "Email",
+      label: t("email"),
       render: (user: IUser) =>
         user.email ? (
           <a
@@ -80,7 +82,7 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "phone",
-      label: "Phone",
+      label: t("phone"),
       render: (user: IUser) =>
         user.phoneNumber ? (
           <a
@@ -99,7 +101,7 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "address",
-      label: "Address",
+      label: t("address"),
       render: (user: IUser) => (
         <span className={clsx("text-xs", textTertiary)}>{user.address}</span>
       ),
@@ -108,7 +110,7 @@ const UserListView: React.FC<UserListViewProps> = ({
 
   const dmoColumn = {
     key: "dmo",
-    label: "DMO",
+    label: t("dmo"),
     render: (user: IUser) =>
       user.dmo?.name ? (
         <div className="flex items-center gap-2">
@@ -130,7 +132,7 @@ const UserListView: React.FC<UserListViewProps> = ({
 
   const authorityColumn = {
     key: "authority",
-    label: "Authority",
+    label: t("authority"),
     render: (user: IUser) =>
       user.authority?.name ? (
         <div className="flex items-center gap-2">
@@ -152,7 +154,7 @@ const UserListView: React.FC<UserListViewProps> = ({
 
   const lastLoginColumn = {
     key: "lastLogin",
-    label: "Last Login",
+    label: t("last_login"),
     render: (user: IUser) => (
       <span className={clsx("text-xs", textTertiary)}>
         {formatLastLogin(user.lastLogin)}
@@ -162,7 +164,7 @@ const UserListView: React.FC<UserListViewProps> = ({
 
   const actionsColumn = {
     key: "actions",
-    label: "Actions",
+    label: t("actions"),
     render: (user: IUser) => (
       <div className="flex items-center gap-1">
         <button
@@ -171,7 +173,7 @@ const UserListView: React.FC<UserListViewProps> = ({
             onEdit(user);
           }}
           className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-          title="Edit user"
+          title={t("edit_user_action")}
         >
           <Pencil className="w-3.5 h-3.5" />
         </button>
@@ -181,7 +183,7 @@ const UserListView: React.FC<UserListViewProps> = ({
             onDelete(user);
           }}
           className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-          title="Delete user"
+          title={t("delete_user_action")}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>

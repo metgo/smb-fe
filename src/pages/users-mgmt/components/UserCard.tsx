@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { Mail, Phone, MapPin, Clock, Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
 
@@ -10,6 +11,7 @@ interface UserCardProps {
 }
 
 const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
+  const { t } = useTranslation("user");
   const { cardClasses, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   const initials =
@@ -51,14 +53,14 @@ const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
           <button
             onClick={() => onEdit(user)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-            title="Edit user"
+            title={t("edit_user_action")}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(user)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-            title="Delete user"
+            title={t("delete_user_action")}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -106,7 +108,9 @@ const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
         )}
       >
         <Clock className="w-3 h-3 shrink-0" />
-        <span>Last login: {formatLastLogin(user.lastLogin)}</span>
+        <span>
+          {t("last_login")}: {formatLastLogin(user.lastLogin)}
+        </span>
       </div>
     </div>
   );
