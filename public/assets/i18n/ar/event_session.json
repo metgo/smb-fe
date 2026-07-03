@@ -243,6 +243,7 @@
   "event_sessions_empty_title": "لا توجد جلسات متاحة",
   "event_sessions_empty_desc": "لم يتم إنشاء أي جلسات لهذا الحدث بعد",
   "event_sessions_create_btn": "إنشاء جلسة",
+  "event_landing_page_create_btn": "إنشاء صفحة هبوط",
   "event_sessions_edit_title": "تعديل الجلسة",
   "event_sessions_count_one": "جلسة",
   "event_sessions_count_other": "جلسات",
@@ -250,7 +251,8 @@
   "event_sessions_status_active": "نشط",
   "event_sessions_status_inactive": "غير نشط",
 
-  "page_title": "إدارة جلسات الأحداث",
+  "page_title_old": "إدارة جلسات الأحداث",
+  "page_title": "إدارة صفحات هبوط الفعاليات",
   "page_description": "إدارة الجلسات والطاقة الاستيعابية والتحليلات والإشعارات والتسجيلات لفعالياتك",
 
   "wizard_step_review": "مراجعة",

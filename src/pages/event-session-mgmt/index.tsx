@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useState, useEffect, useCallback } from "react";
 import {
   LandingTab,
@@ -26,13 +27,13 @@ import {
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
-import clsx from "clsx";
 import { useGetEventByIdQuery } from "@/store/api/eventQueryApi";
 import { useGenSessionPrivewLinkQuery } from "@/store/api/eventSessionApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { BackToListBtn } from "@/components/btns";
+import { getLngWiseStr } from "@/helpers";
 
 // ─── Tab → tour step mapping ──────────────────────────────────────────────────
 
@@ -45,15 +46,14 @@ const STEP_TAB_MAP: Partial<Record<string, TTabId>> = {
 };
 
 // ─── Inner component (needs TourProvider above it) ────────────────────────────
-
 function EventSessionMgmtPageInner() {
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
-  const sessionId = searchParams.get("sessionId") || "";
+  const wrapperId = searchParams.get("wrapperId") || "";
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
-  const { isDark, bgSecondary, textPrimary, textTertiary, cardClasses } =
+  const { isDark, bgSecondary, textPrimary, textTertiary, language } =
     useThemeClasses();
 
   const { data: eventDetails } = useGetEventByIdQuery(
@@ -76,9 +76,9 @@ function EventSessionMgmtPageInner() {
   }, [previewLinkData]);
 
   function handlePreview() {
-    if (!sessionId) return;
+    if (!wrapperId) return;
     if (previewArg === skipToken) {
-      setPreviewArg(sessionId);
+      setPreviewArg(wrapperId);
     } else {
       refetchPreviewLink();
     }
@@ -88,45 +88,16 @@ function EventSessionMgmtPageInner() {
   const [config, setConfigState] = useState<IAdminConfig>(() =>
     store.getConfig(),
   );
-  const [bookings, setBookings] = useState<TBookings>(() =>
+  const [bookings, _setBookings] = useState<TBookings>(() =>
     store.getBookings(),
   );
-  const [records, setRecords] = useState<IBookingRecord[]>(() =>
+  const [records, _setRecords] = useState<IBookingRecord[]>(() =>
     store.getRecords(),
   );
-  const [holds, setHolds] = useState<THolds>(() => store.getHolds());
-
-  // useEffect(() => {
-  //   const onStorage = (e: StorageEvent) => {
-  //     if (e.key === LS.holds) setHolds(store.getHolds());
-  //     if (e.key === LS.bookings) setBookings(store.getBookings());
-  //     if (e.key === LS.records) setRecords(store.getRecords());
-  //   };
-  //   window.addEventListener("storage", onStorage);
-  //   const iv = setInterval(() => setHolds(store.getHolds()), 1000);
-  //   return () => {
-  //     window.removeEventListener("storage", onStorage);
-  //     clearInterval(iv);
-  //   };
-  // }, []);
 
   function onChange(c: IAdminConfig) {
     setConfigState(c);
     store.setConfig(c);
-  }
-
-  function onResetData() {
-    if (
-      !confirm(
-        "Reset all bookings, holds, invites and content to demo defaults?",
-      )
-    )
-      return;
-    store.resetAll();
-    setConfigState(store.getConfig());
-    setBookings(store.getBookings());
-    setRecords(store.getRecords());
-    setHolds(store.getHolds());
   }
 
   // ─── Tour integration ───────────────────────────────────────────────────────
@@ -236,36 +207,41 @@ function EventSessionMgmtPageInner() {
             label={t("back_btn")}
             navPath={`${routes.eventDetails}?eventId=${eventId}`}
           />
-          <PageHeader
-            title={t("page_title")}
-            description={t("page_description")}
-            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-purple-600 to-pink-600"
-          />
-        </div>
-
-        {eventDetails && (
-          <div
-            className={clsx(
-              cardClasses,
-              "rounded-[14px] p-5 flex items-center gap-3 mb-4.5 mx-2",
-            )}
-          >
-            <ImageWithFallback
-              src={eventDetails?.images?.[0]?.image}
-              alt={eventDetails?.name}
-              className="w-12 h-12 rounded-[10px] object-cover shrink-0 border"
-              style={{ borderColor: isDark ? "#374151" : "#e5e7eb" }}
+          <div className="flex justify-between gap-2.5">
+            <PageHeader
+              title={t("page_title")}
+              description={t("page_description")}
+              h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-purple-600 to-pink-600"
             />
-            <div className="min-w-0">
-              <p className={clsx("text-xs font-semibold", textTertiary)}>
-                {t("event_header_label")}
-              </p>
-              <h2 className="m-0 text-[15.5px] font-extrabold tracking-tight truncate">
-                {eventDetails?.name}
-              </h2>
-            </div>
+            {eventDetails && (
+              <div
+                className={clsx(
+                  "rounded-[14px] p-5 flex items-center gap-3 mb-4.5 mx-2",
+                )}
+              >
+                <ImageWithFallback
+                  src={eventDetails?.images?.[0]?.image}
+                  alt={eventDetails?.name}
+                  className="w-12 h-12 rounded-[10px] object-cover shrink-0 border"
+                  style={{ borderColor: isDark ? "#374151" : "#e5e7eb" }}
+                />
+                <div className="min-w-0">
+                  <p className={clsx("text-xs font-semibold", textTertiary)}>
+                    {t("event_header_label")}
+                  </p>
+                  <h2 className="m-0 text-[15.5px] font-extrabold tracking-tight truncate">
+                    {getLngWiseStr(
+                      language,
+                      eventDetails?.name,
+                      eventDetails?.nameHe,
+                      eventDetails?.nameAr,
+                    )}
+                  </h2>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Sticky tabs nav */}
         <nav
@@ -284,7 +260,7 @@ function EventSessionMgmtPageInner() {
             {/* Preview trigger */}
             <button
               onClick={handlePreview}
-              disabled={!sessionId || isPreviewLoading}
+              disabled={!wrapperId || isPreviewLoading}
               title={t("preview_btn")}
               className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                 isDark
@@ -319,27 +295,30 @@ function EventSessionMgmtPageInner() {
         {/* Tab content */}
         <div data-tour="tab-content" className=" p-4">
           {tab === "landing" && (
-            <LandingTab config={config} onChange={onChange} />
-          )}
-          {tab === "capacity" && (
-            <CapacityTab
+            <LandingTab
               config={config}
-              records={records}
-              bookings={bookings}
-              holds={holds}
+              onChange={onChange}
+              eventId={eventId}
+              wrapperId={wrapperId}
             />
           )}
+          {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
           {tab === "analytics" && (
             <AnalyticsTab
               config={config}
               records={records}
               bookings={bookings}
+              // wrapperId={wrapperId}
             />
           )}
-          {tab === "notify" && <NotifyTab config={config} records={records} />}
-          {tab === "regs" && (
-            <RegistrationsTab records={records} onResetData={onResetData} />
+          {tab === "notify" && (
+            <NotifyTab
+              wrapperId={wrapperId}
+              config={config}
+              records={records}
+            />
           )}
+          {tab === "regs" && <RegistrationsTab wrapperId={wrapperId} />}
         </div>
       </div>
 

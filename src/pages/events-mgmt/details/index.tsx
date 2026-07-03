@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -291,7 +291,7 @@ export default function EventDetailsPage() {
                   }`}
                 >
                   <LayoutList className="w-4 h-4 shrink-0" />
-                  {t("create_session")}
+                  {t("create_landing_page")}
                 </button>
               </div>
             )}

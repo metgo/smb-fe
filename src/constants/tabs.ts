@@ -34,6 +34,7 @@ export const businessTabs = [
 
 export const eventTabs = [
   { id: "overview", label: "overview", icon: FileText },
+  { id: "sessions", label: "landing_pages", icon: LayoutList },
   { id: "attributes", label: "attributes", icon: Accessibility },
   { id: "date_time", label: "date_time", icon: Calendar },
   { id: "location", label: "location_map", icon: MapPin },
@@ -45,7 +46,6 @@ export const eventTabs = [
     label: "schedual_notification",
     icon: Bell,
   },
-  { id: "sessions", label: "sessions", icon: LayoutList },
 ];
 
 export const productTabs = [

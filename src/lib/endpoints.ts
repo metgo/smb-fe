@@ -71,11 +71,17 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
-  eventSession: "/event-sessions",
-  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   upcomingEvents: "/upcoming-events",
-  eventSessionPreviwLink: "/event-sessions/preview-link",
 
+  // event sessions
+  eventSession: "/event-sessions",
+  eventSessionPreviwLink: "/event-sessions/preview-link",
+  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
+  eventSessionCapacityReport: "/event-sessions/capacity-report",
+  eventSessionReg: "/event-sessions/registrations",
+  eventSessionTargetAudience: "/event-sessions/target-audience",
+
+  // users
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",

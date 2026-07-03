@@ -21,6 +21,7 @@ const ImageUploadSection = ({
   title,
   cardClasses,
 }: ImageUploadSectionProps) => {
+  console.log("🚀 ~ ImageUploadSection ~ initialImages:", initialImages);
   const { t: tc } = useTranslation("common");
   const { textTertiary, borderColor } = useThemeClasses();
 
@@ -36,6 +37,7 @@ const ImageUploadSection = ({
     confirmDelete,
     handleDeleteImage,
   } = useFilesUpload({ initialImages: initialImages || [], onImagesChange });
+  console.log("🚀 ~ ImageUploadSection ~ images:", images);
 
   return (
     <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
@@ -48,7 +50,7 @@ const ImageUploadSection = ({
         </span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" ref={imagesRef}>
-        {images.map((img, idx) => (
+        {images?.map((img, idx) => (
           <div
             key={idx}
             className={clsx(

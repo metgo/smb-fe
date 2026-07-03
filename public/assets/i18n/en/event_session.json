@@ -13,6 +13,7 @@
   "tab_regs": "Registrations",
 
   "sessions_label": "Sessions",
+  "landing_page_label": "Landing Pages",
   "add_session_btn": "+ Add",
   "slots_count_suffix": "slots",
 
@@ -243,6 +244,7 @@
   "event_sessions_empty_title": "No Sessions Available",
   "event_sessions_empty_desc": "No sessions have been created for this event yet",
   "event_sessions_create_btn": "Create Session",
+  "event_landing_page_create_btn": "Create Landing Page",
   "event_sessions_edit_title": "Edit session",
   "event_sessions_count_one": "session",
   "event_sessions_count_other": "sessions",
@@ -250,7 +252,8 @@
   "event_sessions_status_active": "Active",
   "event_sessions_status_inactive": "Inactive",
 
-  "page_title": "Event Session Management",
+  "page_title_old": "Event Session Management",
+  "page_title": "Event Landing Page Management",
   "page_description": "Manage sessions, capacity, analytics, notifications and registrations for your events",
 
   "wizard_step_review": "Review",

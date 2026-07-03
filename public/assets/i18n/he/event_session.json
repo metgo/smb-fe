@@ -243,6 +243,7 @@
   "event_sessions_empty_title": "אין סשנים זמינים",
   "event_sessions_empty_desc": "לא נוצרו סשנים לאירוע זה עדיין",
   "event_sessions_create_btn": "צור סשן",
+  "event_landing_page_create_btn": "צור דף נחיתה",
   "event_sessions_edit_title": "ערוך סשן",
   "event_sessions_count_one": "סשן",
   "event_sessions_count_other": "סשנים",
@@ -250,7 +251,8 @@
   "event_sessions_status_active": "פעיל",
   "event_sessions_status_inactive": "לא פעיל",
 
-  "page_title": "ניהול מפגשי אירועים",
+  "page_title_old": "ניהול מפגשי אירועים",
+  "page_title": "ניהול דפי הנחיתה של האירועים",
   "page_description": "נהלו מפגשים, תפוסה, אנליטיקה, התראות והרשמות לאירועים שלכם",
 
   "wizard_step_review": "סקירה",

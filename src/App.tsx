@@ -393,7 +393,11 @@ function App() {
     // Normal protected routes
     if (!isLoggedIn) {
       const attemptedPath = window.location.pathname + window.location.search;
-      if (attemptedPath && attemptedPath.includes(routes.notificationMgmt)) {
+      if (
+        attemptedPath &&
+        attemptedPath !== "/" &&
+        attemptedPath !== routes.auth
+      ) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 

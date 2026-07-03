@@ -329,7 +329,6 @@
   "attendee": "משתתף",
   "payment": "תשלום",
   "method": "שיטת תשלום",
-  "date": "תאריך",
   "ticket_id_label": "מזהה כרטיס",
   "ticket_scanned": "הכרטיס כבר נסרק",
   "ticket_expired": "הכרטיס פג תוקף",
@@ -348,5 +347,6 @@
   "failed_to_update_order_status": "עדכון סטטוס ההזמנה נכשל",
 
   "actions": "פעולות",
-  "create_session": "צור סשן"
+  "create_session": "צור סשן",
+  "create_landing_page": "צור דף נחיתה"
 }

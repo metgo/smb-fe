@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "./axiosBaseQuery";
+
 import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 interface GetAllEventSessionsParams {
   page?: number;
@@ -58,6 +59,44 @@ export const eventSessionApi = createApi({
       providesTags: ["EventSession"],
     }),
 
+    eventSessionRegList: builder.query<
+      IRegistrationsResponse,
+      { page: number; limit: number; wrapperId: string }
+    >({
+      query: (params) => ({
+        url: `${endpoints.eventSessionReg}/${params.wrapperId}`,
+        method: "GET",
+        params: {
+          page: params.page,
+          limit: params.limit,
+        },
+      }),
+      providesTags: ["EventSession"],
+    }),
+
+    eventSessionTargetAudience: builder.query<
+      ITargetAudienceResponse,
+      { page: number; limit: number; wrapperId: string }
+    >({
+      query: (params) => ({
+        url: `${endpoints.eventSessionTargetAudience}/${params.wrapperId}`,
+        method: "GET",
+        params: {
+          page: params.page,
+          limit: params.limit,
+        },
+      }),
+      providesTags: ["EventSession"],
+    }),
+
+    getCapacityReport: builder.query<ISessionSummaryResponse, string>({
+      query: (wrapperId) => ({
+        url: `${endpoints.eventSessionCapacityReport}/${wrapperId}`,
+        method: "GET",
+      }),
+      providesTags: ["EventSession"],
+    }),
+
     createEventSession: builder.mutation<
       IAdminConfig & { _id: string },
       CreateEventSessionPayload
@@ -99,4 +138,7 @@ export const {
   useUpdateEventSessionMutation,
   useDeleteEventSessionMutation,
   useGenSessionPrivewLinkQuery,
+  useGetCapacityReportQuery,
+  useEventSessionRegListQuery,
+  useEventSessionTargetAudienceQuery,
 } = eventSessionApi;

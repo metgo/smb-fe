@@ -147,3 +147,105 @@ interface TicketQuantity {
   isUnlimited: boolean;
   perUserLimit: number;
 }
+
+interface ISessionSummaryResponse {
+  success: boolean;
+  data: ISessionSummaryData;
+}
+
+interface ISessionSummaryData {
+  summary: ISessionSummary;
+  details: ISessionDetail[];
+  generatedAt: string; // ISO timestamp
+}
+
+interface ISessionSummary {
+  totalCapacity: number;
+  totalRegistered: number;
+  totalHeld: number;
+  totalAttended: number;
+  totalRemaining: number;
+  totalOccupancy: number;
+}
+
+interface ISessionDetail {
+  session: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  room: string;
+  capacity: number;
+  registered: number;
+  held: number;
+  attended: number;
+  remaining: number;
+  occupancy: number;
+}
+
+interface IRegistrationsResponse {
+  success: boolean;
+  data: IRegistrationsData;
+}
+
+interface IRegistrationsData {
+  wrapperId: string;
+  wrapperName: string;
+  registrations: IRegistration[];
+  totalRegistrations: number;
+  meta: IMetaData;
+  totalData: number;
+  confirmed: number;
+  attended: number;
+}
+
+interface IMetaData {
+  page: number;
+  limit: number;
+  data: number;
+  pageCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+interface IRegistration {
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  sessionName: string;
+  slotDate: string; // YYYY-MM-DD
+  slotTime: string; // HH:mm
+  room: string;
+  status: RegistrationStatus;
+  confirmedAt: string; // ISO timestamp
+  createdAt: string; // ISO timestamp
+}
+
+type RegistrationStatus =
+  | "CONFIRMED"
+  | "ATTENDED"
+  | "CANCELLED"
+  | "HELD"
+  | "PENDING";
+
+interface ITargetAudienceResponse {
+  success: boolean;
+  data: ITargetAudienceData;
+}
+
+interface ITargetAudienceData {
+  wrapperId: string;
+  wrapperName: string;
+  users: ITargetAudience[];
+  meta: IMetaData;
+  totalData: number;
+}
+
+interface ITargetAudience {
+  name: string;
+  email: string;
+  phone: string;
+  registrationCount: number;
+  firstRegistration: string; // ISO timestamp
+  lastRegistration: string; // ISO timestamp
+}

@@ -38,11 +38,18 @@ const TICKETS_PREVIEW_COUNT = 2;
 interface LandingTabProps {
   config: IAdminConfig;
   onChange: (config: IAdminConfig) => void;
+  eventId: string;
+  wrapperId: string;
 }
 
 const CARD_HEAD = "flex items-center justify-between mb-3.5";
 
-export function LandingTab({ config, onChange }: LandingTabProps) {
+export function LandingTab({
+  config,
+  onChange,
+  wrapperId,
+  eventId,
+}: LandingTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
   const {
@@ -57,9 +64,7 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
   const update = (patch: Partial<IAdminConfig>) =>
     onChange({ ...config, ...patch });
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const eventId = searchParams.get("eventId") || "";
-  const sessionId = searchParams.get("sessionId") || "";
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const [createEventSession, { isLoading: isCreating }] =
     useCreateEventSessionMutation();
@@ -67,12 +72,12 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
     useUpdateEventSessionMutation();
 
   const { data: ticketRes } = useGetAllSessionTicketQuery(
-    eventId ? { eventId, wrapperId: sessionId } : skipToken,
+    eventId ? { eventId, wrapperId } : skipToken,
   );
 
   const tickets = ticketRes?.data?.tickets ?? [];
-  const { data: existingSession } = useGetEventSessionByIdQuery(sessionId, {
-    skip: !sessionId,
+  const { data: existingSession } = useGetEventSessionByIdQuery(wrapperId, {
+    skip: !wrapperId,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -89,11 +94,11 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
   });
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!wrapperId) {
       onChange(DEFAULT_CONFIG);
       resetImage();
     }
-  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (existingSession) {
@@ -228,8 +233,11 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
       return;
     }
     try {
-      if (sessionId) {
-        await updateEventSession({ sessionId, body: config }).unwrap();
+      if (wrapperId) {
+        await updateEventSession({
+          sessionId: wrapperId,
+          body: config,
+        }).unwrap();
         toast.success(t("toast_session_updated"));
       } else {
         const created = await createEventSession({
@@ -239,7 +247,7 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev);
-            next.set("sessionId", created._id);
+            next.set("wrapperId", created._id);
             return next;
           },
           { replace: true },
@@ -249,7 +257,7 @@ export function LandingTab({ config, onChange }: LandingTabProps) {
     } catch {
       toast.error(
         t(
-          sessionId
+          wrapperId
             ? "toast_session_update_error"
             : "toast_session_create_error",
         ),

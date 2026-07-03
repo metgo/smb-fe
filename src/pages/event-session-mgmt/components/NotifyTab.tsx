@@ -1,8 +1,14 @@
 import clsx from "clsx";
-import { useState } from "react";
-import { AField } from "./AField";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { AField } from "./AField";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useEventSessionTargetAudienceQuery } from "@/store/api/eventSessionApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import ReactMultiSelect, {
+  type MultiSelectOption,
+} from "@/components/form-fields/ReactMultiSelect";
 
 interface SendLogEntry {
   at: number;
@@ -12,19 +18,32 @@ interface SendLogEntry {
   audience: string;
 }
 
+interface AudienceSelection {
+  isAll: boolean;
+  users: ITargetAudience[];
+}
+
+const ALL_VALUE = "all";
+
 interface NotifyTabProps {
   config: IAdminConfig;
   records: IBookingRecord[];
+  wrapperId: string;
 }
 
-export function NotifyTab({ config, records }: NotifyTabProps) {
+export function NotifyTab({ wrapperId }: NotifyTabProps) {
   const { t } = useTranslation("event_session");
   const { isDark, textTertiary, inputClasses, cardClasses, borderColor } =
     useThemeClasses();
 
+  const { data } = useEventSessionTargetAudienceQuery(
+    wrapperId ? { wrapperId, limit: 10, page: 1 } : skipToken,
+  );
+  const audienceUsers = useMemo(() => data?.data?.users ?? [], [data]);
+
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
-    "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2",
+    "w-full px-3 py-2.5 text-sm rounded-[9px] transition-[border-color,box-shadow] focus:outline-none focus:ring-2 border",
     inputClasses,
     isDark
       ? "focus:border-blue-400 focus:ring-blue-400/10"
@@ -49,18 +68,43 @@ export function NotifyTab({ config, records }: NotifyTabProps) {
           : "border-gray-200 bg-white",
     );
 
-  const [audience, setAudience] = useState<string>("all");
+  const [audience, setAudience] = useState<AudienceSelection>({
+    isAll: true,
+    users: [],
+  });
   const [channel, setChannel] = useState<"EMAIL" | "SMS">("EMAIL");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [log, setLog] = useState<SendLogEntry[]>([]);
 
-  const liveEvents = config.sessions
-    .map((s, i) => ({ ...s, idx: String(i) }))
-    .filter((s) => config.liveEventIds.includes(s.idx));
-  const recipients = records.filter(
-    (r) => audience === "all" || r.eventId === audience,
+  const audienceOptions: MultiSelectOption[] = useMemo(
+    () => [
+      { label: t("all_registrants"), value: ALL_VALUE },
+      ...audienceUsers.map((u) => ({ label: u.name, value: u.email })),
+    ],
+    [audienceUsers, t],
   );
+  const audienceSelectedValues = audience.isAll
+    ? [ALL_VALUE]
+    : audience.users.map((u) => u.email);
+
+  function handleAudienceChange(values: string[]) {
+    if (values.length === 0) {
+      setAudience({ isAll: false, users: [] });
+      return;
+    }
+    if (values.length === 1 && values[0] === ALL_VALUE) {
+      setAudience({ isAll: true, users: [] });
+      return;
+    }
+    const selectedEmails = values.filter((v) => v !== ALL_VALUE);
+    setAudience({
+      isAll: false,
+      users: audienceUsers.filter((u) => selectedEmails.includes(u.email)),
+    });
+  }
+
+  const recipients = audience.isAll ? audienceUsers : audience.users;
   const count = new Set(recipients.map((r) => r.email)).size;
 
   function send() {
@@ -71,10 +115,9 @@ export function NotifyTab({ config, records }: NotifyTabProps) {
         channel,
         subject,
         count,
-        audience:
-          audience === "all"
-            ? t("all_registrants")
-            : (liveEvents.find((e) => e.idx === audience)?.name ?? ""),
+        audience: audience.isAll
+          ? t("all_registrants")
+          : audience.users.map((u) => u.name).join(", "),
       },
       ...l,
     ]);
@@ -99,18 +142,12 @@ export function NotifyTab({ config, records }: NotifyTabProps) {
           {t("send_message_help")}
         </p>
         <AField label={t("audience_field")}>
-          <select
-            className={INPUT}
-            value={audience}
-            onChange={(e) => setAudience(e.target.value)}
-          >
-            <option value="all">{t("all_registrants")}</option>
-            {liveEvents.map((e) => (
-              <option key={e.idx} value={e.idx}>
-                {e.name}
-              </option>
-            ))}
-          </select>
+          <ReactMultiSelect
+            options={audienceOptions}
+            value={audienceSelectedValues}
+            onChange={handleAudienceChange}
+            placeholder={t("audience_field")}
+          />
         </AField>
         <div className="grid grid-cols-2 max-[560px]:grid-cols-1 gap-2.5 mb-3.5">
           <button

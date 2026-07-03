@@ -3,6 +3,8 @@ import { test, expect, newAuthenticatedContext } from "./fixtures/auth";
 import { EventsListPage } from "./pages/EventsListPage";
 import { EventDetailsPage } from "./pages/EventDetailsPage";
 import { EventSessionMgmtPage } from "./pages/EventSessionMgmtPage";
+import { LandingTabPage } from "./pages/LandingTabPage";
+import { SessionWizardPage } from "./pages/SessionWizardPage";
 
 /**
  * Discovers real staging data to drive the tests below:
@@ -151,6 +153,55 @@ test.describe("Event Session Management — new/unsaved session", () => {
     const mgmt = new EventSessionMgmtPage(page);
     await mgmt.backButton.click();
     await expect(page).toHaveURL(/\/event-details\?eventId=/);
+  });
+});
+
+test.describe("Event Session Management — human-like create & publish flow", () => {
+  test("fills the Landing tab, adds a session via the wizard, and publishes", async ({
+    page,
+  }) => {
+    // Real file upload + real create/publish network calls — slower than the UI-only tests above.
+    test.setTimeout(120_000);
+
+    const mgmt = new EventSessionMgmtPage(page);
+    await mgmt.goto(anyEventId);
+
+    const landing = new LandingTabPage(page);
+    await landing.fillPageHeader({
+      brand: "Playwright Test Studio",
+      headline: "Reserve Your Spot",
+      subhead: "Automated test session — safe to ignore.",
+    });
+
+    await landing.uploadHeroImage();
+
+    await landing.addSessionButton.click();
+    const wizard = new SessionWizardPage(page);
+    await wizard.fillDetailsStep({
+      name: "Playwright Test Session",
+      tagline: "Created by an automated test",
+      description:
+        "This session was created by an automated Playwright test to verify the create-and-publish flow.",
+    });
+    await wizard.skipToReview();
+    await wizard.done();
+
+    await landing.setSelectionMode("Multiple Choice");
+
+    test.skip(
+      !(await landing.hasAnyTickets()),
+      `Event ${anyEventId} has no tickets configured on staging, so Publish can't be exercised end-to-end yet — add a ticket to this event to unblock this test.`,
+    );
+
+    await landing.selectFirstTicket();
+    await expect(landing.publishButton).toBeEnabled();
+    await landing.publishButton.click();
+
+    await expect(page.getByText("Session created successfully!")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page).toHaveURL(/sessionId=/);
+    await expect(mgmt.previewButton).toBeEnabled();
   });
 });
 

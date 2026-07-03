@@ -329,5 +329,6 @@
   "failed_to_update_order_status": "فشل تحديث حالة الطلب",
 
   "actions": "الإجراءات",
-  "create_session": "إنشاء جلسة"
+  "create_session": "إنشاء جلسة",
+  "create_landing_page": "إنشاء صفحة هبوط"
 }

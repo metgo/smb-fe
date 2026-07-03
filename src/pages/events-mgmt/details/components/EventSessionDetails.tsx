@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Edit, LayoutList, Layers, Plus, Eye } from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { routes } from "@/lib/routes";
-import { useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
+import { useNavigate } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { Edit, LayoutList, Layers, Plus, Eye } from "lucide-react";
+
+import { routes } from "@/lib/routes";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
 import { useGetSessionsByEventIdQuery } from "@/store/api/eventQueryApi";
 
 interface EventSessionDetailsProps {
@@ -75,6 +76,12 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
                       isDark ? "bg-gray-700" : "bg-gray-200",
                     )}
                   />
+                  <div
+                    className={clsx(
+                      "h-7 w-7 rounded-md shrink-0",
+                      isDark ? "bg-gray-700" : "bg-gray-200",
+                    )}
+                  />
                 </div>
                 <div className="flex gap-2">
                   <div
@@ -112,7 +119,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
 
   function handleEditSession(editSessionId: string) {
     navigate(
-      `${routes.eventSessionMgmt}?eventId=${eventId}&sessionId=${editSessionId}`,
+      `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${editSessionId}`,
     );
   }
 
@@ -177,7 +184,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
           )}
         >
           <Plus size={16} />
-          {t("event_sessions_create_btn")}
+          {t("event_landing_page_create_btn")}
         </button>
       </div>
     );
@@ -198,7 +205,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
           )}
         >
           <Plus size={16} />
-          {t("event_sessions_create_btn")}
+          {t("event_landing_page_create_btn")}
         </button>
       </div>
       <div className="space-y-4">

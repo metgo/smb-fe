@@ -300,7 +300,6 @@
   "attendee": "Attendee",
   "payment": "Payment",
   "method": "Method",
-  "date": "Date",
   "ticket_id_label": "Ticket ID",
   "ticket_scanned": "This ticket has been scanned",
   "ticket_expired": "This ticket has expired",
@@ -319,5 +318,6 @@
   "failed_to_update_order_status": "Failed to update order status",
 
   "actions": "Actions",
-  "create_session": "Create Session"
+  "create_session": "Create Session",
+  "create_landing_page": "Create Landing Page"
 }
