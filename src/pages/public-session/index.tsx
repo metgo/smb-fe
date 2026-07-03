@@ -11,8 +11,10 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useGetPublicSessionTicketQuery } from "@/store/api/sessionQueryApi";
+import { useMarkSessionAttendedMutation } from "@/store/api/sessionMutationApi";
 
 interface IPurchaserInfo {
   name: string;
@@ -87,11 +89,25 @@ export default function PublicSessionPage() {
     sessionBookingId: string;
   }>();
 
-  const { data, isLoading, isError } = useGetPublicSessionTicketQuery(
+  const { data, isLoading, isError, refetch } = useGetPublicSessionTicketQuery(
     { wrapperId: wrapperId!, sessionBookingId: sessionBookingId! },
     { skip: !wrapperId || !sessionBookingId },
   );
   const session = data as IPublicSessionTicket | undefined;
+
+  const [markAttended, { isLoading: isMarkingAttended }] =
+    useMarkSessionAttendedMutation();
+
+  const handleMarkAttended = async () => {
+    if (!sessionBookingId) return;
+    try {
+      await markAttended({ sessionBookingId }).unwrap();
+      toast.success("הסטטוס עודכן ל'נכח/ה'");
+      refetch();
+    } catch {
+      toast.error("עדכון הסטטוס נכשל");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -265,6 +281,17 @@ export default function PublicSessionPage() {
                 {session.bookingReference}
               </p>
             </div>
+
+            {/* Mark as attended */}
+            {session.status?.toUpperCase() === "CONFIRMED" && (
+              <button
+                onClick={handleMarkAttended}
+                disabled={isMarkingAttended}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                {isMarkingAttended ? "מעדכן..." : "סימון כנכח/ה"}
+              </button>
+            )}
           </div>
         </div>
       </div>
