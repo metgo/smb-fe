@@ -132,6 +132,7 @@
   "notifications": "Notifications",
   "unsaved_changes": "Unsaved Changes",
   "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
+  "leave": "Leave",
   "delete_event": "Delete Event",
   "delete_event_confirm": "Are you sure you want to delete this event?",
 
@@ -233,6 +234,7 @@
   "no_images_uploaded": "No Images Uploaded",
   "upload_image_info": "Upload images to create your event gallery",
   "upload_up_to_10_images": "Upload up to 10 images",
+  "upload_up_to_3_images": "Upload up to 3 images",
 
   "attributes_desc": "Categories, accessibility features, and suitable audience",
   "subcategories": "Subcategories",

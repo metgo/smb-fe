@@ -25,6 +25,7 @@
   "users": "المستخدمون",
   "points_of_interest": "نقاط الاهتمام",
   "upload_up_to_10_images": "رفع حتى 10 صور",
+  "upload_up_to_3_images": "رفع حتى 3 صور",
 
   "title_placeholder": "أدخل العنوان...",
   "subtitle_placeholder": "أدخل العنوان الفرعي...",
@@ -146,6 +147,7 @@
   "delete_notification_cofirm": "هل أنت متأكد من حذف هذا الإشعار؟",
   "unsaved_changes": "تغييرات غير محفوظة",
   "unsaved_changes_confirm": "لديك تغييرات غير محفوظة. هل أنت متأكد من المغادرة؟",
+  "leave": "مغادرة",
   "delete_event": "حذف الفعالية",
   "delete_event_confirm": "هل أنت متأكد من حذف هذه الفعالية؟",
 

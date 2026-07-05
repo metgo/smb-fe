@@ -1,10 +1,13 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Loader2, Plus, X } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+
+const MAX_IMAGES = 3;
 
 interface ImageUploadSectionProps {
   id: string;
@@ -21,8 +24,8 @@ const ImageUploadSection = ({
   title,
   cardClasses,
 }: ImageUploadSectionProps) => {
-  console.log("🚀 ~ ImageUploadSection ~ initialImages:", initialImages);
   const { t: tc } = useTranslation("common");
+  const { t: tt } = useTranslation("toast");
   const { textTertiary, borderColor } = useThemeClasses();
 
   const {
@@ -36,8 +39,29 @@ const ImageUploadSection = ({
     isImageDeleting,
     confirmDelete,
     handleDeleteImage,
-  } = useFilesUpload({ initialImages: initialImages || [], onImagesChange });
-  console.log("🚀 ~ ImageUploadSection ~ images:", images);
+  } = useFilesUpload({
+    initialImages: initialImages || [],
+    onChange: onImagesChange,
+  });
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+
+    const remainingSlots = MAX_IMAGES - images.length;
+    if (files.length > remainingSlots) {
+      toast.error(tt("max_images_limit", { count: MAX_IMAGES }));
+    }
+
+    if (remainingSlots > 0) {
+      const filesToUpload = Array.from(files).slice(0, remainingSlots);
+      const dataTransfer = new DataTransfer();
+      filesToUpload.forEach((file) => dataTransfer.items.add(file));
+      handleImageUpload(dataTransfer.files);
+    }
+
+    e.target.value = "";
+  };
 
   return (
     <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
@@ -46,10 +70,10 @@ const ImageUploadSection = ({
           {title}
         </h3>
         <span className={clsx("text-xs", textTertiary)}>
-          {tc("upload_up_to_10_images")}
+          {tc("upload_up_to_3_images")}
         </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" ref={imagesRef}>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4" ref={imagesRef}>
         {images?.map((img, idx) => (
           <div
             key={idx}
@@ -90,7 +114,7 @@ const ImageUploadSection = ({
             </button>
           </div>
         ))}
-        {images.length < 10 && (
+        {images.length < MAX_IMAGES && (
           <div
             className={clsx(
               "aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer",
@@ -106,14 +130,12 @@ const ImageUploadSection = ({
               multiple
               accept="image/*"
               className="hidden"
-              onChange={(e) =>
-                e.target.files && handleImageUpload(e.target.files)
-              }
+              onChange={handleFileInputChange}
             />
             <div className="text-center">
               <Plus className={clsx("w-8 h-8 mx-auto mb-1", textTertiary)} />
               <p className={clsx("text-xs", textTertiary)}>
-                {tc("upload_up_to_10_images")}
+                {tc("upload_up_to_3_images")}
               </p>
             </div>
           </div>

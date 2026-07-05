@@ -12,7 +12,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 import { AField } from "./AField";
@@ -93,9 +93,12 @@ export function LandingTab({
     initialUrl: config.images?.[0]?.image,
   });
 
+  const savedConfigRef = useRef<IAdminConfig>(config);
+
   useEffect(() => {
     if (!wrapperId) {
       onChange(DEFAULT_CONFIG);
+      savedConfigRef.current = DEFAULT_CONFIG;
       resetImage();
     }
   }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -103,8 +106,27 @@ export function LandingTab({
   useEffect(() => {
     if (existingSession) {
       onChange(existingSession);
+      savedConfigRef.current = existingSession;
     }
   }, [existingSession]);
+
+  const isDirty =
+    JSON.stringify(config) !== JSON.stringify(savedConfigRef.current);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   useEffect(() => {
     const currentUrl = config.images?.[0]?.image ?? "";
@@ -238,12 +260,14 @@ export function LandingTab({
           sessionId: wrapperId,
           body: config,
         }).unwrap();
+        savedConfigRef.current = config;
         toast.success(t("toast_session_updated"));
       } else {
         const created = await createEventSession({
           ...config,
           eventId,
         }).unwrap();
+        savedConfigRef.current = config;
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev);
@@ -645,6 +669,16 @@ export function LandingTab({
           editIndex={editIndex}
         />
       )}
+
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        title="unsaved_changes"
+        message="unsaved_changes_confirm"
+        confirmText="leave"
+        variant="warning"
+        onCancel={() => blocker.state === "blocked" && blocker.reset()}
+        onConfirm={() => blocker.state === "blocked" && blocker.proceed()}
+      />
 
       <ConfirmDialog
         open={deleteIndex !== null}

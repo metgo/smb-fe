@@ -13,6 +13,7 @@
   "image_upload_failed": "فشل تحميل الصورة",
   "image_deleted": "تم حذف الصورة بنجاح",
   "delete_failed": "فشل حذف الصورة",
+  "max_images_limit": "يمكنك تحميل حتى {{count}} صور فقط",
   "login_failed": "فشل تسجيل الدخول",
 
   "poi_delete_loading": "جاري حذف نقاط الاهتمام...",
