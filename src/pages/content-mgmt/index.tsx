@@ -37,7 +37,7 @@ import {
   useCreateContentMutation,
   useUpdateContentMutation,
 } from "@/store/api/contentMutationApi";
-import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
@@ -546,7 +546,7 @@ export default function ContentMgmtPage() {
     data: productData,
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
-  } = useGetAllProductsQuery(
+  } = useGetContentManagementProductsQuery(
     selected === "Products" && externalApiId ? productParams : skipToken,
   );
 

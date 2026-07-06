@@ -41,7 +41,14 @@ export default function DmoAuthorityWebsiteSelector({
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { userRole, dmoId } = useAppSelector((state) => state.auth);
+
+  // Auto-select DMO user's own DMO on mount
+  useEffect(() => {
+    if (userRole === UserRole.DMO && dmoId && !selectedDmoId) {
+      setSelectDmoId(dmoId);
+    }
+  }, [userRole, dmoId, selectedDmoId, setSelectDmoId]);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
