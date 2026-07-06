@@ -219,6 +219,53 @@ interface ITicketDateTime {
   endTime: string;
 }
 
+// ── Sessions ─────────────────────────────────────────────────────────────────
+
+interface SessionSlot {
+  id: string;
+  time: string;
+  capacity: number;
+}
+
+interface SessionDate {
+  id: string;
+  date: string;
+  slots: SessionSlot[];
+}
+
+interface SessionInstructor {
+  name: string;
+  role: string;
+}
+
+interface EventSession {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  images: string[];
+  roomLabel: string;
+  rooms: string[];
+  instructors: SessionInstructor[];
+  dates: SessionDate[];
+}
+
+interface CreateSessionPayload {
+  eventId: string;
+  name: string;
+  tagline?: string;
+  description?: string;
+  images?: string[];
+  roomLabel?: string;
+  rooms?: string[];
+  instructors?: SessionInstructor[];
+  dates: SessionDate[];
+}
+
+type UpdateSessionPayload = Partial<Omit<CreateSessionPayload, "eventId">>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface ITicketPayload {
   _id?: string;
   name: string;

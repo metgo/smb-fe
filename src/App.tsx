@@ -44,6 +44,7 @@ import {
   UsersMgmtPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  EventSessionMgmtPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -400,7 +401,11 @@ function App() {
     // Normal protected routes
     if (!isLoggedIn) {
       const attemptedPath = window.location.pathname + window.location.search;
-      if (attemptedPath && attemptedPath.includes(routes.notificationMgmt)) {
+      if (
+        attemptedPath &&
+        attemptedPath !== "/" &&
+        attemptedPath !== routes.auth
+      ) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
@@ -493,8 +498,14 @@ function App() {
 
             { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
             { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
+
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },
+            {
+              path: routes.eventSessionMgmt,
+              element: <EventSessionMgmtPage />,
+            },
+
             { path: routes.productDetails, element: <ProductDetailsPage /> },
             { path: routes.contentMgmt, element: <ContentMgmtPage /> },
             { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },

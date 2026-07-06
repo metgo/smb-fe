@@ -152,10 +152,14 @@
 
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק את הכרטיס הזה?",
+
+  "delete_session": "מחיקת מפגש",
+  "delete_session_confirm": "האם אתה בטוח שברצונך למחוק את המפגש הזה?",
   "deletd_notification": "מחיקת התראה",
   "delete_notification_cofirm": "האם אתה בטוח שברצונך למחוק התראה זו?",
   "unsaved_changes": "שינויים שלא נשמרו",
   "unsaved_changes_confirm": "יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לעזוב?",
+  "leave": "עזוב",
   "delete_event": "מחיקת אירוע",
   "delete_event_confirm": "האם אתה בטוח שברצונך למחוק את האירוע הזה?",
 
@@ -231,6 +235,8 @@
   "media": "מדיה",
   "attributes": "מאפיינים",
   "schedual_notification": "תזמון התראות",
+  "sessions": "מפגשים",
+  "landing_pages": "דפי נחיתה",
   "pricing": "תמחור ומכירות",
   "inventory": "מלאי",
   "availability": "זמינות",
@@ -326,6 +332,7 @@
   "new_user": "משתמש חדש",
   "new_user_description": "כתובת האימייל הזו אינה קיימת במערכת. אנא צור משתמש חדש.",
   "upload_up_to_10_images": "העלה עד 10 תמונות",
+  "upload_up_to_3_images": "העלה עד 3 תמונות",
 
   "user_found_in_system": "משתמש נמצא במערכת",
   "user_name_label": "שם:",

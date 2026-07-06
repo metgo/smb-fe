@@ -10,6 +10,7 @@ import BackToListBtn from "./BackToListBtn";
 import DeleteIconBtn from "./DeleteIconBtn";
 import EditIconBtn from "./EditIconBtn";
 import DraftButton from "./DraftButton";
+import ActionIconButtons from "./ActionIconButtons";
 
 export {
   AddButton,
@@ -23,4 +24,5 @@ export {
   RefreshButton,
   StatusChangeBtn,
   PublishButton,
+  ActionIconButtons,
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -74,17 +74,23 @@ export function useFileUpload({
       : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" },
   );
 
-  /* Hydrate when initialUrl arrives asynchronously (edit mode) */
+  /* Hydrate whenever initialUrl changes (arrives asynchronously in edit
+   * mode, or switches to a different entity while this hook stays mounted) */
+  const initialUrlRef = useRef(initialUrl);
   useEffect(() => {
-    if (initialUrl && state.status === "idle") {
-      setState({
-        previewUrl: initialUrl,
-        gcsUrl: initialUrl,
-        progress: 100,
-        status: "success",
-      });
-    }
-  }, [initialUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (initialUrl === initialUrlRef.current) return;
+    initialUrlRef.current = initialUrl;
+    setState(
+      initialUrl
+        ? {
+            previewUrl: initialUrl,
+            gcsUrl: initialUrl,
+            progress: 100,
+            status: "success",
+          }
+        : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" },
+    );
+  }, [initialUrl]);
 
   /* ─── File selected from input / drag-drop ─────────────────────── */
   const handleFileSelect = useCallback(

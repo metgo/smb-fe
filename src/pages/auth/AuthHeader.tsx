@@ -2,8 +2,6 @@ import Select from "react-select";
 import { useTranslation } from "react-i18next";
 
 import { locales } from "@/lib/utils";
-import { useAppDispatch } from "@/hooks/hooks";
-import { setLanguage } from "@/features/settingsSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
 
@@ -27,13 +25,15 @@ const AuthHeader = ({
   handleCurrentTabChange,
 }: AuthHeaderProps) => {
   const { t, i18n } = useTranslation("login");
-  const dispatch = useAppDispatch();
 
   const { language } = useThemeClasses();
 
   const handleLanguageChange = (lng: Language) => {
-    dispatch(setLanguage(lng));
-    i18n.changeLanguage(lng);
+    // Redux `settings.language`/`isRTL` are updated via the i18n
+    // "languageChanged" listener once the bundle actually loads — see src/i18n/index.ts.
+    i18n.changeLanguage(lng).catch((error) => {
+      console.error("Failed to change language", error);
+    });
   };
 
   return (

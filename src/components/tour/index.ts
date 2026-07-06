@@ -16,3 +16,8 @@ export {
   BUSINESS_WIZARD_TOUR_STEP_IDS,
 } from "./tours/businessWizard";
 export type { BusinessWizardTourStepId } from "./tours/businessWizard";
+export {
+  EVENT_SESSION_TOUR_ID,
+  EVENT_SESSION_TOUR_STEP_IDS,
+} from "./tours/eventSessionMgmt";
+export type { EventSessionTourStepId } from "./tours/eventSessionMgmt";

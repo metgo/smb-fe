@@ -10,6 +10,7 @@ import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
 import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
+import { eventSessionApi } from "./api/eventSessionApi";
 import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
 import { voucherMutationApi } from "./api/voucherMutationApi";
@@ -65,6 +66,7 @@ export const store = configureStore({
 
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+    [eventSessionApi.reducerPath]: eventSessionApi.reducer,
 
     [userQueryApi.reducerPath]: userQueryApi.reducer,
     [orderQueryApi.reducerPath]: orderQueryApi.reducer,
@@ -91,6 +93,7 @@ export const store = configureStore({
     [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
     [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
   },
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       authApi.middleware,
@@ -99,6 +102,7 @@ export const store = configureStore({
       masterDataApi.middleware,
       userMutationApi.middleware,
       eventMutationApi.middleware,
+      eventSessionApi.middleware,
       businessMutationApi.middleware,
       orderMutationApi.middleware,
       eventQueryApi.middleware,

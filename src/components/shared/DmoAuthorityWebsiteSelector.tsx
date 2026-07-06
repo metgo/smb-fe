@@ -4,7 +4,7 @@ import { useEffect, useCallback, useMemo } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { FormFieldWrapper, SelectField } from "@/components/form-fields";
+import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 import ImageWithFallback from "./ImageWithFallback";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
@@ -40,7 +40,7 @@ export default function DmoAuthorityWebsiteSelector({
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
-  const { isDark, selectInputClasses } = useThemeClasses();
+  const { isDark } = useThemeClasses();
   const { userRole, dmoId } = useAppSelector((state) => state.auth);
 
   // Auto-select DMO user's own DMO on mount
@@ -53,26 +53,6 @@ export default function DmoAuthorityWebsiteSelector({
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
-
-  // Filter DMO options: Show all for superadmin/authority, only user's DMO for DMO users
-  const filteredDmoOptions = useMemo(() => {
-    if (userRole === UserRole.DMO && dmoId) {
-      return (
-        dmosAuthorities
-          ?.filter((d) => d._id === dmoId)
-          ?.map((d) => ({
-            label: d.name,
-            value: d._id,
-          })) ?? []
-      );
-    }
-    return (
-      dmosAuthorities?.map((d) => ({
-        label: d.name,
-        value: d._id,
-      })) ?? []
-    );
-  }, [userRole, dmoId, dmosAuthorities]);
 
   const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
     const result = {
@@ -272,10 +252,8 @@ export default function DmoAuthorityWebsiteSelector({
             hint={t("your_geographic_location")}
             error={errors.dmoId}
           >
-            <SelectField
-              isDisabled={
-                userRole === UserRole.AUTHORITY || userRole === UserRole.DMO
-              }
+            <ReactSelect
+              isDisabled={userRole === UserRole.AUTHORITY}
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
@@ -289,16 +267,20 @@ export default function DmoAuthorityWebsiteSelector({
                 }
               }}
               placeholder={t("select_dmo")}
-              options={filteredDmoOptions}
-              error={errors.dmoId}
-              selectInputClasses={selectInputClasses}
+              items={
+                dmosAuthorities?.map((d) => ({
+                  name: d.name,
+                  _id: d._id,
+                  logo: d.logoPath,
+                })) ?? []
+              }
             />
           </FormFieldWrapper>
         </div>
 
         <div className="flex-1 w-full">
           <FormFieldWrapper required label={t("select_authority")}>
-            <SelectField
+            <ReactSelect
               value={selectedAuthorityId}
               isDisabled={userRole === UserRole.AUTHORITY}
               onChange={(v) => {
@@ -312,14 +294,13 @@ export default function DmoAuthorityWebsiteSelector({
                 }
               }}
               placeholder={t("select_authority")}
-              options={
-                selectedDmos?.authorities?.map((a) => ({
-                  label: a.name,
-                  value: a._id,
+              items={
+                selectedDmos?.authorities?.map((a: any) => ({
+                  name: a.name,
+                  _id: a._id,
+                  logo: a.logoPath,
                 })) ?? []
               }
-              error={errors.authorityId}
-              selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
