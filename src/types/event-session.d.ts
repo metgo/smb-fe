@@ -245,3 +245,60 @@ interface ITargetAudience {
   firstRegistration: string; // ISO timestamp
   lastRegistration: string; // ISO timestamp
 }
+
+// Send notification payload
+interface ISendNotificationPayload {
+  type: "email" | "sms";
+  recipientType: "all" | "custom";
+  subject?: string;
+  message: string;
+  recipients?: string[];
+}
+
+interface INotificationHistoryResponse {
+  data: INotificationHistoryItem[];
+}
+
+interface INotificationHistoryItem {
+  _id: string;
+  type: "email" | "sms";
+  recipientType: string;
+  subject?: string;
+  message: string;
+  status: "SENT" | "FAILED" | "PENDING";
+  successCount: number;
+  failureCount: number;
+  recipientCount: number;
+  sentAt: string;
+}
+
+interface INotificationDetailResponse {
+  _id: string;
+  updatedAt: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+  deletedBy: string | null;
+  deletedAt: string | null;
+  isDeleted: boolean;
+  wrapperId: string;
+  type: "email" | "sms";
+  recipientType: string;
+  recipients: INotificationRecipient[];
+  subject?: string;
+  message: string;
+  language: string;
+  status: "SENT" | "FAILED" | "PENDING";
+  sentBy: string;
+  successCount: number;
+  failureCount: number;
+  __v: number;
+  errorSummary?: string;
+  sentAt: string;
+}
+
+interface INotificationRecipient {
+  email?: string;
+  phone?: string;
+  status: "sent" | "failed" | "pending";
+  error?: string;
+}

@@ -128,6 +128,52 @@ export const eventSessionApi = createApi({
       }),
       invalidatesTags: ["EventSession"],
     }),
+
+    // Notificaiton send
+    sendSessionNotification: builder.mutation<
+      any,
+      { wrapperId: string; data: ISendNotificationPayload }
+    >({
+      query: ({ wrapperId, data }) => ({
+        url: `${endpoints.eventSessionSendNotification}/${wrapperId}`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    reSendSessionNotification: builder.mutation<any, string>({
+      query: (historyId) => ({
+        url: `${endpoints.eventSessionResendNotification}/${historyId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["EventSession"],
+    }),
+
+    getSendNotificationHistory: builder.query<
+      INotificationHistoryResponse,
+      { wrapperId: string; page: number; limit: number }
+    >({
+      query: ({ wrapperId, page, limit }) => ({
+        url: `${endpoints.eventSessionSendHistory}/${wrapperId}`,
+        method: "GET",
+        params: {
+          page,
+          limit,
+        },
+      }),
+      providesTags: ["EventSession"],
+    }),
+
+    getSendNotificationHistoryDetails: builder.query<
+      INotificationDetailResponse,
+      string
+    >({
+      query: (historyId) => ({
+        url: `${endpoints.eventSessionSendHistoryDetails}/${historyId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -141,4 +187,9 @@ export const {
   useGetCapacityReportQuery,
   useEventSessionRegListQuery,
   useEventSessionTargetAudienceQuery,
+
+  useSendSessionNotificationMutation,
+  useReSendSessionNotificationMutation,
+  useGetSendNotificationHistoryQuery,
+  useGetSendNotificationHistoryDetailsQuery,
 } = eventSessionApi;

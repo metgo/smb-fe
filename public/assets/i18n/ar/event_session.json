@@ -78,6 +78,8 @@
   "multi_select_tickets_title": "التذاكر المعروضة في الصفحة",
   "multi_select_tickets_help": "اختر التذاكر التي يمكن للضيوف اختيارها في صفحة الهبوط.",
   "multi_select_tickets_empty": "لم يتم العثور على تذاكر لهذه الفعالية.",
+  "ticket_auto_selected_note": "تم اختيار هذه التذكرة تلقائيًا.",
+  "ticket_already_used_note": "هذه التذكرة مستخدمة بالفعل في صفحة هبوط سابقة.",
   "view_more_tickets_btn": "عرض {{count}} تذاكر إضافية",
   "done_btn": "تم",
 
@@ -114,6 +116,7 @@
   "send_message_help": "اختر الجمهور والقناة والمحتوى. في الإنتاج تُرسل الرسائل عبر مزود البريد/SMS — محاكى هنا.",
   "audience_field": "الجمهور المستهدف",
   "all_registrants": "جميع المسجلين",
+  "custom_recipients_label": "اختيار مخصص",
   "channel_email_label": "بريد إلكتروني",
   "channel_email_desc": "رسالة بريد إلكتروني",
   "channel_sms_label": "SMS",
@@ -131,6 +134,19 @@
   "col_audience": "الجمهور",
   "col_subject": "الموضوع",
   "col_recipients": "المستلمون",
+  "col_actions": "الإجراءات",
+  "view_action": "عرض",
+  "resend_action": "إعادة الإرسال",
+  "history_detail_title": "تفاصيل الرسالة",
+  "detail_status_label": "الحالة",
+  "detail_sent_at_label": "تاريخ الإرسال",
+  "detail_success_label": "تم التسليم",
+  "detail_failed_label": "فشل",
+  "detail_message_label": "الرسالة",
+  "detail_recipients_label": "المستلمون",
+  "history_status_sent": "تم الإرسال",
+  "history_status_failed": "فشل",
+  "history_status_pending": "قيد الانتظار",
 
   "registrations_title": "التسجيلات",
   "reset_bookings_btn": "إعادة تعيين جميع الحجوزات",
@@ -237,6 +253,9 @@
   "toast_session_activated": "تم تفعيل الجلسة",
   "toast_session_deactivated": "تم تعطيل الجلسة",
   "toast_session_status_error": "فشل تحديث حالة الجلسة",
+
+  "toast_notification_sent": "تم إرسال الرسالة بنجاح!",
+  "toast_notification_send_error": "فشل إرسال الرسالة.",
 
   "landing_add_session_btn": "إضافة جلسة",
 

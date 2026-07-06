@@ -79,6 +79,8 @@
   "multi_select_tickets_title": "Tickets shown on page",
   "multi_select_tickets_help": "Select which tickets guests can choose from on the landing page.",
   "multi_select_tickets_empty": "No tickets found for this event.",
+  "ticket_auto_selected_note": "This ticket has been automatically selected.",
+  "ticket_already_used_note": "This ticket is already used on previous landing page.",
   "view_more_tickets_btn": "View {{count}} more tickets",
   "done_btn": "Done",
 
@@ -115,6 +117,7 @@
   "send_message_help": "Choose audience, channel and content. In production, messages are sent via email/SMS provider — simulated here.",
   "audience_field": "Target Audience",
   "all_registrants": "All Registrants",
+  "custom_recipients_label": "Custom Selection",
   "channel_email_label": "Email",
   "channel_email_desc": "Email message",
   "channel_sms_label": "SMS",
@@ -132,6 +135,19 @@
   "col_audience": "Audience",
   "col_subject": "Subject",
   "col_recipients": "Recipients",
+  "col_actions": "Actions",
+  "view_action": "View",
+  "resend_action": "Resend",
+  "history_detail_title": "Message Details",
+  "detail_status_label": "Status",
+  "detail_sent_at_label": "Sent At",
+  "detail_success_label": "Delivered",
+  "detail_failed_label": "Failed",
+  "detail_message_label": "Message",
+  "detail_recipients_label": "Recipients",
+  "history_status_sent": "Sent",
+  "history_status_failed": "Failed",
+  "history_status_pending": "Pending",
 
   "registrations_title": "Registrations",
   "reset_bookings_btn": "Reset All Bookings",
@@ -238,6 +254,9 @@
   "toast_session_activated": "Session marked as active",
   "toast_session_deactivated": "Session marked as inactive",
   "toast_session_status_error": "Failed to update session status",
+
+  "toast_notification_sent": "Message sent successfully!",
+  "toast_notification_send_error": "Failed to send message.",
 
   "landing_add_session_btn": "Add Session",
 

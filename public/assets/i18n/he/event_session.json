@@ -78,6 +78,8 @@
   "multi_select_tickets_title": "כרטיסים המוצגים בדף",
   "multi_select_tickets_help": "בחרו אילו כרטיסים יוצגו לאורחים לבחירה בדף הנחיתה.",
   "multi_select_tickets_empty": "לא נמצאו כרטיסים עבור אירוע זה.",
+  "ticket_auto_selected_note": "כרטיס זה נבחר אוטומטית.",
+  "ticket_already_used_note": "כרטיס זה כבר בשימוש בדף נחיתה קודם.",
   "view_more_tickets_btn": "הצג עוד {{count}} כרטיסים",
   "done_btn": "סיום",
 
@@ -114,6 +116,7 @@
   "send_message_help": "בחרו קהל, ערוץ ותוכן. בגרסת הייצור ההודעות נשלחות דרך ספק אימייל/SMS — כאן מדומה.",
   "audience_field": "קהל יעד",
   "all_registrants": "כל הנרשמים",
+  "custom_recipients_label": "בחירה מותאמת אישית",
   "channel_email_label": "אימייל",
   "channel_email_desc": "הודעת דוא״ל",
   "channel_sms_label": "SMS",
@@ -131,6 +134,19 @@
   "col_audience": "קהל",
   "col_subject": "נושא",
   "col_recipients": "נמענים",
+  "col_actions": "פעולות",
+  "view_action": "צפייה",
+  "resend_action": "שליחה מחדש",
+  "history_detail_title": "פרטי ההודעה",
+  "detail_status_label": "סטטוס",
+  "detail_sent_at_label": "נשלח בתאריך",
+  "detail_success_label": "נמסר בהצלחה",
+  "detail_failed_label": "נכשל",
+  "detail_message_label": "הודעה",
+  "detail_recipients_label": "נמענים",
+  "history_status_sent": "נשלח",
+  "history_status_failed": "נכשל",
+  "history_status_pending": "ממתין",
 
   "registrations_title": "הרשמות",
   "reset_bookings_btn": "איפוס כל ההזמנות",
@@ -237,6 +253,9 @@
   "toast_session_activated": "הסשן סומן כפעיל",
   "toast_session_deactivated": "הסשן סומן כלא פעיל",
   "toast_session_status_error": "עדכון סטטוס הסשן נכשל",
+
+  "toast_notification_sent": "ההודעה נשלחה בהצלחה!",
+  "toast_notification_send_error": "שליחת ההודעה נכשלה.",
 
   "landing_add_session_btn": "הוסף סשן",
 

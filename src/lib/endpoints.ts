@@ -80,6 +80,10 @@ export const endpoints = {
   eventSessionCapacityReport: "/event-sessions/capacity-report",
   eventSessionReg: "/event-sessions/registrations",
   eventSessionTargetAudience: "/event-sessions/target-audience",
+  eventSessionSendNotification: "/event-sessions/send-notification",
+  eventSessionSendHistory: "/event-sessions/send-history",
+  eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
+  eventSessionResendNotification: "/event-sessions/resend-notification",
 
   // users
   users: "/users",

@@ -42,6 +42,8 @@ function EventSessionMgmtPageInner() {
   const [searchParams] = useSearchParams();
   const eventId = searchParams.get("eventId") || "";
   const wrapperId = searchParams.get("wrapperId") || "";
+  const ticketId = searchParams.get("ticketId") || "";
+  const isDuplicate = searchParams.get("isDuplicate") || "";
 
   const { t } = useTranslation("event_session");
   const { t: tt } = useTranslation("tour");
@@ -213,7 +215,7 @@ function EventSessionMgmtPageInner() {
             label={t("back_btn")}
             navPath={`${routes.eventDetails}?eventId=${eventId}`}
           />
-          <div className="flex justify-between gap-2.5">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2.5">
             <PageHeader
               title={t("page_title")}
               description={t("page_description")}
@@ -222,7 +224,7 @@ function EventSessionMgmtPageInner() {
             {eventDetails && (
               <div
                 className={clsx(
-                  "rounded-[14px] p-5 flex items-center gap-3 mb-4.5 mx-2",
+                  "rounded-[14px] p-5 flex items-center gap-3 mb-4.5 mx-2 min-w-0 w-full sm:w-auto sm:shrink-0",
                 )}
               >
                 <ImageWithFallback
@@ -306,6 +308,8 @@ function EventSessionMgmtPageInner() {
               onChange={onChange}
               eventId={eventId}
               wrapperId={wrapperId}
+              ticketId={ticketId}
+              isDuplicate={isDuplicate === "true"}
               onDirtyChange={setIsLandingDirty}
               isLoading={isFetching || isLoading}
             />

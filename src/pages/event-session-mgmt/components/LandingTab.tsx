@@ -40,8 +40,10 @@ interface LandingTabProps {
   onChange: (config: IAdminConfig) => void;
   eventId: string;
   wrapperId: string;
+  ticketId: string;
   onDirtyChange?: (isDirty: boolean) => void;
   isLoading: boolean;
+  isDuplicate: boolean;
 }
 
 const CARD_HEAD = "flex items-center justify-between mb-3.5";
@@ -51,8 +53,10 @@ export function LandingTab({
   onChange,
   wrapperId,
   eventId,
+  ticketId,
   onDirtyChange,
   isLoading,
+  isDuplicate = false,
 }: LandingTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
@@ -75,11 +79,10 @@ export function LandingTab({
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
 
-  const { data: ticketRes } = useGetAllSessionTicketQuery(
+  const { data: ticketRes, refetch } = useGetAllSessionTicketQuery(
     eventId ? { eventId, wrapperId } : skipToken,
   );
 
-  const tickets = ticketRes?.data?.tickets ?? [];
   const { data: existingSession } = useGetEventSessionByIdQuery(wrapperId, {
     skip: !wrapperId,
   });
@@ -106,13 +109,36 @@ export function LandingTab({
       resetImage();
     }
   }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   useEffect(() => {
     if (existingSession) {
-      onChange(existingSession);
-      savedConfigRef.current = existingSession;
+      if (isDuplicate) {
+        const formattedExsitingSession = {
+          ...existingSession,
+          brand: `${existingSession.brand} (Copy)`,
+          images: [],
+          ticketIds: [],
+          sessions: existingSession?.sessions?.map((session) => ({
+            ...session,
+            images: [],
+          })),
+        };
+        (onChange(formattedExsitingSession),
+          (savedConfigRef.current = formattedExsitingSession));
+      } else {
+        onChange(existingSession);
+        savedConfigRef.current = existingSession;
+      }
     }
   }, [existingSession]);
+  const tickets = isDuplicate
+    ? ticketRes?.data?.tickets?.filter(
+        (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
+      )
+    : (ticketRes?.data?.tickets ?? []);
 
   const isDirty =
     JSON.stringify(config) !== JSON.stringify(savedConfigRef.current);
@@ -146,6 +172,12 @@ export function LandingTab({
       update({ images: gcsUrl ? [{ image: gcsUrl }] : [] });
     }
   }, [gcsUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!ticketId) return;
+    if ((config.ticketIds ?? []).includes(ticketId)) return;
+    update({ ticketIds: [...(config.ticketIds ?? []), ticketId] });
+  }, [ticketId, config.ticketIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [editIndex, setEditIndex] = useState<number>(0);
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
@@ -267,7 +299,7 @@ export function LandingTab({
       return;
     }
     try {
-      if (wrapperId) {
+      if (wrapperId && !isDuplicate) {
         await updateEventSession({
           sessionId: wrapperId,
           body: config,
@@ -493,6 +525,11 @@ export function LandingTab({
             {!hasTicket && (
               <p className="text-xs font-semibold text-red-500 -mt-2 mb-3">
                 {t("required_badge")}
+              </p>
+            )}
+            {ticketRes?.data?.availableTickets === 0 && !wrapperId && (
+              <p className="text-xs font-semibold text-amber-500 -mt-2 mb-3">
+                {t("ticket_already_used_note")}
               </p>
             )}
 

@@ -2,13 +2,24 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Ticket, Trash2, AlertCircle, Copy, PenBox } from "lucide-react";
+import {
+  Plus,
+  Ticket,
+  Trash2,
+  AlertCircle,
+  Copy,
+  PenBox,
+  LayoutList,
+} from "lucide-react";
+
+import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import { TicketCardSkeleton } from "@/components/skeletons";
 import { ConfirmDialog } from "@/components/shared";
 import { TooltipWrapper } from "@/components/wrapper";
 import TicketModal from "../modals/TicketModal";
+import { ActionIconButtons } from "@/components/btns";
 
 interface TicketsStepProps {
   showTicketModal: boolean;
@@ -255,51 +266,59 @@ const TicketsStep: React.FC<TicketsStepProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      setEditingTicket({
-                        ...ticket,
-                        imageUrl: ticket.images?.[0]?.image ?? "",
-                      });
-                      setTicketDateTime(ticket.dayDescription ?? []);
-                      setOpMode("UPDATE");
-                      setShowTicketModal(true);
-                    }}
-                    className={clsx(
-                      "p-2.5 rounded-lg transition-colors",
-                      isDark
-                        ? "text-white/70 hover:bg-gray-700"
-                        : "text-gray-600 hover:bg-gray-200",
-                    )}
-                    title={t("edit_ticket")}
-                  >
-                    <PenBox className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingTicket({
-                        ...ticket,
-                        name: `${ticket.name} (${t("copy")})`,
-                        imageUrl: ticket.images?.[0]?.image ?? "",
-                      });
-                      setOpMode("DUPLICATE");
-                      setShowTicketModal(true);
-                    }}
-                    className="p-2.5 rounded-lg text-blue-500 hover:bg-blue-500/10 transition-colors"
-                    title={t("duplicate_ticket")}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTicketToDelete(ticket._id);
-                      setIsConfirmOpen(true);
-                    }}
-                    className="p-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-                    title={t("delete_ticket")}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <ActionIconButtons
+                    isDark={isDark}
+                    actions={[
+                      {
+                        title: t("edit_ticket"),
+                        icon: PenBox,
+                        color: "gray",
+                        onClick: () => {
+                          setEditingTicket({
+                            ...ticket,
+                            imageUrl: ticket.images?.[0]?.image ?? "",
+                          });
+                          setTicketDateTime(ticket.dayDescription ?? []);
+                          setOpMode("UPDATE");
+                          setShowTicketModal(true);
+                        },
+                      },
+                      {
+                        title: t("duplicate_ticket"),
+                        icon: Copy,
+                        color: "blue",
+                        onClick: () => {
+                          setEditingTicket({
+                            ...ticket,
+                            name: `${ticket.name} (${t("copy")})`,
+                            imageUrl: ticket.images?.[0]?.image ?? "",
+                          });
+                          setOpMode("DUPLICATE");
+                          setShowTicketModal(true);
+                        },
+                      },
+                      {
+                        title: t("delete_ticket"),
+                        icon: Trash2,
+                        color: "red",
+                        onClick: () => {
+                          setTicketToDelete(ticket._id);
+                          setIsConfirmOpen(true);
+                        },
+                      },
+                      {
+                        title: "Create Landing Page",
+                        icon: LayoutList,
+                        color: "yellow",
+                        onClick: () => {
+                          window.open(
+                            `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                            "_blank",
+                          );
+                        },
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             </div>
