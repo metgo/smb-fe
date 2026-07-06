@@ -459,9 +459,9 @@ export function useEventWizardState({
     setShortDescription("");
     setShortDescriptionHe("");
     setShortDescriptionAr("");
-    setFullDescription("<p></p>");
-    setFullDescriptionHe("<p></p>");
-    setFullDescriptionAr("<p></p>");
+    setFullDescription("");
+    setFullDescriptionHe("");
+    setFullDescriptionAr("");
     setSelectedBusinessId("");
     setEventLanguage("en");
     setEventStatus("draft");

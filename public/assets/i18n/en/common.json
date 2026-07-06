@@ -69,6 +69,8 @@
   "documents": "Documents",
   "version": "Version",
   "max_characters": "Max characters",
+  "char_count": "{{count}} / {{limit}} characters",
+  "exceeds_char_limit": "Exceeds {{limit}} character limit",
   "website_config": "Website Config",
   "dmos": "DMOs",
   "authorities": "Authorities",

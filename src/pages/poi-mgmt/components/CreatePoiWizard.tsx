@@ -9,7 +9,8 @@ import {
   Tag,
   FileText,
   Users,
-  Languages as LanguagesIcon,
+  LanguagesIcon,
+  // Languages as LanguagesIcon,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -26,6 +27,7 @@ import {
   PoiContactInfo,
   PoiMedia,
   PoiTranslateButton,
+  // PoiTranslateButton,
 } from "./sub-components";
 import {
   ConfirmDialog,
@@ -60,6 +62,7 @@ export default function CreatePoiWizard({
 }: CreatePoiWizardProps) {
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
+  const { t: tc } = useTranslation("common");
 
   const { textPrimary, language, theme } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
@@ -394,6 +397,7 @@ export default function CreatePoiWizard({
           newErrors.fullDescription = t("required_field");
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
+
         break;
 
       case 6:
@@ -434,6 +438,26 @@ export default function CreatePoiWizard({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.content || "").length > 500 ||
+      (formData.contentHe || "").length > 500 ||
+      (formData.contentAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     let allValid = true;
     for (let i = 1; i <= 6; i++) {
       if (!validateStep(i)) {

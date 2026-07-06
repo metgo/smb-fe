@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
+import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -16,6 +17,7 @@ export default function ArticleContentForm({
   editingLanguage,
 }: ArticleContentFormProps) {
   const { t } = useTranslation("article");
+  const { t: tc } = useTranslation("common");
   const {
     bgSecondary,
     bgPrimary,
@@ -89,10 +91,15 @@ export default function ArticleContentForm({
         </p>
       </div>
 
-      <div>
-        <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("short_description")} <span className="text-red-500">*</span>
-        </label>
+      <FormFieldWrapper
+        label={t("short_description")}
+        required
+        error={
+          (formData[shortDescField] || "").length > 150
+            ? tc("exceeds_char_limit", { limit: 150 })
+            : undefined
+        }
+      >
         <textarea
           value={formData[shortDescField] || ""}
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
@@ -100,11 +107,15 @@ export default function ArticleContentForm({
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
+          maxLength={150}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {(formData[shortDescField] || "").length} {t("characters")}
+          {tc("char_count", {
+            count: (formData[shortDescField] || "").length,
+            limit: 150,
+          })}
         </p>
-      </div>
+      </FormFieldWrapper>
 
       <RichTextEditor
         content={formData[contentField] || ""}
