@@ -13,6 +13,7 @@ import {
   CreditCard,
   FileText,
   LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
@@ -51,6 +52,7 @@ import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
 import ProductTranslateButton from "./sub-components/ProductTranslateButton";
+// import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -69,8 +71,8 @@ export default function CreateProductWizard({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
-
   const { t: tp } = useTranslation("common");
+
   const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
@@ -424,7 +426,6 @@ export default function CreateProductWizard({
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
     { number: 2, title: tp("translation"), icon: LanguagesIcon },
-
     { number: 3, title: t("product_segmentation"), icon: Package },
     { number: 4, title: t("product_pricing"), icon: CreditCard },
     { number: 5, title: t("product_media"), icon: ImageIcon },
@@ -446,12 +447,13 @@ export default function CreateProductWizard({
           !formData.shortDescriptionHe
         )
           newErrors.shortDescEn = t("field_required");
+
         break;
-      case 2:
+      case 3:
         if (!formData.primaryCategory)
           newErrors.categories = t("select_at_least_one_category");
         break;
-      case 3:
+      case 4:
         if (!formData.sellingPrice || parseFloat(formData.sellingPrice) <= 0) {
           newErrors.sellingPrice = t("invalid_price");
         }
@@ -462,7 +464,7 @@ export default function CreateProductWizard({
           newErrors.quantity = t("invalid_quantity");
         }
         break;
-      case 4:
+      case 5:
         break;
     }
     setErrors(newErrors);
@@ -499,6 +501,25 @@ export default function CreateProductWizard({
   };
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
 
     let allValid = true;
     for (let i = 1; i <= 5; i++) {

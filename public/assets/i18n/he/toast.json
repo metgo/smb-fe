@@ -12,6 +12,7 @@
   "image_upload_success": "התמונה הועלתה בהצלחה",
   "image_upload_failed": "העלאת התמונה נכשלה",
   "delete_failed": "מחיקת התמונה נכשלה",
+  "max_images_limit": "ניתן להעלות עד {{count}} תמונות בלבד",
   "login_failed": "התחברות נכשלה",
 
   "poi_delete_loading": "מוחק נקודות עניין...",

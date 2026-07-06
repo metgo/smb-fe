@@ -44,6 +44,17 @@ export const eventQueryApi = createApi({
       providesTags: ["Event"],
     }),
 
+    getAllSessionTicket: builder.query<
+      ITicketResponse,
+      { eventId: string; wrapperId?: string }
+    >({
+      query: (params) => ({
+        url: `${endpoints.ticketsForEventSession}/${params.eventId}?wrapperId=${params.wrapperId || ""}`,
+        method: "GET",
+      }),
+      providesTags: ["Event"],
+    }),
+
     getEventTickets: builder.query<
       {
         data: any[];
@@ -115,11 +126,25 @@ export const eventQueryApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+
+    getSessionsByEventId: builder.query<
+      IEventSessionListResponse,
+      { eventId: string }
+    >({
+      query: ({ eventId }) => ({
+        url: endpoints.eventSessions,
+        method: "GET",
+        params: { eventId },
+      }),
+      providesTags: ["Event"],
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
 export const {
   useGetAllTicketQuery,
+  useGetAllSessionTicketQuery,
   useGetAllEventsQuery,
   useGetEventByIdQuery,
   useLazyGetEventByIdQuery,
@@ -129,4 +154,5 @@ export const {
   useLazyGetEventTicketsQuery,
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
+  useGetSessionsByEventIdQuery,
 } = eventQueryApi;

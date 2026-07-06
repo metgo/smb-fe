@@ -16,6 +16,7 @@
   "image_upload_failed": "Image upload failed",
   "image_deleted": "Image deleted successfully",
   "delete_failed": "Failed to delete image",
+  "max_images_limit": "You can upload up to {{count}} images only",
   "login_failed": "Login failed",
 
   "poi_delete_loading": "Deleting POIs...",

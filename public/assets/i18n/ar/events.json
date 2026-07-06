@@ -326,5 +326,9 @@
   "updating": "جارٍ التحديث...",
   "confirm_cancel": "تأكيد الإلغاء",
   "order_status_updated": "تم تحديث حالة الطلب إلى {{status}}",
-  "failed_to_update_order_status": "فشل تحديث حالة الطلب"
+  "failed_to_update_order_status": "فشل تحديث حالة الطلب",
+
+  "actions": "الإجراءات",
+  "create_session": "إنشاء جلسة",
+  "create_landing_page": "إنشاء صفحة هبوط"
 }

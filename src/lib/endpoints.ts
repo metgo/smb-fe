@@ -48,6 +48,7 @@ export const endpoints = {
 
   //products
   products: "/products",
+  contentManagementProducts: "/content-management-products",
   bulkProductsUpdate: "/bulk-products-update",
 
   //orders
@@ -67,18 +68,33 @@ export const endpoints = {
 
   // public
   publicEventTicket: "/public/event-tickets",
+  publicSessionTicket: "/public/session-tickets",
 
   // events
   events: "/events",
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
 
+  // event sessions
+  eventSession: "/event-sessions",
+  eventSessionPreviwLink: "/event-sessions/preview-link",
+  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
+  eventSessionCapacityReport: "/event-sessions/capacity-report",
+  eventSessionReg: "/event-sessions/registrations",
+  eventSessionTargetAudience: "/event-sessions/target-audience",
+  eventSessionSendNotification: "/event-sessions/send-notification",
+  eventSessionSendHistory: "/event-sessions/send-history",
+  eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
+  eventSessionResendNotification: "/event-sessions/resend-notification",
+
+  // users
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
   createUser: "/users/create",
   tickets: "/tickets",
   eventTickets: "/event-tickets",
+  eventSessions: "/event-sessions",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

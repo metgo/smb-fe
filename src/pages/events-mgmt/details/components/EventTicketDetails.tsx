@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
@@ -20,9 +19,13 @@ import {
   Tag,
   TrendingDown,
   Package,
+  LayoutList,
 } from "lucide-react";
 import TicketModal from "../../components/wizard/modals/TicketModal";
 import TicketSummaryCard from "./TicketSummaryCard";
+import { ActionIconButtons } from "@/components/btns";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/lib/routes";
 
 interface EventTicketDetailsProps {
   eventId: string;
@@ -41,9 +44,9 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   refetch,
   eventDays,
 }) => {
+  const navigate = useNavigate();
   const { t } = useTranslation("events");
-  const { language } = useAppSelector((state) => state.settings);
-  const { isDark, borderColor } = useThemeClasses();
+  const { isDark, borderColor, language } = useThemeClasses();
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
 
@@ -134,27 +137,6 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   return (
     <>
       <div className="space-y-6">
-        {/* Header with Summary Stats */}
-        {/* <div>
-          <h2
-            className={clsx(
-              "text-2xl font-bold",
-              isDark ? "text-white" : "text-gray-900",
-            )}
-          >
-            {t("event_tickets")}
-          </h2>
-          <p
-            className={clsx(
-              "text-sm mt-1",
-              isDark ? "text-gray-400" : "text-gray-600",
-            )}
-          >
-            {tickets.length}{" "}
-            {tickets.length === 1 ? "ticket type" : "ticket types"} available
-          </p>
-        </div> */}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <TicketSummaryCard
             isDark={isDark}
@@ -297,63 +279,58 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                           " flex gap-2 rounded-lg p-1.5 backdrop-blur-sm",
                         )}
                       >
-                        <button
-                          title="Edit"
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-blue-400",
-                            isDark
-                              ? "hover:bg-blue-500/20 hover:text-blue-400"
-                              : "hover:bg-blue-50 hover:text-blue-600",
-                          )}
-                          onClick={() => {
-                            setEditingTicket({
-                              ...ticket,
-                              imageUrl: ticket?.images?.[0]?.image || "",
-                            });
-                            setTicketDateTime(ticket?.dayDescription || []);
-                            setOpMode("UPDATE");
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-
-                        <button
-                          title="Copy"
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-green-400",
-                            isDark
-                              ? "hover:bg-green-500/20 hover:text-green-400 "
-                              : "hover:bg-green-50 hover:text-green-600",
-                          )}
-                          onClick={() => {
-                            setEditingTicket({
-                              ...ticket,
-                              name: ticket.name + " (Copy)",
-                              imageUrl: ticket?.images?.[0]?.image || "",
-                            });
-                            setOpMode("DUPLICATE");
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          <Copy size={16} />
-                        </button>
-
-                        <button
-                          title="Delete"
-                          onClick={() => {
-                            setIsConfirmOpen(true);
-                            setTicketToDelete(ticket?._id || "");
-                          }}
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-red-400",
-                            isDark
-                              ? "hover:bg-red-500/20 hover:text-red-400"
-                              : "hover:bg-red-50 hover:text-red-600",
-                          )}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <ActionIconButtons
+                          isDark={isDark}
+                          actions={[
+                            {
+                              title: "Edit",
+                              icon: Edit,
+                              color: "blue",
+                              onClick: () => {
+                                setEditingTicket({
+                                  ...ticket,
+                                  imageUrl: ticket?.images?.[0]?.image || "",
+                                });
+                                setTicketDateTime(ticket?.dayDescription || []);
+                                setOpMode("UPDATE");
+                                setIsEditModalOpen(true);
+                              },
+                            },
+                            {
+                              title: "Copy",
+                              icon: Copy,
+                              color: "green",
+                              onClick: () => {
+                                setEditingTicket({
+                                  ...ticket,
+                                  name: `${ticket.name} (Copy)`,
+                                  imageUrl: ticket?.images?.[0]?.image || "",
+                                });
+                                setOpMode("DUPLICATE");
+                                setIsEditModalOpen(true);
+                              },
+                            },
+                            {
+                              title: "Delete",
+                              icon: Trash2,
+                              color: "red",
+                              onClick: () => {
+                                setIsConfirmOpen(true);
+                                setTicketToDelete(ticket?._id || "");
+                              },
+                            },
+                            {
+                              title: "Create Landing Page",
+                              icon: LayoutList,
+                              color: "yellow",
+                              onClick: () => {
+                                navigate(
+                                  `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                );
+                              },
+                            },
+                          ]}
+                        />
                       </div>
                     </div>
 

@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-@custom-variant ltr (&:is(:dir(ltr) *));
-@custom-variant rtl (&:is(:dir(rtl) *));
-
 .goog-te-banner-frame {
   display: none !important;
 }

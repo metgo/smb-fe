@@ -44,6 +44,7 @@ import {
   UsersMgmtPage,
   WebsiteCrashesPage,
   WebsiteCrashDetailsPage,
+  EventSessionMgmtPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -63,6 +64,7 @@ import {
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import PublicTicketPage from "./pages/public-ticket";
+import PublicSessionPage from "./pages/public-session";
 import { UserRole } from "./enums/user.types";
 import { store } from "./store/store";
 
@@ -304,9 +306,12 @@ function App() {
     const isPublicTicketPath = window.location.pathname.startsWith(
       routes.publicTicket,
     );
+    const isPublicSessionPath = window.location.pathname.startsWith(
+      routes.publicSession,
+    );
 
-    // Skip for QR mode and public ticket pages
-    if (isOrdersManagement || isPublicTicketPath) return;
+    // Skip for QR mode and public ticket/session pages
+    if (isOrdersManagement || isPublicTicketPath || isPublicSessionPath) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -359,8 +364,11 @@ function App() {
     const isPublicTicket = window.location.pathname.startsWith(
       routes.publicTicket,
     );
+    const isPublicSession = window.location.pathname.startsWith(
+      routes.publicSession,
+    );
 
-    if (isPublicTicket) {
+    if (isPublicTicket || isPublicSession) {
       return children;
     }
     let user: any = null;
@@ -392,7 +400,11 @@ function App() {
     // Normal protected routes
     if (!isLoggedIn) {
       const attemptedPath = window.location.pathname + window.location.search;
-      if (attemptedPath && attemptedPath.includes(routes.notificationMgmt)) {
+      if (
+        attemptedPath &&
+        attemptedPath !== "/" &&
+        attemptedPath !== routes.auth
+      ) {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
@@ -445,6 +457,15 @@ function App() {
           errorElement: <ErrorUiPage />,
         },
         {
+          path: `${routes.publicSession}/:wrapperId/:sessionBookingId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicSessionPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+        },
+        {
           element: (
             <Suspense fallback={<SplashLoader />}>
               <ProtectedRoute>
@@ -476,8 +497,14 @@ function App() {
 
             { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
             { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
+
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },
+            {
+              path: routes.eventSessionMgmt,
+              element: <EventSessionMgmtPage />,
+            },
+
             { path: routes.productDetails, element: <ProductDetailsPage /> },
             { path: routes.contentMgmt, element: <ContentMgmtPage /> },
             { path: routes.voucherMgmt, element: <VouchersMgmtPage /> },

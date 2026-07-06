@@ -51,7 +51,14 @@ export function Login({ setCurrentTab }: LoginProps) {
           lastName: data.user.lastName,
         }),
       );
-      if (data.user.role === UserRole.TRAVELLER && !data.user.hasBusiness) {
+      const savedRedirect = sessionStorage.getItem("redirect_after_login");
+      if (savedRedirect) {
+        sessionStorage.removeItem("redirect_after_login");
+        navigate(savedRedirect, { replace: true });
+      } else if (
+        data.user.role === UserRole.TRAVELLER &&
+        !data.user.hasBusiness
+      ) {
         navigate(routes.businessMgmt, { replace: true });
       } else {
         navigate(routes.dashboard, { replace: true });

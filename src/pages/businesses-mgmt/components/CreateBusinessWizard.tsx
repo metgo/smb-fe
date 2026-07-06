@@ -14,6 +14,7 @@ import {
   Users,
   Truck,
   LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
@@ -146,17 +147,17 @@ function CreateBusinessWizardInner({
       name: 1,
       shortDescription: 1,
       description: 1,
-      busiEmail: 2,
-      phoneNumber: 2,
-      contactDetails: 2,
-      contactName: 2,
-      address: 3,
-      primaryCategoryId: 4,
-      tags: 4,
-      logo: 5,
-      images: 5,
-      openingHrs: 6,
-      socialMedia: 8,
+      busiEmail: 3,
+      phoneNumber: 3,
+      contactDetails: 3,
+      contactName: 3,
+      address: 4,
+      primaryCategoryId: 5,
+      tags: 5,
+      logo: 6,
+      images: 6,
+      openingHrs: 7,
+      socialMedia: 9,
     };
     return stepMap[field] ?? 1;
   };
@@ -372,7 +373,7 @@ function CreateBusinessWizardInner({
 
   const addr = parseAddress(address);
 
-  const totalSteps = 9;
+  const totalSteps = 10;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -582,7 +583,6 @@ function CreateBusinessWizardInner({
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: tc("translation"), icon: LanguagesIcon },
-
     { number: 3, title: t("step_contact_ownership"), icon: Users },
     { number: 4, title: t("step_location"), icon: MapPin },
     { number: 5, title: t("step_attributes"), icon: Tag },
@@ -804,6 +804,26 @@ function CreateBusinessWizardInner({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     // Validate all steps
     let allValid = true;
     for (let i = 1; i <= 5; i++) {

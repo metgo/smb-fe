@@ -137,7 +137,7 @@ export function useEventWizardState({
   const [editingNotification, setEditingNotification] =
     useState<NotificationData | null>(null);
 
-  // ─── Step 7: Media ───────────────────────────────────────────────────
+  // ─── Step 8: Media ───────────────────────────────────────────────────
   const [eventImages, setEventImages] = useState<TImages>([]);
 
   // ─── API: Mutations ──────────────────────────────────────────────────
@@ -459,9 +459,9 @@ export function useEventWizardState({
     setShortDescription("");
     setShortDescriptionHe("");
     setShortDescriptionAr("");
-    setFullDescription("<p></p>");
-    setFullDescriptionHe("<p></p>");
-    setFullDescriptionAr("<p></p>");
+    setFullDescription("");
+    setFullDescriptionHe("");
+    setFullDescriptionAr("");
     setSelectedBusinessId("");
     setEventLanguage("en");
     setEventStatus("draft");

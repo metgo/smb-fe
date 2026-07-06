@@ -11,6 +11,7 @@ export const routes = {
   articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
+  eventSessionMgmt: "/event-session-management",
 
   productsMgmt: "/products-management",
   productDetails: "/product-details",
@@ -49,6 +50,7 @@ export const routes = {
   users: "/users",
 
   publicTicket: "/verify-ticket",
+  publicSession: "/verify-session",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
 };
