@@ -2,31 +2,30 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { Edit, LayoutList, Layers, Plus, Eye } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useUpdateEventSessionMutation } from "@/store/api/eventSessionApi";
-import { useGetSessionsByEventIdQuery } from "@/store/api/eventQueryApi";
 
 interface EventSessionDetailsProps {
   eventId: string;
+  isLoading: boolean;
+  sessions?: IEventSessionListResponse;
+  refetch: () => void;
 }
 
 const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   eventId,
+  isLoading,
+  sessions,
+  refetch,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
   const { isDark, borderColor } = useThemeClasses();
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
-  const {
-    data: sessions,
-    refetch,
-    isLoading,
-  } = useGetSessionsByEventIdQuery(eventId ? { eventId } : skipToken);
 
   if (isLoading) {
     return (

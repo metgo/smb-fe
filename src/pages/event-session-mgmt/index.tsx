@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   LandingTab,
   CapacityTab,
-  AnalyticsTab,
   NotifyTab,
   RegistrationsTab,
 } from "./components";
@@ -15,15 +14,7 @@ import {
   PageHeader,
   ImageWithFallback,
 } from "@/components/shared";
-import {
-  Layout,
-  Users,
-  BarChart2,
-  Bell,
-  ClipboardList,
-  Compass,
-  Eye,
-} from "lucide-react";
+import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { EVENT_SESSION_TOUR_ID } from "@/components/tour";
@@ -88,9 +79,6 @@ function EventSessionMgmtPageInner() {
   const [config, setConfigState] = useState<IAdminConfig>(() =>
     store.getConfig(),
   );
-  const [bookings, _setBookings] = useState<TBookings>(() =>
-    store.getBookings(),
-  );
   const [records, _setRecords] = useState<IBookingRecord[]>(() =>
     store.getRecords(),
   );
@@ -146,13 +134,13 @@ function EventSessionMgmtPageInner() {
         title: "event_session.capacity.title",
         desc: "event_session.capacity.desc",
       },
-      {
-        id: "analytics",
-        target: '[data-tour="tabs-nav"]',
-        placement: "bottom",
-        title: "event_session.analytics.title",
-        desc: "event_session.analytics.desc",
-      },
+      // {
+      //   id: "analytics",
+      //   target: '[data-tour="tabs-nav"]',
+      //   placement: "bottom",
+      //   title: "event_session.analytics.title",
+      //   desc: "event_session.analytics.desc",
+      // },
       {
         id: "notify",
         target: '[data-tour="tabs-nav"]',
@@ -191,7 +179,7 @@ function EventSessionMgmtPageInner() {
   const tabs = [
     { id: "landing", label: t("tab_landing"), icon: Layout },
     { id: "capacity", label: t("tab_capacity"), icon: Users },
-    { id: "analytics", label: t("tab_analytics"), icon: BarChart2 },
+    // { id: "analytics", label: t("tab_analytics"), icon: BarChart2 },
     { id: "notify", label: t("tab_notify"), icon: Bell },
     { id: "regs", label: t("tab_regs"), icon: ClipboardList },
   ];
@@ -303,14 +291,13 @@ function EventSessionMgmtPageInner() {
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
-          {tab === "analytics" && (
+          {/* {tab === "analytics" && (
             <AnalyticsTab
               config={config}
               records={records}
               bookings={bookings}
-              // wrapperId={wrapperId}
             />
-          )}
+          )} */}
           {tab === "notify" && (
             <NotifyTab
               wrapperId={wrapperId}

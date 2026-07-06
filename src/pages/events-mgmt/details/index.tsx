@@ -26,6 +26,7 @@ import {
   useGetAllTicketQuery,
   useGetEventByIdQuery,
   useGetEventsStatsQuery,
+  useGetSessionsByEventIdQuery,
 } from "@/store/api/eventQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -94,6 +95,12 @@ export default function EventDetailsPage() {
   const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
+
+  const {
+    data: sessions,
+    refetch: sessionRefetch,
+    isLoading: isSessionsLoading,
+  } = useGetSessionsByEventIdQuery(eventId ? { eventId } : skipToken);
 
   const { data: eventStatsData, isLoading: isStatsLoading } =
     useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
@@ -226,7 +233,14 @@ export default function EventDetailsPage() {
       case "registration":
         return <EventRegistrationDetails eventDetails={eventDetails} />;
       case "sessions":
-        return <EventSessionDetails eventId={eventId} />;
+        return (
+          <EventSessionDetails
+            eventId={eventId}
+            isLoading={isSessionsLoading}
+            sessions={sessions}
+            refetch={sessionRefetch}
+          />
+        );
       default:
         return null;
     }
