@@ -19,6 +19,7 @@ import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { GetProductsQuery } from 'src/modules/products/queries';
 import { Business } from '../business/shared/schema/business.schema';
+import { Product } from './schema/products.schema';
 import { ProductsAudit } from './schema/products-audit.schema';
 
 @Injectable()
@@ -26,6 +27,8 @@ export class ProductsService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+    @InjectModel(Product.name)
+    private ProductModel: Model<Product>,
     @InjectModel(ProductsAudit.name)
     private ProductsAuditModel: Model<ProductsAudit>,
   ) {}
@@ -323,22 +326,58 @@ export class ProductsService {
   }
 
   async deductQuantity(products) {
-    const bulkOps = products.map(pro => ({
-      updateOne: {
-        filter: { productId: pro.id, isActive: true },
-        update: [
-          {
-            $set: {
-              'quantity.remaining': {
-                $subtract: ['$quantity.remaining', pro.quantity],
+    try {
+      const productBulkOps = products.map(pro => ({
+        updateOne: {
+          filter: { _id: pro.id },
+          update: [
+            {
+              $set: {
+                'quantity.remaining': {
+                  $subtract: ['$quantity.remaining', pro.quantity],
+                },
+                'quantity.sold': {
+                  $add: ['$quantity.sold', pro.quantity],
+                },
               },
             },
-          },
-        ],
-      },
-    }));
+          ],
+        },
+      }));
 
-    await this.ProductsAuditModel.bulkWrite(bulkOps);
+      const auditBulkOps = products.map(pro => ({
+        updateOne: {
+          filter: { productId: pro.id, isActive: true },
+          update: [
+            {
+              $set: {
+                'quantity.remaining': {
+                  $subtract: ['$quantity.remaining', pro.quantity],
+                },
+                'quantity.sold': {
+                  $add: ['$quantity.sold', pro.quantity],
+                },
+              },
+            },
+          ],
+        },
+      }));
+
+      await Promise.all([
+        this.ProductModel.bulkWrite(productBulkOps),
+        this.ProductsAuditModel.bulkWrite(auditBulkOps),
+      ]);
+
+      this.logger.info('[DEDUCT QUANTITY]: Successfully deducted quantity from both collections', {
+        productCount: products.length,
+      });
+    } catch (error) {
+      this.logger.error('[DEDUCT QUANTITY]: Failed to deduct quantity', {
+        err: error.message,
+        productCount: products.length,
+      });
+      throw error;
+    }
   }
 
   async findProductsByField(field: keyof ProductsAudit, id: ObjectId[]) {
