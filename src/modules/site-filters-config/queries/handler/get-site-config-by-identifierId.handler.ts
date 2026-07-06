@@ -60,7 +60,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
           {
             path: 'siteTopics.siteCategories.eventIds',
             select:
-              'slug name shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address',
+              'slug name shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address dayDescription',
           },
           {
             path: 'siteTopics.siteCategories.tripIds',
@@ -87,6 +87,18 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
 
       const { locale } = query;
       const result = siteSettings.toObject();
+
+      // Filter out expired events (where all dayDescription dates are in the past)
+      // Also deduplicate eventIds across all categories to prevent duplicates
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      const seenEventIds = new Set<string>();
+
+      const isEventExpired = (event: any): boolean => {
+        const dayDescriptions: Array<{ date: Date }> = event.dayDescription ?? [];
+        if (dayDescriptions.length === 0) return false; // no dates — keep it
+        return !dayDescriptions.some(d => new Date(d.date) >= today);
+      };
 
       result.header = this.localizeString(
         { base: result.header, he: result.headerHe, ar: result.headerAr },
@@ -165,8 +177,14 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
                       serviceType: ServicesTypes.PRODUCT,
                     })),
                   eventIds: (cat.eventIds || [])
-                    .filter(Boolean)
-                    .map(({ images, ...item }: any) => ({
+                    .filter((event: any) => {
+                      if (!event?._id || !event || isEventExpired(event)) return false;
+                      const eventIdStr = event._id.toString();
+                      if (seenEventIds.has(eventIdStr)) return false;
+                      seenEventIds.add(eventIdStr);
+                      return true;
+                    })
+                    .map(({ images, dayDescription, ...item }: any) => ({
                       ...item,
                       images: this.sanitizeImages(images),
                       serviceType: ServicesTypes.EVENT,

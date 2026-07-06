@@ -33,6 +33,8 @@ export const DynamicEmailTemplate = {
   OrderConfirmationForClientMiniSite: 'create-minisite-orders-for-client',
   TicketConfirmationForCustomers: 'ticket-confirmation-for-customers',
   TicketConfirmationForEventCreator: 'ticket-confirmation-for-event-creator',
+  SessionBookingConfirmation: 'lumen-session-booking-confirmation',
+  SessionBookingConfirmationFinal: 'lumen-booking-confirmation',
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
   InquiryFundayToUser: 'inquiry-funday',
   InquiryFundayToOwner: 'inquiry-funday-for-client',

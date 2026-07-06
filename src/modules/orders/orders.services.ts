@@ -53,6 +53,7 @@ import { ConfigService } from 'src/services/config/config.service';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { SessionBookingsService } from 'src/modules/session-bookings/session-bookings.service';
 import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
 import { Ticket } from '../tickets/schema/tickets.schema';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
@@ -105,6 +106,7 @@ export class OrdersService {
     private readonly qrTokenService: QrTokenService,
     private readonly configService: ConfigService,
     private readonly campaignService: CampaignService,
+    private readonly sessionBookingsService: SessionBookingsService,
   ) { }
 
   async getVendorOwnerForOrder(
@@ -2011,12 +2013,19 @@ export class OrdersService {
       emails: Object.keys(emailToProductsMap),
     });
 
-    await Promise.all(
-      Object.entries(emailToProductsMap).map(async ([email, group]) => {
-        this.logger.info('[EMAIL]: SENDING TO CUSTOMER', { email });
-        const productsHtml = group.products
-          .map(
-            product => `
+    // ── Check if event is LUMEN-enabled (has wrapperIds) ────────────────────────
+    const eventWrapperIds = eventDetails[0]?.wrapperIds;
+    const eventWrapperId = eventWrapperIds && eventWrapperIds.length > 0 ? eventWrapperIds[0] : null;
+    const eventCode = eventDetails[0]?.code || eventDetails[0]?.eventCode;
+
+    // ── Send OLD email ONLY if NO session wrapper ──────────────────────────────
+    if (!eventWrapperId) {
+      await Promise.all(
+        Object.entries(emailToProductsMap).map(async ([email, group]) => {
+          this.logger.info('[EMAIL]: SENDING TO CUSTOMER', { email });
+          const productsHtml = group.products
+            .map(
+              product => `
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
                 <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
@@ -2047,34 +2056,168 @@ export class OrdersService {
               </tr>
             </table>
             `,
-          )
-          .join('');
+            )
+            .join('');
 
-        try {
-          await this.mailchimpService.sendTransactionalEmail({
-            to: email,
-            templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
-            from_email: externalApi?.companyDetails?.email,
-            from_name: externalApi?.name,
-            mergeVars: {
-              ...orderEmailFields,
-              EVENT_NAME: eventDetails[0].name || '',
-              PRODUCTS_HTML: productsHtml,
-              BUYERNAME: group.buyerName || '',
-              TOTALAMOUNT: group.totalAmount || 0,
-              CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
-              BUSINESSADDRESS: eventLocationForBusinessAddress || '',
-            },
-          });
-          this.logger.info('[EMAIL]: CUSTOMER EMAIL SENT', { email });
-        } catch (err) {
-          this.logger.error('[EMAIL]: FAILED TO SEND CUSTOMER EMAIL', {
-            email,
-            error: err instanceof Error ? err.message : String(err),
-          });
-        }
-      }),
-    );
+          try {
+            await this.mailchimpService.sendTransactionalEmail({
+              to: email,
+              templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
+              from_email: externalApi?.companyDetails?.email,
+              from_name: externalApi?.name,
+              mergeVars: {
+                ...orderEmailFields,
+                EVENT_NAME: eventDetails[0].name || '',
+                PRODUCTS_HTML: productsHtml,
+                BUYERNAME: group.buyerName || '',
+                TOTALAMOUNT: group.totalAmount || 0,
+                CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+                BUSINESSADDRESS: eventLocationForBusinessAddress || '',
+              },
+            });
+            this.logger.info('[EMAIL]: CUSTOMER EMAIL SENT', { email });
+          } catch (err) {
+            this.logger.error('[EMAIL]: FAILED TO SEND CUSTOMER EMAIL', {
+              email,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }),
+      );
+    } // ← Close: if (!eventWrapperId)
+
+    // ── Send NEW email ONLY if HAS session wrapper ───────────────────────────────
+    if (eventWrapperId) {
+      try {
+        this.logger.info('[LUMEN]: SENDING SESSION BOOKING INVITATIONS', {
+          eventWrapperId,
+          eventCode,
+          customerCount: Object.keys(emailToProductsMap).length,
+        });
+
+        // Send Email #2 to each customer
+        await Promise.all(
+          Object.entries(emailToProductsMap).map(async ([email, group]) => {
+            try {
+              // Find phone number from any orderProduct with this email
+              // All orderProducts with same email should have same phone number
+              const phoneFromOrder = orderProduct.find(op => op.email === email)?.phone || '';
+
+              // Generate UNIQUE code per ticket (single-use)
+              // Format: TICKET-<random8chars>
+              const uniqueCode = `TICKET-${Math.random()
+                .toString(36)
+                .substring(2, 10)
+                .toUpperCase()}`;
+
+              // Generate encrypted invite token with single-use code
+              const { token, ttlDays } = this.sessionBookingsService.generateInviteToken({
+                name: group.buyerName,
+                email,
+                phone: phoneFromOrder,
+                wrapperId: eventWrapperId,
+                code: uniqueCode,
+                // Pass the last event date so token expiry is capped to 1 day before
+                // the event rather than a flat 7 days (e.g. bought July 10, event July 22 → expires July 21)
+                eventLastDate: eventDetails[0]?.dayDescription?.length
+                  ? new Date(eventDetails[0].dayDescription[eventDetails[0].dayDescription.length - 1].date)
+                  : undefined,
+              });
+
+              // Create link to travel website's purchaser-verify page
+              // Travel website will decrypt and redirect to LUMEN
+              const purchaserVerifyLink = `${externalApi?.websiteUrl}/purchaser-verify?code=${token}`;
+
+              this.logger.info('[LUMEN]: SENDING SESSION BOOKING EMAIL', {
+                email,
+                wrapperId: eventWrapperId,
+                code: uniqueCode,
+                purchaserVerifyLink,
+              });
+
+              // Generate QR code for purchaser-verify link
+              // Commented out QR code generation for session booking
+              // try {
+              //   bookingQrUrl = await this.qrCodeService.generateQRCode(
+              //     purchaserVerifyLink,
+              //     `lumen-booking-${eventWrapperId}-${email.replace(/[^a-z0-9]/gi, '')}`,
+              //   );
+              // } catch (qrErr) {
+              //   this.logger.warn('[LUMEN]: Failed to generate booking QR code', {
+              //     email,
+              //     error: qrErr instanceof Error ? qrErr.message : String(qrErr),
+              //   });
+              // }
+
+              // Build products HTML — same structure as ticket-confirmation-for-customers
+              // purchaser-verify QR is embedded in each ticket card (replaces the verify-ticket QR)
+              const lumenProductsHtml = group.products
+                .map(
+                  product => `
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                  <tr>
+                    <td style="padding: 10px; background: #f9f9f9; direction: rtl; border-radius: 20px;">
+                      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                        <tr>
+                          <td style="padding: 0; vertical-align: top; text-align: center; width: 120px; padding-left: 10px;">
+                            <img src="${product?.image || ''}" alt="${product?.name}" style="max-width: 120px; height: 120px; border-radius: 8px; display: block;">
+                          </td>
+                          <td style="padding: 0; vertical-align: top; padding-left: 10px;">
+                            <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 5px;">${product?.name}</span>
+                            <span style="display: block; font-size: 14px; color: #666666; margin-bottom: 8px;">כמות: ${product?.quantity}</span>
+                            <span style="display: block; font-size: 16px; color: #333333; margin-bottom: 12px;">₪${product?.price}</span>
+                            <a href="${purchaserVerifyLink}" style="display: block; width: 100%; text-align: center; padding: 10px; margin-top: 10px; font-size: 14px; color: ${externalApi?.primaryColor || '#0d9488'}; text-decoration: underline; cursor: pointer; font-weight: 500; border: 1px solid ${externalApi?.primaryColor || '#0d9488'}; border-radius: 6px;">בקר והזמן מפגש</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                `,
+                )
+                .join('');
+
+              // Send Email #2 (Session booking confirmation)
+              await this.mailchimpService.sendTransactionalEmail({
+                to: email,
+                templatedId: DynamicEmailTemplate.SessionBookingConfirmation,
+                from_email: externalApi?.companyDetails?.email,
+                from_name: externalApi?.name,
+                mergeVars: {
+                  ...orderEmailFields,
+                  BUYERNAME: group.buyerName || '',
+                  BUYEREMAIL: email || '',
+                  CUSTOMER_NAME: group.buyerName || '',
+                  CUSTOMER_EMAIL: email || '',
+                  EVENT_NAME: eventDetails[0]?.name || '',
+                  BOOKING_LINK: purchaserVerifyLink,
+                  PURCHASER_VERIFY_LINK: purchaserVerifyLink,
+                  TOKEN_EXPIRY_DAYS: String(ttlDays),
+                  HOLD_EXPIRY_MINUTES: '7',
+                  CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+                  PRODUCTS_HTML: lumenProductsHtml,
+                  TOTALAMOUNT: group.totalAmount || 0,
+                  BUSINESSADDRESS: eventLocationForBusinessAddress || '',
+                },
+              });
+
+              this.logger.info('[LUMEN]: SESSION BOOKING EMAIL SENT', { email });
+            } catch (lumenErr) {
+              this.logger.error('[LUMEN]: FAILED TO SEND SESSION BOOKING EMAIL', {
+                email,
+                error: lumenErr instanceof Error ? lumenErr.message : String(lumenErr),
+              });
+              // Don't throw - continue with other customers
+            }
+          }),
+        );
+      } catch (lumenError) {
+        this.logger.error('[LUMEN]: SESSION BOOKING EMAIL FLOW FAILED', {
+          error: lumenError instanceof Error ? lumenError.message : String(lumenError),
+        });
+        // Don't throw - session booking is optional, continue with rest of flow
+      }
+    } // ← Close: if (eventWrapperId)
 
     const eventCreatorUserData = eventDetails[0]?.userId;
     this.logger.info('[EMAIL]: EVENT CREATOR DEBUG', {

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בחר את המפגשים שלך</title>
+  <style>
+    body {
+      font-family: 'Assistant', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      direction: rtl;
+      text-align: right;
+    }
+
+    a {
+      text-decoration: none;
+      color: #1976d2;
+    }
+
+    img {
+      border: 0;
+      display: block;
+    }
+
+    .highlight {
+      background-color: #fff3cd;
+      border-right: 4px solid *|COLOR|*;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .qr-section {
+      background-color: #f9f9f9;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .countdown {
+      font-size: 18px;
+      font-weight: bold;
+      color: *|COLOR|*;
+      margin: 10px 0;
+    }
+
+    .session-card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      border-right: 3px solid *|COLOR|*;
+    }
+
+    @media only screen and (max-width: 480px) {
+      .container {
+        width: 100% !important;
+        max-width: 480px !important;
+      }
+      .desktop-only {
+        display: none !important;
+      }
+      .mobile-only {
+        display: table-row !important;
+      }
+    }
+
+    @media only screen and (min-width: 481px) {
+      .container {
+        width: 600px !important;
+        max-width: 600px !important;
+      }
+      .desktop-only {
+        display: table-row !important;
+      }
+      .mobile-only {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body dir="rtl">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px;" class="container">
+
+          <!-- Logo -->
+          <tr>
+            <td align="right" style="padding: 20px;">
+              <img src="*|LOGO|*" alt="Logo" width="50" height="50" style="max-width: 50px; height: auto;">
+            </td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td align="right" style="padding: 0 20px;">
+              <h2 style="margin: 0 0 10px 0; color: #313131; text-align: right; font-size: 24px;">בחר את המפגשים שלך ✨</h2>
+              <p style="margin: 10px 0; text-align: right; color: #666; font-size: 16px;">שלום <strong>*|CUSTOMER_NAME|*</strong>,</p>
+              <p style="margin: 10px 0; text-align: right; color: #666; font-size: 14px;">ההזמנה שלך עבור <strong>*|EVENT_NAME|*</strong> אושרה! כעת אתה יכול לבחור את מפגשי הקבוצה המדויקים שלך.</p>
+            </td>
+          </tr>
+
+          <!-- Alert Box -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <div class="highlight">
+                <p style="margin: 0; text-align: right; color: #333; font-size: 14px;">
+                  <strong>⏰ חשוב!</strong> יש לך <strong>*|TOKEN_EXPIRY_DAYS|* ימים</strong> לבחור את המפגשים שלך. לאחר מכן, הקישור הזה יפוג.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Event Details -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <div class="session-card">
+                <p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: right; font-size: 14px;">📋 פרטי האירוע:</p>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="padding: 8px 0; text-align: right; color: #666; font-size: 13px;">
+                      <strong>שם האירוע:</strong> *|EVENT_NAME|*
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; text-align: right; color: #666; font-size: 13px;">
+                      <strong>פלטפורמה:</strong> *|WEBSITE_NAME|*
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; text-align: right; color: #666; font-size: 13px;">
+                      <strong>דוא"ל שלך:</strong> *|CUSTOMER_EMAIL|*
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+          <!-- QR Code Section -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <div class="qr-section">
+                <p style="margin: 0 0 15px 0; font-weight: bold; color: #313131; text-align: center; font-size: 14px;">סרוק או לחץ לבחירת מפגשים</p>
+
+                <!-- QR Code Image -->
+                <img src="*|QR_CODE_URL|*" alt="Booking QR Code" width="200" height="200" style="width: 200px; height: 200px; margin: 0 auto; border: 3px solid *|COLOR|*; border-radius: 8px;">
+
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #999; text-align: center;">או לחץ על הכפתור למטה</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Key Info Box -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #e3f2fd; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                <tr>
+                  <td style="text-align: right; padding: 10px;">
+                    <p style="margin: 0; color: #1565c0; font-weight: bold; font-size: 13px;">⏱️ זכור:</p>
+                    <p style="margin: 8px 0 0 0; color: #1565c0; font-size: 13px;">
+                      בעת בחירת מפגש, יש לך <strong>*|HOLD_EXPIRY_MINUTES|* דקות</strong> להשלים את ההזמנה.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td align="center" style="padding: 30px 20px;">
+              <a href="*|BOOKING_LINK|*" style="background: *|COLOR|*; padding: 14px 28px; color: white; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">בחר את המפגשים שלך עכשיו</a>
+            </td>
+          </tr>
+
+          <!-- Instructions -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <div style="background: #fafafa; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #313131; font-size: 13px; text-align: right;">🎯 צעדים בעדיפות:</p>
+                <ol style="margin: 10px 0 0 0; padding-right: 20px; color: #666; font-size: 13px; text-align: right;">
+                  <li style="margin: 5px 0;">לחץ על הקישור או סרוק את קוד ה-QR</li>
+                  <li style="margin: 5px 0;">הפרטים שלך יהיו מלאים מראש (שם, דוא"ל, טלפון)</li>
+                  <li style="margin: 5px 0;">בחר את התאריך, השעה, חדר/מטפל שלך</li>
+                  <li style="margin: 5px 0;">השלם את ההזמנה בתוך 7 דקות</li>
+                  <li style="margin: 5px 0;">קבל אישור בדוא"ל עם קוד QR לכניסה</li>
+                </ol>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Validity Notice -->
+          <tr>
+            <td align="right" style="padding: 0 20px 20px;">
+              <p style="margin: 0; color: #999; font-size: 12px; text-align: right; line-height: 1.6;">
+                ✓ קישור זה תקף ל-*|TOKEN_EXPIRY_DAYS|* ימים מעכשיו<br>
+                ✓ מומלץ לבחור מפגשים בהקדם האפשרי<br>
+                ✓ תוכל לשנות את בחירתך אם תהיה צורך
+              </p>
+            </td>
+          </tr>
+
+          <!-- Settings Link -->
+          <tr>
+            <td align="center" style="padding: 20px;">
+              <p style="margin: 0; color: #666; font-size: 12px;">לשינויי הגדרות קבלת הודעות בדוא"ל <a href="*|BUTTON_LINK|*" style="color: *|COLOR|*; text-decoration: underline;">לחצו כאן</a></p>
+            </td>
+          </tr>
+
+          <!-- Social Icons -->
+          <tr>
+            <td style="padding: 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 0;">
+                    <table cellpadding="0" cellspacing="0" border="0" style="display: inline-block;">
+                      <tr>
+                        <td style="padding: 0 10px;">
+                          <a href="*|FACEBOOK_LINK|*" style="display: block;">
+                            <img src="https://storage.googleapis.com/tav8-sderot20w3s71w1n/icons/facebook.png" alt="facebook" style="width: 40px; height: 40px; border-radius: 50%;">
+                          </a>
+                        </td>
+                        <td style="padding: 0 10px;">
+                          <a href="https://wa.me/*|WHATSAPP_LINK|*" style="display: block;">
+                            <img src="https://storage.googleapis.com/tav8-sderot20w3s71w1n/icons/whatsapp.png" alt="whatsapp" style="width: 40px; height: 40px; border-radius: 50%;">
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer Banner - Mobile -->
+          <tr class="mobile-only">
+            <td align="center" style="padding: 0;">
+              <a href="*|BUTTON_LINK|*" style="display: block;">
+                <img src="*|MOBILE_BANNER_IMG|*" alt="Footer" width="100%" style="width: 100%; height: auto;">
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer Banner - Desktop -->
+          <tr class="desktop-only">
+            <td align="center" style="padding: 0;">
+              <a href="*|BUTTON_LINK|*" style="display: block;">
+                <img src="*|BANNER_IMG|*" alt="Footer" width="100%" style="width: 100%; height: auto;">
+              </a>
+            </td>
+          </tr>
+
+          <!-- Copyright Footer -->
+          <tr>
+            <td align="center" style="padding: 20px; background-color: #f9f9f9; border-top: 1px solid #e0e0e0;">
+              <p style="margin: 0; color: #999; font-size: 11px; text-align: center;">
+                © *|WEBSITE_NAME|* - כל הזכויות שמורות<br>
+                *|BUSINESSADDRESS|*
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { SessionBookingsModule } from 'src/modules/session-bookings/session-bookings.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { OrdersPublicController } from 'src/modules/orders/controllers/orders-public.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
@@ -49,6 +50,7 @@ import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-
     QRCodeModule,
     QrTokenModule,
     forwardRef(() => CampaignModule),
+    SessionBookingsModule,
   ],
   controllers: [OrdersController, OrdersPublicController],
   providers: [OrdersService, ExpireOrderService, CreateMiniSiteOrderHandler],

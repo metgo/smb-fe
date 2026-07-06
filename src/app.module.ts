@@ -60,6 +60,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
 import { AppCacheModule } from './services/cache/cache.module';
 import { PartnersModule } from './modules/partners/partners.module';
+import { SessionBookingsModule } from './modules/session-bookings/session-bookings.module';
 // import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
@@ -121,6 +122,7 @@ import { PartnersModule } from './modules/partners/partners.module';
     SettingsModule,
     PromotionsModule,
     PartnersModule,
+    SessionBookingsModule,
   ],
   providers: [
     {

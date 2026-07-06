@@ -28,6 +28,7 @@ export class ConfigService {
       'API_PORT',
       'BASE_URL',
       'FE_BASE_URL',
+      'TRAVEL_WEBSITE_URL',
       'MONGODB_URI',
       'JWT_TOKEN_EXPIRES',
       'ACCESS_TOKEN_EXPIRATION',
@@ -94,6 +95,7 @@ export class ConfigService {
       API_PORT: Joi.number().port().default(3000),
       BASE_URL: Joi.string().required(),
       FE_BASE_URL: Joi.string().required(),
+      TRAVEL_WEBSITE_URL: Joi.string().optional(),
       MONGODB_URI: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.number().required(),
       ACCESS_TOKEN_EXPIRATION: Joi.number().required(),
@@ -168,6 +170,7 @@ export class ConfigService {
     return {
       BE: this.get('BASE_URL'),
       FE: this.get('FE_BASE_URL'),
+      TRAVEL: this.get('TRAVEL_WEBSITE_URL'),
     };
   }
 
