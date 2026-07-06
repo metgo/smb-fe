@@ -115,6 +115,7 @@ const CreateArticleWizard = ({
   existingArticle,
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
+  const { t: tc } = useTranslation("common");
   const { associatedWebsite } = useAppSelector((state) => state.auth);
   const { textPrimary, borderColor, textTertiary, language } =
     useThemeClasses();
@@ -250,6 +251,22 @@ const CreateArticleWizard = ({
       formData.shortDescriptionAr.trim();
     if (!hasShortDescription) {
       toast.error(t("validation_short_desc_required"));
+      return false;
+    }
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return false;
+    }
+    if (
+      (formData.content || "").length > 500 ||
+      (formData.contentHe || "").length > 500 ||
+      (formData.contentAr || "").length > 500
+    ) {
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
       return false;
     }
     return true;

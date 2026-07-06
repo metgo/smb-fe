@@ -45,6 +45,8 @@ export default function CreateEventWizardNew({
   eventDataRefetch,
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
+  const { t: tt } = useTranslation("common");
+
   const { t: tc } = useTranslation("toast");
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
@@ -58,7 +60,7 @@ export default function CreateEventWizardNew({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    { number: 2, icon: Languages, title: t("translation") },
+    { number: 2, icon: Languages, title: tt("translation") },
     { number: 3, icon: Calendar, title: t("step_2_date_time") },
     { number: 4, icon: Users, title: t("step_3_registration") },
     { number: 5, icon: Ticket, title: t("step_4_tickets") },

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { detectLanguage } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateBlogNameMutation } from "@/store/api/blogQueryApi";
+import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleTranslateButtonProps {
   formData: any;
@@ -52,6 +53,7 @@ const ArticleTranslateButton = ({
   onChange,
 }: ArticleTranslateButtonProps) => {
   const { t } = useTranslation("article");
+  const { t: tc } = useTranslation("common");
   const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   const [generateBlogName, { isLoading: isTranslating }] =
@@ -201,12 +203,14 @@ const ArticleTranslateButton = ({
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow`}
                 />
               </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("short_description")}
-                </label>
+              <FormFieldWrapper
+                label={t("short_description")}
+                error={
+                  (formData[shortDescription] || "").length > 150
+                    ? tc("exceeds_char_limit", { limit: 150 })
+                    : undefined
+                }
+              >
                 <textarea
                   dir={dir}
                   rows={3}
@@ -215,22 +219,38 @@ const ArticleTranslateButton = ({
                     onChange({ [shortDescription]: e.target.value })
                   }
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={150}
                 />
-              </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("content")}
-                </label>
+                <p className={`text-xs ${textTertiary} mt-1`}>
+                  {tc("char_count", {
+                    count: (formData[shortDescription] || "").length,
+                    limit: 150,
+                  })}
+                </p>
+              </FormFieldWrapper>
+              <FormFieldWrapper
+                label={t("content")}
+                error={
+                  (formData[content] || "").length > 500
+                    ? tc("exceeds_char_limit", { limit: 500 })
+                    : undefined
+                }
+              >
                 <textarea
                   dir={dir}
                   rows={6}
                   value={formData[content] || ""}
                   onChange={(e) => onChange({ [content]: e.target.value })}
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
+                  maxLength={500}
                 />
-              </div>
+                <p className={`text-xs ${textTertiary} mt-1`}>
+                  {tc("char_count", {
+                    count: (formData[content] || "").length,
+                    limit: 500,
+                  })}
+                </p>
+              </FormFieldWrapper>
             </div>
           </div>
         );
