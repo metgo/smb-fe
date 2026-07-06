@@ -6,10 +6,10 @@ import {
   Mail,
   Phone,
   User,
-  MapPin,
   CheckCircle2,
   XCircle,
   AlertCircle,
+  Hotel,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -32,7 +32,7 @@ interface IPublicSessionTicket {
   slotTime: string;
   room?: string;
   status: string;
-  bookingReference: string;
+  bookingReference?: string;
   brand?: string;
   headline?: string;
   subhead?: string;
@@ -72,6 +72,11 @@ const statusConfig: Record<
     icon: <AlertCircle className="w-3.5 h-3.5" />,
     color: "bg-yellow-100 text-yellow-700",
     label: "ממתין",
+  },
+  EXPIRED: {
+    icon: <AlertCircle className="w-3.5 h-3.5" />,
+    color: "bg-gray-100 text-gray-600",
+    label: "פג תוקף",
   },
 };
 
@@ -137,9 +142,7 @@ export default function PublicSessionPage() {
   const status =
     statusConfig[session.status?.toUpperCase()] ?? statusConfig["PENDING"];
 
-  const isCancelled = ["CANCELLED", "NO_SHOW"].includes(
-    session.status?.toUpperCase(),
-  );
+  const canMarkAttended = session.status?.toUpperCase() === "CONFIRMED";
 
   return (
     <div
@@ -177,11 +180,9 @@ export default function PublicSessionPage() {
             </div>
           </div>
 
-          {isCancelled && (
+          {!canMarkAttended && (
             <div className="bg-red-600 text-white text-center py-3 px-4 font-bold text-sm tracking-wide">
-              {session.status?.toUpperCase() === "CANCELLED"
-                ? "ההזמנה בוטלה"
-                : "לא הגיע/ה למפגש"}
+              לא ניתן לעדכן סטטוס — ההזמנה {status.label}
             </div>
           )}
 
@@ -196,6 +197,24 @@ export default function PublicSessionPage() {
               {status.icon}
               {status.label}
             </span>
+          </div>
+
+          <div className="px-5 pt-4 pb-1 flex items-start gap-3">
+            {session.sessionImage && (
+              <img
+                src={session.sessionImage}
+                alt={session.sessionName}
+                className="w-14 h-14 rounded-lg object-cover shrink-0"
+              />
+            )}
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
+                שם המפגש
+              </p>
+              <p className="text-gray-800 font-semibold text-base">
+                {session.sessionName}
+              </p>
+            </div>
           </div>
 
           <div className="px-5 pb-6 space-y-5">
@@ -215,7 +234,7 @@ export default function PublicSessionPage() {
                 </div>
                 {session.room && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+                    <Hotel className="w-3.5 h-3.5 text-teal-500 shrink-0" />
                     <span>{session.room}</span>
                   </div>
                 )}
@@ -248,17 +267,19 @@ export default function PublicSessionPage() {
             </div>
 
             {/* Booking reference */}
-            <div className="text-center pt-1">
-              <p className="text-[10px] text-gray-300 uppercase tracking-widest">
-                מספר אסמכתא
-              </p>
-              <p className="text-xs text-gray-400 font-mono mt-0.5">
-                {session.bookingReference}
-              </p>
-            </div>
+            {session.bookingReference && (
+              <div className="text-center pt-1">
+                <p className="text-[10px] text-gray-300 uppercase tracking-widest">
+                  מספר אסמכתא
+                </p>
+                <p className="text-xs text-gray-400 font-mono mt-0.5">
+                  {session.bookingReference}
+                </p>
+              </div>
+            )}
 
             {/* Mark as attended */}
-            {session.status?.toUpperCase() === "CONFIRMED" && (
+            {canMarkAttended && (
               <button
                 onClick={handleMarkAttended}
                 disabled={isMarkingAttended}
