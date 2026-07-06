@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
   Navigate,
 } from "react-router-dom";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useRef, useMemo } from "react";
 
 import { envKeys } from "@/lib/envKeys";
 import { endpoints } from "@/lib/endpoints";
@@ -53,11 +53,18 @@ import { useSocket } from "./providers/SocketProvider";
 import {
   addNotification,
   setNotifications,
+  incrementUnreadCount,
+  setUnreadCount,
 } from "./features/notificationSlice";
-import { useLazyGetAllNotificationsQuery } from "./store/api/notificationApi";
+import {
+  useLazyGetAllNotificationsQuery,
+  notificationApi,
+} from "./store/api/notificationApi";
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
+import PublicTicketPage from "./pages/public-ticket";
 import { UserRole } from "./enums/user.types";
+import { store } from "./store/store";
 
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
@@ -104,10 +111,15 @@ function App() {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const { notifications } = useAppSelector((state) => state.notification);
+  const { notifications, unreadCount } = useAppSelector(
+    (state) => state.notification,
+  );
   const latestCreatedAt = notifications?.[0]?.createdAt;
 
   const [getLatestNotification] = useLazyGetAllNotificationsQuery();
+  const countRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!socket) return;
@@ -118,6 +130,11 @@ function App() {
 
         if (response?.data) {
           dispatch(setNotifications(response.data));
+        }
+
+        // Set initial unread count from API response
+        if ((response as any)?.totalUnread !== undefined) {
+          dispatch(setUnreadCount((response as any).totalUnread));
         }
       } catch (error) {
         console.error("Initial notification fetch failed", error);
@@ -141,6 +158,33 @@ function App() {
           response.data.reverse().forEach((notif: INotification) => {
             dispatch(addNotification(notif));
           });
+
+          // Increment count locally for each new notification (instant + accurate)
+          const newNotificationsCount = response.data.length;
+          for (let i = 0; i < newNotificationsCount; i++) {
+            dispatch(incrementUnreadCount());
+          }
+
+          // Debounced API verification: only verify if count < 100 and batch calls
+          const currentCount = store.getState().notification.unreadCount;
+          if (currentCount < 100) {
+            // Clear existing timeout to debounce
+            if (countRefreshTimeoutRef.current) {
+              clearTimeout(countRefreshTimeoutRef.current);
+            }
+
+            // Set new debounced timeout (300ms)
+            countRefreshTimeoutRef.current = setTimeout(() => {
+              // Only call API if still < 100 (in case more notifications arrived)
+              const finalCount = store.getState().notification.unreadCount;
+              if (finalCount < 100) {
+                store.dispatch(
+                  notificationApi.endpoints.getNotificationCount.initiate(),
+                );
+              }
+              countRefreshTimeoutRef.current = null;
+            }, 300);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch new notifications", error);
@@ -158,8 +202,12 @@ function App() {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("notification", handleNotification);
+      // Cleanup debounce timer
+      if (countRefreshTimeoutRef.current) {
+        clearTimeout(countRefreshTimeoutRef.current);
+      }
     };
-  }, [socket, dispatch, getLatestNotification, latestCreatedAt]);
+  }, [socket, dispatch, getLatestNotification, latestCreatedAt, unreadCount]);
 
   // Update Redux state if Google OAuth callback was handled
   useEffect(() => {
@@ -191,13 +239,16 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle QR verification token for orders-management access (JWT token, same as incomplete profile)
+  // Handle QR verification token for orders-management and event-details access (JWT token, same as incomplete profile)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get("token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
+    const isEventDetails = window.location.pathname.startsWith(
+      routes.eventDetails,
+    );
 
-    if (jwtToken && isOrdersManagement) {
+    if (jwtToken && (isOrdersManagement || isEventDetails)) {
       // Keep the original QR token separate from the normal access token.
       sessionStorage.setItem("access_token", jwtToken);
       sessionStorage.setItem("qr_token", jwtToken);
@@ -235,7 +286,7 @@ function App() {
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep JWT token in session even if user fetch fails, allows order management
+          // Keep JWT token in session even if user fetch fails, allows event management
         }
       };
 
@@ -250,8 +301,12 @@ function App() {
     const currentAccessToken = sessionStorage.getItem("access_token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-    // Skip profile completion token for QR mode
-    if (isOrdersManagement) return;
+    const isPublicTicketPath = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
+
+    // Skip for QR mode and public ticket pages
+    if (isOrdersManagement || isPublicTicketPath) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -301,7 +356,13 @@ function App() {
   }) => {
     const isLoggedIn = !!sessionStorage.getItem("access_token");
     const userInfo = sessionStorage.getItem("user_info");
+    const isPublicTicket = window.location.pathname.startsWith(
+      routes.publicTicket,
+    );
 
+    if (isPublicTicket) {
+      return children;
+    }
     let user: any = null;
     if (userInfo) {
       try {
@@ -335,7 +396,7 @@ function App() {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
-      // Allow routes with token to bypass login (business-details, orders-management QR)
+      // Allow routes with token to bypass login (business-details, event-details, orders-management QR)
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
       const orderId = urlParams.get("orderId");
@@ -343,9 +404,15 @@ function App() {
       const isBusinessDetails = window.location.pathname.startsWith(
         routes.businessDetails,
       );
+      const isEventDetails = window.location.pathname.startsWith(
+        routes.eventDetails,
+      );
       const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
 
-      if (hasToken && (isBusinessDetails || isOrdersManagement)) {
+      if (
+        hasToken &&
+        (isBusinessDetails || isEventDetails || isOrdersManagement)
+      ) {
         return children;
       }
 
@@ -368,6 +435,15 @@ function App() {
   const router = useMemo(
     () =>
       createBrowserRouter([
+        {
+          path: `${routes.publicTicket}/:eventId/:ticketId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicTicketPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+        },
         {
           element: (
             <Suspense fallback={<SplashLoader />}>

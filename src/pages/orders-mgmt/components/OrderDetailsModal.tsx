@@ -374,7 +374,7 @@ function OrderDetailsModal({
               className={`flex justify-between pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-300"}`}
             >
               <span className={`${textPrimary}`}>{t("total") || "Total"}</span>
-              {orderDetails?.paymentMode.includes("voucher") ? (
+              {orderDetails?.paymentMode?.includes("voucher") ? (
                 <span className={`${textPrimary}`}>
                   {orderDetails?.totalAmount
                     ? `₪${orderDetails?.totalAmount}`

@@ -1,12 +1,13 @@
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 
 import { routes } from "@/lib/routes";
 import {
   BusinessGridView,
   BusinessListView,
+  BusinessFiltersPanel,
   CreateBusinessWizard,
   ExportBusinessButton,
 } from "./components";
@@ -21,7 +22,6 @@ import {
   Compass,
 } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -32,26 +32,17 @@ import {
   ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
-import {
-  useGetAllbusinessesQuery,
-  useGetBusinessStatsQuery,
-} from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
-import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
-import { FilterByStatus } from "@/components/filter-fields";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_LIST_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
+
+import { useBusinessFilters } from "./hooks/useBusinessFilters";
+import { useBusinessListData } from "./hooks/useBusinessListData";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const LIMIT = 20;
 const COLUMNS_STORAGE_KEY = "businessesTableColumns";
 
 const defaultColumns: IBusinessColumnVisibility = {
@@ -96,14 +87,32 @@ function BusinessesMgmtPageInner() {
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("toast");
   const { t: tt } = useTranslation("tour");
-  const { isDark, language, bgSecondary, borderColor } = useThemeClasses();
+  const { isDark, bgSecondary, borderColor } = useThemeClasses();
 
-  // Auth state
-  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
+  // ─── Filter & Search (persisted to localStorage) ─────────────────────
+  const {
+    filters,
+    setFilters,
+    searchTerm,
+    setSearchTerm,
+    clearFilter,
+    hasSavedFilters,
+  } = useBusinessFilters();
 
-  // ─── Local State ─────────────────────────────────────────
+  // ─── Data fetching & infinite scroll ─────────────────────────────────
+  const {
+    combinedBusinesses,
+    businessStatsData,
+    isLoading,
+    isFetching,
+    isStatsLoading,
+    refetch,
+    hasMore,
+    totalData,
+    fetchNextPage,
+  } = useBusinessListData(filters, searchTerm);
+
+  // ─── UI State ─────────────────────────────────────────────────────────
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
@@ -113,19 +122,10 @@ function BusinessesMgmtPageInner() {
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
-    status: "all",
-    hasProductFilter: "all" as const,
-  });
   const [columnVisibility, setColumnVisibility] =
     useState<IBusinessColumnVisibility>(defaultColumns);
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const hasSavedFilters =
-    filters.hasProductFilter !== "all" || filters.status !== "all";
 
   // ─── Tour integration ─────────────────────────────────────────────────
   const {
@@ -190,19 +190,7 @@ function BusinessesMgmtPageInner() {
     [],
   );
 
-  // Auto-start once per user
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      startTour(buildSteps(), {
-        tourId: BUSINESS_LIST_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [startTour, buildSteps]);
-
-  // Open the filter panel while the tour is on the "filter-panel" step so the
-  // spotlight can focus on the revealed panel; leave other step state unchanged.
+  // Open filter panel when tour lands on that step
   useEffect(() => {
     if (!isTourOpen) return;
     const stepId = tourSteps[currentStep]?.id;
@@ -215,7 +203,7 @@ function BusinessesMgmtPageInner() {
     }
   }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
-  // Load column visibility
+  // ─── Column visibility (persisted to localStorage) ────────────────────
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
@@ -232,7 +220,7 @@ function BusinessesMgmtPageInner() {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  // ─── Close column dropdown on outside click ─────────
+  // ─── Close column dropdown on outside click ────────────────────────────
   useEffect(() => {
     if (!showColumnSettings) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -247,91 +235,11 @@ function BusinessesMgmtPageInner() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColumnSettings]);
 
-  // ─── Reset page when filters/search change ─────────
-  useEffect(() => {
-    setPage(1);
-    setCombinedBusinesses(businessData?.data);
-  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
-
-  // ─── Query Parameters (memoized, stable reference) ─────────
-  const queryParams = useMemo(() => {
-    const params: Record<string, any> = {
-      page,
-      dmoId,
-      // startDate,
-      // endDate,
-      authorityId,
-      limit: LIMIT,
-      locale: language,
-      externalApiId: websiteId,
-    };
-    if (searchTerm) params.search = searchTerm;
-    if (filters.status !== "all") params.status = filters.status;
-    if (filters.hasProductFilter !== "all") {
-      params.hasProductFilter = filters.hasProductFilter === "yes";
-    }
-    return params;
-  }, [
-    page,
-    searchTerm,
-    filters,
-    language,
-    dmoId,
-    authorityId,
-    // startDate,
-    // endDate,
-    websiteId,
-  ]);
-
-  // ─── API Queries ─────────
-  const statsQueryParams = useMemo(() => {
-    const { page, limit, locale, ...rest } = queryParams;
-    return rest;
-  }, [queryParams]);
-
-  const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery(statsQueryParams, {
-      refetchOnMountOrArgChange: true,
-    });
-
-  const {
-    data: businessData,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useGetAllbusinessesQuery(queryParams, {
-    refetchOnMountOrArgChange: true,
-  });
-
+  // ─── Mutations ─────────────────────────────────────────────────────────
   const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
     useBulkBusinessesUpdateMutation();
 
-  const hasMore = businessData?.meta?.hasNextPage;
-  const totalData = businessData?.totalData;
-
-  // ─── Infinite Scroll: Merge new data safely ─────────
-  useEffect(() => {
-    if (!businessData?.data?.length) {
-      setCombinedBusinesses([]);
-      return;
-    }
-
-    setCombinedBusinesses((prev) => {
-      if (page === 1) return businessData?.data;
-      const existingIds = new Set(prev.map((b) => b._id));
-      const newItems = businessData?.data?.filter(
-        (b: any) => !existingIds.has(b._id),
-      );
-      return newItems?.length ? [...prev, ...newItems] : prev;
-    });
-  }, [businessData, page]);
-
-  const fetchNextPage = useCallback(() => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => prev + 1);
-  }, [hasMore, isFetching]);
-
-  // ─── Handlers (memoized to prevent re-renders) ─────────
+  // ─── Handlers ─────────────────────────────────────────────────────────
   const handleBusinessClick = useCallback(
     (business: any) => {
       navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -340,12 +248,6 @@ function BusinessesMgmtPageInner() {
     },
     [navigate],
   );
-
-  const clearFilter = useCallback(() => {
-    setFilters({ status: "all", hasProductFilter: "all" });
-    setSearchTerm("");
-    setPage(1);
-  }, []);
 
   const resetToDefault = useCallback(() => {
     setColumnVisibility(defaultColumns);
@@ -359,7 +261,6 @@ function BusinessesMgmtPageInner() {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedBusinesses.size) return;
-
     const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
@@ -404,7 +305,7 @@ function BusinessesMgmtPageInner() {
     [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
   );
 
-  // ─── Stats Cards ─────────
+  // ─── Stats Cards ───────────────────────────────────────────────────────
   const businessStats = useMemo(
     () => [
       {
@@ -453,7 +354,10 @@ function BusinessesMgmtPageInner() {
     [businessStatsData, t],
   );
 
-  // ─── Render ─────────
+  const isFilterPanelTourStep =
+    isTourOpen && tourSteps[currentStep]?.id === "filter-panel";
+
+  // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
       <div className="flex flex-col pt-10 md:pt-0">
@@ -506,7 +410,6 @@ function BusinessesMgmtPageInner() {
                   setColumnVisibility={setColumnVisibility}
                   resetToDefault={resetToDefault}
                 />
-
                 <ExportBusinessButton
                   businesses={combinedBusinesses}
                   selectedBusinesses={selectedBusinesses}
@@ -541,81 +444,13 @@ function BusinessesMgmtPageInner() {
 
           {/* Filters Panel */}
           {(showFilters || hasSavedFilters) && (
-            <div
-              data-tour="filter-panel"
-              className={`border-t py-2 ${
-                isTourOpen && tourSteps[currentStep]?.id === "filter-panel"
-                  ? "z-10001 relative"
-                  : ""
-              } ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
-            >
-              <div className="flex flex-wrap items-start gap-3 px-3 w-full">
-                <FilterByStatus filters={filters} setFilters={setFilters} />
-                <div className="flex flex-col flex-1 min-w-35">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("has_products")}
-                  </label>
-                  <select
-                    value={filters.hasProductFilter}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        hasProductFilter: e.target.value as any,
-                      })
-                    }
-                    className={`w-full px-2 py-1.5 text-sm rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="yes">{t("yes")}</option>
-                    <option value="no">{t("no")}</option>
-                  </select>
-                </div>
-                {hasSavedFilters && (
-                  <div className="flex flex-col w-full sm:w-auto">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("active_filters")}
-                    </label>
-                    <div className="flex gap-2 items-center flex-wrap">
-                      <div className="flex flex-wrap gap-1.5">
-                        {Object.entries(filters).map(
-                          ([key, value]) =>
-                            value !== "all" && (
-                              <FilterChips
-                                key={key}
-                                label={t(
-                                  value === "yes" || value === "no"
-                                    ? value
-                                    : value.toLowerCase(),
-                                )}
-                                onRemove={() =>
-                                  setFilters((prev) => ({
-                                    ...prev,
-                                    [key]: "all",
-                                  }))
-                                }
-                              />
-                            ),
-                        )}
-                      </div>
-                      <button
-                        onClick={clearFilter}
-                        className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
-                      >
-                        {t("clear_all")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <BusinessFiltersPanel
+              filters={filters}
+              setFilters={setFilters}
+              hasSavedFilters={hasSavedFilters}
+              clearFilter={clearFilter}
+              isHighlighted={isFilterPanelTourStep}
+            />
           )}
 
           <BulkActionBar
@@ -637,7 +472,7 @@ function BusinessesMgmtPageInner() {
           ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
-              hasMore={!!hasMore}
+              hasMore={hasMore}
               next={fetchNextPage}
               isLoading={isLoading}
               columnVisibility={columnVisibility}
@@ -649,7 +484,7 @@ function BusinessesMgmtPageInner() {
           ) : (
             <BusinessGridView
               refetch={refetch}
-              hasMore={!!hasMore}
+              hasMore={hasMore}
               next={fetchNextPage}
               data={combinedBusinesses}
               onRowClick={handleBusinessClick}

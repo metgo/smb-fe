@@ -124,8 +124,10 @@ export default function ChangeOwnerModal({
         description: t("missing_information_description"),
       });
       return;
-    } else {
-      await postUserAdmin({
+    }
+
+    try {
+      const newUserResponse = await postUserAdmin({
         email,
         firstName,
         lastName,
@@ -133,17 +135,31 @@ export default function ChangeOwnerModal({
         address,
         languagePreference: language,
         role: UserRole.TRAVELLER,
-      });
-    }
+      }).unwrap();
 
-    toast.success(t("new_owner_created"), {
-      description: t("new_owner_created_description", {
-        firstName,
-        lastName,
-      }),
-    });
-    if (refetch) refetch();
-    handleClose();
+      const newUserId = newUserResponse?.data?._id || newUserResponse?._id;
+
+      if (!newUserId) {
+        toast.error(t("user_creation_failed"));
+        return;
+      }
+
+      await updateOwner({
+        userId: newUserId,
+        businessesId: businessId,
+      }).unwrap();
+
+      toast.success(t("new_owner_created"), {
+        description: t("new_owner_created_description", {
+          firstName,
+          lastName,
+        }),
+      });
+      if (refetch) refetch();
+      handleClose();
+    } catch (err) {
+      toast.error(t("owner_assignment_failed"));
+    }
   };
 
   return (

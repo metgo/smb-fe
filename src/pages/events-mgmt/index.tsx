@@ -10,7 +10,7 @@ import {
   useGetAllEventsQuery,
   useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
-import { EventsWithViewMode, CreateEventWizard } from "./components";
+import { CreateEventWizardNew, EventsWithViewMode } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterByStatus } from "@/components/filter-fields";
@@ -459,7 +459,7 @@ export default function EventsMgmtPage() {
         </div>
       </div>
       {/* Create Event Wizard */}
-      <CreateEventWizard
+      <CreateEventWizardNew
         isOpen={isCreateWizardOpen}
         onClose={handleCreateWizardClose}
         refetch={refetch}

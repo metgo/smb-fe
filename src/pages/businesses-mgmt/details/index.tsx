@@ -48,12 +48,7 @@ import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { envKeys } from "@/lib/envKeys";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_DETAILS_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 import { getLngWiseStr } from "@/helpers";
 
@@ -119,18 +114,6 @@ function TourTrigger() {
   const handleManualStart = () => {
     startTour(buildSteps());
   };
-
-  // Auto-start once per user
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      startTour(buildSteps(), {
-        tourId: BUSINESS_DETAILS_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <button

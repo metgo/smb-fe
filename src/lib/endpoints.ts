@@ -65,6 +65,9 @@ export const endpoints = {
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
 
+  // public
+  publicEventTicket: "/public/event-tickets",
+
   // events
   events: "/events",
   eventsStats: "/events-stats",
@@ -75,6 +78,7 @@ export const endpoints = {
   userAdmin: "/users/admin",
   createUser: "/users/create",
   tickets: "/tickets",
+  eventTickets: "/event-tickets",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
@@ -92,6 +96,7 @@ export const endpoints = {
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationCount: "/notifications/count",
   notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips

@@ -21,7 +21,7 @@ import {
   TrendingDown,
   Package,
 } from "lucide-react";
-import CreateTicketWizard from "../../components/sub-components/CreateTicketWizard";
+import TicketModal from "../../components/wizard/modals/TicketModal";
 import TicketSummaryCard from "./TicketSummaryCard";
 
 interface EventTicketDetailsProps {
@@ -700,7 +700,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 
       {/* Ticket Wizard */}
       {isEditModalOpen && editingTicket && (
-        <CreateTicketWizard
+        <TicketModal
           eventId={eventId}
           refetch={refetch}
           opMode={opMode}

@@ -16,12 +16,7 @@ import {
   LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
-import {
-  TourProvider,
-  TourPortal,
-  useTour,
-  BUSINESS_WIZARD_TOUR_ID,
-} from "@/components/tour";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
 import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -138,19 +133,6 @@ function CreateBusinessWizardInner({
     ],
     [],
   );
-
-  // Auto-start once (only in CREATE mode — edit users already know the wizard)
-  useEffect(() => {
-    if (opMode !== "CREATE") return;
-    const timer = setTimeout(() => {
-      startTour(buildTourSteps(), {
-        tourId: BUSINESS_WIZARD_TOUR_ID,
-        autoOnce: true,
-      });
-    }, 600);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const [_detecedLanguage, setDetectedLanguage] = useState("");
