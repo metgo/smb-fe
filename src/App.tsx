@@ -63,6 +63,7 @@ import {
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import PublicTicketPage from "./pages/public-ticket";
+import PublicSessionPage from "./pages/public-session";
 import { UserRole } from "./enums/user.types";
 import { store } from "./store/store";
 
@@ -304,9 +305,13 @@ function App() {
     const isPublicTicketPath = window.location.pathname.startsWith(
       routes.publicTicket,
     );
+    const isPublicSessionPath = window.location.pathname.startsWith(
+      routes.publicSession,
+    );
 
-    // Skip for QR mode and public ticket pages
-    if (isOrdersManagement || isPublicTicketPath) return;
+    // Skip for QR mode and public ticket/session pages
+    if (isOrdersManagement || isPublicTicketPath || isPublicSessionPath)
+      return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
@@ -359,8 +364,11 @@ function App() {
     const isPublicTicket = window.location.pathname.startsWith(
       routes.publicTicket,
     );
+    const isPublicSession = window.location.pathname.startsWith(
+      routes.publicSession,
+    );
 
-    if (isPublicTicket) {
+    if (isPublicTicket || isPublicSession) {
       return children;
     }
     let user: any = null;
@@ -440,6 +448,15 @@ function App() {
           element: (
             <Suspense fallback={<SplashLoader />}>
               <PublicTicketPage />
+            </Suspense>
+          ),
+          errorElement: <ErrorUiPage />,
+        },
+        {
+          path: `${routes.publicSession}/:wrapperId/:sessionBookingId`,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <PublicSessionPage />
             </Suspense>
           ),
           errorElement: <ErrorUiPage />,

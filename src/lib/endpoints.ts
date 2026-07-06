@@ -68,6 +68,7 @@ export const endpoints = {
 
   // public
   publicEventTicket: "/public/event-tickets",
+  publicSessionTicket: "/public/session-tickets",
 
   // events
   events: "/events",

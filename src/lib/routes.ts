@@ -49,6 +49,7 @@ export const routes = {
   users: "/users",
 
   publicTicket: "/verify-ticket",
+  publicSession: "/verify-session",
   websiteCrashes: "/website-crashes",
   websiteCrashDetails: "/website-crash-details",
 };
