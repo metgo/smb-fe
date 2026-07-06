@@ -146,7 +146,7 @@ export default function PublicSessionPage() {
       className="min-h-screen bg-linear-to-br from-teal-50 via-white to-teal-50"
       dir="rtl"
     >
-      <div className="max-w-md mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto px-4 py-12">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
           {/* Hero banner */}
           <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-teal-600">
@@ -198,35 +198,10 @@ export default function PublicSessionPage() {
             </span>
           </div>
 
-          <div className="px-5 pt-5 pb-1 flex items-start gap-3">
-            {session.sessionImage && (
-              <img
-                src={session.sessionImage}
-                alt={session.sessionName}
-                className="w-14 h-14 rounded-lg object-cover shrink-0"
-              />
-            )}
-            <div className="min-w-0">
-              <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
-                שם המפגש
-              </p>
-              <p className="text-gray-800 font-semibold text-base">
-                {session.sessionName}
-              </p>
-            </div>
-          </div>
-
-          {/* Perforated divider */}
-          <div className="relative flex items-center px-4 py-3">
-            <div className="absolute -left-4 w-8 h-8 rounded-full bg-linear-to-br from-teal-50 via-white to-teal-50 border-r border-gray-100" />
-            <div className="flex-1 border-t-2 border-dashed border-gray-200" />
-            <div className="absolute -right-4 w-8 h-8 rounded-full bg-linear-to-br from-teal-50 via-white to-teal-50 border-l border-gray-100" />
-          </div>
-
           <div className="px-5 pb-6 space-y-5">
             {/* Schedule */}
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2 mt-3">
                 מועד
               </p>
               <div className="space-y-1.5">
