@@ -5,12 +5,13 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 import { fmtDate, fmtTime } from "../data";
-import { Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useEventSessionRegListQuery } from "@/store/api/eventSessionApi";
 
 const LIMIT = 10;
+const SKELETON_ROWS = 6;
+const SKELETON_COLS = 6;
 
 interface RegistrationsTabProps {
   wrapperId: string;
@@ -70,9 +71,10 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
 
   const TD = clsx("py-2.75 px-3 border-b align-top", borderColor);
 
+  const isInitialLoading = page === 1 && (isFetching || isLoading);
+
   return (
     <div>
-      <Spinner isLoading={page === 1 && (isFetching || isLoading)} />
       <div className="flex flex-col gap-4.5">
         <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
           <div className="flex items-center justify-between mb-3.5">
@@ -87,7 +89,39 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
             )}
           </div>
 
-          {registrations?.length === 0 ? (
+          {isInitialLoading ? (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-[13.5px] [&>tbody>tr:last-child>td]:border-b-0">
+                <thead>
+                  <tr>
+                    <th className={TH}>{t("col_ref")}</th>
+                    <th className={TH}>{t("col_status")}</th>
+                    <th className={TH}>{t("col_name")}</th>
+                    <th className={TH}>{t("col_contact")}</th>
+                    <th className={TH}>{t("col_session")}</th>
+                    <th className={TH}>{t("col_when")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: SKELETON_ROWS }).map((_, row) => (
+                    <tr key={row} className="animate-pulse">
+                      {Array.from({ length: SKELETON_COLS }).map((_, col) => (
+                        <td key={col} className={TD}>
+                          <div
+                            className={clsx(
+                              "h-4 rounded",
+                              isDark ? "bg-gray-700" : "bg-gray-200",
+                            )}
+                            style={{ width: `${55 + Math.random() * 35}%` }}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : registrations?.length === 0 ? (
             <p className={clsx("text-sm leading-relaxed", textTertiary)}>
               {t("no_bookings_yet")}
             </p>
@@ -148,9 +182,8 @@ export function RegistrationsTab({ wrapperId }: RegistrationsTabProps) {
                           textTertiary,
                         )}
                       >
-                        <span dir="ltr">{registration.customerEmail}</span>
-
-                        <span dir="ltr">{registration.customerPhone}</span>
+                        <span>{registration.customerEmail}</span>
+                        <span>{registration.customerPhone}</span>
                       </td>
 
                       <td className={TD}>

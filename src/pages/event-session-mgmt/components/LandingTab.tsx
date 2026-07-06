@@ -29,7 +29,7 @@ import {
 import { useGetAllSessionTicketQuery } from "@/store/api/eventQueryApi";
 import { routes } from "@/lib/routes";
 import { PublishButton } from "@/components/btns";
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import { ConfirmDialog, ImageWithFallback, Spinner } from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { DEFAULT_CONFIG } from "../data";
 
@@ -40,6 +40,8 @@ interface LandingTabProps {
   onChange: (config: IAdminConfig) => void;
   eventId: string;
   wrapperId: string;
+  onDirtyChange?: (isDirty: boolean) => void;
+  isLoading: boolean;
 }
 
 const CARD_HEAD = "flex items-center justify-between mb-3.5";
@@ -49,6 +51,8 @@ export function LandingTab({
   onChange,
   wrapperId,
   eventId,
+  onDirtyChange,
+  isLoading,
 }: LandingTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
@@ -112,6 +116,14 @@ export function LandingTab({
 
   const isDirty =
     JSON.stringify(config) !== JSON.stringify(savedConfigRef.current);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    return () => onDirtyChange?.(false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -291,6 +303,7 @@ export function LandingTab({
 
   return (
     <>
+      <Spinner isLoading={isLoading} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5">
         <div className="space-y-4">
           <div className={CARD}>

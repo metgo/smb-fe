@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 import { Stat } from "./Stat";
-import { Spinner } from "@/components/shared";
 import { fmtDate, fmtTime, slotKey } from "../data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetCapacityReportQuery } from "@/store/api/eventSessionApi";
+
+const SKELETON_ROWS = 6;
+const SKELETON_COLS = 6;
 
 interface ISlotRow {
   id: number;
@@ -94,9 +96,10 @@ export function CapacityTab({ wrapperId }: CapacityTabProps) {
     arrivedByKey[key] = item.attended;
   });
 
+  const isInitialLoading = isFetching || isLoading;
+
   return (
     <div>
-      <Spinner isLoading={isFetching || isLoading} />
       <div className="flex flex-col gap-4.5">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3 mb-4.5">
           <Stat
@@ -146,54 +149,73 @@ export function CapacityTab({ wrapperId }: CapacityTabProps) {
                 </tr>
               </thead>
               <tbody>
-                {groups.map((g, gi) => (
-                  <Fragment key={gi}>
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className={clsx(
-                          "py-2 px-3 text-[12.5px] font-bold border-b",
-                          isDark ? "bg-gray-800/60" : "bg-gray-50",
-                          borderColor,
-                        )}
-                      >
-                        {g.eventName} · {fmtDate(g.date, undefined, language)}
-                      </td>
-                    </tr>
-                    {g.rows.map((r, i) => {
-                      return (
-                        <tr key={i}>
-                          <td className={TD}>{fmtTime(r.time)}</td>
-                          <td className={TD}>{r.room || "—"}</td>
-                          <td className={TD}>{r.registered}</td>
-                          <td className={TD}>{r.held || "—"}</td>
-                          <td className={TD}>{r.attended || "—"}</td>
-                          <td className={TD}>
-                            <span
+                {isInitialLoading
+                  ? Array.from({ length: SKELETON_ROWS }).map((_, row) => (
+                      <tr key={row} className="animate-pulse">
+                        {Array.from({ length: SKELETON_COLS }).map((_, col) => (
+                          <td key={col} className={TD}>
+                            <div
                               className={clsx(
-                                "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
-                                r.remaining === 0
-                                  ? isDark
-                                    ? "bg-red-900/60 text-red-300"
-                                    : "bg-red-100 text-red-700"
-                                  : isDark
-                                    ? "bg-green-900/60 text-green-300"
-                                    : "bg-green-100 text-green-700",
+                                "h-4 rounded",
+                                isDark ? "bg-gray-700" : "bg-gray-200",
                               )}
-                            >
-                              {r.remaining === 0
-                                ? t("pill_full")
-                                : t("remaining_of_capacity", {
-                                    remaining: r.remaining,
-                                    capacity: r.capacity,
-                                  })}
-                            </span>
+                              style={{
+                                width: `${55 + Math.random() * 35}%`,
+                              }}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  : groups.map((g, gi) => (
+                      <Fragment key={gi}>
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className={clsx(
+                              "py-2 px-3 text-[12.5px] font-bold border-b",
+                              isDark ? "bg-gray-800/60" : "bg-gray-50",
+                              borderColor,
+                            )}
+                          >
+                            {g.eventName} ·{" "}
+                            {fmtDate(g.date, undefined, language)}
                           </td>
                         </tr>
-                      );
-                    })}
-                  </Fragment>
-                ))}
+                        {g.rows.map((r, i) => {
+                          return (
+                            <tr key={i}>
+                              <td className={TD}>{fmtTime(r.time)}</td>
+                              <td className={TD}>{r.room || "—"}</td>
+                              <td className={TD}>{r.registered}</td>
+                              <td className={TD}>{r.held || "—"}</td>
+                              <td className={TD}>{r.attended || "—"}</td>
+                              <td className={TD}>
+                                <span
+                                  className={clsx(
+                                    "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold",
+                                    r.remaining === 0
+                                      ? isDark
+                                        ? "bg-red-900/60 text-red-300"
+                                        : "bg-red-100 text-red-700"
+                                      : isDark
+                                        ? "bg-green-900/60 text-green-300"
+                                        : "bg-green-100 text-green-700",
+                                  )}
+                                >
+                                  {r.remaining === 0
+                                    ? t("pill_full")
+                                    : t("remaining_of_capacity", {
+                                        remaining: r.remaining,
+                                        capacity: r.capacity,
+                                      })}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </Fragment>
+                    ))}
               </tbody>
             </table>
           </div>

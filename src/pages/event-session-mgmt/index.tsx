@@ -13,6 +13,7 @@ import {
   TabsSection,
   PageHeader,
   ImageWithFallback,
+  ConfirmDialog,
 } from "@/components/shared";
 import { Layout, Users, Bell, ClipboardList, Compass, Eye } from "lucide-react";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
@@ -47,9 +48,11 @@ function EventSessionMgmtPageInner() {
   const { isDark, bgSecondary, textPrimary, textTertiary, language } =
     useThemeClasses();
 
-  const { data: eventDetails } = useGetEventByIdQuery(
-    eventId ? { eventId } : skipToken,
-  );
+  const {
+    data: eventDetails,
+    isFetching,
+    isLoading,
+  } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
 
   const [previewArg, setPreviewArg] = useState<string | typeof skipToken>(
     skipToken,
@@ -76,6 +79,8 @@ function EventSessionMgmtPageInner() {
   }
 
   const [tab, setTab] = useState<TTabId>("landing");
+  const [isLandingDirty, setIsLandingDirty] = useState(false);
+  const [pendingTab, setPendingTab] = useState<TTabId | null>(null);
   const [config, setConfigState] = useState<IAdminConfig>(() =>
     store.getConfig(),
   );
@@ -86,6 +91,19 @@ function EventSessionMgmtPageInner() {
   function onChange(c: IAdminConfig) {
     setConfigState(c);
     store.setConfig(c);
+  }
+
+  function handleTabChange(id: string) {
+    if (tab === "landing" && isLandingDirty && id !== tab) {
+      setPendingTab(id as TTabId);
+      return;
+    }
+    setTab(id as TTabId);
+  }
+
+  function confirmTabChange() {
+    if (pendingTab) setTab(pendingTab);
+    setPendingTab(null);
   }
 
   // ─── Tour integration ───────────────────────────────────────────────────────
@@ -241,7 +259,7 @@ function EventSessionMgmtPageInner() {
               <TabsSection
                 tabs={tabs}
                 activeTab={tab}
-                setActiveTab={(id) => setTab(id as TTabId)}
+                setActiveTab={handleTabChange}
               />
             </div>
 
@@ -288,6 +306,8 @@ function EventSessionMgmtPageInner() {
               onChange={onChange}
               eventId={eventId}
               wrapperId={wrapperId}
+              onDirtyChange={setIsLandingDirty}
+              isLoading={isFetching || isLoading}
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
@@ -310,6 +330,16 @@ function EventSessionMgmtPageInner() {
       </div>
 
       <TourPortal />
+
+      <ConfirmDialog
+        open={pendingTab !== null}
+        title="unsaved_changes"
+        message="unsaved_changes_confirm"
+        confirmText="leave"
+        variant="warning"
+        onCancel={() => setPendingTab(null)}
+        onConfirm={confirmTabChange}
+      />
     </>
   );
 }
