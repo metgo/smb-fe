@@ -62,6 +62,10 @@ export function useContentData({
       params.hasProductFilter = filters.hasProductFilter === "yes";
     if (filters.primaryCategory !== "all")
       params.primaryCategoryId = filters.primaryCategory;
+    if (filters.assignmentStatus && filters.assignmentStatus !== "all")
+      params.assignmentStatus = filters.assignmentStatus;
+    if (filters.viewCategory && filters.viewCategory !== "all")
+      params.viewCategory = filters.viewCategory;
     return params;
   }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
 
@@ -77,6 +81,10 @@ export function useContentData({
     };
     if (filters.businessId) params.businessId = filters.businessId;
     if (searchQuery) params.search = searchQuery;
+    if (filters.assignmentStatus && filters.assignmentStatus !== "all")
+      params.assignmentStatus = filters.assignmentStatus;
+    if (filters.viewCategory && filters.viewCategory !== "all")
+      params.viewCategory = filters.viewCategory;
     return params;
   }, [productTab, dmoId, authorityId, externalApiId, productPage]);
 

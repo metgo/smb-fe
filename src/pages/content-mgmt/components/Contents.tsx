@@ -227,29 +227,29 @@ const Contents = ({
   });
   // ─── Derive assigned IDs and view categories from templateContents ────────
   // templateContents uses IContentTemplate: { topic, groups: [{ category, contents: [{ _id, contentType }] }] }
-  const assignedBusinessIds = useMemo(() => {
-    const ids = new Set<string>();
-    templateContents?.forEach((topic) =>
-      topic.groups?.forEach((group) =>
-        group.contents
-          ?.filter((c) => c.contentType === "business")
-          .forEach((c) => ids.add(c._id?.toString())),
-      ),
-    );
-    return ids;
-  }, [templateContents]);
+  // const assignedBusinessIds = useMemo(() => {
+  //   const ids = new Set<string>();
+  //   templateContents?.forEach((topic) =>
+  //     topic.groups?.forEach((group) =>
+  //       group.contents
+  //         ?.filter((c) => c.contentType === "business")
+  //         .forEach((c) => ids.add(c._id?.toString())),
+  //     ),
+  //   );
+  //   return ids;
+  // }, [templateContents]);
 
-  const assignedProductIds = useMemo(() => {
-    const ids = new Set<string>();
-    templateContents?.forEach((topic) =>
-      topic.groups?.forEach((group) =>
-        group.contents
-          ?.filter((c) => c.contentType === "product")
-          .forEach((c) => ids.add(c._id?.toString())),
-      ),
-    );
-    return ids;
-  }, [templateContents]);
+  // const assignedProductIds = useMemo(() => {
+  //   const ids = new Set<string>();
+  //   templateContents?.forEach((topic) =>
+  //     topic.groups?.forEach((group) =>
+  //       group.contents
+  //         ?.filter((c) => c.contentType === "product")
+  //         .forEach((c) => ids.add(c._id?.toString())),
+  //     ),
+  //   );
+  //   return ids;
+  // }, [templateContents]);
 
   const viewCategories = useMemo(() => {
     const cats: {
@@ -275,30 +275,9 @@ const Contents = ({
 
   const filteredItems = useMemo(() => {
     let items = combinedBusinesses ?? [];
-    const assignedIds =
-      currentTab === "Products" ? assignedProductIds : assignedBusinessIds;
 
-    if (filters.assignmentStatus === "assigned") {
-      items = items.filter((item: any) =>
-        assignedIds.has(item._id?.toString()),
-      );
-    } else if (filters.assignmentStatus === "unassigned") {
-      items = items.filter(
-        (item: any) => !assignedIds.has(item._id?.toString()),
-      );
-    }
-
-    if (filters.viewCategory && filters.viewCategory !== "all") {
-      const cat = viewCategories.find((c) => c.label === filters.viewCategory);
-      if (cat) {
-        const catIds = new Set(
-          (currentTab === "Products" ? cat.productIds : cat.businessIds).map(
-            (id) => id.toString(),
-          ),
-        );
-        items = items.filter((item: any) => catIds.has(item._id?.toString()));
-      }
-    }
+    // NOTE: assignmentStatus and viewCategory are now filtered server-side
+    // via useContentData → backend handlers. Only client-side sort applied here.
 
     if (filters.sortOrder === "alpha") {
       items = [...items].sort((a, b) => {
@@ -316,16 +295,7 @@ const Contents = ({
     }
 
     return items;
-  }, [
-    combinedBusinesses,
-    filters.assignmentStatus,
-    filters.viewCategory,
-    filters.sortOrder,
-    assignedBusinessIds,
-    assignedProductIds,
-    viewCategories,
-    currentTab,
-  ]);
+  }, [combinedBusinesses, filters.sortOrder]);
 
   // ─── Selection handler ────────────────────────────────────────────────────
   const handleSelect = useCallback(
