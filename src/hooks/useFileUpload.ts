@@ -70,9 +70,14 @@ export function useFileUpload({
           previewUrl: initialUrl,
           gcsUrl: initialUrl,
           progress: 100,
-          status: "success",
+          status: "success" as FileUploadStatus,
         }
-      : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" },
+      : {
+          previewUrl: "",
+          gcsUrl: "",
+          progress: 0,
+          status: "idle" as FileUploadStatus,
+        },
   );
 
   /* Hydrate whenever initialUrl changes (arrives asynchronously in edit
@@ -81,14 +86,19 @@ export function useFileUpload({
   useEffect(() => {
     if (initialUrl === initialUrlRef.current) return;
     initialUrlRef.current = initialUrl;
-    const newState = initialUrl
+    const newState: Omit<FileUploadState, "isDeleting"> = initialUrl
       ? {
           previewUrl: initialUrl,
           gcsUrl: initialUrl,
           progress: 100,
-          status: "success",
+          status: "success" as FileUploadStatus,
         }
-      : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" };
+      : {
+          previewUrl: "",
+          gcsUrl: "",
+          progress: 0,
+          status: "idle" as FileUploadStatus,
+        };
 
     setState(newState);
 
@@ -119,7 +129,7 @@ export function useFileUpload({
         previewUrl: blobUrl,
         gcsUrl: "",
         progress: 0,
-        status: "uploading",
+        status: "uploading" as FileUploadStatus,
       });
 
       try {
@@ -144,11 +154,11 @@ export function useFileUpload({
           previewUrl: gcsURL,
           gcsUrl: gcsURL,
           progress: 100,
-          status: "success",
+          status: "success" as FileUploadStatus,
         });
         toast.success(t("image_upload_success"));
       } catch {
-        setState((prev) => ({ ...prev, status: "error" }));
+        setState((prev) => ({ ...prev, status: "error" as FileUploadStatus }));
         toast.error(t("image_upload_failed"));
       }
     },
@@ -161,7 +171,7 @@ export function useFileUpload({
       previewUrl: url,
       gcsUrl: url,
       progress: 100,
-      status: "success",
+      status: "success" as FileUploadStatus,
     });
   }, []);
 
@@ -180,7 +190,12 @@ export function useFileUpload({
       }
     }
 
-    setState({ previewUrl: "", gcsUrl: "", progress: 0, status: "idle" });
+    setState({
+      previewUrl: "",
+      gcsUrl: "",
+      progress: 0,
+      status: "idle" as FileUploadStatus,
+    });
   }, [state.previewUrl, state.gcsUrl, deleteMedia, t]);
 
   /* ─── Reset (e.g. when switching to URL mode) ───────────────────── */
@@ -188,7 +203,12 @@ export function useFileUpload({
     if (state.previewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(state.previewUrl);
     }
-    setState({ previewUrl: "", gcsUrl: "", progress: 0, status: "idle" });
+    setState({
+      previewUrl: "",
+      gcsUrl: "",
+      progress: 0,
+      status: "idle" as FileUploadStatus,
+    });
   }, [state.previewUrl]);
 
   return {
