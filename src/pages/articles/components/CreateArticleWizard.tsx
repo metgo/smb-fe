@@ -177,6 +177,7 @@ const CreateArticleWizard = ({
   const [formData, setFormData] = useState<IArticleFormData>(
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
+  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
 
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -449,7 +450,11 @@ const CreateArticleWizard = ({
         );
       case 2:
         return (
-          <ArticleTranslateButton formData={formData} onChange={handleChange} />
+          <ArticleTranslateButton
+            formData={formData}
+            syncKey={existingArticle?._id}
+            onChange={handleChange}
+          />
         );
       case 3:
         return <Media {...mediaProps} {...commonProps} />;
