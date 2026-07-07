@@ -31,19 +31,15 @@ interface UseFileUploadOptions {
    */
   initialUrl?: string;
   /**
+   * Callback when the file state changes (upload success, delete, etc.)
+   */
+  onLogoChange?: (logoData: { image: string } | null) => void;
+  /**
    * "image" converts to WebP before upload; "video" skips conversion.
    * Defaults to "image".
    */
   mediaType?: "image" | "video";
 }
-
-// const IDLE_STATE: FileUploadState = {
-//   previewUrl: "",
-//   gcsUrl: "",
-//   progress: 0,
-//   status: "idle",
-//   isDeleting: false,
-// };
 
 /**
  * Reusable hook for single-file upload via GCP presigned URL.
@@ -56,12 +52,17 @@ interface UseFileUploadOptions {
  */
 export function useFileUpload({
   initialUrl,
+  onLogoChange,
   mediaType = "image",
 }: UseFileUploadOptions = {}): UseFileUploadReturn {
   const { t } = useTranslation("toast");
 
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [deleteMedia, { isLoading: isDeleting }] = useDeleteMediaMutation();
+
+  // Keep a ref to the latest onLogoChange callback
+  const onLogoChangeRef = useRef(onLogoChange);
+  onLogoChangeRef.current = onLogoChange;
 
   const [state, setState] = useState<Omit<FileUploadState, "isDeleting">>(() =>
     initialUrl
@@ -80,17 +81,34 @@ export function useFileUpload({
   useEffect(() => {
     if (initialUrl === initialUrlRef.current) return;
     initialUrlRef.current = initialUrl;
-    setState(
-      initialUrl
-        ? {
-            previewUrl: initialUrl,
-            gcsUrl: initialUrl,
-            progress: 100,
-            status: "success",
-          }
-        : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" },
-    );
+    const newState = initialUrl
+      ? {
+          previewUrl: initialUrl,
+          gcsUrl: initialUrl,
+          progress: 100,
+          status: "success",
+        }
+      : { previewUrl: "", gcsUrl: "", progress: 0, status: "idle" };
+
+    setState(newState);
+
+    // Notify parent about the change
+    if (onLogoChangeRef.current) {
+      onLogoChangeRef.current(initialUrl ? { image: initialUrl } : null);
+    }
   }, [initialUrl]);
+
+  /* ─── Sync state to parent via onLogoChange ────────────────────── */
+  useEffect(() => {
+    if (!onLogoChangeRef.current) return;
+
+    // Only notify when we have a successful upload or when clearing
+    if (state.status === "success" && state.gcsUrl) {
+      onLogoChangeRef.current({ image: state.gcsUrl });
+    } else if (state.status === "idle") {
+      onLogoChangeRef.current(null);
+    }
+  }, [state.status, state.gcsUrl]);
 
   /* ─── File selected from input / drag-drop ─────────────────────── */
   const handleFileSelect = useCallback(

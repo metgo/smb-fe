@@ -38,6 +38,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
 }) => {
   const { socialMedia } = useCommon();
   const { isDark } = useThemeClasses();
+  console.log("🚀 ~ formData:", formData);
 
   const allSocialMedia: SocialMediaItem[] = socialMedia?.datas?.data ?? [];
 
