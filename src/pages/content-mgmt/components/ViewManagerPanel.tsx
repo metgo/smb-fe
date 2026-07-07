@@ -224,7 +224,17 @@ function ViewDrawer({
       onRefetch();
       onViewSelect(view);
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to activate view");
+      // Enhanced error logging for diagnostics
+      console.error("[ViewManager] Activation failed:", {
+        viewId: view._id,
+        viewName: view.viewName,
+        error: err,
+        errorData: err?.data,
+        errorMessage: err?.data?.message || err?.message,
+      });
+      toast.error(
+        err?.data?.message || err?.message || "Failed to activate view",
+      );
     } finally {
       setActivatingId(null);
     }
