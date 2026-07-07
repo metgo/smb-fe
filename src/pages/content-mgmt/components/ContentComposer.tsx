@@ -37,6 +37,7 @@ interface ContentComposerProps {
   websiteName?: string;
   onViewSelect?: (view: IView) => void;
   onViewsRefetch?: () => void;
+  onRefetchTemplate?: () => void;
   hasUnsavedContent?: boolean;
   onSaveCurrentAsView?: () => void;
   isSavingCurrentAsView?: boolean;
@@ -335,6 +336,7 @@ const ContentComposer = ({
   websiteName = "",
   onViewSelect,
   onViewsRefetch,
+  onRefetchTemplate,
   hasUnsavedContent = false,
   onSaveCurrentAsView,
   isSavingCurrentAsView = false,
@@ -432,6 +434,7 @@ const ContentComposer = ({
           websiteName={websiteName}
           onViewSelect={(view) => onViewSelect?.(view)}
           onRefetch={() => onViewsRefetch?.()}
+          onRefetchTemplate={() => onRefetchTemplate?.()}
           hasUnsavedContent={hasUnsavedContent}
           onSaveCurrentAsView={onSaveCurrentAsView}
           isSavingCurrentAsView={isSavingCurrentAsView}

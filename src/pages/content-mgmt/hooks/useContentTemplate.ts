@@ -347,6 +347,9 @@ export function useContentTemplate({
     setTemplateContentId(view._id);
     setContentStatus((view.status?.toLowerCase() ?? "draft") as TStatus);
     if ("header" in view) setHeader(view.header || "<p></p>");
+
+    // Force refetch of the main template query to ensure cache is fresh
+    refetch();
   };
 
   const onStatusChangeHandler = async (status: string) => {
@@ -484,5 +487,6 @@ export function useContentTemplate({
     handleSubmit,
     handleSaveCurrentAsView,
     refetchViews,
+    refetchTemplate: refetch,
   };
 }

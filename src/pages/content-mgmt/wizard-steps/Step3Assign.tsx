@@ -34,21 +34,41 @@ export default function Step3Assign({
   const { isDark } = useThemeClasses();
   const [assignAll] = useAssignAllEntitiesMutation();
   const [assignState, setAssignState] = useState<AssignState>("idle");
+  const [initialStateSet, setInitialStateSet] = useState(false);
 
   const allCategories = topics.flatMap((t) => t.categories);
   const totalTopics = topics.length;
   const totalCategories = allCategories.length;
 
   const { data: viewProgress } = useGetViewByIdQuery(
-    { viewId },
+    { viewId, raw: true }, // Use raw=true to get original IDs without filtering
     {
-      skip: !viewId || assignState !== "running",
-      pollingInterval: 3000,
+      skip: !viewId, // Fetch whenever viewId exists (for edit mode + during assignment)
+      pollingInterval: assignState === "running" ? 3000 : 0, // Only poll during assignment
     },
   );
 
+  // Set initial state based on existing assignments (for edit mode)
   useEffect(() => {
-    if (!viewProgress) return;
+    if (!viewProgress || initialStateSet) return;
+
+    const status = (viewProgress as any).assignmentStatus;
+
+    if (status === "done") {
+      setAssignState("done");
+    } else if (status === "running") {
+      setAssignState("running");
+      onAssignStart();
+    } else if (status === "failed") {
+      setAssignState("error");
+    }
+
+    setInitialStateSet(true);
+  }, [viewProgress, initialStateSet, onAssignStart, viewId]);
+
+  // Handle assignment status updates during running
+  useEffect(() => {
+    if (!viewProgress || !initialStateSet) return;
     const status = (viewProgress as any).assignmentStatus;
     if (status === "done" && assignState === "running") {
       setAssignState("done");
@@ -61,7 +81,12 @@ export default function Step3Assign({
         "AI assignment failed. You can retry or publish without assignment.",
       );
     }
-  }, [(viewProgress as any)?.assignmentStatus]);
+  }, [
+    (viewProgress as any)?.assignmentStatus,
+    initialStateSet,
+    assignState,
+    onAssignEnd,
+  ]);
 
   const progressDone: number = (viewProgress as any)?.assignmentDone ?? 0;
   const progressTotal: number =
@@ -91,11 +116,15 @@ export default function Step3Assign({
   const totalAssignedFromView = assignedFromView.reduce(
     (sum: number, t: any) =>
       sum +
-      (t.siteCategories ?? []).reduce(
-        (s: number, c: any) =>
-          s + (c.businessIds?.length ?? 0) + (c.productIds?.length ?? 0),
-        0,
-      ),
+      (t.siteCategories ?? []).reduce((s: number, c: any) => {
+        const bCount = Array.isArray(c.businessIds) ? c.businessIds.length : 0;
+        const pCount = Array.isArray(c.productIds) ? c.productIds.length : 0;
+        const eCount = Array.isArray(c.eventIds) ? c.eventIds.length : 0;
+        const poiCount = Array.isArray(c.poiIds) ? c.poiIds.length : 0;
+        const tCount = Array.isArray(c.tripIds) ? c.tripIds.length : 0;
+        const fCount = Array.isArray(c.fundayIds) ? c.fundayIds.length : 0;
+        return s + bCount + pCount + eCount + poiCount + tCount + fCount;
+      }, 0),
     0,
   );
 
@@ -129,7 +158,7 @@ export default function Step3Assign({
           { label: "Categories", value: totalCategories, color: "purple" },
           {
             label: "Assigned items",
-            value: assignState === "done" ? totalAssignedFromView : 0,
+            value: totalAssignedFromView > 0 ? totalAssignedFromView : 0,
             color: "green",
           },
         ].map(({ label, value, color }) => (
@@ -300,127 +329,157 @@ export default function Step3Assign({
         <div
           className={clsx(
             "flex items-center gap-3 p-3 rounded-xl border",
-            isDark
-              ? "bg-green-900/20 border-green-800/40"
-              : "bg-green-50 border-green-100",
+            totalAssignedFromView === 0
+              ? isDark
+                ? "bg-amber-900/20 border-amber-800/40"
+                : "bg-amber-50 border-amber-100"
+              : isDark
+                ? "bg-green-900/20 border-green-800/40"
+                : "bg-green-50 border-green-100",
           )}
         >
-          <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+          {totalAssignedFromView === 0 ? (
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+          ) : (
+            <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+          )}
           <div>
             <p
               className={clsx(
                 "text-sm font-medium",
-                isDark ? "text-green-300" : "text-green-700",
+                totalAssignedFromView === 0
+                  ? isDark
+                    ? "text-amber-300"
+                    : "text-amber-700"
+                  : isDark
+                    ? "text-green-300"
+                    : "text-green-700",
               )}
             >
-              Assignment complete
+              {totalAssignedFromView === 0
+                ? "No items assigned"
+                : "Assignment complete"}
             </p>
             <p
               className={clsx(
                 "text-xs",
-                isDark ? "text-green-500" : "text-green-600",
+                totalAssignedFromView === 0
+                  ? isDark
+                    ? "text-amber-500"
+                    : "text-amber-600"
+                  : isDark
+                    ? "text-green-500"
+                    : "text-green-600",
               )}
             >
-              {totalAssignedFromView} items assigned across {totalCategories}{" "}
-              categories
+              {totalAssignedFromView === 0
+                ? "Run AI assignment to assign businesses and products to categories."
+                : `${totalAssignedFromView} items assigned across ${totalCategories} categories`}
             </p>
           </div>
           <button
             onClick={() => {
-              void runAssignment(false);
+              void runAssignment(totalAssignedFromView === 0 ? false : true);
             }}
-            className="ms-auto text-xs underline text-green-600 hover:text-green-700 shrink-0"
+            className={clsx(
+              "ms-auto text-xs underline shrink-0",
+              totalAssignedFromView === 0
+                ? "text-amber-600 hover:text-amber-700"
+                : "text-green-600 hover:text-green-700",
+            )}
           >
-            Re-run
+            {totalAssignedFromView === 0 ? "Run Now" : "Re-run"}
           </button>
         </div>
       )}
 
-      {/* Per-category summary after done */}
-      {assignState === "done" && assignedFromView.length > 0 && (
-        <div className="space-y-2">
-          <h3
-            className={clsx(
-              "text-sm font-semibold",
-              isDark ? "text-gray-300" : "text-gray-700",
-            )}
-          >
-            Results by Category
-          </h3>
-          {assignedFromView.map((topic: any) => (
-            <div key={topic.titleHe || topic.title} className="space-y-1.5">
-              <p
-                className={clsx(
-                  "text-xs font-medium px-1",
-                  isDark ? "text-gray-500" : "text-gray-400",
-                )}
-              >
-                {topic.titleHe || topic.title}
-              </p>
-              {(topic.siteCategories ?? []).map((cat: any) => {
-                const bCount = cat.businessIds?.length ?? 0;
-                const pCount = cat.productIds?.length ?? 0;
-                const total = bCount + pCount;
-                return (
-                  <div
-                    key={cat.titleHe || cat.title}
-                    className={clsx(
-                      "flex items-center gap-3 p-2.5 rounded-xl border",
-                      isDark
-                        ? "border-gray-700 bg-gray-800"
-                        : "border-gray-200 bg-white",
-                    )}
-                  >
-                    <span
+      {/* Per-category summary after done — only show if there are actual assignments */}
+      {assignState === "done" &&
+        assignedFromView.length > 0 &&
+        totalAssignedFromView > 0 && (
+          <div className="space-y-2">
+            <h3
+              className={clsx(
+                "text-sm font-semibold",
+                isDark ? "text-gray-300" : "text-gray-700",
+              )}
+            >
+              Results by Category
+            </h3>
+            {assignedFromView.map((topic: any) => (
+              <div key={topic.titleHe || topic.title} className="space-y-1.5">
+                <p
+                  className={clsx(
+                    "text-xs font-medium px-1",
+                    isDark ? "text-gray-500" : "text-gray-400",
+                  )}
+                >
+                  {topic.titleHe || topic.title}
+                </p>
+                {(topic.siteCategories ?? []).map((cat: any) => {
+                  const bCount = cat.businessIds?.length ?? 0;
+                  const pCount = cat.productIds?.length ?? 0;
+                  const total = bCount + pCount;
+                  return (
+                    <div
+                      key={cat.titleHe || cat.title}
                       className={clsx(
-                        "text-sm flex-1 truncate",
-                        isDark ? "text-gray-300" : "text-gray-700",
+                        "flex items-center gap-3 p-2.5 rounded-xl border",
+                        isDark
+                          ? "border-gray-700 bg-gray-800"
+                          : "border-gray-200 bg-white",
                       )}
                     >
-                      {cat.titleHe || cat.title || "Untitled"}
-                    </span>
-                    <div className="flex items-center gap-3 shrink-0">
-                      {bCount > 0 && (
-                        <span
-                          className={clsx(
-                            "flex items-center gap-1 text-xs",
-                            isDark ? "text-blue-400" : "text-blue-600",
-                          )}
-                        >
-                          <Users className="w-3 h-3" />
-                          {bCount}
-                        </span>
-                      )}
-                      {pCount > 0 && (
-                        <span
-                          className={clsx(
-                            "flex items-center gap-1 text-xs",
-                            isDark ? "text-purple-400" : "text-purple-600",
-                          )}
-                        >
-                          <Package className="w-3 h-3" />
-                          {pCount}
-                        </span>
-                      )}
-                      {total === 0 && (
-                        <span
-                          className={clsx(
-                            "flex items-center gap-1 text-xs",
-                            isDark ? "text-gray-600" : "text-gray-400",
-                          )}
-                        >
-                          <AlertCircle className="w-3 h-3" />
-                          None
-                        </span>
-                      )}
+                      <span
+                        className={clsx(
+                          "text-sm flex-1 truncate",
+                          isDark ? "text-gray-300" : "text-gray-700",
+                        )}
+                      >
+                        {cat.titleHe || cat.title || "Untitled"}
+                      </span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {bCount > 0 && (
+                          <span
+                            className={clsx(
+                              "flex items-center gap-1 text-xs",
+                              isDark ? "text-blue-400" : "text-blue-600",
+                            )}
+                          >
+                            <Users className="w-3 h-3" />
+                            {bCount}
+                          </span>
+                        )}
+                        {pCount > 0 && (
+                          <span
+                            className={clsx(
+                              "flex items-center gap-1 text-xs",
+                              isDark ? "text-purple-400" : "text-purple-600",
+                            )}
+                          >
+                            <Package className="w-3 h-3" />
+                            {pCount}
+                          </span>
+                        )}
+                        {total === 0 && (
+                          <span
+                            className={clsx(
+                              "flex items-center gap-1 text-xs",
+                              isDark ? "text-gray-600" : "text-gray-400",
+                            )}
+                          >
+                            <AlertCircle className="w-3 h-3" />
+                            None
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      )}
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
 
       {/* Skip reminder */}
       {assignState === "idle" && totalCategories > 0 && (

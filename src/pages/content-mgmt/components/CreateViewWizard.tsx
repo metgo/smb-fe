@@ -70,7 +70,7 @@ export default function CreateViewWizard({
   const [step, setStep] = useState(1);
   const [viewName, setViewName] = useState(existingView?.viewName ?? "");
   const [themeContext, setThemeContext] = useState(
-    (existingView as any)?.themeContext ?? "",
+    existingView?.themeContext ?? "",
   );
   const [topics, setTopics] = useState<WizardTopic[]>(() =>
     existingView ? viewToWizardTopics(existingView.siteTopics ?? []) : [],
@@ -79,6 +79,9 @@ export default function CreateViewWizard({
     existingView?._id ?? null,
   );
   const [isAssigning, setIsAssigning] = useState(false);
+
+  // Preserve original status when editing (don't auto-change APPROVED to DRAFT)
+  const originalStatus = existingView?.status ?? "DRAFT";
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
@@ -95,24 +98,41 @@ export default function CreateViewWizard({
       viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
     themeContext: themeContext.trim() || null,
     siteTopics: topics.map((topic, topicIndex) => {
+      // In edit mode, try to find the matching original topic to preserve its category assignments
+      const originalTopic = isEditMode
+        ? (existingView?.siteTopics ?? [])[topicIndex]
+        : undefined;
+
       const siteCategories = topic.categories
         .filter((cat) => cat.title || cat.titleHe)
-        .map((cat) => ({
-          title: cat.title,
-          titleHe: cat.titleHe,
-          titleAr: cat.titleAr,
-          description: cat.description,
-          descriptionHe: cat.descriptionHe,
-          descriptionAr: cat.descriptionAr,
-          synonyms: cat.synonyms,
-          synonymsHe: cat.synonymsHe,
-          synonymsAr: cat.synonymsAr,
-          searchKeywords: cat.searchKeywords,
-          businessIds: [],
-          productIds: [],
-          isPrimary: false,
-          isArchived: false,
-        }));
+        .map((cat, catIndex) => {
+          // In edit mode, try to find the matching original category to preserve its businessIds/productIds
+          const originalCat = originalTopic
+            ? (originalTopic.siteCategories ?? [])[catIndex]
+            : undefined;
+
+          return {
+            title: cat.title,
+            titleHe: cat.titleHe,
+            titleAr: cat.titleAr,
+            description: cat.description,
+            descriptionHe: cat.descriptionHe,
+            descriptionAr: cat.descriptionAr,
+            synonyms: cat.synonyms,
+            synonymsHe: cat.synonymsHe,
+            synonymsAr: cat.synonymsAr,
+            searchKeywords: cat.searchKeywords,
+            // Preserve existing assignments in edit mode, otherwise empty
+            businessIds: (originalCat as any)?.businessIds ?? [],
+            productIds: (originalCat as any)?.productIds ?? [],
+            eventIds: (originalCat as any)?.eventIds ?? [],
+            poiIds: (originalCat as any)?.poiIds ?? [],
+            tripIds: (originalCat as any)?.tripIds ?? [],
+            fundayIds: (originalCat as any)?.fundayIds ?? [],
+            isPrimary: false,
+            isArchived: false,
+          };
+        });
 
       return {
         title: topic.title,
@@ -130,13 +150,17 @@ export default function CreateViewWizard({
   });
 
   // For updating existing views: only metadata, never overwrite topics
-  const buildMetadataPayload = (status: string) => ({
-    status,
-    viewName:
-      viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
-    themeContext: themeContext.trim() || null,
-    externalApiId,
-  });
+  const buildMetadataPayload = (status: string) => {
+    const payload = {
+      status,
+      viewName:
+        viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+      themeContext: themeContext.trim() || null,
+      externalApiId,
+    };
+    console.log("[CreateViewWizard] buildMetadataPayload:", payload);
+    return payload;
+  };
 
   const handleNext = async () => {
     if (step === 1 && !canProceedStep1) {
@@ -154,11 +178,13 @@ export default function CreateViewWizard({
     if (step === 2) {
       try {
         if (savedViewId) {
+          // When editing, preserve the original status (don't change APPROVED to DRAFT)
           await updateContent({
-            body: buildPayload("DRAFT"),
+            body: buildPayload(originalStatus),
             contentId: savedViewId,
           }).unwrap();
         } else {
+          // When creating new, use DRAFT
           const res = await createContent(buildPayload("DRAFT")).unwrap();
           setSavedViewId(res._id || res.id);
         }
@@ -177,8 +203,10 @@ export default function CreateViewWizard({
   const handleSaveDraft = async () => {
     if (savedViewId) {
       try {
+        // When editing existing view, preserve original status unless explicitly saving as draft
+        // For new views (no existingView), save as DRAFT
         await updateContent({
-          body: buildMetadataPayload("DRAFT"),
+          body: buildMetadataPayload(isEditMode ? originalStatus : "DRAFT"),
           contentId: savedViewId,
         }).unwrap();
         onCreated(savedViewId, false);
@@ -205,10 +233,18 @@ export default function CreateViewWizard({
 
     if (savedViewId) {
       try {
+        const payload = buildMetadataPayload("APPROVED");
+        console.log("[CreateViewWizard] Publishing with payload:", payload);
+        console.log(
+          "[CreateViewWizard] themeContext state value:",
+          themeContext,
+        );
+
         await updateContent({
-          body: buildMetadataPayload("APPROVED"),
+          body: payload,
           contentId: savedViewId,
         }).unwrap();
+
         try {
           await activateView({ viewId: savedViewId }).unwrap();
           onCreated(savedViewId, true);
@@ -226,7 +262,14 @@ export default function CreateViewWizard({
     }
 
     try {
-      const res = await createContent(buildPayload("APPROVED")).unwrap();
+      const payload = buildPayload("APPROVED");
+      console.log(
+        "[CreateViewWizard] Creating new view with payload:",
+        payload,
+      );
+      console.log("[CreateViewWizard] themeContext state value:", themeContext);
+
+      const res = await createContent(payload).unwrap();
       const id = res._id || res.id;
       try {
         await activateView({ viewId: id }).unwrap();

@@ -474,6 +474,7 @@ export default function ContentMgmtPage() {
                       websiteName={selectedWebsiteName}
                       onViewSelect={template.handleViewSelect}
                       onViewsRefetch={template.refetchViews}
+                      onRefetchTemplate={template.refetchTemplate}
                       hasUnsavedContent={template.hasUnsavedContent}
                       onSaveCurrentAsView={template.handleSaveCurrentAsView}
                       isSavingCurrentAsView={

@@ -38,10 +38,11 @@ export const contentQueryApi = createApi({
       },
     }),
 
-    getViewById: builder.query<IView, { viewId: string }>({
-      query: ({ viewId }) => ({
+    getViewById: builder.query<IView, { viewId: string; raw?: boolean }>({
+      query: ({ viewId, raw }) => ({
         url: `${endpoints.contentConfig}/${viewId}`,
         method: "GET",
+        params: raw ? { raw: "true" } : undefined,
       }),
       providesTags: ["Views"],
     }),
@@ -52,4 +53,5 @@ export const {
   useGetContentByExternalIdQuery,
   useGetAllViewsQuery,
   useGetViewByIdQuery,
+  useLazyGetViewByIdQuery,
 } = contentQueryApi;

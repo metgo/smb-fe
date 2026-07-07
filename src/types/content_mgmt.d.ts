@@ -144,6 +144,7 @@ interface IView {
   viewName: string | null;
   viewNameHe: string | null;
   viewNameAr: string | null;
+  themeContext?: string | null;
   isActive: boolean;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   updatedAt: string | null;

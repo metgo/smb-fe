@@ -30,6 +30,7 @@ interface Props {
   websiteName: string;
   onViewSelect: (view: IView) => void;
   onRefetch: () => void;
+  onRefetchTemplate?: () => void;
   hasUnsavedContent?: boolean;
   onSaveCurrentAsView?: () => void;
   isSavingCurrentAsView?: boolean;
@@ -196,6 +197,7 @@ interface DrawerProps {
   onClose: () => void;
   onViewSelect: (view: IView) => void;
   onRefetch: () => void;
+  onRefetchTemplate?: () => void;
   onOpenWizard: () => void;
   onEditView: (view: IView) => void;
 }
@@ -206,8 +208,9 @@ function ViewDrawer({
   isDark,
   websiteName,
   onClose,
-  onViewSelect,
+  onViewSelect: _onViewSelect,
   onRefetch,
+  onRefetchTemplate,
   onOpenWizard,
   onEditView,
 }: DrawerProps) {
@@ -222,15 +225,14 @@ function ViewDrawer({
       await activateView({ viewId: view._id }).unwrap();
       toast.success(`"${view.viewName || "View"}" is now active`);
       onRefetch();
-      onViewSelect(view);
+      if (onRefetchTemplate) {
+        onRefetchTemplate();
+      }
+      onClose();
     } catch (err: any) {
-      // Enhanced error logging for diagnostics
       console.error("[ViewManager] Activation failed:", {
         viewId: view._id,
-        viewName: view.viewName,
-        error: err,
-        errorData: err?.data,
-        errorMessage: err?.data?.message || err?.message,
+        error: err?.data?.message || err?.message,
       });
       toast.error(
         err?.data?.message || err?.message || "Failed to activate view",
@@ -394,8 +396,9 @@ export default function ViewManagerPanel({
   isLoading,
   externalApiId,
   websiteName,
-  onViewSelect,
+  onViewSelect: _onViewSelect,
   onRefetch,
+  onRefetchTemplate,
   hasUnsavedContent = false,
   onSaveCurrentAsView,
   isSavingCurrentAsView = false,
@@ -417,17 +420,10 @@ export default function ViewManagerPanel({
       publishNow ? "View is now live on your website" : "View saved as draft",
     );
 
-    // Trigger refetch - it will update the views prop automatically
+    // Trigger refetch to update the views list and the active template
     onRefetch();
-
-    // Give RTK Query a moment to update, then select the active view
-    if (publishNow) {
-      setTimeout(() => {
-        const active = views.find((v) => v.isActive);
-        if (active) {
-          onViewSelect(active);
-        }
-      }, 500);
+    if (onRefetchTemplate) {
+      onRefetchTemplate();
     }
   };
 
@@ -568,8 +564,9 @@ export default function ViewManagerPanel({
           isDark={isDark}
           websiteName={websiteName}
           onClose={() => setShowDrawer(false)}
-          onViewSelect={onViewSelect}
+          onViewSelect={_onViewSelect}
           onRefetch={onRefetch}
+          onRefetchTemplate={onRefetchTemplate}
           onOpenWizard={handleOpenWizardSafely}
           onEditView={handleEditView}
         />
