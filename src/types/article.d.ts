@@ -72,5 +72,10 @@ interface IArticleFormData {
   // Common
   slug: string;
   status:
-    "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
+    | "DRAFT"
+    | "PUBLISHED"
+    | "SCHEDULED"
+    | "ARCHIVED"
+    | "APPROVED"
+    | "PENDING";
 }

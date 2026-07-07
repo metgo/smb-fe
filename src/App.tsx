@@ -311,8 +311,7 @@ function App() {
     );
 
     // Skip for QR mode and public ticket/session pages
-    if (isOrdersManagement || isPublicTicketPath || isPublicSessionPath)
-      return;
+    if (isOrdersManagement || isPublicTicketPath || isPublicSessionPath) return;
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
