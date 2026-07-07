@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
-import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
 import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
@@ -131,7 +131,7 @@ export function useContentData({
     data: productData,
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
-  } = useGetAllProductsQuery(
+  } = useGetContentManagementProductsQuery(
     selected === "Products" && externalApiId ? productParams : skipToken,
   );
 
