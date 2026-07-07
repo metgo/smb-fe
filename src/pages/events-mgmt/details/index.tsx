@@ -39,7 +39,7 @@ import {
   MediaDetails,
 } from "@/components/details-sections";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
-import { eventTabs } from "@/constants/tabs";
+import { getEventTabs } from "@/constants/tabs";
 import { CreateEventWizardNew } from "../components";
 
 const findEventType = (type: string) => {
@@ -66,6 +66,9 @@ export default function EventDetailsPage() {
   const isFromQRCode = !!tokenFromUrl; // Only from QR code if token exists
 
   const { bgPrimary, isRTL, isDark } = useThemeClasses();
+
+  const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(true);
+  console.log("🚀 ~ EventDetailsPage ~ hasExternalTicket:", hasExternalTicket);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -92,15 +95,17 @@ export default function EventDetailsPage() {
     isLoading,
     isFetching,
   } = useGetEventByIdQuery(eventId ? { eventId } : skipToken);
-  const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
-    eventId ? { eventId } : skipToken,
-  );
 
+  const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
+    eventId && !hasExternalTicket ? { eventId } : skipToken,
+  );
   const {
     data: sessions,
     refetch: sessionRefetch,
-    isLoading: isSessionsLoading,
-  } = useGetSessionsByEventIdQuery(eventId ? { eventId } : skipToken);
+    isFetching: isSessionsLoading,
+  } = useGetSessionsByEventIdQuery(
+    eventId && !hasExternalTicket ? { eventId } : skipToken,
+  );
 
   const { data: eventStatsData, isLoading: isStatsLoading } =
     useGetEventsStatsQuery(eventId ? { eventId } : skipToken);
@@ -110,6 +115,7 @@ export default function EventDetailsPage() {
   useEffect(() => {
     if (eventDetails) {
       setEventDays(eventDetails?.dayDescription ?? []);
+      setHasExternalTicket(eventDetails?.hasExternalTicket);
     }
   }, [eventDetails]);
 
@@ -218,6 +224,8 @@ export default function EventDetailsPage() {
             eventId={eventId}
             refetch={ticketsRefetch}
             eventDays={eventDays}
+            hasExternalTicket={hasExternalTicket}
+            ticketBuyLink={eventDetails?.ticketBuyLink}
           />
         );
       case "schedual_notification":
@@ -331,7 +339,7 @@ export default function EventDetailsPage() {
       <div className="flex flex-col flex-1 min-h-0 mt-2">
         <div className="shrink-0">
           <TabsSection
-            tabs={eventTabs}
+            tabs={getEventTabs(eventDetails?.hasExternalTicket)}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />

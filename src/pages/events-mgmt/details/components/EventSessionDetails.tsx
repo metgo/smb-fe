@@ -25,6 +25,7 @@ const EventSessionDetails: React.FC<EventSessionDetailsProps> = ({
   const navigate = useNavigate();
   const { t } = useTranslation("event_session");
   const { isDark, borderColor } = useThemeClasses();
+
   const [updateEventSession, { isLoading: isUpdating }] =
     useUpdateEventSessionMutation();
 

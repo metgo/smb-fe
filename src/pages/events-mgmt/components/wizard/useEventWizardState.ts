@@ -130,6 +130,8 @@ export function useEventWizardState({
   // ─── Step 5: Tickets ─────────────────────────────────────────────────
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [localTickets, setLocalTickets] = useState<any[]>([]);
+  const [ticketBuyLink, setTicketBuyLink] = useState<null | string>(null);
+  const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(false);
 
   // ─── Step 6: Messaging ───────────────────────────────────────────────
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -272,6 +274,8 @@ export function useEventWizardState({
       accessibilitiesId: selectedAccessiblitiesId,
       subCategoriesId: selectedSubCategoriesId,
       internalNotes,
+      hasExternalTicket,
+      ticketBuyLink,
     }),
     [
       eventName,
@@ -291,6 +295,8 @@ export function useEventWizardState({
       selectedAccessiblitiesId,
       selectedSubCategoriesId,
       internalNotes,
+      hasExternalTicket,
+      ticketBuyLink,
     ],
   );
 
@@ -493,6 +499,8 @@ export function useEventWizardState({
     setEventImages([]);
     setNotifications([]);
     setLocalTickets([]);
+    setHasExternalTicket(false);
+    setTicketBuyLink(null);
     initialImagesCountRef.current = 0;
   }, [isOpen, editId]);
 
@@ -547,6 +555,9 @@ export function useEventWizardState({
     setRecurrenceEndCount(editData.recurringEventRuleId?.occurrenceLimit ?? 10);
     setAddress(editData.address?.location ?? "");
     setOnlineLink(editData.onlineLink ?? "");
+
+    setHasExternalTicket(editData.hasExternalTicket ?? false);
+    setTicketBuyLink(editData.ticketBuyLink ?? null);
 
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
     setCapacity(editData.registration?.capacity ?? 100);
@@ -927,6 +938,10 @@ export function useEventWizardState({
     eventDaysForTickets,
     initEventCreate,
     ticketRefetch,
+    hasExternalTicket,
+    setHasExternalTicket,
+    ticketBuyLink,
+    setTicketBuyLink,
 
     // Step 6 — Messaging
     notifications,

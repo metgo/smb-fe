@@ -31,6 +31,10 @@ interface TicketsStepProps {
   initEventCreate: () => any;
   tickets: any[];
   eventDays: EventDay[];
+  hasExternalTicket: boolean;
+  setHasExternalTicket: (v: boolean) => void;
+  ticketBuyLink: string | null;
+  setTicketBuyLink: (v: string | null) => void;
 }
 
 const TICKET_TYPE_STYLES: Record<string, string> = {
@@ -50,9 +54,20 @@ const TicketsStep: React.FC<TicketsStepProps> = ({
   refetch,
   initEventCreate,
   eventDays,
+  hasExternalTicket,
+  setHasExternalTicket,
+  ticketBuyLink,
+  setTicketBuyLink,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const {
+    textPrimary,
+    textTertiary,
+    isDark,
+    borderColor,
+    bgSecondary,
+    textSecondary,
+  } = useThemeClasses();
 
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE");
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(
@@ -141,222 +156,269 @@ const TicketsStep: React.FC<TicketsStepProps> = ({
           {t("event_tickets")}
         </h2>
 
-        <TooltipWrapper
-          infoText={`🗓 ${t("select_event_day_first")}`}
-          showToolTip={isTicketDisabled}
-        >
-          <span className="inline-block">
-            <button
-              type="button"
-              disabled={isTicketDisabled}
-              onClick={openCreateModal}
-              className={clsx(
-                "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
-                isTicketDisabled && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              <Plus className="w-5 h-5" />
-              {t("create_ticket")}
-            </button>
-          </span>
-        </TooltipWrapper>
-      </div>
-
-      {/* ── Validation error ──────────────────────────────────────────── */}
-      {errors.tickets && !hasTickets && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span className="font-medium">{errors.tickets}</span>
-        </div>
-      )}
-
-      {/* ── Loading skeleton (while deleting) ────────────────────────── */}
-      {isDeleting && (
-        <div className="space-y-4">
-          {Array.from({ length: Math.min(tickets?.length || 1, 3) }).map(
-            (_, i) => (
-              <TicketCardSkeleton isDark={isDark} key={i} />
-            ),
-          )}
-        </div>
-      )}
-
-      {/* ── Empty state ───────────────────────────────────────────────── */}
-      {!hasTickets && !isDeleting && (
-        <div
-          className={clsx(
-            "p-16 rounded-2xl border-2 border-dashed text-center",
-            isDark
-              ? "border-gray-700 bg-gray-800/30"
-              : "border-gray-300 bg-gray-50",
-          )}
-        >
-          <Ticket
-            className={`w-20 h-20 mx-auto mb-5 opacity-40 ${textTertiary}`}
-          />
-          <h3 className={`text-xl font-semibold mb-2 ${textPrimary}`}>
-            {t("no_tickets_yet")}
-          </h3>
-          <p className={`mb-8 ${textTertiary}`}>{t("no_tickets_yet_desc")}</p>
+        {!hasExternalTicket && (
           <TooltipWrapper
             infoText={`🗓 ${t("select_event_day_first")}`}
             showToolTip={isTicketDisabled}
           >
-            <button
-              onClick={openCreateModal}
-              disabled={isTicketDisabled}
-              className={clsx(
-                "px-8 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg",
-                isTicketDisabled && "opacity-50 cursor-not-allowed",
-              )}
-            >
-              {t("create_first_ticket")}
-            </button>
+            <span className="inline-block">
+              <button
+                type="button"
+                disabled={isTicketDisabled}
+                onClick={openCreateModal}
+                className={clsx(
+                  "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
+                  isTicketDisabled && "opacity-50 cursor-not-allowed",
+                )}
+              >
+                <Plus className="w-5 h-5" />
+                {t("create_ticket")}
+              </button>
+            </span>
           </TooltipWrapper>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* ── Ticket list ───────────────────────────────────────────────── */}
-      {hasTickets && !isDeleting && (
-        <div className="space-y-4">
-          {tickets.map((ticket: any) => (
+      <div>
+        <div className="flex items-center gap-2">
+          <input
+            id="hasExternalTicket"
+            type="checkbox"
+            checked={hasExternalTicket}
+            onChange={(e) => setHasExternalTicket(e.target.checked)}
+            className="h-4 w-4 cursor-pointer rounded border-gray-300 bg-amber-50 text-teal-600 focus:ring-2 focus:ring-teal-500"
+          />
+
+          <label
+            htmlFor="hasExternalTicket"
+            className={clsx(
+              textPrimary,
+              "cursor-pointer select-none text-sm font-medium",
+            )}
+          >
+            {/* I have an external ticket purchase link. */}
+            {t("i_have_an_eternal_ticket_purchase_link")}
+          </label>
+        </div>
+        {hasExternalTicket && (
+          <div className="mt-4">
+            <label
+              className={`block text-sm font-medium ${textSecondary} mb-2`}
+            >
+              {t("enter_your_ticket_purchase_link")}
+            </label>
+            <input
+              type="text"
+              value={ticketBuyLink || ""}
+              onChange={(e) => setTicketBuyLink(e.target.value)}
+              placeholder={"https://ticket-purchase.co.il"}
+              className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
+            />
+          </div>
+        )}
+      </div>
+
+      {!hasExternalTicket && (
+        <>
+          {/* ── Validation error ──────────────────────────────────────────── */}
+          {errors.tickets && !hasTickets && !hasExternalTicket && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span className="font-medium">{errors.tickets}</span>
+            </div>
+          )}
+
+          {/* ── Loading skeleton (while deleting) ────────────────────────── */}
+          {isDeleting && (
+            <div className="space-y-4">
+              {Array.from({ length: Math.min(tickets?.length || 1, 3) }).map(
+                (_, i) => (
+                  <TicketCardSkeleton isDark={isDark} key={i} />
+                ),
+              )}
+            </div>
+          )}
+
+          {/* ── Empty state ───────────────────────────────────────────────── */}
+          {!hasTickets && !isDeleting && (
             <div
-              key={ticket._id}
               className={clsx(
-                "p-6 rounded-xl border hover:shadow-md transition",
+                "p-16 rounded-2xl border-2 border-dashed text-center",
                 isDark
-                  ? "border-gray-700 bg-gray-800/50"
-                  : "border-gray-200 bg-gray-50",
+                  ? "border-gray-700 bg-gray-800/30"
+                  : "border-gray-300 bg-gray-50",
               )}
             >
-              <div className="flex justify-between gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h4 className={`text-xl font-semibold ${textPrimary}`}>
-                      {ticket.name}
-                    </h4>
-                    <span
-                      className={clsx(
-                        "px-3 py-1 rounded-full text-xs font-semibold uppercase",
-                        TICKET_TYPE_STYLES[ticket.type] ??
-                          TICKET_TYPE_STYLES.paid,
-                      )}
-                    >
-                      {t(ticket.type)}
-                    </span>
-                  </div>
-                  <div
-                    className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
-                  >
-                    <span>
-                      <span className="font-medium">{t("price")}:</span>{" "}
-                      {formatPrice(ticket)}
-                    </span>
-                    <span>
-                      <span className="font-medium">{t("quantity")}:</span>{" "}
-                      {ticket.quantity?.initial ?? t("unlimited")}
-                    </span>
-                    <span>
-                      <span className="font-medium">
-                        {t("per_user_limit")}:
-                      </span>{" "}
-                      {ticket.quantity?.perUserLimit || t("no_limit")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <ActionIconButtons
-                    isDark={isDark}
-                    actions={[
-                      {
-                        title: t("edit_ticket"),
-                        icon: PenBox,
-                        color: "gray",
-                        onClick: () => {
-                          setEditingTicket({
-                            ...ticket,
-                            imageUrl: ticket.images?.[0]?.image ?? "",
-                          });
-                          setTicketDateTime(ticket.dayDescription ?? []);
-                          setOpMode("UPDATE");
-                          setShowTicketModal(true);
-                        },
-                      },
-                      {
-                        title: t("duplicate_ticket"),
-                        icon: Copy,
-                        color: "blue",
-                        onClick: () => {
-                          setEditingTicket({
-                            ...ticket,
-                            name: `${ticket.name} (${t("copy")})`,
-                            imageUrl: ticket.images?.[0]?.image ?? "",
-                          });
-                          setOpMode("DUPLICATE");
-                          setShowTicketModal(true);
-                        },
-                      },
-                      {
-                        title: t("delete_ticket"),
-                        icon: Trash2,
-                        color: "red",
-                        onClick: () => {
-                          setTicketToDelete(ticket._id);
-                          setIsConfirmOpen(true);
-                        },
-                      },
-                      {
-                        title: "Create Landing Page",
-                        icon: LayoutList,
-                        color: "yellow",
-                        onClick: () => {
-                          window.open(
-                            `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
-                            "_blank",
-                          );
-                        },
-                      },
-                    ]}
-                  />
-                </div>
-              </div>
+              <Ticket
+                className={`w-20 h-20 mx-auto mb-5 opacity-40 ${textTertiary}`}
+              />
+              <h3 className={`text-xl font-semibold mb-2 ${textPrimary}`}>
+                {t("no_tickets_yet")}
+              </h3>
+              <p className={`mb-8 ${textTertiary}`}>
+                {t("no_tickets_yet_desc")}
+              </p>
+              <TooltipWrapper
+                infoText={`🗓 ${t("select_event_day_first")}`}
+                showToolTip={isTicketDisabled}
+              >
+                <button
+                  onClick={openCreateModal}
+                  disabled={isTicketDisabled}
+                  className={clsx(
+                    "px-8 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg",
+                    isTicketDisabled && "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  {t("create_first_ticket")}
+                </button>
+              </TooltipWrapper>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {/* ── Ticket wizard modal ───────────────────────────────────────── */}
-      {showTicketModal && editingTicket && (
-        <TicketModal
-          eventId={eventId}
-          refetch={refetch}
-          opMode={opMode}
-          eventDays={eventDays}
-          setIsOpen={setShowTicketModal}
-          editData={editingTicket}
-          setEditData={setEditingTicket}
-          ticketDateTime={ticketDateTime}
-          setTicketDateTime={setTicketDateTime}
-        />
-      )}
+          {/* ── Ticket list ───────────────────────────────────────────────── */}
+          {hasTickets && !isDeleting && (
+            <div className="space-y-4">
+              {tickets.map((ticket: any) => (
+                <div
+                  key={ticket._id}
+                  className={clsx(
+                    "p-6 rounded-xl border hover:shadow-md transition",
+                    isDark
+                      ? "border-gray-700 bg-gray-800/50"
+                      : "border-gray-200 bg-gray-50",
+                  )}
+                >
+                  <div className="flex justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h4 className={`text-xl font-semibold ${textPrimary}`}>
+                          {ticket.name}
+                        </h4>
+                        <span
+                          className={clsx(
+                            "px-3 py-1 rounded-full text-xs font-semibold uppercase",
+                            TICKET_TYPE_STYLES[ticket.type] ??
+                              TICKET_TYPE_STYLES.paid,
+                          )}
+                        >
+                          {t(ticket.type)}
+                        </span>
+                      </div>
+                      <div
+                        className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
+                      >
+                        <span>
+                          <span className="font-medium">{t("price")}:</span>{" "}
+                          {formatPrice(ticket)}
+                        </span>
+                        <span>
+                          <span className="font-medium">{t("quantity")}:</span>{" "}
+                          {ticket.quantity?.initial ?? t("unlimited")}
+                        </span>
+                        <span>
+                          <span className="font-medium">
+                            {t("per_user_limit")}:
+                          </span>{" "}
+                          {ticket.quantity?.perUserLimit || t("no_limit")}
+                        </span>
+                      </div>
+                    </div>
 
-      {/* ── Delete confirmation ───────────────────────────────────────── */}
-      <ConfirmDialog
-        open={isConfirmOpen}
-        title={t("delete_ticket")}
-        message={t("delete_ticket_confirm")}
-        confirmText={t("delete")}
-        loading={isDeleting}
-        variant="danger"
-        onCancel={() => {
-          setIsConfirmOpen(false);
-          setTicketToDelete(null);
-        }}
-        onConfirm={async () => {
-          if (ticketToDelete) await handleDeleteTicket(ticketToDelete);
-        }}
-      />
+                    <div className="flex items-center gap-1">
+                      <ActionIconButtons
+                        isDark={isDark}
+                        actions={[
+                          {
+                            title: t("edit_ticket"),
+                            icon: PenBox,
+                            color: "gray",
+                            onClick: () => {
+                              setEditingTicket({
+                                ...ticket,
+                                imageUrl: ticket.images?.[0]?.image ?? "",
+                              });
+                              setTicketDateTime(ticket.dayDescription ?? []);
+                              setOpMode("UPDATE");
+                              setShowTicketModal(true);
+                            },
+                          },
+                          {
+                            title: t("duplicate_ticket"),
+                            icon: Copy,
+                            color: "blue",
+                            onClick: () => {
+                              setEditingTicket({
+                                ...ticket,
+                                name: `${ticket.name} (${t("copy")})`,
+                                imageUrl: ticket.images?.[0]?.image ?? "",
+                              });
+                              setOpMode("DUPLICATE");
+                              setShowTicketModal(true);
+                            },
+                          },
+                          {
+                            title: t("delete_ticket"),
+                            icon: Trash2,
+                            color: "red",
+                            onClick: () => {
+                              setTicketToDelete(ticket._id);
+                              setIsConfirmOpen(true);
+                            },
+                          },
+                          {
+                            title: "Create Landing Page",
+                            icon: LayoutList,
+                            color: "yellow",
+                            onClick: () => {
+                              window.open(
+                                `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                "_blank",
+                              );
+                            },
+                          },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Ticket wizard modal ───────────────────────────────────────── */}
+          {showTicketModal && editingTicket && (
+            <TicketModal
+              eventId={eventId}
+              refetch={refetch}
+              opMode={opMode}
+              eventDays={eventDays}
+              setIsOpen={setShowTicketModal}
+              editData={editingTicket}
+              setEditData={setEditingTicket}
+              ticketDateTime={ticketDateTime}
+              setTicketDateTime={setTicketDateTime}
+            />
+          )}
+
+          {/* ── Delete confirmation ───────────────────────────────────────── */}
+          <ConfirmDialog
+            open={isConfirmOpen}
+            title={t("delete_ticket")}
+            message={t("delete_ticket_confirm")}
+            confirmText={t("delete")}
+            loading={isDeleting}
+            variant="danger"
+            onCancel={() => {
+              setIsConfirmOpen(false);
+              setTicketToDelete(null);
+            }}
+            onConfirm={async () => {
+              if (ticketToDelete) await handleDeleteTicket(ticketToDelete);
+            }}
+          />
+        </>
+      )}
     </div>
   );
 };

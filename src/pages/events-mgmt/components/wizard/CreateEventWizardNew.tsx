@@ -46,7 +46,6 @@ export default function CreateEventWizardNew({
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
   const { t: tt } = useTranslation("common");
-
   const { t: tc } = useTranslation("toast");
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
@@ -242,6 +241,10 @@ export default function CreateEventWizardNew({
             errors={wizard.errors}
             refetch={wizard.ticketRefetch}
             eventDays={wizard.eventDaysForTickets}
+            hasExternalTicket={wizard.hasExternalTicket}
+            setHasExternalTicket={wizard.setHasExternalTicket}
+            ticketBuyLink={wizard.ticketBuyLink}
+            setTicketBuyLink={wizard.setTicketBuyLink}
           />
         )}
 

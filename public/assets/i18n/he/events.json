@@ -348,5 +348,9 @@
 
   "actions": "פעולות",
   "create_session": "צור סשן",
-  "create_landing_page": "צור דף נחיתה"
+  "create_landing_page": "צור דף נחיתה",
+
+  "i_have_an_eternal_ticket_purchase_link": "יש לי קישור חיצוני לרכישת כרטיסים",
+  "enter_your_ticket_purchase_link": "הזן את קישור רכישת הכרטיסים שלך",
+  "enter_your_link_placeholder": "הזן את כותרת הקישור"
 }

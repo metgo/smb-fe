@@ -319,5 +319,9 @@
 
   "actions": "Actions",
   "create_session": "Create Session",
-  "create_landing_page": "Create Landing Page"
+  "create_landing_page": "Create Landing Page",
+
+  "i_have_an_eternal_ticket_purchase_link": "I have an external ticket purchase link",
+  "enter_your_ticket_purchase_link": "Enter your ticket purchase link",
+  "enter_your_link_placeholder": "Enter your link"
 }

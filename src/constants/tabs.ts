@@ -48,6 +48,15 @@ export const eventTabs = [
   },
 ];
 
+export const getEventTabs = (hasExternalTicket?: boolean) => {
+  return eventTabs.filter((tab) => {
+    if (hasExternalTicket) {
+      return tab.id !== "sessions" && tab.id !== "registration";
+    }
+    return true;
+  });
+};
+
 export const productTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "attributes", label: "attributes", icon: Accessibility },
