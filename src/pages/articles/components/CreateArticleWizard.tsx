@@ -177,7 +177,6 @@ const CreateArticleWizard = ({
   const [formData, setFormData] = useState<IArticleFormData>(
     existingArticle ? buildFormFromArticle(existingArticle) : EMPTY_FORM,
   );
-  console.log("🚀 ~ CreateArticleWizard ~ formData:", formData);
 
   const [tagInput, setTagInput] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
@@ -262,14 +261,7 @@ const CreateArticleWizard = ({
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return false;
     }
-    if (
-      (formData.content || "").length > 500 ||
-      (formData.contentHe || "").length > 500 ||
-      (formData.contentAr || "").length > 500
-    ) {
-      toast.error(tc("exceeds_char_limit", { limit: 500 }));
-      return false;
-    }
+
     return true;
   };
 
