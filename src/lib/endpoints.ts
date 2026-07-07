@@ -112,6 +112,7 @@ export const endpoints = {
   wizardGenerateTopics: "/site-filter-config/wizard/generate-topics",
   wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
   wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
+  wizardTranslate: "/site-filter-config/wizard/translate",
 
   // Notifications
   notifications: "/notifications",

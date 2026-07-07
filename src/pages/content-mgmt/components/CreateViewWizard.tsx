@@ -69,6 +69,9 @@ export default function CreateViewWizard({
   const isEditMode = !!existingView;
   const [step, setStep] = useState(1);
   const [viewName, setViewName] = useState(existingView?.viewName ?? "");
+  const [themeContext, setThemeContext] = useState(
+    (existingView as any)?.themeContext ?? "",
+  );
   const [topics, setTopics] = useState<WizardTopic[]>(() =>
     existingView ? viewToWizardTopics(existingView.siteTopics ?? []) : [],
   );
@@ -90,6 +93,7 @@ export default function CreateViewWizard({
     externalApiId,
     viewName:
       viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+    themeContext: themeContext.trim() || null,
     siteTopics: topics.map((topic, topicIndex) => {
       const siteCategories = topic.categories
         .filter((cat) => cat.title || cat.titleHe)
@@ -130,6 +134,7 @@ export default function CreateViewWizard({
     status,
     viewName:
       viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+    themeContext: themeContext.trim() || null,
     externalApiId,
   });
 
@@ -323,6 +328,8 @@ export default function CreateViewWizard({
               topics={topics}
               setTopics={setTopics}
               externalApiId={externalApiId}
+              themeContext={themeContext}
+              setThemeContext={setThemeContext}
             />
           )}
           {step === 2 && (

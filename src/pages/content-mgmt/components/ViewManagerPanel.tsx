@@ -412,10 +412,23 @@ export default function ViewManagerPanel({
     setShowWizard(false);
     setShowDrawer(false);
     setEditingView(null);
-    onRefetch();
+
     toast.success(
       publishNow ? "View is now live on your website" : "View saved as draft",
     );
+
+    // Trigger refetch - it will update the views prop automatically
+    onRefetch();
+
+    // Give RTK Query a moment to update, then select the active view
+    if (publishNow) {
+      setTimeout(() => {
+        const active = views.find((v) => v.isActive);
+        if (active) {
+          onViewSelect(active);
+        }
+      }, 500);
+    }
   };
 
   const handleEditView = (view: IView) => {

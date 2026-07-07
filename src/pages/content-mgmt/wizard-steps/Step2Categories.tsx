@@ -8,11 +8,15 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Languages,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGenerateCategoriesMutation } from "@/store/api/contentMutationApi";
+import {
+  useGenerateCategoriesMutation,
+  useTranslateTopicMutation,
+} from "@/store/api/contentMutationApi";
 
 const MAX_CATEGORIES = 8;
 const LANG_TABS: { key: WizardLang; label: string }[] = [
@@ -41,6 +45,9 @@ interface CategoryCardProps {
     value: any,
   ) => void;
   onDelete: (topicId: string, catId: string) => void;
+  onTranslate: (topicId: string, catId: string) => void;
+  isTranslating: boolean;
+  translateTopic: any;
 }
 
 function CategoryCard({
@@ -50,10 +57,15 @@ function CategoryCard({
   isDark,
   onChange,
   onDelete,
+  // onTranslate,
+  // isTranslating,
+  translateTopic,
 }: CategoryCardProps) {
   const [showMeta, setShowMeta] = useState(false);
   const [newSynonym, setNewSynonym] = useState("");
   const [newKeyword, setNewKeyword] = useState("");
+  const [isEditingDesc, setIsEditingDesc] = useState(false);
+  const [tempDesc, setTempDesc] = useState("");
 
   const titleField =
     activeLang === "en" ? "title" : activeLang === "he" ? "titleHe" : "titleAr";
@@ -69,6 +81,64 @@ function CategoryCard({
       : activeLang === "he"
         ? "synonymsHe"
         : "synonymsAr";
+
+  const currentDesc =
+    (category[descField as keyof WizardCategory] as string) ?? "";
+
+  const handleAddDesc = async () => {
+    const trimmed = tempDesc.trim();
+    if (!trimmed) return;
+
+    // Call translate API to get all 3 languages
+    try {
+      const translated = await translateTopic({
+        title: "", // Empty title since we're only translating description
+        description: trimmed,
+      }).unwrap();
+
+      // Update all 3 description fields with translations
+      onChange(
+        topicId,
+        category.id,
+        "description",
+        translated.description || trimmed,
+      );
+      onChange(
+        topicId,
+        category.id,
+        "descriptionHe",
+        translated.descriptionHe || trimmed,
+      );
+      onChange(
+        topicId,
+        category.id,
+        "descriptionAr",
+        translated.descriptionAr || trimmed,
+      );
+
+      setIsEditingDesc(false);
+      setTempDesc("");
+      toast.success("Description added with translations");
+    } catch {
+      // Fallback: Copy same text to all 3 language fields
+      onChange(topicId, category.id, "description", trimmed);
+      onChange(topicId, category.id, "descriptionHe", trimmed);
+      onChange(topicId, category.id, "descriptionAr", trimmed);
+      setIsEditingDesc(false);
+      setTempDesc("");
+      toast.warning("Description added — translation unavailable");
+    }
+  };
+
+  const handleEditDesc = () => {
+    setTempDesc(currentDesc);
+    setIsEditingDesc(true);
+  };
+
+  const handleCancelDesc = () => {
+    setIsEditingDesc(false);
+    setTempDesc("");
+  };
 
   const addChip = (
     field: keyof WizardCategory,
@@ -102,7 +172,7 @@ function CategoryCard({
     >
       {/* Main row */}
       <div className="flex items-start gap-2 p-3">
-        <div className="flex-1 min-w-0 space-y-0.5">
+        <div className="flex-1 min-w-0 space-y-1.5">
           <input
             value={
               (category[titleField as keyof WizardCategory] as string) ?? ""
@@ -115,30 +185,87 @@ function CategoryCard({
                 e.target.value,
               )
             }
+            maxLength={50}
             placeholder="Category name"
             className={clsx(
               "w-full text-sm font-semibold bg-transparent border-none outline-none",
               isDark ? "text-gray-200" : "text-gray-800",
             )}
           />
-          <input
-            value={
-              (category[descField as keyof WizardCategory] as string) ?? ""
-            }
-            onChange={(e) =>
-              onChange(
-                topicId,
-                category.id,
-                descField as keyof WizardCategory,
-                e.target.value,
-              )
-            }
-            placeholder="Short description"
-            className={clsx(
-              "w-full text-xs bg-transparent border-none outline-none",
-              isDark ? "text-gray-500" : "text-gray-400",
-            )}
-          />
+
+          {/* Short Description - Edit Mode */}
+          {isEditingDesc ? (
+            <div className="space-y-1">
+              <div className="flex gap-1">
+                <input
+                  autoFocus
+                  value={tempDesc}
+                  onChange={(e) => setTempDesc(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddDesc();
+                    if (e.key === "Escape") handleCancelDesc();
+                  }}
+                  maxLength={150}
+                  placeholder="Short description (optional)"
+                  className={clsx(
+                    "flex-1 px-2 py-1 text-xs rounded-lg border transition-colors",
+                    tempDesc.length >= 150 && "border-red-500",
+                    isDark
+                      ? "bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-500 focus:border-teal-500"
+                      : "bg-white border-gray-300 text-gray-700 placeholder-gray-400 focus:border-teal-500",
+                  )}
+                />
+                <button
+                  onClick={handleAddDesc}
+                  disabled={!tempDesc.trim()}
+                  className="px-2 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg disabled:opacity-50"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={handleCancelDesc}
+                  className="px-2 py-1 text-gray-400 hover:text-gray-600 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+              <p
+                className={clsx(
+                  "text-xs text-right tabular-nums",
+                  tempDesc.length >= 150
+                    ? "text-red-500 font-medium"
+                    : isDark
+                      ? "text-gray-600"
+                      : "text-gray-400",
+                )}
+              >
+                {tempDesc.length >= 150 && "Max · "}
+                {tempDesc.length}/150
+              </p>
+            </div>
+          ) : (
+            /* Short Description - View Mode */
+            <div
+              onClick={handleEditDesc}
+              className={clsx(
+                "px-2 py-1 text-xs rounded-lg border cursor-pointer transition-colors group",
+                currentDesc
+                  ? isDark
+                    ? "bg-gray-700/50 border-gray-600 text-gray-300 hover:border-teal-500"
+                    : "bg-gray-50 border-gray-200 text-gray-700 hover:border-teal-500"
+                  : isDark
+                    ? "bg-gray-700/30 border-gray-700 border-dashed text-gray-600 hover:border-gray-600"
+                    : "bg-gray-50/50 border-gray-300 border-dashed text-gray-400 hover:border-gray-400",
+              )}
+            >
+              {currentDesc || (
+                <span className="flex items-center gap-1">
+                  <Plus className="w-3 h-3" />
+                  <span>Add short description (optional)</span>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Metadata toggle */}
@@ -160,6 +287,26 @@ function CategoryCard({
             <ChevronDown className="w-3.5 h-3.5" />
           )}
         </button>
+
+        {/* Translate button - COMMENTED OUT: Auto-translates on Add now */}
+        {/* <button
+          onClick={() => onTranslate(topicId, category.id)}
+          disabled={isTranslating}
+          title="Translate to all languages using AI"
+          className={clsx(
+            "p-1.5 rounded-lg transition-colors shrink-0",
+            isDark
+              ? "text-gray-400 hover:bg-gray-700 hover:text-teal-400"
+              : "text-gray-400 hover:bg-gray-100 hover:text-teal-600",
+            isTranslating && "opacity-60 cursor-not-allowed",
+          )}
+        >
+          {isTranslating ? (
+            <Loader className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Languages className="w-3.5 h-3.5" />
+          )}
+        </button> */}
 
         <button
           onClick={() => onDelete(topicId, category.id)}
@@ -216,9 +363,11 @@ function CategoryCard({
                   if (e.key === "Enter")
                     addChip(synField, newSynonym, setNewSynonym);
                 }}
+                maxLength={30}
                 placeholder="Add synonym…"
                 className={clsx(
-                  "flex-1 px-2 py-1 rounded-lg border text-xs",
+                  "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
+                  newSynonym.length >= 30 && "border-red-500",
                   isDark
                     ? "bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-600"
                     : "bg-white border-gray-200 text-gray-700 placeholder-gray-400",
@@ -272,9 +421,11 @@ function CategoryCard({
                   if (e.key === "Enter")
                     addChip("searchKeywords", newKeyword, setNewKeyword);
                 }}
+                maxLength={30}
                 placeholder="Add keyword…"
                 className={clsx(
-                  "flex-1 px-2 py-1 rounded-lg border text-xs",
+                  "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
+                  newKeyword.length >= 30 && "border-red-500",
                   isDark
                     ? "bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-600"
                     : "bg-white border-gray-200 text-gray-700 placeholder-gray-400",
@@ -305,6 +456,7 @@ export default function Step2Categories({
 }: Props) {
   const { isDark } = useThemeClasses();
   const [generateCategories] = useGenerateCategoriesMutation();
+  const [translateTopic] = useTranslateTopicMutation();
   const [activeLang, setActiveLang] = useState<WizardLang>("he");
   const [generatingTopicIds, setGeneratingTopicIds] = useState<Set<string>>(
     new Set(),
@@ -315,6 +467,10 @@ export default function Step2Categories({
   );
   const [addingForTopic, setAddingForTopic] = useState<string | null>(null);
   const [newCatTitle, setNewCatTitle] = useState("");
+  // Tracks which category card is currently translating — key: "topicId-catId"
+  const [translatingCatId, setTranslatingCatId] = useState<string | null>(null);
+  // Tracks which inline add form is currently translating — key: topicId
+  const [translatingAddId, setTranslatingAddId] = useState<string | null>(null);
 
   const toggleCollapse = (id: string) =>
     setCollapsedTopics((prev) => {
@@ -417,7 +573,7 @@ export default function Step2Categories({
     setIsGeneratingAll(false);
   };
 
-  const addManualCategory = (topicId: string) => {
+  const addManualCategory = async (topicId: string) => {
     if (!newCatTitle.trim()) {
       toast.error("Category name is required");
       return;
@@ -427,21 +583,120 @@ export default function Step2Categories({
       toast.error(`Maximum ${MAX_CATEGORIES} categories allowed`);
       return;
     }
-    setTopics((prev) =>
-      prev.map((t) =>
-        t.id === topicId
-          ? {
-              ...t,
-              categories: [
-                ...t.categories,
-                makeCategory({ title: newCatTitle.trim() }),
-              ],
-            }
-          : t,
-      ),
-    );
-    setNewCatTitle("");
-    setAddingForTopic(null);
+
+    setTranslatingAddId(topicId);
+    try {
+      const translated = await translateTopic({
+        title: newCatTitle.trim(),
+      }).unwrap();
+
+      setTopics((prev) =>
+        prev.map((t) =>
+          t.id === topicId
+            ? {
+                ...t,
+                categories: [
+                  ...t.categories,
+                  makeCategory({
+                    title: translated.title || newCatTitle.trim(),
+                    titleHe: translated.titleHe || newCatTitle.trim(),
+                    titleAr: translated.titleAr || newCatTitle.trim(),
+                  }),
+                ],
+              }
+            : t,
+        ),
+      );
+      setNewCatTitle("");
+      setAddingForTopic(null);
+      toast.success("Category added with translations");
+    } catch {
+      // Fallback: save with typed text in all languages
+      setTopics((prev) =>
+        prev.map((t) =>
+          t.id === topicId
+            ? {
+                ...t,
+                categories: [
+                  ...t.categories,
+                  makeCategory({ title: newCatTitle.trim() }),
+                ],
+              }
+            : t,
+        ),
+      );
+      setNewCatTitle("");
+      setAddingForTopic(null);
+      toast.warning(
+        "Category added — translation unavailable, edit each language manually.",
+      );
+    } finally {
+      setTranslatingAddId(null);
+    }
+  };
+
+  const handleTranslateCategory = async (topicId: string, catId: string) => {
+    const topic = topics.find((t) => t.id === topicId);
+    const cat = topic?.categories.find((c) => c.id === catId);
+    if (!cat) return;
+
+    // Use the active language as source
+    const sourceTitle =
+      activeLang === "he"
+        ? cat.titleHe
+        : activeLang === "en"
+          ? cat.title
+          : cat.titleAr;
+    const sourceDesc =
+      activeLang === "he"
+        ? cat.descriptionHe
+        : activeLang === "en"
+          ? cat.description
+          : cat.descriptionAr;
+
+    if (!sourceTitle?.trim()) {
+      toast.error("Category name is empty — nothing to translate");
+      return;
+    }
+
+    const key = `${topicId}-${catId}`;
+    setTranslatingCatId(key);
+    try {
+      const translated = await translateTopic({
+        title: sourceTitle.trim(),
+        description: sourceDesc?.trim() || undefined,
+      }).unwrap();
+
+      setTopics((prev) =>
+        prev.map((t) =>
+          t.id === topicId
+            ? {
+                ...t,
+                categories: t.categories.map((c) =>
+                  c.id === catId
+                    ? {
+                        ...c,
+                        title: translated.title || c.title,
+                        titleHe: translated.titleHe || c.titleHe,
+                        titleAr: translated.titleAr || c.titleAr,
+                        description: translated.description || c.description,
+                        descriptionHe:
+                          translated.descriptionHe || c.descriptionHe,
+                        descriptionAr:
+                          translated.descriptionAr || c.descriptionAr,
+                      }
+                    : c,
+                ),
+              }
+            : t,
+        ),
+      );
+      toast.success("Category translations updated");
+    } catch {
+      toast.error("Translation failed — please try again");
+    } finally {
+      setTranslatingCatId(null);
+    }
   };
 
   const handleCategoryChange = (
@@ -643,35 +898,63 @@ export default function Step2Categories({
 
                   {/* Inline add form */}
                   {addingForTopic === topic.id && (
-                    <div className="flex gap-2">
-                      <input
-                        autoFocus
-                        value={newCatTitle}
-                        onChange={(e) => setNewCatTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") addManualCategory(topic.id);
-                          if (e.key === "Escape") setAddingForTopic(null);
-                        }}
-                        placeholder="Category name…"
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          autoFocus
+                          value={newCatTitle}
+                          onChange={(e) => setNewCatTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") addManualCategory(topic.id);
+                            if (e.key === "Escape") setAddingForTopic(null);
+                          }}
+                          maxLength={50}
+                          placeholder="Category name…"
+                          className={clsx(
+                            "flex-1 px-3 py-1.5 rounded-lg border text-sm transition-colors",
+                            newCatTitle.length >= 50 && "border-red-500",
+                            isDark
+                              ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
+                              : "bg-white border-gray-300 text-gray-800",
+                          )}
+                        />
+                        <button
+                          onClick={() => addManualCategory(topic.id)}
+                          disabled={
+                            translatingAddId === topic.id || !newCatTitle.trim()
+                          }
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {translatingAddId === topic.id ? (
+                            <Loader className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Languages className="w-3 h-3" />
+                          )}
+                          {translatingAddId === topic.id
+                            ? "Translating…"
+                            : "Add"}
+                        </button>
+                        <button
+                          onClick={() => setAddingForTopic(null)}
+                          disabled={translatingAddId === topic.id}
+                          className="px-2 py-1.5 text-gray-400 hover:text-gray-600 text-xs disabled:opacity-50"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <p
                         className={clsx(
-                          "flex-1 px-3 py-1.5 rounded-lg border text-sm",
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
-                            : "bg-white border-gray-300 text-gray-800",
+                          "text-xs text-right tabular-nums",
+                          newCatTitle.length >= 50
+                            ? "text-red-500 font-medium"
+                            : isDark
+                              ? "text-gray-600"
+                              : "text-gray-400",
                         )}
-                      />
-                      <button
-                        onClick={() => addManualCategory(topic.id)}
-                        className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg"
                       >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => setAddingForTopic(null)}
-                        className="px-2 py-1.5 text-gray-400 hover:text-gray-600 text-xs"
-                      >
-                        ✕
-                      </button>
+                        {newCatTitle.length >= 50 && "Max · "}
+                        {newCatTitle.length}/50
+                      </p>
                     </div>
                   )}
 
@@ -712,6 +995,11 @@ export default function Step2Categories({
                         isDark={isDark}
                         onChange={handleCategoryChange}
                         onDelete={handleCategoryDelete}
+                        onTranslate={handleTranslateCategory}
+                        isTranslating={
+                          translatingCatId === `${topic.id}-${cat.id}`
+                        }
+                        translateTopic={translateTopic}
                       />
                     ))}
                 </div>

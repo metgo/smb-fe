@@ -90,6 +90,24 @@ export const contentMutationApi = createApi({
       invalidatesTags: ["Content", "Views"],
     }),
 
+    translateTopic: builder.mutation<
+      {
+        title: string;
+        titleHe: string;
+        titleAr: string;
+        description: string;
+        descriptionHe: string;
+        descriptionAr: string;
+      },
+      { title: string; description?: string }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardTranslate,
+        method: "POST",
+        data: body,
+      }),
+    }),
+
     aiSuggestCategoryEntities: builder.mutation<
       {
         businesses: IAiSuggestedEntity[];
@@ -128,4 +146,5 @@ export const {
   useGenerateCategoriesMutation,
   useAssignAllEntitiesMutation,
   useAiSuggestCategoryEntitiesMutation,
+  useTranslateTopicMutation,
 } = contentMutationApi;
