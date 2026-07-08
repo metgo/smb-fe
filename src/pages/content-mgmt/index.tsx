@@ -39,7 +39,7 @@ import {
 } from "@/store/api/contentMutationApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 
 type TabState = {
@@ -585,7 +585,9 @@ export default function ContentMgmtPage() {
     data: eventData,
     isLoading: isLoadingEvent,
     isFetching: isFetchingEvent,
-  } = useGetAllEventsQuery(selected === "Events" ? eventParams : skipToken);
+  } = useGetContentManagementEventsQuery(
+    selected === "Events" ? eventParams : skipToken,
+  );
 
   const eventHasMore = eventData?.meta?.hasNextPage;
 
