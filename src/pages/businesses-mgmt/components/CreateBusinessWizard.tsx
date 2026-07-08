@@ -254,34 +254,54 @@ function CreateBusinessWizardInner({
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
 
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
   const detectAndAssignLanguageFields = (data: any): any => {
     const updated = { ...data };
 
-    const fields = [
-      { en: "name", he: "nameHe", ar: "nameAr" },
+    // Note: these are the PAYLOAD field names (stepPayloadMap uses
+    // "description" / "descriptionHe" / "descriptionAr", not "fullDescription")
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
       {
+        base: "shortDescription",
         en: "shortDescription",
         he: "shortDescriptionHe",
         ar: "shortDescriptionAr",
       },
-      { en: "description", he: "descriptionHe", ar: "descriptionAr" },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
     ];
 
-    fields.forEach(({ en, he, ar }) => {
-      const text = data[language]?.trim();
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
       if (!text) return;
 
-      const lang = detectLanguage(text);
-      console.log("🚀 ~ detectAndAssignLanguageFields ~ lang:", lang)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
 
-      if (lang === "he") {
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
         updated[he] = text;
-        updated[en] = "";
-      } else if (lang === "ar") {
+      } else if (detectedLang === "ar") {
         updated[ar] = text;
-        updated[en] = "";
+      } else {
+        updated[en] = text;
       }
-       
     });
 
     return updated;
