@@ -11,7 +11,6 @@ export const BusinessContentForm = ({
   formData,
   onChange,
 }: ArticleContentFormProps) => {
-  console.log("🚀 ~ BusinessContentForm ~ formData:", formData)
   const { t } = useTranslation("common");
   const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor, language } =
     useThemeClasses();
