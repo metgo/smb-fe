@@ -22,6 +22,7 @@ import {
   useDeleteContentMutation,
 } from "@/store/api/contentMutationApi";
 import CreateViewWizard from "./CreateViewWizard";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   views: IView[];
@@ -42,17 +43,17 @@ const STATUS_CONFIG: Record<
 > = {
   PUBLISHED: {
     icon: CheckCircle,
-    label: "Active",
+    label: "active_status",
     colors: "text-green-500 bg-green-100 dark:bg-green-900/30",
   },
   DRAFT: {
     icon: Clock,
-    label: "Draft",
+    label: "draft_status",
     colors: "text-amber-500 bg-amber-100 dark:bg-amber-900/30",
   },
   ARCHIVED: {
     icon: Archive,
-    label: "Archived",
+    label: "archived_status",
     colors: "text-gray-400 bg-gray-100 dark:bg-gray-800",
   },
 };
@@ -90,6 +91,7 @@ function ViewCard({
   onDelete,
   isActivating,
 }: ViewCardProps) {
+  const { t } = useTranslation("content");
   const status = view.isActive ? "PUBLISHED" : view.status;
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.DRAFT;
   const Icon = cfg.icon;
@@ -130,7 +132,7 @@ function ViewCard({
               )}
             >
               <Icon className="w-3 h-3" />
-              {cfg.label}
+              {t(cfg.label)}
             </span>
           </div>
           <p
@@ -139,7 +141,8 @@ function ViewCard({
               isDark ? "text-gray-500" : "text-gray-400",
             )}
           >
-            {topicCount} topic{topicCount !== 1 ? "s" : ""} · Updated {updated}
+            {t("topics_count", { count: topicCount })} ·{" "}
+            {t("updated_on", { date: updated })}
           </p>
         </div>
 
@@ -149,7 +152,7 @@ function ViewCard({
             <button
               onClick={onActivate}
               disabled={isActivating}
-              title="Set as active view"
+              title={t("set_as_active_view")}
               className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-60"
             >
               {isActivating ? (
@@ -157,12 +160,12 @@ function ViewCard({
               ) : (
                 <Zap className="w-3 h-3" />
               )}
-              Activate
+              {t("activate")}
             </button>
           )}
           <button
             onClick={onEdit}
-            title="Edit this view"
+            title={t("edit_this_view")}
             className={clsx(
               "p-1.5 rounded-lg transition-colors",
               isDark
@@ -175,7 +178,7 @@ function ViewCard({
           {!isActive && (
             <button
               onClick={onDelete}
-              title="Delete this view"
+              title={t("delete_this_view")}
               className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -214,6 +217,7 @@ function ViewDrawer({
   onOpenWizard,
   onEditView,
 }: DrawerProps) {
+  const { t } = useTranslation("content");
   const [activateView] = useActivateViewMutation();
   const [deleteContent] = useDeleteContentMutation();
   const [activatingId, setActivatingId] = useState<string | null>(null);
@@ -223,7 +227,9 @@ function ViewDrawer({
     setActivatingId(view._id);
     try {
       await activateView({ viewId: view._id }).unwrap();
-      toast.success(`"${view.viewName || "View"}" is now active`);
+      toast.success(
+        t("toast_view_activated", { name: view.viewName || t("view") }),
+      );
       onRefetch();
       if (onRefetchTemplate) {
         onRefetchTemplate();
@@ -235,7 +241,7 @@ function ViewDrawer({
         error: err?.data?.message || err?.message,
       });
       toast.error(
-        err?.data?.message || err?.message || "Failed to activate view",
+        err?.data?.message || err?.message || t("toast_activate_view_error"),
       );
     } finally {
       setActivatingId(null);
@@ -246,10 +252,10 @@ function ViewDrawer({
     if (!deleteTarget) return;
     try {
       await deleteContent({ eventId: deleteTarget._id }).unwrap();
-      toast.success("View deleted");
+      toast.success(t("toast_view_deleted"));
       onRefetch();
     } catch (err: any) {
-      toast.error(err?.data?.message || "Cannot delete this view");
+      toast.error(err?.data?.message || t("toast_delete_view_error"));
     } finally {
       setDeleteTarget(null);
     }
@@ -292,7 +298,7 @@ function ViewDrawer({
                 isDark ? "text-gray-200" : "text-gray-800",
               )}
             >
-              Views for {websiteName}
+              {t("views_for", { name: websiteName })}
             </span>
           </div>
           <button
@@ -332,10 +338,8 @@ function ViewDrawer({
               )}
             >
               <LayoutTemplate className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p>No views yet</p>
-              <p className="text-xs mt-1">
-                Create your first view using the wizard
-              </p>
+              <p>{t("no_views_yet")}</p>
+              <p className="text-xs mt-1">{t("create_first_view_wizard")}</p>
             </div>
           )}
 
@@ -366,7 +370,7 @@ function ViewDrawer({
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Create New View
+            {t("create_new_view")}
           </button>
         </div>
       </div>
@@ -375,10 +379,12 @@ function ViewDrawer({
       {deleteTarget && (
         <ConfirmDialog
           open
-          title="Delete View"
-          message={`Delete "${deleteTarget.viewName || "this view"}"? This cannot be undone.`}
-          confirmText="Delete"
-          cancelText="Cancel"
+          title={t("delete_view")}
+          message={t("delete_view_confirm_message", {
+            name: deleteTarget.viewName || t("this_view"),
+          })}
+          confirmText={t("delete")}
+          cancelText={t("cancel")}
           variant="danger"
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
@@ -403,6 +409,7 @@ export default function ViewManagerPanel({
   onSaveCurrentAsView,
   isSavingCurrentAsView = false,
 }: Props) {
+  const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const [showDrawer, setShowDrawer] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -417,7 +424,7 @@ export default function ViewManagerPanel({
     setEditingView(null);
 
     toast.success(
-      publishNow ? "View is now live on your website" : "View saved as draft",
+      publishNow ? t("toast_view_live") : t("toast_view_draft_saved"),
     );
 
     // Trigger refetch to update the views list and the active template
@@ -436,7 +443,7 @@ export default function ViewManagerPanel({
   const handleOpenWizardSafely = () => {
     if (hasUnsavedContent && onSaveCurrentAsView) {
       onSaveCurrentAsView();
-      toast.info("Current layout saved as a draft view.");
+      toast.info(t("toast_current_layout_saved_draft"));
     }
     setShowDrawer(false);
     setShowWizard(true);
@@ -474,11 +481,11 @@ export default function ViewManagerPanel({
                 isDark ? "text-gray-300" : "text-gray-700",
               )}
             >
-              {activeView.viewName || "Active View"}
+              {activeView.viewName || t("active_view")}
             </span>
             <span className="flex items-center gap-1 text-xs text-green-500 font-medium shrink-0">
               <CheckCircle className="w-3 h-3" />
-              Live
+              {t("live")}
             </span>
           </>
         ) : views.length === 0 ? (
@@ -488,11 +495,11 @@ export default function ViewManagerPanel({
               isDark ? "text-gray-500" : "text-gray-400",
             )}
           >
-            No views yet
+            {t("no_views_yet")}
           </span>
         ) : (
           <span className="text-xs flex-1 text-amber-600 dark:text-amber-400 font-medium">
-            No active view — website shows no content
+            {t("no_active_view_warning")}
           </span>
         )}
 
@@ -507,7 +514,7 @@ export default function ViewManagerPanel({
                 : "border-gray-300 text-gray-600 hover:bg-gray-100",
             )}
           >
-            Manage <ChevronDown className="w-3 h-3" />
+            {t("manage")} <ChevronDown className="w-3 h-3" />
           </button>
         ) : (
           <button
@@ -515,7 +522,7 @@ export default function ViewManagerPanel({
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-teal-600 hover:bg-teal-700 text-white transition-colors shrink-0"
           >
             <Plus className="w-3 h-3" />
-            New View
+            {t("new_view")}
           </button>
         )}
       </div>
@@ -534,10 +541,7 @@ export default function ViewManagerPanel({
           )}
         >
           <LayoutTemplate className="w-3.5 h-3.5 shrink-0" />
-          <span className="flex-1">
-            Current layout is not saved as a view — you won't be able to restore
-            it after creating a new one.
-          </span>
+          <span className="flex-1">{t("unsaved_layout_warning")}</span>
           <button
             onClick={onSaveCurrentAsView}
             disabled={isSavingCurrentAsView}
@@ -551,7 +555,7 @@ export default function ViewManagerPanel({
             {isSavingCurrentAsView ? (
               <Loader className="w-3 h-3 animate-spin" />
             ) : null}
-            Save as View
+            {t("save_as_view")}
           </button>
         </div>
       )}

@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { Layers, Grid, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { WizardStepper, WizardFooter } from "@/components/shared";
@@ -15,12 +16,6 @@ import {
 import Step1Topics from "../wizard-steps/Step1Topics";
 import Step2Categories from "../wizard-steps/Step2Categories";
 import Step3Assign from "../wizard-steps/Step3Assign";
-
-const STEPS: IWizardStep[] = [
-  { number: 1, title: "Topics", icon: Layers },
-  { number: 2, title: "Categories", icon: Grid },
-  { number: 3, title: "Assign Content", icon: Link2 },
-];
 
 interface Props {
   externalApiId: string;
@@ -65,6 +60,7 @@ export default function CreateViewWizard({
   onClose,
   onCreated,
 }: Props) {
+  const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const isEditMode = !!existingView;
   const [step, setStep] = useState(1);
@@ -79,6 +75,12 @@ export default function CreateViewWizard({
     existingView?._id ?? null,
   );
   const [isAssigning, setIsAssigning] = useState(false);
+
+  const steps = [
+    { number: 1, title: t("wizard_step_topics"), icon: Layers },
+    { number: 2, title: t("wizard_step_categories"), icon: Grid },
+    { number: 3, title: t("wizard_step_assign"), icon: Link2 },
+  ];
 
   // Preserve original status when editing (don't auto-change APPROVED to DRAFT)
   const originalStatus = existingView?.status ?? "DRAFT";
@@ -95,7 +97,8 @@ export default function CreateViewWizard({
     status,
     externalApiId,
     viewName:
-      viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+      viewName.trim() ||
+      t("view_default_name", { date: new Date().toLocaleDateString("en-GB") }),
     themeContext: themeContext.trim() || null,
     siteTopics: topics.map((topic, topicIndex) => {
       // In edit mode, try to find the matching original topic to preserve its category assignments
@@ -154,7 +157,10 @@ export default function CreateViewWizard({
     const payload = {
       status,
       viewName:
-        viewName.trim() || `View ${new Date().toLocaleDateString("en-GB")}`,
+        viewName.trim() ||
+        t("view_default_name", {
+          date: new Date().toLocaleDateString("en-GB"),
+        }),
       themeContext: themeContext.trim() || null,
       externalApiId,
     };
@@ -164,13 +170,11 @@ export default function CreateViewWizard({
 
   const handleNext = async () => {
     if (step === 1 && !canProceedStep1) {
-      toast.error("Add at least one topic before continuing.");
+      toast.error(t("toast_add_topic_error"));
       return;
     }
     if (step === 2 && !canProceedStep2) {
-      toast.error(
-        "Each topic must have at least one category before continuing.",
-      );
+      toast.error(t("toast_add_category_error"));
       return;
     }
 
@@ -190,9 +194,7 @@ export default function CreateViewWizard({
         }
         setStep(3);
       } catch (error: any) {
-        toast.error(
-          error?.data?.message || "Failed to prepare view — please try again.",
-        );
+        toast.error(error?.data?.message || t("toast_prepare_view_error"));
       }
       return;
     }
@@ -211,7 +213,7 @@ export default function CreateViewWizard({
         }).unwrap();
         onCreated(savedViewId, false);
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to save draft");
+        toast.error(error?.data?.message || t("toast_save_draft_error"));
       }
       return;
     }
@@ -221,13 +223,13 @@ export default function CreateViewWizard({
       const id = res._id || res.id;
       onCreated(id, false);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to save draft");
+      toast.error(error?.data?.message || t("toast_save_draft_error"));
     }
   };
 
   const handlePublish = async () => {
     if (isAssigning) {
-      toast.error("Please wait for AI assignment to finish before publishing.");
+      toast.error(t("toast_ai_assignment_busy"));
       return;
     }
 
@@ -250,13 +252,12 @@ export default function CreateViewWizard({
           onCreated(savedViewId, true);
         } catch (error: any) {
           toast.error(
-            error?.data?.message ||
-              "View saved, but it cannot go live until content is assigned.",
+            error?.data?.message || t("toast_publish_no_content_warning"),
           );
           onCreated(savedViewId, false);
         }
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to publish view");
+        toast.error(error?.data?.message || t("toast_publish_view_error"));
       }
       return;
     }
@@ -276,13 +277,12 @@ export default function CreateViewWizard({
         onCreated(id, true);
       } catch (error: any) {
         toast.error(
-          error?.data?.message ||
-            "View saved, but it cannot go live until content is assigned.",
+          error?.data?.message || t("toast_publish_no_content_warning"),
         );
         onCreated(id, false);
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to publish view");
+      toast.error(error?.data?.message || t("toast_publish_view_error"));
     }
   };
 
@@ -313,7 +313,7 @@ export default function CreateViewWizard({
               isDark ? "text-gray-200" : "text-gray-800",
             )}
           >
-            {isEditMode ? "Edit View" : "Create New View"}
+            {isEditMode ? t("edit_view") : t("create_new_view")}
           </h2>
           <p
             className={clsx(
@@ -328,7 +328,7 @@ export default function CreateViewWizard({
         <input
           value={viewName}
           onChange={(e) => setViewName(e.target.value)}
-          placeholder="View name (optional)"
+          placeholder={t("view_name_optional")}
           className={clsx(
             "text-sm px-3 py-1.5 rounded-lg border hidden sm:block",
             isDark
@@ -341,9 +341,9 @@ export default function CreateViewWizard({
       {/* Stepper */}
       <div className="px-6 pt-5 pb-0 shrink-0">
         <WizardStepper
-          steps={STEPS}
+          steps={steps}
           currentStep={step}
-          totalSteps={STEPS.length}
+          totalSteps={steps.length}
           onStepClick={(s) => {
             if (s < step) setStep(s);
           }}
@@ -382,7 +382,7 @@ export default function CreateViewWizard({
       {/* Footer */}
       <WizardFooter
         currentStep={step}
-        totalSteps={STEPS.length}
+        totalSteps={steps.length}
         isSaving={isBusy}
         isPublishing={isBusy}
         isDisabled={isAssigning}

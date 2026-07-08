@@ -11,6 +11,7 @@ import {
   Languages,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -66,6 +67,7 @@ function CategoryCard({
   const [newKeyword, setNewKeyword] = useState("");
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [tempDesc, setTempDesc] = useState("");
+  const { t } = useTranslation("content");
 
   const titleField =
     activeLang === "en" ? "title" : activeLang === "he" ? "titleHe" : "titleAr";
@@ -118,7 +120,7 @@ function CategoryCard({
 
       setIsEditingDesc(false);
       setTempDesc("");
-      toast.success("Description added with translations");
+      toast.success(t("toast_desc_added_translations"));
     } catch {
       // Fallback: Copy same text to all 3 language fields
       onChange(topicId, category.id, "description", trimmed);
@@ -126,7 +128,7 @@ function CategoryCard({
       onChange(topicId, category.id, "descriptionAr", trimmed);
       setIsEditingDesc(false);
       setTempDesc("");
-      toast.warning("Description added — translation unavailable");
+      toast.warning(t("toast_desc_added_no_translation"));
     }
   };
 
@@ -186,7 +188,7 @@ function CategoryCard({
               )
             }
             maxLength={50}
-            placeholder="Category name"
+            placeholder={t("category_name_placeholder")}
             className={clsx(
               "w-full text-sm font-semibold bg-transparent border-none outline-none",
               isDark ? "text-gray-200" : "text-gray-800",
@@ -206,7 +208,7 @@ function CategoryCard({
                     if (e.key === "Escape") handleCancelDesc();
                   }}
                   maxLength={150}
-                  placeholder="Short description (optional)"
+                  placeholder={t("add_short_desc")}
                   className={clsx(
                     "flex-1 px-2 py-1 text-xs rounded-lg border transition-colors",
                     tempDesc.length >= 150 && "border-red-500",
@@ -261,7 +263,7 @@ function CategoryCard({
               {currentDesc || (
                 <span className="flex items-center gap-1">
                   <Plus className="w-3 h-3" />
-                  <span>Add short description (optional)</span>
+                  <span>{t("add_short_desc")}</span>
                 </span>
               )}
             </div>
@@ -332,7 +334,7 @@ function CategoryCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Synonyms ({activeLang.toUpperCase()})
+              {t("synonyms")} ({activeLang.toUpperCase()})
             </p>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
               {((category[synField] as string[]) ?? []).map((chip) => (
@@ -364,7 +366,7 @@ function CategoryCard({
                     addChip(synField, newSynonym, setNewSynonym);
                 }}
                 maxLength={30}
-                placeholder="Add synonym…"
+                placeholder={t("add_synonym")}
                 className={clsx(
                   "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
                   newSynonym.length >= 30 && "border-red-500",
@@ -390,7 +392,7 @@ function CategoryCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              Search Keywords
+              {t("keywords")}
             </p>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
               {(category.searchKeywords ?? []).map((chip) => (
@@ -422,7 +424,7 @@ function CategoryCard({
                     addChip("searchKeywords", newKeyword, setNewKeyword);
                 }}
                 maxLength={30}
-                placeholder="Add keyword…"
+                placeholder={t("add_keyword")}
                 className={clsx(
                   "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
                   newKeyword.length >= 30 && "border-red-500",
@@ -455,6 +457,7 @@ export default function Step2Categories({
   externalApiId,
 }: Props) {
   const { isDark } = useThemeClasses();
+  const { t } = useTranslation("content");
   const [generateCategories] = useGenerateCategoriesMutation();
   const [translateTopic] = useTranslateTopicMutation();
   const [activeLang, setActiveLang] = useState<WizardLang>("he");
@@ -575,12 +578,12 @@ export default function Step2Categories({
 
   const addManualCategory = async (topicId: string) => {
     if (!newCatTitle.trim()) {
-      toast.error("Category name is required");
+      toast.error(t("toast_category_name_required"));
       return;
     }
     const topic = topics.find((t) => t.id === topicId)!;
     if (topic.categories.length >= MAX_CATEGORIES) {
-      toast.error(`Maximum ${MAX_CATEGORIES} categories allowed`);
+      toast.error(t("toast_max_categories", { count: MAX_CATEGORIES }));
       return;
     }
 
@@ -609,7 +612,7 @@ export default function Step2Categories({
       );
       setNewCatTitle("");
       setAddingForTopic(null);
-      toast.success("Category added with translations");
+      toast.success(t("toast_category_added_translations"));
     } catch {
       // Fallback: save with typed text in all languages
       setTopics((prev) =>
@@ -627,9 +630,7 @@ export default function Step2Categories({
       );
       setNewCatTitle("");
       setAddingForTopic(null);
-      toast.warning(
-        "Category added — translation unavailable, edit each language manually.",
-      );
+      toast.warning(t("toast_category_added_no_translation"));
     } finally {
       setTranslatingAddId(null);
     }
@@ -655,7 +656,7 @@ export default function Step2Categories({
           : cat.descriptionAr;
 
     if (!sourceTitle?.trim()) {
-      toast.error("Category name is empty — nothing to translate");
+      toast.error(t("toast_category_name_empty"));
       return;
     }
 
@@ -691,9 +692,9 @@ export default function Step2Categories({
             : t,
         ),
       );
-      toast.success("Category translations updated");
+      toast.success(t("toast_category_translations_updated"));
     } catch {
-      toast.error("Translation failed — please try again");
+      toast.error(t("toast_translation_failed"));
     } finally {
       setTranslatingCatId(null);
     }
@@ -746,7 +747,7 @@ export default function Step2Categories({
             isDark ? "text-teal-300" : "text-teal-700",
           )}
         >
-          For each topic, generate or add up to <strong>8 categories</strong>.
+          {t("max_categories_per_topic", { count: 8 })}
           Each category gets synonyms and search keywords automatically to
           improve search on your website.
         </p>
@@ -783,7 +784,7 @@ export default function Step2Categories({
           ) : (
             <Wand2 className="w-3.5 h-3.5" />
           )}
-          Generate All
+          {t("generate_with_ai")}
         </button>
       </div>
 
@@ -871,7 +872,7 @@ export default function Step2Categories({
                       ) : (
                         <Wand2 className="w-3 h-3" />
                       )}
-                      Generate
+                      {t("generate_with_ai")}
                     </button>
 
                     <button
@@ -892,7 +893,7 @@ export default function Step2Categories({
                       )}
                     >
                       <Plus className="w-3 h-3" />
-                      Add Manually
+                      {t("add_manually")}
                     </button>
                   </div>
 
@@ -909,7 +910,7 @@ export default function Step2Categories({
                             if (e.key === "Escape") setAddingForTopic(null);
                           }}
                           maxLength={50}
-                          placeholder="Category name…"
+                          placeholder={t("category_name_placeholder")}
                           className={clsx(
                             "flex-1 px-3 py-1.5 rounded-lg border text-sm transition-colors",
                             newCatTitle.length >= 50 && "border-red-500",
@@ -931,8 +932,8 @@ export default function Step2Categories({
                             <Languages className="w-3 h-3" />
                           )}
                           {translatingAddId === topic.id
-                            ? "Translating…"
-                            : "Add"}
+                            ? t("translating")
+                            : t("add_category")}
                         </button>
                         <button
                           onClick={() => setAddingForTopic(null)}
@@ -981,7 +982,7 @@ export default function Step2Categories({
                         isDark ? "text-gray-600" : "text-gray-400",
                       )}
                     >
-                      No categories yet — generate or add manually
+                      {t("wizard_no_categories_yet")}
                     </p>
                   )}
 

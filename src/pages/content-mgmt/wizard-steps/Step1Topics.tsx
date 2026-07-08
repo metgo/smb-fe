@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { Wand2, Plus, Trash2, Loader, Languages } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -33,6 +34,7 @@ export default function Step1Topics({
   themeContext,
   setThemeContext,
 }: Props) {
+  const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const [generateTopics, { isLoading }] = useGenerateTopicsMutation();
   const [translateTopic] = useTranslateTopicMutation();
@@ -60,22 +62,20 @@ export default function Step1Topics({
         categories: [],
       }));
       setTopics(mapped);
-      toast.success(`Generated ${mapped.length} topics`);
+      toast.success(t("toast_generated_topics", { count: mapped.length }));
     } catch {
-      toast.error(
-        "AI generation is not available yet — add topics manually below.",
-      );
+      toast.error(t("toast_ai_generation_unavailable"));
     }
   };
 
   // Called when user clicks "Add Topic" — translates before saving
   const handleAddManual = async () => {
     if (!newTitle.trim()) {
-      toast.error("Topic name is required");
+      toast.error(t("toast_topic_name_required"));
       return;
     }
     if (topics.length >= MAX_TOPICS) {
-      toast.error(`Maximum ${MAX_TOPICS} topics allowed`);
+      toast.error(t("max_topics_reached"));
       return;
     }
 
@@ -102,7 +102,7 @@ export default function Step1Topics({
       setNewTitle("");
       setNewDesc("");
       setShowAddForm(false);
-      toast.success("Topic added with translations");
+      toast.success(t("toast_topic_added_translations"));
     } catch {
       // If translation fails, still save with the typed text in all languages
       setTopics((prev) => [
@@ -121,9 +121,7 @@ export default function Step1Topics({
       setNewTitle("");
       setNewDesc("");
       setShowAddForm(false);
-      toast.warning(
-        "Topic added — translation unavailable, you can edit each language manually.",
-      );
+      toast.warning(t("toast_topic_added_no_translation"));
     } finally {
       setIsTranslatingNew(false);
     }
@@ -222,10 +220,7 @@ export default function Step1Topics({
             isDark ? "text-teal-300" : "text-teal-700",
           )}
         >
-          AI will look at your content and suggest up to{" "}
-          <strong>8 topics</strong> for your website. You can edit, delete, or
-          add topics manually. Topics are created in Hebrew, English, and
-          Arabic.
+          {t("wizard_step1_instructions")}
         </p>
       </div>
 
@@ -237,21 +232,21 @@ export default function Step1Topics({
             isDark ? "text-gray-400" : "text-gray-500",
           )}
         >
-          Theme / Context{" "}
+          {t("theme_context")}{" "}
           <span
             className={clsx(
               "font-normal",
               isDark ? "text-gray-600" : "text-gray-400",
             )}
           >
-            (optional)
+            ({t("optional")})
           </span>
         </label>
         <input
           value={themeContext}
           onChange={(e) => setThemeContext(e.target.value)}
           maxLength={200}
-          placeholder='e.g. "חנוכה (Hanukkah)", "פסח (Passover)", "יום העצמאות (Independence Day)", "פורים (Purim)"'
+          placeholder={t("theme_context_examples")}
           className={clsx(
             "w-full px-3 py-2 rounded-lg border text-sm transition-colors",
             themeContext.length >= 200 && "border-red-500",
@@ -267,8 +262,7 @@ export default function Step1Topics({
               isDark ? "text-gray-600" : "text-gray-400",
             )}
           >
-            Leave empty to generate topics based on your content. Fill in to
-            create a themed view.
+            {t("theme_context_helper")}
           </p>
           <p
             className={clsx(
@@ -298,14 +292,14 @@ export default function Step1Topics({
           ) : (
             <Wand2 className="w-4 h-4" />
           )}
-          {isLoading ? "Generating…" : "Generate with AI"}
+          {isLoading ? t("generating") : t("generate_with_ai")}
         </button>
 
         <button
           onClick={() => setShowAddForm((v) => !v)}
           disabled={topics.length >= MAX_TOPICS}
           title={
-            topics.length >= MAX_TOPICS ? "Maximum 8 topics reached" : undefined
+            topics.length >= MAX_TOPICS ? t("max_topics_reached") : undefined
           }
           className={clsx(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors",
@@ -317,7 +311,7 @@ export default function Step1Topics({
           )}
         >
           <Plus className="w-4 h-4" />
-          Add Manually
+          {t("add_manually")}
         </button>
 
         <span
@@ -349,7 +343,7 @@ export default function Step1Topics({
                 e.key === "Enter" && !isTranslatingNew && handleAddManual()
               }
               maxLength={50}
-              placeholder="Topic name (e.g. Food & Drink)"
+              placeholder={t("topic_name_placeholder")}
               className={clsx(
                 "w-full px-3 py-2 rounded-lg border text-sm transition-colors",
                 newTitle.length >= 50 && "border-red-500",
@@ -380,7 +374,7 @@ export default function Step1Topics({
                 e.key === "Enter" && !isTranslatingNew && handleAddManual()
               }
               maxLength={150}
-              placeholder="Short description (optional)"
+              placeholder={t("short_desc_placeholder")}
               className={clsx(
                 "w-full px-3 py-2 rounded-lg border text-sm transition-colors",
                 newDesc.length >= 150 && "border-red-500",
@@ -411,7 +405,7 @@ export default function Step1Topics({
             )}
           >
             <Languages className="w-3 h-3 shrink-0" />
-            AI will automatically translate to Hebrew, English, and Arabic
+            {t("ai_translation_note")}
           </p>
           <div className="flex gap-2 justify-end">
             <button
@@ -424,7 +418,7 @@ export default function Step1Topics({
                   : "border-gray-300 text-gray-500 hover:bg-gray-100",
               )}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={handleAddManual}
@@ -436,7 +430,7 @@ export default function Step1Topics({
               ) : (
                 <Languages className="w-3.5 h-3.5" />
               )}
-              {isTranslatingNew ? "Translating…" : "Add Topic"}
+              {isTranslatingNew ? t("translating") : t("add_topic")}
             </button>
           </div>
         </div>
@@ -490,9 +484,9 @@ export default function Step1Topics({
           )}
         >
           <Wand2 className="w-8 h-8 mx-auto mb-3 opacity-25" />
-          <p className="text-sm font-medium">No topics yet</p>
+          <p className="text-sm font-medium">{t("wizard_no_topics_yet")}</p>
           <p className="text-xs mt-1 opacity-70">
-            Generate with AI or add manually to get started
+            {t("generate_with_ai_or_add_manually")}
           </p>
         </div>
       )}
@@ -534,7 +528,7 @@ export default function Step1Topics({
                     )
                   }
                   maxLength={50}
-                  placeholder="Topic name"
+                  placeholder={t("topic_name_placeholder")}
                   className={clsx(
                     "w-full text-sm font-semibold bg-transparent border-none outline-none",
                     isDark ? "text-gray-200" : "text-gray-800",
@@ -550,7 +544,7 @@ export default function Step1Topics({
                     )
                   }
                   maxLength={150}
-                  placeholder="Short description"
+                  placeholder={t("short_desc_placeholder")}
                   className={clsx(
                     "w-full text-xs bg-transparent border-none outline-none",
                     isDark ? "text-gray-500" : "text-gray-400",

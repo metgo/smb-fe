@@ -16,6 +16,7 @@ import {
   // InboxIcon,   // Used by Unassigned Items (commented out)
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -230,6 +231,7 @@ function CategoryRow({
   onAddBusiness,
   onAddProduct,
 }: CategoryRowProps) {
+  const { t } = useTranslation("content");
   const [expanded, setExpanded] = useState(false);
 
   const assignedBizIds = new Set(
@@ -367,7 +369,7 @@ function CategoryRow({
             {availableBiz.length > 0 && (
               <div className="pt-1">
                 <SearchSelect
-                  placeholder="+ Add business…"
+                  placeholder={t("add_business_placeholder")}
                   options={availableBiz}
                   onSelect={(item) => onAddBusiness(topicIdx, catIdx, item)}
                   isDark={isDark}
@@ -422,7 +424,7 @@ function CategoryRow({
             {availableProd.length > 0 && (
               <div className="pt-1">
                 <SearchSelect
-                  placeholder="+ Add product…"
+                  placeholder={t("add_product_placeholder")}
                   options={availableProd}
                   onSelect={(item) => onAddProduct(topicIdx, catIdx, item)}
                   isDark={isDark}
@@ -446,6 +448,7 @@ export default function Step3Assign({
   onAssignEnd,
 }: Props) {
   const { isDark } = useThemeClasses();
+  const { t } = useTranslation("content");
   const [assignAll] = useAssignAllEntitiesMutation();
   const [updateContent, { isLoading: isSaving }] = useUpdateContentMutation();
   const [assignState, setAssignState] = useState<AssignState>("idle");
@@ -516,7 +519,7 @@ export default function Step3Assign({
       setAssignState("done");
       onAssignEnd();
       void refetchView();
-      toast.success("AI assignment complete — review the results below.");
+      toast.success(t("toast_assign_complete"));
     } else if (status === "failed" && assignState === "running") {
       setAssignState("error");
       onAssignEnd();
@@ -679,10 +682,10 @@ export default function Step3Assign({
     try {
       await updateContent({ contentId: viewId, body: { siteTopics } }).unwrap();
       setHasUnsavedChanges(false);
-      toast.success("Changes saved successfully.");
+      toast.success(t("toast_changes_saved"));
       void refetchView();
     } catch {
-      toast.error("Failed to save changes.");
+      toast.error(t("toast_save_changes_failed"));
     }
   }, [viewId, localTopics, updateContent, refetchView]);
 
@@ -701,7 +704,7 @@ export default function Step3Assign({
     } catch {
       setAssignState("error");
       onAssignEnd();
-      toast.error("Failed to start AI assignment.");
+      toast.error(t("toast_start_assign_failed"));
     }
   };
 
@@ -735,19 +738,20 @@ export default function Step3Assign({
             "text-sm",
             isDark ? "text-teal-300" : "text-teal-700",
           )}
-        >
-          AI will go through <strong>every</strong> approved business and
-          product and assign them to the most relevant category. You can also{" "}
-          <strong>manually add, remove, or reassign</strong> items below.
-        </p>
+          dangerouslySetInnerHTML={{ __html: t("step3_instructions") }}
+        />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Topics", value: totalTopics, color: "teal" },
-          { label: "Categories", value: totalCategories, color: "purple" },
-          { label: "Assigned", value: totalAssignedFromView, color: "green" },
+          { label: t("topics"), value: totalTopics, color: "teal" },
+          { label: t("categories"), value: totalCategories, color: "purple" },
+          {
+            label: t("assigned"),
+            value: totalAssignedFromView,
+            color: "green",
+          },
         ].map(({ label, value, color }) => (
           <div
             key={label}
@@ -792,14 +796,14 @@ export default function Step3Assign({
                 disabled={totalCategories === 0 || !viewId}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Wand2 className="w-5 h-5" /> Continue Assignment
+                <Wand2 className="w-5 h-5" /> {t("continue_assignment")}
               </button>
               <button
                 onClick={() => void runAssignment(true)}
                 disabled={totalCategories === 0 || !viewId}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Wand2 className="w-5 h-5" /> Re-assign All
+                <Wand2 className="w-5 h-5" /> {t("reassign_all")}
               </button>
             </>
           ) : (
@@ -808,7 +812,7 @@ export default function Step3Assign({
               disabled={totalCategories === 0 || !viewId}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Wand2 className="w-5 h-5" /> Start AI Assignment
+              <Wand2 className="w-5 h-5" /> {t("start_ai_assignment")}
             </button>
           )}
         </div>
@@ -825,7 +829,7 @@ export default function Step3Assign({
               )}
             >
               <Loader className="w-4 h-4 animate-spin text-teal-500" />
-              Assigning entities to categories…
+              {t("assigning_entities")}
             </span>
             <span
               className={clsx(
@@ -854,8 +858,10 @@ export default function Step3Assign({
             )}
           >
             {progressTotal - progressDone > 0
-              ? `${progressTotal - progressDone} categories remaining…`
-              : "Finalising results…"}
+              ? t("categories_remaining", {
+                  count: progressTotal - progressDone,
+                })
+              : t("finalising_results")}
           </p>
         </div>
       )}
@@ -878,7 +884,7 @@ export default function Step3Assign({
                 isDark ? "text-red-300" : "text-red-700",
               )}
             >
-              Assignment failed
+              {t("assignment_failed")}
             </p>
             <p
               className={clsx(
@@ -886,15 +892,14 @@ export default function Step3Assign({
                 isDark ? "text-red-500" : "text-red-600",
               )}
             >
-              You can retry or publish without AI assignment and assign manually
-              later.
+              {t("assignment_failed_desc")}
             </p>
           </div>
           <button
             onClick={() => void runAssignment(false)}
             className="text-xs underline text-red-500 hover:text-red-600 shrink-0"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       )}
@@ -932,8 +937,8 @@ export default function Step3Assign({
               )}
             >
               {totalAssignedFromView === 0
-                ? "No items assigned"
-                : "Assignment complete"}
+                ? t("no_items_assigned")
+                : t("assignment_complete")}
             </p>
             <p
               className={clsx(
@@ -948,8 +953,11 @@ export default function Step3Assign({
               )}
             >
               {totalAssignedFromView === 0
-                ? "Run AI assignment to assign businesses and products to categories."
-                : `${totalAssignedFromView} items assigned across ${totalCategories} categories`}
+                ? t("run_ai_assignment_desc")
+                : t("items_assigned_desc", {
+                    count: totalAssignedFromView,
+                    categories: totalCategories,
+                  })}
             </p>
           </div>
           <button
@@ -963,7 +971,7 @@ export default function Step3Assign({
                 : "text-green-600 hover:text-green-700",
             )}
           >
-            {totalAssignedFromView === 0 ? "Run Now" : "Re-run"}
+            {totalAssignedFromView === 0 ? t("run_now") : t("rerun")}
           </button>
         </div>
       )}
@@ -979,7 +987,7 @@ export default function Step3Assign({
                 isDark ? "text-gray-300" : "text-gray-700",
               )}
             >
-              Categories
+              {t("categories_header")}
             </h3>
             {hasUnsavedChanges && (
               <button
@@ -993,7 +1001,7 @@ export default function Step3Assign({
                 ) : (
                   <Save className="w-3 h-3" />
                 )}
-                Save Changes
+                {t("save_changes")}
               </button>
             )}
           </div>
@@ -1131,7 +1139,7 @@ export default function Step3Assign({
             isDark ? "text-gray-600" : "text-gray-400",
           )}
         >
-          You can skip this step and assign businesses manually after saving.
+          {t("skip_assignment_reminder")}
         </p>
       )}
     </div>
