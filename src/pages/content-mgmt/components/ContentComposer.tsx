@@ -344,6 +344,10 @@ const ContentComposer = ({
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
   const { associatedWebsite } = useAppSelector((state) => state.auth);
+  const selectedWebsite = ((associatedWebsite as any[]) || []).find(
+    (w) => w._id === externalApiId,
+  );
+  const isMarketplace = selectedWebsite?.purpose === "MARKETPLACE";
 
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -438,6 +442,7 @@ const ContentComposer = ({
           hasUnsavedContent={hasUnsavedContent}
           onSaveCurrentAsView={onSaveCurrentAsView}
           isSavingCurrentAsView={isSavingCurrentAsView}
+          isMarketplace={isMarketplace}
         />
       )}
 

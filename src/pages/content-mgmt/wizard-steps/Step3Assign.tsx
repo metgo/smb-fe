@@ -32,6 +32,7 @@ interface Props {
   topics: WizardTopic[];
   externalApiId: string;
   viewId: string;
+  isMarketplace?: boolean;
   onAssignStart: () => void;
   onAssignEnd: () => void;
 }
@@ -213,6 +214,7 @@ interface CategoryRowProps {
   isDark: boolean;
   allBusinesses: any[];
   allProducts: any[];
+  isMarketplace?: boolean;
   onRemoveBusiness: (topicIdx: number, catIdx: number, bizId: string) => void;
   onRemoveProduct: (topicIdx: number, catIdx: number, prodId: string) => void;
   onAddBusiness: (topicIdx: number, catIdx: number, item: any) => void;
@@ -226,6 +228,7 @@ function CategoryRow({
   isDark,
   allBusinesses,
   allProducts,
+  isMarketplace = false,
   onRemoveBusiness,
   onRemoveProduct,
   onAddBusiness,
@@ -279,6 +282,7 @@ function CategoryRow({
           {cat.titleHe || cat.title || "Untitled"}
         </span>
         <div className="flex items-center gap-2 shrink-0">
+          {/* Businesses — shown for both MARKETPLACE and TRAVELING */}
           {bCount > 0 && (
             <span
               className={clsx(
@@ -290,7 +294,8 @@ function CategoryRow({
               {bCount}
             </span>
           )}
-          {pCount > 0 && (
+          {/* Products — TRAVELING only */}
+          {pCount > 0 && !isMarketplace && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -301,7 +306,9 @@ function CategoryRow({
               {pCount}
             </span>
           )}
-          {total === 0 && (
+          {/* None indicator */}
+          {((isMarketplace && bCount === 0) ||
+            (!isMarketplace && total === 0)) && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -323,7 +330,7 @@ function CategoryRow({
             isDark ? "border-gray-700" : "border-gray-100",
           )}
         >
-          {/* Businesses */}
+          {/* Businesses — always shown (both MARKETPLACE and TRAVELING) */}
           <div className="space-y-1.5">
             <p
               className={clsx(
@@ -378,60 +385,136 @@ function CategoryRow({
             )}
           </div>
 
-          {/* Products */}
-          <div className="space-y-1.5">
-            <p
-              className={clsx(
-                "text-xs font-semibold flex items-center gap-1",
-                isDark ? "text-purple-400" : "text-purple-600",
-              )}
-            >
-              <Package className="w-3 h-3" /> Products ({pCount})
-            </p>
-            <div className="space-y-1">
-              {(cat.productIds ?? []).map((prod: any) => (
-                <div
-                  key={prod._id ?? prod}
-                  className={clsx(
-                    "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
-                    isDark
-                      ? "bg-gray-750 hover:bg-gray-700"
-                      : "bg-gray-50 hover:bg-gray-100",
-                  )}
-                >
-                  <ItemAvatar item={prod} size={5} />
-                  <span
+          {/* Products — TRAVELING only */}
+          {!isMarketplace && (
+            <div className="space-y-1.5">
+              <p
+                className={clsx(
+                  "text-xs font-semibold flex items-center gap-1",
+                  isDark ? "text-purple-400" : "text-purple-600",
+                )}
+              >
+                <Package className="w-3 h-3" /> Products ({pCount})
+              </p>
+              <div className="space-y-1">
+                {(cat.productIds ?? []).map((prod: any) => (
+                  <div
+                    key={prod._id ?? prod}
                     className={clsx(
-                      "text-xs flex-1 truncate",
-                      isDark ? "text-gray-300" : "text-gray-700",
+                      "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
+                      isDark
+                        ? "bg-gray-750 hover:bg-gray-700"
+                        : "bg-gray-50 hover:bg-gray-100",
                     )}
                   >
-                    {itemLabel(prod)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onRemoveProduct(topicIdx, catIdx, prod._id ?? prod)
-                    }
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
-                    title="Remove"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            {availableProd.length > 0 && (
-              <div className="pt-1">
-                <SearchSelect
-                  placeholder={t("add_product_placeholder")}
-                  options={availableProd}
-                  onSelect={(item) => onAddProduct(topicIdx, catIdx, item)}
-                  isDark={isDark}
-                />
+                    <ItemAvatar item={prod} size={5} />
+                    <span
+                      className={clsx(
+                        "text-xs flex-1 truncate",
+                        isDark ? "text-gray-300" : "text-gray-700",
+                      )}
+                    >
+                      {itemLabel(prod)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onRemoveProduct(topicIdx, catIdx, prod._id ?? prod)
+                      }
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
+                      title="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+              {availableProd.length > 0 && (
+                <div className="pt-1">
+                  <SearchSelect
+                    placeholder={t("add_product_placeholder")}
+                    options={availableProd}
+                    onSelect={(item) => onAddProduct(topicIdx, catIdx, item)}
+                    isDark={isDark}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Events — TRAVELING only, AI-assigned read-only display */}
+          {!isMarketplace && (cat.eventIds ?? []).length > 0 && (
+            <div className="space-y-1.5">
+              <p
+                className={clsx(
+                  "text-xs font-semibold flex items-center gap-1",
+                  isDark ? "text-orange-400" : "text-orange-600",
+                )}
+              >
+                <span className="w-3 h-3 inline-block text-center leading-3">
+                  🎫
+                </span>
+                Events ({(cat.eventIds ?? []).length})
+              </p>
+              <div className="space-y-1">
+                {(cat.eventIds ?? []).map((ev: any) => (
+                  <div
+                    key={ev._id ?? ev}
+                    className={clsx(
+                      "flex items-center gap-2 rounded-lg px-2 py-1.5",
+                      isDark ? "bg-gray-750" : "bg-orange-50",
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "text-xs flex-1 truncate",
+                        isDark ? "text-gray-300" : "text-gray-700",
+                      )}
+                    >
+                      {itemLabel(ev)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* POIs — TRAVELING only, AI-assigned read-only display */}
+          {!isMarketplace && (cat.poiIds ?? []).length > 0 && (
+            <div className="space-y-1.5">
+              <p
+                className={clsx(
+                  "text-xs font-semibold flex items-center gap-1",
+                  isDark ? "text-green-400" : "text-green-600",
+                )}
+              >
+                <span className="w-3 h-3 inline-block text-center leading-3">
+                  📍
+                </span>
+                Points of Interest ({(cat.poiIds ?? []).length})
+              </p>
+              <div className="space-y-1">
+                {(cat.poiIds ?? []).map((poi: any) => (
+                  <div
+                    key={poi._id ?? poi}
+                    className={clsx(
+                      "flex items-center gap-2 rounded-lg px-2 py-1.5",
+                      isDark ? "bg-gray-750" : "bg-green-50",
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "text-xs flex-1 truncate",
+                        isDark ? "text-gray-300" : "text-gray-700",
+                      )}
+                    >
+                      {itemLabel(poi)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -444,6 +527,7 @@ export default function Step3Assign({
   topics,
   externalApiId,
   viewId,
+  isMarketplace = false,
   onAssignStart,
   onAssignEnd,
 }: Props) {
@@ -1030,6 +1114,7 @@ export default function Step3Assign({
                   isDark={isDark}
                   allBusinesses={allBusinesses}
                   allProducts={allProducts}
+                  isMarketplace={isMarketplace}
                   onRemoveBusiness={removeBusiness}
                   onRemoveProduct={removeProduct}
                   onAddBusiness={addBusiness}

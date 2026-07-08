@@ -35,6 +35,7 @@ interface Props {
   hasUnsavedContent?: boolean;
   onSaveCurrentAsView?: () => void;
   isSavingCurrentAsView?: boolean;
+  isMarketplace?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -408,6 +409,7 @@ export default function ViewManagerPanel({
   hasUnsavedContent = false,
   onSaveCurrentAsView,
   isSavingCurrentAsView = false,
+  isMarketplace = false,
 }: Props) {
   const { t } = useTranslation("content");
   const { isDark } = useThemeClasses();
@@ -582,6 +584,7 @@ export default function ViewManagerPanel({
           externalApiId={externalApiId}
           websiteName={websiteName}
           existingView={editingView ?? undefined}
+          isMarketplace={isMarketplace}
           onClose={() => {
             setShowWizard(false);
             setEditingView(null);

@@ -21,6 +21,7 @@ interface Props {
   externalApiId: string;
   websiteName: string;
   existingView?: IView;
+  isMarketplace?: boolean;
   onClose: () => void;
   onCreated: (viewId: string, publishNow: boolean) => void;
 }
@@ -57,6 +58,7 @@ export default function CreateViewWizard({
   externalApiId,
   websiteName,
   existingView,
+  isMarketplace = false,
   onClose,
   onCreated,
 }: Props) {
@@ -373,6 +375,7 @@ export default function CreateViewWizard({
             topics={topics}
             externalApiId={externalApiId}
             viewId={savedViewId ?? ""}
+            isMarketplace={isMarketplace}
             onAssignStart={() => setIsAssigning(true)}
             onAssignEnd={() => setIsAssigning(false)}
           />
