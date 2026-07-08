@@ -261,14 +261,7 @@ const CreateArticleWizard = ({
       toast.error(tc("exceeds_char_limit", { limit: 150 }));
       return false;
     }
-    if (
-      (formData.content || "").length > 500 ||
-      (formData.contentHe || "").length > 500 ||
-      (formData.contentAr || "").length > 500
-    ) {
-      toast.error(tc("exceeds_char_limit", { limit: 500 }));
-      return false;
-    }
+
     return true;
   };
 
@@ -449,7 +442,11 @@ const CreateArticleWizard = ({
         );
       case 2:
         return (
-          <ArticleTranslateButton formData={formData} onChange={handleChange} />
+          <ArticleTranslateButton
+            formData={formData}
+            syncKey={existingArticle?._id}
+            onChange={handleChange}
+          />
         );
       case 3:
         return <Media {...mediaProps} {...commonProps} />;
