@@ -27,6 +27,7 @@ import {
   PoiContactInfo,
   PoiMedia,
   PoiTranslateButton,
+  PoiContentForm,
   // PoiTranslateButton,
 } from "./sub-components";
 import {
@@ -43,7 +44,6 @@ import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
-import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -510,7 +510,7 @@ export default function CreatePoiWizard({
               selectedFormLanguage={selectedFormLanguage}
               setSelectedFormLanguage={setSelectedFormLanguage}
             />
-            <BusinessContentForm formData={formData} onChange={handleChange} />
+            <PoiContentForm formData={formData} onChange={handleChange} />
           </div>
         );
       case 2:

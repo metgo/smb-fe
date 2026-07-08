@@ -6,6 +6,8 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import { detectLanguage } from "@/helpers";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
@@ -37,6 +39,58 @@ export function usePoiDraftSaver({
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
   const { t } = useTranslation("toast");
   const { t: tp } = useTranslation("poi");
+  const { language } = useThemeClasses();
+
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const updated = { ...data };
+
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
+
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
+
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
+
+    return updated;
+  };
 
   const markDirty = useCallback((step: number) => {
     setDirtySteps((prev) => new Set(prev).add(step));
@@ -53,7 +107,7 @@ export function usePoiDraftSaver({
           setPoiId(res?.id);
         }
 
-        let payload = stepPayloadMap;
+        let payload = detectAndAssignLanguageFields(stepPayloadMap);
 
         if (isPublish) {
           payload = {
