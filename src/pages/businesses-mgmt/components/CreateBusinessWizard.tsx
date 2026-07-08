@@ -360,6 +360,18 @@ function CreateBusinessWizardInner({
     reset: resetLogo,
   } = useFileUpload({
     initialUrl: opMode === IOpMode.EDIT ? editData?.logo?.image : undefined,
+    onLogoChange:
+      opMode === IOpMode.EDIT
+        ? (logoData) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { logo: logoData },
+              });
+            }
+          }
+        : undefined,
   });
 
   const logoImage: IImageUpload | null = logoPreviewUrl

@@ -1,5 +1,10 @@
 type VoucherStatus =
-  "ACTIVE" | "ASSIGNED" | "REDEEMED" | "EXPIRED" | "CANCELED" | "UNASSIGNED";
+  | "ACTIVE"
+  | "ASSIGNED"
+  | "REDEEMED"
+  | "EXPIRED"
+  | "CANCELED"
+  | "UNASSIGNED";
 
 interface CampId {
   _id: string;
