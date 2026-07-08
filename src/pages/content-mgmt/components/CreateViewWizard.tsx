@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import { useState } from "react";
-import { createPortal } from "react-dom";
-import { X, Layers, Grid, Link2 } from "lucide-react";
+import { Layers, Grid, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { WizardStepper, WizardFooter } from "@/components/shared";
+import { ModalWrapper } from "@/components/wrapper";
 import {
   useCreateContentMutation,
   useUpdateContentMutation,
@@ -288,125 +288,109 @@ export default function CreateViewWizard({
 
   const isBusy = isCreating || isUpdating || isActivating;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  return (
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl" showSpinner={isBusy}>
+      {/* Solid background overlay — overrides the semi-transparent cardClasses */}
       <div
         className={clsx(
-          "w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden",
+          "absolute inset-0 rounded-t-2xl md:rounded-2xl -z-[1] pointer-events-none",
+          isDark ? "bg-gray-900" : "bg-white",
+        )}
+      />
+      {/* Header */}
+      <div
+        className={clsx(
+          "flex items-center justify-between px-6 py-4 shrink-0 border-b",
           isDark
-            ? "bg-gray-900 border border-gray-700"
-            : "bg-white border border-gray-200",
+            ? "border-gray-700 bg-gray-800/60"
+            : "border-gray-100 bg-gray-50",
         )}
       >
-        {/* Header */}
-        <div
+        <div>
+          <h2
+            className={clsx(
+              "text-base font-semibold",
+              isDark ? "text-gray-200" : "text-gray-800",
+            )}
+          >
+            {isEditMode ? "Edit View" : "Create New View"}
+          </h2>
+          <p
+            className={clsx(
+              "text-xs mt-0.5",
+              isDark ? "text-gray-500" : "text-gray-400",
+            )}
+          >
+            {websiteName}
+          </p>
+        </div>
+
+        <input
+          value={viewName}
+          onChange={(e) => setViewName(e.target.value)}
+          placeholder="View name (optional)"
           className={clsx(
-            "flex items-center justify-between px-6 py-4 shrink-0 border-b",
+            "text-sm px-3 py-1.5 rounded-lg border hidden sm:block",
             isDark
-              ? "border-gray-700 bg-gray-800/60"
-              : "border-gray-100 bg-gray-50",
+              ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
+              : "bg-white border-gray-300 text-gray-800 placeholder-gray-400",
           )}
-        >
-          <div>
-            <h2
-              className={clsx(
-                "text-base font-semibold",
-                isDark ? "text-gray-200" : "text-gray-800",
-              )}
-            >
-              {isEditMode ? "Edit View" : "Create New View"}
-            </h2>
-            <p
-              className={clsx(
-                "text-xs mt-0.5",
-                isDark ? "text-gray-500" : "text-gray-400",
-              )}
-            >
-              {websiteName}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <input
-              value={viewName}
-              onChange={(e) => setViewName(e.target.value)}
-              placeholder="View name (optional)"
-              className={clsx(
-                "text-sm px-3 py-1.5 rounded-lg border hidden sm:block",
-                isDark
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-800 placeholder-gray-400",
-              )}
-            />
-            <button
-              onClick={onClose}
-              className={clsx(
-                "p-2 rounded-lg transition-colors",
-                isDark
-                  ? "hover:bg-gray-700 text-gray-400"
-                  : "hover:bg-gray-100 text-gray-500",
-              )}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Stepper */}
-        <div className="px-6 pt-5 pb-0 shrink-0">
-          <WizardStepper
-            steps={STEPS}
-            currentStep={step}
-            totalSteps={STEPS.length}
-            onStepClick={(s) => {
-              if (s < step) setStep(s);
-            }}
-          />
-        </div>
-
-        {/* Step content — scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {step === 1 && (
-            <Step1Topics
-              topics={topics}
-              setTopics={setTopics}
-              externalApiId={externalApiId}
-              themeContext={themeContext}
-              setThemeContext={setThemeContext}
-            />
-          )}
-          {step === 2 && (
-            <Step2Categories
-              topics={topics}
-              setTopics={setTopics}
-              externalApiId={externalApiId}
-            />
-          )}
-          {step === 3 && (
-            <Step3Assign
-              topics={topics}
-              externalApiId={externalApiId}
-              viewId={savedViewId ?? ""}
-              onAssignStart={() => setIsAssigning(true)}
-              onAssignEnd={() => setIsAssigning(false)}
-            />
-          )}
-        </div>
-
-        {/* Footer */}
-        <WizardFooter
-          currentStep={step}
-          totalSteps={STEPS.length}
-          isSaving={isBusy}
-          isPublishing={isBusy}
-          isDisabled={isAssigning}
-          onPrevious={() => setStep((s) => Math.max(s - 1, 1))}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handlePublish}
         />
       </div>
-    </div>,
-    document.body,
+
+      {/* Stepper */}
+      <div className="px-6 pt-5 pb-0 shrink-0">
+        <WizardStepper
+          steps={STEPS}
+          currentStep={step}
+          totalSteps={STEPS.length}
+          onStepClick={(s) => {
+            if (s < step) setStep(s);
+          }}
+        />
+      </div>
+
+      {/* Step content — scrollable */}
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {step === 1 && (
+          <Step1Topics
+            topics={topics}
+            setTopics={setTopics}
+            externalApiId={externalApiId}
+            themeContext={themeContext}
+            setThemeContext={setThemeContext}
+          />
+        )}
+        {step === 2 && (
+          <Step2Categories
+            topics={topics}
+            setTopics={setTopics}
+            externalApiId={externalApiId}
+          />
+        )}
+        {step === 3 && (
+          <Step3Assign
+            topics={topics}
+            externalApiId={externalApiId}
+            viewId={savedViewId ?? ""}
+            onAssignStart={() => setIsAssigning(true)}
+            onAssignEnd={() => setIsAssigning(false)}
+          />
+        )}
+      </div>
+
+      {/* Footer */}
+      <WizardFooter
+        currentStep={step}
+        totalSteps={STEPS.length}
+        isSaving={isBusy}
+        isPublishing={isBusy}
+        isDisabled={isAssigning}
+        onPrevious={() => setStep((s) => Math.max(s - 1, 1))}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }
