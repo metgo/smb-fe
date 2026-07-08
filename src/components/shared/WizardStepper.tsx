@@ -50,11 +50,11 @@ export default function WizardStepper({
 
   return (
     <div className="mb-4">
-      {/* Mobile: horizontally scrollable stepper */}
-      <div className="flex md:hidden">
+      {/* Mobile & Tablet: horizontally scrollable stepper */}
+      <div className="flex lg:hidden justify-center">
         <div
           ref={scrollRef}
-          className="flex items-start overflow-x-auto py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="flex items-start py-3 gap-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {steps.map((step) => (
             <div key={step.number} className="flex items-start shrink-0">
@@ -64,27 +64,27 @@ export default function WizardStepper({
                   else stepRefs.current.delete(step.number);
                 }}
                 onClick={() => onStepClick(step.number)}
-                className="flex flex-col items-center gap-1 w-16 shrink-0"
+                className="flex flex-col items-center gap-2 px-3 sm:px-4 md:px-5 shrink-0"
               >
                 <div
                   className={clsx(
-                    "w-7 h-7 rounded-full flex items-center justify-center transition-all",
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0",
                     getIconBg(step),
                     step.number === currentStep &&
                       "ring-2 ring-teal-400 ring-offset-1",
                   )}
                 >
                   {step.number < currentStep ? (
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-5 h-5" />
                   ) : (
-                    <step.icon className="w-3.5 h-3.5" />
+                    <step.icon className="w-4 h-4" />
                   )}
                 </div>
                 <span
                   className={clsx(
-                    "text-[10px] text-center leading-tight w-full px-0.5 truncate transition-colors",
+                    "text-xs sm:text-sm text-center leading-tight whitespace-nowrap transition-colors font-semibold",
                     step.number === currentStep
-                      ? "text-teal-600 font-medium"
+                      ? "text-teal-600"
                       : isDark
                         ? "text-gray-500"
                         : "text-gray-400",
@@ -93,29 +93,28 @@ export default function WizardStepper({
                   {step.title}
                 </span>
               </button>
-
-              {step.number < totalSteps && (
+              {/* {step.number < totalSteps && (
                 <div
                   className={clsx(
                     "w-6 h-0.5 mt-3.5 shrink-0 rounded transition-all",
                     getConnectorBg(step),
                   )}
                 />
-              )}
+              )} */}
             </div>
           ))}
         </div>
       </div>
 
       {/* Desktop: full stepper with icons, connectors, and labels */}
-      <div className="hidden md:flex items-start gap-1">
+      <div className="hidden lg:flex items-start gap-2">
         {steps.map((step) => (
           <div
             key={step.number}
             onClick={() => onStepClick(step.number)}
             className="flex-1 cursor-pointer min-w-0"
           >
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <div
                 className={clsx(
                   "w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all",
@@ -141,12 +140,12 @@ export default function WizardStepper({
               )}
             </div>
 
-            <div className="mt-1 pr-1">
+            <div className="mt-2 text-center px-1">
               <span
                 className={clsx(
-                  "text-xs block text-center truncate transition-colors",
+                  "text-sm block leading-snug transition-colors font-medium",
                   step.number === currentStep
-                    ? "text-teal-600 font-medium"
+                    ? "text-teal-600"
                     : isDark
                       ? "text-gray-500"
                       : "text-gray-400",
