@@ -135,7 +135,6 @@ function CreateBusinessWizardInner({
   );
 
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
@@ -250,6 +249,7 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
+
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
@@ -263,8 +263,6 @@ function CreateBusinessWizardInner({
   const detectAndAssignLanguageFields = (data: any): any => {
     const updated = { ...data };
 
-    // Note: these are the PAYLOAD field names (stepPayloadMap uses
-    // "description" / "descriptionHe" / "descriptionAr", not "fullDescription")
     const fieldGroups = [
       { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
       {
@@ -306,6 +304,7 @@ function CreateBusinessWizardInner({
 
     return updated;
   };
+
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -841,17 +840,17 @@ function CreateBusinessWizardInner({
 
     // Validate all steps
     let allValid = true;
-    // for (let i = 1; i <= 5; i++) {
-    //   if (!validateStep(i)) {
-    //     allValid = false;
-    //     setCurrentStep(i);
-    //     break;
-    //   }
-    // }
-    // if (!allValid) {
-    //   toast.error(tt("fill_all_fields"));
-    //   return;
-    // }
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(tt("fill_all_fields"));
+      return;
+    }
 
     setIsPublishing(true);
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
