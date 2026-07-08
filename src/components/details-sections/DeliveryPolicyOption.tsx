@@ -158,7 +158,7 @@ const DeliveryPolicyOption: FC<DeliveryPolicyOptionProps> = ({
             className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             {/* {t("pickup_available")} */}
-            Delivery
+            {t("delivery")}
           </span>
         </label>
 
