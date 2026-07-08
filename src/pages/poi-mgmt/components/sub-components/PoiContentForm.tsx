@@ -4,8 +4,7 @@ import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 interface ArticleContentFormProps {
   formData: Record<string, any>;
   onChange: (updates: Record<string, any>) => void;
-  syncKey?: string | number;
-  editingLanguage: "en" | "he" | "ar";
+
 }
 
 export default function PoiContentForm({

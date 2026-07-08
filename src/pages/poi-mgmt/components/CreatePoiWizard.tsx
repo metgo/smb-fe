@@ -43,7 +43,7 @@ import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
-import PoiContentForm from "./sub-components/PoiContentForm";
+import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -64,7 +64,7 @@ export default function CreatePoiWizard({
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
 
-  const { textPrimary, language, theme } = useThemeClasses();
+  const { textPrimary, theme } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -510,12 +510,7 @@ export default function CreatePoiWizard({
               selectedFormLanguage={selectedFormLanguage}
               setSelectedFormLanguage={setSelectedFormLanguage}
             />
-            <PoiContentForm
-              formData={formData}
-              onChange={handleChange}
-              syncKey={editData?._id}
-              editingLanguage={language}
-            />
+            <BusinessContentForm formData={formData} onChange={handleChange} />
           </div>
         );
       case 2:
