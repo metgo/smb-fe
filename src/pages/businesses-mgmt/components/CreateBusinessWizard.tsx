@@ -851,18 +851,18 @@ function CreateBusinessWizardInner({
     }
 
     // Validate all steps
-    let allValid = true;
-    for (let i = 1; i <= 5; i++) {
-      if (!validateStep(i)) {
-        allValid = false;
-        setCurrentStep(i);
-        break;
-      }
-    }
-    if (!allValid) {
-      toast.error(tt("fill_all_fields"));
-      return;
-    }
+    // let allValid = true;
+    // for (let i = 1; i <= 5; i++) {
+    //   if (!validateStep(i)) {
+    //     allValid = false;
+    //     setCurrentStep(i);
+    //     break;
+    //   }
+    // }
+    // if (!allValid) {
+    //   toast.error(tt("fill_all_fields"));
+    //   return;
+    // }
 
     setIsPublishing(true);
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
