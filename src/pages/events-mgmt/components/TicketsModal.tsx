@@ -6,7 +6,10 @@ import { Plus, Ticket, Trash2, Copy, PenBox, LayoutList } from "lucide-react";
 
 import { routes } from "@/lib/routes";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
+import {
+  useDeleteTicketMutation,
+  useUpdateEventMutation,
+} from "@/store/api/eventMutationApi";
 import { TicketCardSkeleton } from "@/components/skeletons";
 import { ConfirmDialog } from "@/components/shared";
 import { ModalWrapper, TooltipWrapper } from "@/components/wrapper";
@@ -18,7 +21,7 @@ import { TICKET_TYPE_STYLES } from "@/lib/utils";
 
 interface TicketsStepProps {
   eventId: string;
-  eventDays: EventDay[];
+  eventDays: IEventDayDescription[];
   externalTicketLink: string;
   isTicketLinkExist: boolean;
   setIsOpen: (v: boolean) => void;
@@ -47,6 +50,8 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
     isFetching,
     isLoading,
   } = useGetAllTicketQuery(eventId ? { eventId } : skipToken);
+  const [updateEvent, { isLoading: isEventUpdating }] =
+    useUpdateEventMutation();
 
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [ticketBuyLink, setTicketBuyLink] = useState<null | string>(null);
@@ -144,6 +149,17 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
     setHasExternalTicket(isTicketLinkExist);
     setTicketBuyLink(externalTicketLink);
   }, [isTicketLinkExist, externalTicketLink]);
+
+  async function updateTicketPurchaseLink() {
+    await updateEvent({
+      eventId,
+      body: {
+        ticketBuyLink,
+        hasExternalTicket,
+      },
+    }).unwrap();
+  }
+
   return (
     <ModalWrapper
       onClose={() => setIsOpen(false)}
@@ -208,13 +224,26 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
               >
                 {t("enter_your_ticket_purchase_link")}
               </label>
-              <input
-                type="text"
-                value={ticketBuyLink || ""}
-                onChange={(e) => setTicketBuyLink(e.target.value)}
-                placeholder={"https://ticket-purchase.co.il"}
-                className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
-              />
+
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  value={ticketBuyLink || ""}
+                  onChange={(e) => setTicketBuyLink(e.target.value)}
+                  placeholder={"https://ticket-purchase.co.il"}
+                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
+                />
+                <button
+                  type="button"
+                  onClick={updateTicketPurchaseLink}
+                  className={clsx(
+                    "bg-green-600 hover:bg-green-500 rounded-lg px-4 py-2 text-white",
+                    isEventUpdating ? " cursor-not-allowed" : " cursor-pointer",
+                  )}
+                >
+                  {t("submit")}
+                </button>
+              </div>
             </div>
           )}
         </div>

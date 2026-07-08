@@ -115,7 +115,12 @@ export default function EventsWithViewMode({
   const [updateEvent] = useUpdateEventMutation();
 
   const [isTicketsModalOpen, setIsTicketsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState({
+  const [selectedEvent, setSelectedEvent] = useState<{
+    eventId: string;
+    eventDays: IEventDayDescription[];
+    externalTicketLink: string;
+    isTicketLinkExist: boolean;
+  }>({
     eventId: "",
     eventDays: [],
     externalTicketLink: "",
@@ -660,18 +665,21 @@ export default function EventsWithViewMode({
                       setIsTicketsModalOpen(true);
                     },
                   },
-                  (!event.hasExternalTicket || event.ticketCount > 0) && {
-                    title: t("create_landing_page"),
+                  {
+                    title: event?.hasExternalTicket
+                      ? t("without_ticket_cant_create_landing_page")
+                      : t("create_landing_page"),
                     icon: LayoutList,
                     color: "yellow",
                     onClick: () => {
+                      if (event?.hasExternalTicket) return;
                       window.open(
                         `${routes.eventSessionMgmt}?eventId=${event?._id}`,
                         "_blank",
                       );
                     },
                   },
-                ].filter(Boolean)}
+                ]}
               />
             ),
           },

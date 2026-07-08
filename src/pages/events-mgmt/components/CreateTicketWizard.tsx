@@ -23,7 +23,7 @@ interface CreateTicketWizardProps {
   editData: ITicketPayload;
   eventId: string | null;
   refetch?: () => void;
-  eventDays: EventDay[];
+  eventDays: IEventDayDescription[];
   ticketDateTime: ITicketDateTime[];
   setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
 }
@@ -415,8 +415,8 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                         )}
                       >
                         <option value="">{t("select_date")}</option>
-                        {eventDays.map((d) => (
-                          <option key={d.id} value={d.date}>
+                        {eventDays.map((d, index) => (
+                          <option key={index} value={d.date}>
                             {formatDate(d.date, "en")}
                           </option>
                         ))}
