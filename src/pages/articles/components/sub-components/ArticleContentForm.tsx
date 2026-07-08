@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import RichTextEditor from "./RichTextEditor";
-import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
@@ -91,31 +90,23 @@ export default function ArticleContentForm({
         </p>
       </div>
 
-      <FormFieldWrapper
+      <RichTextEditor
+        content={formData[shortDescField] || ""}
+        onChange={(html) => onChange({ [shortDescField]: html })}
+        bgPrimary={bgPrimary}
+        bgSecondary={bgSecondary}
+        textPrimary={textPrimary}
+        textTertiary={textTertiary}
+        borderColor={borderColor}
+        syncKey={syncKey}
+        editingLanguage={editingLanguage}
         label={t("short_description")}
-        required
-        error={
-          (formData[shortDescField] || "").length > 150
-            ? tc("exceeds_char_limit", { limit: 150 })
-            : undefined
-        }
-      >
-        <textarea
-          value={formData[shortDescField] || ""}
-          onChange={(e) => onChange({ [shortDescField]: e.target.value })}
-          placeholder={t("short_description_placeholder")}
-          className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
-          rows={3}
-          dir={dir}
-          maxLength={150}
-        />
-        <p className={`text-xs ${textTertiary} mt-1`}>
-          {tc("char_count", {
-            count: (formData[shortDescField] || "").length,
-            limit: 150,
-          })}
-        </p>
-      </FormFieldWrapper>
+        placeholder={t("short_description_placeholder")}
+        minHeight="min-h-[120px]"
+        maxLength={150}
+        charCountLabel={(count, limit) => tc("char_count", { count, limit })}
+        exceedsLimitLabel={(limit) => tc("exceeds_char_limit", { limit })}
+      />
 
       <RichTextEditor
         content={formData[contentField] || ""}
@@ -127,6 +118,8 @@ export default function ArticleContentForm({
         borderColor={borderColor}
         syncKey={syncKey}
         editingLanguage={editingLanguage}
+        label={t("content")}
+        placeholder={t("full_description_placeholder")}
       />
     </div>
   );
