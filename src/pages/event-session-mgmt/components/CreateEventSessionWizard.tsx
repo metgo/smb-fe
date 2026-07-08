@@ -28,16 +28,21 @@ interface CreateEventSessionWizardProps {
   editIndex: number;
 }
 
-function blankSession(t: (key: string) => string): IEventSession {
+function blankSession(): IEventSession {
   return {
-    name: t("new_session_name"),
+    name: "",
     tagline: "",
     description: "",
     images: [],
     imagesLables: [],
-    roomLabel: t("default_room_label"),
+    roomLabel: "",
     rooms: [],
-    instructors: [],
+    instructors: [
+      {
+        name: "",
+        role: "",
+      },
+    ],
     isActive: true,
     dates: [{ date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] }],
   };
@@ -60,6 +65,9 @@ export function CreateEventSessionWizard({
   } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
+
+  // State for the new tag input field
+  const [newRoomInput, setNewRoomInput] = useState("");
 
   const CARD = clsx(cardClasses, "rounded-[14px] p-5");
   const INPUT = clsx(
@@ -89,7 +97,7 @@ export function CreateEventSessionWizard({
 
   const isNew = editIndex === -1;
   const [draftSession, setDraftSession] = useState<IEventSession>(() =>
-    blankSession(t),
+    blankSession(),
   );
 
   const ev = isNew ? draftSession : (config.sessions[editIndex] ?? null);
@@ -181,8 +189,8 @@ export function CreateEventSessionWizard({
       instructors: [
         ...(ev.instructors || []),
         {
-          name: t("default_instructor_name"),
-          role: t("default_instructor_role"),
+          name: "",
+          role: "",
         },
       ],
     });
@@ -346,26 +354,53 @@ export function CreateEventSessionWizard({
             >
               {t("rooms_help")}
             </p>
-            <AField label={t("room_label_field")}>
+
+            {/* Tag Input Field for Adding New Rooms */}
+            <div className="flex gap-2 items-center mb-4">
               <input
-                className={INPUT}
-                value={ev.roomLabel}
-                onChange={(e) => updateSession({ roomLabel: e.target.value })}
-                placeholder={t("room_label_placeholder")}
+                className={clsx(INPUT, "flex-1")}
+                placeholder={t(
+                  "add_room_placeholder",
+                  "Type room name and press Enter...",
+                )}
+                value={newRoomInput}
+                onChange={(e) => setNewRoomInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (newRoomInput.trim()) {
+                      listAdd(newRoomInput.trim());
+                      setNewRoomInput("");
+                    }
+                  }
+                }}
               />
-            </AField>
-            <div className="flex flex-wrap gap-2 items-center">
+              <button
+                type="button"
+                className={BTN_GHOST_XS}
+                onClick={() => {
+                  if (newRoomInput.trim()) {
+                    listAdd(newRoomInput.trim());
+                    setNewRoomInput("");
+                  }
+                }}
+              >
+                {t("add_btn", "Add")}
+              </button>
+            </div>
+            {/* Existing Editable Tags */}
+            <div className="flex flex-wrap gap-2 items-center mb-3">
               {(ev.rooms || []).map((r, i) => (
                 <span
                   key={i}
                   className={clsx(
-                    "inline-flex items-center rounded-lg py-0.5 pr-0.5 pl-1",
+                    "inline-flex items-center rounded-lg py-0.5 pr-0.5 pl-2",
                     tagSpan,
                   )}
                 >
                   <input
                     className={clsx(
-                      "border-0 bg-transparent text-sm font-semibold w-23 p-1.5 focus:outline-none",
+                      "border-0 bg-transparent text-sm font-semibold w-24 sm:w-32 p-1 focus:outline-none",
                       tagInput,
                     )}
                     value={r}
@@ -373,7 +408,7 @@ export function CreateEventSessionWizard({
                   />
                   <button
                     className={clsx(
-                      "text-base w-5.5 h-5.5 rounded-md leading-none",
+                      "text-base w-5 h-5 rounded-md leading-none flex items-center justify-center",
                       tagRemove,
                     )}
                     onClick={() => listRemove(i)}
@@ -382,14 +417,6 @@ export function CreateEventSessionWizard({
                   </button>
                 </span>
               ))}
-              <button
-                className={BTN_GHOST_XS}
-                onClick={() =>
-                  listAdd(ev.roomLabel + " " + ((ev.rooms || []).length + 1))
-                }
-              >
-                {t("add_room_btn")}
-              </button>
             </div>
           </div>
         );

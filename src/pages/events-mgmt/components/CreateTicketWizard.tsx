@@ -16,7 +16,7 @@ import {
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 
-interface TicketModalProps {
+interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
   setIsOpen: (v: boolean) => void;
   setEditData: (v: any) => void;
@@ -42,7 +42,7 @@ const MODAL_TITLES: Record<TTicketOpMode, string> = {
   DUPLICATE: "duplicate_ticket",
 };
 
-const TicketModal: React.FC<TicketModalProps> = ({
+const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
   setIsOpen,
   setEditData,
   editData,
@@ -825,4 +825,4 @@ const TicketModal: React.FC<TicketModalProps> = ({
   );
 };
 
-export default TicketModal;
+export default CreateTicketWizard;

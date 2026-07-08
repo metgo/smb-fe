@@ -1,7 +1,7 @@
 import Select from "react-select";
 
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "../shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export type ItemOption = {
   value: string;
@@ -108,6 +108,7 @@ export default function ReactSelect({
         }),
         menu: (base) => ({
           ...base,
+          zIndex: 9999, // <-- Added higher zIndex for the dropdown menu
           borderRadius: 8,
           borderColor: isDark ? "#374151" : "#e5e7eb",
           backgroundColor: isDark ? "#111827" : "#ffffff",

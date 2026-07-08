@@ -61,7 +61,7 @@ const ActionIconButtons = ({
               disabled={action.disabled}
               onClick={action.onClick}
               className={clsx(
-                "rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                "rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
                 color.text,
                 isDark ? color.darkHover : color.lightHover,
               )}

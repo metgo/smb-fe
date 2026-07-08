@@ -68,7 +68,6 @@ export default function EventDetailsPage() {
   const { bgPrimary, isRTL, isDark } = useThemeClasses();
 
   const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(true);
-  console.log("🚀 ~ EventDetailsPage ~ hasExternalTicket:", hasExternalTicket);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

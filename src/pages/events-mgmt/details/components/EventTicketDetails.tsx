@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { formatDate } from "@/helpers/formatter";
@@ -22,11 +23,10 @@ import {
   LayoutList,
   ExternalLink,
 } from "lucide-react";
-import TicketModal from "../../components/wizard/modals/TicketModal";
 import TicketSummaryCard from "./TicketSummaryCard";
 import { ActionIconButtons } from "@/components/btns";
-import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import CreateTicketWizard from "../../components/CreateTicketWizard";
 
 interface EventTicketDetailsProps {
   eventId: string;
@@ -361,7 +361,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               color: "yellow",
                               onClick: () => {
                                 navigate(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                  `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
                                 );
                               },
                             },
@@ -713,7 +713,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 
       {/* Ticket Wizard */}
       {isEditModalOpen && editingTicket && (
-        <TicketModal
+        <CreateTicketWizard
           eventId={eventId}
           refetch={refetch}
           opMode={opMode}
