@@ -82,7 +82,7 @@ function CreateBusinessWizardInner({
   const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
-  const { textPrimary, isRTL, theme } = useThemeClasses();
+  const { textPrimary, isRTL, theme, language } = useThemeClasses();
 
   // ─── Tour ─────────────────────────────────────────────────────────────
   const { startTour } = useTour();
@@ -253,41 +253,36 @@ function CreateBusinessWizardInner({
   const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
     setFormData((prev: any) => ({ ...prev, ...updates }));
   }, []);
+
   const detectAndAssignLanguageFields = (data: any): any => {
-    const name = data.name?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const description = data.description?.trim() || "";
-
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = name || shortDescription || description;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.nameHe = name || data.nameHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.descriptionHe = description || data.descriptionHe;
+    const fields = [
+      { en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      { en: "description", he: "descriptionHe", ar: "descriptionAr" },
+    ];
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.nameAr = name || data.nameAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.descriptionAr = description || data.descriptionAr;
+    fields.forEach(({ en, he, ar }) => {
+      const text = data[language]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    }
-    // else: remains in English fields (default)
+      const lang = detectLanguage(text);
+      console.log("🚀 ~ detectAndAssignLanguageFields ~ lang:", lang)
+
+      if (lang === "he") {
+        updated[he] = text;
+        updated[en] = "";
+      } else if (lang === "ar") {
+        updated[ar] = text;
+        updated[en] = "";
+      }
+       
+    });
 
     return updated;
   };
@@ -826,17 +821,17 @@ function CreateBusinessWizardInner({
 
     // Validate all steps
     let allValid = true;
-    for (let i = 1; i <= 5; i++) {
-      if (!validateStep(i)) {
-        allValid = false;
-        setCurrentStep(i);
-        break;
-      }
-    }
-    if (!allValid) {
-      toast.error(tt("fill_all_fields"));
-      return;
-    }
+    // for (let i = 1; i <= 5; i++) {
+    //   if (!validateStep(i)) {
+    //     allValid = false;
+    //     setCurrentStep(i);
+    //     break;
+    //   }
+    // }
+    // if (!allValid) {
+    //   toast.error(tt("fill_all_fields"));
+    //   return;
+    // }
 
     setIsPublishing(true);
     const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
