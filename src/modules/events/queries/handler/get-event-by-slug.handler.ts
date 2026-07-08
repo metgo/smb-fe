@@ -90,7 +90,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       ];
 
       const select
-        = '_id location cover images cover name nameHe nameAr address countryCode phoneNumber shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug dayDescription payment eventId';
+        = '_id location cover images cover name nameHe nameAr address countryCode phoneNumber shortDescription description shortDescriptionHe descriptionHe shortDescriptionAr descriptionAr contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug hasExternalTicket ticketBuyLink dayDescription payment eventId';
 
       const event = await this.EventsAuditModel.findOne(findQuery)
         .populate(populate)

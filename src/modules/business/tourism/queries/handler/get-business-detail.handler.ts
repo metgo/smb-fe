@@ -35,6 +35,10 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           path: 'tagsId',
           select: '_id name nameHe nameAr',
         },
+        {
+          path: 'socialMedia.socialMediaId',
+          select: 'name',
+        },
       ];
 
       try {
@@ -51,11 +55,15 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }
 
-        const { businessId, ...rest } = business;
+        const { businessId, socialMedia, ...rest } = business;
 
         const mappedData = {
           ...rest,
           _id: businessId,
+          socialMedia: (socialMedia ?? []).map(({ socialMediaId, url }: any) => ({
+            ...(socialMediaId ?? {}),
+            url,
+          })),
         };
 
         const response = await this.businessService.localizeBusiness(
