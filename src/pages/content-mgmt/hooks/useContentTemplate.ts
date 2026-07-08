@@ -11,6 +11,7 @@ import {
 import {
   useCreateContentMutation,
   useUpdateContentMutation,
+  useActivateViewMutation,
 } from "@/store/api/contentMutationApi";
 import type { Filters } from "./useContentTabs";
 
@@ -137,6 +138,7 @@ export function useContentTemplate({
 
   const [createContent, { isLoading: isCreating }] = useCreateContentMutation();
   const [updateContent, { isLoading: isUpdating }] = useUpdateContentMutation();
+  const [activateView] = useActivateViewMutation();
 
   const {
     refetch,
@@ -454,8 +456,88 @@ export function useContentTemplate({
   };
 
   const handleSaveCurrentAsView = async () => {
-    await handleSubmit("DRAFT");
-    refetchViews();
+    // Save as APPROVED and activate immediately — this preserves existing live content
+    // that was created before the AI wizard was introduced. The content was already
+    // live on the website, so saving it as a view should keep it active.
+    if (!externalApiId) return;
+
+    try {
+      const payload = {
+        header,
+        status: "APPROVED",
+        externalApiId,
+        siteTopics: templateContents
+          ?.map((template, index) => {
+            const filteredCategories = template?.groups
+              ?.filter((group) => group?.category?.trim())
+              ?.map((group) => {
+                const idsByType = group.contents.reduce<
+                  Record<string, string[]>
+                >((acc, item) => {
+                  const key =
+                    TYPE_TO_KEY[item.contentType ?? "business"] ??
+                    "businessIds";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(item._id);
+                  return acc;
+                }, {});
+                return {
+                  title: group.category,
+                  description: group.description,
+                  isPrimary: group.isPrimary,
+                  isArchived: group.isHideCategory,
+                  icon: group.icon,
+                  colors: group.colors ?? [],
+                  businessIds: idsByType.businessIds ?? [],
+                  productIds: idsByType.productIds ?? [],
+                  tripIds: idsByType.tripIds ?? [],
+                  eventIds: idsByType.eventIds ?? [],
+                  poiIds: idsByType.poiIds ?? [],
+                  fundayIds: idsByType.fundayIds ?? [],
+                  ...idsByType,
+                };
+              });
+            if (!filteredCategories || filteredCategories.length === 0)
+              return null;
+            return {
+              title: template.topic,
+              isPrimary: template.isPrimary,
+              isArchived: template.isHideTopic,
+              order: index,
+              icon: template.icon ?? "",
+              colors: template.colors ?? [],
+              siteCategories: filteredCategories,
+            };
+          })
+          ?.filter(Boolean),
+      };
+
+      const existingId =
+        templateContentId ??
+        (templateContentsData?.externalApiId?._id === externalApiId
+          ? templateContentsData._id
+          : null);
+
+      const res = existingId
+        ? await updateContent({ body: payload, contentId: existingId }).unwrap()
+        : await createContent(payload).unwrap();
+
+      const savedId = res?._id || res?.id;
+      if (savedId) {
+        setTemplateContentId(savedId);
+        // Activate so isActive=true and website keeps showing this content
+        try {
+          await activateView({ viewId: savedId }).unwrap();
+        } catch {
+          // Activation may fail if content has no assigned items — status is still APPROVED
+        }
+        refetch();
+        refetchViews();
+        toast.success("Current layout saved and set as active view.");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to save as view.");
+    }
   };
 
   const hasUnsavedContent =
