@@ -9,7 +9,7 @@ import {
   Tag,
   FileText,
   Users,
-  LanguagesIcon,
+  // LanguagesIcon,
   // Languages as LanguagesIcon,
 } from "lucide-react";
 
@@ -274,7 +274,7 @@ export default function CreatePoiWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: t("step_translation"), icon: LanguagesIcon },
+    // { number: 2, title: t("step_translation"), icon: LanguagesIcon },
     { number: 3, title: t("step_contact_info"), icon: Users },
     { number: 4, title: t("step_media"), icon: ImageIcon },
     { number: 5, title: t("step_attributes"), icon: Tag },
@@ -647,7 +647,7 @@ export default function CreatePoiWizard({
               className={`text-xs md:text-sm truncate ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title}
             </p>
           </div>
           <div className="flex items-center gap-2 md:gap-4 shrink-0">

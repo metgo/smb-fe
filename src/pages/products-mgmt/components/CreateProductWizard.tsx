@@ -12,7 +12,7 @@ import {
   Eye,
   CreditCard,
   FileText,
-  LanguagesIcon,
+  // LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
 import {
@@ -423,7 +423,7 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: tp("translation"), icon: LanguagesIcon },
+    // { number: 2, title: tp("translation"), icon: LanguagesIcon },
     { number: 3, title: t("product_segmentation"), icon: Package },
     { number: 4, title: t("product_pricing"), icon: CreditCard },
     { number: 5, title: t("product_media"), icon: ImageIcon },
@@ -740,10 +740,10 @@ export default function CreateProductWizard({
             presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
           />
         );
-      case 2:
-        return (
-          <ProductTranslateButton formData={formData} onChange={handleChange} />
-        );
+      // case 2:
+      //   return (
+      //     <ProductTranslateButton formData={formData} onChange={handleChange} />
+      //   );
       case 3:
         return (
           <Attributes

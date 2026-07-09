@@ -8,7 +8,7 @@ import {
   CheckCircle,
   Loader,
   Mail,
-  Languages,
+  // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -60,7 +60,7 @@ export default function CreateEventWizardNew({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    { number: 2, icon: Languages, title: tt("translation") },
+    // { number: 2, icon: Languages, title: tt("translation") },
     { number: 3, icon: Calendar, title: t("step_2_date_time") },
     { number: 4, icon: Users, title: t("step_3_registration") },
     { number: 5, icon: Ticket, title: t("step_4_tickets") },
@@ -91,7 +91,7 @@ export default function CreateEventWizardNew({
           </h2>
           <p className={`text-sm mt-1 ${textTertiary}`}>
             {t("step")} {wizard.currentStep} {t("step_of")} {steps.length}:{" "}
-            {steps[wizard.currentStep - 1].title}
+            {steps[wizard.currentStep - 1]?.title}
           </p>
         </div>
 
@@ -159,12 +159,12 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 2 && (
+        {/* {wizard.currentStep === 2 && (
           <ProductTranslateButton
             formData={wizard.translationFormData}
             onChange={wizard.handleTranslateChange}
           />
-        )}
+        )} */}
 
         {wizard.currentStep === 3 && (
           <DateTimeStep

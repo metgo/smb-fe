@@ -13,7 +13,7 @@ import {
   FileText,
   Users,
   Truck,
-  LanguagesIcon,
+  // LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
 import { TourProvider, TourPortal, useTour } from "@/components/tour";
@@ -57,7 +57,7 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
-import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
+// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -249,10 +249,6 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
 
   const getActiveField = (base: string, lang: string): string => {
     if (lang === "en") return base;
@@ -608,7 +604,7 @@ function CreateBusinessWizardInner({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: tc("translation"), icon: LanguagesIcon },
+    // { number: 2, title: tc("translation"), icon: LanguagesIcon },
     { number: 3, title: t("step_contact_ownership"), icon: Users },
     { number: 4, title: t("step_location"), icon: MapPin },
     { number: 5, title: t("step_attributes"), icon: Tag },
@@ -956,13 +952,13 @@ function CreateBusinessWizardInner({
           />
         );
 
-      case 2:
-        return (
-          <BusinessTranslateButton
-            formData={formData}
-            onChange={handleChange}
-          />
-        );
+      // case 2:
+      //   return (
+      //     <BusinessTranslateButton
+      //       formData={formData}
+      //       onChange={handleChange}
+      //     />
+      //   );
 
       case 3:
         return <BusinessContactOwership {...commonProps} />;
@@ -1034,7 +1030,7 @@ function CreateBusinessWizardInner({
               className={`hidden sm:block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title}
             </p>
 
             {lastSaved && (

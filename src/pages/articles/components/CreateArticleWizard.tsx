@@ -5,7 +5,7 @@ import {
   Eye,
   FileText,
   Image as ImageIcon,
-  LanguagesIcon,
+  // LanguagesIcon,
   Section,
 } from "lucide-react";
 
@@ -122,7 +122,7 @@ const CreateArticleWizard = ({
   const [currentStep, setCurrentStep] = useState(1);
   const steps = [
     { number: 1, title: t("form"), icon: FileText },
-    { number: 2, title: t("translation"), icon: LanguagesIcon },
+    // { number: 2, title: t("translation"), icon: LanguagesIcon },
     { number: 3, title: t("media"), icon: ImageIcon },
     { number: 4, title: t("seo"), icon: Section },
     { number: 5, title: t("review"), icon: Eye },
@@ -449,14 +449,14 @@ const CreateArticleWizard = ({
             />
           </div>
         );
-      case 2:
-        return (
-          <ArticleTranslateButton
-            formData={formData}
-            syncKey={existingArticle?._id}
-            onChange={handleChange}
-          />
-        );
+      // case 2:
+      //   return (
+      //     <ArticleTranslateButton
+      //       formData={formData}
+      //       syncKey={existingArticle?._id}
+      //       onChange={handleChange}
+      //     />
+      //   );
       case 3:
         return <Media {...mediaProps} {...commonProps} />;
       case 4:
