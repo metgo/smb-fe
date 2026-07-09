@@ -98,7 +98,7 @@ export const eventSessionApi = createApi({
     }),
 
     createEventSession: builder.mutation<
-      IAdminConfig & { _id: string },
+      { id: string; message: string },
       CreateEventSessionPayload
     >({
       query: (body) => ({

@@ -2,7 +2,6 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useRef, useState, useEffect } from "react";
 import {
-  Pencil,
   Trash,
   Upload,
   X,
@@ -10,6 +9,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Calendar,
+  PenBox,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useBlocker, useNavigate, useSearchParams } from "react-router-dom";
@@ -28,9 +28,9 @@ import {
 } from "@/store/api/eventSessionApi";
 import { useGetAllSessionTicketQuery } from "@/store/api/eventQueryApi";
 import { routes } from "@/lib/routes";
-import { PublishButton } from "@/components/btns";
+import { ActionIconButtons, PublishButton } from "@/components/btns";
 import { ConfirmDialog, ImageWithFallback, Spinner } from "@/components/shared";
-import { ModalWrapper } from "@/components/wrapper";
+import { ModalWrapper, TooltipWrapper } from "@/components/wrapper";
 import { DEFAULT_CONFIG } from "../data";
 
 const TICKETS_PREVIEW_COUNT = 2;
@@ -73,6 +73,9 @@ export function LandingTab({
     onChange({ ...config, ...patch });
 
   const [_searchParams, setSearchParams] = useSearchParams();
+  const [ticketDateTime, setTicketDateTime] = useState<
+    ITicketDayTimeForSession[]
+  >([]);
 
   const [createEventSession, { isLoading: isCreating }] =
     useCreateEventSessionMutation();
@@ -109,6 +112,7 @@ export function LandingTab({
       resetImage();
     }
   }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -134,6 +138,7 @@ export function LandingTab({
       }
     }
   }, [existingSession]);
+
   const tickets = isDuplicate
     ? ticketRes?.data?.tickets?.filter(
         (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
@@ -220,11 +225,56 @@ export function LandingTab({
 
   function toggleTicket(ticketId: string) {
     const ticketIds = config.ticketIds ?? [];
+    const isAdding = !ticketIds.includes(ticketId);
+
+    // Update ticket IDs if no conflict
     update({
       ticketIds: ticketIds.includes(ticketId)
         ? ticketIds.filter((id) => id !== ticketId)
         : [...ticketIds, ticketId],
     });
+
+    if (isAdding) {
+      // Find the ticket being added
+      const ticketToAdd = tickets?.find((t) => t.ticketId === ticketId);
+      if (!ticketToAdd) return;
+
+      // Get currently selected tickets
+      const currentSelectedTickets =
+        tickets?.filter((t) => ticketIds.includes(t.ticketId!)) || [];
+
+      // Check for date/time conflicts with existing selections
+      const allSelectedTickets = [...currentSelectedTickets, ticketToAdd];
+      const dateTimeSet = new Set<string>();
+
+      for (const ticket of allSelectedTickets) {
+        for (const day of ticket.dayDescription || []) {
+          const key = `${day.date}_${day.startTime}`;
+          if (dateTimeSet.has(key)) {
+            break;
+          }
+          dateTimeSet.add(key);
+        }
+      }
+
+      // Add the new ticket's date/times to the state
+      const newDateTimeEntries: ITicketDayTimeForSession[] = (
+        ticketToAdd.dayDescription || []
+      ).map((day) => ({
+        ticketId: ticketToAdd.ticketId!,
+        ticketName: ticketToAdd.name,
+        date: day.date,
+        startTime: day.startTime,
+        endTime: day.endTime,
+      }));
+
+      setTicketDateTime((prev) => [...prev, ...newDateTimeEntries]);
+    } else {
+      // Remove the ticket's date/times when unchecking
+      setTicketDateTime((prev) =>
+        prev.filter((item) => item.ticketId !== ticketId),
+      );
+    }
   }
 
   function renderTicketRow(ticket: ITicket) {
@@ -315,7 +365,7 @@ export function LandingTab({
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev);
-            next.set("wrapperId", created._id);
+            next.set("wrapperId", created.id);
             return next;
           },
           { replace: true },
@@ -599,18 +649,26 @@ export function LandingTab({
                   <span className="text-red-500"> *</span>
                 </h3>
               </div>
-              <button
-                onClick={() => {
-                  setEditIndex(-1);
-                  setIsCreateWizardOpen(true);
-                }}
-                className={clsx(
-                  "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold text-white hover:brightness-110 transition-[transform,filter] active:translate-y-px",
-                  isDark ? "bg-blue-500" : "bg-blue-600",
-                )}
+              <TooltipWrapper
+                showToolTip={!hasTicket}
+                infoText={"You must have ticket first"}
               >
-                {t("landing_add_session_btn")}
-              </button>
+                <button
+                  onClick={() => {
+                    setEditIndex(-1);
+                    setIsCreateWizardOpen(true);
+                  }}
+                  className={clsx(
+                    "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold hover:brightness-110 transition-[transform,filter] active:translate-y-px",
+                    hasTicket
+                      ? "bg-blue-500 cursor-pointer text-white"
+                      : "bg-blue-300 cursor-not-allowed text-gray-100",
+                  )}
+                  disabled={!hasTicket}
+                >
+                  {t("landing_add_session_btn")}
+                </button>
+              </TooltipWrapper>
             </div>
             <p
               className={clsx(
@@ -651,33 +709,28 @@ export function LandingTab({
                   <span>{e.name}</span>
                 </label>
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      setEditIndex(sessionIdx);
-                      setIsCreateWizardOpen(true);
-                    }}
-                    className={clsx(
-                      "p-1 rounded-full text-sm font-bold transition-[transform,filter] active:translate-y-px",
-                      isDark
-                        ? "bg-blue-950/40 text-blue-400 hover:bg-blue-900/40"
-                        : "bg-blue-50 text-blue-600 hover:bg-blue-100",
-                    )}
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  {config.sessions.length > 1 ? (
-                    <button
-                      onClick={() => setDeleteIndex(sessionIdx)}
-                      className={clsx(
-                        "p-1 rounded-full text-sm font-bold transition-[transform,filter] active:translate-y-px",
-                        isDark
-                          ? "bg-red-950/40 text-red-400 hover:bg-red-900/40"
-                          : "bg-red-50 text-red-600 hover:bg-red-100",
-                      )}
-                    >
-                      <Trash size={16} />
-                    </button>
-                  ) : null}
+                  <ActionIconButtons
+                    isDark={isDark}
+                    actions={[
+                      {
+                        title: t("edit"),
+                        icon: PenBox,
+                        color: "blue",
+                        onClick: () => {
+                          setEditIndex(sessionIdx);
+                          setIsCreateWizardOpen(true);
+                        },
+                      },
+                      {
+                        title: t("delete"),
+                        icon: Trash,
+                        color: "red",
+                        onClick: () => {
+                          setDeleteIndex(sessionIdx);
+                        },
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             ))}
@@ -713,10 +766,11 @@ export function LandingTab({
 
       {isCreateWizardOpen && (
         <CreateEventSessionWizard
-          setIsOpen={setIsCreateWizardOpen}
           onChange={onChange}
           config={config}
           editIndex={editIndex}
+          ticketDateTime={ticketDateTime}
+          setIsOpen={setIsCreateWizardOpen}
         />
       )}
 

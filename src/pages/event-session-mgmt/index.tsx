@@ -86,9 +86,6 @@ function EventSessionMgmtPageInner() {
   const [config, setConfigState] = useState<IAdminConfig>(() =>
     store.getConfig(),
   );
-  const [records, _setRecords] = useState<IBookingRecord[]>(() =>
-    store.getRecords(),
-  );
 
   function onChange(c: IAdminConfig) {
     setConfigState(c);
@@ -154,13 +151,6 @@ function EventSessionMgmtPageInner() {
         title: "event_session.capacity.title",
         desc: "event_session.capacity.desc",
       },
-      // {
-      //   id: "analytics",
-      //   target: '[data-tour="tabs-nav"]',
-      //   placement: "bottom",
-      //   title: "event_session.analytics.title",
-      //   desc: "event_session.analytics.desc",
-      // },
       {
         id: "notify",
         target: '[data-tour="tabs-nav"]',
@@ -315,20 +305,7 @@ function EventSessionMgmtPageInner() {
             />
           )}
           {tab === "capacity" && <CapacityTab wrapperId={wrapperId} />}
-          {/* {tab === "analytics" && (
-            <AnalyticsTab
-              config={config}
-              records={records}
-              bookings={bookings}
-            />
-          )} */}
-          {tab === "notify" && (
-            <NotifyTab
-              wrapperId={wrapperId}
-              config={config}
-              records={records}
-            />
-          )}
+          {tab === "notify" && <NotifyTab wrapperId={wrapperId} />}
           {tab === "regs" && <RegistrationsTab wrapperId={wrapperId} />}
         </div>
       </div>

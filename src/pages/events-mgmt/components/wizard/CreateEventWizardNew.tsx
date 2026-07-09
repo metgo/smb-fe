@@ -2,7 +2,6 @@ import clsx from "clsx";
 import {
   Calendar,
   Users,
-  Ticket,
   Image,
   FileText,
   CheckCircle,
@@ -25,7 +24,6 @@ import { EventBasicInformation } from "../sub-components";
 import { useEventWizardState } from "./useEventWizardState";
 import DateTimeStep from "./steps/DateTimeStep";
 import RegistrationStep from "./steps/RegistrationStep";
-import TicketsStep from "./steps/TicketsStep";
 import MessagingStep from "./steps/MessagingStep";
 import ReviewStep from "./steps/ReviewStep";
 
@@ -46,7 +44,6 @@ export default function CreateEventWizardNew({
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
   const { t: tt } = useTranslation("common");
-
   const { t: tc } = useTranslation("toast");
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
@@ -63,7 +60,6 @@ export default function CreateEventWizardNew({
     { number: 2, icon: Languages, title: tt("translation") },
     { number: 3, icon: Calendar, title: t("step_2_date_time") },
     { number: 4, icon: Users, title: t("step_3_registration") },
-    { number: 5, icon: Ticket, title: t("step_4_tickets") },
     { number: 6, icon: Mail, title: t("messaging") },
     { number: 7, icon: Image, title: t("step_5_media") },
     { number: 8, icon: CheckCircle, title: t("step_6_review") },
@@ -91,7 +87,7 @@ export default function CreateEventWizardNew({
           </h2>
           <p className={`text-sm mt-1 ${textTertiary}`}>
             {t("step")} {wizard.currentStep} {t("step_of")} {steps.length}:{" "}
-            {steps[wizard.currentStep - 1].title}
+            {steps[wizard?.currentStep - 1]?.title}
           </p>
         </div>
 
@@ -228,23 +224,6 @@ export default function CreateEventWizardNew({
             errors={wizard.errors}
           />
         )}
-
-        {wizard.currentStep === 5 && (
-          <TicketsStep
-            tickets={wizard.localTickets}
-            eventId={wizard.eventId}
-            setEventId={wizard.setEventId}
-            initEventCreate={() =>
-              wizard.initEventCreate({ businessId: wizard.selectedBusinessId })
-            }
-            showTicketModal={wizard.showTicketModal}
-            setShowTicketModal={wizard.setShowTicketModal}
-            errors={wizard.errors}
-            refetch={wizard.ticketRefetch}
-            eventDays={wizard.eventDaysForTickets}
-          />
-        )}
-
         {wizard.currentStep === 6 && (
           <MessagingStep
             markDirty={wizard.handleMarkDirty}
@@ -295,7 +274,6 @@ export default function CreateEventWizardNew({
             capacityType={wizard.capacityType}
             capacity={wizard.capacity}
             customQuestions={wizard.customQuestions}
-            tickets={wizard.localTickets}
           />
         )}
       </div>

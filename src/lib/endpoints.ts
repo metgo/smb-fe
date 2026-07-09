@@ -74,6 +74,7 @@ export const endpoints = {
   events: "/events",
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
+  contentManagementEvents: "/content-management-events",
 
   // event sessions
   eventSession: "/event-sessions",

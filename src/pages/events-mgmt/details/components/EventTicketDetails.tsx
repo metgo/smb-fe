@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { formatDate } from "@/helpers/formatter";
@@ -20,18 +21,20 @@ import {
   TrendingDown,
   Package,
   LayoutList,
+  ExternalLink,
 } from "lucide-react";
-import TicketModal from "../../components/wizard/modals/TicketModal";
 import TicketSummaryCard from "./TicketSummaryCard";
 import { ActionIconButtons } from "@/components/btns";
-import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import CreateTicketWizard from "../../components/CreateTicketWizard";
 
 interface EventTicketDetailsProps {
   eventId: string;
   refetch: () => void;
   tickets: ITicketPayload[];
   eventDays: EventDay[];
+  hasExternalTicket: boolean;
+  ticketBuyLink: string;
 }
 const safe = (n: any) => (Number.isFinite(n) ? n : 0);
 
@@ -43,10 +46,13 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   eventId,
   refetch,
   eventDays,
+  hasExternalTicket,
+  ticketBuyLink,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("events");
-  const { isDark, borderColor, language } = useThemeClasses();
+  const { isDark, borderColor, language, textPrimary, textSecondary } =
+    useThemeClasses();
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
 
@@ -99,6 +105,36 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
         : "bg-gray-100 text-gray-700 border-gray-200")
     );
   };
+
+  if (hasExternalTicket) {
+    return (
+      <div className="h-96 w-full flex flex-col items-center justify-center">
+        <div className="">
+          <div className={clsx(textSecondary, "font-bold text-2xl pb-2")}>
+            {" "}
+            {t("i_have_an_eternal_ticket_purchase_link")}
+          </div>
+          <a
+            href={ticketBuyLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={clsx(
+              textPrimary,
+              "group inline-flex items-center gap-2 py-2.5",
+            )}
+            aria-label={`Buy tickets on external site: ${ticketBuyLink}`}
+          >
+            <Ticket className="h-4 w-4" aria-hidden="true" />
+            <span>{ticketBuyLink}</span>
+            <ExternalLink
+              className="h-3.5 w-3.5 opacity-70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   if (!tickets?.length) {
     return (
@@ -324,9 +360,14 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               icon: LayoutList,
                               color: "yellow",
                               onClick: () => {
-                                navigate(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
-                                );
+                                if (ticket?.wrapperId)
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                  );
+                                else
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&&ticketId=${ticket._id}`,
+                                  );
                               },
                             },
                           ]}
@@ -677,7 +718,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
 
       {/* Ticket Wizard */}
       {isEditModalOpen && editingTicket && (
-        <TicketModal
+        <CreateTicketWizard
           eventId={eventId}
           refetch={refetch}
           opMode={opMode}

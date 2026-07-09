@@ -13,19 +13,21 @@ import { FormFieldWrapper } from "@/components/form-fields";
 import { IOpMode } from "@/enums/operation.types";
 import {
   useCreateTicketMutation,
+  useUpdateEventMutation,
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 
-interface TicketModalProps {
+interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
   setIsOpen: (v: boolean) => void;
   setEditData: (v: any) => void;
   editData: ITicketPayload;
   eventId: string | null;
   refetch?: () => void;
-  eventDays: EventDay[];
+  eventDays: IEventDayDescription[];
   ticketDateTime: ITicketDateTime[];
   setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
+  hasExternalTicket?: boolean;
 }
 
 type TicketErrors = {
@@ -42,7 +44,7 @@ const MODAL_TITLES: Record<TTicketOpMode, string> = {
   DUPLICATE: "duplicate_ticket",
 };
 
-const TicketModal: React.FC<TicketModalProps> = ({
+const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
   setIsOpen,
   setEditData,
   editData,
@@ -52,6 +54,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
   eventDays,
   ticketDateTime,
   setTicketDateTime,
+  hasExternalTicket = false,
 }) => {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
@@ -85,7 +88,8 @@ const TicketModal: React.FC<TicketModalProps> = ({
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
-
+  const [updateEvent, { isLoading: isEventUpdating }] =
+    useUpdateEventMutation();
   // ─── Helpers ────────────────────────────────────────────────────────
   const computeDiscounts = (markedPrice: number, sellingPrice: number) => {
     if (markedPrice > 0 && sellingPrice >= 0 && sellingPrice <= markedPrice) {
@@ -222,6 +226,12 @@ const TicketModal: React.FC<TicketModalProps> = ({
             }).unwrap()
           : await createTicket(payload).unwrap();
 
+      if (hasExternalTicket) {
+        await updateEvent({
+          eventId,
+          body: { hasExternalTicket: false },
+        }).unwrap();
+      }
       toast.success(res?.message || t("ticket_saved_successfully"));
       refetch?.();
       setIsOpen(false);
@@ -266,7 +276,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
     setEditData(null);
   };
 
-  const isSubmitting = isSaving || isUpdating;
+  const isSubmitting = isSaving || isUpdating || isEventUpdating;
   const isUploading = images[0]?.status === "uploading";
 
   return (
@@ -415,8 +425,8 @@ const TicketModal: React.FC<TicketModalProps> = ({
                         )}
                       >
                         <option value="">{t("select_date")}</option>
-                        {eventDays.map((d) => (
-                          <option key={d.id} value={d.date}>
+                        {eventDays.map((d, index) => (
+                          <option key={index} value={d.date}>
                             {formatDate(d.date, "en")}
                           </option>
                         ))}
@@ -825,4 +835,4 @@ const TicketModal: React.FC<TicketModalProps> = ({
   );
 };
 
-export default TicketModal;
+export default CreateTicketWizard;

@@ -30,8 +30,6 @@ const HISTORY_LIMIT = 10;
 const HISTORY_SKELETON_ROWS = 4;
 
 interface NotifyTabProps {
-  config: IAdminConfig;
-  records: IBookingRecord[];
   wrapperId: string;
 }
 

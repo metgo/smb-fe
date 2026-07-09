@@ -7,7 +7,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 import ImageWithFallback from "./ImageWithFallback";
 import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 type Props = {
   keyId: keyof IAssociatedWebsiteIds;
@@ -41,14 +41,15 @@ export default function DmoAuthorityWebsiteSelector({
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
-  const { userRole, dmoId } = useAppSelector((state) => state.auth);
+  const { dmoId } = useAppSelector((state) => state.auth);
+  const { isSuperadmin, isDMO, isAuthority } = useUserRoles();
 
   // Auto-select DMO user's own DMO on mount
   useEffect(() => {
-    if (userRole === UserRole.DMO && dmoId && !selectedDmoId) {
+    if (isDMO && dmoId && !selectedDmoId) {
       setSelectDmoId(dmoId);
     }
-  }, [userRole, dmoId, selectedDmoId, setSelectDmoId]);
+  }, [isDMO, dmoId, selectedDmoId, setSelectDmoId]);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
@@ -253,7 +254,7 @@ export default function DmoAuthorityWebsiteSelector({
             error={errors.dmoId}
           >
             <ReactSelect
-              isDisabled={userRole === UserRole.AUTHORITY}
+              isDisabled={isAuthority}
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
@@ -282,7 +283,7 @@ export default function DmoAuthorityWebsiteSelector({
           <FormFieldWrapper required label={t("select_authority")}>
             <ReactSelect
               value={selectedAuthorityId}
-              isDisabled={userRole === UserRole.AUTHORITY}
+              isDisabled={isAuthority}
               onChange={(v) => {
                 setSelectAuthorityId(v);
                 if (setErrors && v) {
@@ -324,12 +325,13 @@ export default function DmoAuthorityWebsiteSelector({
             "selectedBlacklistIds",
           )}
 
-          {renderSection(
-            t("select_unassociated_websites"),
-            unAssociatedWebsites,
-            "allWhitelistIds",
-            "selectedWhitelistIds",
-          )}
+          {isSuperadmin &&
+            renderSection(
+              t("select_unassociated_websites"),
+              unAssociatedWebsites,
+              "allWhitelistIds",
+              "selectedWhitelistIds",
+            )}
         </div>
       )}
     </section>
