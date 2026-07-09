@@ -27,7 +27,7 @@ import { ReactSelect } from "@/components/form-fields";
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
 import { detectLanguage } from "@/helpers";
-import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
+// import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import Media from "@/components/details-sections/Media";

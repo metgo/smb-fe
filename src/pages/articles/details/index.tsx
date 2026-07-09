@@ -92,6 +92,8 @@ function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
     metaDescriptionHe: blogDetails?.metaDescriptionHe ?? "",
     metaDescriptionAr: blogDetails?.metaDescriptionAr ?? "",
     tags: blogDetails?.tags ?? [],
+    tagsHe: blogDetails?.tagsHe ?? [],
+    tagsAr: blogDetails?.tagsAr ?? [],
     images: blogDetails?.images ?? [],
     createdAt: blogDetails?.createdAt ?? "",
     updatedAt: blogDetails?.updatedAt ?? null,
@@ -228,25 +230,37 @@ export default function ArticleDetails() {
       )}
 
       {/* Tags */}
-      {blogDetails && blogDetails?.tags?.length > 0 && (
-        <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("tags")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {blogDetails?.tags?.map((tag, idx) => (
-              <span
-                key={idx}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  isDark
-                    ? "bg-blue-900/30 text-blue-400"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {blogDetails &&
+        (() => {
+          const localizedTags =
+            language === "he"
+              ? blogDetails?.tagsHe
+              : language === "ar"
+                ? blogDetails?.tagsAr
+                : blogDetails?.tags;
+
+          return (
+            localizedTags?.length > 0 && (
+              <div>
+                <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("tags")}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {localizedTags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        isDark
+                          ? "bg-blue-900/30 text-blue-400"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          );
+        })()}
     </div>
   );
 
