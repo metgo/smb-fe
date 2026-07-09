@@ -53,21 +53,17 @@ export function useEventDraftSaver({
 
   // 🔹 Save Draft (manual or autosave)
   const saveDraft = useCallback(
-    async (isPublish = false) => {
+    async (isPublish = false, overridePayload?: Record<string, any>) => {
       try {
         let internalEventId;
-
-        // 1️⃣ Initialize event if not created yet
         if (!eventId) {
           const res = await initEventCreate({ businessId }).unwrap();
           internalEventId = res?.id;
           setEventId(res?.id);
         }
 
-        // 2️⃣ Build base payload
-        let payload = buildPayload();
+        let payload = { ...buildPayload(), ...overridePayload };
 
-        // 3️⃣ If publishing, override status
         if (isPublish) {
           payload = {
             ...payload,
@@ -77,13 +73,11 @@ export function useEventDraftSaver({
 
         if (!Object.keys(payload).length) return;
 
-        // 4️⃣ Update event
         await updateEvent({
           eventId: internalEventId || eventId!,
           body: payload,
         }).unwrap();
 
-        // 5️⃣ Clear dirty steps up to current step
         setDirtySteps((prev) => {
           const next = new Set(prev);
           [...next].forEach((s) => s <= currentStep && next.delete(s));

@@ -30,8 +30,6 @@ interface PoiBasicInfoProps {
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
   poiAssociatedWebsites?: IAssociatedWebsiteIds[];
-  selectedFormLanguage: Language;
-  setSelectedFormLanguage: (v: Language) => void;
 }
 
 const PoiBasicInfo: FC<PoiBasicInfoProps> = ({

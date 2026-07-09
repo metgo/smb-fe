@@ -554,8 +554,6 @@ export default function CreatePoiWizard({
               websiteVisibilityIds={websiteVisibilityIds}
               setWebsiteVisibilityIds={setWebsiteVisibilityIds}
               poiAssociatedWebsites={editData?.associatedWebsites ?? []}
-              selectedFormLanguage={selectedFormLanguage}
-              setSelectedFormLanguage={setSelectedFormLanguage}
             />
             <PoiContentForm formData={formData} setFormData={setFormData} />
           </div>
