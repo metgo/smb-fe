@@ -845,7 +845,11 @@ export default function EventsWithViewMode({
       </div>
 
       {isTicketsModalOpen && (
-        <TicketsModal {...selectedEvent} setIsOpen={setIsTicketsModalOpen} />
+        <TicketsModal
+          {...selectedEvent}
+          eventsRefetch={refetch}
+          setIsOpen={setIsTicketsModalOpen}
+        />
       )}
     </>
   );

@@ -25,12 +25,14 @@ interface TicketsStepProps {
   externalTicketLink: string;
   isTicketLinkExist: boolean;
   setIsOpen: (v: boolean) => void;
+  eventsRefetch: () => void;
 }
 
 const TicketsModal: React.FC<TicketsStepProps> = ({
   eventId,
   eventDays,
   setIsOpen,
+  eventsRefetch,
   isTicketLinkExist,
   externalTicketLink,
 }) => {
@@ -162,7 +164,10 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
 
   return (
     <ModalWrapper
-      onClose={() => setIsOpen(false)}
+      onClose={() => {
+        eventsRefetch();
+        setIsOpen(false);
+      }}
       height="h-max min-h-[60vh]"
       showSpinner={isFetching || isLoading}
     >
@@ -305,13 +310,14 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                   <div
                     key={ticket._id}
                     className={clsx(
-                      "p-2 rounded-xl border hover:shadow-md transition",
+                      "p-3 rounded-xl border hover:shadow-md transition",
                       isDark
                         ? "border-gray-700 bg-gray-800/50"
                         : "border-gray-200 bg-gray-50",
                     )}
                   >
-                    <div className="flex justify-between gap-6">
+                    {/* Desktop Layout - hidden on mobile */}
+                    <div className="hidden md:flex justify-between items-center gap-6">
                       <div className="flex-1 flex items-center gap-2 md:gap-4">
                         <div>
                           <ImageWithFallback
@@ -359,7 +365,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div>
                         <ActionIconButtons
                           isDark={isDark}
                           actions={[
@@ -420,6 +426,121 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                           ]}
                         />
                       </div>
+                    </div>
+
+                    {/* Mobile Layout - shown only on mobile */}
+                    <div className="md:hidden">
+                      {/* Header with image and title */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <ImageWithFallback
+                          src={ticket?.images?.[0]?.image}
+                          className="w-16 h-16 rounded-lg object-cover shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4
+                              className={`text-base font-semibold ${textPrimary} truncate`}
+                            >
+                              {ticket.name}
+                            </h4>
+                            <span
+                              className={clsx(
+                                "px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase whitespace-nowrap",
+                                TICKET_TYPE_STYLES[ticket.type] ??
+                                  TICKET_TYPE_STYLES.paid,
+                              )}
+                            >
+                              {t(ticket.type)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ticket details in a grid */}
+                      <div
+                        className={`grid grid-cols-2 gap-2 mb-3 text-sm ${textTertiary}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{t("price")}:</span>
+                          <span className="font-semibold">
+                            {formatPrice(ticket)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{t("quantity")}:</span>
+                          <span>
+                            {ticket.quantity?.initial ?? t("unlimited")}
+                          </span>
+                        </div>
+                        <div className="col-span-2 flex items-center gap-1">
+                          <span className="font-medium">
+                            {t("per_user_limit")}:
+                          </span>
+                          <span>
+                            {ticket.quantity?.perUserLimit || t("no_limit")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ActionIconButtons
+                        isDark={isDark}
+                        actions={[
+                          {
+                            title: t("edit_ticket"),
+                            icon: PenBox,
+                            color: "gray",
+                            onClick: () => {
+                              setEditingTicket({
+                                ...ticket,
+                                imageUrl: ticket.images?.[0]?.image ?? "",
+                              });
+                              setTicketDateTime(ticket.dayDescription ?? []);
+                              setOpMode("UPDATE");
+                              setShowTicketModal(true);
+                            },
+                          },
+                          {
+                            title: t("duplicate_ticket"),
+                            icon: Copy,
+                            color: "blue",
+                            onClick: () => {
+                              setEditingTicket({
+                                ...ticket,
+                                name: `${ticket.name} (${t("copy")})`,
+                                imageUrl: ticket.images?.[0]?.image ?? "",
+                              });
+                              setOpMode("DUPLICATE");
+                              setShowTicketModal(true);
+                            },
+                          },
+                          {
+                            title: t("delete_ticket"),
+                            icon: Trash2,
+                            color: "red",
+                            onClick: () => {
+                              setTicketToDelete(ticket._id);
+                              setIsConfirmOpen(true);
+                            },
+                          },
+                          {
+                            title: "Create Landing Page",
+                            icon: LayoutList,
+                            color: "yellow",
+                            onClick: () => {
+                              if (ticket?.wrapperId)
+                                window.open(
+                                  `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                  "_blank",
+                                );
+                              else
+                                window.open(
+                                  `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                  "_blank",
+                                );
+                            },
+                          },
+                        ]}
+                      />
                     </div>
                   </div>
                 ))}

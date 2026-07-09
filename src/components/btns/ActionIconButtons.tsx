@@ -50,7 +50,7 @@ const ActionIconButtons = ({
   className,
 }: ActionButtonsProps) => {
   return (
-    <div className={clsx("flex gap-2 rounded-lg p-1.5", className)}>
+    <div className={clsx("flex rounded-lg", className)}>
       {actions.map((action) => {
         const Icon = action.icon;
         const color = colorClasses[action.color ?? "gray"];

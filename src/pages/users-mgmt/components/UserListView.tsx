@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import type React from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { PenBox, Trash } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
 import { UserRole } from "@/enums/user.types";
+import { ActionIconButtons } from "@/components/btns";
 
 interface UserListViewProps {
   users: IUser[];
@@ -28,7 +29,8 @@ const UserListView: React.FC<UserListViewProps> = ({
   activeRole,
 }) => {
   const { t } = useTranslation("user");
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, isDark } =
+    useThemeClasses();
 
   const baseColumns = [
     {
@@ -166,27 +168,28 @@ const UserListView: React.FC<UserListViewProps> = ({
     key: "actions",
     label: t("actions"),
     render: (user: IUser) => (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(user);
-          }}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-          title={t("edit_user_action")}
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(user);
-          }}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-          title={t("delete_user_action")}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+      <div className="flex items-center">
+        <ActionIconButtons
+          isDark={isDark}
+          actions={[
+            {
+              title: t("edit"),
+              icon: PenBox,
+              color: "gray",
+              onClick: () => {
+                onEdit(user);
+              },
+            },
+            {
+              title: t("delete"),
+              icon: Trash,
+              color: "red",
+              onClick: () => {
+                onDelete(user);
+              },
+            },
+          ]}
+        />
       </div>
     ),
   };

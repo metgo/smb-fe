@@ -1,5 +1,5 @@
 export const LS = {
-  config: "lumen.config.v2",
+  config: "event_lading_page",
 } as const;
 
 let _uid = 0;
