@@ -74,8 +74,6 @@ export default function CreatePoiWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
   const [selectedDmoId, setSelectedDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
@@ -261,22 +259,6 @@ export default function CreatePoiWizard({
       }
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
-      // Detect primary language from edit data
-      if (
-        editData?.nameHe ||
-        editData?.shortDescriptionHe ||
-        editData?.descriptionHe
-      ) {
-        setSelectedFormLanguage("he");
-      } else if (
-        editData?.nameAr ||
-        editData?.shortDescriptionAr ||
-        editData?.descriptionAr
-      ) {
-        setSelectedFormLanguage("ar");
-      } else {
-        setSelectedFormLanguage("en");
-      }
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images || []);
@@ -516,8 +498,20 @@ export default function CreatePoiWizard({
       return;
     }
     setIsPublishing(true);
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+    const corrected = detectAndAssignLanguageFields(formData);
 
+    const processedFormData = {
+      ...stepPayloadMap,
+      name: corrected.title,
+      nameHe: corrected.titleHe,
+      nameAr: corrected.titleAr,
+      shortDescription: corrected.shortDescription,
+      shortDescriptionHe: corrected.shortDescriptionHe,
+      shortDescriptionAr: corrected.shortDescriptionAr,
+      description: corrected.content,
+      descriptionHe: corrected.contentHe,
+      descriptionAr: corrected.contentAr,
+    };
     const resolvedPoiId = await saveDraft(true, processedFormData);
     if (resolvedPoiId) {
       await createWebsiteAccessItem({
