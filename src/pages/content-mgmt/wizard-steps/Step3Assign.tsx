@@ -282,8 +282,8 @@ function CategoryRow({
           {cat.titleHe || cat.title || "Untitled"}
         </span>
         <div className="flex items-center gap-2 shrink-0">
-          {/* Businesses — shown for both MARKETPLACE and TRAVELING */}
-          {bCount > 0 && (
+          {/* Businesses — TRAVELING only */}
+          {!isMarketplace && bCount > 0 && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -294,8 +294,8 @@ function CategoryRow({
               {bCount}
             </span>
           )}
-          {/* Products — TRAVELING only */}
-          {pCount > 0 && !isMarketplace && (
+          {/* Products — shown for both, but count display differs */}
+          {pCount > 0 && (
             <span
               className={clsx(
                 "flex items-center gap-1 text-xs",
@@ -307,7 +307,7 @@ function CategoryRow({
             </span>
           )}
           {/* None indicator */}
-          {((isMarketplace && bCount === 0) ||
+          {((isMarketplace && pCount === 0) ||
             (!isMarketplace && total === 0)) && (
             <span
               className={clsx(
@@ -330,63 +330,8 @@ function CategoryRow({
             isDark ? "border-gray-700" : "border-gray-100",
           )}
         >
-          {/* Businesses — always shown (both MARKETPLACE and TRAVELING) */}
-          <div className="space-y-1.5">
-            <p
-              className={clsx(
-                "text-xs font-semibold flex items-center gap-1",
-                isDark ? "text-blue-400" : "text-blue-600",
-              )}
-            >
-              <Users className="w-3 h-3" /> Businesses ({bCount})
-            </p>
-            <div className="space-y-1">
-              {(cat.businessIds ?? []).map((biz: any) => (
-                <div
-                  key={biz._id ?? biz}
-                  className={clsx(
-                    "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
-                    isDark
-                      ? "bg-gray-750 hover:bg-gray-700"
-                      : "bg-gray-50 hover:bg-gray-100",
-                  )}
-                >
-                  <ItemAvatar item={biz} size={5} />
-                  <span
-                    className={clsx(
-                      "text-xs flex-1 truncate",
-                      isDark ? "text-gray-300" : "text-gray-700",
-                    )}
-                  >
-                    {itemLabel(biz)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onRemoveBusiness(topicIdx, catIdx, biz._id ?? biz)
-                    }
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
-                    title="Remove"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            {availableBiz.length > 0 && (
-              <div className="pt-1">
-                <SearchSelect
-                  placeholder={t("add_business_placeholder")}
-                  options={availableBiz}
-                  onSelect={(item) => onAddBusiness(topicIdx, catIdx, item)}
-                  isDark={isDark}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Products — TRAVELING only */}
-          {!isMarketplace && (
+          {/* MARKETPLACE: Only show Products */}
+          {isMarketplace ? (
             <div className="space-y-1.5">
               <p
                 className={clsx(
@@ -440,6 +385,119 @@ function CategoryRow({
                 </div>
               )}
             </div>
+          ) : (
+            /* TRAVELING: Show Businesses + Products + Events + POIs */
+            <>
+              {/* Businesses */}
+              <div className="space-y-1.5">
+                <p
+                  className={clsx(
+                    "text-xs font-semibold flex items-center gap-1",
+                    isDark ? "text-blue-400" : "text-blue-600",
+                  )}
+                >
+                  <Users className="w-3 h-3" /> Businesses ({bCount})
+                </p>
+                <div className="space-y-1">
+                  {(cat.businessIds ?? []).map((biz: any) => (
+                    <div
+                      key={biz._id ?? biz}
+                      className={clsx(
+                        "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
+                        isDark
+                          ? "bg-gray-750 hover:bg-gray-700"
+                          : "bg-gray-50 hover:bg-gray-100",
+                      )}
+                    >
+                      <ItemAvatar item={biz} size={5} />
+                      <span
+                        className={clsx(
+                          "text-xs flex-1 truncate",
+                          isDark ? "text-gray-300" : "text-gray-700",
+                        )}
+                      >
+                        {itemLabel(biz)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onRemoveBusiness(topicIdx, catIdx, biz._id ?? biz)
+                        }
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
+                        title="Remove"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {availableBiz.length > 0 && (
+                  <div className="pt-1">
+                    <SearchSelect
+                      placeholder={t("add_business_placeholder")}
+                      options={availableBiz}
+                      onSelect={(item) => onAddBusiness(topicIdx, catIdx, item)}
+                      isDark={isDark}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Products */}
+              <div className="space-y-1.5">
+                <p
+                  className={clsx(
+                    "text-xs font-semibold flex items-center gap-1",
+                    isDark ? "text-purple-400" : "text-purple-600",
+                  )}
+                >
+                  <Package className="w-3 h-3" /> Products ({pCount})
+                </p>
+                <div className="space-y-1">
+                  {(cat.productIds ?? []).map((prod: any) => (
+                    <div
+                      key={prod._id ?? prod}
+                      className={clsx(
+                        "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
+                        isDark
+                          ? "bg-gray-750 hover:bg-gray-700"
+                          : "bg-gray-50 hover:bg-gray-100",
+                      )}
+                    >
+                      <ItemAvatar item={prod} size={5} />
+                      <span
+                        className={clsx(
+                          "text-xs flex-1 truncate",
+                          isDark ? "text-gray-300" : "text-gray-700",
+                        )}
+                      >
+                        {itemLabel(prod)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onRemoveProduct(topicIdx, catIdx, prod._id ?? prod)
+                        }
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
+                        title="Remove"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {availableProd.length > 0 && (
+                  <div className="pt-1">
+                    <SearchSelect
+                      placeholder={t("add_product_placeholder")}
+                      options={availableProd}
+                      onSelect={(item) => onAddProduct(topicIdx, catIdx, item)}
+                      isDark={isDark}
+                    />
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Events — TRAVELING only, AI-assigned read-only display */}
@@ -587,11 +645,18 @@ export default function Step3Assign({
   useEffect(() => {
     if (!viewProgress || initialStateSet) return;
     const status = (viewProgress as any).assignmentStatus;
+    const errorMsg = (viewProgress as any).assignmentError;
     if (status === "done") setAssignState("done");
     else if (status === "running") {
       setAssignState("running");
       onAssignStart();
-    } else if (status === "failed") setAssignState("error");
+    } else if (status === "failed") {
+      setAssignState("error");
+      // Show error message if available from backend
+      if (errorMsg) {
+        toast.error(`Assignment failed: ${errorMsg}`);
+      }
+    }
     setInitialStateSet(true);
   }, [viewProgress, initialStateSet, onAssignStart, viewId]);
 
@@ -599,6 +664,7 @@ export default function Step3Assign({
   useEffect(() => {
     if (!viewProgress || !initialStateSet) return;
     const status = (viewProgress as any).assignmentStatus;
+    const errorMsg = (viewProgress as any).assignmentError;
     if (status === "done" && assignState === "running") {
       setAssignState("done");
       onAssignEnd();
@@ -607,15 +673,20 @@ export default function Step3Assign({
     } else if (status === "failed" && assignState === "running") {
       setAssignState("error");
       onAssignEnd();
+      // Show specific error message from backend if available
       toast.error(
-        "AI assignment failed. You can retry or publish without assignment.",
+        errorMsg ||
+          "AI assignment failed. You can retry or publish without assignment.",
       );
     }
   }, [
     (viewProgress as any)?.assignmentStatus,
+    (viewProgress as any)?.assignmentError,
     initialStateSet,
     assignState,
     onAssignEnd,
+    refetchView,
+    t,
   ]);
 
   const progressDone: number = (viewProgress as any)?.assignmentDone ?? 0;
@@ -785,10 +856,15 @@ export default function Step3Assign({
     onAssignStart();
     try {
       await assignAll({ viewId, reAssignAll }).unwrap();
-    } catch {
+      // Success: Server will continue processing in background
+      // Frontend will poll and see status change from "processing" → "done" or "failed"
+    } catch (error: any) {
+      // Network/API error (not backend processing error — that happens in background)
+      const errorMessage =
+        error?.data?.message || error?.message || "Failed to start assignment";
       setAssignState("error");
       onAssignEnd();
-      toast.error(t("toast_start_assign_failed"));
+      toast.error(`Assignment failed to start: ${errorMessage}`);
     }
   };
 

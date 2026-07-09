@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layers, Grid, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -27,32 +27,51 @@ interface Props {
 }
 
 const viewToWizardTopics = (siteTopics: IContentTopic[]): WizardTopic[] =>
-  siteTopics.map((topic) => ({
-    id: Math.random().toString(36).slice(2),
-    title: topic.title || topic.titleHe || topic.titleAr || "",
-    titleHe: topic.titleHe || topic.title || "",
-    titleAr: topic.titleAr || topic.title || "",
-    description:
-      topic.description || topic.descriptionHe || topic.descriptionAr || "",
-    descriptionHe: topic.descriptionHe || topic.description || "",
-    descriptionAr: topic.descriptionAr || topic.description || "",
-    categories: (topic.siteCategories ?? []).map((cat) => ({
+  siteTopics.map((topic) => {
+    // Fallback chain: use available translation, or fallback to English
+    const title = topic.title || topic.titleHe || topic.titleAr || "";
+    const titleHe = topic.titleHe || topic.title || "";
+    const titleAr = topic.titleAr || topic.title || "";
+    const description =
+      topic.description || topic.descriptionHe || topic.descriptionAr || "";
+    const descriptionHe = topic.descriptionHe || topic.description || "";
+    const descriptionAr = topic.descriptionAr || topic.description || "";
+
+    return {
       id: Math.random().toString(36).slice(2),
-      title: cat.title || cat.titleHe || cat.titleAr || "",
-      titleHe: cat.titleHe || cat.title || "",
-      titleAr: cat.titleAr || cat.title || "",
-      description:
-        cat.description || cat.descriptionHe || cat.descriptionAr || "",
-      descriptionHe: cat.descriptionHe || cat.description || "",
-      descriptionAr: cat.descriptionAr || cat.description || "",
-      synonyms: (cat as any).synonyms ?? [],
-      synonymsHe: (cat as any).synonymsHe ?? [],
-      synonymsAr: (cat as any).synonymsAr ?? [],
-      searchKeywords: (cat as any).searchKeywords ?? [],
-      assignedBusinesses: [],
-      assignedProducts: [],
-    })),
-  }));
+      title,
+      titleHe,
+      titleAr,
+      description,
+      descriptionHe,
+      descriptionAr,
+      categories: (topic.siteCategories ?? []).map((cat) => {
+        const catTitle = cat.title || cat.titleHe || cat.titleAr || "";
+        const catTitleHe = cat.titleHe || cat.title || "";
+        const catTitleAr = cat.titleAr || cat.title || "";
+        const catDesc =
+          cat.description || cat.descriptionHe || cat.descriptionAr || "";
+        const catDescHe = cat.descriptionHe || cat.description || "";
+        const catDescAr = cat.descriptionAr || cat.description || "";
+
+        return {
+          id: Math.random().toString(36).slice(2),
+          title: catTitle,
+          titleHe: catTitleHe,
+          titleAr: catTitleAr,
+          description: catDesc,
+          descriptionHe: catDescHe,
+          descriptionAr: catDescAr,
+          synonyms: (cat as any).synonyms ?? [],
+          synonymsHe: (cat as any).synonymsHe ?? [],
+          synonymsAr: (cat as any).synonymsAr ?? [],
+          searchKeywords: (cat as any).searchKeywords ?? [],
+          assignedBusinesses: [],
+          assignedProducts: [],
+        };
+      }),
+    };
+  });
 
 export default function CreateViewWizard({
   externalApiId,
@@ -70,6 +89,8 @@ export default function CreateViewWizard({
   const [themeContext, setThemeContext] = useState(
     existingView?.themeContext ?? "",
   );
+  // Always initialize fresh from existingView each time modal opens
+  // This ensures we get the latest data, not stale cached state
   const [topics, setTopics] = useState<WizardTopic[]>(() =>
     existingView ? viewToWizardTopics(existingView.siteTopics ?? []) : [],
   );
@@ -77,6 +98,33 @@ export default function CreateViewWizard({
     existingView?._id ?? null,
   );
   const [isAssigning, setIsAssigning] = useState(false);
+
+  // Re-initialize topics whenever existingView changes
+  // Using entire existingView as dependency ensures we pick up data changes (deletions, edits)
+  // Not just the ID, because the same view could have different data after edits
+  useEffect(() => {
+    if (existingView) {
+      const freshTopics = viewToWizardTopics(existingView.siteTopics ?? []);
+      console.log("[CreateViewWizard] Loaded fresh view data:", {
+        viewId: existingView._id,
+        topicCount: freshTopics.length,
+        siteTopicsLength: existingView.siteTopics?.length,
+        topics: freshTopics.map((t) => ({
+          title: t.title,
+          titleHe: t.titleHe,
+          categories: t.categories.length,
+          categoryCount: t.categories.map((c) => ({
+            title: c.title,
+            titleHe: c.titleHe,
+          })),
+        })),
+      });
+      setTopics(freshTopics);
+      setViewName(existingView.viewName ?? "");
+      setThemeContext(existingView.themeContext ?? "");
+      setSavedViewId(existingView._id ?? null);
+    }
+  }, [existingView]); // Use entire object, not just ID
 
   const steps = [
     { number: 1, title: t("wizard_step_topics"), icon: Layers },
@@ -154,7 +202,7 @@ export default function CreateViewWizard({
     }),
   });
 
-  // For updating existing views: only metadata, never overwrite topics
+  // For updating existing views: send metadata + updated topics (preserving category assignments)
   const buildMetadataPayload = (status: string) => {
     const payload = {
       status,
@@ -165,6 +213,63 @@ export default function CreateViewWizard({
         }),
       themeContext: themeContext.trim() || null,
       externalApiId,
+      // FIX: Include siteTopics when editing so translations are saved
+      // This preserves the category assignments while updating topic/category names and descriptions
+      ...(isEditMode &&
+        existingView && {
+          siteTopics: topics.map((topic, topicIndex) => {
+            // Find the matching original topic to preserve its category assignments
+            const originalTopic = (existingView?.siteTopics ?? [])[topicIndex];
+
+            const siteCategories = topic.categories
+              .filter((cat) => cat.title || cat.titleHe)
+              .map((cat, catIndex) => {
+                // Find the matching original category to preserve its businessIds/productIds
+                const originalCat = originalTopic
+                  ? (originalTopic.siteCategories ?? [])[catIndex]
+                  : undefined;
+
+                return {
+                  title: cat.title,
+                  titleHe: cat.titleHe,
+                  titleAr: cat.titleAr,
+                  description: cat.description,
+                  descriptionHe: cat.descriptionHe,
+                  descriptionAr: cat.descriptionAr,
+                  synonyms: cat.synonyms,
+                  synonymsHe: cat.synonymsHe,
+                  synonymsAr: cat.synonymsAr,
+                  searchKeywords: cat.searchKeywords,
+                  // Preserve existing assignments
+                  businessIds: (originalCat as any)?.businessIds ?? [],
+                  productIds: (originalCat as any)?.productIds ?? [],
+                  eventIds: (originalCat as any)?.eventIds ?? [],
+                  poiIds: (originalCat as any)?.poiIds ?? [],
+                  tripIds: (originalCat as any)?.tripIds ?? [],
+                  fundayIds: (originalCat as any)?.fundayIds ?? [],
+                  isPrimary: (originalCat as any)?.isPrimary ?? false,
+                  isArchived: (originalCat as any)?.isArchived ?? false,
+                  icon: (originalCat as any)?.icon,
+                  colors: (originalCat as any)?.colors ?? [],
+                };
+              });
+
+            return {
+              title: topic.title,
+              titleHe: topic.titleHe,
+              titleAr: topic.titleAr,
+              description: topic.description,
+              descriptionHe: topic.descriptionHe,
+              descriptionAr: topic.descriptionAr,
+              isPrimary: topicIndex === 0,
+              isArchived: (originalTopic as any)?.isArchived ?? false,
+              order: topicIndex,
+              icon: (originalTopic as any)?.icon ?? "",
+              colors: (originalTopic as any)?.colors ?? [],
+              siteCategories,
+            };
+          }),
+        }),
     };
     console.log("[CreateViewWizard] buildMetadataPayload:", payload);
     return payload;

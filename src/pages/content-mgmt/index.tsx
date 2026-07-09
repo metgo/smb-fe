@@ -196,7 +196,9 @@ export default function ContentMgmtPage() {
   console.log("🚀 ~ ContentMgmtPage ~ isMarketplace:", isMarketplace);
   const selectedWebsiteName = selectedWebsite?.name ?? "";
 
-  const marketplaceHiddenTabs = isMarketplace ? ["Businesses", "POI"] : [];
+  const marketplaceHiddenTabs = isMarketplace
+    ? ["Businesses", "POI", "Events"]
+    : [];
 
   // When switching to a marketplace site, jump off any now-hidden tab
   useEffect(() => {

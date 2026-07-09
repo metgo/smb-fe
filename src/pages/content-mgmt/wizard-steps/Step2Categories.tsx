@@ -521,12 +521,21 @@ export default function Step2Categories({
         topicLabel: topic.titleHe || topic.title,
         count: mapped.length,
       };
-    } catch {
+    } catch (error: any) {
+      const errorMessage =
+        error?.data?.message ||
+        error?.message ||
+        "Failed to generate categories";
+      console.error(
+        `[CATEGORY GENERATION] Error for topic "${topic.titleHe || topic.title}":`,
+        errorMessage,
+      );
       return {
         topicId: topic.id,
         categories: [],
         success: false,
         topicLabel: topic.titleHe || topic.title,
+        errorMessage,
       };
     } finally {
       setGeneratingTopicIds((prev) => {
@@ -568,7 +577,8 @@ export default function Step2Categories({
         );
       } else {
         toast.error(
-          `AI not available yet — add categories for "${result.topicLabel}" manually.`,
+          result.errorMessage ||
+            `AI not available yet — add categories for "${result.topicLabel}" manually.`,
         );
       }
     }

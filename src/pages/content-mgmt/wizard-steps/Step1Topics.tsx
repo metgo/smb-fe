@@ -63,8 +63,14 @@ export default function Step1Topics({
       }));
       setTopics(mapped);
       toast.success(t("toast_generated_topics", { count: mapped.length }));
-    } catch {
-      toast.error(t("toast_ai_generation_unavailable"));
+    } catch (error: any) {
+      // Extract meaningful error message from backend
+      const errorMsg =
+        error?.data?.message ||
+        error?.message ||
+        t("toast_ai_generation_unavailable");
+      console.error("[Step1Topics] Generation error:", errorMsg);
+      toast.error(errorMsg);
     }
   };
 
@@ -103,7 +109,15 @@ export default function Step1Topics({
       setNewDesc("");
       setShowAddForm(false);
       toast.success(t("toast_topic_added_translations"));
-    } catch {
+    } catch (error: any) {
+      // Extract meaningful error message from backend
+      const errorMsg = error?.data?.message || error?.message;
+
+      if (errorMsg) {
+        // Show the detailed error message from backend
+        toast.error(errorMsg);
+      }
+
       // If translation fails, still save with the typed text in all languages
       setTopics((prev) => [
         ...prev,
@@ -188,6 +202,12 @@ export default function Step1Topics({
     field: keyof WizardTopic,
     value: string,
   ) => {
+    console.log("[Step1Topics] Changed field:", {
+      id,
+      field,
+      value,
+      activeLang,
+    });
     setTopics((prev) =>
       prev.map((t) => (t.id === id ? { ...t, [field]: value } : t)),
     );

@@ -437,6 +437,9 @@ export default function ViewManagerPanel({
   };
 
   const handleEditView = (view: IView) => {
+    // Ensure we're using fresh data by refetching the view before opening the wizard
+    // This prevents showing stale topics/categories that were deleted
+    onRefetch();
     setEditingView(view);
     setShowDrawer(false);
     setShowWizard(true);
