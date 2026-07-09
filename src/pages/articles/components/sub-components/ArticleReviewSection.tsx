@@ -196,7 +196,7 @@ export default function ArticleReviewSection({
       </ReviewCard>
 
       {/* ── SEO (Step 2) ─────────────────────────────────────────── */}
-      <ReviewCard title={t("seo")} step={2} {...cardProps}>
+      <ReviewCard title={t("seo")} step={3} {...cardProps}>
         <LangSection label={label}>
           <FieldRow
             label={t("meta_title")}

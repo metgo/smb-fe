@@ -50,7 +50,7 @@ const ActionIconButtons = ({
   className,
 }: ActionButtonsProps) => {
   return (
-    <div className={clsx("flex gap-2 rounded-lg p-1.5", className)}>
+    <div className={clsx("flex rounded-lg", className)}>
       {actions.map((action) => {
         const Icon = action.icon;
         const color = colorClasses[action.color ?? "gray"];
@@ -61,7 +61,7 @@ const ActionIconButtons = ({
               disabled={action.disabled}
               onClick={action.onClick}
               className={clsx(
-                "rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                "rounded-md p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
                 color.text,
                 isDark ? color.darkHover : color.lightHover,
               )}

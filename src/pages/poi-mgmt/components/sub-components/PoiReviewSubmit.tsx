@@ -90,7 +90,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(5)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -114,7 +114,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(3)}
+            onClick={() => setCurrentStep(4)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -142,7 +142,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(4)}
+            onClick={() => setCurrentStep(2)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -183,7 +183,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(5)}
+            onClick={() => setCurrentStep(3)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}

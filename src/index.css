@@ -256,9 +256,6 @@ input.auth-input:-webkit-autofill:active {
 html {
   font-size: var(--font-size);
 }
-button {
-  cursor: pointer;
-}
 
 /* Remove spin buttons from all number inputs */
 input[type="number"]::-webkit-outer-spin-button,

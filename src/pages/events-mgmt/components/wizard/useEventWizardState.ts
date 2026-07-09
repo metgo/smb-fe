@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -19,7 +18,6 @@ import {
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
-import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
 import { detectLanguage } from "@/helpers";
 
 interface UseEventWizardStateProps {
@@ -54,6 +52,7 @@ export function useEventWizardState({
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // const [isNotSaved, setIsNotSaved] = useState(false)
   const initialImagesCountRef = useRef(0);
 
   // ─── IDs ─────────────────────────────────────────────────────────────
@@ -129,8 +128,8 @@ export function useEventWizardState({
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // ─── Step 5: Tickets ─────────────────────────────────────────────────
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [localTickets, setLocalTickets] = useState<any[]>([]);
+  const [ticketBuyLink, setTicketBuyLink] = useState<null | string>(null);
+  const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(false);
 
   // ─── Step 6: Messaging ───────────────────────────────────────────────
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -188,11 +187,6 @@ export function useEventWizardState({
     },
   });
 
-  // ─── API: Tickets ────────────────────────────────────────────────────
-  const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
-    eventId ? { eventId } : skipToken,
-  );
-
   // ─── Media uploads ───────────────────────────────────────────────────
   const {
     images,
@@ -213,20 +207,6 @@ export function useEventWizardState({
           updateEvent({ eventId, body: { images: updatedImages } as any })
       : undefined,
   });
-
-  // ─── Computed: derived values ─────────────────────────────────────────
-  const eventDaysForTickets = useMemo<EventDay[]>(() => {
-    if (isMultiDay) return eventDays;
-    return [
-      {
-        id: "1",
-        date: startDate,
-        startTime: eventDays[0]?.startTime ?? "09:00",
-        endTime: eventDays[0]?.endTime ?? "17:00",
-        description: "",
-      },
-    ];
-  }, [isMultiDay, eventDays, startDate]);
 
   const translationFormData = useMemo(
     () => ({
@@ -273,6 +253,8 @@ export function useEventWizardState({
       accessibilitiesId: selectedAccessiblitiesId,
       subCategoriesId: selectedSubCategoriesId,
       internalNotes,
+      hasExternalTicket,
+      ticketBuyLink,
     }),
     [
       eventName,
@@ -292,6 +274,8 @@ export function useEventWizardState({
       selectedAccessiblitiesId,
       selectedSubCategoriesId,
       internalNotes,
+      hasExternalTicket,
+      ticketBuyLink,
     ],
   );
 
@@ -433,11 +417,6 @@ export function useEventWizardState({
     }
   }, []);
 
-  // ─── Effects: Sync tickets from API ──────────────────────────────────
-  useEffect(() => {
-    if (tickets && (eventId || editId)) setLocalTickets(tickets);
-  }, [tickets, eventId, editId]);
-
   // ─── Effects: Mark media dirty when images change ────────────────────
   useEffect(() => {
     if (images.length) handleMarkDirty(7);
@@ -493,7 +472,8 @@ export function useEventWizardState({
     setAccessiblitiesId([]);
     setEventImages([]);
     setNotifications([]);
-    setLocalTickets([]);
+    setHasExternalTicket(false);
+    setTicketBuyLink(null);
     initialImagesCountRef.current = 0;
   }, [isOpen, editId]);
 
@@ -510,9 +490,9 @@ export function useEventWizardState({
     setShortDescription(editData.shortDescription ?? "");
     setShortDescriptionHe(editData.shortDescriptionHe ?? "");
     setShortDescriptionAr(editData.shortDescriptionAr ?? "");
-    setFullDescription(editData.description ?? "<p></p>");
-    setFullDescriptionHe(editData.descriptionHe ?? "<p></p>");
-    setFullDescriptionAr(editData.descriptionAr ?? "<p></p>");
+    setFullDescription(editData.description ?? "");
+    setFullDescriptionHe(editData.descriptionHe ?? "");
+    setFullDescriptionAr(editData.descriptionAr ?? "");
     setSelectedBusinessId(editData.businessId?._id ?? "");
     setEventStatus(editData.status?.toLowerCase() ?? "draft");
     setAccessiblitiesId(editData.accessibilitiesId ?? []);
@@ -548,6 +528,9 @@ export function useEventWizardState({
     setRecurrenceEndCount(editData.recurringEventRuleId?.occurrenceLimit ?? 10);
     setAddress(editData.address?.location ?? "");
     setOnlineLink(editData.onlineLink ?? "");
+
+    setHasExternalTicket(editData.hasExternalTicket ?? false);
+    setTicketBuyLink(editData.ticketBuyLink ?? null);
 
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
     setCapacity(editData.registration?.capacity ?? 100);
@@ -599,7 +582,7 @@ export function useEventWizardState({
           )
             newErrors.shortDescription = tc("required_field");
           break;
-        case 3:
+        case 2:
           if (!isMultiDay && !startDate)
             newErrors.startDate = tc("required_field");
           if (isMultiDay && eventDays.some((d) => !d.date))
@@ -609,13 +592,9 @@ export function useEventWizardState({
           if (eventFormat !== "physical" && !onlineLink)
             newErrors.onlineLink = tc("required_field");
           break;
-        case 4:
+        case 3:
           if (capacityType === "limited" && capacity <= 0)
             newErrors.capacity = tc("must_be_greater_than_zero");
-          break;
-        case 5:
-          if (localTickets.length === 0 && registrationRequired)
-            newErrors.tickets = tc("at_least_one_ticket_required");
           break;
       }
 
@@ -638,7 +617,6 @@ export function useEventWizardState({
       onlineLink,
       capacityType,
       capacity,
-      localTickets,
       registrationRequired,
       tc,
     ],
@@ -980,14 +958,6 @@ export function useEventWizardState({
     customQuestions,
     setCustomQuestions,
     addCustomQuestion,
-
-    // Step 5 — Tickets
-    localTickets,
-    showTicketModal,
-    setShowTicketModal,
-    eventDaysForTickets,
-    initEventCreate,
-    ticketRefetch,
 
     // Step 6 — Messaging
     notifications,

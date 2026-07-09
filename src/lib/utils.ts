@@ -14,6 +14,13 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
   { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
 ];
 
+export const TICKET_TYPE_STYLES: Record<string, string> = {
+  free: "bg-green-500/20 text-green-600 dark:text-green-400",
+  vip: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  donation: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+  paid: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+};
+
 export const itemStatuses = [
   { value: "DRAFT", label: "draft" },
   { value: "PENDING", label: "pending" },
