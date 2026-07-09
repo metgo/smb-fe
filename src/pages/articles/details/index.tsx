@@ -52,6 +52,8 @@ interface BlogDetails {
   metaDescriptionHe: string;
   metaDescriptionAr: string;
   tags: string[];
+  tagsHe: string[];
+  tagsAr: string[];
   images: BlogImage[];
   createdAt: string;
   updatedAt: string | null;
