@@ -4,10 +4,10 @@ import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
 
 interface ArticleContentFormProps {
   formData: Record<string, any>;
-  onChange: (updates: Record<string, any>) => void;
+  setFormData: (data: Record<string, any>) => void;
 }
 
-const PoiContentForm = ({ formData, onChange }: ArticleContentFormProps) => {
+const PoiContentForm = ({ formData, setFormData }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
   const {
     bgSecondary,
@@ -45,7 +45,12 @@ const PoiContentForm = ({ formData, onChange }: ArticleContentFormProps) => {
         <input
           type="text"
           value={formData[titleField] || ""} //  uses correct field
-          onChange={(e) => onChange({ [titleField]: e.target.value })}
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [titleField]: e.target.value,
+            }))
+          }
           placeholder={t("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
           dir={dir}
@@ -67,7 +72,12 @@ const PoiContentForm = ({ formData, onChange }: ArticleContentFormProps) => {
       >
         <textarea
           value={formData[shortDescField] || ""}
-          onChange={(e) => onChange({ [shortDescField]: e.target.value })}
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [shortDescField]: e.target.value,
+            }))
+          }
           placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
@@ -94,7 +104,12 @@ const PoiContentForm = ({ formData, onChange }: ArticleContentFormProps) => {
       >
         <textarea
           value={formData[contentDescField] || ""}
-          onChange={(e) => onChange({ [contentDescField]: e.target.value })}
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [contentDescField]: e.target.value,
+            }))
+          }
           placeholder={t("full_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}

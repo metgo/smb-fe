@@ -120,7 +120,6 @@ const CreateArticleWizard = ({
   const { textPrimary, borderColor, textTertiary, language } =
     useThemeClasses();
   const [currentStep, setCurrentStep] = useState(1);
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
   const steps = [
     { number: 1, title: t("form"), icon: FileText },
     { number: 2, title: t("translation"), icon: LanguagesIcon },
@@ -312,43 +311,53 @@ const CreateArticleWizard = ({
    * Detects the language of non-empty fields and assigns them to the correct language-specific fields
    * Priority: title > shortDescription > content
    */
-  const detectAndAssignLanguageFields = (
-    data: IArticleFormData,
-  ): IArticleFormData => {
-    const title = data.title?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const content = data.content?.trim() || "";
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
 
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = title || shortDescription || content;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
+  const detectAndAssignLanguageFields = (data: any): any => {
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.titleHe = title || data.titleHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.contentHe = content || data.contentHe;
+    const fieldGroups = [
+      { base: "title", en: "title", he: "titleHe", ar: "titleAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "content",
+        en: "content",
+        he: "contentHe",
+        ar: "contentAr",
+      },
+    ];
 
-      // Clear English fields
-      updated.title = "";
-      updated.shortDescription = "";
-      updated.content = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.titleAr = title || data.titleAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.contentAr = content || data.contentAr;
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.title = "";
-      updated.shortDescription = "";
-      updated.content = "";
-    }
-    // else: remains in English fields (default)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
 
     return updated;
   };
