@@ -14,10 +14,10 @@ interface Tag {
 }
 
 interface AttributesFormData {
-  nameEn: string;
+  name: string;
   nameHe: string;
   nameAr: string;
-  fullDescriptionEn: string;
+  fullDescription: string;
   fullDescriptionHe: string;
   fullDescriptionAr: string;
   primaryCategory: string;
@@ -61,13 +61,13 @@ const Attributes: FC<AttributesProps> = ({
 }) => {
   const currentName = getLngWiseStr(
     selectedFormLanguage,
-    formData?.nameEn,
+    formData?.name,
     formData?.nameHe,
     formData?.nameAr,
   );
   const currentDescription = getLngWiseStr(
     selectedFormLanguage,
-    formData?.fullDescriptionEn,
+    formData?.fullDescription,
     formData?.fullDescriptionHe,
     formData?.fullDescriptionAr,
   );
@@ -100,8 +100,9 @@ const Attributes: FC<AttributesProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
-
   const selectedCatRef = useRef<HTMLButtonElement | null>(null);
+  const hasGeneratedRef = useRef(false);
+
   useEffect(() => {
     selectedCatRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -142,29 +143,36 @@ const Attributes: FC<AttributesProps> = ({
 
   /* ---------------- Auto Generate Tags ---------------- */
   useEffect(() => {
+    hasGeneratedRef.current = false;
+  }, [editData?._id]);
+
+  useEffect(() => {
+    // Only auto-generate once per item (e.g. once per editData._id / new-item session)
+    if (hasGeneratedRef.current) return;
+
     const currentName = getLngWiseStr(
-      selectedFormLanguage,
-      formData?.nameEn,
+      language,
+      formData?.name,
       formData?.nameHe,
       formData?.nameAr,
     );
 
     const currentDescription = getLngWiseStr(
-      selectedFormLanguage,
-      formData?.fullDescriptionEn,
+      language,
+      formData?.fullDescription,
       formData?.fullDescriptionHe,
       formData?.fullDescriptionAr,
     );
 
     if (!currentName && !currentDescription) return;
 
-    // The two conditions when api call
-    const noTagsYet = !formData?.tags?.length;
-    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
-
-    if (!noTagsYet && !nameOrDescChanged) {
+    // If tags already exist (e.g. loaded from editData), don't auto-generate
+    if (formData?.tags?.length) {
+      hasGeneratedRef.current = true;
       return;
     }
+
+    hasGeneratedRef.current = true; // mark before the async call so it can't fire twice
 
     getGeneratedTags({
       name: currentName,
@@ -191,7 +199,7 @@ const Attributes: FC<AttributesProps> = ({
       .catch((err) => {
         console.error("Tag generation failed:", err);
       });
-  }, [name, description]);
+  }, [editData?._id]); // only re-run when switching to a different item
 
   /* ---------------- Handlers ---------------- */
 
