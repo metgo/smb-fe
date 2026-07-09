@@ -6,7 +6,6 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
