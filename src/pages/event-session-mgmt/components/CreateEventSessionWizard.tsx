@@ -26,26 +26,48 @@ interface CreateEventSessionWizardProps {
   onChange: (config: IAdminConfig) => void;
   setIsOpen: (v: boolean) => void;
   editIndex: number;
+  ticketDateTime: ITicketDayTimeForSession[];
 }
 
-function blankSession(): IEventSession {
-  return {
-    name: "",
-    tagline: "",
-    description: "",
-    images: [],
-    imagesLables: [],
-    roomLabel: "",
-    rooms: [],
-    instructors: [
-      {
-        name: "",
-        role: "",
-      },
-    ],
-    isActive: true,
-    dates: [{ date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] }],
-  };
+interface IEventSessionDate {
+  date: string;
+  slots: {
+    time: string;
+    capacity: number;
+  }[];
+}
+
+// Transform ticketDateTime to dates format
+function transformTicketDateTimeToDates(
+  ticketDateTime: ITicketDayTimeForSession[],
+): IEventSessionDate[] {
+  // Group by date
+  const dateMap = new Map<string, Set<string>>();
+
+  ticketDateTime.forEach((item) => {
+    // Extract just the date part (YYYY-MM-DD)
+    const dateOnly = item.date.split("T")[0];
+
+    if (!dateMap.has(dateOnly)) {
+      dateMap.set(dateOnly, new Set());
+    }
+
+    // Add startTime to the set for this date
+    dateMap.get(dateOnly)!.add(item.startTime);
+  });
+
+  // Convert to the required format
+  const result: IEventSessionDate[] = [];
+  dateMap.forEach((times, date) => {
+    result.push({
+      date: `${date}`, // Keep the original format
+      slots: Array.from(times).map((time) => ({
+        time: time,
+        capacity: 8, // Default capacity, adjust as needed
+      })),
+    });
+  });
+  return result;
 }
 
 export function CreateEventSessionWizard({
@@ -53,6 +75,7 @@ export function CreateEventSessionWizard({
   onChange,
   setIsOpen,
   editIndex,
+  ticketDateTime,
 }: CreateEventSessionWizardProps) {
   const { t } = useTranslation("event_session");
   const {
@@ -95,9 +118,36 @@ export function CreateEventSessionWizard({
     ? "text-blue-400 hover:bg-gray-700"
     : "text-blue-600 hover:bg-white";
 
+  function blankSession(
+    ticketDateTime: ITicketDayTimeForSession[],
+  ): IEventSession {
+    const dates =
+      ticketDateTime && ticketDateTime.length > 0
+        ? transformTicketDateTimeToDates(ticketDateTime)
+        : [{ date: "2026-08-01", slots: [{ time: "10:00", capacity: 8 }] }];
+
+    return {
+      name: "",
+      tagline: "",
+      description: "",
+      images: [],
+      imagesLables: [],
+      roomLabel: "",
+      rooms: [],
+      instructors: [
+        {
+          name: "",
+          role: "",
+        },
+      ],
+      isActive: true,
+      dates: dates,
+    };
+  }
+
   const isNew = editIndex === -1;
   const [draftSession, setDraftSession] = useState<IEventSession>(() =>
-    blankSession(),
+    blankSession(ticketDateTime),
   );
 
   const ev = isNew ? draftSession : (config.sessions[editIndex] ?? null);

@@ -11,7 +11,7 @@ import {
   useUpdateEventMutation,
 } from "@/store/api/eventMutationApi";
 import { TicketCardSkeleton } from "@/components/skeletons";
-import { ConfirmDialog } from "@/components/shared";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { ModalWrapper, TooltipWrapper } from "@/components/wrapper";
 import { ActionIconButtons } from "@/components/btns";
 import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
@@ -305,49 +305,57 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                   <div
                     key={ticket._id}
                     className={clsx(
-                      "p-6 rounded-xl border hover:shadow-md transition",
+                      "p-2 rounded-xl border hover:shadow-md transition",
                       isDark
                         ? "border-gray-700 bg-gray-800/50"
                         : "border-gray-200 bg-gray-50",
                     )}
                   >
                     <div className="flex justify-between gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h4
-                            className={`text-xl font-semibold ${textPrimary}`}
-                          >
-                            {ticket.name}
-                          </h4>
-                          <span
-                            className={clsx(
-                              "px-3 py-1 rounded-full text-xs font-semibold uppercase",
-                              TICKET_TYPE_STYLES[ticket.type] ??
-                                TICKET_TYPE_STYLES.paid,
-                            )}
-                          >
-                            {t(ticket.type)}
-                          </span>
+                      <div className="flex-1 flex items-center gap-2 md:gap-4">
+                        <div>
+                          <ImageWithFallback
+                            src={ticket?.images?.[0]?.image}
+                            className="w-20 h-20 rounded object-cover"
+                          />
                         </div>
-                        <div
-                          className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
-                        >
-                          <span>
-                            <span className="font-medium">{t("price")}:</span>{" "}
-                            {formatPrice(ticket)}
-                          </span>
-                          <span>
-                            <span className="font-medium">
-                              {t("quantity")}:
-                            </span>{" "}
-                            {ticket.quantity?.initial ?? t("unlimited")}
-                          </span>
-                          <span>
-                            <span className="font-medium">
-                              {t("per_user_limit")}:
-                            </span>{" "}
-                            {ticket.quantity?.perUserLimit || t("no_limit")}
-                          </span>
+                        <div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <h4
+                              className={`text-xl font-semibold ${textPrimary}`}
+                            >
+                              {ticket.name}
+                            </h4>
+                            <span
+                              className={clsx(
+                                "px-3 py-1 rounded-full text-xs font-semibold uppercase",
+                                TICKET_TYPE_STYLES[ticket.type] ??
+                                  TICKET_TYPE_STYLES.paid,
+                              )}
+                            >
+                              {t(ticket.type)}
+                            </span>
+                          </div>
+                          <div
+                            className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textTertiary}`}
+                          >
+                            <span>
+                              <span className="font-medium">{t("price")}:</span>{" "}
+                              {formatPrice(ticket)}
+                            </span>
+                            <span>
+                              <span className="font-medium">
+                                {t("quantity")}:
+                              </span>{" "}
+                              {ticket.quantity?.initial ?? t("unlimited")}
+                            </span>
+                            <span>
+                              <span className="font-medium">
+                                {t("per_user_limit")}:
+                              </span>{" "}
+                              {ticket.quantity?.perUserLimit || t("no_limit")}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -430,6 +438,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                 setEditData={setEditingTicket}
                 ticketDateTime={ticketDateTime}
                 setTicketDateTime={setTicketDateTime}
+                hasExternalTicket={isTicketLinkExist}
               />
             )}
 

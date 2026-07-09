@@ -125,12 +125,22 @@ interface ITicket {
   price: TicketPrice;
   quantity: TicketQuantity;
   status: "active" | "inactive";
-  dayDescription: {
-    date: string;
-    startTime: string;
-    endTime: string;
-  }[];
+  dayDescription: ITicketDayTime[];
   images: { image: string }[];
+}
+
+interface ITicketDayTime {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface ITicketDayTimeForSession {
+  ticketId: string;
+  ticketName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
 }
 
 interface TicketPrice {

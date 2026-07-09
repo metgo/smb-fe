@@ -501,7 +501,8 @@ export default function EventsWithViewMode({
                     {
                       icon: MapPin,
                       label:
-                        extractCenterAddressText(event.address.location) || "",
+                        extractCenterAddressText(event?.address?.location) ||
+                        "",
                     },
                   ]}
                   // footer={
@@ -628,7 +629,7 @@ export default function EventsWithViewMode({
           },
           {
             key: "action",
-            label: t("action"),
+            label: t("actions"),
             render: (event) => (
               <ActionIconButtons
                 isDark={isDark}
@@ -642,7 +643,7 @@ export default function EventsWithViewMode({
                     },
                   },
                   {
-                    title: t("view_details"),
+                    title: t("details"),
                     icon: Eye,
                     color: "green",
                     onClick: () => {
@@ -667,7 +668,7 @@ export default function EventsWithViewMode({
                   },
                   {
                     title: event?.hasExternalTicket
-                      ? t("without_ticket_cant_create_landing_page")
+                      ? t("create_ticket_for_this_event")
                       : t("create_landing_page"),
                     icon: LayoutList,
                     color: "yellow",

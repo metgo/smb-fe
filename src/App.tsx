@@ -68,6 +68,26 @@ import PublicSessionPage from "./pages/public-session";
 import { UserRole } from "./enums/user.types";
 import { store } from "./store/store";
 
+// Helper function to clean URL parameters
+const cleanUrlParams = (paramsToRemove: string[]) => {
+  if (typeof window === "undefined") return;
+
+  const url = new URL(window.location.href);
+  let hasParamsToRemove = false;
+
+  paramsToRemove.forEach((param) => {
+    if (url.searchParams.has(param)) {
+      url.searchParams.delete(param);
+      hasParamsToRemove = true;
+    }
+  });
+
+  if (hasParamsToRemove) {
+    const cleanUrl = url.pathname + url.search;
+    window.history.replaceState({}, "", cleanUrl);
+  }
+};
+
 // Handle Google OAuth callback - extract userData from URL and store in localStorage
 const handleGoogleOAuthCallback = (): boolean => {
   if (typeof window === "undefined") return false;
@@ -75,34 +95,38 @@ const handleGoogleOAuthCallback = (): boolean => {
   const urlParams = new URLSearchParams(window.location.search);
   const userData = urlParams.get("userData");
 
-  if (userData) {
-    try {
-      const data = JSON.parse(decodeURIComponent(userData));
+  // Early return if no userData (prevents unnecessary processing)
+  if (!userData) return false;
 
-      // Store tokens and user info in localStorage
-      if (data.accessToken) {
-        sessionStorage.setItem("access_token", data.accessToken);
-      }
-      if (data.user) {
-        sessionStorage.setItem(
-          "user_info",
-          JSON.stringify({ user: data.user }),
-        );
-      }
+  try {
+    const data = JSON.parse(decodeURIComponent(userData));
 
-      // Redirect to auth route so ProtectedRoute handles role-based redirects (traveller → business)
-      window.history.replaceState({}, "", routes.auth);
-
-      return true;
-    } catch (error) {
-      console.error("Error parsing Google OAuth userData:", error);
+    // Store tokens and user info in localStorage
+    if (data.accessToken) {
+      sessionStorage.setItem("access_token", data.accessToken);
     }
+    if (data.user) {
+      sessionStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+    }
+
+    // Clean the URL parameters
+    cleanUrlParams(["userData"]);
+
+    // Redirect to auth route so ProtectedRoute handles role-based redirects
+    window.location.href = routes.auth;
+
+    return true;
+  } catch (error) {
+    console.error("Error parsing Google OAuth userData:", error);
+    return false;
   }
-  return false;
 };
 
-// Run synchronously before React renders
-const isGoogleOAuthCallback = handleGoogleOAuthCallback();
+// Only run OAuth handler if the URL actually contains userData
+const isGoogleOAuthCallback =
+  typeof window !== "undefined" && window.location.search.includes("userData=")
+    ? handleGoogleOAuthCallback()
+    : false;
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -123,6 +147,18 @@ function App() {
     null,
   );
 
+  // Add debugging log for App mount
+  useEffect(() => {
+    console.log("🔄 App mounted/reloaded", {
+      path: window.location.pathname,
+      search: window.location.search,
+      hasToken: !!sessionStorage.getItem("access_token"),
+      hasUserInfo: !!sessionStorage.getItem("user_info"),
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
+
+  // Socket notifications setup
   useEffect(() => {
     if (!socket) return;
     const notificationSound = new Audio("/assets/audio/bell-ring.mp3");
@@ -161,23 +197,20 @@ function App() {
             dispatch(addNotification(notif));
           });
 
-          // Increment count locally for each new notification (instant + accurate)
+          // Increment count locally for each new notification
           const newNotificationsCount = response.data.length;
           for (let i = 0; i < newNotificationsCount; i++) {
             dispatch(incrementUnreadCount());
           }
 
-          // Debounced API verification: only verify if count < 100 and batch calls
+          // Debounced API verification
           const currentCount = store.getState().notification.unreadCount;
           if (currentCount < 100) {
-            // Clear existing timeout to debounce
             if (countRefreshTimeoutRef.current) {
               clearTimeout(countRefreshTimeoutRef.current);
             }
 
-            // Set new debounced timeout (300ms)
             countRefreshTimeoutRef.current = setTimeout(() => {
-              // Only call API if still < 100 (in case more notifications arrived)
               const finalCount = store.getState().notification.unreadCount;
               if (finalCount < 100) {
                 store.dispatch(
@@ -204,7 +237,6 @@ function App() {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("notification", handleNotification);
-      // Cleanup debounce timer
       if (countRefreshTimeoutRef.current) {
         clearTimeout(countRefreshTimeoutRef.current);
       }
@@ -241,8 +273,12 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle QR verification token for orders-management and event-details access (JWT token, same as incomplete profile)
+  // Handle QR verification token with session tracking
   useEffect(() => {
+    // Skip if already processed in this session
+    const qrProcessed = sessionStorage.getItem("qr_auto_login_processed");
+    if (qrProcessed === "true") return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const jwtToken = urlParams.get("token");
     const isOrdersManagement = window.location.pathname === routes.ordersMgmt;
@@ -251,6 +287,9 @@ function App() {
     );
 
     if (jwtToken && (isOrdersManagement || isEventDetails)) {
+      // Mark as processed to prevent re-runs
+      sessionStorage.setItem("qr_auto_login_processed", "true");
+
       // Keep the original QR token separate from the normal access token.
       sessionStorage.setItem("access_token", jwtToken);
       sessionStorage.setItem("qr_token", jwtToken);
@@ -275,20 +314,15 @@ function App() {
             saveUserInfo({ user: userData });
             dispatch(loginSuccess(userData));
 
-            // Clean token from URL now that it's stored in session
-            const newUrl =
-              window.location.pathname +
-              window.location.search
-                .replace(/[?&]token=[^&]*/, "")
-                .replace(/^&/, "?");
-            window.history.replaceState({}, "", newUrl);
+            // Clean token from URL
+            cleanUrlParams(["token"]);
 
             // Notify other components like SocketProvider
             window.dispatchEvent(new Event("session:updated"));
           }
         } catch (error) {
           console.error("Failed to fetch vendor user info via QR token", error);
-          // Keep JWT token in session even if user fetch fails, allows event management
+          // Keep JWT token in session even if user fetch fails
         }
       };
 
@@ -296,8 +330,14 @@ function App() {
     }
   }, [dispatch]);
 
-  // Handle profile completion token — auto-login the user if token is in URL
+  // Handle profile completion token with session tracking
   useEffect(() => {
+    // Skip if already processed in this session
+    const profileProcessed = sessionStorage.getItem(
+      "profile_auto_login_processed",
+    );
+    if (profileProcessed === "true") return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token") || urlParams.get("approveToken");
     const currentAccessToken = sessionStorage.getItem("access_token");
@@ -315,6 +355,9 @@ function App() {
 
     // Only trigger if we have a token and it's either new or different from the current one
     if (token && token !== currentAccessToken) {
+      // Mark as processed to prevent re-runs
+      sessionStorage.setItem("profile_auto_login_processed", "true");
+
       const fetchUserProfile = async () => {
         try {
           // Set the token temporarily so /users/me can use it
@@ -332,13 +375,8 @@ function App() {
             saveUserInfo({ user: userData });
             dispatch(loginSuccess(userData));
 
-            // Clean token from URL now that it's stored in session
-            const newUrl =
-              window.location.pathname +
-              window.location.search
-                .replace(/[?&]token=[^&]*/, "")
-                .replace(/^&/, "?");
-            window.history.replaceState({}, "", newUrl);
+            // Clean token from URL
+            cleanUrlParams(["token", "approveToken"]);
 
             // Notify other components like SocketProvider
             window.dispatchEvent(new Event("session:updated"));
@@ -349,6 +387,8 @@ function App() {
           if (sessionStorage.getItem("access_token") === token) {
             sessionStorage.removeItem("access_token");
           }
+          // Clear the processed flag to allow retry on next load
+          sessionStorage.removeItem("profile_auto_login_processed");
         }
       };
       fetchUserProfile();
@@ -371,6 +411,7 @@ function App() {
     if (isPublicTicket || isPublicSession) {
       return children;
     }
+
     let user: any = null;
     if (userInfo) {
       try {
@@ -380,18 +421,24 @@ function App() {
       }
     }
 
+    // Check if redirect was already attempted to prevent loops
+    const redirectAttempted = sessionStorage.getItem("redirect_attempted");
+
     // If user is on login page
     if (isLoginPage) {
       if (isLoggedIn && user) {
         const savedRedirect = sessionStorage.getItem("redirect_after_login");
         if (savedRedirect) {
           sessionStorage.removeItem("redirect_after_login");
+          sessionStorage.removeItem("redirect_attempted");
           return <Navigate to={savedRedirect} replace />;
         }
 
         if (user.role === UserRole.TRAVELLER && !user.hasBusiness) {
+          sessionStorage.removeItem("redirect_attempted");
           return <Navigate to={routes.businessMgmt} replace />;
         }
+        sessionStorage.removeItem("redirect_attempted");
         return <Navigate to={routes.dashboard} replace />;
       }
       return children;
@@ -399,6 +446,11 @@ function App() {
 
     // Normal protected routes
     if (!isLoggedIn) {
+      // If already attempted redirect, don't do it again (prevents loop)
+      if (redirectAttempted) {
+        return children;
+      }
+
       const attemptedPath = window.location.pathname + window.location.search;
       if (
         attemptedPath &&
@@ -408,7 +460,10 @@ function App() {
         sessionStorage.setItem("redirect_after_login", attemptedPath);
       }
 
-      // Allow routes with token to bypass login (business-details, event-details, orders-management QR)
+      // Mark that redirect was attempted
+      sessionStorage.setItem("redirect_attempted", "true");
+
+      // Allow routes with token to bypass login
       const urlParams = new URLSearchParams(window.location.search);
       const hasToken = urlParams.get("token");
       const orderId = urlParams.get("orderId");
@@ -439,6 +494,11 @@ function App() {
       }
 
       return <Navigate to={routes.auth} replace />;
+    }
+
+    // User is logged in, clear redirect attempt flag
+    if (redirectAttempted) {
+      sessionStorage.removeItem("redirect_attempted");
     }
 
     return children;
@@ -555,7 +615,6 @@ function App() {
           errorElement: <ErrorUiPage />,
           children: [{ path: routes.auth, element: <AuthPage /> }],
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       ]),
     [],
   );

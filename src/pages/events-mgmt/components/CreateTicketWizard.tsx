@@ -13,6 +13,7 @@ import { FormFieldWrapper } from "@/components/form-fields";
 import { IOpMode } from "@/enums/operation.types";
 import {
   useCreateTicketMutation,
+  useUpdateEventMutation,
   useUpdateTicketMutation,
 } from "@/store/api/eventMutationApi";
 
@@ -26,6 +27,7 @@ interface CreateTicketWizardProps {
   eventDays: IEventDayDescription[];
   ticketDateTime: ITicketDateTime[];
   setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
+  hasExternalTicket?: boolean;
 }
 
 type TicketErrors = {
@@ -52,6 +54,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
   eventDays,
   ticketDateTime,
   setTicketDateTime,
+  hasExternalTicket = false,
 }) => {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
@@ -85,7 +88,8 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
-
+  const [updateEvent, { isLoading: isEventUpdating }] =
+    useUpdateEventMutation();
   // ─── Helpers ────────────────────────────────────────────────────────
   const computeDiscounts = (markedPrice: number, sellingPrice: number) => {
     if (markedPrice > 0 && sellingPrice >= 0 && sellingPrice <= markedPrice) {
@@ -222,6 +226,12 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
             }).unwrap()
           : await createTicket(payload).unwrap();
 
+      if (hasExternalTicket) {
+        await updateEvent({
+          eventId,
+          body: { hasExternalTicket: false },
+        }).unwrap();
+      }
       toast.success(res?.message || t("ticket_saved_successfully"));
       refetch?.();
       setIsOpen(false);
@@ -266,7 +276,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
     setEditData(null);
   };
 
-  const isSubmitting = isSaving || isUpdating;
+  const isSubmitting = isSaving || isUpdating || isEventUpdating;
   const isUploading = images[0]?.status === "uploading";
 
   return (

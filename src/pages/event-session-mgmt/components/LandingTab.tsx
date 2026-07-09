@@ -73,6 +73,9 @@ export function LandingTab({
     onChange({ ...config, ...patch });
 
   const [_searchParams, setSearchParams] = useSearchParams();
+  const [ticketDateTime, setTicketDateTime] = useState<
+    ITicketDayTimeForSession[]
+  >([]);
 
   const [createEventSession, { isLoading: isCreating }] =
     useCreateEventSessionMutation();
@@ -222,11 +225,56 @@ export function LandingTab({
 
   function toggleTicket(ticketId: string) {
     const ticketIds = config.ticketIds ?? [];
+    const isAdding = !ticketIds.includes(ticketId);
+
+    // Update ticket IDs if no conflict
     update({
       ticketIds: ticketIds.includes(ticketId)
         ? ticketIds.filter((id) => id !== ticketId)
         : [...ticketIds, ticketId],
     });
+
+    if (isAdding) {
+      // Find the ticket being added
+      const ticketToAdd = tickets?.find((t) => t.ticketId === ticketId);
+      if (!ticketToAdd) return;
+
+      // Get currently selected tickets
+      const currentSelectedTickets =
+        tickets?.filter((t) => ticketIds.includes(t.ticketId!)) || [];
+
+      // Check for date/time conflicts with existing selections
+      const allSelectedTickets = [...currentSelectedTickets, ticketToAdd];
+      const dateTimeSet = new Set<string>();
+
+      for (const ticket of allSelectedTickets) {
+        for (const day of ticket.dayDescription || []) {
+          const key = `${day.date}_${day.startTime}`;
+          if (dateTimeSet.has(key)) {
+            break;
+          }
+          dateTimeSet.add(key);
+        }
+      }
+
+      // Add the new ticket's date/times to the state
+      const newDateTimeEntries: ITicketDayTimeForSession[] = (
+        ticketToAdd.dayDescription || []
+      ).map((day) => ({
+        ticketId: ticketToAdd.ticketId!,
+        ticketName: ticketToAdd.name,
+        date: day.date,
+        startTime: day.startTime,
+        endTime: day.endTime,
+      }));
+
+      setTicketDateTime((prev) => [...prev, ...newDateTimeEntries]);
+    } else {
+      // Remove the ticket's date/times when unchecking
+      setTicketDateTime((prev) =>
+        prev.filter((item) => item.ticketId !== ticketId),
+      );
+    }
   }
 
   function renderTicketRow(ticket: ITicket) {
@@ -317,7 +365,7 @@ export function LandingTab({
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev);
-            next.set("wrapperId", created._id);
+            next.set("wrapperId", created.id);
             return next;
           },
           { replace: true },
@@ -718,10 +766,11 @@ export function LandingTab({
 
       {isCreateWizardOpen && (
         <CreateEventSessionWizard
-          setIsOpen={setIsCreateWizardOpen}
           onChange={onChange}
           config={config}
           editIndex={editIndex}
+          ticketDateTime={ticketDateTime}
+          setIsOpen={setIsCreateWizardOpen}
         />
       )}
 
