@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import type React from "react";
-import { PenBox, Trash } from "lucide-react";
+import { PenBox, RefreshCcw, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ReordableDataTable } from "@/components/shared";
@@ -17,6 +17,8 @@ interface UserListViewProps {
   onEdit: (user: IUser) => void;
   onDelete: (user: IUser) => void;
   activeRole?: string;
+  handleLoginAttemptReset: (v: string) => void;
+  isLoginAttemptReseting: boolean;
 }
 
 const UserListView: React.FC<UserListViewProps> = ({
@@ -27,8 +29,12 @@ const UserListView: React.FC<UserListViewProps> = ({
   onEdit,
   onDelete,
   activeRole,
+  handleLoginAttemptReset,
+  isLoginAttemptReseting,
 }) => {
   const { t } = useTranslation("user");
+  const { t: tc } = useTranslation("common");
+
   const { textPrimary, textSecondary, textTertiary, isDark } =
     useThemeClasses();
 
@@ -167,31 +173,34 @@ const UserListView: React.FC<UserListViewProps> = ({
   const actionsColumn = {
     key: "actions",
     label: t("actions"),
-    render: (user: IUser) => (
-      <div className="flex items-center">
-        <ActionIconButtons
-          isDark={isDark}
-          actions={[
-            {
-              title: t("edit"),
-              icon: PenBox,
-              color: "gray",
-              onClick: () => {
-                onEdit(user);
-              },
-            },
-            {
-              title: t("delete"),
-              icon: Trash,
-              color: "red",
-              onClick: () => {
-                onDelete(user);
-              },
-            },
-          ]}
-        />
-      </div>
-    ),
+    render: (user: IUser) => {
+      const actions: IActionIconButton[] = [
+        {
+          title: tc("edit"),
+          icon: PenBox,
+          color: "gray",
+          onClick: () => onEdit(user),
+        },
+        {
+          title: tc("delete"),
+          icon: Trash2,
+          color: "red",
+          onClick: () => onDelete(user),
+        },
+      ];
+
+      if (user.loginAttempts > 0) {
+        actions.push({
+          title: `${t("reset_login_attempts")}: ${user.loginAttempts}`,
+          icon: RefreshCcw,
+          color: "green",
+          isLoading: isLoginAttemptReseting,
+          onClick: () => handleLoginAttemptReset(user._id),
+        });
+      }
+
+      return <ActionIconButtons isDark={isDark} actions={actions} />;
+    },
   };
 
   let columns: any[] = baseColumns;

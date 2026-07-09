@@ -18,6 +18,8 @@ import {
 } from "./components";
 import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
 import { useAppSelector } from "@/hooks/hooks";
+import { useResetLoginAttemptMutation } from "@/store/api/authApi";
+import { toast } from "sonner";
 
 const ROLE_ORDER: UserRole[] = [
   UserRole.SUPERADMIN,
@@ -39,6 +41,8 @@ const LIMIT = 1000;
 
 const UsersMgmtPage = () => {
   const { t } = useTranslation("user");
+  const { t: tt } = useTranslation("toast");
+
   const { userRole } = useAppSelector((state) => state.auth);
 
   const visibleTabs = useMemo(() => {
@@ -97,12 +101,20 @@ const UsersMgmtPage = () => {
       refetchOnMountOrArgChange: true,
     },
   );
+  const totalData = data?.totalData ?? 0;
+  const hasMore = data?.meta?.hasNextPage ?? false;
 
   const [deleteUser] = useDeleteUserMutation();
+  const [resetLoginAttempt, { isLoading: isLoginAttemptReseting }] =
+    useResetLoginAttemptMutation();
 
-  const totalData = data?.totalData ?? 0;
-
-  const hasMore = data?.meta?.hasNextPage ?? false;
+  const handleLoginAttemptReset = async (userId: string) => {
+    const res = await resetLoginAttempt(userId).unwrap();
+    if (res.data) {
+      toast.success(tt("login_attempt_rest_success"));
+      refetch();
+    }
+  };
 
   /**
    * Merge paginated users.
@@ -263,6 +275,8 @@ const UsersMgmtPage = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             activeRole={activeRole}
+            handleLoginAttemptReset={handleLoginAttemptReset}
+            isLoginAttemptReseting={isLoginAttemptReseting}
           />
         ) : (
           <div id="users-scroll-container" className="h-full overflow-y-auto">
@@ -305,6 +319,8 @@ const UsersMgmtPage = () => {
                       user={user}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      handleLoginAttemptReset={handleLoginAttemptReset}
+                      isLoginAttemptReseting={isLoginAttemptReseting}
                     />
                   ))}
                 </div>

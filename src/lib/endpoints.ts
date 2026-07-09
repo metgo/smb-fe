@@ -77,7 +77,9 @@ export const endpoints = {
   contentManagementEvents: "/content-management-events",
 
   // event sessions
-  eventSession: "/event-sessions",
+  tickets: "/tickets",
+  eventTickets: "/event-tickets",
+  eventSessions: "/event-sessions",
   eventSessionPreviwLink: "/event-sessions/preview-link",
   ticketsForEventSession: "/event-sessions/tickets-without-sessions",
   eventSessionCapacityReport: "/event-sessions/capacity-report",
@@ -93,9 +95,7 @@ export const endpoints = {
   userInfo: "/users/me",
   userAdmin: "/users/admin",
   createUser: "/users/create",
-  tickets: "/tickets",
-  eventTickets: "/event-tickets",
-  eventSessions: "/event-sessions",
+  resetLoginAttempts: "/users/reset-login-attempts",
 
   // Media
   mediaSignedUrl: "/media-signed-url",

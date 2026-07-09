@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface DatesEditorProps {
   event: IEventSession;
@@ -130,7 +131,6 @@ export function DatesEditor({
                   type="time"
                   className={INPUT}
                   value={s.time}
-                  readOnly
                   onChange={(e) =>
                     onPatchSlot(di, si, { time: e.target.value })
                   }

@@ -70,5 +70,7 @@
 
   "unsaved_changes": "Unsaved Changes",
   "close_without_saving": "You have unsaved changes. Are you sure you want to close without saving?",
-  "close": "Close"
+  "close": "Close",
+
+  "login_attempt_rest_success": "Login attempts have been reset successfully"
 }

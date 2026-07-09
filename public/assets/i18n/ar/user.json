@@ -61,5 +61,7 @@
   "edit_user_action": "تعديل المستخدم",
   "delete_user_action": "حذف المستخدم",
   "last_login": "آخر تسجيل دخول",
-  "actions": "الإجراءات"
+  "actions": "الإجراءات",
+
+  "reset_login_attempts": "إعادة تعيين محاولات تسجيل الدخول"
 }

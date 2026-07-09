@@ -1,14 +1,6 @@
 import clsx from "clsx";
-import type { LucideIcon } from "lucide-react";
 import TooltipWrapper from "@/components/wrapper/TooltipWrapper";
-
-interface IActionIconButton {
-  title: string;
-  icon: LucideIcon;
-  onClick: () => void;
-  color?: "blue" | "green" | "red" | "yellow" | "gray";
-  disabled?: boolean;
-}
+import { Loader2 } from "lucide-react";
 
 interface ActionButtonsProps {
   actions: IActionIconButton[];
@@ -66,7 +58,11 @@ const ActionIconButtons = ({
                 isDark ? color.darkHover : color.lightHover,
               )}
             >
-              <Icon size={16} />
+              {action.isLoading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Icon size={16} />
+              )}
             </button>
           </TooltipWrapper>
         );
