@@ -397,10 +397,16 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
                               icon: LayoutList,
                               color: "yellow",
                               onClick: () => {
-                                window.open(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
-                                  "_blank",
-                                );
+                                if (ticket?.wrapperId)
+                                  window.open(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                    "_blank",
+                                  );
+                                else
+                                  window.open(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&ticketId=${ticket._id}`,
+                                    "_blank",
+                                  );
                               },
                             },
                           ]}

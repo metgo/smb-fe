@@ -109,6 +109,7 @@ export function LandingTab({
       resetImage();
     }
   }, [wrapperId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -140,7 +141,6 @@ export function LandingTab({
         (ticket) => !existingSession?.ticketIds?.includes(ticket?.ticketId),
       )
     : (ticketRes?.data?.tickets ?? []);
-  console.log("🚀 ~ LandingTab ~ tickets:", tickets);
 
   const isDirty =
     JSON.stringify(config) !== JSON.stringify(savedConfigRef.current);

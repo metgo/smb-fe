@@ -360,9 +360,14 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                               icon: LayoutList,
                               color: "yellow",
                               onClick: () => {
-                                navigate(
-                                  `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
-                                );
+                                if (ticket?.wrapperId)
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                  );
+                                else
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&&ticketId=${ticket._id}`,
+                                  );
                               },
                             },
                           ]}

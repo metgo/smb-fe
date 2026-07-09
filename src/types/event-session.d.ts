@@ -110,7 +110,7 @@ interface TicketData {
   eventId: string;
   wrapperId: string;
   wrapperName: string;
-  tickets: Ticket[];
+  tickets: ITicket[];
   totalTickets: number;
   totalSessionWrappers: number;
   assignedTickets: number;
