@@ -13,6 +13,7 @@ import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCommon } from "@/hooks/useCommon";
 import ImageWithFallback from "@/components/shared/ImageWithFallback";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
   [UserRole.SUPERADMIN]: [
@@ -71,6 +72,8 @@ const CreateUserWizard = ({
   onSuccess,
 }: CreateUserWizardProps) => {
   const { t } = useTranslation("user");
+  const { isSuperadmin } = useUserRoles();
+
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
@@ -363,7 +366,7 @@ const CreateUserWizard = ({
           <div>
             <label className={labelClass}>
               {t("role")} *{" "}
-              {isEdit && (
+              {isEdit && !isSuperadmin && (
                 <span className="text-xs text-gray-500">{t("locked")}</span>
               )}
             </label>
@@ -378,8 +381,10 @@ const CreateUserWizard = ({
                   dmoId: "",
                 }))
               }
-              disabled={isEdit}
-              className={isEdit ? disabledInputClass : inputClass}
+              disabled={isEdit && !isSuperadmin}
+              className={
+                isEdit && !isSuperadmin ? disabledInputClass : inputClass
+              }
             >
               {allowedRoleOptions.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -388,7 +393,7 @@ const CreateUserWizard = ({
               ))}
             </select>
             {errors.role && <p className={errorClass}>{errors.role}</p>}
-            {isEdit && (
+            {isEdit && !isSuperadmin && (
               <p className="text-xs text-gray-500 mt-1">
                 {t("role_locked_hint")}
               </p>
