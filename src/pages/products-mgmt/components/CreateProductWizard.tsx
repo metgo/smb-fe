@@ -51,7 +51,6 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 // import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
@@ -234,9 +233,7 @@ export default function CreateProductWizard({
         : undefined,
   });
 
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+ 
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);

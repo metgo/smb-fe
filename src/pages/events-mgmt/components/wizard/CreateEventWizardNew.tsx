@@ -20,7 +20,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
 import { EventBasicInformation } from "../sub-components";
 import { useEventWizardState } from "./useEventWizardState";
 import DateTimeStep from "./steps/DateTimeStep";
@@ -45,7 +44,6 @@ export default function CreateEventWizardNew({
   eventDataRefetch,
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
-  const { t: tt } = useTranslation("common");
 
   const { t: tc } = useTranslation("toast");
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
