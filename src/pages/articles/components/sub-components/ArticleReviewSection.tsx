@@ -145,7 +145,7 @@ export default function ArticleReviewSection({
   onEdit,
 }: ArticleReviewSectionProps) {
   const { t } = useTranslation("article");
-  const { bgSecondary, textPrimary, textTertiary, borderColor } =
+  const { bgSecondary, textPrimary, textTertiary, borderColor, language } =
     useThemeClasses();
 
   const cardProps = {
@@ -158,169 +158,82 @@ export default function ArticleReviewSection({
   };
   const fieldProps = { textPrimary, textTertiary, borderColor };
 
+  const langMeta: Record<
+    string,
+    { label: string; dir: "ltr" | "rtl"; suffix: "" | "He" | "Ar" }
+  > = {
+    en: { label: "English", dir: "ltr", suffix: "" },
+    he: { label: "Hebrew", dir: "rtl", suffix: "He" },
+    ar: { label: "Arabic", dir: "rtl", suffix: "Ar" },
+  };
+  const { label, dir, suffix } = langMeta[language] ?? langMeta.en;
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* ── Content (Step 1) ─────────────────────────────────────── */}
       <ReviewCard title={t("form")} step={1} {...cardProps}>
-        <LangSection label="English">
+        <LangSection label={label}>
           <FieldRow
             label={t("title")}
-            value={formData.title}
-            dir="ltr"
+            value={formData[`title${suffix}`]}
+            dir={dir}
             {...fieldProps}
           />
           <FieldRow
             label={t("short_description")}
-            value={formData.shortDescription}
-            dir="ltr"
+            value={formData[`shortDescription${suffix}`]}
+            dir={dir}
             {...fieldProps}
           />
           <FieldRow
             label={t("content")}
-            value={formData.content}
-            dir="ltr"
+            value={formData[`content${suffix}`]}
+            dir={dir}
             isHtml
             {...fieldProps}
           />
         </LangSection>
       </ReviewCard>
 
-      {/* ── Translations (Step 2) ─────────────────────────────────── */}
-      <ReviewCard title={t("translation")} step={2} {...cardProps}>
-        <LangSection label="Hebrew">
-          <FieldRow
-            label={t("title")}
-            value={formData.titleHe}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("short_description")}
-            value={formData.shortDescriptionHe}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("content")}
-            value={formData.contentHe}
-            dir="rtl"
-            isHtml
-            {...fieldProps}
-          />
-        </LangSection>
-        <LangSection label="Arabic">
-          <FieldRow
-            label={t("title")}
-            value={formData.titleAr}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("short_description")}
-            value={formData.shortDescriptionAr}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("content")}
-            value={formData.contentAr}
-            dir="rtl"
-            isHtml
-            {...fieldProps}
-          />
-        </LangSection>
-      </ReviewCard>
-
-      {/* ── SEO (Step 3) ─────────────────────────────────────────── */}
-      <ReviewCard title={t("seo")} step={3} {...cardProps}>
-        <LangSection label="English">
+      {/* ── SEO (Step 2) ─────────────────────────────────────────── */}
+      <ReviewCard title={t("seo")} step={2} {...cardProps}>
+        <LangSection label={label}>
           <FieldRow
             label={t("meta_title")}
-            value={formData.metaTitle}
-            dir="ltr"
+            value={formData[`metaTitle${suffix}`]}
+            dir={dir}
             {...fieldProps}
           />
           <FieldRow
             label={t("meta_description")}
-            value={formData.metaDescription}
-            dir="ltr"
+            value={formData[`metaDescription${suffix}`]}
+            dir={dir}
             {...fieldProps}
           />
           <FieldRow
             label={t("summary")}
-            value={formData.summary}
-            dir="ltr"
+            value={formData[`summary${suffix}`]}
+            dir={dir}
             {...fieldProps}
           />
-          <FieldRow
-            label="Slug"
-            value={formData.slug}
-            dir="ltr"
-            {...fieldProps}
-          />
+          {suffix === "" && (
+            <FieldRow
+              label="Slug"
+              value={formData.slug}
+              dir={dir}
+              {...fieldProps}
+            />
+          )}
           <div className={`py-2 border-b ${borderColor} last:border-0`}>
             <p
               className={`text-xs font-medium uppercase tracking-wide ${textTertiary} mb-1`}
             >
               {t("tags")}
             </p>
-            <TagList tags={formData.tags} textTertiary={textTertiary} />
-          </div>
-        </LangSection>
-        <LangSection label="Hebrew">
-          <FieldRow
-            label={t("meta_title")}
-            value={formData.metaTitleHe}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("meta_description")}
-            value={formData.metaDescriptionHe}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("summary")}
-            value={formData.summaryHe}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <div className={`py-2 border-b ${borderColor} last:border-0`}>
-            <p
-              className={`text-xs font-medium uppercase tracking-wide ${textTertiary} mb-1`}
-            >
-              {t("tags")}
-            </p>
-            <TagList tags={formData.tagsHe} textTertiary={textTertiary} />
-          </div>
-        </LangSection>
-        <LangSection label="Arabic">
-          <FieldRow
-            label={t("meta_title")}
-            value={formData.metaTitleAr}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("meta_description")}
-            value={formData.metaDescriptionAr}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <FieldRow
-            label={t("summary")}
-            value={formData.summaryAr}
-            dir="rtl"
-            {...fieldProps}
-          />
-          <div className={`py-2 border-b ${borderColor} last:border-0`}>
-            <p
-              className={`text-xs font-medium uppercase tracking-wide ${textTertiary} mb-1`}
-            >
-              {t("tags")}
-            </p>
-            <TagList tags={formData.tagsAr} textTertiary={textTertiary} />
+            <TagList
+              tags={formData[`tags${suffix}`]}
+              textTertiary={textTertiary}
+            />
           </div>
         </LangSection>
       </ReviewCard>

@@ -158,7 +158,7 @@ export default function CreatePoiWizard({
   const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
   const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
-  const totalSteps = 7;
+  const totalSteps = 6;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -275,11 +275,11 @@ export default function CreatePoiWizard({
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     // { number: 2, title: t("step_translation"), icon: LanguagesIcon },
-    { number: 3, title: t("step_contact_info"), icon: Users },
-    { number: 4, title: t("step_media"), icon: ImageIcon },
-    { number: 5, title: t("step_attributes"), icon: Tag },
-    { number: 6, title: t("step_location"), icon: MapPin },
-    { number: 7, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 2, title: t("step_contact_info"), icon: Users },
+    { number: 3, title: t("step_media"), icon: ImageIcon },
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_location"), icon: MapPin },
+    { number: 6, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   const addr = parseAddress(address);
@@ -378,7 +378,7 @@ export default function CreatePoiWizard({
 
         break;
 
-      case 6:
+      case 5:
         if (!addr.location) newErrors.address = t("required_field");
         break;
     }
@@ -556,7 +556,7 @@ export default function CreatePoiWizard({
       //   return (
       //     <PoiTranslateButton formData={formData} onChange={handleChange} />
       //   );
-      case 3:
+      case 2:
         return (
           <PoiContactInfo
             t={t}
@@ -566,7 +566,7 @@ export default function CreatePoiWizard({
             markDirty={markDirty}
           />
         );
-      case 4:
+      case 3:
         return (
           <PoiMedia
             markDirty={markDirty}
@@ -596,7 +596,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 5:
+      case 4:
         return (
           <PoiAttributes
             formData={formData}
@@ -609,7 +609,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 6:
+      case 5:
         return (
           <PoiLocation
             t={t}
@@ -619,7 +619,7 @@ export default function CreatePoiWizard({
             setAddress={setAddress}
           />
         );
-      case 7:
+      case 6:
         return (
           <PoiReviewSubmit
             t={t}

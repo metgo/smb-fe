@@ -281,8 +281,11 @@ export default function CreateEventWizardNew({
             images={wizard.images}
             setCurrentStep={wizard.setCurrentStep}
             eventName={wizard.translationFormData.name}
+            eventNameHe={wizard.translationFormData.nameHe}
+            eventNameAr={wizard.translationFormData.nameAr}
             shortDescription={wizard.translationFormData.shortDescription}
-            eventLanguage={wizard.eventLanguage}
+            shortDescriptionHe={wizard.translationFormData.shortDescriptionHe}
+            shortDescriptionAr={wizard.translationFormData.shortDescriptionAr}
             eventStatus={wizard.eventStatus}
             isMultiDay={wizard.isMultiDay}
             startDate={wizard.startDate}

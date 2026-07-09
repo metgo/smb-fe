@@ -123,9 +123,9 @@ const CreateArticleWizard = ({
   const steps = [
     { number: 1, title: t("form"), icon: FileText },
     // { number: 2, title: t("translation"), icon: LanguagesIcon },
-    { number: 3, title: t("media"), icon: ImageIcon },
-    { number: 4, title: t("seo"), icon: Section },
-    { number: 5, title: t("review"), icon: Eye },
+    { number: 2, title: t("media"), icon: ImageIcon },
+    { number: 3, title: t("seo"), icon: Section },
+    { number: 4, title: t("review"), icon: Eye },
   ];
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
@@ -457,9 +457,9 @@ const CreateArticleWizard = ({
       //       onChange={handleChange}
       //     />
       //   );
-      case 3:
+      case 2:
         return <Media {...mediaProps} {...commonProps} />;
-      case 4:
+      case 3:
         return (
           <ArticleSeoSettings
             formData={formData}
@@ -476,7 +476,7 @@ const CreateArticleWizard = ({
             editingLanguage={language}
           />
         );
-      case 5:
+      case 4:
         return (
           <ArticleReviewSection formData={formData} onEdit={setCurrentStep} />
         );
