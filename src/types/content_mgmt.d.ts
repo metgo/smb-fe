@@ -20,16 +20,31 @@ interface IIcon {
 
 interface IContentGroup {
   category: string;
+  categoryHe?: string;
+  categoryAr?: string;
   description?: string;
+  descriptionHe?: string;
+  descriptionAr?: string;
   isPrimary: boolean;
   isHideCategory: boolean;
   contents: IContent[];
   icon?: string | null;
   colors?: string[];
+  synonyms?: string[];
+  synonymsHe?: string[];
+  synonymsAr?: string[];
+  searchKeywords?: string[];
+  searchKeywordsHe?: string[];
+  searchKeywordsAr?: string[];
 }
 
 interface IContentTemplate {
   topic: string;
+  topicHe?: string;
+  topicAr?: string;
+  description?: string;
+  descriptionHe?: string;
+  descriptionAr?: string;
   isPrimary?: boolean;
   isHideTopic?: boolean;
   groups: IContentGroup[];
@@ -83,7 +98,12 @@ interface ISiteCategory {
   tripIds: IContentFeedItem[];
   productIds: IContentFeedItem[];
   fundayIds: IContentFeedItem[];
-
+  synonyms?: string[];
+  synonymsHe?: string[];
+  synonymsAr?: string[];
+  searchKeywords?: string[];
+  searchKeywordsHe?: string[];
+  searchKeywordsAr?: string[];
   isPrimary: boolean;
   isArchived: boolean;
 }
@@ -121,6 +141,8 @@ type WizardCategory = {
   synonymsHe: string[];
   synonymsAr: string[];
   searchKeywords: string[];
+  searchKeywordsHe: string[];
+  searchKeywordsAr: string[];
   assignedBusinesses: any[];
   assignedProducts: any[];
   isGenerating?: boolean;
@@ -146,7 +168,7 @@ interface IView {
   viewNameAr: string | null;
   themeContext?: string | null;
   isActive: boolean;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  status: "DRAFT" | "APPROVED" | "PUBLISHED" | "ARCHIVED";
   updatedAt: string | null;
   createdAt: string;
   externalApiId: { _id: string; name: string };

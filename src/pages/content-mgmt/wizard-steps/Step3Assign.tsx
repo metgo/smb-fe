@@ -26,6 +26,8 @@ import {
 import { useGetViewByIdQuery } from "@/store/api/contentQueryApi";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
+import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 interface Props {
@@ -43,7 +45,12 @@ type AssignState = "idle" | "running" | "done" | "error";
 
 function itemLabel(item: any): string {
   return (
-    item?.nameHe || item?.name || item?.titleHe || item?.title || "Untitled"
+    item?.nameHe ||
+    item?.name ||
+    item?.nameAr ||
+    item?.titleHe ||
+    item?.title ||
+    "Untitled"
   );
 }
 
@@ -83,11 +90,13 @@ function SearchSelect({
   options,
   onSelect,
   isDark,
+  emptyLabel = "No items available",
 }: {
   placeholder: string;
   options: any[];
   onSelect: (item: any) => void;
   isDark: boolean;
+  emptyLabel?: string;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -134,6 +143,7 @@ function SearchSelect({
         : options.slice(0, 50),
     [options, query],
   );
+  const hasOptions = options.length > 0;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -146,15 +156,17 @@ function SearchSelect({
           setQuery(e.target.value);
           setOpen(true);
         }}
-        placeholder={placeholder}
+        placeholder={hasOptions ? placeholder : emptyLabel}
+        disabled={!hasOptions}
         className={clsx(
           "w-full text-xs px-3 py-2 rounded-lg border outline-none",
           isDark
-            ? "bg-gray-700 border-gray-600 text-gray-200 placeholder:text-gray-500 focus:border-teal-500"
-            : "bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 focus:border-teal-500",
+            ? "bg-gray-700 border-gray-600 text-gray-200 placeholder:text-gray-500 focus:border-teal-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            : "bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 focus:border-teal-500 disabled:opacity-60 disabled:cursor-not-allowed",
         )}
       />
       {open &&
+        hasOptions &&
         filtered.length > 0 &&
         createPortal(
           <ul
@@ -214,11 +226,17 @@ interface CategoryRowProps {
   isDark: boolean;
   allBusinesses: any[];
   allProducts: any[];
+  allEvents: any[];
+  allPois: any[];
   isMarketplace?: boolean;
   onRemoveBusiness: (topicIdx: number, catIdx: number, bizId: string) => void;
   onRemoveProduct: (topicIdx: number, catIdx: number, prodId: string) => void;
+  onRemoveEvent: (topicIdx: number, catIdx: number, eventId: string) => void;
+  onRemovePoi: (topicIdx: number, catIdx: number, poiId: string) => void;
   onAddBusiness: (topicIdx: number, catIdx: number, item: any) => void;
   onAddProduct: (topicIdx: number, catIdx: number, item: any) => void;
+  onAddEvent: (topicIdx: number, catIdx: number, item: any) => void;
+  onAddPoi: (topicIdx: number, catIdx: number, item: any) => void;
 }
 
 function CategoryRow({
@@ -228,11 +246,17 @@ function CategoryRow({
   isDark,
   allBusinesses,
   allProducts,
+  allEvents,
+  allPois,
   isMarketplace = false,
   onRemoveBusiness,
   onRemoveProduct,
+  onRemoveEvent,
+  onRemovePoi,
   onAddBusiness,
   onAddProduct,
+  onAddEvent,
+  onAddPoi,
 }: CategoryRowProps) {
   const { t } = useTranslation("content");
   const [expanded, setExpanded] = useState(false);
@@ -243,13 +267,23 @@ function CategoryRow({
   const assignedProdIds = new Set(
     (cat.productIds ?? []).map((p: any) => p._id ?? p),
   );
+  const assignedEventIds = new Set(
+    (cat.eventIds ?? []).map((e: any) => e._id ?? e),
+  );
+  const assignedPoiIds = new Set(
+    (cat.poiIds ?? []).map((poi: any) => poi._id ?? poi),
+  );
 
   const availableBiz = allBusinesses.filter((b) => !assignedBizIds.has(b._id));
   const availableProd = allProducts.filter((p) => !assignedProdIds.has(p._id));
+  const availableEvents = allEvents.filter((e) => !assignedEventIds.has(e._id));
+  const availablePois = allPois.filter((poi) => !assignedPoiIds.has(poi._id));
 
   const bCount = cat.businessIds?.length ?? 0;
   const pCount = cat.productIds?.length ?? 0;
-  const total = bCount + pCount;
+  const eCount = cat.eventIds?.length ?? 0;
+  const poiCount = cat.poiIds?.length ?? 0;
+  const total = bCount + pCount + eCount + poiCount;
 
   return (
     <div
@@ -294,7 +328,7 @@ function CategoryRow({
               {bCount}
             </span>
           )}
-          {/* Products — shown for both, but count display differs */}
+          {/* Products */}
           {pCount > 0 && (
             <span
               className={clsx(
@@ -304,6 +338,28 @@ function CategoryRow({
             >
               <Package className="w-3 h-3" />
               {pCount}
+            </span>
+          )}
+          {/* Events — TRAVELING only */}
+          {!isMarketplace && eCount > 0 && (
+            <span
+              className={clsx(
+                "flex items-center gap-1 text-xs",
+                isDark ? "text-orange-400" : "text-orange-600",
+              )}
+            >
+              🎫 {eCount}
+            </span>
+          )}
+          {/* POIs — TRAVELING only */}
+          {!isMarketplace && poiCount > 0 && (
+            <span
+              className={clsx(
+                "flex items-center gap-1 text-xs",
+                isDark ? "text-green-400" : "text-green-600",
+              )}
+            >
+              📍 {poiCount}
             </span>
           )}
           {/* None indicator */}
@@ -500,8 +556,8 @@ function CategoryRow({
             </>
           )}
 
-          {/* Events — TRAVELING only, AI-assigned read-only display */}
-          {!isMarketplace && (cat.eventIds ?? []).length > 0 && (
+          {/* Events — TRAVELING only */}
+          {!isMarketplace && (
             <div className="space-y-1.5">
               <p
                 className={clsx(
@@ -512,17 +568,20 @@ function CategoryRow({
                 <span className="w-3 h-3 inline-block text-center leading-3">
                   🎫
                 </span>
-                Events ({(cat.eventIds ?? []).length})
+                Events ({eCount})
               </p>
               <div className="space-y-1">
                 {(cat.eventIds ?? []).map((ev: any) => (
                   <div
                     key={ev._id ?? ev}
                     className={clsx(
-                      "flex items-center gap-2 rounded-lg px-2 py-1.5",
-                      isDark ? "bg-gray-750" : "bg-orange-50",
+                      "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
+                      isDark
+                        ? "bg-gray-750 hover:bg-gray-700"
+                        : "bg-orange-50 hover:bg-orange-100",
                     )}
                   >
+                    <ItemAvatar item={ev} size={5} />
                     <span
                       className={clsx(
                         "text-xs flex-1 truncate",
@@ -531,14 +590,33 @@ function CategoryRow({
                     >
                       {itemLabel(ev)}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onRemoveEvent(topicIdx, catIdx, ev._id ?? ev)
+                      }
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
+                      title="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 ))}
+              </div>
+              <div className="pt-1">
+                <SearchSelect
+                  placeholder={t("add_event_placeholder")}
+                  options={availableEvents}
+                  onSelect={(item) => onAddEvent(topicIdx, catIdx, item)}
+                  isDark={isDark}
+                  emptyLabel="No more events available"
+                />
               </div>
             </div>
           )}
 
-          {/* POIs — TRAVELING only, AI-assigned read-only display */}
-          {!isMarketplace && (cat.poiIds ?? []).length > 0 && (
+          {/* POIs — TRAVELING only */}
+          {!isMarketplace && (
             <div className="space-y-1.5">
               <p
                 className={clsx(
@@ -549,17 +627,20 @@ function CategoryRow({
                 <span className="w-3 h-3 inline-block text-center leading-3">
                   📍
                 </span>
-                Points of Interest ({(cat.poiIds ?? []).length})
+                Points of Interest ({poiCount})
               </p>
               <div className="space-y-1">
                 {(cat.poiIds ?? []).map((poi: any) => (
                   <div
                     key={poi._id ?? poi}
                     className={clsx(
-                      "flex items-center gap-2 rounded-lg px-2 py-1.5",
-                      isDark ? "bg-gray-750" : "bg-green-50",
+                      "flex items-center gap-2 rounded-lg px-2 py-1.5 group",
+                      isDark
+                        ? "bg-gray-750 hover:bg-gray-700"
+                        : "bg-green-50 hover:bg-green-100",
                     )}
                   >
+                    <ItemAvatar item={poi} size={5} />
                     <span
                       className={clsx(
                         "text-xs flex-1 truncate",
@@ -568,9 +649,29 @@ function CategoryRow({
                     >
                       {itemLabel(poi)}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onRemovePoi(topicIdx, catIdx, poi._id ?? poi)
+                      }
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-500 shrink-0"
+                      title="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
+              {availablePois.length > 0 && (
+                <div className="pt-1">
+                  <SearchSelect
+                    placeholder={t("add_poi_placeholder")}
+                    options={availablePois}
+                    onSelect={(item) => onAddPoi(topicIdx, catIdx, item)}
+                    isDark={isDark}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -619,9 +720,10 @@ export default function Step3Assign({
     },
   );
 
-  // ── All businesses and products for the website (for add/unassigned) ──
+  // ── All businesses, products, events and POIs for the website (for add/unassigned) ──
+  // Businesses: only needed for TRAVELING mode
   const { data: allBizData } = useGetAllbusinessesQuery(
-    externalApiId
+    externalApiId && !isMarketplace
       ? { externalApiId, status: "APPROVED", limit: 1000, page: 1 }
       : skipToken,
   );
@@ -630,9 +732,28 @@ export default function Step3Assign({
       ? { externalApiId, status: "APPROVED", limit: 1000, page: 1 }
       : skipToken,
   );
+  // Events: only needed for TRAVELING mode
+  const { data: allEventsData } = useGetAllEventsQuery(
+    externalApiId && !isMarketplace
+      ? {
+          externalApiId: [externalApiId],
+          status: "APPROVED",
+          limit: 1000,
+          page: 1,
+        }
+      : skipToken,
+  );
+  // POIs: only needed for TRAVELING mode
+  const { data: allPoisData } = useGetAllPOIQuery(
+    externalApiId && !isMarketplace
+      ? { externalApiId, status: "APPROVED", limit: 1000, page: 1 }
+      : skipToken,
+  );
 
-  const allBusinesses: any[] = allBizData?.data ?? [];
+  const allBusinesses: any[] = isMarketplace ? [] : (allBizData?.data ?? []);
   const allProducts: any[] = allProdData?.data ?? [];
+  const allEvents: any[] = isMarketplace ? [] : (allEventsData?.data ?? []);
+  const allPois: any[] = isMarketplace ? [] : (allPoisData?.data ?? []);
 
   // ── Sync local topics from populated view ──
   useEffect(() => {
@@ -707,7 +828,9 @@ export default function Step3Assign({
             const pCount = Array.isArray(c.productIds)
               ? c.productIds.length
               : 0;
-            return s + bCount + pCount;
+            const eCount = Array.isArray(c.eventIds) ? c.eventIds.length : 0;
+            const poiCount = Array.isArray(c.poiIds) ? c.poiIds.length : 0;
+            return s + bCount + pCount + eCount + poiCount;
           }, 0),
         0,
       ),
@@ -774,6 +897,34 @@ export default function Step3Assign({
     [markChanged],
   );
 
+  const removeEvent = useCallback(
+    (tIdx: number, cIdx: number, eventId: string) => {
+      setLocalTopics((prev) => {
+        const next = structuredClone(prev);
+        next[tIdx].siteCategories[cIdx].eventIds = (
+          next[tIdx].siteCategories[cIdx].eventIds ?? []
+        ).filter((e: any) => (e._id ?? e) !== eventId);
+        return next;
+      });
+      markChanged();
+    },
+    [markChanged],
+  );
+
+  const removePoi = useCallback(
+    (tIdx: number, cIdx: number, poiId: string) => {
+      setLocalTopics((prev) => {
+        const next = structuredClone(prev);
+        next[tIdx].siteCategories[cIdx].poiIds = (
+          next[tIdx].siteCategories[cIdx].poiIds ?? []
+        ).filter((poi: any) => (poi._id ?? poi) !== poiId);
+        return next;
+      });
+      markChanged();
+    },
+    [markChanged],
+  );
+
   const addBusiness = useCallback(
     (tIdx: number, cIdx: number, item: any) => {
       setLocalTopics((prev) => {
@@ -798,6 +949,38 @@ export default function Step3Assign({
         if (!list.find((p: any) => (p._id ?? p) === item._id)) {
           list.push(item);
           next[tIdx].siteCategories[cIdx].productIds = list;
+        }
+        return next;
+      });
+      markChanged();
+    },
+    [markChanged],
+  );
+
+  const addEvent = useCallback(
+    (tIdx: number, cIdx: number, item: any) => {
+      setLocalTopics((prev) => {
+        const next = structuredClone(prev);
+        const list = next[tIdx].siteCategories[cIdx].eventIds ?? [];
+        if (!list.find((e: any) => (e._id ?? e) === item._id)) {
+          list.push(item);
+          next[tIdx].siteCategories[cIdx].eventIds = list;
+        }
+        return next;
+      });
+      markChanged();
+    },
+    [markChanged],
+  );
+
+  const addPoi = useCallback(
+    (tIdx: number, cIdx: number, item: any) => {
+      setLocalTopics((prev) => {
+        const next = structuredClone(prev);
+        const list = next[tIdx].siteCategories[cIdx].poiIds ?? [];
+        if (!list.find((poi: any) => (poi._id ?? poi) === item._id)) {
+          list.push(item);
+          next[tIdx].siteCategories[cIdx].poiIds = list;
         }
         return next;
       });
@@ -1190,11 +1373,17 @@ export default function Step3Assign({
                   isDark={isDark}
                   allBusinesses={allBusinesses}
                   allProducts={allProducts}
+                  allEvents={allEvents}
+                  allPois={allPois}
                   isMarketplace={isMarketplace}
                   onRemoveBusiness={removeBusiness}
                   onRemoveProduct={removeProduct}
+                  onRemoveEvent={removeEvent}
+                  onRemovePoi={removePoi}
                   onAddBusiness={addBusiness}
                   onAddProduct={addProduct}
+                  onAddEvent={addEvent}
+                  onAddPoi={addPoi}
                 />
               ))}
             </div>

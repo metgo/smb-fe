@@ -201,5 +201,7 @@
   "toast_changes_saved": "השינויים נשמרו בהצלחה.",
   "toast_save_changes_failed": "שמירת השינויים נכשלה.",
   "add_business_placeholder": "+ הוסף עסק…",
-  "add_product_placeholder": "+ הוסף מוצר…"
+  "add_product_placeholder": "+ הוסף מוצר…",
+  "add_event_placeholder": "+ הוסף אירוע…",
+  "add_poi_placeholder": "+ הוסף נקודת עניין…"
 }

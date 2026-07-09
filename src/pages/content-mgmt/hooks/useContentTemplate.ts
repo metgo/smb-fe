@@ -26,6 +26,11 @@ const TYPE_TO_KEY: Record<string, string> = {
 const initialTemplateContent: IContentTemplate[] = [
   {
     topic: "מה בא לכם לעשות?",
+    topicHe: "מה בא לכם לעשות?",
+    topicAr: "",
+    description: "",
+    descriptionHe: "",
+    descriptionAr: "",
     isPrimary: false,
     isHideTopic: false,
     groups: [
@@ -33,6 +38,17 @@ const initialTemplateContent: IContentTemplate[] = [
         isPrimary: false,
         isHideCategory: false,
         category: "",
+        categoryHe: "",
+        categoryAr: "",
+        description: "",
+        descriptionHe: "",
+        descriptionAr: "",
+        synonyms: [],
+        synonymsHe: [],
+        synonymsAr: [],
+        searchKeywords: [],
+        searchKeywordsHe: [],
+        searchKeywordsAr: [],
         icon: "",
         contents: [],
       },
@@ -40,6 +56,11 @@ const initialTemplateContent: IContentTemplate[] = [
   },
   {
     topic: "מוצרים ושירותים",
+    topicHe: "מוצרים ושירותים",
+    topicAr: "",
+    description: "",
+    descriptionHe: "",
+    descriptionAr: "",
     isPrimary: false,
     isHideTopic: false,
     groups: [
@@ -47,6 +68,17 @@ const initialTemplateContent: IContentTemplate[] = [
         isPrimary: false,
         isHideCategory: false,
         category: "",
+        categoryHe: "",
+        categoryAr: "",
+        description: "",
+        descriptionHe: "",
+        descriptionAr: "",
+        synonyms: [],
+        synonymsHe: [],
+        synonymsAr: [],
+        searchKeywords: [],
+        searchKeywordsHe: [],
+        searchKeywordsAr: [],
         icon: "",
         contents: [],
       },
@@ -78,6 +110,17 @@ function buildGroups(
   return (Object.entries(grouped) as [string, IContent[]][]).map(
     ([category, contents]) => ({
       category,
+      categoryHe: category,
+      categoryAr: category,
+      description: "",
+      descriptionHe: "",
+      descriptionAr: "",
+      synonyms: [],
+      synonymsHe: [],
+      synonymsAr: [],
+      searchKeywords: [],
+      searchKeywordsHe: [],
+      searchKeywordsAr: [],
       isPrimary: false,
       isHideCategory: false,
       contents,
@@ -213,6 +256,11 @@ export function useContentTemplate({
 
     const formatted = templateContentsData?.siteTopics?.map((topic) => ({
       topic: topic.title,
+      topicHe: topic.titleHe ?? "",
+      topicAr: topic.titleAr ?? "",
+      description: topic.description ?? "",
+      descriptionHe: topic.descriptionHe ?? "",
+      descriptionAr: topic.descriptionAr ?? "",
       order: topic.order,
       isHideTopic: topic.isArchived,
       isPrimary: topic.isPrimary,
@@ -222,8 +270,19 @@ export function useContentTemplate({
         isPrimary: item.isPrimary,
         isHideCategory: item.isArchived,
         category: item.title,
+        categoryHe: item.titleHe ?? "",
+        categoryAr: item.titleAr ?? "",
+        description: item.description ?? "",
+        descriptionHe: item.descriptionHe ?? "",
+        descriptionAr: item.descriptionAr ?? "",
         icon: item.icon,
         colors: item.colors ?? [],
+        synonyms: (item as any).synonyms ?? [],
+        synonymsHe: (item as any).synonymsHe ?? [],
+        synonymsAr: (item as any).synonymsAr ?? [],
+        searchKeywords: (item as any).searchKeywords ?? [],
+        searchKeywordsHe: (item as any).searchKeywordsHe ?? [],
+        searchKeywordsAr: (item as any).searchKeywordsAr ?? [],
         contents: [
           ...mapContents(item.businessIds, "business"),
           ...mapContents(item.productIds, "product"),
@@ -261,8 +320,13 @@ export function useContentTemplate({
       const idx = updated.findIndex(
         (t) => t.topic === initialTemplateContent[0].topic,
       );
-      const topic = {
+      const topic: IContentTemplate = {
         topic: initialTemplateContent[0].topic,
+        topicHe: initialTemplateContent[0].topicHe,
+        topicAr: initialTemplateContent[0].topicAr,
+        description: "",
+        descriptionHe: "",
+        descriptionAr: "",
         isHideTopic: false,
         groups,
       };
@@ -300,8 +364,13 @@ export function useContentTemplate({
       const idx = updated.findIndex(
         (t) => t.topic === initialTemplateContent[1].topic,
       );
-      const topic = {
+      const topic: IContentTemplate = {
         topic: initialTemplateContent[1].topic,
+        topicHe: initialTemplateContent[1].topicHe,
+        topicAr: initialTemplateContent[1].topicAr,
+        description: "",
+        descriptionHe: "",
+        descriptionAr: "",
         isHideTopic: false,
         groups,
       };
@@ -324,6 +393,11 @@ export function useContentTemplate({
     if (!view) return;
     const formattedTopics = (view.siteTopics ?? []).map((topic) => ({
       topic: topic.title,
+      topicHe: topic.titleHe ?? "",
+      topicAr: topic.titleAr ?? "",
+      description: topic.description ?? "",
+      descriptionHe: topic.descriptionHe ?? "",
+      descriptionAr: topic.descriptionAr ?? "",
       order: topic.order,
       isHideTopic: topic.isArchived,
       isPrimary: topic.isPrimary,
@@ -333,8 +407,19 @@ export function useContentTemplate({
         isPrimary: item.isPrimary,
         isHideCategory: item.isArchived,
         category: item.title,
+        categoryHe: item.titleHe ?? "",
+        categoryAr: item.titleAr ?? "",
+        description: item.description ?? "",
+        descriptionHe: item.descriptionHe ?? "",
+        descriptionAr: item.descriptionAr ?? "",
         icon: item.icon,
         colors: item.colors ?? [],
+        synonyms: (item as any).synonyms ?? [],
+        synonymsHe: (item as any).synonymsHe ?? [],
+        synonymsAr: (item as any).synonymsAr ?? [],
+        searchKeywords: (item as any).searchKeywords ?? [],
+        searchKeywordsHe: (item as any).searchKeywordsHe ?? [],
+        searchKeywordsAr: (item as any).searchKeywordsAr ?? [],
         contents: [
           ...mapContents(item.businessIds, "business"),
           ...mapContents(item.productIds, "product"),
@@ -391,7 +476,17 @@ export function useContentTemplate({
                 }, {});
                 return {
                   title: group.category,
-                  description: group.description,
+                  titleHe: group.categoryHe || group.category,
+                  titleAr: group.categoryAr || group.category,
+                  description: group.description || null,
+                  descriptionHe: group.descriptionHe || null,
+                  descriptionAr: group.descriptionAr || null,
+                  synonyms: group.synonyms ?? [],
+                  synonymsHe: group.synonymsHe ?? [],
+                  synonymsAr: group.synonymsAr ?? [],
+                  searchKeywords: group.searchKeywords ?? [],
+                  searchKeywordsHe: group.searchKeywordsHe ?? [],
+                  searchKeywordsAr: group.searchKeywordsAr ?? [],
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
                   icon: group.icon,
@@ -411,6 +506,11 @@ export function useContentTemplate({
 
             return {
               title: template.topic,
+              titleHe: template.topicHe || template.topic,
+              titleAr: template.topicAr || template.topic,
+              description: template.description || null,
+              descriptionHe: template.descriptionHe || null,
+              descriptionAr: template.descriptionAr || null,
               isPrimary: template.isPrimary,
               isArchived: template.isHideTopic,
               order: index,
@@ -483,7 +583,17 @@ export function useContentTemplate({
                 }, {});
                 return {
                   title: group.category,
-                  description: group.description,
+                  titleHe: group.categoryHe || group.category,
+                  titleAr: group.categoryAr || group.category,
+                  description: group.description || null,
+                  descriptionHe: group.descriptionHe || null,
+                  descriptionAr: group.descriptionAr || null,
+                  synonyms: group.synonyms ?? [],
+                  synonymsHe: group.synonymsHe ?? [],
+                  synonymsAr: group.synonymsAr ?? [],
+                  searchKeywords: group.searchKeywords ?? [],
+                  searchKeywordsHe: group.searchKeywordsHe ?? [],
+                  searchKeywordsAr: group.searchKeywordsAr ?? [],
                   isPrimary: group.isPrimary,
                   isArchived: group.isHideCategory,
                   icon: group.icon,
@@ -501,6 +611,11 @@ export function useContentTemplate({
               return null;
             return {
               title: template.topic,
+              titleHe: template.topicHe || template.topic,
+              titleAr: template.topicAr || template.topic,
+              description: template.description || null,
+              descriptionHe: template.descriptionHe || null,
+              descriptionAr: template.descriptionAr || null,
               isPrimary: template.isPrimary,
               isArchived: template.isHideTopic,
               order: index,

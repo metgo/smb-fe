@@ -66,6 +66,8 @@ const viewToWizardTopics = (siteTopics: IContentTopic[]): WizardTopic[] =>
           synonymsHe: (cat as any).synonymsHe ?? [],
           synonymsAr: (cat as any).synonymsAr ?? [],
           searchKeywords: (cat as any).searchKeywords ?? [],
+          searchKeywordsHe: (cat as any).searchKeywordsHe ?? [],
+          searchKeywordsAr: (cat as any).searchKeywordsAr ?? [],
           assignedBusinesses: [],
           assignedProducts: [],
         };
@@ -175,6 +177,8 @@ export default function CreateViewWizard({
             synonymsHe: cat.synonymsHe,
             synonymsAr: cat.synonymsAr,
             searchKeywords: cat.searchKeywords,
+            searchKeywordsHe: cat.searchKeywordsHe,
+            searchKeywordsAr: cat.searchKeywordsAr,
             // Preserve existing assignments in edit mode, otherwise empty
             businessIds: (originalCat as any)?.businessIds ?? [],
             productIds: (originalCat as any)?.productIds ?? [],
@@ -240,6 +244,8 @@ export default function CreateViewWizard({
                   synonymsHe: cat.synonymsHe,
                   synonymsAr: cat.synonymsAr,
                   searchKeywords: cat.searchKeywords,
+                  searchKeywordsHe: cat.searchKeywordsHe,
+                  searchKeywordsAr: cat.searchKeywordsAr,
                   // Preserve existing assignments
                   businessIds: (originalCat as any)?.businessIds ?? [],
                   productIds: (originalCat as any)?.productIds ?? [],

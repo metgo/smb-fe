@@ -196,5 +196,7 @@
   "toast_changes_saved": "Changes saved successfully.",
   "toast_save_changes_failed": "Failed to save changes.",
   "add_business_placeholder": "+ Add business…",
-  "add_product_placeholder": "+ Add product…"
+  "add_product_placeholder": "+ Add product…",
+  "add_event_placeholder": "+ Add event…",
+  "add_poi_placeholder": "+ Add point of interest…"
 }

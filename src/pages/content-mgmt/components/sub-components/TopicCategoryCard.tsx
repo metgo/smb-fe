@@ -264,7 +264,13 @@ const TopicCategoryCard = ({
           ...template,
           groups: template.groups.map((grp, gIndex) => {
             if (gIndex !== categoryIndex) return grp;
-            return { ...grp, category: editValue };
+            // Update all language fields — if no He/Ar translation exists yet, fall back to the new name
+            return {
+              ...grp,
+              category: editValue,
+              categoryHe: grp.categoryHe || editValue,
+              categoryAr: grp.categoryAr || editValue,
+            };
           }),
         };
       }),

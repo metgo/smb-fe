@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Wand2,
   Plus,
@@ -20,6 +20,8 @@ import {
 } from "@/store/api/contentMutationApi";
 
 const MAX_CATEGORIES = 8;
+const GENERATE_ALL_CONCURRENCY = 2;
+const CATEGORY_CACHE_TTL_MS = 5 * 60 * 1000;
 const LANG_TABS: { key: WizardLang; label: string }[] = [
   { key: "he", label: "עב" },
   { key: "en", label: "EN" },
@@ -50,6 +52,15 @@ interface CategoryCardProps {
   isTranslating: boolean;
   translateTopic: any;
 }
+
+type TopicGenerationResult = {
+  topicId: string;
+  categories: WizardCategory[];
+  success: boolean;
+  topicLabel: string;
+  count?: number;
+  errorMessage?: string;
+};
 
 function CategoryCard({
   category,
@@ -384,7 +395,7 @@ function CategoryCard({
             </div>
           </div>
 
-          {/* Search keywords (language-neutral) */}
+          {/* Search keywords (per language) */}
           <div>
             <p
               className={clsx(
@@ -392,56 +403,68 @@ function CategoryCard({
                 isDark ? "text-gray-400" : "text-gray-500",
               )}
             >
-              {t("keywords")}
+              {t("keywords")} ({activeLang.toUpperCase()})
             </p>
-            <div className="flex flex-wrap gap-1.5 mb-1.5">
-              {(category.searchKeywords ?? []).map((chip) => (
-                <span
-                  key={chip}
-                  className={clsx(
-                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
-                    isDark
-                      ? "bg-purple-900/40 text-purple-300"
-                      : "bg-purple-50 text-purple-600",
-                  )}
-                >
-                  {chip}
-                  <button
-                    onClick={() => removeChip("searchKeywords", chip)}
-                    className="hover:text-red-400"
-                  >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-1">
-              <input
-                value={newKeyword}
-                onChange={(e) => setNewKeyword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter")
-                    addChip("searchKeywords", newKeyword, setNewKeyword);
-                }}
-                maxLength={30}
-                placeholder={t("add_keyword")}
-                className={clsx(
-                  "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
-                  newKeyword.length >= 30 && "border-red-500",
-                  isDark
-                    ? "bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-600"
-                    : "bg-white border-gray-200 text-gray-700 placeholder-gray-400",
-                )}
-              />
-              <button
-                onClick={() =>
-                  addChip("searchKeywords", newKeyword, setNewKeyword)
-                }
-                className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg"
-              >
-                <Plus className="w-3 h-3" />
-              </button>
-            </div>
+            {(() => {
+              const kwField: keyof WizardCategory =
+                activeLang === "en"
+                  ? "searchKeywords"
+                  : activeLang === "he"
+                    ? "searchKeywordsHe"
+                    : "searchKeywordsAr";
+              return (
+                <>
+                  <div className="flex flex-wrap gap-1.5 mb-1.5">
+                    {((category[kwField] as string[]) ?? []).map((chip) => (
+                      <span
+                        key={chip}
+                        className={clsx(
+                          "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
+                          isDark
+                            ? "bg-purple-900/40 text-purple-300"
+                            : "bg-purple-50 text-purple-600",
+                        )}
+                      >
+                        {chip}
+                        <button
+                          onClick={() => removeChip(kwField, chip)}
+                          className="hover:text-red-400"
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-1">
+                    <input
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter")
+                          addChip(kwField, newKeyword, setNewKeyword);
+                      }}
+                      maxLength={30}
+                      placeholder={t("add_keyword")}
+                      className={clsx(
+                        "flex-1 px-2 py-1 rounded-lg border text-xs transition-colors",
+                        newKeyword.length >= 30 && "border-red-500",
+                        isDark
+                          ? "bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-600"
+                          : "bg-white border-gray-200 text-gray-700 placeholder-gray-400",
+                      )}
+                    />
+                    <button
+                      onClick={() =>
+                        addChip(kwField, newKeyword, setNewKeyword)
+                      }
+                      className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -465,11 +488,21 @@ export default function Step2Categories({
     new Set(),
   );
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState({
+    current: 0,
+    total: 0,
+  });
   const [collapsedTopics, setCollapsedTopics] = useState<Set<string>>(
     new Set(),
   );
   const [addingForTopic, setAddingForTopic] = useState<string | null>(null);
   const [newCatTitle, setNewCatTitle] = useState("");
+  const categoryGenerationCacheRef = useRef<
+    Map<string, { timestamp: number; categories: WizardCategory[] }>
+  >(new Map());
+  const inFlightGenerationRef = useRef<Map<string, Promise<WizardCategory[]>>>(
+    new Map(),
+  );
   // Tracks which category card is currently translating — key: "topicId-catId"
   const [translatingCatId, setTranslatingCatId] = useState<string | null>(null);
   // Tracks which inline add form is currently translating — key: topicId
@@ -496,23 +529,73 @@ export default function Step2Categories({
     synonymsHe: data.synonymsHe ?? [],
     synonymsAr: data.synonymsAr ?? [],
     searchKeywords: data.searchKeywords ?? [],
+    searchKeywordsHe: data.searchKeywordsHe ?? [],
+    searchKeywordsAr: data.searchKeywordsAr ?? [],
     assignedBusinesses: [],
     assignedProducts: [],
   });
 
+  const getGenerationCacheKey = (topic: WizardTopic) =>
+    JSON.stringify({
+      externalApiId,
+      topicTitle: (topic.title || topic.titleHe || "").trim(),
+      topicDescription: (topic.description || topic.descriptionHe || "").trim(),
+      existingCategories: topic.categories
+        .map((category) => (category.title || category.titleHe || "").trim())
+        .filter(Boolean)
+        .sort(),
+    });
+
+  const requestGeneratedCategories = async (
+    topic: WizardTopic,
+  ): Promise<WizardCategory[]> => {
+    const cacheKey = getGenerationCacheKey(topic);
+    const now = Date.now();
+    const cached = categoryGenerationCacheRef.current.get(cacheKey);
+
+    if (cached && now - cached.timestamp < CATEGORY_CACHE_TTL_MS) {
+      return cached.categories;
+    }
+
+    const existingRequest = inFlightGenerationRef.current.get(cacheKey);
+    if (existingRequest) {
+      return existingRequest;
+    }
+
+    const requestPromise = generateCategories({
+      topicTitle: topic.title || topic.titleHe,
+      topicDescription: topic.description || topic.descriptionHe,
+      externalApiId,
+      existingCategories: topic.categories.map(
+        (category) => category.title || category.titleHe,
+      ),
+    })
+      .unwrap()
+      .then((result) => {
+        const mapped = result
+          .slice(0, MAX_CATEGORIES)
+          .map((category: any) => makeCategory(category));
+
+        categoryGenerationCacheRef.current.set(cacheKey, {
+          timestamp: Date.now(),
+          categories: mapped,
+        });
+
+        return mapped;
+      })
+      .finally(() => {
+        inFlightGenerationRef.current.delete(cacheKey);
+      });
+
+    inFlightGenerationRef.current.set(cacheKey, requestPromise);
+
+    return requestPromise;
+  };
+
   const generateForTopic = async (topic: WizardTopic) => {
     setGeneratingTopicIds((prev) => new Set(prev).add(topic.id));
     try {
-      const result = await generateCategories({
-        topicTitle: topic.title || topic.titleHe,
-        topicDescription: topic.description || topic.descriptionHe,
-        externalApiId,
-        existingCategories: topic.categories.map((c) => c.title),
-      }).unwrap();
-
-      const mapped = result
-        .slice(0, MAX_CATEGORIES)
-        .map((c: any) => makeCategory(c));
+      const mapped = await requestGeneratedCategories(topic);
 
       return {
         topicId: topic.id,
@@ -520,7 +603,7 @@ export default function Step2Categories({
         success: true,
         topicLabel: topic.titleHe || topic.title,
         count: mapped.length,
-      };
+      } satisfies TopicGenerationResult;
     } catch (error: any) {
       const errorMessage =
         error?.data?.message ||
@@ -536,7 +619,7 @@ export default function Step2Categories({
         success: false,
         topicLabel: topic.titleHe || topic.title,
         errorMessage,
-      };
+      } satisfies TopicGenerationResult;
     } finally {
       setGeneratingTopicIds((prev) => {
         const next = new Set(prev);
@@ -548,10 +631,39 @@ export default function Step2Categories({
 
   const generateAll = async () => {
     setIsGeneratingAll(true);
-    const results = await Promise.all(
-      topics
-        .filter((topic) => topic.categories.length === 0)
-        .map((topic) => generateForTopic(topic)),
+    const topicsToGenerate = topics.filter(
+      (topic) => topic.categories.length === 0,
+    );
+    setGenerationProgress({ current: 0, total: topicsToGenerate.length });
+
+    if (topicsToGenerate.length === 0) {
+      setIsGeneratingAll(false);
+      return;
+    }
+
+    const results: TopicGenerationResult[] = new Array(topicsToGenerate.length);
+    let completed = 0;
+    let nextIndex = 0;
+
+    const worker = async () => {
+      while (nextIndex < topicsToGenerate.length) {
+        const currentIndex = nextIndex++;
+        const topic = topicsToGenerate[currentIndex];
+        const result = await generateForTopic(topic);
+        results[currentIndex] = result;
+        completed += 1;
+        setGenerationProgress({
+          current: completed,
+          total: topicsToGenerate.length,
+        });
+      }
+    };
+
+    await Promise.all(
+      Array.from(
+        { length: Math.min(GENERATE_ALL_CONCURRENCY, topicsToGenerate.length) },
+        () => worker(),
+      ),
     );
 
     // Apply all updates at once to avoid race conditions
@@ -569,18 +681,20 @@ export default function Step2Categories({
       return updated;
     });
 
-    // Show toasts for all results
-    for (const result of results) {
-      if (result.success) {
-        toast.success(
-          `Generated ${result.count} categories for "${result.topicLabel}"`,
-        );
-      } else {
-        toast.error(
-          result.errorMessage ||
-            `AI not available yet — add categories for "${result.topicLabel}" manually.`,
-        );
-      }
+    const successCount = results.filter((result) => result?.success).length;
+    const failedResults = results.filter((result) => result && !result.success);
+
+    if (successCount > 0) {
+      toast.success(
+        `Generated categories for ${successCount} topic${successCount > 1 ? "s" : ""}.`,
+      );
+    }
+
+    for (const result of failedResults) {
+      toast.error(
+        result.errorMessage ||
+          `AI not available yet — add categories for "${result.topicLabel}" manually.`,
+      );
     }
 
     setIsGeneratingAll(false);
@@ -790,7 +904,12 @@ export default function Step2Categories({
           className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isGeneratingAll ? (
-            <Loader className="w-3.5 h-3.5 animate-spin" />
+            <>
+              <Loader className="w-3.5 h-3.5 animate-spin" />
+              <span className="text-xs tabular-nums">
+                ({generationProgress.current}/{generationProgress.total})
+              </span>
+            </>
           ) : (
             <Wand2 className="w-3.5 h-3.5" />
           )}

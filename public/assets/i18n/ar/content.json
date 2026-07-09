@@ -204,5 +204,7 @@
   "toast_changes_saved": "تم حفظ التغييرات بنجاح.",
   "toast_save_changes_failed": "فشل حفظ التغييرات.",
   "add_business_placeholder": "+ إضافة نشاط تجاري…",
-  "add_product_placeholder": "+ إضافة منتج…"
+  "add_product_placeholder": "+ إضافة منتج…",
+  "add_event_placeholder": "+ إضافة حدث…",
+  "add_poi_placeholder": "+ إضافة نقطة اهتمام…"
 }

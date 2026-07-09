@@ -121,6 +121,9 @@ const TopicBlock = ({
     updated[topicIndex] = {
       ...updated[topicIndex],
       topic: newName,
+      // Keep existing He/Ar translations; only fall back to new name if they were empty
+      topicHe: updated[topicIndex].topicHe || newName,
+      topicAr: updated[topicIndex].topicAr || newName,
     };
 
     setTemplateContent(updated);
