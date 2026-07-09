@@ -146,10 +146,8 @@ const Attributes: FC<AttributesProps> = ({
     hasGeneratedRef.current = false;
   }, [editData?._id]);
 
+  /* ---------------- Auto Generate Tags ---------------- */
   useEffect(() => {
-    // Only auto-generate once per item (e.g. once per editData._id / new-item session)
-    if (hasGeneratedRef.current) return;
-
     const currentName = getLngWiseStr(
       language,
       formData?.name,
@@ -166,40 +164,43 @@ const Attributes: FC<AttributesProps> = ({
 
     if (!currentName && !currentDescription) return;
 
-    // If tags already exist (e.g. loaded from editData), don't auto-generate
-    if (formData?.tags?.length) {
-      hasGeneratedRef.current = true;
-      return;
-    }
+    const noTagsYet = !formData?.tags?.length;
+    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
 
-    hasGeneratedRef.current = true; // mark before the async call so it can't fire twice
+    if (!noTagsYet && !nameOrDescChanged) return;
 
-    getGeneratedTags({
-      name: currentName,
-      description: currentDescription,
-    })
-      .then((res: any) => {
-        if (!res?.data?.length) return;
-
-        const newTags: Tag[] = res.data
-          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
-          .map((tag: Tag) => ({
-            en: tag.en || "",
-            he: tag.he || "",
-            ar: tag.ar || "",
-          }));
-
-        if (newTags.length > 0) {
-          setFormData({
-            ...formData,
-            tags: [...formData.tags, ...newTags],
-          });
-        }
+    // Debounce: cancels any pending call if name/description changes again
+    // before this timer fires. Only the last change in a burst triggers a call.
+    const timer = setTimeout(() => {
+      getGeneratedTags({
+        name: currentName,
+        description: currentDescription,
       })
-      .catch((err) => {
-        console.error("Tag generation failed:", err);
-      });
-  }, [editData?._id]); // only re-run when switching to a different item
+        .then((res: any) => {
+          if (!res?.data?.length) return;
+
+          const newTags: Tag[] = res.data
+            .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
+            .map((tag: Tag) => ({
+              en: tag.en || "",
+              he: tag.he || "",
+              ar: tag.ar || "",
+            }));
+
+          if (newTags.length > 0) {
+            setFormData({
+              ...formData,
+              tags: [...formData.tags, ...newTags],
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Tag generation failed:", err);
+        });
+    }, 600); // adjust delay to taste
+
+    return () => clearTimeout(timer); // cleanup cancels the stale call
+  }, [name, description, language]);
 
   /* ---------------- Handlers ---------------- */
 
