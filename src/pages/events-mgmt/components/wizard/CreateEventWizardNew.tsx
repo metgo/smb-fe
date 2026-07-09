@@ -59,12 +59,12 @@ export default function CreateEventWizardNew({
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
     // { number: 2, icon: Languages, title: tt("translation") },
-    { number: 3, icon: Calendar, title: t("step_2_date_time") },
-    { number: 4, icon: Users, title: t("step_3_registration") },
-    { number: 5, icon: Ticket, title: t("step_4_tickets") },
-    { number: 6, icon: Mail, title: t("messaging") },
-    { number: 7, icon: Image, title: t("step_5_media") },
-    { number: 8, icon: CheckCircle, title: t("step_6_review") },
+    { number: 2, icon: Calendar, title: t("step_2_date_time") },
+    { number: 3, icon: Users, title: t("step_3_registration") },
+    { number: 4, icon: Ticket, title: t("step_4_tickets") },
+    { number: 5, icon: Mail, title: t("messaging") },
+    { number: 6, icon: Image, title: t("step_5_media") },
+    { number: 7, icon: CheckCircle, title: t("step_6_review") },
   ];
 
   if (!isOpen) return null;
@@ -164,7 +164,7 @@ export default function CreateEventWizardNew({
           />
         )} */}
 
-        {wizard.currentStep === 3 && (
+        {wizard.currentStep === 2 && (
           <DateTimeStep
             geo={wizard.geo}
             setGeo={wizard.setGeo}
@@ -211,7 +211,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 4 && (
+        {wizard.currentStep === 3 && (
           <RegistrationStep
             markDirty={wizard.handleMarkDirty}
             registrationRequired={wizard.registrationRequired}
@@ -227,7 +227,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 5 && (
+        {wizard.currentStep === 4 && (
           <TicketsStep
             tickets={wizard.localTickets}
             eventId={wizard.eventId}
@@ -243,7 +243,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 6 && (
+        {wizard.currentStep === 5 && (
           <MessagingStep
             markDirty={wizard.handleMarkDirty}
             notifications={wizard.notifications}
@@ -261,7 +261,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 7 && (
+        {wizard.currentStep === 6 && (
           <Media
             images={wizard.images}
             imagesRef={wizard.imagesRef}
@@ -276,7 +276,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 8 && (
+        {wizard.currentStep === 7 && (
           <ReviewStep
             images={wizard.images}
             setCurrentStep={wizard.setCurrentStep}

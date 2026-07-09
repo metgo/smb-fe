@@ -72,8 +72,14 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
 }) => {
   const { t: tc } = useTranslation("common");
   const { categories, socialMedia, accessibility, groupTypes } = useCommon();
-  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
-    useThemeClasses();
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    isDark,
+    language,
+  } = useThemeClasses();
   const allSocialMedia: any[] = socialMedia?.datas?.data ?? [];
   const sectionCard = clsx("rounded-xl border overflow-hidden", borderColor);
 
@@ -138,29 +144,35 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           STEPS.BASIC_INFO,
         )}
         <div className="p-5 space-y-4">
-          {/* Names */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("name"), formData.name)}
-            {row(tc("name_he"), formData.nameHe)}
-            {row(tc("name_ar"), formData.nameAr)}
+          {/* Name */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" && row(tc("name"), formData.name)}
+            {language === "he" && row(tc("name_he"), formData.nameHe)}
+            {language === "ar" && row(tc("name_ar"), formData.nameAr)}
           </div>
 
           {divider}
 
-          {/* Short descriptions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("short_description_en"), formData.shortDescription)}
-            {row(tc("short_description_he"), formData.shortDescriptionHe)}
-            {row(tc("short_description_ar"), formData.shortDescriptionAr)}
+          {/* Short description */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" &&
+              row(tc("short_description_en"), formData.shortDescription)}
+            {language === "he" &&
+              row(tc("short_description_he"), formData.shortDescriptionHe)}
+            {language === "ar" &&
+              row(tc("short_description_ar"), formData.shortDescriptionAr)}
           </div>
 
           {divider}
 
-          {/* Full descriptions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(tc("full_description_en"), formData.fullDescription)}
-            {row(tc("full_description_he"), formData.fullDescriptionHe)}
-            {row(tc("full_description_ar"), formData.fullDescriptionAr)}
+          {/* Full description */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" &&
+              row(tc("full_description_en"), formData.fullDescription)}
+            {language === "he" &&
+              row(tc("full_description_he"), formData.fullDescriptionHe)}
+            {language === "ar" &&
+              row(tc("full_description_ar"), formData.fullDescriptionAr)}
           </div>
         </div>
       </div>
