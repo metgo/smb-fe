@@ -16,7 +16,6 @@ import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
-import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
 import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface EventBasicInformationProps {
