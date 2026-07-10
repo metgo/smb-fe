@@ -7,7 +7,7 @@ import {
   CheckCircle,
   Loader,
   Mail,
-  Languages,
+  // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,7 +19,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { PublishButton } from "@/components/btns";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "@/pages/products-mgmt/components/sub-components/ProductTranslateButton";
 import { EventBasicInformation } from "../sub-components";
 import { useEventWizardState } from "./useEventWizardState";
 import DateTimeStep from "./steps/DateTimeStep";
@@ -43,7 +42,7 @@ export default function CreateEventWizardNew({
   eventDataRefetch,
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
-  const { t: tt } = useTranslation("common");
+
   const { t: tc } = useTranslation("toast");
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
@@ -57,12 +56,12 @@ export default function CreateEventWizardNew({
 
   const steps: IWizardStep[] = [
     { number: 1, icon: FileText, title: t("step_1_basic_information") },
-    { number: 2, icon: Languages, title: tt("translation") },
-    { number: 3, icon: Calendar, title: t("step_2_date_time") },
-    { number: 4, icon: Users, title: t("step_3_registration") },
-    { number: 6, icon: Mail, title: t("messaging") },
-    { number: 7, icon: Image, title: t("step_5_media") },
-    { number: 8, icon: CheckCircle, title: t("step_6_review") },
+    // { number: 2, icon: Languages, title: tt("translation") },
+    { number: 2, icon: Calendar, title: t("step_2_date_time") },
+    { number: 3, icon: Users, title: t("step_3_registration") },
+    { number: 4, icon: Mail, title: t("messaging") },
+    { number: 5, icon: Image, title: t("step_5_media") },
+    { number: 6, icon: CheckCircle, title: t("step_6_review") },
   ];
 
   if (!isOpen) return null;
@@ -155,14 +154,14 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 2 && (
+        {/* {wizard.currentStep === 2 && (
           <ProductTranslateButton
             formData={wizard.translationFormData}
             onChange={wizard.handleTranslateChange}
           />
-        )}
+        )} */}
 
-        {wizard.currentStep === 3 && (
+        {wizard.currentStep === 2 && (
           <DateTimeStep
             geo={wizard.geo}
             setGeo={wizard.setGeo}
@@ -209,7 +208,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 4 && (
+        {wizard.currentStep === 3 && (
           <RegistrationStep
             markDirty={wizard.handleMarkDirty}
             registrationRequired={wizard.registrationRequired}
@@ -224,7 +223,7 @@ export default function CreateEventWizardNew({
             errors={wizard.errors}
           />
         )}
-        {wizard.currentStep === 6 && (
+        {wizard.currentStep === 4 && (
           <MessagingStep
             markDirty={wizard.handleMarkDirty}
             notifications={wizard.notifications}
@@ -242,7 +241,7 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 7 && (
+        {wizard.currentStep === 5 && (
           <Media
             images={wizard.images}
             imagesRef={wizard.imagesRef}
@@ -257,13 +256,16 @@ export default function CreateEventWizardNew({
           />
         )}
 
-        {wizard.currentStep === 8 && (
+        {wizard.currentStep === 6 && (
           <ReviewStep
             images={wizard.images}
             setCurrentStep={wizard.setCurrentStep}
             eventName={wizard.translationFormData.name}
+            eventNameHe={wizard.translationFormData.nameHe}
+            eventNameAr={wizard.translationFormData.nameAr}
             shortDescription={wizard.translationFormData.shortDescription}
-            eventLanguage={wizard.eventLanguage}
+            shortDescriptionHe={wizard.translationFormData.shortDescriptionHe}
+            shortDescriptionAr={wizard.translationFormData.shortDescriptionAr}
             eventStatus={wizard.eventStatus}
             isMultiDay={wizard.isMultiDay}
             startDate={wizard.startDate}

@@ -10,16 +10,19 @@ import { ImageWithFallback } from "@/components/shared";
 // Step numbers that match the 8-step wizard
 const WIZARD_STEPS = {
   BASIC_INFO: 1,
-  DATE_TIME: 3,
-  REGISTRATION: 4,
-  IMAGES: 7,
+  DATE_TIME: 2,
+  REGISTRATION: 3,
+  IMAGES: 5,
 } as const;
 
 interface ReviewStepProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   eventName: string;
+  eventNameHe: string;
+  eventNameAr: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
   shortDescription: string;
-  eventLanguage: string;
   eventStatus: string;
   isMultiDay: boolean;
   startDate: string;
@@ -36,8 +39,11 @@ interface ReviewStepProps {
 const ReviewStep: React.FC<ReviewStepProps> = ({
   setCurrentStep,
   eventName,
+  eventNameHe,
+  eventNameAr,
+  shortDescriptionHe,
+  shortDescriptionAr,
   shortDescription,
-  eventLanguage,
   eventStatus,
   isMultiDay,
   startDate,
@@ -125,11 +131,26 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         />
         <div className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Row label={t("name")} value={eventName || t("not_set")} />
-            <Row label={t("language")} value={eventLanguage.toUpperCase()} />
+            <Row
+              label={t("name")}
+              value={
+                (language === "he"
+                  ? eventNameHe
+                  : language === "ar"
+                    ? eventNameAr
+                    : eventName) || t("not_set")
+              }
+            />
+            <Row label={t("language")} value={language.toUpperCase()} />
             <Row
               label={t("description")}
-              value={shortDescription || t("not_set")}
+              value={
+                (language === "he"
+                  ? shortDescriptionHe
+                  : language === "ar"
+                    ? shortDescriptionAr
+                    : shortDescription) || t("not_set")
+              }
             />
             <Row
               label={t("event_status")}

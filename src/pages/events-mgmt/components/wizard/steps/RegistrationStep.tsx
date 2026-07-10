@@ -50,7 +50,7 @@ const RegistrationStep: React.FC<RegistrationStepProps> = ({
   } = useThemeClasses();
 
   useEffect(() => {
-    markDirty(4);
+    markDirty(3);
   }, [
     registrationRequired,
     capacityType,

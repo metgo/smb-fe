@@ -1,79 +1,57 @@
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import FormFieldWrapper from "@/components/form-fields/FormFieldWrapper";
+
 interface ArticleContentFormProps {
   formData: Record<string, any>;
-  onChange: (updates: Record<string, any>) => void;
-  syncKey?: string | number;
-  editingLanguage: "en" | "he" | "ar";
+  setFormData: (data: Record<string, any>) => void;
 }
 
-export default function PoiContentForm({
-  formData,
-  onChange,
-}: ArticleContentFormProps) {
-  const { t } = useTranslation("article");
-  const { t: tc } = useTranslation("common");
+const PoiContentForm = ({ formData, setFormData }: ArticleContentFormProps) => {
+  const { t } = useTranslation("common");
+  const {
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    language,
+  } = useThemeClasses();
 
-  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
-  // Detect which language actually has content, prioritize that
-  const detectPrimaryLang = (): "en" | "he" | "ar" => {
-    if (
-      formData?.title?.trim() ||
-      formData?.shortDescription?.trim() ||
-      formData?.content?.trim()
-    )
-      return "en";
-    if (
-      formData?.titleHe?.trim() ||
-      formData?.shortDescriptionHe?.trim() ||
-      formData?.contentHe?.trim()
-    )
-      return "he";
-    if (
-      formData?.titleAr?.trim() ||
-      formData?.shortDescriptionAr?.trim() ||
-      formData?.contentAr?.trim()
-    )
-      return "ar";
-    return "en";
+  // Get correct field name based on current global language
+  const getFieldName = (baseField: string): string => {
+    if (language === "en") {
+      return baseField; // name, shortDescription, fullDescription
+    }
+    // For he → nameHe, shortDescriptionHe, etc.
+    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
+    return `${baseField}${suffix}`;
   };
 
-  const primaryLang = detectPrimaryLang();
+  const titleField = getFieldName("title");
+  const shortDescField = getFieldName("shortDescription");
+  const contentDescField = getFieldName("content");
 
-  const FIELD_MAP = {
-    en: { title: "title", shortDesc: "shortDescription", content: "content" },
-    he: {
-      title: "titleHe",
-      shortDesc: "shortDescriptionHe",
-      content: "contentHe",
-    },
-    ar: {
-      title: "titleAr",
-      shortDesc: "shortDescriptionAr",
-      content: "contentAr",
-    },
-  };
-
-  const fields = FIELD_MAP[primaryLang];
-  const titleField = fields.title;
-  const shortDescField = fields.shortDesc;
-  const contentField = fields.content;
-
-  const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
+  const isRtl = language === "he" || language === "ar";
+  const dir = isRtl ? "rtl" : "ltr";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 mt-6">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Title */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {tc("title")} <span className="text-red-500">*</span>
+          {t("title")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          value={formData[titleField] || ""}
-          onChange={(e) => onChange({ [titleField]: e.target.value })}
-          placeholder={tc("title_placeholder")}
+          value={formData[titleField] || ""} //  uses correct field
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [titleField]: e.target.value,
+            }))
+          }
+          placeholder={t("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
           dir={dir}
         />
@@ -82,56 +60,70 @@ export default function PoiContentForm({
         </p>
       </div>
 
+      {/* Short Description */}
       <FormFieldWrapper
-        label={tc("short_description")}
+        label={t("short_description")}
         required
         error={
           (formData[shortDescField] || "").length > 150
-            ? tc("exceeds_char_limit", { limit: 150 })
+            ? t("exceeds_char_limit", { limit: 150 })
             : undefined
         }
       >
         <textarea
           value={formData[shortDescField] || ""}
-          onChange={(e) => onChange({ [shortDescField]: e.target.value })}
-          placeholder={tc("short_description_placeholder")}
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [shortDescField]: e.target.value,
+            }))
+          }
+          placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
           maxLength={150}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {tc("char_count", {
+          {t("char_count", {
             count: (formData[shortDescField] || "").length,
             limit: 150,
           })}
         </p>
       </FormFieldWrapper>
+
+      {/* Full Description */}
       <FormFieldWrapper
-        label={tc("full_description")}
+        label={t("full_description")}
         required
         error={
-          (formData[contentField] || "").length > 500
-            ? tc("exceeds_char_limit", { limit: 500 })
+          (formData[contentDescField] || "").length > 500
+            ? t("exceeds_char_limit", { limit: 500 })
             : undefined
         }
       >
         <textarea
-          value={formData[contentField] || ""}
-          onChange={(e) => onChange({ [contentField]: e.target.value })}
-          placeholder={tc("full_description_placeholder")}
+          value={formData[contentDescField] || ""}
+          onChange={(e) =>
+            setFormData((prev: any) => ({
+              ...prev,
+              [contentDescField]: e.target.value,
+            }))
+          }
+          placeholder={t("full_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
           dir={dir}
           maxLength={500}
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
-          {tc("char_count", {
-            count: (formData[contentField] || "").length,
+          {t("char_count", {
+            count: (formData[contentDescField] || "").length,
             limit: 500,
           })}
         </p>
       </FormFieldWrapper>
     </div>
   );
-}
+};
+export default PoiContentForm;

@@ -121,7 +121,7 @@ const DateTimeStep: React.FC<DateTimeStepProps> = ({
     useThemeClasses();
 
   useEffect(() => {
-    markDirty(3);
+    markDirty(2);
   }, [
     startDate,
     eventDays,

@@ -14,10 +14,10 @@ interface Tag {
 }
 
 interface AttributesFormData {
-  nameEn: string;
+  name: string;
   nameHe: string;
   nameAr: string;
-  fullDescriptionEn: string;
+  fullDescription: string;
   fullDescriptionHe: string;
   fullDescriptionAr: string;
   primaryCategory: string;
@@ -61,13 +61,13 @@ const Attributes: FC<AttributesProps> = ({
 }) => {
   const currentName = getLngWiseStr(
     selectedFormLanguage,
-    formData?.nameEn,
+    formData?.name,
     formData?.nameHe,
     formData?.nameAr,
   );
   const currentDescription = getLngWiseStr(
     selectedFormLanguage,
-    formData?.fullDescriptionEn,
+    formData?.fullDescription,
     formData?.fullDescriptionHe,
     formData?.fullDescriptionAr,
   );
@@ -100,8 +100,9 @@ const Attributes: FC<AttributesProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(0);
-
   const selectedCatRef = useRef<HTMLButtonElement | null>(null);
+  const hasGeneratedRef = useRef(false);
+
   useEffect(() => {
     selectedCatRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -142,56 +143,64 @@ const Attributes: FC<AttributesProps> = ({
 
   /* ---------------- Auto Generate Tags ---------------- */
   useEffect(() => {
+    hasGeneratedRef.current = false;
+  }, [editData?._id]);
+
+  /* ---------------- Auto Generate Tags ---------------- */
+  useEffect(() => {
     const currentName = getLngWiseStr(
-      selectedFormLanguage,
-      formData?.nameEn,
+      language,
+      formData?.name,
       formData?.nameHe,
       formData?.nameAr,
     );
 
     const currentDescription = getLngWiseStr(
-      selectedFormLanguage,
-      formData?.fullDescriptionEn,
+      language,
+      formData?.fullDescription,
       formData?.fullDescriptionHe,
       formData?.fullDescriptionAr,
     );
 
     if (!currentName && !currentDescription) return;
 
-    // The two conditions when api call
     const noTagsYet = !formData?.tags?.length;
     const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
 
-    if (!noTagsYet && !nameOrDescChanged) {
-      return;
-    }
+    if (!noTagsYet && !nameOrDescChanged) return;
 
-    getGeneratedTags({
-      name: currentName,
-      description: currentDescription,
-    })
-      .then((res: any) => {
-        if (!res?.data?.length) return;
-
-        const newTags: Tag[] = res.data
-          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
-          .map((tag: Tag) => ({
-            en: tag.en || "",
-            he: tag.he || "",
-            ar: tag.ar || "",
-          }));
-
-        if (newTags.length > 0) {
-          setFormData({
-            ...formData,
-            tags: [...formData.tags, ...newTags],
-          });
-        }
+    // Debounce: cancels any pending call if name/description changes again
+    // before this timer fires. Only the last change in a burst triggers a call.
+    const timer = setTimeout(() => {
+      getGeneratedTags({
+        name: currentName,
+        description: currentDescription,
       })
-      .catch((err) => {
-        console.error("Tag generation failed:", err);
-      });
-  }, [name, description]);
+        .then((res: any) => {
+          if (!res?.data?.length) return;
+
+          const newTags: Tag[] = res.data
+            .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
+            .map((tag: Tag) => ({
+              en: tag.en || "",
+              he: tag.he || "",
+              ar: tag.ar || "",
+            }));
+
+          if (newTags.length > 0) {
+            setFormData({
+              ...formData,
+              tags: [...formData.tags, ...newTags],
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Tag generation failed:", err);
+        });
+    }, 600); // adjust delay to taste
+
+    return () => clearTimeout(timer); // cleanup cancels the stale call
+  }, [name, description, language]);
 
   /* ---------------- Handlers ---------------- */
 

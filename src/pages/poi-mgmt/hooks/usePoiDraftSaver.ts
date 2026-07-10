@@ -43,7 +43,7 @@ export function usePoiDraftSaver({
   }, []);
 
   const saveDraft = useCallback(
-    async (isPublish = false) => {
+    async (isPublish = false, processedFormData?: any) => {
       try {
         let internalPoiId: string | undefined;
 
@@ -53,7 +53,7 @@ export function usePoiDraftSaver({
           setPoiId(res?.id);
         }
 
-        let payload = stepPayloadMap;
+        let payload = processedFormData || stepPayloadMap;
 
         if (isPublish) {
           payload = {

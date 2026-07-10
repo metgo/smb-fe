@@ -18,6 +18,7 @@ import {
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
+import { detectLanguage } from "@/helpers";
 
 interface UseEventWizardStateProps {
   isOpen: boolean;
@@ -581,7 +582,7 @@ export function useEventWizardState({
           )
             newErrors.shortDescription = tc("required_field");
           break;
-        case 3:
+        case 2:
           if (!isMultiDay && !startDate)
             newErrors.startDate = tc("required_field");
           if (isMultiDay && eventDays.some((d) => !d.date))
@@ -591,7 +592,7 @@ export function useEventWizardState({
           if (eventFormat !== "physical" && !onlineLink)
             newErrors.onlineLink = tc("required_field");
           break;
-        case 4:
+        case 3:
           if (capacityType === "limited" && capacity <= 0)
             newErrors.capacity = tc("must_be_greater_than_zero");
           break;
@@ -722,7 +723,56 @@ export function useEventWizardState({
     refetch,
     eventDataRefetch,
   ]);
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
 
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const updated = { ...data };
+
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
+
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
+
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
+
+    return updated;
+  };
   const handlePublish = useCallback(async () => {
     setIsPublishBtnClicked(true);
     let allValid = true;
@@ -738,7 +788,18 @@ export function useEventWizardState({
       return;
     }
     setIsPublishing(true);
-    const resolvedEventId = await saveDraft(true);
+    const processed = detectAndAssignLanguageFields(buildBasicInfoPayload());
+    setEventName(processed.name);
+    setEventNameHe(processed.nameHe);
+    setEventNameAr(processed.nameAr);
+    setShortDescription(processed.shortDescription);
+    setShortDescriptionHe(processed.shortDescriptionHe);
+    setShortDescriptionAr(processed.shortDescriptionAr);
+    setFullDescription(processed.description);
+    setFullDescriptionHe(processed.descriptionHe);
+    setFullDescriptionAr(processed.descriptionAr);
+    handleMarkDirty(1);
+    const resolvedEventId = await saveDraft(true, processed);
     if (resolvedEventId) {
       await createWebsiteAccessItem({
         body: buildWebsiteAccessPayload(),

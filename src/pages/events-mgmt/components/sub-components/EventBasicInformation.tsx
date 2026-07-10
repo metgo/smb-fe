@@ -16,7 +16,7 @@ import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
-import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
+import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface EventBasicInformationProps {
   formData: Record<string, any>;
@@ -200,7 +200,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         {t("step_1_basic_information")}
       </div>
 
-      <ProductContentForm formData={formData} onChange={onChange} />
+      <BusinessContentForm formData={formData} onChange={onChange} />
 
       <SelectableChips
         label="subcategories"

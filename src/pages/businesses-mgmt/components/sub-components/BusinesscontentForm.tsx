@@ -12,67 +12,36 @@ export const BusinessContentForm = ({
   onChange,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
-  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
+  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor, language } =
     useThemeClasses();
-  // Detect which language actually has content, prioritize that
-  const detectPrimaryLang = (): "en" | "he" | "ar" => {
-    if (
-      formData.name?.trim() ||
-      formData.shortDescription?.trim() ||
-      formData.fullDescription?.trim()
-    )
-      return "en";
-    if (
-      formData.nameHe?.trim() ||
-      formData.shortDescriptionHe?.trim() ||
-      formData.fullDescriptionHe?.trim()
-    )
-      return "he";
-    if (
-      formData.nameAr?.trim() ||
-      formData.shortDescriptionAr?.trim() ||
-      formData.fullDescriptionAr?.trim()
-    )
-      return "ar";
-    return "en";
+
+  // Get correct field name based on current global language
+  const getFieldName = (baseField: string): string => {
+    if (language === "en") {
+      return baseField; // name, shortDescription, fullDescription
+    }
+    // For he → nameHe, shortDescriptionHe, etc.
+    const suffix = language.charAt(0).toUpperCase() + language.slice(1);
+    return `${baseField}${suffix}`;
   };
 
-  const primaryLang = detectPrimaryLang();
+  const titleField = getFieldName("name");
+  const shortDescField = getFieldName("shortDescription");
+  const fullDescField = getFieldName("fullDescription");
 
-  const FIELD_MAP = {
-    en: {
-      name: "name",
-      shortDesc: "shortDescription",
-      fullDescription: "fullDescription",
-    },
-    he: {
-      name: "nameHe",
-      shortDesc: "shortDescriptionHe",
-      fullDescription: "fullDescriptionHe",
-    },
-    ar: {
-      name: "nameAr",
-      shortDesc: "shortDescriptionAr",
-      fullDescription: "fullDescriptionAr",
-    },
-  };
-
-  const fields = FIELD_MAP[primaryLang];
-  const titleField = fields.name;
-  const shortDescField = fields.shortDesc;
-  const descField = fields.fullDescription;
-
-  const dir = primaryLang === "he" || primaryLang === "ar" ? "rtl" : "ltr";
+  const isRtl = language === "he" || language === "ar";
+  const dir = isRtl ? "rtl" : "ltr";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Title */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("title")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          value={formData[titleField] || ""}
+          value={formData[titleField] || ""}          //  uses correct field
           onChange={(e) => onChange({ [titleField]: e.target.value })}
           placeholder={t("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
@@ -83,6 +52,7 @@ export const BusinessContentForm = ({
         </p>
       </div>
 
+      {/* Short Description */}
       <FormFieldWrapper
         label={t("short_description")}
         required
@@ -93,7 +63,7 @@ export const BusinessContentForm = ({
         }
       >
         <textarea
-          value={formData[shortDescField] || ""}
+          value={formData[shortDescField] || ""}    
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
           placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
@@ -109,18 +79,19 @@ export const BusinessContentForm = ({
         </p>
       </FormFieldWrapper>
 
+      {/* Full Description */}
       <FormFieldWrapper
         label={t("full_description")}
         required
         error={
-          (formData[descField] || "").length > 500
+          (formData[fullDescField] || "").length > 500
             ? t("exceeds_char_limit", { limit: 500 })
             : undefined
         }
       >
         <textarea
-          value={formData[descField] || ""}
-          onChange={(e) => onChange({ [descField]: e.target.value })}
+          value={formData[fullDescField] || ""}     
+          onChange={(e) => onChange({ [fullDescField]: e.target.value })}
           placeholder={t("full_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
           rows={3}
@@ -129,7 +100,7 @@ export const BusinessContentForm = ({
         />
         <p className={`text-xs ${textTertiary} mt-1`}>
           {t("char_count", {
-            count: (formData[descField] || "").length,
+            count: (formData[fullDescField] || "").length,
             limit: 500,
           })}
         </p>

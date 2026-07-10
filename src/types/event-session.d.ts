@@ -232,7 +232,11 @@ interface IRegistration {
 }
 
 type RegistrationStatus =
-  "CONFIRMED" | "ATTENDED" | "CANCELLED" | "HELD" | "PENDING";
+  | "CONFIRMED"
+  | "ATTENDED"
+  | "CANCELLED"
+  | "HELD"
+  | "PENDING";
 
 interface ITargetAudienceResponse {
   success: boolean;

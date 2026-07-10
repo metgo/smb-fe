@@ -12,7 +12,7 @@ import {
   Eye,
   CreditCard,
   FileText,
-  LanguagesIcon,
+  // LanguagesIcon,
   // LanguagesIcon,
 } from "lucide-react";
 import {
@@ -51,7 +51,6 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 // import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
@@ -72,8 +71,6 @@ export default function CreateProductWizard({
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
   const { t: tp } = useTranslation("common");
-
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
   const { isTraveller } = useUserRoles();
@@ -236,9 +233,6 @@ export default function CreateProductWizard({
         : undefined,
   });
 
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -425,14 +419,13 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: tp("translation"), icon: LanguagesIcon },
-    { number: 3, title: t("product_segmentation"), icon: Package },
-    { number: 4, title: t("product_pricing"), icon: CreditCard },
-    { number: 5, title: t("product_media"), icon: ImageIcon },
-    { number: 6, title: t("product_delivery_service"), icon: Truck },
-    { number: 7, title: t("product_review"), icon: Eye },
+    // { number: 2, title: tp("translation"), icon: LanguagesIcon },
+    { number: 2, title: t("product_segmentation"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: CreditCard },
+    { number: 4, title: t("product_media"), icon: ImageIcon },
+    { number: 5, title: t("product_delivery_service"), icon: Truck },
+    { number: 6, title: t("product_review"), icon: Eye },
   ];
-
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -449,11 +442,11 @@ export default function CreateProductWizard({
           newErrors.shortDescEn = t("field_required");
 
         break;
-      case 3:
+      case 2:
         if (!formData.primaryCategory)
           newErrors.categories = t("select_at_least_one_category");
         break;
-      case 4:
+      case 3:
         if (!formData.sellingPrice || parseFloat(formData.sellingPrice) <= 0) {
           newErrors.sellingPrice = t("invalid_price");
         }
@@ -540,44 +533,57 @@ export default function CreateProductWizard({
     await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
   const detectAndAssignLanguageFields = (data: any): any => {
-    const name = data.name?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const description = data.description?.trim() || "";
-
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = name || shortDescription || description;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.nameHe = name || data.nameHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.descriptionHe = description || data.descriptionHe;
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.nameAr = name || data.nameAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.descriptionAr = description || data.descriptionAr;
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    }
-    // else: remains in English fields (default)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
 
     return updated;
   };
+
   // Draft Save Payload per Step
   const stepPayloadMap = {
     completionPercent: completionPercent,
@@ -729,11 +735,11 @@ export default function CreateProductWizard({
             presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
           />
         );
+      // case 2:
+      //   return (
+      //     <ProductTranslateButton formData={formData} onChange={handleChange} />
+      //   );
       case 2:
-        return (
-          <ProductTranslateButton formData={formData} onChange={handleChange} />
-        );
-      case 3:
         return (
           <Attributes
             name={formData.nameHe || formData.name || formData.nameAr}
@@ -751,11 +757,11 @@ export default function CreateProductWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 4:
+      case 3:
         return <ProductPricingAvailability {...commonProps} />;
-      case 5:
+      case 4:
         return <Media {...mediaProps} {...commonProps} />;
-      case 6:
+      case 5:
         return (
           <DeliveryPolicyOption
             isProduct
@@ -765,7 +771,7 @@ export default function CreateProductWizard({
             setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
-      case 7:
+      case 6:
         return (
           <ProductReviewSubmit
             {...commonProps}
