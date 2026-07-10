@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { X, Loader, Sparkles, Loader2 } from "lucide-react";
+import { X, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -175,19 +175,6 @@ const Attributes: FC<AttributesProps> = ({
 
   return (
     <div className="relative">
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0  bg-white dark:bg-black/30 z-50 flex items-center justify-center rounded-lg">
-          {" "}
-          <div className="flex flex-col items-center gap-3 text-black dark:text-white">
-            <Loader className="w-10 h-10 animate-spin" />
-            <p className="text-sm font-medium">
-              {t("generating_tags") || "Generating tags..."}
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-6">
         {variant === "full" && (
           <>

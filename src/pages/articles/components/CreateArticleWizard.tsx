@@ -26,7 +26,7 @@ import { ReactSelect } from "@/components/form-fields";
 
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
-import { detectLanguage } from "@/helpers";
+import { detectLanguage, getLngWiseStr } from "@/helpers";
 // import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
@@ -158,10 +158,12 @@ const CreateArticleWizard = ({
             const mapped = updatedImages.map((img) => ({
               image: img.image,
               alt:
-                existingArticle.title ||
-                existingArticle.titleHe ||
-                existingArticle.titleAr ||
-                "",
+                getLngWiseStr(
+                  language,
+                  existingArticle.title,
+                  existingArticle.titleHe,
+                  existingArticle.titleAr,
+                ) || "",
               isPrimary: img.isPrimary,
             }));
             updateBlog({
@@ -268,13 +270,24 @@ const CreateArticleWizard = ({
   const handleGenerateSeo = async () => {
     try {
       // Get the first available language content
-      const titleText = formData.title || formData.titleHe || formData.titleAr;
-      const descText =
-        formData.shortDescription ||
-        formData.shortDescriptionHe ||
-        formData.shortDescriptionAr;
-      const contentText =
-        formData.content || formData.contentHe || formData.contentAr;
+      const titleText = getLngWiseStr(
+        language,
+        formData.title,
+        formData.titleHe,
+        formData.titleAr,
+      );
+      const descText = getLngWiseStr(
+        language,
+        formData.shortDescription,
+        formData.shortDescriptionHe,
+        formData.shortDescriptionAr,
+      );
+      const contentText = getLngWiseStr(
+        language,
+        formData.content,
+        formData.contentHe,
+        formData.contentAr,
+      );
 
       const result = await generateBlogSeo({
         title: titleText,
