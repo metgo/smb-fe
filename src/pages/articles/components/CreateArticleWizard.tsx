@@ -60,7 +60,6 @@ const EMPTY_FORM: IArticleFormData = {
   metaDescription: "",
   metaDescriptionHe: "",
   metaDescriptionAr: "",
-  slug: "",
   status: "DRAFT",
 };
 
@@ -91,7 +90,6 @@ function buildFormFromArticle(article: any): IArticleFormData {
     metaDescription: article.metaDescription || "",
     metaDescriptionHe: article.metaDescriptionHe || "",
     metaDescriptionAr: article.metaDescriptionAr || "",
-    slug: article.slug || "",
     status:
       (article?.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
@@ -102,6 +100,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
 interface CreateArticleWizardProps {
   onClose: () => void;
   existingArticle?: any;
+  refetch: () => void;
 }
 
 function getTagsField(lang: Language): keyof IArticleFormData {
@@ -113,6 +112,7 @@ function getTagsField(lang: Language): keyof IArticleFormData {
 const CreateArticleWizard = ({
   onClose,
   existingArticle,
+  refetch,
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
   const { t: tc } = useTranslation("common");
@@ -296,10 +296,6 @@ const CreateArticleWizard = ({
         metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
         metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
         tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
-        slug:
-          prev.slug ||
-          result.slug ||
-          titleText.toLowerCase().replace(/\s+/g, "-"),
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -503,6 +499,7 @@ const CreateArticleWizard = ({
 
       // Step 2: Save with processed data
       await saveArticle(true, processedFormData);
+      refetch();
     } finally {
       setIsPublishing(false);
     }

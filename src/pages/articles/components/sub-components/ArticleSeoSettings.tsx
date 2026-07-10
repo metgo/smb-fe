@@ -108,36 +108,7 @@ export default function ArticleSeoSettings({
         </div>
       </div>
 
-      {/* Slug */}
-      <div>
-        <label
-          className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
-        >
-          {t("url_slug")}
-        </label>
-        <div
-          className={`flex items-center border ${borderColor} rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500`}
-        >
-          <span
-            className={`px-3 py-2.5 text-sm ${textTertiary} ${bgSecondary} border-r ${borderColor} select-none`}
-          >
-            /
-          </span>
-          <input
-            type="text"
-            value={formData.slug || ""}
-            onChange={(e) =>
-              onChange({
-                slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
-              })
-            }
-            placeholder={t("url_slug_placeholder")}
-            className={`flex-1 px-3 py-2.5 ${bgPrimary} ${textPrimary} focus:outline-none text-sm font-mono`}
-            dir="ltr"
-          />
-        </div>
-        <p className={`text-xs ${textTertiary} mt-1`}>{t("url_slug_hint")}</p>
-      </div>
+     
 
       {/* Summary */}
       <div>
