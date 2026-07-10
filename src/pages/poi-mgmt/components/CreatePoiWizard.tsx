@@ -23,7 +23,6 @@ import {
   PoiBasicInfo,
   PoiLocation,
   PoiReviewSubmit,
-  PoiAttributes,
   PoiContactInfo,
   PoiMedia,
   // PoiTranslateButton,
@@ -612,16 +611,7 @@ export default function CreatePoiWizard({
         );
       case 4:
         return (
-          // <PoiAttributes
-          //   formData={formData}
-          //   setFormData={setFormData}
-          //   name={formData.title || formData.titleHe || formData.titleAr}
-          //   description={
-          //     formData.shortDescription ||
-          //     formData.shortDescriptionHe ||
-          //     formData.shortDescriptionAr
-          //   }
-          // />
+      
           <Attributes
             selectedFormLanguage={language}
             editData={editData}
