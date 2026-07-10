@@ -118,7 +118,6 @@ export default function CreatePoiWizard({
     formData.shortDescriptionHe,
     formData.shortDescriptionAr,
   );
-  console.log("🚀 ~ CreatePoiWizard ~ formData:", formData);
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
@@ -611,7 +610,6 @@ export default function CreatePoiWizard({
         );
       case 4:
         return (
-      
           <Attributes
             selectedFormLanguage={language}
             editData={editData}
