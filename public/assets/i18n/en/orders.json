@@ -49,8 +49,10 @@
   "payment_status": "Payment Status",
   "order_status_update_success": "Order status updated successfully",
   "order_status_update_failed": "Failed to update order status",
+  "completed_order_status_locked": "Completed orders cannot be changed",
   "deliveryFee": "Delivery Fee",
-  "price": "Price",
+  "price": "Total Amount",
+  "totalOrderAmount": "Total Amount",
 
   "pick_up": "Pickup",
   "deliver": "Delivery",
@@ -108,6 +110,7 @@
   "digital": "Digital",
   "voucher": "Voucher",
   "voucher_amount": "Voucher Amount",
+  "voucher_paid_amount": "Amount paid by voucher",
   "credit_card_amount": "Credit Card Amount",
   "vendors": "Vendors",
   "campaign": "Campaign",
@@ -204,5 +207,13 @@
   "resend_loading": "Resending...",
   "resend_success": "Resent successfully!",
   "submitting": "Submitting...",
-  "refund_success": "Refund Success"
+  "refund_success": "Refund Success",
+  "paymentStatus": "Payment Status",
+  "productCount": "Product Count",
+  "noDataToExport": "No data to export",
+  "resend": "Resend",
+  "website": "Website",
+  "column_settings": "Column Settings",
+  "reset_to_default": "Reset to Default",
+  "select_columns_to_display": "Select columns to display"
 }

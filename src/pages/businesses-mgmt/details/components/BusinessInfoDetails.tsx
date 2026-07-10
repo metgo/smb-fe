@@ -6,6 +6,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { ConnectedWebsites } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
+import { getLngWiseStr } from "@/helpers";
 
 interface Business {
   shortDescription: string;
@@ -32,7 +33,7 @@ interface BusinessInfoDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
-  const { isDark } = useThemeClasses();
+  const { isDark, language } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
 
   return (
@@ -40,12 +41,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
-        content={
-          business?.shortDescriptionHe ||
-          business?.shortDescription ||
-          business?.shortDescriptionAr ||
-          "-"
-        }
+        content={getLngWiseStr(
+          language,
+          business?.shortDescription,
+          business?.shortDescriptionHe,
+          business?.shortDescriptionAr,
+        )}
         icon={
           <FileText
             className={clsx(
@@ -60,12 +61,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
       {/* Full Description */}
       <DescriptionCard
         title={t("full_description")}
-        content={
-          business?.descriptionHe ||
-          business?.description ||
-          business?.descriptionAr ||
-          "-"
-        }
+        content={getLngWiseStr(
+          language,
+          business?.description,
+          business?.descriptionHe,
+          business?.descriptionAr,
+        )}
         icon={
           <AlignLeft
             className={clsx(

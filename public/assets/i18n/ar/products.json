@@ -1,7 +1,7 @@
 {
   "product": "منتج",
   "products_management": "إدارة المنتجات",
-  "products_management_desc": "نظام شامل لإدارة كتالوج المنتجات للشركات في منطقة النقب الغربية",
+  "products_management_desc": "نظام شامل لإدارة كتالوج المنتجات للشركات",
   "launch_products_view": "عرض المنتجات",
   "products_list": "قائمة المنتجات",
   "product_details": "تفاصيل المنتج",
@@ -145,5 +145,6 @@
   "save_as_draft": "حفظ كمسودة",
   "submit_for_approval": "إرسال للموافقة",
   "no_products": "لا توجد منتجات",
-  "no_products_desc": "ابدأ بإنشاء منتجك الأول"
+  "no_products_desc": "ابدأ بإنشاء منتجك الأول",
+  "export": "تصدير"
 }

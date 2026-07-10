@@ -9,6 +9,7 @@ import {
   XCircle,
   CheckCheck,
   X,
+  Eye,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -26,8 +27,18 @@ import {
   useGetAllNotificationsQuery,
   useGetNotificatonStatsQuery,
   useMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
 } from "@/store/api/notificationApi";
+import {
+  useApproveCategorySuggestionMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
+import { useGetChangesByEntityQuery } from "@/store/api/businessQueryApi";
+import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { toast } from "sonner";
 import { useSocket } from "@/providers/SocketProvider";
+import { ViewChangesModal } from "@/components/change-tracking";
+import { useAppSelector } from "@/hooks/hooks";
 
 const SEARCH_STORAGE_KEY = "notificationSearchTerm";
 
@@ -36,8 +47,13 @@ export default function NotificationsMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("notifications");
   const { t: tc } = useTranslation("common");
+  const userRole = useAppSelector((state) => state.auth.userRole);
 
   const [markNotificationsAsRead] = useMarkNotificationsAsReadMutation();
+  const [updateNotification] = useUpdateNotificationMutation();
+  const [approveCategorySuggestion] = useApproveCategorySuggestionMutation();
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [updateProduct] = useUpdateProductMutation();
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +67,24 @@ export default function NotificationsMgmtPage() {
   const [selectedNotifications, setSelectedNotifications] = useState<
     Set<string>
   >(new Set());
+
+  const [viewChangesState, setViewChangesState] = useState({
+    isOpen: false,
+    entityType: "business" as "business" | "product" | "event" | "poi",
+    entityId: "",
+    entityName: "",
+  });
+
+  const { data: changesData, isLoading: changesLoading } =
+    useGetChangesByEntityQuery(
+      {
+        entityType: viewChangesState.entityType,
+        entityId: viewChangesState.entityId,
+      },
+      {
+        skip: !viewChangesState.isOpen || !viewChangesState.entityId,
+      },
+    );
 
   const QueryParams = useMemo(() => {
     const params: any = {
@@ -67,6 +101,7 @@ export default function NotificationsMgmtPage() {
     data: notifications,
     refetch: refetchNotifList,
     isFetching,
+    isError: isNotifError,
   } = useGetAllNotificationsQuery(QueryParams);
   const { data: notifStats, refetch: refetchNotifStats } =
     useGetNotificatonStatsQuery();
@@ -87,7 +122,12 @@ export default function NotificationsMgmtPage() {
     };
   }, [socket]);
 
-  const hasMore = notifications?.meta?.hasNextPage || false;
+  const hasMore =
+    !isNotifError &&
+    notifications?.meta?.hasNextPage &&
+    notifications?.data?.length > 0
+      ? true
+      : false;
 
   const {
     isDark,
@@ -104,27 +144,36 @@ export default function NotificationsMgmtPage() {
   } = useThemeClasses();
 
   useEffect(() => {
-    if (!notifications?.data) return;
+    if (!notifications?.data || notifications.data.length === 0) return;
     if (page === 1) {
       setAllNotifications(notifications.data);
     } else {
       setAllNotifications((prev) => {
+        if (!prev || prev.length === 0) return notifications.data;
         const existingIds = new Set(prev.map((b) => b._id));
         const newItems = notifications.data.filter(
           (b: any) => !existingIds.has(b._id),
         );
-        return [...prev, ...newItems];
+        return newItems.length > 0 ? [...prev, ...newItems] : prev;
       });
     }
-  }, [notifications?.data, page]);
+  }, [notifications, page]);
+
+  // Fallback: stop loading if we've accumulated too many items or hit an error
+  useEffect(() => {
+    if (isNotifError) {
+      setPage(1); // Reset to page 1 on error
+    }
+  }, [isNotifError]);
 
   useEffect(() => {
     setPage(1);
   }, [readFilter, typeFilter, itemTypeFilter]);
 
   const fetchNextPage = () => {
-    if (!hasMore || isFetching) return;
+    if (!hasMore || isFetching || isNotifError) return;
     setPage((prev) => prev + 1);
+    // RTK Query will automatically refetch when QueryParams (with updated page) changes
   };
 
   const getNotificationIcon = (type: TNotifType) => {
@@ -157,7 +206,7 @@ export default function NotificationsMgmtPage() {
     >
       <div className="h-[calc(100vh-64px)] flex flex-col">
         {/* Fixed Header */}
-        <div className="shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="shrink-0 p-4 sm:p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="max-w-400 mx-auto">
             <div className="flex items-center justify-between">
               <div>
@@ -171,7 +220,7 @@ export default function NotificationsMgmtPage() {
         </div>
 
         {/* Stats & Toolbar */}
-        <div className="shrink-0 p-6 pb-0">
+        <div className="shrink-0 p-4 sm:p-6 pb-0">
           <div className="max-w-400 mx-auto">
             {/* Stats Cards */}
             {notifStats && <NotificationStatsCards stats={notifStats} />}
@@ -261,7 +310,10 @@ export default function NotificationsMgmtPage() {
         </div>
 
         {/* Scrollable Notifications List */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        <div
+          id="scrollableDiv"
+          className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6"
+        >
           <div className="max-w-400 mx-auto">
             {allNotifications?.length === 0 ? (
               <div
@@ -373,7 +425,51 @@ export default function NotificationsMgmtPage() {
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {allNotifications?.map((notification) => {
                       const itemType = notification?.itemType;
+                      if (!itemType) return null;
                       const queryParam = `${itemType.toLowerCase()}Id`;
+                      const isApproved = notification.status === "APPROVED";
+                      const canApprove =
+                        notification.notifType === "ACTION" &&
+                        notification.status !== "CLOSED" &&
+                        (itemType === "BUSINESS" || itemType === "PRODUCT");
+
+                      const markApprovedLocally = () => {
+                        setAllNotifications((prev) =>
+                          prev.map((item) =>
+                            item._id === notification._id
+                              ? {
+                                  ...item,
+                                  status: "APPROVED",
+                                  isRead: true,
+                                }
+                              : item,
+                          ),
+                        );
+                      };
+
+                      const handleViewChanges = async (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        await markNotificationsAsRead(notification._id);
+
+                        const typeMap: Record<
+                          string,
+                          "business" | "product" | "event" | "poi"
+                        > = {
+                          BUSINESS: "business",
+                          PRODUCT: "product",
+                          EVENT: "event",
+                          POI: "poi",
+                        };
+
+                        setViewChangesState({
+                          isOpen: true,
+                          entityType: typeMap[itemType] || "business",
+                          entityId: notification.itemId,
+                          entityName:
+                            notification?.content?.[language]?.title ||
+                            itemType,
+                        });
+                      };
 
                       const handleNavigate = async () => {
                         await markNotificationsAsRead(notification._id);
@@ -420,7 +516,7 @@ export default function NotificationsMgmtPage() {
                                     : `font-semibold ${textPrimary}`,
                                 )}
                               >
-                                {notification?.content?.[language].title}
+                                {notification?.content?.[language]?.title}
                               </h4>
 
                               <p
@@ -439,6 +535,78 @@ export default function NotificationsMgmtPage() {
                               >
                                 {timeAgo(notification.createdAt)}
                               </p>
+
+                              {canApprove && (
+                                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (isApproved) return;
+                                      try {
+                                        if (
+                                          notification.actionData
+                                            ?.suggestedCategory
+                                        ) {
+                                          await approveCategorySuggestion({
+                                            itemId: notification.itemId,
+                                            itemType: notification.itemType,
+                                            categoryTitle:
+                                              notification.actionData
+                                                ?.suggestedCategory || "",
+                                            notificationId: notification._id,
+                                          }).unwrap();
+                                        } else if (itemType === "BUSINESS") {
+                                          await updateBusiness({
+                                            businessId: notification.itemId,
+                                            body: { status: "APPROVED" },
+                                          }).unwrap();
+                                        } else if (itemType === "PRODUCT") {
+                                          await updateProduct({
+                                            productId: notification.itemId,
+                                            body: { status: "APPROVED" },
+                                          }).unwrap();
+                                        }
+                                        await updateNotification({
+                                          notificationId: notification._id,
+                                          body: {
+                                            status: "APPROVED",
+                                            isRead: true,
+                                          },
+                                        }).unwrap();
+                                        markApprovedLocally();
+                                        toast.success("Approved successfully!");
+                                        refetchNotifList();
+                                      } catch (err) {
+                                        toast.error(
+                                          "Failed to approve. Please try again.",
+                                        );
+                                      }
+                                    }}
+                                    disabled={isApproved}
+                                    className={clsx(
+                                      "px-3 py-1.5 text-xs font-medium text-white rounded-lg transition",
+                                      isApproved
+                                        ? "bg-green-700 opacity-60 cursor-not-allowed"
+                                        : "bg-green-600 hover:bg-green-700",
+                                    )}
+                                  >
+                                    {isApproved ? "Approved" : "Approve"}
+                                  </button>
+
+                                  {(notification.status === "PENDING" ||
+                                    notification.status === "DRAFT") &&
+                                    (notification.changesCount as number) >
+                                      0 && (
+                                      <button
+                                        onClick={handleViewChanges}
+                                        className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition flex items-center gap-1"
+                                      >
+                                        <Eye size={14} />
+                                        View Changes
+                                      </button>
+                                    )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -451,6 +619,40 @@ export default function NotificationsMgmtPage() {
           </div>
         </div>
       </div>
+
+      <ViewChangesModal
+        isOpen={viewChangesState.isOpen}
+        onClose={() =>
+          setViewChangesState({ ...viewChangesState, isOpen: false })
+        }
+        entityType={viewChangesState.entityType}
+        entityId={viewChangesState.entityId}
+        entityName={viewChangesState.entityName}
+        changeData={
+          changesData &&
+          Array.isArray(changesData.changes) &&
+          changesData.changes.length > 0
+            ? {
+                changeId: changesData._id || undefined,
+                changes: changesData.changes || [],
+                summary: changesData.summary || "",
+                changesCount: changesData.changesCount || 0,
+                changedBy: changesData.changedBy || {
+                  firstName: "",
+                  email: "",
+                },
+                changedAt: changesData.changedAt || new Date(),
+                status: changesData.status || "PENDING",
+              }
+            : undefined
+        }
+        isLoading={changesLoading}
+        userRole={userRole as any}
+        onApprove={() => {
+          setViewChangesState({ ...viewChangesState, isOpen: false });
+          refetchNotifList();
+        }}
+      />
     </div>
   );
 }

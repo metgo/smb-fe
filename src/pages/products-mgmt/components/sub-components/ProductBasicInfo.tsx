@@ -1,7 +1,7 @@
 import { ReactSelect } from "@/components/form-fields";
-import ProductContentForm from "./ProductContentForm";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { getLngWiseStr } from "@/helpers";
+import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
@@ -9,7 +9,6 @@ interface ProductBasicInfoProps {
   setSelectedFormLanguage: (lang: Language) => void;
   formData: {
     businessId: string;
-
     name: string;
     nameHe: string;
     nameAr: string;
@@ -87,7 +86,7 @@ const ProductBasicInfo = ({
         )}
       </div>
       {/* Language Selector */}
-      <ProductContentForm formData={formData} onChange={handleChange} />
+      <BusinessContentForm formData={formData} onChange={handleChange} />
     </div>
   );
 };

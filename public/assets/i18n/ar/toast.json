@@ -6,11 +6,14 @@
   "draft_failed": "فشل حفظ المسودة",
   "fill_all_fields": "يرجى ملء جميع الحقول المطلوبة قبل المتابعة",
   "name_required": "يرجى إدخال اسم قبل الحفظ",
+  "short_description_required": "يرجى إدخال وصف قصير قبل الحفظ",
+  "full_description_required": "يرجى إدخال وصف كامل قبل الحفظ",
   "image_upload_info": "بدأ تحميل الصورة. يرجى الانتظار…",
   "image_upload_success": "تم تحميل الصورة بنجاح",
   "image_upload_failed": "فشل تحميل الصورة",
   "image_deleted": "تم حذف الصورة بنجاح",
   "delete_failed": "فشل حذف الصورة",
+  "max_images_limit": "يمكنك تحميل حتى {{count}} صور فقط",
   "login_failed": "فشل تسجيل الدخول",
 
   "poi_delete_loading": "جاري حذف نقاط الاهتمام...",
@@ -63,5 +66,7 @@
   "empty_content_info": "يرجى إضافة فئة واحدة على الأقل تحتوي على أعمال.",
   "unsaved_changes": "تغييرات غير محفوظة",
   "close_without_saving": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد الإغلاق بدون الحفظ؟",
-  "close": "إغلاق"
+  "close": "إغلاق",
+
+  "login_attempt_rest_success": "تمت إعادة تعيين محاولات تسجيل الدخول بنجاح!"
 }

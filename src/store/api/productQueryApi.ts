@@ -35,6 +35,13 @@ export const productQueryApi = createApi({
         params: { productId: id }, // send as query parameter
       }),
     }),
+    getContentManagementProducts: builder.query<any, any>({
+      query: (params) => ({
+        url: `${endpoints.contentManagementProducts}?sortBy=DESC`,
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 export const {
@@ -43,4 +50,5 @@ export const {
   useLazyGetProductbyIdQuery,
   useGetProductStatsQuery,
   useGetProductStatsByIdQuery,
+  useGetContentManagementProductsQuery,
 } = productQueryApi;

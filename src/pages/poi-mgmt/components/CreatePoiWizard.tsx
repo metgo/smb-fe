@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   MapPin,
@@ -9,7 +9,8 @@ import {
   Tag,
   FileText,
   Users,
-  Languages as LanguagesIcon,
+  // LanguagesIcon,
+  // Languages as LanguagesIcon,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -25,24 +26,30 @@ import {
   PoiAttributes,
   PoiContactInfo,
   PoiMedia,
-  PoiTranslateButton,
+  // PoiTranslateButton,
+  PoiContentForm,
+  // PoiTranslateButton,
 } from "./sub-components";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
-import { parseAddress } from "@/helpers";
+import { detectLanguage, parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
-import PoiContentForm from "./sub-components/PoiContentForm";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  poiDataRefetch?: any;
   opMode?: TOpMode;
 }
 
@@ -50,12 +57,14 @@ export default function CreatePoiWizard({
   onClose,
   editData,
   refetch,
+  poiDataRefetch,
   opMode = IOpMode.CREATE,
 }: CreatePoiWizardProps) {
   const { t } = useTranslation("poi");
   const { t: tt } = useTranslation("toast");
-  const { theme } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary, language } = useThemeClasses();
+  const { t: tc } = useTranslation("common");
+
+  const { textPrimary, theme, language } = useThemeClasses();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -65,12 +74,10 @@ export default function CreatePoiWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
   const [selectedDmoId, setSelectedDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [poiId, setPoiId] = useState<string>("");
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
@@ -99,10 +106,6 @@ export default function CreatePoiWizard({
     videoUrl: "",
     virtualTourUrl: "",
   });
-
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
@@ -155,7 +158,7 @@ export default function CreatePoiWizard({
   const [updatePoi, { isLoading: isSaving }] = useUpdatePoiMutation();
   const [initPoiCreate, { isLoading: isCreating }] = useInitPoiCreateMutation();
 
-  const totalSteps = 7;
+  const totalSteps = 6;
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -240,7 +243,7 @@ export default function CreatePoiWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.long),
+          long: String(editData.geoLocation.long),
         });
       }
       if (editData?.address) {
@@ -256,22 +259,6 @@ export default function CreatePoiWizard({
       }
       setSelectAuthorityId(editData?.authorityId?._id || "");
       setSelectedDmoId(editData?.dmoId?._id || "");
-      // Detect primary language from edit data
-      if (
-        editData?.nameHe ||
-        editData?.shortDescriptionHe ||
-        editData?.descriptionHe
-      ) {
-        setSelectedFormLanguage("he");
-      } else if (
-        editData?.nameAr ||
-        editData?.shortDescriptionAr ||
-        editData?.descriptionAr
-      ) {
-        setSelectedFormLanguage("ar");
-      } else {
-        setSelectedFormLanguage("en");
-      }
 
       if (opMode === IOpMode.EDIT) {
         setGalleryImages(editData?.images || []);
@@ -287,12 +274,12 @@ export default function CreatePoiWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: t("step_translation"), icon: LanguagesIcon },
-    { number: 3, title: t("step_contact_info"), icon: Users },
-    { number: 4, title: t("step_media"), icon: ImageIcon },
-    { number: 5, title: t("step_attributes"), icon: Tag },
-    { number: 6, title: t("step_location"), icon: MapPin },
-    { number: 7, title: t("step_review_submit"), icon: CheckCircle },
+    // { number: 2, title: t("step_translation"), icon: LanguagesIcon },
+    { number: 2, title: t("step_contact_info"), icon: Users },
+    { number: 3, title: t("step_media"), icon: ImageIcon },
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_location"), icon: MapPin },
+    { number: 6, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   const addr = parseAddress(address);
@@ -317,7 +304,7 @@ export default function CreatePoiWizard({
       city: addr.city,
       location: addr.location,
     },
-    geoLocation: { lat: geo.lat, long: geo.lng },
+    geoLocation: { lat: geo.lat, long: geo.long },
     tagsId: formData.tags?.map((tag: any) => ({
       en: tag.en,
       he: tag.he,
@@ -337,6 +324,7 @@ export default function CreatePoiWizard({
     opMode,
     onClose,
     refetch,
+    poiDataRefetch,
     currentStep,
     poiId,
     setPoiId,
@@ -348,10 +336,16 @@ export default function CreatePoiWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "poi",
@@ -381,9 +375,10 @@ export default function CreatePoiWizard({
           newErrors.fullDescription = t("required_field");
         if (!selectedDmoId) newErrors.dmo = t("required_field");
         if (!selectedAuthorityId) newErrors.authority = t("required_field");
+
         break;
 
-      case 6:
+      case 5:
         if (!addr.location) newErrors.address = t("required_field");
         break;
     }
@@ -409,17 +404,87 @@ export default function CreatePoiWizard({
 
   const handleSaveDraft = async () => {
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (poiId) {
+    const resolvedPoiId = await saveDraft(false);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
+      refetch?.();
     }
   };
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
 
+  const detectAndAssignLanguageFields = (data: any): any => {
+    const updated = { ...data };
+
+    const fieldGroups = [
+      { base: "title", en: "title", he: "titleHe", ar: "titleAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "content",
+        en: "content",
+        he: "contentHe",
+        ar: "contentAr",
+      },
+    ];
+
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
+
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
+
+    return updated;
+  };
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.content || "").length > 500 ||
+      (formData.contentHe || "").length > 500 ||
+      (formData.contentAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     let allValid = true;
     for (let i = 1; i <= 6; i++) {
       if (!validateStep(i)) {
@@ -433,13 +498,28 @@ export default function CreatePoiWizard({
       return;
     }
     setIsPublishing(true);
-    if (poiId) {
+    const corrected = detectAndAssignLanguageFields(formData);
+
+    const processedFormData = {
+      ...stepPayloadMap,
+      name: corrected.title,
+      nameHe: corrected.titleHe,
+      nameAr: corrected.titleAr,
+      shortDescription: corrected.shortDescription,
+      shortDescriptionHe: corrected.shortDescriptionHe,
+      shortDescriptionAr: corrected.shortDescriptionAr,
+      description: corrected.content,
+      descriptionHe: corrected.contentHe,
+      descriptionAr: corrected.contentAr,
+    };
+    const resolvedPoiId = await saveDraft(true, processedFormData);
+    if (resolvedPoiId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: poiId,
+        itemId: resolvedPoiId,
       });
+      await Promise.all([poiDataRefetch?.(), refetch?.()]);
     }
-    await saveDraft(true);
     setIsPublishing(false);
   };
 
@@ -468,22 +548,15 @@ export default function CreatePoiWizard({
               websiteVisibilityIds={websiteVisibilityIds}
               setWebsiteVisibilityIds={setWebsiteVisibilityIds}
               poiAssociatedWebsites={editData?.associatedWebsites ?? []}
-              selectedFormLanguage={selectedFormLanguage}
-              setSelectedFormLanguage={setSelectedFormLanguage}
             />
-            <PoiContentForm
-              formData={formData}
-              onChange={handleChange}
-              syncKey={editData?._id}
-              editingLanguage={language}
-            />
+            <PoiContentForm formData={formData} setFormData={setFormData} />
           </div>
         );
+      // case 2:
+      //   return (
+      //     <PoiTranslateButton formData={formData} onChange={handleChange} />
+      //   );
       case 2:
-        return (
-          <PoiTranslateButton formData={formData} onChange={handleChange} />
-        );
-      case 3:
         return (
           <PoiContactInfo
             t={t}
@@ -493,7 +566,7 @@ export default function CreatePoiWizard({
             markDirty={markDirty}
           />
         );
-      case 4:
+      case 3:
         return (
           <PoiMedia
             markDirty={markDirty}
@@ -523,7 +596,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 5:
+      case 4:
         return (
           <PoiAttributes
             formData={formData}
@@ -536,7 +609,7 @@ export default function CreatePoiWizard({
             }
           />
         );
-      case 6:
+      case 5:
         return (
           <PoiLocation
             t={t}
@@ -546,7 +619,7 @@ export default function CreatePoiWizard({
             setAddress={setAddress}
           />
         );
-      case 7:
+      case 6:
         return (
           <PoiReviewSubmit
             t={t}
@@ -564,23 +637,26 @@ export default function CreatePoiWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className={clsx("px-6 py-4 border-b", textPrimary)}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className={clsx("text-2xl", textPrimary)}>
+      <div className={clsx("px-4 py-3 md:px-6 md:py-4 border-b", textPrimary)}>
+        <div className="flex items-center justify-between gap-3 mb-3 md:mb-4">
+          <div className="min-w-0">
+            <h2 className={clsx("text-lg md:text-2xl truncate", textPrimary)}>
               {opMode === IOpMode.EDIT ? t("edit_poi") : t("create_poi")}
             </h2>
             <p
-              className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`text-xs md:text-sm truncate ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
             {/* Completion circle */}
-            <div className="relative w-14 h-14">
-              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+            <div className="relative w-10 h-10 md:w-14 md:h-14">
+              <svg
+                className="w-10 h-10 md:w-14 md:h-14 -rotate-90"
+                viewBox="0 0 56 56"
+              >
                 <circle
                   cx="28"
                   cy="28"
@@ -613,7 +689,7 @@ export default function CreatePoiWizard({
               <div className="absolute inset-0 flex items-center justify-center">
                 <span
                   className={clsx(
-                    "text-xs font-bold",
+                    "text-[10px] md:text-xs font-bold",
                     completionPercent >= 70
                       ? "text-green-600"
                       : completionPercent >= 40
@@ -630,53 +706,15 @@ export default function CreatePoiWizard({
         </div>
 
         {/* Step progress */}
-        <div className="flex items-center gap-2 mb-4">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.number}
-                onClick={() => setCurrentStep(step.number)}
-                className="flex-1 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                      step.number === currentStep
-                        ? "bg-teal-600 text-white"
-                        : step.number < currentStep
-                          ? "bg-green-600 text-white"
-                          : theme === "dark"
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {step.number < currentStep ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                  </div>
-                  {step.number < totalSteps && (
-                    <div
-                      className={`flex-1 h-1 rounded ${step.number < currentStep ? "bg-green-600" : theme === "dark" ? "bg-gray-800" : "bg-gray-200"}`}
-                    />
-                  )}
-                </div>
-                <div className="mt-1">
-                  <span
-                    className={`text-xs block text-center text-nowrap overflow-hidden ${textTertiary}`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <WizardStepper
+          steps={steps}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onStepClick={setCurrentStep}
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">{renderStep()}</div>
 
       <WizardFooter
         currentStep={currentStep}

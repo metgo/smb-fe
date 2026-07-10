@@ -1,12 +1,14 @@
 import { toast } from "sonner";
+import axios from "axios";
+
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bookmark,
   ChevronDown,
+  Compass,
   Edit,
   Eye,
-  MoreHorizontal,
   MousePointer,
   Plus,
   Share2,
@@ -45,8 +47,95 @@ import {
 import { businessTabs } from "@/constants/tabs";
 import { IOpMode } from "@/enums/operation.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { envKeys } from "@/lib/envKeys";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
+import { getLngWiseStr } from "@/helpers";
 
-export default function BusinessDetailsPage() {
+// ─── Tour trigger (inner — needs TourProvider in scope) ───────────────────────
+
+function TourTrigger() {
+  const { startTour } = useTour();
+  const { t } = useTranslation("tour");
+  const { isDark } = useThemeClasses();
+  const { t: tb } = useTranslation("businesses");
+
+  const buildSteps = (): TourStep[] => [
+    {
+      id: "welcome",
+      placement: "center",
+      title: "business_details.welcome.title",
+      desc: "business_details.welcome.desc",
+    },
+    {
+      id: "status",
+      target: '[data-tour="status-btn"]',
+      placement: "bottom",
+      title: "business_details.status.title",
+      desc: "business_details.status.desc",
+    },
+    {
+      id: "actions",
+      target: '[data-tour="actions-dropdown"]',
+      placement: "left",
+      title: "business_details.actions.title",
+      desc: "business_details.actions.desc",
+    },
+    {
+      id: "header",
+      target: '[data-tour="business-header"]',
+      placement: "bottom",
+      title: "business_details.header.title",
+      desc: "business_details.header.desc",
+    },
+    {
+      id: "stats",
+      target: '[data-tour="business-stats"]',
+      placement: "bottom",
+      title: "business_details.stats.title",
+      desc: "business_details.stats.desc",
+    },
+    {
+      id: "tabs",
+      target: '[data-tour="tabs-section"]',
+      placement: "bottom",
+      title: "business_details.tabs.title",
+      desc: "business_details.tabs.desc",
+    },
+    {
+      id: "content",
+      target: '[data-tour="tab-content"]',
+      placement: "top",
+      title: "business_details.content.title",
+      desc: "business_details.content.desc",
+    },
+  ];
+
+  const handleManualStart = () => {
+    startTour(buildSteps());
+  };
+
+  return (
+    <button
+      onClick={handleManualStart}
+      title={t("start_tour")}
+      className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
+        isDark
+          ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+          : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+      }`}
+    >
+      <Compass className="w-4 h-4" />
+      <span className="hidden sm:inline text-sm font-medium">
+        {tb("tour") ?? t("start_tour")}
+      </span>
+    </button>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+function BusinessDetailsPageInner() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -55,9 +144,37 @@ export default function BusinessDetailsPage() {
 
   const { isTraveller } = useUserRoles();
 
-  const { isDark } = useThemeClasses();
+  const { isDark, isRTL, language } = useThemeClasses();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ── Tour integration ────────────────────────────────────────────────────
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    refreshTargetRect,
+  } = useTour();
+
+  // Open the actions dropdown while the tour is on the "actions" step so the
+  // spotlight can focus on the revealed menu items; close it on any other step.
+  useEffect(() => {
+    if (!isTourOpen) {
+      setIsDropdownOpen(false);
+      return;
+    }
+    const stepId = tourSteps[currentStep]?.id;
+    if (stepId === "actions") {
+      setIsDropdownOpen(true);
+      // Wait one frame for React to render the dropdown, then re-measure.
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 40);
+      });
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setIsDropdownOpen(false);
+    }
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -72,6 +189,62 @@ export default function BusinessDetailsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   const businessId = searchParams.get("businessId") ?? "";
+  const profileToken = searchParams.get("token");
+
+  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditClicked, setIsEditClicked] = useState(false);
+  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
+  const [missingFieldsFromToken, setMissingFieldsFromToken] = useState<
+    string[]
+  >([]);
+
+  // ── No-auth profile completion token handling ──────────────────────────
+  // When token is in URL, validate it directly and open Edit modal.
+  // ProtectedRoute allows this page through without login when token is present.
+  useEffect(() => {
+    // Check URL token first (no-auth flow from email link)
+    if (profileToken) {
+      const validateToken = async () => {
+        try {
+          const res = await axios.get(
+            `${envKeys.baseUrl}/complete-profile/${profileToken}`,
+          );
+          const { fields } = res.data;
+          setIsEditClicked(true);
+          setOpMode(IOpMode.EDIT);
+          setMissingFieldsFromToken(fields ?? []);
+          // Clean token from URL
+          window.history.replaceState(
+            {},
+            "",
+            `${routes.businessDetails}?businessId=${businessId}`,
+          );
+        } catch {
+          // Token expired or invalid — redirect to a clean error page
+          window.location.replace(`${routes.auth}?tokenError=expired`);
+        }
+      };
+      validateToken();
+      return;
+    }
+
+    // Check sessionStorage (post-login redirect flow)
+    const storedToken = sessionStorage.getItem("profile_completion_token");
+    const storedFields: string[] = JSON.parse(
+      sessionStorage.getItem("profile_completion_fields") ?? "[]",
+    );
+    if (storedToken && storedFields.length) {
+      sessionStorage.removeItem("profile_completion_token");
+      sessionStorage.removeItem("profile_completion_business_id");
+      sessionStorage.removeItem("profile_completion_fields");
+      setIsEditClicked(true);
+      setOpMode(IOpMode.EDIT);
+      setMissingFieldsFromToken(storedFields);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileToken, businessId]);
+
   ///business detail stats
   const {
     data,
@@ -116,16 +289,13 @@ export default function BusinessDetailsPage() {
       value: `${data?.conversionRate || 0}%`,
     },
   ];
+
   const {
     data: business,
     refetch: businessDataRefetch,
     isLoading,
   } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
   const [updateBusiness] = useUpdateBusinessMutation();
-  const [opMode, setOpMode] = useState<TOpMode>(IOpMode.EDIT);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEditClicked, setIsEditClicked] = useState(false);
-  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isEditClicked) {
@@ -134,17 +304,31 @@ export default function BusinessDetailsPage() {
   }, [isEditClicked]);
 
   const onCreateProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessName=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessName=${encodeURIComponent(displayName || "")}`,
     );
   };
   const onViewProduct = () => {
+    const displayName = getLngWiseStr(
+      language,
+      business?.name,
+      business?.nameHe,
+      business?.nameAr,
+    );
     navigate(
-      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${business?.name}`,
+      `${routes.productsMgmt}?businessId=${businessId}&businessNameProduct=${encodeURIComponent(displayName || "")}`,
     );
   };
 
   const handleMutateData = (mode: TOpMode) => {
+    // Refetch fresh business data before opening edit modal
+    businessDataRefetch();
     setIsEditClicked(true);
     setOpMode(mode);
   };
@@ -166,12 +350,16 @@ export default function BusinessDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, isDark, business };
+    const businessImages = business?.images ?? [];
     const mediaProps = {
       logoImage: business?.logo?.image ?? null,
-      images: (business?.images ?? []).map((img: IImage) => ({
+      images: businessImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        businessImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -192,7 +380,7 @@ export default function BusinessDetailsPage() {
             lat={
               business?.geoLocation?.lat ?? business?.location?.coordinates?.[0]
             }
-            lng={
+            long={
               business?.geoLocation?.long ??
               business?.location?.coordinates?.[1]
             }
@@ -221,29 +409,32 @@ export default function BusinessDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
       {/* Top Row */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
         <BackToListBtn navPath={routes.businessMgmt} />
         <div className="flex items-center gap-2">
-          <StatusChangeBtn
-            handleStatusChange={onStatusChangeHandler}
-            status={business?.status}
-          />
+          {/* Status */}
+          <div data-tour="status-btn">
+            <StatusChangeBtn
+              handleStatusChange={onStatusChangeHandler}
+              status={business?.status}
+            />
+          </div>
 
-          <div className="relative" ref={dropdownRef}>
+          {/* Actions dropdown */}
+          <div className="relative" ref={dropdownRef} data-tour="actions-btn">
             <button
               onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+              className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
                 isDark
                   ? "border-gray-700 hover:bg-gray-800 text-gray-300 bg-gray-900"
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">{t("actions")}</span>
+              <span className="inline text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
@@ -251,7 +442,10 @@ export default function BusinessDetailsPage() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                data-tour="actions-dropdown"
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border overflow-hidden ${
+                  isTourOpen ? "z-10001" : "z-50"
+                } ${
                   isDark
                     ? "bg-gray-900 border-gray-700"
                     : "bg-white border-gray-200"
@@ -328,38 +522,36 @@ export default function BusinessDetailsPage() {
             )}
           </div>
 
-          {/* <button
-              onClick={() => handleMutateData(IOpMode.DUPLICATE)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${isDark
-                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                } transition-colors`}
-            >
-              <Copy className="w-4 h-4" />
-              <span>{tc("duplicate") || "Duplicate"}</span>
-            </button> */}
+          {/* Tour trigger */}
+          <TourTrigger />
         </div>
       </div>
 
-      <div className="details-top shrink-0">
+      <div className="details-top shrink-0" data-tour="business-header">
         <DetailTitleSection {...business} imageSrc={business?.logo?.image} />
-        <PageStats
-          stats={businessStats}
-          isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 my-4 gap-4"
-        />
+        <div data-tour="business-stats">
+          <PageStats
+            stats={businessStats}
+            isLoading={isDetailStatsLoading}
+            className="sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3"
+            wrapperClassName=" my-2 sm:my-4"
+          />
+        </div>
       </div>
 
       {/* Content */}
-      <div className="mt-6 flex flex-col flex-1 min-h-0">
-        <div className="shrink-0">
+      <div className="mt-2 sm:mt-4 flex flex-col flex-1 min-h-0">
+        <div className="shrink-0" data-tour="tabs-section">
           <TabsSection
             tabs={businessTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-        <div className="details-content flex-1 overflow-y-auto min-h-0">
+        <div
+          className="details-content flex-1 overflow-y-auto min-h-0"
+          data-tour="tab-content"
+        >
           {renderContent()}
         </div>
       </div>
@@ -369,17 +561,35 @@ export default function BusinessDetailsPage() {
         <ChangeOwnerModal
           setIsOpen={setIsOwnerChangeModalOpen}
           currentOwner={business?.owner}
+          refetch={businessDataRefetch}
         />
       )}
 
       {isEditClicked && (
         <CreateBusinessWizard
           editData={business}
-          onClose={() => setIsEditClicked(false)}
+          onClose={() => {
+            setIsEditClicked(false);
+            setMissingFieldsFromToken([]);
+          }}
           refetch={refetch}
+          businessDataRefetch={businessDataRefetch}
           opMode={opMode}
+          missingFields={missingFieldsFromToken}
         />
       )}
+
+      <TourPortal />
     </div>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function BusinessDetailsPage() {
+  return (
+    <TourProvider>
+      <BusinessDetailsPageInner />
+    </TourProvider>
   );
 }

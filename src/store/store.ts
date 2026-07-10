@@ -10,6 +10,7 @@ import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
 import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
+import { eventSessionApi } from "./api/eventSessionApi";
 import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
 import { voucherMutationApi } from "./api/voucherMutationApi";
@@ -35,6 +36,10 @@ import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
 import { websiteSettingsApi } from "./api/websiteSettingsApi";
 import { promotionsApi } from "./api/promotionsApi";
+import { websiteConfigApi } from "./api/websiteConfigApi";
+import { websiteCrashApi } from "./api/websiteCrashApi";
+import { sessionQueryApi } from "./api/sessionQueryApi";
+import { sessionMutationApi } from "./api/sessionMutationApi";
 import { nprogressMiddleware } from "./nprogressMiddleware";
 
 export const store = configureStore({
@@ -61,6 +66,7 @@ export const store = configureStore({
 
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+    [eventSessionApi.reducerPath]: eventSessionApi.reducer,
 
     [userQueryApi.reducerPath]: userQueryApi.reducer,
     [orderQueryApi.reducerPath]: orderQueryApi.reducer,
@@ -82,7 +88,12 @@ export const store = configureStore({
     [dynamicPageApi.reducerPath]: dynamicPageApi.reducer,
     [websiteSettingsApi.reducerPath]: websiteSettingsApi.reducer,
     [promotionsApi.reducerPath]: promotionsApi.reducer,
+    [websiteConfigApi.reducerPath]: websiteConfigApi.reducer,
+    [websiteCrashApi.reducerPath]: websiteCrashApi.reducer,
+    [sessionQueryApi.reducerPath]: sessionQueryApi.reducer,
+    [sessionMutationApi.reducerPath]: sessionMutationApi.reducer,
   },
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       authApi.middleware,
@@ -91,6 +102,7 @@ export const store = configureStore({
       masterDataApi.middleware,
       userMutationApi.middleware,
       eventMutationApi.middleware,
+      eventSessionApi.middleware,
       businessMutationApi.middleware,
       orderMutationApi.middleware,
       eventQueryApi.middleware,
@@ -115,6 +127,10 @@ export const store = configureStore({
       poiMutationApi.middleware,
       websiteSettingsApi.middleware,
       promotionsApi.middleware,
+      websiteConfigApi.middleware,
+      websiteCrashApi.middleware,
+      sessionQueryApi.middleware,
+      sessionMutationApi.middleware,
       nprogressMiddleware,
     ),
 });

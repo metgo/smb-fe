@@ -177,15 +177,17 @@ export default function PurchasesReport() {
         </div>
 
         {/* Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          {purchasesReports.map((item) => (
-            <PurchaseMetric
-              key={item.id}
-              label={item.label}
-              value={item.value}
-              description={item.description}
-            />
-          ))}
+        <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0 mb-8">
+          <div className="grid grid-flow-col auto-cols-[200px] gap-2 md:gap-4 lg:grid-flow-row lg:grid-cols-5 lg:auto-cols-auto">
+            {purchasesReports.map((item) => (
+              <PurchaseMetric
+                key={item.id}
+                label={item.label}
+                value={item.value}
+                description={item.description}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Chart */}
@@ -269,7 +271,7 @@ export default function PurchasesReport() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 mt-4">
+        <div className="flex items-center flex-wrap flex-row justify-center gap-2 md:gap-6 md:mt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
             <span

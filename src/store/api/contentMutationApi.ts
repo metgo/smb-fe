@@ -34,8 +34,34 @@ export const contentMutationApi = createApi({
         method: "DELETE",
       }),
     }),
+
+    aiSuggestCategoryEntities: builder.mutation<
+      { businesses: IAiSuggestedEntity[]; products: IAiSuggestedEntity[] },
+      {
+        categoryName: string;
+        categoryDescription: string;
+        externalApiId?: string;
+      }
+    >({
+      query: (body) => ({
+        url: "/businesses/ai-suggest-category-entities",
+        method: "POST",
+        data: body,
+      }),
+    }),
   }),
 });
 
-export const { useCreateContentMutation, useUpdateContentMutation } =
-  contentMutationApi;
+export interface IAiSuggestedEntity {
+  _id: string;
+  name: string;
+  description: string;
+  images: { image: string }[];
+  matchReason: string;
+}
+
+export const {
+  useCreateContentMutation,
+  useUpdateContentMutation,
+  useAiSuggestCategoryEntitiesMutation,
+} = contentMutationApi;

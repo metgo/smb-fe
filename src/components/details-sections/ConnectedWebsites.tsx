@@ -33,7 +33,7 @@ const ConnectedWebsites = ({
     <>
       <div
         className={clsx(
-          "rounded-xl border p-6 transition-all duration-200",
+          "rounded-xl border p-2 md:p-6 transition-all duration-200",
           isDark
             ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
             : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
@@ -75,12 +75,12 @@ const ConnectedWebsites = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-5">
           {associatedWebsites?.map((website: any, index: number) => (
             <div
               key={index}
               className={clsx(
-                "flex flex-col items-center text-center rounded-xl border p-4 transition-all duration-200",
+                "flex flex-col items-center text-center rounded-xl border p-0 md:p-4 transition-all duration-200",
                 isDark
                   ? "bg-gray-900/50 border-gray-700 hover:border-gray-600"
                   : "bg-white border-gray-200 hover:border-blue-300 hover:shadow-blue-100/60",

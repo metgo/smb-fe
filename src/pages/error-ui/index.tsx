@@ -1,20 +1,110 @@
-import { useState } from "react";
-import { routes } from "@/lib/routes";
-import { Link } from "react-router-dom";
+import clsx from "clsx";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Home, RefreshCw, Mail } from "lucide-react";
+import { Link, useRouteError } from "react-router-dom";
 
+import { routes } from "@/lib/routes";
+import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
+import { useReportSiteErrorMutation } from "@/store/api/commonMutationApi";
 
 const SUPPORT_EMAIL = "support@metgo.app";
+
+const getBrowserInfo = (): { name: string; version: string } => {
+  const ua = navigator.userAgent;
+  const browsers: { name: string; pattern: RegExp }[] = [
+    { name: "Edge", pattern: /Edg\/(\S+)/ },
+    { name: "Chrome", pattern: /Chrome\/(\S+)/ },
+    { name: "Firefox", pattern: /Firefox\/(\S+)/ },
+    { name: "Safari", pattern: /Version\/(\S+).*Safari/ },
+    { name: "Opera", pattern: /OPR\/(\S+)/ },
+  ];
+  for (const { name, pattern } of browsers) {
+    const match = ua.match(pattern);
+    if (match) return { name, version: match[1] };
+  }
+  return { name: "Unknown", version: "Unknown" };
+};
+
+const getOsInfo = (): { name: string; version: string } => {
+  const ua = navigator.userAgent;
+  const oses: { name: string; pattern: RegExp }[] = [
+    { name: "Windows", pattern: /Windows NT ([\d.]+)/ },
+    { name: "macOS", pattern: /Mac OS X ([\d_]+)/ },
+    { name: "iOS", pattern: /iPhone OS ([\d_]+)/ },
+    { name: "Android", pattern: /Android ([\d.]+)/ },
+    { name: "Linux", pattern: /Linux/ },
+  ];
+  for (const { name, pattern } of oses) {
+    const match = ua.match(pattern);
+    if (match) return { name, version: (match[1] ?? "").replace(/_/g, ".") };
+  }
+  return { name: "Unknown", version: "" };
+};
+
+const getDeviceType = (): "mobile" | "tablet" | "desktop" => {
+  const ua = navigator.userAgent;
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
+  if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua))
+    return "mobile";
+  return "desktop";
+};
+
+const getNetworkInfo = (): { online: boolean; connectionType: string } => {
+  const conn = (navigator as any).connection;
+  return {
+    online: navigator.onLine,
+    connectionType: conn?.effectiveType ?? conn?.type ?? "unknown",
+  };
+};
 
 const ErrorUiPage = () => {
   const { isDark } = useThemeClasses();
   const { t } = useTranslation("common");
+  const routeError = useRouteError() as any;
+  const user = useAppSelector((state) => state.auth.user);
+  const [reportSiteError] = useReportSiteErrorMutation();
 
   const [hovered, setHovered] = useState(false);
   const [homeBtnHovered, setHomeBtnHovered] = useState(false);
+
+  useEffect(() => {
+    const payload = {
+      user: user
+        ? {
+            _id: user.id,
+            name: `${user.firstName} ${user.lastName}`.trim(),
+            email: user.email,
+          }
+        : null,
+      device: {
+        userAgent: navigator.userAgent,
+        platform: (navigator as any).userAgentData?.platform ?? "",
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+        browser: getBrowserInfo(),
+        os: getOsInfo(),
+        deviceType: getDeviceType(),
+        network: getNetworkInfo(),
+      },
+      error: {
+        message: routeError?.message ?? "Unknown error",
+        name: routeError?.name ?? "Error",
+        stack: routeError?.stack,
+        status: routeError?.status,
+        url: window.location.href,
+        referrer: document.referrer || null,
+      },
+      timestamp: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+
+    if (window.location.hostname !== "localhost") {
+      reportSiteError(payload);
+    }
+  }, []);
 
   return (
     <div
@@ -239,8 +329,6 @@ const ErrorUiPage = () => {
             {SUPPORT_EMAIL}
           </a>
         </p>
-
-        {/* Contact Support */}
 
         {/* Buttons Row */}
         <div className="flex flex-wrap items-center justify-center gap-3">

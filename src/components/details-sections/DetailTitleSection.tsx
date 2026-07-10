@@ -18,6 +18,7 @@ interface DetailTitleSectionProps {
   createdAt: string;
   updatedAt: string;
   completionPercent: number;
+  imageSrc?: string;
 }
 
 const DetailTitleSection = ({
@@ -29,6 +30,7 @@ const DetailTitleSection = ({
   createdAt,
   updatedAt,
   completionPercent,
+  imageSrc,
 }: DetailTitleSectionProps) => {
   const { t } = useTranslation("common");
   const { isDark, textTertiary, language } = useThemeClasses();
@@ -43,18 +45,18 @@ const DetailTitleSection = ({
   return (
     <div className="flex items-center gap-3">
       <ImageWithFallback
-        src={images?.[0]?.image}
+        src={imageSrc || images?.[0]?.image}
         alt={name || nameHe || nameAr}
         className={clsx(
-          "w-14 h-14 rounded-xl object-cover shrink-0 border",
+          "w-10 h-10 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 border",
           isDark ? "border-gray-600" : "border-gray-200",
         )}
       />
 
-      <div className="flex flex-1 items-center justify-between gap-4 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h1
-            className={`text-lg font-semibold leading-tight truncate ${
+            className={`text-base sm:text-lg font-semibold leading-tight truncate ${
               isDark ? "text-gray-100" : "text-gray-900"
             }`}
           >
@@ -129,12 +131,12 @@ const DetailTitleSection = ({
           </div>
         </div>
 
-        <div className="shrink-0 flex flex-col items-end gap-1">
+        <div className="shrink-0 flex flex-col items-start sm:items-end gap-1">
           <span className={clsx("text-[10px]", textTertiary)}>
             {t("completion_percentage")}
           </span>
           <div className="flex items-center gap-2">
-            <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-20 sm:w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-teal-500 transition-all duration-300"
                 style={{ width: `${completionPercent}%` }}

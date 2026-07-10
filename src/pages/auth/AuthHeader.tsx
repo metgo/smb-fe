@@ -2,8 +2,6 @@ import Select from "react-select";
 import { useTranslation } from "react-i18next";
 
 import { locales } from "@/lib/utils";
-import { useAppDispatch } from "@/hooks/hooks";
-import { setLanguage } from "@/features/settingsSlice";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ImageWithFallback } from "@/components/shared";
 
@@ -27,19 +25,21 @@ const AuthHeader = ({
   handleCurrentTabChange,
 }: AuthHeaderProps) => {
   const { t, i18n } = useTranslation("login");
-  const dispatch = useAppDispatch();
 
   const { language } = useThemeClasses();
 
   const handleLanguageChange = (lng: Language) => {
-    dispatch(setLanguage(lng));
-    i18n.changeLanguage(lng);
+    // Redux `settings.language`/`isRTL` are updated via the i18n
+    // "languageChanged" listener once the bundle actually loads — see src/i18n/index.ts.
+    i18n.changeLanguage(lng).catch((error) => {
+      console.error("Failed to change language", error);
+    });
   };
 
   return (
-    <div className="mb-8 flex items-start justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
           {t(title)}
         </h1>
 
@@ -63,7 +63,7 @@ const AuthHeader = ({
           handleLanguageChange((val as ItemOption).value as Language)
         }
         styles={{
-          container: (b) => ({ ...b, minWidth: 150, zIndex: 50 }),
+          container: (b) => ({ ...b, minWidth: 130, zIndex: 50 }),
 
           control: (b, s) => ({
             ...b,

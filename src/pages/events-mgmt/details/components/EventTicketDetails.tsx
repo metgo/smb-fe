@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
@@ -20,15 +20,21 @@ import {
   Tag,
   TrendingDown,
   Package,
+  LayoutList,
+  ExternalLink,
 } from "lucide-react";
-import CreateTicketWizard from "../../components/sub-components/CreateTicketWizard";
 import TicketSummaryCard from "./TicketSummaryCard";
+import { ActionIconButtons } from "@/components/btns";
+import { routes } from "@/lib/routes";
+import CreateTicketWizard from "../../components/CreateTicketWizard";
 
 interface EventTicketDetailsProps {
   eventId: string;
   refetch: () => void;
   tickets: ITicketPayload[];
   eventDays: EventDay[];
+  hasExternalTicket: boolean;
+  ticketBuyLink: string;
 }
 const safe = (n: any) => (Number.isFinite(n) ? n : 0);
 
@@ -40,10 +46,13 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   eventId,
   refetch,
   eventDays,
+  hasExternalTicket,
+  ticketBuyLink,
 }) => {
+  const navigate = useNavigate();
   const { t } = useTranslation("events");
-  const { language } = useAppSelector((state) => state.settings);
-  const { isDark, borderColor } = useThemeClasses();
+  const { isDark, borderColor, language, textPrimary, textSecondary } =
+    useThemeClasses();
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
 
@@ -97,6 +106,36 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
     );
   };
 
+  if (hasExternalTicket) {
+    return (
+      <div className="h-96 w-full flex flex-col items-center justify-center">
+        <div className="">
+          <div className={clsx(textSecondary, "font-bold text-2xl pb-2")}>
+            {" "}
+            {t("i_have_an_eternal_ticket_purchase_link")}
+          </div>
+          <a
+            href={ticketBuyLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={clsx(
+              textPrimary,
+              "group inline-flex items-center gap-2 py-2.5",
+            )}
+            aria-label={`Buy tickets on external site: ${ticketBuyLink}`}
+          >
+            <Ticket className="h-4 w-4" aria-hidden="true" />
+            <span>{ticketBuyLink}</span>
+            <ExternalLink
+              className="h-3.5 w-3.5 opacity-70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   if (!tickets?.length) {
     return (
       <div
@@ -134,27 +173,6 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   return (
     <>
       <div className="space-y-6">
-        {/* Header with Summary Stats */}
-        {/* <div>
-          <h2
-            className={clsx(
-              "text-2xl font-bold",
-              isDark ? "text-white" : "text-gray-900",
-            )}
-          >
-            {t("event_tickets")}
-          </h2>
-          <p
-            className={clsx(
-              "text-sm mt-1",
-              isDark ? "text-gray-400" : "text-gray-600",
-            )}
-          >
-            {tickets.length}{" "}
-            {tickets.length === 1 ? "ticket type" : "ticket types"} available
-          </p>
-        </div> */}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <TicketSummaryCard
             isDark={isDark}
@@ -297,63 +315,63 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                           " flex gap-2 rounded-lg p-1.5 backdrop-blur-sm",
                         )}
                       >
-                        <button
-                          title="Edit"
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-blue-400",
-                            isDark
-                              ? "hover:bg-blue-500/20 hover:text-blue-400"
-                              : "hover:bg-blue-50 hover:text-blue-600",
-                          )}
-                          onClick={() => {
-                            setEditingTicket({
-                              ...ticket,
-                              imageUrl: ticket?.images?.[0]?.image || "",
-                            });
-                            setTicketDateTime(ticket?.dayDescription || []);
-                            setOpMode("UPDATE");
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-
-                        <button
-                          title="Copy"
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-green-400",
-                            isDark
-                              ? "hover:bg-green-500/20 hover:text-green-400 "
-                              : "hover:bg-green-50 hover:text-green-600",
-                          )}
-                          onClick={() => {
-                            setEditingTicket({
-                              ...ticket,
-                              name: ticket.name + " (Copy)",
-                              imageUrl: ticket?.images?.[0]?.image || "",
-                            });
-                            setOpMode("DUPLICATE");
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          <Copy size={16} />
-                        </button>
-
-                        <button
-                          title="Delete"
-                          onClick={() => {
-                            setIsConfirmOpen(true);
-                            setTicketToDelete(ticket?._id || "");
-                          }}
-                          className={clsx(
-                            "p-1.5 rounded-md transition-colors text-red-400",
-                            isDark
-                              ? "hover:bg-red-500/20 hover:text-red-400"
-                              : "hover:bg-red-50 hover:text-red-600",
-                          )}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <ActionIconButtons
+                          isDark={isDark}
+                          actions={[
+                            {
+                              title: "Edit",
+                              icon: Edit,
+                              color: "blue",
+                              onClick: () => {
+                                setEditingTicket({
+                                  ...ticket,
+                                  imageUrl: ticket?.images?.[0]?.image || "",
+                                });
+                                setTicketDateTime(ticket?.dayDescription || []);
+                                setOpMode("UPDATE");
+                                setIsEditModalOpen(true);
+                              },
+                            },
+                            {
+                              title: "Copy",
+                              icon: Copy,
+                              color: "green",
+                              onClick: () => {
+                                setEditingTicket({
+                                  ...ticket,
+                                  name: `${ticket.name} (Copy)`,
+                                  imageUrl: ticket?.images?.[0]?.image || "",
+                                });
+                                setOpMode("DUPLICATE");
+                                setIsEditModalOpen(true);
+                              },
+                            },
+                            {
+                              title: "Delete",
+                              icon: Trash2,
+                              color: "red",
+                              onClick: () => {
+                                setIsConfirmOpen(true);
+                                setTicketToDelete(ticket?._id || "");
+                              },
+                            },
+                            {
+                              title: "Create Landing Page",
+                              icon: LayoutList,
+                              color: "yellow",
+                              onClick: () => {
+                                if (ticket?.wrapperId)
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&wrapperId=${ticket?.wrapperId}&ticketId=${ticket._id}`,
+                                  );
+                                else
+                                  navigate(
+                                    `${routes.eventSessionMgmt}?eventId=${eventId}&&ticketId=${ticket._id}`,
+                                  );
+                              },
+                            },
+                          ]}
+                        />
                       </div>
                     </div>
 

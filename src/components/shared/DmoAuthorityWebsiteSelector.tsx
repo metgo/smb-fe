@@ -4,10 +4,10 @@ import { useEffect, useCallback, useMemo } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { FormFieldWrapper, SelectField } from "@/components/form-fields";
+import { FormFieldWrapper, ReactSelect } from "@/components/form-fields";
 import ImageWithFallback from "./ImageWithFallback";
 import { useAppSelector } from "@/hooks/hooks";
-import { UserRole } from "@/enums/user.types";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 type Props = {
   keyId: keyof IAssociatedWebsiteIds;
@@ -15,6 +15,7 @@ type Props = {
   selectedDmoId: string;
   selectedAuthorityId: string;
   errors: Record<string, string>;
+  setErrors?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   dmoSectionRef: React.RefObject<HTMLDivElement | null>;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
@@ -25,6 +26,7 @@ type Props = {
 
 export default function DmoAuthorityWebsiteSelector({
   errors,
+  setErrors,
   isEdit,
   selectedDmoId,
   setSelectDmoId,
@@ -38,8 +40,16 @@ export default function DmoAuthorityWebsiteSelector({
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
-  const { isDark, selectInputClasses } = useThemeClasses();
-  const { userRole } = useAppSelector((state) => state.auth);
+  const { isDark } = useThemeClasses();
+  const { dmoId } = useAppSelector((state) => state.auth);
+  const { isSuperadmin, isDMO, isAuthority } = useUserRoles();
+
+  // Auto-select DMO user's own DMO on mount
+  useEffect(() => {
+    if (isDMO && dmoId && !selectedDmoId) {
+      setSelectDmoId(dmoId);
+    }
+  }, [isDMO, dmoId, selectedDmoId, setSelectDmoId]);
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
@@ -165,7 +175,7 @@ export default function DmoAuthorityWebsiteSelector({
         >
           {title}
         </label>
-        <div className="grid grid-cols-4 gap-2 mt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
           {/* Select All */}
           <label
             className={`flex items-center gap-2 cursor-pointer border rounded p-2
@@ -236,47 +246,62 @@ export default function DmoAuthorityWebsiteSelector({
   return (
     <section className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div className="flex-1 w-full" ref={dmoSectionRef}>
+        <div className="flex-1 w-full relative" ref={dmoSectionRef}>
           <FormFieldWrapper
             required
             label={t("select_dmo")}
+            hint={t("your_geographic_location")}
             error={errors.dmoId}
           >
-            <SelectField
-              isDisabled={userRole === UserRole.AUTHORITY}
+            <ReactSelect
+              isDisabled={isAuthority}
               value={selectedDmoId}
               onChange={(v) => {
                 setSelectDmoId(v);
                 setSelectAuthorityId("");
+                if (setErrors && v) {
+                  setErrors((prev: Record<string, string>) => {
+                    const updated = { ...prev };
+                    delete updated.dmoId;
+                    return updated;
+                  });
+                }
               }}
               placeholder={t("select_dmo")}
-              options={
+              items={
                 dmosAuthorities?.map((d) => ({
-                  label: d.name,
-                  value: d._id,
+                  name: d.name,
+                  _id: d._id,
+                  logo: d.logoPath,
                 })) ?? []
               }
-              error={errors.dmoId}
-              selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
 
         <div className="flex-1 w-full">
-          <FormFieldWrapper label={t("select_authority")}>
-            <SelectField
+          <FormFieldWrapper required label={t("select_authority")}>
+            <ReactSelect
               value={selectedAuthorityId}
-              isDisabled={userRole === UserRole.AUTHORITY}
-              onChange={setSelectAuthorityId}
+              isDisabled={isAuthority}
+              onChange={(v) => {
+                setSelectAuthorityId(v);
+                if (setErrors && v) {
+                  setErrors((prev: Record<string, string>) => {
+                    const updated = { ...prev };
+                    delete updated.authorityId;
+                    return updated;
+                  });
+                }
+              }}
               placeholder={t("select_authority")}
-              options={
-                selectedDmos?.authorities?.map((a) => ({
-                  label: a.name,
-                  value: a._id,
+              items={
+                selectedDmos?.authorities?.map((a: any) => ({
+                  name: a.name,
+                  _id: a._id,
+                  logo: a.logoPath,
                 })) ?? []
               }
-              error={errors.authorityId}
-              selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
@@ -300,12 +325,13 @@ export default function DmoAuthorityWebsiteSelector({
             "selectedBlacklistIds",
           )}
 
-          {renderSection(
-            t("select_unassociated_websites"),
-            unAssociatedWebsites,
-            "allWhitelistIds",
-            "selectedWhitelistIds",
-          )}
+          {isSuperadmin &&
+            renderSection(
+              t("select_unassociated_websites"),
+              unAssociatedWebsites,
+              "allWhitelistIds",
+              "selectedWhitelistIds",
+            )}
         </div>
       )}
     </section>

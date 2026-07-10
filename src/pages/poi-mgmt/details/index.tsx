@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Edit,
   Eye,
-  MoreHorizontal,
   MousePointer,
   Timer,
   TrendingUp,
@@ -130,11 +129,15 @@ export default function PoiDetailsPage() {
   };
 
   const renderContent = () => {
+    const poiImages = poi?.images ?? [];
     const mediaProps = {
-      images: (poi?.images ?? []).map((img: IImage) => ({
+      images: poiImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        poiImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -146,7 +149,7 @@ export default function PoiDetailsPage() {
             purpose="POI"
             address={poi?.address}
             lat={poi?.geoLocation?.lat ?? poi?.location?.coordinates?.[0]}
-            lng={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
+            long={poi?.geoLocation?.long ?? poi?.location?.coordinates?.[1]}
           />
         );
       case "media":
@@ -166,7 +169,7 @@ export default function PoiDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:pt-0">
       <Spinner isLoading={isLoading} />
 
       <div className="flex items-center justify-between mb-3 shrink-0">
@@ -186,7 +189,6 @@ export default function PoiDetailsPage() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
               <span className="text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -218,7 +220,8 @@ export default function PoiDetailsPage() {
         <PageStats
           stats={poiStats}
           isLoading={isDetailStatsLoading}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mt-3 gap-4"
+          className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4"
+          wrapperClassName="mt-3"
         />
       </div>
 
@@ -240,6 +243,7 @@ export default function PoiDetailsPage() {
           editData={poi}
           onClose={() => setIsEditClicked(false)}
           refetch={refetch}
+          poiDataRefetch={poiDataRefetch}
           opMode={IOpMode.EDIT}
         />
       )}

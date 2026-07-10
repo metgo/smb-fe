@@ -9,7 +9,7 @@ export const websiteSettingsApi = createApi({
   tagTypes: ["WebsiteSettings"],
 
   endpoints: (builder) => ({
-    createWebsiteSetting: builder.mutation<any, SiteSettingsFormData>({
+    createWebsiteSetting: builder.mutation<any, ISiteSettingsFormData>({
       query: (body) => ({
         url: endpoints.websiteSettings,
         method: "POST",
@@ -19,7 +19,7 @@ export const websiteSettingsApi = createApi({
 
     updateWebsiteSetting: builder.mutation<
       any,
-      { id: string; body: SiteSettingsFormData }
+      { id: string; body: Partial<ISiteSettingsFormData> }
     >({
       query: ({ id, body }) => ({
         url: `${endpoints.websiteSettings}/${id}`,
@@ -28,7 +28,7 @@ export const websiteSettingsApi = createApi({
       }),
     }),
 
-    getWebsiteSettingDetails: builder.query<IWebsiteConfigRes, string>({
+    getWebsiteSettingDetails: builder.query<IWebsiteConfigRes, string | null>({
       query: (externalApiId) => ({
         url: `${endpoints.websiteSettings}/external-api/${externalApiId}`,
         method: "GET",

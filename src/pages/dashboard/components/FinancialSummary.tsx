@@ -205,28 +205,30 @@ export default function FinancialSummary() {
           title={t("financial_summary")}
         />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <SummaryCard
-          isDark={isDark}
-          title={t("vouchers")}
-          subtitle={tc(timeFrame)}
-          icon={<Ticket className="w-5 h-5 text-white" />}
-          metrics={voucherMetrics}
-        />
-        <SummaryCard
-          isDark={isDark}
-          title={t("online_orders")}
-          subtitle={tc(timeFrame)}
-          icon={<ShoppingCart className="w-5 h-5 text-white" />}
-          metrics={onlineOrdersMetrics}
-        />
-        <SummaryCard
-          isDark={isDark}
-          title={t("offline_orders")}
-          subtitle={tc(timeFrame)}
-          icon={<Store className="w-5 h-5 text-white" />}
-          metrics={offlineOrdersMetrics}
-        />
+      <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="grid grid-flow-col auto-cols-[280px] gap-2 md:gap-6 lg:grid-flow-row lg:grid-cols-3 lg:auto-cols-auto">
+          <SummaryCard
+            isDark={isDark}
+            title={t("vouchers")}
+            subtitle={tc(timeFrame)}
+            icon={<Ticket className="w-5 h-5 text-white" />}
+            metrics={voucherMetrics}
+          />
+          <SummaryCard
+            isDark={isDark}
+            title={t("online_orders")}
+            subtitle={tc(timeFrame)}
+            icon={<ShoppingCart className="w-5 h-5 text-white" />}
+            metrics={onlineOrdersMetrics}
+          />
+          <SummaryCard
+            isDark={isDark}
+            title={t("offline_orders")}
+            subtitle={tc(timeFrame)}
+            icon={<Store className="w-5 h-5 text-white" />}
+            metrics={offlineOrdersMetrics}
+          />
+        </div>
       </div>
     </section>
   );

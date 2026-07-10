@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import { toast } from "sonner";
 import { DndProvider } from "react-dnd";
-import { Plus, SlidersHorizontal } from "lucide-react";
+import { Plus, SlidersHorizontal, Home, Image, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AnimatePresence } from "framer-motion";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState, useCallback, useEffect, useRef } from "react";
-import { AnimatePresence } from "framer-motion";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { PublishButton } from "@/components/btns";
@@ -26,7 +26,7 @@ import {
   PlacementSettingsDrawer,
   PromoEmptyState,
 } from "./components";
-import { ConfirmDialog, Spinner } from "@/components/shared";
+import { ConfirmDialog, Spinner, TabsSection } from "@/components/shared";
 
 const placements = ["home_page_hero", "secondary_banner", "footer_spotlight"];
 
@@ -228,23 +228,34 @@ export default function PromotionsMgmtPage() {
     }
   };
 
+  const PLACEMENT_TABS = [
+    { id: "home_page_hero", label: t("home_page_hero"), icon: Home },
+    { id: "secondary_banner", label: t("secondary_banner"), icon: Image },
+    { id: "footer_spotlight", label: t("footer_spotlight"), icon: Star },
+  ];
+
+  const handlePlacementChange = (id: string) => {
+    setSelectedPlacement((prev) => (prev === id ? "" : id));
+    setSettingsOpen(false);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div
         className={clsx(
-          "max-h-screen transition-colors flex flex-col relative gap-4",
+          " pt-6 md:pt-0 h-[calc(100vh-7rem)] transition-colors flex flex-col overflow-hidden",
           isDark ? "bg-gray-950" : "bg-gray-50",
         )}
       >
         <Spinner isLoading={isCofigLoading || isLoading || isPublishing} />
 
         <div
-          className={`${bgPrimary} border-b ${borderColor} sticky top-0 z-10 rounded-xl p-4`}
+          className={`shrink-0 ${bgPrimary} border-b ${borderColor} rounded-xl p-4 mb-2`}
         >
           {/* Title Bar */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div>
-              <h1 className={`text-3xl font-bold ${textPrimary}`}>
+              <h1 className={`text-2xl sm:text-3xl font-bold ${textPrimary}`}>
                 {t("promotions")}
               </h1>
               <p className={`text-sm ${textSecondary} mt-1`}>
@@ -252,72 +263,69 @@ export default function PromotionsMgmtPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <ReactSelect
-                minWidth={180}
-                value={externalApiId}
-                items={associatedWebsite}
-                onChange={(value) => setExternalApiId(value)}
-                placeholder={t("select_website")}
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex-1 sm:flex-none min-w-40">
+                <ReactSelect
+                  value={externalApiId}
+                  items={associatedWebsite}
+                  onChange={(value) => setExternalApiId(value)}
+                  placeholder={t("select_website")}
+                />
+              </div>
               <button
-                onClick={() => {
-                  setShowWizard(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                onClick={() => setShowWizard(true)}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors shrink-0"
               >
-                <Plus className="w-5 h-5" />
-                {t("add_promotion")}
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm">{t("add_promotion")}</span>
               </button>
             </div>
           </div>
 
-          <div className="flex gap-4 items-center justify-between">
-            <div className="flex justify-start">
-              {placements.map((placement, idx) => {
-                const active = selectedPlacement === placement;
-
-                return (
+          <div className="flex items-end justify-between gap-2">
+            <TabsSection
+              tabs={PLACEMENT_TABS}
+              activeTab={selectedPlacement}
+              setActiveTab={handlePlacementChange}
+            />
+            <div className="shrink-0 pb-1 flex items-center gap-2">
+              {selectedPlacement && (
+                <div className="relative">
                   <button
-                    key={idx}
-                    onClick={() => {
-                      setSelectedPlacement((prev) =>
-                        prev === placement ? "" : placement,
-                      );
-                      setSettingsOpen(false);
-                    }}
+                    onClick={() => setSettingsOpen((prev) => !prev)}
+                    title={t("placement_settings")}
                     className={clsx(
-                      "relative px-3 py-2 text-sm font-medium transition-all",
-                      isDark ? "text-gray-300" : "text-gray-600",
-                      active && (isDark ? "text-green-400" : "text-green-600"),
+                      "p-2 rounded-lg border transition-colors",
+                      settingsOpen
+                        ? isDark
+                          ? "bg-gray-700 border-green-600 text-green-400"
+                          : "bg-green-50 border-green-500 text-green-600"
+                        : isDark
+                          ? "bg-gray-800 border-gray-700 text-green-400 hover:bg-gray-700"
+                          : "bg-white border-gray-200 text-green-600 hover:bg-gray-50",
                     )}
                   >
-                    {t(placement)}
-
-                    <span
-                      className={clsx(
-                        "absolute left-0 -bottom-px h-0.5 w-full transition-all",
-                        active
-                          ? isDark
-                            ? "bg-green-500"
-                            : "bg-green-600"
-                          : "bg-transparent",
-                      )}
-                    />
+                    <SlidersHorizontal className="w-4 h-4" />
                   </button>
-                );
-              })}
-            </div>
-
-            <div>
+                  {settingsOpen && (
+                    <PlacementSettingsDrawer
+                      selectedPlacement={selectedPlacement}
+                      setSettingsOpen={setSettingsOpen}
+                      placementSettings={placementSettings}
+                      setPlacementSettings={setPlacementSettings}
+                      defaultPlacementConfig={defaultPlacementConfig}
+                    />
+                  )}
+                </div>
+              )}
               <PublishButton isLoading={isPublishing} onClick={handlePublish} />
             </div>
           </div>
 
-          {selectedPromotions.length > 0 && (
+          {selectedPromotions?.length > 0 && (
             <div
               className={clsx(
-                "mt-4 flex items-center justify-between rounded-lg border",
+                "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2 sm:p-3",
                 isDark
                   ? "bg-green-950/20 border-green-800"
                   : "bg-green-50 border-green-200",
@@ -334,7 +342,7 @@ export default function PromotionsMgmtPage() {
                 })}
               </span>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
                   {t("activate")}
                 </button>
@@ -360,7 +368,7 @@ export default function PromotionsMgmtPage() {
 
         <div
           className={clsx(
-            "flex-1 overflow-y-auto p-3  border rounded-xl",
+            "flex-1 overflow-y-auto p-3 border rounded-xl",
             borderColor,
           )}
         >
@@ -377,7 +385,7 @@ export default function PromotionsMgmtPage() {
             <AnimatePresence>
               <div
                 className={clsx(
-                  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3",
+                  "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3",
                 )}
               >
                 {filteredPromotions.map((promotion, index) => (
@@ -406,34 +414,6 @@ export default function PromotionsMgmtPage() {
               setEditingPromotion(undefined);
             }}
             existingPromotion={editingPromotion}
-          />
-        )}
-
-        {/* Fixed FAB — bottom-right */}
-        {selectedPlacement && (
-          <button
-            onClick={() => setSettingsOpen((prev) => !prev)}
-            title={t("placement_settings")}
-            className={clsx(
-              "fixed bottom-6 right-6 z-50 p-3 rounded-full shadow-lg transition-colors",
-              isDark
-                ? "bg-gray-800 border border-gray-700 text-green-400 hover:bg-gray-700"
-                : "bg-white border border-gray-200 text-green-600 hover:bg-gray-50",
-            )}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* Compact bottom drawer for active placement */}
-        {settingsOpen && (
-          <PlacementSettingsDrawer
-            selectedPlacement={selectedPlacement}
-            settingsOpen={settingsOpen}
-            setSettingsOpen={setSettingsOpen}
-            placementSettings={placementSettings}
-            setPlacementSettings={setPlacementSettings}
-            defaultPlacementConfig={defaultPlacementConfig}
           />
         )}
 

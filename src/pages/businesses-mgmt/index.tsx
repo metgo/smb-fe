@@ -1,29 +1,27 @@
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 
 import { routes } from "@/lib/routes";
 import {
   BusinessGridView,
   BusinessListView,
+  BusinessFiltersPanel,
   CreateBusinessWizard,
+  ExportBusinessButton,
 } from "./components";
 
 import {
-  Download,
-  ChevronDown,
-  ChevronUp,
   CheckCircle,
   AlertCircle,
-  Columns,
   UtensilsCrossed,
   Landmark,
   Theater,
   Map,
+  Compass,
 } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
@@ -31,41 +29,23 @@ import {
   ConfirmDialog,
   PageHeader,
   PageStats,
+  ShowColumns,
   ViewModeToggle,
 } from "@/components/shared";
-import {
-  useGetAllbusinessesQuery,
-  useGetBusinessStatsQuery,
-} from "@/store/api/businessQueryApi";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
-import FilterChips from "@/components/shared/FilterChips";
 import EmptyState from "@/components/shared/EmptyState";
-import { FilterByStatus } from "@/components/filter-fields";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 
-// Constants & Types
-const LIMIT = 20;
-const STORAGE_KEY = "business_query_state";
+import { useBusinessFilters } from "./hooks/useBusinessFilters";
+import { useBusinessListData } from "./hooks/useBusinessListData";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const COLUMNS_STORAGE_KEY = "businessesTableColumns";
-const SEARCH_STORAGE_KEY = "businessSearchTerm";
 
-type ColumnVisibility = {
-  impact: boolean;
-  name: boolean;
-  shortDescription: boolean;
-  contactDetails: boolean;
-  busiEmail: boolean;
-  phoneNumber: boolean;
-  productCount: boolean;
-  status: boolean;
-  lifetimeSales: boolean;
-  tripCount: boolean;
-  associatedWebsites: boolean;
-  contactPhone: boolean;
-  categories: boolean;
-};
-
-const defaultColumns: ColumnVisibility = {
+const defaultColumns: IBusinessColumnVisibility = {
   impact: true,
   name: true,
   shortDescription: true,
@@ -82,7 +62,7 @@ const defaultColumns: ColumnVisibility = {
 };
 
 const columnDefinitions: Array<{
-  key: keyof ColumnVisibility;
+  key: keyof IBusinessColumnVisibility;
   isDefault: boolean;
 }> = [
   { key: "impact", isDefault: true },
@@ -100,20 +80,39 @@ const columnDefinitions: Array<{
   { key: "categories", isDefault: false },
 ];
 
-// Main Component
-export default function BusinessesMgmtPage() {
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+function BusinessesMgmtPageInner() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("toast");
-  const { isDark, isRTL, language, bgSecondary, borderColor, textSecondary } =
-    useThemeClasses();
+  const { t: tt } = useTranslation("tour");
+  const { isDark, bgSecondary, borderColor } = useThemeClasses();
 
-  // Auth state
-  const { dmoId, authorityId, startDate, endDate, websiteId } = useAppSelector(
-    (state) => state.auth,
-  );
+  // ─── Filter & Search (persisted to localStorage) ─────────────────────
+  const {
+    filters,
+    setFilters,
+    searchTerm,
+    setSearchTerm,
+    clearFilter,
+    hasSavedFilters,
+  } = useBusinessFilters();
 
-  // ─── Local State ─────────────────────────────────────────
+  // ─── Data fetching & infinite scroll ─────────────────────────────────
+  const {
+    combinedBusinesses,
+    businessStatsData,
+    isLoading,
+    isFetching,
+    isStatsLoading,
+    refetch,
+    hasMore,
+    totalData,
+    fetchNextPage,
+  } = useBusinessListData(filters, searchTerm);
+
+  // ─── UI State ─────────────────────────────────────────────────────────
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
@@ -123,34 +122,88 @@ export default function BusinessesMgmtPage() {
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
-    status: "all",
-    hasProductFilter: "all" as const,
-  });
   const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
-  const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
+    useState<IBusinessColumnVisibility>(defaultColumns);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const hasSavedFilters =
-    filters.hasProductFilter !== "all" || filters.status !== "all";
 
-  // ─── Load persisted state on mount (safe, no render loop) ─────────
+  // ─── Tour integration ─────────────────────────────────────────────────
+  const {
+    isOpen: isTourOpen,
+    steps: tourSteps,
+    currentStep,
+    startTour,
+    refreshTargetRect,
+  } = useTour();
+
+  const buildSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "business_list.welcome.title",
+        desc: "business_list.welcome.desc",
+      },
+      {
+        id: "page-header",
+        target: '[data-tour="page-header"]',
+        placement: "bottom",
+        title: "business_list.page_header.title",
+        desc: "business_list.page_header.desc",
+      },
+      {
+        id: "stats",
+        target: '[data-tour="stats"]',
+        placement: "bottom",
+        title: "business_list.stats.title",
+        desc: "business_list.stats.desc",
+      },
+      {
+        id: "search",
+        target: '[data-tour="search"]',
+        placement: "bottom",
+        title: "business_list.search.title",
+        desc: "business_list.search.desc",
+      },
+      {
+        id: "toolbar",
+        target: '[data-tour="toolbar"]',
+        placement: "bottom",
+        title: "business_list.toolbar.title",
+        desc: "business_list.toolbar.desc",
+      },
+      {
+        id: "filter-panel",
+        target: '[data-tour="filter-panel"]',
+        placement: "bottom",
+        title: "business_list.filter_panel.title",
+        desc: "business_list.filter_panel.desc",
+      },
+      {
+        id: "business-list",
+        target: '[data-tour="business-list"]',
+        placement: "top",
+        title: "business_list.business_list.title",
+        desc: "business_list.business_list.desc",
+      },
+    ],
+    [],
+  );
+
+  // Open filter panel when tour lands on that step
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (saved?.filters) setFilters(saved.filters);
-      if (saved?.searchTerm) setSearchTerm(saved.searchTerm);
-      if (saved?.page) setPage(saved.page);
-      if (saved?.viewMode) setViewMode(saved.viewMode);
-    } catch (e) {
-      console.error("Failed to load saved state:", e);
+    if (!isTourOpen) return;
+    const stepId = tourSteps[currentStep]?.id;
+    if (stepId === "filter-panel") {
+      setShowFilters(true);
+      const raf = requestAnimationFrame(() => {
+        setTimeout(() => refreshTargetRect(), 40);
+      });
+      return () => cancelAnimationFrame(raf);
     }
-  }, []);
+  }, [isTourOpen, currentStep, tourSteps, refreshTargetRect]);
 
-  // Load column visibility
+  // ─── Column visibility (persisted to localStorage) ────────────────────
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COLUMNS_STORAGE_KEY);
@@ -163,25 +216,11 @@ export default function BusinessesMgmtPage() {
     }
   }, []);
 
-  // ─── Persist state to localStorage (debounced via effect) ─────────
-  useEffect(() => {
-    const queryState = { page, filters, searchTerm, viewMode };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queryState));
-  }, [page, filters, searchTerm, viewMode]);
-
   useEffect(() => {
     localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(columnVisibility));
   }, [columnVisibility]);
 
-  // useEffect(() => {
-  //   if (searchTerm) {
-  //     localStorage.setItem(SEARCH_STORAGE_KEY, searchTerm);
-  //   } else {
-  //     localStorage.removeItem(SEARCH_STORAGE_KEY);
-  //   }
-  // }, [searchTerm]);
-
-  // ─── Close column dropdown on outside click ─────────
+  // ─── Close column dropdown on outside click ────────────────────────────
   useEffect(() => {
     if (!showColumnSettings) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -196,88 +235,11 @@ export default function BusinessesMgmtPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColumnSettings]);
 
-  // ─── Reset page when filters/search change ─────────
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, filters, dmoId, authorityId, startDate, endDate]);
-
-  // ─── Query Parameters (memoized, stable reference) ─────────
-  const queryParams = useMemo(() => {
-    const params: Record<string, any> = {
-      page,
-      dmoId,
-      // startDate,
-      // endDate,
-      authorityId,
-      limit: LIMIT,
-      locale: language,
-      externalApiId: websiteId,
-    };
-    const finalSearchTerm =
-      localStorage.getItem(SEARCH_STORAGE_KEY) ?? searchTerm;
-    if (finalSearchTerm) params.search = finalSearchTerm;
-    if (filters.status !== "all") params.status = filters.status;
-    if (filters.hasProductFilter !== "all") {
-      params.hasProductFilter = filters.hasProductFilter === "yes";
-    }
-    return params;
-  }, [
-    page,
-    searchTerm,
-    filters,
-    language,
-    dmoId,
-    authorityId,
-    // startDate,
-    // endDate,
-    websiteId,
-  ]);
-
-  // ─── API Queries ─────────
-  const statsQueryParams = useMemo(() => {
-    const { page, limit, locale, ...rest } = queryParams;
-    return rest;
-  }, [queryParams]);
-
-  const { data: businessStatsData, isLoading: isStatsLoading } =
-    useGetBusinessStatsQuery(statsQueryParams);
-
-  const {
-    data: businessData,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useGetAllbusinessesQuery(queryParams);
-
+  // ─── Mutations ─────────────────────────────────────────────────────────
   const [bulkBusinessesUpdate, { isLoading: isDeleting }] =
     useBulkBusinessesUpdateMutation();
 
-  const hasMore = businessData?.meta?.hasNextPage;
-  const totalData = businessData?.totalData;
-
-  // ─── Infinite Scroll: Merge new data safely ─────────
-  useEffect(() => {
-    if (!businessData?.data?.length) {
-      setCombinedBusinesses([]);
-      return;
-    }
-
-    setCombinedBusinesses((prev) => {
-      if (page === 1) return businessData?.data;
-      const existingIds = new Set(prev.map((b) => b._id));
-      const newItems = businessData?.data?.filter(
-        (b: any) => !existingIds.has(b._id),
-      );
-      return newItems.length ? [...prev, ...newItems] : prev;
-    });
-  }, [businessData, page]);
-
-  const fetchNextPage = useCallback(() => {
-    if (!hasMore || isFetching) return;
-    setPage((prev) => prev + 1);
-  }, [hasMore, isFetching]);
-
-  // ─── Handlers (memoized to prevent re-renders) ─────────
+  // ─── Handlers ─────────────────────────────────────────────────────────
   const handleBusinessClick = useCallback(
     (business: any) => {
       navigate(`${routes.businessDetails}?businessId=${business?._id}`, {
@@ -286,14 +248,6 @@ export default function BusinessesMgmtPage() {
     },
     [navigate],
   );
-
-  const clearFilter = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SEARCH_STORAGE_KEY);
-    setFilters({ status: "all", hasProductFilter: "all" });
-    setSearchTerm("");
-    setPage(1);
-  }, []);
 
   const resetToDefault = useCallback(() => {
     setColumnVisibility(defaultColumns);
@@ -307,11 +261,6 @@ export default function BusinessesMgmtPage() {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedBusinesses.size) return;
-    console.log(
-      "🚀 ~ BusinessesMgmtPage ~ selectedBusinesses:",
-      selectedBusinesses,
-    );
-
     const toastId = toast.loading(tc("business_delete_loading"));
     try {
       const results = await bulkBusinessesUpdate({
@@ -356,62 +305,7 @@ export default function BusinessesMgmtPage() {
     [selectedBusinesses, bulkBusinessesUpdate, refetch, tc],
   );
 
-  // ─── Export Logic (extracted for clarity) ─────────
-  const handleExport = useCallback(() => {
-    const businessesToExport =
-      selectedBusinesses.size > 0
-        ? (businessData?.data?.filter((b: any) =>
-            selectedBusinesses.has(b._id),
-          ) ?? [])
-        : (businessData?.data ?? []);
-
-    if (!businessesToExport.length) {
-      toast.info(t("noBusinessesToExport") || "No businesses to export");
-      return;
-    }
-
-    const escapeCSV = (value: any): string => {
-      if (value == null) return "";
-      const str = String(value);
-      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const columns = Object.entries(columnVisibility)
-      .filter(([_, visible]) => visible)
-      .map(([key]) => key as keyof ColumnVisibility);
-
-    const headers = columns.map((key) => t(key));
-    const csvRows = businessesToExport.map((business: any) =>
-      columns
-        .map((key) => {
-          let value: any = business[key];
-          if (key === "associatedWebsites") {
-            value = business.associatedWebsites?.[0]?.url || "-";
-          } else if (key === "categories" && Array.isArray(value)) {
-            value = value.join(", ");
-          } else if (key === "tripCount" && value == null) {
-            value = Math.floor((business.productCount * business.impact) / 10);
-          }
-          return escapeCSV(value ?? "-");
-        })
-        .join(","),
-    );
-
-    const csvContent = [headers.map(escapeCSV).join(","), ...csvRows].join(
-      "\n",
-    );
-    const blob = new Blob(["﻿", csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `businesses_export_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [selectedBusinesses, businessData, columnVisibility, t]);
-
-  // ─── Stats Cards ─────────
+  // ─── Stats Cards ───────────────────────────────────────────────────────
   const businessStats = useMemo(
     () => [
       {
@@ -460,220 +354,103 @@ export default function BusinessesMgmtPage() {
     [businessStatsData, t],
   );
 
-  // ─── Render ─────────
+  const isFilterPanelTourStep =
+    isTourOpen && tourSteps[currentStep]?.id === "filter-panel";
+
+  // ─── Render ─────────────────────────────────────────────────────────
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex flex-col pt-10 md:pt-0">
         {/* Sticky Header */}
         <div
           className={`border-b ${isDark ? "border-gray-800" : "bg-transparent border-gray-200"} z-10`}
         >
-          <PageHeader
-            title={t("businesses_management")}
-            description={t("businesses_management_desc")}
-            btnLabel={t("add_business")}
-            onClick={() => setIsCreateModalOpen(true)}
-            h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            totalCount={totalData ?? 0}
-          />
-          <PageStats
-            stats={businessStats}
-            isLoading={isStatsLoading}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
-          />
+          <div data-tour="page-header">
+            <PageHeader
+              title={t("businesses_management")}
+              description={t("businesses_management_desc")}
+              btnLabel={t("add_business")}
+              onClick={() => setIsCreateModalOpen(true)}
+              h1Gradient="bg-linear-to-r text-transparent from-blue-500 via-indigo-600 to-purple-600"
+              totalCount={totalData ?? 0}
+            />
+          </div>
+
+          <div data-tour="stats">
+            <PageStats
+              stats={businessStats}
+              isLoading={isStatsLoading}
+              className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-4"
+            />
+          </div>
 
           {/* Search & Actions */}
-          <div className="py-4 flex flex-col lg:flex-row gap-3">
-            <div className="flex-1 relative">
+          <div className="py-3 flex flex-col gap-2">
+            <div className="flex-1 relative" data-tour="search">
               <SearchInput
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                storageKey={SEARCH_STORAGE_KEY}
               />
             </div>
 
-            <FilterButton value={showFilters} onChange={setShowFilters} />
+            <div
+              className="flex items-center justify-between gap-2 w-full"
+              data-tour="toolbar"
+            >
+              <div className="flex items-center gap-2">
+                <FilterButton value={showFilters} onChange={setShowFilters} />
+                <ShowColumns
+                  t={t}
+                  viewMode={viewMode}
+                  columnDefinitions={columnDefinitions}
+                  columnVisibility={columnVisibility}
+                  showColumnSettings={showColumnSettings}
+                  setShowColumnSettings={setShowColumnSettings}
+                  setColumnVisibility={setColumnVisibility}
+                  resetToDefault={resetToDefault}
+                />
+                <ExportBusinessButton
+                  businesses={combinedBusinesses}
+                  selectedBusinesses={selectedBusinesses}
+                  columnVisibility={columnVisibility}
+                  t={t}
+                />
+              </div>
 
-            {viewMode === "list" && (
-              <div className="relative" ref={columnSettingsRef}>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowColumnSettings(!showColumnSettings)}
-                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                  onClick={() => startTour(buildSteps())}
+                  title={tt("start_tour")}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 ${
                     isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
                   }`}
                 >
-                  <Columns className="w-5 h-5" />
-                  {t("show_columns")}
-                  {showColumnSettings ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
+                  <Compass className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {t("tour") ?? tt("start_tour")}
+                  </span>
                 </button>
-
-                {showColumnSettings && (
-                  <div
-                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-96 overflow-y-auto border z-50 ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700"
-                        : "bg-white border-gray-200"
-                    }`}
-                  >
-                    <div
-                      className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3
-                          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                        >
-                          {t("column_settings")}
-                        </h3>
-                        <button
-                          onClick={resetToDefault}
-                          className="text-xs text-teal-600 hover:text-teal-700"
-                        >
-                          {t("reset_to_default")}
-                        </button>
-                      </div>
-                      <p
-                        className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                      >
-                        {t("select_columns_to_display")}
-                      </p>
-                    </div>
-                    <div className="p-3 space-y-1">
-                      {columnDefinitions.map(({ key }) => (
-                        <label
-                          key={key}
-                          className={`flex items-center gap-2 p-2 rounded cursor-pointer ${
-                            isRTL ? "flex-row-reverse" : ""
-                          } ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={columnVisibility[key]}
-                            onChange={(e) =>
-                              setColumnVisibility((prev) => ({
-                                ...prev,
-                                [key]: e.target.checked,
-                              }))
-                            }
-                            className="rounded"
-                          />
-                          <span className={`text-sm ${textSecondary}`}>
-                            {t(key)}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <ViewModeToggle
+                  onChange={setViewMode}
+                  value={viewMode}
+                  tableName="businessViewMode"
+                />
               </div>
-            )}
-
-            <button
-              onClick={handleExport}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                isDark
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              <Download className="w-5 h-5" />
-              {t("export")}
-            </button>
-
-            <ViewModeToggle
-              onChange={(mode) => {
-                setViewMode(mode);
-                localStorage.setItem(
-                  STORAGE_KEY,
-                  JSON.stringify({
-                    ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"),
-                    viewMode: mode,
-                  }),
-                );
-              }}
-              value={viewMode}
-              tableName="businessViewMode"
-            />
+            </div>
           </div>
 
           {/* Filters Panel */}
           {(showFilters || hasSavedFilters) && (
-            <div
-              className={`border-t py-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
-            >
-              <div className="flex flex-wrap items-start gap-4 ml-4 w-full">
-                <FilterByStatus filters={filters} setFilters={setFilters} />
-                <div className="flex flex-col min-w-45">
-                  <label
-                    className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("has_products")}
-                  </label>
-                  <select
-                    value={filters.hasProductFilter}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        hasProductFilter: e.target.value as any,
-                      })
-                    }
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="all">{t("all")}</option>
-                    <option value="yes">{t("yes")}</option>
-                    <option value="no">{t("no")}</option>
-                  </select>
-                </div>
-                {hasSavedFilters && (
-                  <div className="flex flex-col min-w-45">
-                    <label
-                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("active_filters")}
-                    </label>
-                    <div className="flex gap-2 items-center">
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(filters).map(
-                          ([key, value]) =>
-                            value !== "all" && (
-                              <FilterChips
-                                key={key}
-                                label={t(
-                                  value === "yes" || value === "no"
-                                    ? value
-                                    : value.toLowerCase(),
-                                )}
-                                onRemove={() =>
-                                  setFilters((prev) => ({
-                                    ...prev,
-                                    [key]: "all",
-                                  }))
-                                }
-                              />
-                            ),
-                        )}
-                      </div>
-                      <button
-                        onClick={clearFilter}
-                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                      >
-                        {t("clear_all")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <BusinessFiltersPanel
+              filters={filters}
+              setFilters={setFilters}
+              hasSavedFilters={hasSavedFilters}
+              clearFilter={clearFilter}
+              isHighlighted={isFilterPanelTourStep}
+            />
           )}
 
           <BulkActionBar
@@ -685,8 +462,8 @@ export default function BusinessesMgmtPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto mt-2">
-          {!isLoading && !isFetching && combinedBusinesses.length === 0 ? (
+        <div className="flex-1 overflow-y-auto mt-2" data-tour="business-list">
+          {!isLoading && !isFetching && combinedBusinesses?.length === 0 ? (
             <div
               className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
             >
@@ -695,7 +472,7 @@ export default function BusinessesMgmtPage() {
           ) : viewMode === "list" ? (
             <BusinessListView
               t={t}
-              hasMore={!!hasMore}
+              hasMore={hasMore}
               next={fetchNextPage}
               isLoading={isLoading}
               columnVisibility={columnVisibility}
@@ -707,7 +484,7 @@ export default function BusinessesMgmtPage() {
           ) : (
             <BusinessGridView
               refetch={refetch}
-              hasMore={!!hasMore}
+              hasMore={hasMore}
               next={fetchNextPage}
               data={combinedBusinesses}
               onRowClick={handleBusinessClick}
@@ -744,6 +521,18 @@ export default function BusinessesMgmtPage() {
           />
         )}
       </div>
+
+      <TourPortal />
     </>
+  );
+}
+
+// ─── Exported page (wraps with TourProvider) ──────────────────────────────────
+
+export default function BusinessesMgmtPage() {
+  return (
+    <TourProvider>
+      <BusinessesMgmtPageInner />
+    </TourProvider>
   );
 }

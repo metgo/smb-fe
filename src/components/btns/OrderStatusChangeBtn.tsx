@@ -11,6 +11,7 @@ interface StatusChangeBtnProps {
   status: TOrderStatus;
   handleStatusChange: (status: TOrderStatus) => void;
   setShowCancelDialog: (show: boolean) => void;
+  allowCancel?: boolean;
 }
 
 type StatusOption = {
@@ -24,6 +25,7 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   status,
   handleStatusChange,
   setShowCancelDialog,
+  allowCancel = false,
 }) => {
   const { t } = useTranslation("orders");
   const { isDark, isRTL } = useThemeClasses();
@@ -75,8 +77,9 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   };
 
   const activeOption = currentStatus ? allStatuses[currentStatus] : undefined;
-  const restrictedStatuses: TOrderStatus[] = ["completed", "canceled"];
+  const restrictedStatuses: TOrderStatus[] = ["canceled"];
   const isTraveller = userRole === UserRole.TRAVELLER;
+  const isCompleted = currentStatus === "completed";
 
   /* -------------------- Outside Click Handler -------------------- */
   useEffect(() => {
@@ -95,6 +98,8 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
   /* -------------------- Handlers -------------------- */
   const handleChange = (newStatus: TOrderStatus) => {
+    if (isCompleted) return;
+
     setIsOpen(false);
     if (newStatus === "canceled") {
       setShowCancelDialog(true);
@@ -109,9 +114,13 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          if (!isCompleted) setIsOpen((prev) => !prev);
+        }}
+        disabled={isCompleted}
         className={clsx(
           "flex items-center gap-2 px-2 py-2 rounded-md text-sm border font-medium transition-colors duration-200",
+          isCompleted && "cursor-not-allowed opacity-70",
           activeOption
             ? [activeOption.textColor, activeOption.borderColor]
             : isDark
@@ -139,7 +148,7 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
         />
       </button>
 
-      {isOpen && (
+      {isOpen && !isCompleted && (
         <div
           className={clsx(
             "absolute top-full mt-2 w-48 rounded-lg shadow-lg border z-60",
@@ -170,7 +179,10 @@ const OrderStatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
 
               const isActive = key === currentStatus;
               const isDisabled =
-                isTraveller && restrictedStatuses.includes(key);
+                (isTraveller &&
+                  restrictedStatuses.includes(key) &&
+                  !(allowCancel && key === "canceled")) ||
+                (key === "canceled" && currentStatus === "canceled");
 
               return (
                 <button

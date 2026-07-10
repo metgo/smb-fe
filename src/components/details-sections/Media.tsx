@@ -217,12 +217,14 @@ const Media: FC<MediaProps> = ({
               )}
 
               {/* Set as Primary */}
-              <button
-                onClick={() => setPrimaryImage(idx)}
-                className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
-              >
-                {t("set_as_primary") || "Set as Primary"}
-              </button>
+              {idx !== primaryImageIndex && (
+                <button
+                  onClick={() => setPrimaryImage(idx)}
+                  className="absolute bottom-2 left-2 right-2 cursor-pointer px-3 py-1.5 bg-teal-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-teal-700"
+                >
+                  {t("set_as_primary") || "Set as Primary"}
+                </button>
+              )}
             </div>
           ))}
 

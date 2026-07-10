@@ -39,5 +39,7 @@
   "password": "Enter your password *",
   "next": "Next",
   "welcome_user": "Welcome",
-  "continue_with_google": "Continue with Google"
+  "continue_with_google": "Continue with Google",
+
+  "rate_limit_message": "Your account is currently restricted due to multiple unsuccessful login attempts."
 }

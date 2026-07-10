@@ -1,16 +1,12 @@
-import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState, useRef } from "react";
 import {
   Edit,
   Package,
   ArrowUp,
-  ArrowLeft,
-  ArrowRight,
   ArrowUpDown,
   Copy,
   Eye,
-  MoreHorizontal,
   ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +22,7 @@ import {
   useGetProductStatsByIdQuery,
 } from "@/store/api/productQueryApi";
 import { routes } from "@/lib/routes";
+import { IOpMode } from "@/enums/operation.types";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { PageStats, Spinner, TabsSection } from "@/components/shared";
@@ -38,22 +35,20 @@ import {
   DetailTitleSection,
   MediaDetails,
 } from "@/components/details-sections";
-import { StatusChangeBtn } from "@/components/btns";
-import { IOpMode } from "@/enums/operation.types";
+import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
 
   const { t } = useTranslation("products");
-  const { t: ct } = useTranslation("common");
   const { t: tt } = useTranslation("toast");
 
-  const { isDark, language, isRTL } = useThemeClasses();
+  const [searchParams] = useSearchParams();
+
+  const { isDark, isRTL, language } = useThemeClasses();
   const [updateProduct] = useUpdateProductMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const [searchParams] = useSearchParams();
 
   const productId = searchParams.get("productId");
   const {
@@ -142,12 +137,16 @@ export default function ProductDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, language, product };
+    const productImages = product?.images ?? [];
     const mediaProps = {
       logoImage: null,
-      images: (product?.images ?? []).map((img: IImage) => ({
+      images: productImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        productImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
     switch (activeTab) {
       case "overview":
@@ -166,7 +165,7 @@ export default function ProductDetailsPage() {
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
-        return <DeliveryPolicyOptionDetails data={product} />;
+        return <DeliveryPolicyOptionDetails data={product} isProduct />;
       case "media":
         return <MediaDetails {...mediaProps} />;
       default:
@@ -175,27 +174,12 @@ export default function ProductDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh-7rem)] overflow-hidden relative pt-10 md:py-8 ">
       <Spinner isLoading={isLoading} />
 
       {/* Action bar */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <button
-          onClick={() => navigate(routes.productsMgmt)}
-          className={clsx(
-            "flex items-center gap-2 py-2 rounded-lg transition-colors",
-            isDark
-              ? "hover:bg-gray-800 text-gray-300"
-              : "hover:bg-gray-100 text-gray-700",
-          )}
-        >
-          {isRTL ? (
-            <ArrowRight className="w-5 h-5" />
-          ) : (
-            <ArrowLeft className="w-5 h-5" />
-          )}
-          <span>{ct("back_to_list") || "Back"}</span>
-        </button>
+        <BackToListBtn navPath={routes.productsMgmt} />
 
         <div className="flex items-center gap-3">
           <StatusChangeBtn
@@ -211,8 +195,7 @@ export default function ProductDetailsPage() {
                   : "border-gray-300 hover:bg-gray-100 text-gray-700 bg-white"
               }`}
             >
-              <MoreHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">Actions</span>
+              <span className="text-sm font-medium">{t("actions")}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
@@ -220,7 +203,7 @@ export default function ProductDetailsPage() {
 
             {isDropdownOpen && (
               <div
-                className={`absolute right-0 mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-52 rounded-xl shadow-lg border z-50 overflow-hidden ${
                   isDark
                     ? "bg-gray-900 border-gray-700"
                     : "bg-white border-gray-200"
@@ -289,7 +272,8 @@ export default function ProductDetailsPage() {
         <PageStats
           stats={salesStats}
           isLoading={isStatsLoading}
-          className="grid grid-cols-2 lg:grid-cols-3 gap-2 my-4"
+          className="lg:grid-cols-3 gap-2"
+          wrapperClassName="my-4"
         />
       </div>
 

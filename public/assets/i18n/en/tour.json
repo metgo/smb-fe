@@ -1,0 +1,135 @@
+{
+  "start_tour": "Take a Tour",
+
+  "business_details": {
+    "welcome": {
+      "title": "Welcome to Business Details",
+      "desc": "This page gives you complete control over a business — track performance, manage content, update settings, and more. Let's walk through the key areas together."
+    },
+    "status": {
+      "title": "Status Control",
+      "desc": "Instantly activate, suspend, or archive a business. Changes apply platform-wide the moment you save them."
+    },
+    "actions": {
+      "title": "Actions Menu",
+      "desc": "Four shortcuts live here — Edit updates the full business profile, Change Owner transfers management to another user, Create Product links a new product to this business, and View Products opens its product list."
+    },
+    "header": {
+      "title": "Business Identity",
+      "desc": "The business name, logo, primary category, and profile completion score. A higher completion score improves visibility and trust on the platform."
+    },
+    "stats": {
+      "title": "Real-Time Analytics",
+      "desc": "Live data on page views, unique visitors, clicks, bookmarks, shares, average engagement time, and conversion rate — your business performance at a glance."
+    },
+    "tabs": {
+      "title": "Section Navigation",
+      "desc": "Switch between Overview, Attributes, Contact, Location, Media, Social Networks, Delivery Policy, and Opening Hours using these tabs."
+    },
+    "content": {
+      "title": "Section Details",
+      "desc": "Each tab reveals the full content for that section. To edit any field, open the Actions menu and select 'Edit'."
+    }
+  },
+
+  "business_wizard": {
+    "welcome": {
+      "title": "Welcome to the Business Wizard",
+      "desc": "This step-by-step wizard guides you through creating or editing a complete business profile. You can save a draft at any time and publish when ready."
+    },
+    "header": {
+      "title": "Wizard Header",
+      "desc": "Shows your current step and its title. The completion ring tracks real-time profile strength — publish once all required fields are filled."
+    },
+    "stepper": {
+      "title": "Step Navigator",
+      "desc": "10 steps cover every aspect of a business: basic info, translations, contact, location, attributes, media, opening hours, delivery, online presence, and a final review. Click any step to jump directly to it."
+    },
+    "completion": {
+      "title": "Completion Tracker",
+      "desc": "This ring updates live as you fill in fields. Green = 70%+, amber = 40–69%, red = below 40%. Reach 100% for the strongest profile visibility."
+    },
+    "content": {
+      "title": "Step Content",
+      "desc": "Fill in the details for the current step here. Required fields are marked — steps 1–5 must be completed before you can publish."
+    },
+    "footer": {
+      "title": "Footer Navigation",
+      "desc": "Previous and Next move between steps. Save Draft stores your progress without publishing. Publish submits the business for review."
+    }
+  },
+
+  "business_list": {
+    "welcome": {
+      "title": "Welcome to Business Management",
+      "desc": "Manage your entire business portfolio from one place — browse, filter, create, and track performance. Let's walk through the key features."
+    },
+    "page_header": {
+      "title": "Page Overview",
+      "desc": "The live business count sits next to the title. Hit 'Add Business' to register a new business through the step-by-step creation wizard."
+    },
+    "stats": {
+      "title": "Portfolio Snapshot",
+      "desc": "Six live metrics: total registered businesses, active ones, total products, average impact score, pending approvals, and average profile completion rate."
+    },
+    "search": {
+      "title": "Smart Search",
+      "desc": "Find any business instantly by name, email, or phone number. Results refresh as you type — no submit needed."
+    },
+    "toolbar": {
+      "title": "Toolbar",
+      "desc": "Four tools in one row — open the Filter panel, show or hide table columns, export the current view to CSV, and switch between list and grid display."
+    },
+    "filter_panel": {
+      "title": "Filter Panel",
+      "desc": "Narrow results by status (Active, Pending, Archived) or by whether a business has products. Active filters appear as removable chips above the list."
+    },
+    "business_list": {
+      "title": "Business List",
+      "desc": "Click any row to open the full business profile. Use the checkboxes to select multiple businesses and apply bulk actions — status change or deletion — in one go."
+    }
+  },
+
+  "event_session": {
+    "welcome": {
+      "title": "Welcome to Event Session Management",
+      "desc": "This dashboard gives you full control over event sessions — configure guest-facing landing pages, monitor seat capacity in real time, track attendance analytics, send targeted notifications, and manage all registrations from one place. Let's explore each section together."
+    },
+    "page_header": {
+      "title": "Page Overview",
+      "desc": "The title and description identify this management area at a glance. The five tabs below divide the full event lifecycle into focused sections so you always know exactly where you are."
+    },
+    "tabs_nav": {
+      "title": "Section Navigator",
+      "desc": "Five tabs cover every stage of an event: Landing Page to configure the guest booking experience, Capacity Report for live seat monitoring, Analytics for attendance insights, Notifications to message registrants, and Registrations to manage all bookings."
+    },
+    "landing": {
+      "title": "Landing Page",
+      "desc": "Design the guest-facing booking page from here — set the hero background image, brand name, main heading, available sessions, and whether guests can book one or multiple sessions at once. Every change is instantly previewable."
+    },
+    "capacity": {
+      "title": "Capacity Report",
+      "desc": "Monitor live seat availability across every session and time slot. Each row shows total capacity, booked seats, active holds, attendees who arrived, and remaining spots — updated in real time so you always have an accurate picture."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "desc": "Visualise registration trends and occupancy rates broken down by session. Track total registrations, actual attendance, no-show rate, and overall occupancy to inform planning decisions for future events."
+    },
+    "notify": {
+      "title": "Notifications",
+      "desc": "Send targeted messages to registrants via email or SMS. Pick your audience, choose a channel, write your subject and body, and review the complete send history — all from one consolidated panel."
+    },
+    "regs": {
+      "title": "Registrations",
+      "desc": "Browse and manage every booking in a single table. Each row shows the booking reference, registrant name, contact details, and attendance status. You can also reset all demo data from this tab when needed."
+    }
+  },
+
+  "nav": {
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip Tour",
+    "finish": "Let's Go",
+    "step_of": "Step {{current}} of {{total}}"
+  }
+}

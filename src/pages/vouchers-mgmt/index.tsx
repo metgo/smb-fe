@@ -22,7 +22,7 @@ export default function VouchersMgmtPage() {
 
   return (
     <div
-      className={`h-[calc(108vh-180px)] transition-colors flex flex-col ${
+      className={`h-[calc(108vh-180px)] transition-colors flex flex-col pt-10 md:pt-0 ${
         isDark ? "bg-gray-950" : "bg-gray-50"
       }`}
     >

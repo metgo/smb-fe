@@ -172,14 +172,24 @@ export const useImagesUpload = ({
 
   /* ---------------- Remove image ---------------- */
   const removeImage = (index: number) => {
+    const newPrimaryIndex =
+      primaryImageIndex === index
+        ? 0
+        : index < primaryImageIndex
+          ? primaryImageIndex - 1
+          : primaryImageIndex;
+
     setImages((prev) => {
       const img = prev[index];
       if (img?.previewUrl?.startsWith("blob:")) {
         URL.revokeObjectURL(img.previewUrl);
       }
-      return prev.filter((_, i) => i !== index);
+      return prev
+        .filter((_, i) => i !== index)
+        .map((img, i) => ({ ...img, isPrimary: i === newPrimaryIndex }));
     });
-    if (primaryImageIndex === index) setPrimaryImageIndex(0);
+
+    setPrimaryImageIndex(newPrimaryIndex);
   };
 
   /*--------------- Delete Image Locally - If not uploaded yet ------------------ */

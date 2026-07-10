@@ -60,8 +60,8 @@ const FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
-  // "Events",
-  // "POI",
+  "Events",
+  "POI",
 ];
 
 const TAB_TO_CONTENT_TYPE: Record<string, IContent["contentType"]> = {
@@ -270,7 +270,7 @@ const Contents = ({
           isDark ? "border-gray-500" : "border-gray-200",
         )}
       >
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <h2
             className={`${isDark ? "text-gray-400" : "text-gray-700"} text-lg font-semibold`}
           >
@@ -281,7 +281,7 @@ const Contents = ({
             {currentTab} {t("available")}
           </div>
 
-          <div className="flex flex-1 justify-end">
+          <div className="flex ml-auto">
             <div className="flex items-center gap-1">
               {FILTER_OPTIONS.map((option) => {
                 const isSelected = selected === option;
@@ -301,18 +301,6 @@ const Contents = ({
                     )}
                   >
                     {FILTER_ICONS[option]}
-                    <span
-                      className={clsx(
-                        "text-xs font-medium",
-                        isSelected
-                          ? "text-teal-600"
-                          : isDark
-                            ? "text-gray-400"
-                            : "text-gray-500",
-                      )}
-                    >
-                      {option}
-                    </span>
                     {isTabLoading ? (
                       <span className="flex items-center gap-px">
                         <span
@@ -392,11 +380,11 @@ const Contents = ({
             className={`border-t pt-2 ${isDark ? "border-gray-800 bg-gray-900/30" : "border-gray-200 bg-gray-50"}`}
           >
             <div className="flex flex-wrap items-start gap-4 w-full">
-              <div className="grid grid-cols-8 gap-2 pb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-8 gap-2 pb-2">
                 {/* ── Business filters ── */}
                 {currentTab === "Businesses" && (
                   <>
-                    <div className="flex flex-col col-span-4">
+                    <div className="flex flex-col sm:col-span-4">
                       <label
                         className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >
@@ -418,7 +406,7 @@ const Contents = ({
                       </select>
                     </div>
 
-                    <div className="flex flex-col col-span-4">
+                    <div className="flex flex-col sm:col-span-4">
                       <label
                         className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                       >
@@ -502,27 +490,6 @@ const Contents = ({
                 {/* ── Event filters ── */}
                 {currentTab === "Events" && (
                   <div className="flex flex-col min-w-45">
-                    <label className={`block text-sm mb-2`}>
-                      {t("event_type")}
-                    </label>
-                    <select
-                      value={filters.eventTypeFilter}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          eventTypeFilter: e.target.value,
-                        })
-                      }
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        isDark
-                          ? "bg-gray-900 border-gray-700 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="all">{tc("all")}</option>
-                      <option value="free">{tc("free")}</option>
-                      <option value="paid">{tc("paid")}</option>
-                    </select>
                     <label className={`block text-sm mb-2 `}>
                       {t("registration")}
                     </label>
@@ -593,7 +560,12 @@ const Contents = ({
               {(currentTab === "Businesses" &&
                 (filters.hasProductFilter !== "all" ||
                   filters.primaryCategory !== "all")) ||
-              (currentTab === "Products" && filters.businessId) ? (
+              (currentTab === "Products" && filters.businessId) ||
+              (currentTab === "Events" &&
+                ((filters.registrationFilter &&
+                  filters.registrationFilter !== "all") ||
+                  filters.dateRangeFilter.start ||
+                  filters.dateRangeFilter.end)) ? (
                 <div className="flex flex-col items-start gap-1">
                   <label
                     className={`block text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -603,7 +575,8 @@ const Contents = ({
                   <div className="flex gap-2 items-center">
                     <div className="flex flex-wrap gap-2 mb-2 mt-2">
                       {Object.entries(filters).map(([key, value]) => {
-                        if (!value || value === "all") return null;
+                        if (!value || value === "all" || value === "")
+                          return null;
                         if (typeof value === "object") return null;
 
                         // Only show chips relevant to current tab
@@ -611,10 +584,20 @@ const Contents = ({
                           return null;
                         if (currentTab === "Products" && key !== "businessId")
                           return null;
+                        if (
+                          currentTab === "Events" &&
+                          key !== "registrationFilter"
+                        )
+                          return null;
 
                         let displayValue = value;
                         if (key === "hasProductFilter")
                           displayValue = value === "yes" ? t("yes") : t("no");
+                        else if (key === "registrationFilter")
+                          displayValue =
+                            value === "true"
+                              ? tc("required")
+                              : tc("not_required");
                         else if (key === "primaryCategory") {
                           const found = categoryFilter?.find(
                             (item: any) => item._id === value,
@@ -641,6 +624,19 @@ const Contents = ({
                           />
                         );
                       })}
+                      {currentTab === "Events" &&
+                        (filters.dateRangeFilter.start ||
+                          filters.dateRangeFilter.end) && (
+                          <FilterChips
+                            label={`${filters.dateRangeFilter.start || "..."} → ${filters.dateRangeFilter.end || "..."}`}
+                            onRemove={() =>
+                              setFilters((prev: Filters) => ({
+                                ...prev,
+                                dateRangeFilter: { start: "", end: "" },
+                              }))
+                            }
+                          />
+                        )}
                     </div>
                     <button
                       onClick={clearFilter}
@@ -704,8 +700,27 @@ const Contents = ({
                 _id={item._id}
                 name={item?.name}
                 descripition={item?.shortDescription}
-                image={item?.images?.[0]?.image}
+                image={
+                  typeof item?.images === "string"
+                    ? item?.images
+                    : item?.images?.[0]?.image
+                }
                 categoryName={item?.primaryCategoryId?.name}
+                address={item?.address}
+                startDate={
+                  currentTab === "Events"
+                    ? item?.dayDescription?.[0]?.date
+                    : undefined
+                }
+                startTime={
+                  currentTab === "Events"
+                    ? item?.dayDescription?.[0]?.startTime
+                    : undefined
+                }
+                isFree={currentTab === "Events" ? item?.isFree : undefined}
+                eventType={
+                  currentTab === "Events" ? item?.eventType : undefined
+                }
                 viewMode={viewMode}
                 isExpanded={isExpanded}
                 isSelected={selectedItems.has(item._id)}

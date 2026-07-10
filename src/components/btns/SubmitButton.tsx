@@ -7,6 +7,7 @@ interface SubmitButtonProps {
   label: string;
   className: string;
   onClick?: () => void;
+  isDisabled?: boolean;
   type?: "submit" | "reset" | "button" | "reset";
 }
 
@@ -16,10 +17,11 @@ const SubmitButton = ({
   className,
   type = "submit",
   onClick,
+  isDisabled = false,
 }: SubmitButtonProps) => (
   <Button
     type={type}
-    disabled={loading}
+    disabled={loading || isDisabled}
     onClick={onClick && onClick}
     className={clsx(
       className,

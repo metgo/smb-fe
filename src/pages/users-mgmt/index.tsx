@@ -1,5 +1,6 @@
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ROLE_TABS } from "@/lib/utils";
 import { UserRole } from "@/enums/user.types";
@@ -16,11 +17,52 @@ import {
   CreateUserWizard,
 } from "./components";
 import { TabsSection, PageHeader, ViewModeToggle } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
+import { useResetLoginAttemptMutation } from "@/store/api/authApi";
+import { toast } from "sonner";
+
+const ROLE_ORDER: UserRole[] = [
+  UserRole.SUPERADMIN,
+  UserRole.ADMIN,
+  UserRole.DMO,
+  UserRole.AUTHORITY,
+  UserRole.TRAVELLER,
+];
+
+const ROLE_TAB_LABEL_KEYS: Partial<Record<UserRole, string>> = {
+  [UserRole.SUPERADMIN]: "super_admins_tab",
+  [UserRole.ADMIN]: "admins_tab",
+  [UserRole.DMO]: "dmos_tab",
+  [UserRole.AUTHORITY]: "authorities_tab",
+  [UserRole.TRAVELLER]: "travellers_tab",
+};
 
 const LIMIT = 1000;
 
 const UsersMgmtPage = () => {
-  const [activeRole, setActiveRole] = useState<UserRole>(UserRole.SUPERADMIN);
+  const { t } = useTranslation("user");
+  const { t: tt } = useTranslation("toast");
+
+  const { userRole } = useAppSelector((state) => state.auth);
+
+  const visibleTabs = useMemo(() => {
+    const myIndex = ROLE_ORDER.indexOf(userRole as UserRole);
+    const tabs =
+      myIndex === -1
+        ? ROLE_TABS
+        : ROLE_TABS.filter(
+            (tab) => ROLE_ORDER.indexOf(tab.id as UserRole) >= myIndex,
+          );
+
+    return tabs.map((tab) => ({
+      ...tab,
+      label: t(ROLE_TAB_LABEL_KEYS[tab.id as UserRole] ?? tab.label),
+    }));
+  }, [userRole, t]);
+
+  const [activeRole, setActiveRole] = useState<UserRole>(
+    () => (userRole as UserRole) ?? UserRole.SUPERADMIN,
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -53,15 +95,26 @@ const UsersMgmtPage = () => {
     [page, activeRole, search],
   );
 
-  const { data, isFetching, isLoading } = useGetUsersQuery(queryParams, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isFetching, isLoading, refetch } = useGetUsersQuery(
+    queryParams,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const totalData = data?.totalData ?? 0;
+  const hasMore = data?.meta?.hasNextPage ?? false;
 
   const [deleteUser] = useDeleteUserMutation();
+  const [resetLoginAttempt, { isLoading: isLoginAttemptReseting }] =
+    useResetLoginAttemptMutation();
 
-  const totalData = data?.datas?.totalData ?? 0;
-
-  const hasMore = data?.datas?.meta?.hasNextPage ?? false;
+  const handleLoginAttemptReset = async (userId: string) => {
+    const res = await resetLoginAttempt(userId).unwrap();
+    if (res.data) {
+      toast.success(tt("login_attempt_rest_success"));
+      refetch();
+    }
+  };
 
   /**
    * Merge paginated users.
@@ -75,8 +128,8 @@ const UsersMgmtPage = () => {
       return;
     }
 
-    const users = data.datas?.data ?? [];
-    const fetchedPage = data.datas?.meta?.page ?? 1;
+    const users = data.data ?? [];
+    const fetchedPage = data.meta?.page ?? 1;
 
     if (!users.length) {
       if (fetchedPage === 1) setAllUsers([]);
@@ -165,45 +218,46 @@ const UsersMgmtPage = () => {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-2xl p-2 ${bgPrimary}`}
-      style={{
-        height: "calc(100vh - 112px)",
-      }}
+      className={`h-[calc(100vh-7rem)] flex flex-col overflow-hidden rounded-2xl px-2 pt-10 md:pt-0 ${bgPrimary}`}
     >
       {/* Header */}
-      <PageHeader
-        title="Users Management"
-        h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-400"
-        totalCount={totalData || undefined}
-        btnLabel="Create User"
-        onClick={() => setWizardUser(null)}
-      />
-
-      {/* Tabs */}
-      <TabsSection
-        tabs={ROLE_TABS}
-        activeTab={activeRole}
-        setActiveTab={handleRoleChange}
-      />
-
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mt-4 relative">
-        <div className="flex-1">
-          <SearchInput
-            placeholder="Search users..."
-            searchTerm={search}
-            setSearchTerm={handleSearchChange}
-          />
-        </div>
-
-        <ViewModeToggle
-          value={viewMode}
-          onChange={(mode) => {
-            setViewMode(mode);
-            localStorage.setItem("usersViewMode", mode);
-          }}
-          tableName="usersViewMode"
+      <div className="shrink-0">
+        <PageHeader
+          title={t("users_management")}
+          h1Gradient="text-transparent bg-gradient-to-r from-teal-500 to-cyan-400"
+          totalCount={totalData || undefined}
+          btnLabel={t("create_user")}
+          onClick={() => setWizardUser(null)}
         />
+
+        {/* Tabs */}
+        <TabsSection
+          tabs={visibleTabs}
+          activeTab={activeRole}
+          setActiveTab={handleRoleChange}
+        />
+
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4">
+          <div className="flex-1 relative">
+            <SearchInput
+              placeholder={t("search_users_placeholder")}
+              searchTerm={search}
+              setSearchTerm={handleSearchChange}
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <ViewModeToggle
+              value={viewMode}
+              onChange={(mode) => {
+                setViewMode(mode);
+                localStorage.setItem("usersViewMode", mode);
+              }}
+              tableName="usersViewMode"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Content */}
@@ -220,6 +274,9 @@ const UsersMgmtPage = () => {
             fetchNextPage={fetchNextPage}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            activeRole={activeRole}
+            handleLoginAttemptReset={handleLoginAttemptReset}
+            isLoginAttemptReseting={isLoginAttemptReseting}
           />
         ) : (
           <div id="users-scroll-container" className="h-full overflow-y-auto">
@@ -250,7 +307,7 @@ const UsersMgmtPage = () => {
                 endMessage={
                   allUsers.length > LIMIT ? (
                     <p className={`text-center text-xs py-4 ${textTertiary}`}>
-                      All users loaded
+                      {t("all_users_loaded")}
                     </p>
                   ) : null
                 }
@@ -262,6 +319,8 @@ const UsersMgmtPage = () => {
                       user={user}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      handleLoginAttemptReset={handleLoginAttemptReset}
+                      isLoginAttemptReseting={isLoginAttemptReseting}
                     />
                   ))}
                 </div>
@@ -276,6 +335,7 @@ const UsersMgmtPage = () => {
         <CreateUserWizard
           editUser={wizardUser}
           onClose={() => setWizardUser(undefined)}
+          onSuccess={refetch}
         />
       )}
 
@@ -283,9 +343,12 @@ const UsersMgmtPage = () => {
       <ConfirmDialog
         open={!!deleteTarget}
         variant="danger"
-        title="Delete User"
-        message={`Are you sure you want to delete ${deleteTarget?.firstName} ${deleteTarget?.lastName}? This action cannot be undone.`}
-        confirmText="Delete"
+        title={t("delete_user")}
+        message={t("delete_user_confirm", {
+          firstName: deleteTarget?.firstName,
+          lastName: deleteTarget?.lastName,
+        })}
+        confirmText="delete"
         loading={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}

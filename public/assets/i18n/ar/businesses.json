@@ -1,6 +1,6 @@
 {
   "businesses_management": "إدارة الأعمال",
-  "businesses_management_desc": "إدارة جميع الأعمال في منطقة النقب الغربي",
+  "businesses_management_desc": "إدارة جميع الأعمال",
   "total_businesses": "إجمالي الأعمال",
   "active_businesses": "الأعمال النشطة",
   "active_users": "المستخدمين النشطين",
@@ -222,8 +222,9 @@
   "delivery_areas_pricing": "تسعير مناطق التوصيل",
   "delivery_additional_info": "معلومات إضافية عن التوصيل",
   "return_exchange_info": "معلومات الإرجاع والاستبدال",
-  "vendor_delivers": "التاجر يقوم بالتوصيل",
+  "vendor_delivers": "سعر لكل منتج",
   "pickup_available": "الاستلام متاح",
+  "global_delivery": "سعر لكل طلب",
   "delivery_area": "منطقة التوصيل",
   "delivery_price": "سعر التوصيل (شيكل)",
   "add_area": "إضافة منطقة",
@@ -296,5 +297,6 @@
   "user_not_in_system_alert": "غير موجود في نظامنا. يرجى تقديم معلوماته لإرسال الدعوة.",
   "download": "تحميل رمز QR",
   "scanToVisit": "امسح للزيارة",
-  "last_active": "آخر نشاط"
+  "last_active": "آخر نشاط",
+  "tour": "جولة تعريفية"
 }

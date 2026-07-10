@@ -16,7 +16,7 @@ import { categoryIds } from "@/lib/utils";
 import { useCommon } from "@/hooks/useCommon";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { getLngWiseStr } from "@/helpers";
-import ProductContentForm from "@/pages/products-mgmt/components/sub-components/ProductContentForm";
+import { BusinessContentForm } from "@/pages/businesses-mgmt/components/sub-components/BusinesscontentForm";
 
 interface EventBasicInformationProps {
   formData: Record<string, any>;
@@ -167,20 +167,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <DmoAuthorityWebsiteSelector
-        keyId="_id"
-        errors={errors}
-        isEdit={!!eventId}
-        selectedDmoId={selectedDmoId}
-        setSelectDmoId={setSelectDmoId}
-        selectedAuthorityId={selectedAuthorityId}
-        setSelectAuthorityId={setSelectAuthorityId}
-        dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={eventAssociatedWebsites}
-      />
-
       <FormFieldWrapper label={t("select_business")}>
         <ReactSelect
           value={selectedBusinessId}
@@ -196,12 +182,25 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onSearch={searchBusiness}
         />
       </FormFieldWrapper>
+      <DmoAuthorityWebsiteSelector
+        keyId="_id"
+        errors={errors}
+        isEdit={!!eventId}
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={eventAssociatedWebsites}
+      />
 
       <div className="font-semibold text-md text-gray-700">
         {t("step_1_basic_information")}
       </div>
 
-      <ProductContentForm formData={formData} onChange={onChange} />
+      <BusinessContentForm formData={formData} onChange={onChange} />
 
       <SelectableChips
         label="subcategories"

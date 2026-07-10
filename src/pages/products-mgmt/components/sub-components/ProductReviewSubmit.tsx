@@ -45,6 +45,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     isDark,
     bgTertiary,
     bgSecondary,
+    language,
   } = useThemeClasses();
   const { t } = useTranslation("common");
   const { t: tb } = useTranslation("businesses");
@@ -131,29 +132,35 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
         )}
 
         <div className="p-5 space-y-4">
-          {/* Names */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(t("name"), formData.name)}
-            {row(t("name_he"), formData.nameHe)}
-            {row(t("name_ar"), formData.nameAr)}
+          {/* Name */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" && row(t("name"), formData.name)}
+            {language === "he" && row(t("name_he"), formData.nameHe)}
+            {language === "ar" && row(t("name_ar"), formData.nameAr)}
           </div>
 
           {divider}
 
-          {/* Short descriptions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(t("short_description_en"), formData.shortDescription)}
-            {row(t("short_description_he"), formData.shortDescriptionHe)}
-            {row(t("short_description_ar"), formData.shortDescriptionAr)}
+          {/* Short description */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" &&
+              row(t("short_description_en"), formData.shortDescription)}
+            {language === "he" &&
+              row(t("short_description_he"), formData.shortDescriptionHe)}
+            {language === "ar" &&
+              row(t("short_description_ar"), formData.shortDescriptionAr)}
           </div>
 
           {divider}
 
-          {/* Full descriptions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {row(t("full_description_en"), formData.fullDescription)}
-            {row(t("full_description_he"), formData.fullDescriptionHe)}
-            {row(t("full_description_ar"), formData.fullDescriptionAr)}
+          {/* Full description */}
+          <div className="grid grid-cols-1 gap-4">
+            {language === "en" &&
+              row(t("full_description_en"), formData.fullDescription)}
+            {language === "he" &&
+              row(t("full_description_he"), formData.fullDescriptionHe)}
+            {language === "ar" &&
+              row(t("full_description_ar"), formData.fullDescriptionAr)}
           </div>
         </div>
       </div>

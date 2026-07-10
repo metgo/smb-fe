@@ -26,9 +26,9 @@ const ProductPricingInventoryDetails: React.FC<
     !isUnlimited && totalStock ? (availableStock / totalStock) * 100 : 100;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2 md:space-y-6">
       {/* Prices */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-6">
         {/* Marked Price */}
         <div
           className={`p-4 rounded-lg border ${
@@ -43,7 +43,7 @@ const ProductPricingInventoryDetails: React.FC<
             {t("marked_price") || "Marked Price"}
           </h3>
           <p
-            className={`text-3xl font-bold ${isDark ? "text-gray-200" : "text-gray-800"}`}
+            className={`text-xl md:text-3xl font-bold ${isDark ? "text-gray-200" : "text-gray-800"}`}
           >
             ₪{product?.price?.markedPrice?.toLocaleString()}
           </p>
@@ -63,7 +63,7 @@ const ProductPricingInventoryDetails: React.FC<
             {t("selling_price") || "Selling Price"}
           </h3>
           <p
-            className={`text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
+            className={`text-xl md:text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
           >
             ₪{product?.price?.sellingPrice?.toLocaleString()}
           </p>
@@ -100,7 +100,7 @@ const ProductPricingInventoryDetails: React.FC<
       )}
 
       {/* Quantity Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-6">
         {/* Total Quantity */}
         <div
           className={`p-4 rounded-lg border ${
@@ -115,7 +115,7 @@ const ProductPricingInventoryDetails: React.FC<
             {t("total_quantity")}
           </h3>
           <p
-            className={`text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
+            className={`text-xl md:text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
           >
             {isUnlimited ? (
               <span className="text-teal-500">{t("unlimited")}</span>
@@ -151,7 +151,7 @@ const ProductPricingInventoryDetails: React.FC<
             {t("available_stock")}
           </h3>
           <p
-            className={`text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
+            className={`text-xl md:text-3xl font-bold ${isDark ? "text-teal-300" : "text-teal-800"}`}
           >
             {isUnlimited ? (
               <span className="text-teal-500">∞</span>

@@ -7,13 +7,17 @@ import {
   MapPin,
   Image as ImageIcon,
   Clock,
+  Compass,
   Globe,
   Tag,
   FileText,
   Users,
   Truck,
-  LanguagesIcon,
+  // LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
+import { TourProvider, TourPortal, useTour } from "@/components/tour";
+import type { TourStep } from "@/components/tour";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -29,7 +33,11 @@ import {
   BusinessOpeningHours,
   BusinessReviewSubmit,
 } from "./sub-components";
-import { ConfirmDialog, WizardFooter } from "@/components/shared";
+import {
+  ConfirmDialog,
+  WizardFooter,
+  WizardStepper,
+} from "@/components/shared";
 import { ModalWrapper } from "@/components/wrapper";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -49,36 +57,116 @@ import {
 } from "@/components/details-sections";
 import { IOpMode } from "@/enums/operation.types";
 import Media from "@/components/details-sections/Media";
-import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
+// import BusinessTranslateButton from "./sub-components/BusinessTranslateButton";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
   editData?: any;
   refetch?: any;
+  businessDataRefetch?: any;
   opMode?: TOpMode;
+  missingFields?: string[];
 }
 
-export default function CreateBusinessWizard({
+function CreateBusinessWizardInner({
   onClose,
   editData,
   refetch,
+  businessDataRefetch,
   opMode = IOpMode.CREATE,
+  missingFields = [],
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { t: tt } = useTranslation("toast");
   const { t: tc } = useTranslation("common");
+  const { t: tr } = useTranslation("tour");
   const [selectedFormLanguage, _setSelectedFormLanguage] =
     useState<Language>("he");
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary } = useThemeClasses();
+  const { textPrimary, isRTL, theme, language } = useThemeClasses();
+
+  // ─── Tour ─────────────────────────────────────────────────────────────
+  const { startTour } = useTour();
+
+  const buildTourSteps = useCallback(
+    (): TourStep[] => [
+      {
+        id: "welcome",
+        placement: "center",
+        title: "business_wizard.welcome.title",
+        desc: "business_wizard.welcome.desc",
+      },
+      {
+        id: "header",
+        target: '[data-tour="wizard-header"]',
+        placement: "bottom",
+        title: "business_wizard.header.title",
+        desc: "business_wizard.header.desc",
+      },
+      {
+        id: "stepper",
+        target: '[data-tour="wizard-stepper"]',
+        placement: "bottom",
+        title: "business_wizard.stepper.title",
+        desc: "business_wizard.stepper.desc",
+      },
+      {
+        id: "completion",
+        target: '[data-tour="wizard-completion"]',
+        placement: "left",
+        title: "business_wizard.completion.title",
+        desc: "business_wizard.completion.desc",
+      },
+      {
+        id: "content",
+        target: '[data-tour="wizard-content"]',
+        placement: "top",
+        title: "business_wizard.content.title",
+        desc: "business_wizard.content.desc",
+      },
+      {
+        id: "footer",
+        target: '[data-tour="wizard-footer"]',
+        placement: "top",
+        title: "business_wizard.footer.title",
+        desc: "business_wizard.footer.desc",
+      },
+    ],
+    [],
+  );
+
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState(1);
+  // When opened from email link with missingFields, start on the step of the first missing field
+  const getStepForField = (field: string): number => {
+    const stepMap: Record<string, number> = {
+      name: 1,
+      shortDescription: 1,
+      description: 1,
+      busiEmail: 3,
+      phoneNumber: 3,
+      contactDetails: 3,
+      contactName: 3,
+      address: 4,
+      primaryCategoryId: 5,
+      tags: 5,
+      logo: 6,
+      images: 6,
+      openingHrs: 7,
+      socialMedia: 9,
+    };
+    return stepMap[field] ?? 1;
+  };
+  const initialStep =
+    missingFields.length > 0 ? getStepForField(missingFields[0]) : 1;
+
+  // Set of step numbers that have missing fields — used to highlight them in the step indicator
+  const stepsWithMissingFields = new Set(missingFields.map(getStepForField));
+
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -89,7 +177,7 @@ export default function CreateBusinessWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [geo, setGeo] = useState<Geo>({ lat: "", long: "" });
   const [address, setAddress] = useState("");
 
   // Business Media States
@@ -150,7 +238,10 @@ export default function CreateBusinessWizard({
     operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
+    globalDelivery: false,
     deliveryArea: [] as any[],
+    vendorDeliveryArea: [] as any[],
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -158,47 +249,58 @@ export default function CreateBusinessWizard({
     // Step 8
     socialMedia: [],
   });
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
-  }, []);
+
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
   const detectAndAssignLanguageFields = (data: any): any => {
-    const name = data.name?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const description = data.description?.trim() || "";
-
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = name || shortDescription || description;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.nameHe = name || data.nameHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.descriptionHe = description || data.descriptionHe;
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.nameAr = name || data.nameAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.descriptionAr = description || data.descriptionAr;
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    }
-    // else: remains in English fields (default)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
 
     return updated;
   };
+
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -211,6 +313,10 @@ export default function CreateBusinessWizard({
         JSON.stringify(initialGroupTypesId.current)
     );
   };
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
   const {
     images,
     imagesRef,
@@ -225,6 +331,18 @@ export default function CreateBusinessWizard({
   } = useFilesUpload({
     initialImages: galleryImages,
     onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT
+        ? (updatedImages) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { images: updatedImages },
+              });
+            }
+          }
+        : undefined,
   });
 
   const {
@@ -238,6 +356,18 @@ export default function CreateBusinessWizard({
     reset: resetLogo,
   } = useFileUpload({
     initialUrl: opMode === IOpMode.EDIT ? editData?.logo?.image : undefined,
+    onLogoChange:
+      opMode === IOpMode.EDIT
+        ? (logoData) => {
+            const effectiveId = businessId || editData?._id;
+            if (effectiveId) {
+              updateBusiness({
+                businessId: effectiveId,
+                body: { logo: logoData },
+              });
+            }
+          }
+        : undefined,
   });
 
   const logoImage: IImageUpload | null = logoPreviewUrl
@@ -262,10 +392,6 @@ export default function CreateBusinessWizard({
     await deleteLogoFile();
     setDeleteTargetLogo(null);
   };
-
-  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] =
-    useInitBusinessCreateMutation();
 
   const addr = parseAddress(address);
 
@@ -331,31 +457,40 @@ export default function CreateBusinessWizard({
       setSelectedDmoId(dmoId);
     }
   }, []);
-  useEffect(() => {
-    if (businessId === "" || opMode === IOpMode.CREATE) return;
 
-    if (editData && businessId) {
+  useEffect(() => {
+    // For CREATE mode, we don't load from editData
+    if (opMode === IOpMode.CREATE) return;
+
+    // Wait until we have both the data and the ID (either from state or from prop)
+    const effectiveId = businessId || editData?._id;
+    if (editData && effectiveId) {
       const loadedFormData = {
         //basic info
         name:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.name || ""} (Duplicate)`
-            : editData?.name || "",
+            ? `${editData?.nameEn || editData?.name || ""} (Duplicate)`
+            : editData?.nameEn || editData?.name || "",
         nameHe:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameHe || ""} (שכפל)`
-            : editData?.nameHe || "",
+            ? `${editData?.nameHe || editData?.name || ""} (שכפל)`
+            : editData?.nameHe || editData?.name || "",
         nameAr:
           opMode === IOpMode.DUPLICATE
-            ? `${editData?.nameAr || ""} (نسخ)`
-            : editData?.nameAr || "",
+            ? `${editData?.nameAr || editData?.name || ""} (نسخ)`
+            : editData?.nameAr || editData?.name || "",
 
-        shortDescription: editData?.shortDescription || "",
-        shortDescriptionHe: editData?.shortDescriptionHe || "",
-        shortDescriptionAr: editData?.shortDescriptionAr || "",
-        fullDescription: editData?.description || "",
-        fullDescriptionHe: editData?.descriptionHe || "",
-        fullDescriptionAr: editData?.descriptionAr || "",
+        shortDescription:
+          editData?.shortDescriptionEn || editData?.shortDescription || "",
+        shortDescriptionHe:
+          editData?.shortDescriptionHe || editData?.shortDescription || "",
+        shortDescriptionAr:
+          editData?.shortDescriptionAr || editData?.shortDescription || "",
+        fullDescription: editData?.descriptionEn || editData?.description || "",
+        fullDescriptionHe:
+          editData?.descriptionHe || editData?.description || "",
+        fullDescriptionAr:
+          editData?.descriptionAr || editData?.description || "",
         internalNotes: editData?.internalNotes || "",
         slug: editData?.slug || "",
         //images
@@ -365,7 +500,10 @@ export default function CreateBusinessWizard({
         type: "BUSINESS",
         vendorDelivers: editData.vendorDelivers ?? false,
         pickupAvailable: editData.isPickUpAvailable ?? false,
+        globalDelivery: editData.globalDelivery ?? false,
         deliveryArea: editData?.deliveryArea ?? [],
+        vendorDeliveryArea: editData?.vendorDeliveryArea ?? [],
+        globalDeliveryArea: editData?.globalDeliveryArea ?? [],
         deliveryReturnExchange: editData.deliveryReturnExchange ?? [],
         deliveryAdditionalInfo: editData.deliveryAdditionalInfo ?? "",
         deliverySpecificSellerInfo: editData.deliverySpecificSellerInfo ?? [],
@@ -396,16 +534,21 @@ export default function CreateBusinessWizard({
           };
           const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
           return days.map((day) => {
-            const entry = editData?.openingHrs?.find((h: any) => {
+            const entries = (editData?.openingHrs ?? []).filter((h: any) => {
               const d = (h.day || h.days || "").toLowerCase().trim();
               return dayNormMap[d] === day;
             });
-            return {
-              day,
-              open: entry?.open || "",
-              close: entry?.close || "",
-              isHoliday: entry?.isHoliday || false,
-            };
+            const first = entries[0];
+            const isHoliday = first?.isHoliday || false;
+            const byAppointment = first?.byAppointment || false;
+            const slots =
+              entries.length > 0 && !isHoliday
+                ? entries.map((e: any) => ({
+                    open: e.open || "",
+                    close: e.close || "",
+                  }))
+                : [{ open: "10:00", close: "17:00" }];
+            return { day, slots, isHoliday, byAppointment };
           });
         })(),
         //attributes
@@ -425,7 +568,7 @@ export default function CreateBusinessWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.lng),
+          long: String(editData.geoLocation.long),
         });
       }
 
@@ -445,7 +588,7 @@ export default function CreateBusinessWizard({
       if (editData?.geoLocation) {
         setGeo({
           lat: String(editData.geoLocation.lat),
-          lng: String(editData.geoLocation.lng),
+          long: String(editData.geoLocation.long),
         });
       }
       setSelectAuthorityId(editData?.authorityId?._id || "");
@@ -461,16 +604,15 @@ export default function CreateBusinessWizard({
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
-    { number: 2, title: tc("translation"), icon: LanguagesIcon },
-
-    { number: 3, title: t("step_contact_ownership"), icon: Users },
-    { number: 4, title: t("step_location"), icon: MapPin },
-    { number: 5, title: t("step_attributes"), icon: Tag },
-    { number: 6, title: t("step_media"), icon: ImageIcon },
-    { number: 7, title: t("step_operating_hours"), icon: Clock },
-    { number: 8, title: t("step_delivery_policy"), icon: Truck },
-    { number: 9, title: t("step_online_info"), icon: Globe },
-    { number: 10, title: t("step_review_submit"), icon: CheckCircle },
+    // { number: 2, title: tc("translation"), icon: LanguagesIcon },
+    { number: 2, title: t("step_contact_ownership"), icon: Users },
+    { number: 3, title: t("step_location"), icon: MapPin },
+    { number: 4, title: t("step_attributes"), icon: Tag },
+    { number: 5, title: t("step_media"), icon: ImageIcon },
+    { number: 6, title: t("step_operating_hours"), icon: Clock },
+    { number: 7, title: t("step_delivery_policy"), icon: Truck },
+    { number: 8, title: t("step_online_info"), icon: Globe },
+    { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
   // Draft Save Payload per Step
@@ -524,11 +666,29 @@ export default function CreateBusinessWizard({
     logo: { image: logoGcsUrl },
     images: galleryImages,
     //  step 6
-    openingHrs: formData.operatingHours,
+    openingHrs: (formData.operatingHours ?? []).flatMap(
+      ({ day, slots, isHoliday, byAppointment }: any) =>
+        isHoliday || !slots?.length
+          ? [{ day, open: "", close: "", isHoliday, byAppointment }]
+          : slots.map((slot: any) => ({
+              day,
+              open: slot.open,
+              close: slot.close,
+              isHoliday: false,
+              byAppointment,
+            })),
+    ),
     // step 7
-    // vendorDelivers: formData.vendorDelivers,
+    vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
+    globalDelivery: formData.globalDelivery,
     deliveryArea: formData.deliveryArea,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -540,7 +700,7 @@ export default function CreateBusinessWizard({
   const { markDirty, saveDraft } = useBusinessDraftSaver({
     opMode,
     onClose,
-    refetch,
+    // refetch,
     currentStep,
     businessId,
     setBusinessId,
@@ -554,6 +714,9 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
+        if (!selectedAuthorityId?.trim())
+          newErrors.authorityId = t("required_field");
         if (
           !formData.name?.trim() &&
           !formData.nameAr?.trim() &&
@@ -630,18 +793,59 @@ export default function CreateBusinessWizard({
       toast.error(tt("name_required"));
       return;
     }
+    if (
+      !formData.shortDescription?.trim() &&
+      !formData.shortDescriptionHe?.trim() &&
+      !formData.shortDescriptionAr?.trim()
+    ) {
+      toast.error(tt("short_description_required"));
+      return;
+    }
+    if (
+      !formData.fullDescription?.trim() &&
+      !formData.fullDescriptionHe?.trim() &&
+      !formData.fullDescriptionAr?.trim()
+    ) {
+      toast.error(tt("full_description_required"));
+      return;
+    }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
-    if (businessId) {
+    const resolvedBusinessId = await saveDraft(false);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
+      // Refetch after save draft completes
+      // Don't await to prevent blocking the UI
+      if (businessDataRefetch) {
+        businessDataRefetch();
+      }
     }
   };
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tc("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     // Validate all steps
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
@@ -657,31 +861,38 @@ export default function CreateBusinessWizard({
     }
 
     setIsPublishing(true);
-    if (businessId) {
+    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
+    const resolvedBusinessId = await saveDraft(true, processedFormData);
+    if (resolvedBusinessId) {
       await createWebsiteAccessItem({
         body: websiteAccessItemPayload,
-        itemId: businessId,
+        itemId: resolvedBusinessId,
       });
-    }
-    const processedFormData = detectAndAssignLanguageFields(stepPayloadMap);
 
-    await saveDraft(true, processedFormData);
+      await Promise.all([refetch?.(), businessDataRefetch?.()]);
+    }
     setIsPublishing(false);
   };
 
   useEffect(() => {
-    if (opMode !== IOpMode.CREATE) {
-      setBusinessId(editData?._id);
+    if (opMode !== IOpMode.CREATE && editData?._id && businessId === "") {
+      setBusinessId(editData._id);
     }
-  }, [opMode, businessId]);
+  }, [opMode, editData?._id, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+      // Send websites that are UNCHECKED (to add to blacklist/hide)
+      // In this section: CHECK = show, UNCHECK = hide
+      selectedItems: websiteVisibilityIds.allBlacklistIds.filter(
+        (id: string) => !websiteVisibilityIds.selectedBlacklistIds.includes(id),
+      ),
     },
     whitelist: {
       allItems: websiteVisibilityIds.allWhitelistIds,
+      // Send ONLY explicitly checked websites from unassociated section
+      // Associated section manages visibility via blacklist only
       selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "business",
@@ -693,6 +904,7 @@ export default function CreateBusinessWizard({
       t,
       formData,
       errors,
+      setErrors,
       setCurrentStep,
       address,
       geo,
@@ -740,17 +952,17 @@ export default function CreateBusinessWizard({
           />
         );
 
-      case 2:
-        return (
-          <BusinessTranslateButton
-            formData={formData}
-            onChange={handleChange}
-          />
-        );
+      // case 2:
+      //   return (
+      //     <BusinessTranslateButton
+      //       formData={formData}
+      //       onChange={handleChange}
+      //     />
+      //   );
 
-      case 3:
+      case 2:
         return <BusinessContactOwership {...commonProps} />;
-      case 4:
+      case 3:
         return (
           <BusinessLocation
             {...commonProps}
@@ -761,7 +973,7 @@ export default function CreateBusinessWizard({
           />
         );
 
-      case 5:
+      case 4:
         return (
           <Attributes
             selectedFormLanguage={selectedFormLanguage}
@@ -781,15 +993,15 @@ export default function CreateBusinessWizard({
             setGroupTypesId={setGroupTypesId}
           />
         );
-      case 6:
+      case 5:
         return <Media {...mediaProps} business={editData} isBusiness={true} />;
-      case 7:
+      case 6:
         return <BusinessOpeningHours {...commonProps} />;
-      case 8:
+      case 7:
         return <DeliveryPolicyOption {...commonProps} />;
-      case 9:
+      case 8:
         return <BusinessOnlinePresence {...commonProps} />;
-      case 10:
+      case 9:
         return (
           <BusinessReviewSubmit
             {...commonProps}
@@ -805,152 +1017,137 @@ export default function CreateBusinessWizard({
   return (
     <ModalWrapper onClose={handleClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
-      <div className={clsx("px-6 py-4 border-b", textPrimary)}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className={clsx("text-2xl", textPrimary)}>
+      <div
+        data-tour="wizard-header"
+        className={clsx("px-4 sm:px-6 py-3 sm:py-4 border-b", textPrimary)}
+      >
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h2 className={clsx("text-lg sm:text-2xl truncate", textPrimary)}>
               {modelTitle(opMode, tc)} {t("business")}
             </h2>
             <p
-              className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`hidden sm:block text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title}
             </p>
 
             {lastSaved && (
               <p
-                className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+                className={`text-xs mt-1 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
               >
                 {t("saved")} {lastSaved.toLocaleTimeString()}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-4">
-            {/* Impact Percent Indicator */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="relative w-14 h-14">
-                <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    fill="none"
-                    strokeWidth="5"
-                    className={
-                      theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
-                    }
-                  />
-                  <circle
-                    cx="28"
-                    cy="28"
-                    r="22"
-                    fill="none"
-                    strokeWidth="5"
-                    strokeDasharray={`${2 * Math.PI * 22}`}
-                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                    stroke={
-                      completionPercent >= 70
-                        ? "#16a34a"
-                        : completionPercent >= 40
-                          ? "#f59e0b"
-                          : "#ef4444"
-                    }
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className={clsx(
-                      "text-xs font-bold",
-                      completionPercent >= 70
-                        ? "text-green-600"
-                        : completionPercent >= 40
-                          ? "text-amber-500"
-                          : "text-red-500",
-                    )}
-                  >
-                    {completionPercent}%
-                  </span>
-                </div>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {/* Completion ring */}
+            <div
+              data-tour="wizard-completion"
+              className="relative w-10 h-10 sm:w-14 sm:h-14"
+            >
+              <svg
+                className="w-10 h-10 sm:w-14 sm:h-14 -rotate-90"
+                viewBox="0 0 56 56"
+              >
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  className={
+                    theme === "dark" ? "stroke-gray-700" : "stroke-gray-200"
+                  }
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  fill="none"
+                  strokeWidth="5"
+                  strokeDasharray={`${2 * Math.PI * 22}`}
+                  strokeDashoffset={`${2 * Math.PI * 22 * (1 - completionPercent / 100)}`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                  stroke={
+                    completionPercent >= 70
+                      ? "#16a34a"
+                      : completionPercent >= 40
+                        ? "#f59e0b"
+                        : "#ef4444"
+                  }
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className={clsx(
+                    "text-xs font-bold",
+                    completionPercent >= 70
+                      ? "text-green-600"
+                      : completionPercent >= 40
+                        ? "text-amber-500"
+                        : "text-red-500",
+                  )}
+                >
+                  {completionPercent}%
+                </span>
               </div>
             </div>
+            {/* Tour trigger */}
+            <button
+              onClick={() => startTour(buildTourSteps())}
+              title={tr("start_tour")}
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-400 hover:text-teal-400"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-teal-600"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+            </button>
             <PublishButton onClick={handlePublish} isLoading={isPublishing} />
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
-          {steps.map((step) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.number}
-                onClick={() => setCurrentStep(step.number)}
-                className="flex-1 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  {/* Icon */}
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                      step.number === currentStep
-                        ? "bg-teal-600 text-white"
-                        : step.number < currentStep
-                          ? "bg-green-600 text-white"
-                          : theme === "dark"
-                            ? "bg-gray-800 text-gray-500"
-                            : "bg-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {step.number < currentStep ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                  </div>
-
-                  {/* Connecting Line */}
-                  {step.number < totalSteps && (
-                    <div
-                      className={`flex-1 h-1 rounded ${
-                        step.number < currentStep
-                          ? "bg-green-600"
-                          : theme === "dark"
-                            ? "bg-gray-800"
-                            : "bg-gray-200"
-                      }`}
-                    />
-                  )}
-                </div>
-
-                {/* Step Title Below */}
-                <div className="mt-1">
-                  <span
-                    className={`text-xs block text-center md:block text-nowrap overflow-hidden ${textTertiary}`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        <div data-tour="wizard-stepper">
+          <WizardStepper
+            steps={steps}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            stepsWithMissingFields={stepsWithMissingFields}
+            onStepClick={setCurrentStep}
+          />
         </div>
       </div>
 
+      {/* Missing fields banner — shown when opened via no-auth email link */}
+      {missingFields.length > 0 && (
+        <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
+          <span className="font-medium">⚠️ Missing fields: </span>
+          {missingFields.join(", ")}
+        </div>
+      )}
+
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+      <div data-tour="wizard-content" className="flex-1 overflow-y-auto p-6">
+        {renderStep()}
+      </div>
 
       {/* Footer */}
-      <WizardFooter
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        isSaving={isSaving || isCreating}
-        isPublishing={isPublishing}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onSaveDraft={handleSaveDraft}
-        onPublish={handlePublish}
-      />
+      <div data-tour="wizard-footer">
+        <WizardFooter
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isSaving={isSaving || isCreating}
+          isPublishing={isPublishing}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSaveDraft={handleSaveDraft}
+          onPublish={handlePublish}
+        />
+      </div>
 
       <ConfirmDialog
         open={showClosePopup}
@@ -966,6 +1163,18 @@ export default function CreateBusinessWizard({
           onClose();
         }}
       />
+
+      <TourPortal />
     </ModalWrapper>
+  );
+}
+
+// ─── Exported component (wraps with its own TourProvider) ─────────────────────
+
+export default function CreateBusinessWizard(props: CreateBusinessWizardProps) {
+  return (
+    <TourProvider>
+      <CreateBusinessWizardInner {...props} />
+    </TourProvider>
   );
 }

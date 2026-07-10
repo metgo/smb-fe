@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   X,
   Send,
+  List,
+  Edit3,
   ChevronDown,
   Maximize2,
   PanelLeftClose,
@@ -35,9 +37,9 @@ import {
   useCreateContentMutation,
   useUpdateContentMutation,
 } from "@/store/api/contentMutationApi";
-import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 
 type TabState = {
@@ -115,7 +117,7 @@ const PanelExpandButton = ({
     animate={{ opacity: 1, y: 0 }}
     className={clsx(
       "absolute z-50 flex items-center gap-1 py-2 rounded-md text-xs font-medium",
-      "hidden group-hover:flex transition-opacity duration-150",
+      "hidden md:group-hover:flex transition-opacity duration-150",
       isExpanded
         ? "left-0 right-0 mx-auto w-max top-0 px-4"
         : `px-2 top-0 ${posClass}`,
@@ -213,11 +215,19 @@ export default function ContentMgmtPage() {
   const [showSendResults, setShowSendResults] = useState(false);
   const [sendResults, setSendResults] = useState<SendResult[]>([]);
   const [focus, setFocus] = useState<PanelFocus>("both");
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768,
+  );
+  const [mobilePanel, setMobilePanel] = useState<"left" | "right">("left");
   const [page, setPage] = useState(1);
 
   const [productPage, setProductPage] = useState(1);
+  const [poiPage, setPoiPage] = useState(1);
+  const [eventPage, setEventPage] = useState(1);
   const [combinedBusinesses, setCombinedBusinesses] = useState<any[]>([]);
   const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
+  const [combinedPOIs, setCombinedPOIs] = useState<any[]>([]);
+  const [combinedEvents, setCombinedEvents] = useState<any[]>([]);
 
   const defaultTabState: TabState = {
     searchQuery: "",
@@ -263,8 +273,10 @@ export default function ContentMgmtPage() {
     setSelectedBacklogIds(new Set());
     setPage(1);
     setProductPage(1);
+    setEventPage(1);
     setCombinedBusinesses([]);
     setCombinedProducts([]);
+    setCombinedEvents([]);
     setTabState({
       Businesses: {
         searchQuery: "",
@@ -339,7 +351,7 @@ export default function ContentMgmtPage() {
 
   useEffect(() => {
     if (templateContentsData && externalApiId) {
-      if (externalApiId === templateContentsData?.externalApiId._id) {
+      if (externalApiId === templateContentsData?.externalApiId?._id) {
         const formattedTemplateContents = templateContentsData?.siteTopics?.map(
           (topic) => ({
             topic: topic.title,
@@ -417,7 +429,7 @@ export default function ContentMgmtPage() {
     if (filters.hasProductFilter !== "all")
       params.hasProductFilter = filters.hasProductFilter === "yes";
     if (filters.primaryCategory !== "all")
-      params.primaryCategory = filters.primaryCategory;
+      params.primaryCategoryId = filters.primaryCategory;
     return params;
   }, [businessTab, dmoId, authorityId, language, page, externalApiId]);
 
@@ -456,13 +468,14 @@ export default function ContentMgmtPage() {
 
   const eventParams = useMemo(() => {
     const { searchQuery, filters } = tabState["Events"];
-    const params: any = { status: "APPROVED", limit: BUSINESS_PAGE_LIMIT };
+    const params: any = {
+      status: "APPROVED",
+      limit: BUSINESS_PAGE_LIMIT,
+      page: eventPage,
+    };
     if (searchQuery) params.search = searchQuery;
     if (filters.registrationFilter !== "all") {
       params.isRegistration = filters.registrationFilter;
-    }
-    if (filters.eventTypeFilter !== "all") {
-      params.isRegistration = filters.eventTypeFilter;
     }
 
     if (filters.dateRangeFilter.start) {
@@ -473,16 +486,21 @@ export default function ContentMgmtPage() {
       params.endDate = filters.dateRangeFilter.end;
     }
     return params;
-  }, [eventTab, language]);
+  }, [eventTab, language, eventPage]);
 
   const poiParams = useMemo(() => {
+    const { searchQuery } = tabState["POI"];
     const params: any = {
       dmoId,
       authorityId,
       limit: BUSINESS_PAGE_LIMIT,
+      status: "APPROVED",
+      externalApiId,
+      page: poiPage,
     };
+    if (searchQuery) params.search = searchQuery;
     return params;
-  }, [poiTab, language, dmoId, authorityId]);
+  }, [poiTab, language, dmoId, authorityId, externalApiId, poiPage]);
 
   const {
     data: businessData,
@@ -528,7 +546,7 @@ export default function ContentMgmtPage() {
     data: productData,
     isLoading: isLoadingProduct,
     isFetching: isFetchingProduct,
-  } = useGetAllProductsQuery(
+  } = useGetContentManagementProductsQuery(
     selected === "Products" && externalApiId ? productParams : skipToken,
   );
 
@@ -563,13 +581,73 @@ export default function ContentMgmtPage() {
     selected === "Trips" ? tripParams : skipToken,
   );
 
-  const { data: eventData, isLoading: isLoadingEvent } = useGetAllEventsQuery(
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    isFetching: isFetchingEvent,
+  } = useGetContentManagementEventsQuery(
     selected === "Events" ? eventParams : skipToken,
   );
 
-  const { data: poiData, isLoading: isLoadingPOI } = useGetAllPOIQuery(
-    selected === "POI" ? poiParams : skipToken,
-  );
+  const eventHasMore = eventData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    setEventPage(1);
+    setCombinedEvents([]);
+  }, [eventTab.searchQuery, eventTab.filters]);
+
+  useEffect(() => {
+    if (!eventData?.data) return;
+    if (eventPage === 1) {
+      setCombinedEvents(eventData.data);
+    } else {
+      setCombinedEvents((prev) => {
+        const existingIds = new Set(prev.map((e: any) => e._id));
+        const newItems = eventData.data.filter(
+          (e: any) => !existingIds.has(e._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [eventData?.data, eventPage]);
+
+  const fetchNextEventPage = () => {
+    if (!eventHasMore || isFetchingEvent) return;
+    setEventPage((prev) => prev + 1);
+  };
+
+  const {
+    data: poiData,
+    isLoading: isLoadingPOI,
+    isFetching: isFetchingPOI,
+  } = useGetAllPOIQuery(selected === "POI" ? poiParams : skipToken);
+
+  const poiHasMore = poiData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    setPoiPage(1);
+    setCombinedPOIs([]);
+  }, [poiTab.searchQuery, poiTab.filters, dmoId, authorityId, externalApiId]);
+
+  useEffect(() => {
+    if (!poiData?.data) return;
+    if (poiPage === 1) {
+      setCombinedPOIs(poiData.data);
+    } else {
+      setCombinedPOIs((prev) => {
+        const existingIds = new Set(prev.map((p: any) => p._id));
+        const newItems = poiData.data.filter(
+          (p: any) => !existingIds.has(p._id),
+        );
+        return [...prev, ...newItems];
+      });
+    }
+  }, [poiData?.data, poiPage]);
+
+  const fetchNextPoiPage = () => {
+    if (!poiHasMore || isFetchingPOI) return;
+    setPoiPage((prev) => prev + 1);
+  };
 
   const currentTab = selected ?? "Businesses";
   const { searchQuery, filters } = tabState[currentTab];
@@ -636,14 +714,29 @@ export default function ContentMgmtPage() {
       hasMore: productHasMore,
     },
     Trips: { rawData: tripData, isLoading: isLoadingTrip },
-    Events: { rawData: eventData, isLoading: isLoadingEvent },
-    POI: { rawData: poiData, isLoading: isLoadingPOI },
+    Events: {
+      rawData: combinedEvents,
+      isLoading: isLoadingEvent,
+      loadMore: fetchNextEventPage,
+      hasMore: eventHasMore,
+    },
+    POI: {
+      rawData: combinedPOIs,
+      isLoading: isLoadingPOI,
+      loadMore: fetchNextPoiPage,
+      hasMore: poiHasMore,
+    },
   };
   const active = dataMap[selected ?? "Businesses"];
 
   const getItems = (rawData: any, tab: string | null) => {
     if (!rawData) return [];
-    if (tab === "POI" || tab === "Businesses" || tab === "Products")
+    if (
+      tab === "Businesses" ||
+      tab === "Products" ||
+      tab === "POI" ||
+      tab === "Events"
+    )
       return rawData;
     return rawData?.data ?? [];
   };
@@ -894,6 +987,14 @@ export default function ContentMgmtPage() {
     toast.success(t("messages_sent_to_customers", { count: results?.length }));
   };
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const effectiveFocus: PanelFocus = isMobile ? mobilePanel : focus;
+
   const expandLeft = () => setFocus((p) => (p === "left" ? "both" : "left"));
   const expandRight = () => setFocus((p) => (p === "right" ? "both" : "right"));
 
@@ -917,25 +1018,25 @@ export default function ContentMgmtPage() {
                   : "bg-white border-gray-200",
               )}
             >
-              <div className="flex justify-between items-start w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start w-full gap-3">
                 {/* left section */}
                 <div className="flex flex-col">
                   <h1
                     className={clsx(
-                      "text-2xl font-bold mb-2",
+                      "text-xl sm:text-2xl font-bold mb-1",
                       isDark ? "text-gray-400" : "text-gray-900",
                     )}
                   >
                     {t("content_manager_title")}
                   </h1>
 
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                     {t("content_manager_description")}
                   </p>
                 </div>
 
                 {/* right section */}
-                <div className="flex gap-3 mt-4">
+                <div className="flex gap-2 sm:gap-3 sm:mt-4 shrink-0">
                   <DraftButton
                     onClick={() => handleSubmit("DRAFT")}
                     isLoading={isCreating || isUpdating}
@@ -983,17 +1084,54 @@ export default function ContentMgmtPage() {
               </AnimatePresence>
             </div>
 
+            {/* ── Mobile panel switcher ── */}
+            <div
+              className={clsx(
+                "md:hidden flex border-b shrink-0 mt-2",
+                isDark ? "border-gray-700" : "border-gray-200",
+              )}
+            >
+              <button
+                onClick={() => setMobilePanel("left")}
+                className={clsx(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  mobilePanel === "left"
+                    ? "border-teal-500 text-teal-600"
+                    : isDark
+                      ? "border-transparent text-gray-400"
+                      : "border-transparent text-gray-500",
+                )}
+              >
+                <List className="w-4 h-4" />
+                {t("source_backlog_title")}
+              </button>
+              <button
+                onClick={() => setMobilePanel("right")}
+                className={clsx(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  mobilePanel === "right"
+                    ? "border-teal-500 text-teal-600"
+                    : isDark
+                      ? "border-transparent text-gray-400"
+                      : "border-transparent text-gray-500",
+                )}
+              >
+                <Edit3 className="w-4 h-4" />
+                {t("content_composer_title")}
+              </button>
+            </div>
+
             {/* ── Two-panel layout ── */}
             <div className="flex gap-0 flex-1 overflow-hidden min-h-0">
               {/* ── LEFT: Contents ── */}
               <AnimatePresence initial={false}>
-                {focus !== "right" && (
+                {effectiveFocus !== "right" && (
                   <motion.div
                     key="left-panel"
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={focus === "left" ? "expanded" : "half"}
+                    animate={effectiveFocus === "left" ? "expanded" : "half"}
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -1003,7 +1141,7 @@ export default function ContentMgmtPage() {
                       isDark={isDark}
                       onToggle={expandLeft}
                       expandLabel={t("expand")}
-                      isExpanded={focus === "left"}
+                      isExpanded={effectiveFocus === "left"}
                       posClass={isRTL ? "left-0" : "right-0"}
                       collapseIcon={<PanelRightClose className="w-3.5 h-3.5" />}
                     />
@@ -1045,7 +1183,7 @@ export default function ContentMgmtPage() {
                         currentTab={currentTab}
                         selected={selected}
                         setSelected={setSelected}
-                        isExpanded={focus === "both"}
+                        isExpanded={effectiveFocus === "both"}
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                         totalData={
@@ -1058,9 +1196,7 @@ export default function ContentMgmtPage() {
                           Products: productData?.totalData ?? 0,
                           Trips: tripData?.totalData ?? 0,
                           Events: eventData?.totalData ?? 0,
-                          POI: Array.isArray(poiData)
-                            ? poiData.length
-                            : (poiData?.totalData ?? 0),
+                          POI: poiData?.totalData ?? combinedPOIs.length,
                         }}
                         tabLoadings={{
                           Businesses: isLoading || isApiIdChanging,
@@ -1088,7 +1224,7 @@ export default function ContentMgmtPage() {
 
               {/* ── Animated divider ── */}
               <AnimatePresence>
-                {focus === "both" && (
+                {effectiveFocus === "both" && (
                   <motion.div
                     key="divider"
                     initial={{ opacity: 0, scaleY: 0 }}
@@ -1105,13 +1241,13 @@ export default function ContentMgmtPage() {
 
               {/* ── RIGHT: ContentComposer ── */}
               <AnimatePresence initial={false}>
-                {focus !== "left" && (
+                {effectiveFocus !== "left" && (
                   <motion.div
                     key="right-panel"
                     className="group relative flex flex-col min-w-0 overflow-hidden"
                     variants={panelVariants}
                     initial="hidden"
-                    animate={focus === "right" ? "expanded" : "half"}
+                    animate={effectiveFocus === "right" ? "expanded" : "half"}
                     exit="hidden"
                     transition={SPRING}
                     style={{ minWidth: 0 }}
@@ -1121,7 +1257,7 @@ export default function ContentMgmtPage() {
                       isDark={isDark}
                       onToggle={expandRight}
                       expandLabel={t("expand")}
-                      isExpanded={focus === "right"}
+                      isExpanded={effectiveFocus === "right"}
                       posClass={isRTL ? "right-0" : "left-0"}
                       collapseIcon={<PanelLeftClose className="w-3.5 h-3.5" />}
                     />
@@ -1129,7 +1265,7 @@ export default function ContentMgmtPage() {
                       header={header}
                       setHeader={setHeader}
                       contentStatus={contentStatus}
-                      isExpanded={focus === "both"}
+                      isExpanded={effectiveFocus === "both"}
                       externalApiId={externalApiId}
                       setExternalApiId={setExternalApiId}
                       templateContents={templateContents}

@@ -23,18 +23,24 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
   images,
   setCurrentStep,
 }) => {
-  const { isDark, borderColor } = useThemeClasses();
+  const { isDark, borderColor, language } = useThemeClasses();
 
   const sectionClass = `p-4 rounded-xl border ${borderColor} ${isDark ? "bg-gray-800/50" : "bg-gray-50"} space-y-3`;
   const labelClass = `text-xs uppercase tracking-wide ${isDark ? "text-gray-400" : "text-gray-500"}`;
   const valueClass = `text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`;
 
-  const name = formData.title || formData.titleHe || formData.titleAr || "-";
+  const name =
+    (language === "he"
+      ? formData.titleHe
+      : language === "ar"
+        ? formData.titleAr
+        : formData.title) || "-";
   const shortDesc =
-    formData.shortDescription ||
-    formData.shortDescriptionHe ||
-    formData.shortDescriptionAr ||
-    "-";
+    (language === "he"
+      ? formData.shortDescriptionHe
+      : language === "ar"
+        ? formData.shortDescriptionAr
+        : formData.shortDescription) || "-";
 
   return (
     <div className="space-y-6  mx-auto">
@@ -84,7 +90,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(5)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -108,7 +114,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(3)}
+            onClick={() => setCurrentStep(4)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -136,7 +142,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(4)}
+            onClick={() => setCurrentStep(2)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}
@@ -177,7 +183,7 @@ const PoiReviewSubmit: FC<PoiReviewSubmitProps> = ({
             </span>
           </div>
           <button
-            onClick={() => setCurrentStep(5)}
+            onClick={() => setCurrentStep(3)}
             className="text-xs text-teal-500 hover:underline"
           >
             {t("edit")}

@@ -14,6 +14,7 @@
   "select_topic_label": "اختر موضوع",
   "select_topic_placeholder": "اختر موضوعًا...",
   "placeholder_new_category": "اسم الفئة الجديدة...",
+  "placeholder_new_category_desc": "وصف الفئة الجديدة...",
   "info_create_topic_first": "قم بإنشاء موضوع أولاً قبل إضافة الفئات",
   "feed_header": "رأس الخلاصة",
   "rename_topic": "إعادة تسمية الموضوع",
@@ -73,5 +74,11 @@
   "has_products": "يوجد منتجات",
   "yes": "نعم",
   "no": "لا",
-  "primary_category": "الفئة الرئيسية"
+  "primary_category": "الفئة الرئيسية",
+  "registration": "التسجيل",
+  "date_range": "نطاق التاريخ",
+  "filter_by_business": "تصفية حسب النشاط التجاري",
+  "select_business": "اختر النشاط التجاري",
+  "isTrip": "هل هو رحلة",
+  "available": "متاح"
 }

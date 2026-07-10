@@ -65,7 +65,7 @@ export default function FileUploadSlot({
           }}
           onClick={() => document.getElementById(inputId)?.click()}
           className={clsx(
-            "group relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200 cursor-pointer",
+            "group relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-5 sm:p-8 text-center transition-all duration-200 cursor-pointer",
             isDragging
               ? "border-teal-500 bg-teal-500/10 scale-[1.01]"
               : isDark
@@ -203,7 +203,7 @@ export default function FileUploadSlot({
             )}
 
             {isSuccess && (
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex flex-wrap items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={onPreview}
@@ -236,7 +236,7 @@ export default function FileUploadSlot({
                   type="button"
                   onClick={onRemove}
                   className={clsx(
-                    "ml-auto flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+                    "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
                     isDark
                       ? "border-red-800 bg-red-900/20 text-red-400 hover:bg-red-900/40"
                       : "border-red-200 bg-red-50 text-red-500 hover:bg-red-100",

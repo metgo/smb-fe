@@ -71,6 +71,49 @@ export const eventMutationApi = createApi({
         method: "DELETE",
       }),
     }),
+
+    updateEventTicketStatus: builder.mutation<
+      any,
+      { orderId: string; status: string; cancelReason?: string }
+    >({
+      query: ({ orderId, status, cancelReason }) => ({
+        url: `${endpoints.eventTickets}/order-status`,
+        method: "PATCH",
+        params: { orderId, status, ...(cancelReason ? { cancelReason } : {}) },
+      }),
+    }),
+
+    createSession: builder.mutation<
+      { data: EventSession },
+      CreateSessionPayload
+    >({
+      query: (body) => ({
+        url: endpoints.eventSessions,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Event"],
+    }),
+
+    updateSession: builder.mutation<
+      { data: EventSession },
+      { sessionId: string; body: UpdateSessionPayload }
+    >({
+      query: ({ sessionId, body }) => ({
+        url: `${endpoints.eventSessions}/${sessionId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Event"],
+    }),
+
+    deleteSession: builder.mutation<any, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: `${endpoints.eventSessions}/${sessionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Event"],
+    }),
   }),
 });
 
@@ -81,4 +124,8 @@ export const {
   useDeleteTicketMutation,
   useCreateTicketMutation,
   useDeleteEventMutation,
+  useUpdateEventTicketStatusMutation,
+  useCreateSessionMutation,
+  useUpdateSessionMutation,
+  useDeleteSessionMutation,
 } = eventMutationApi;

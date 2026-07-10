@@ -11,6 +11,7 @@ import {
 interface UseFilesUploadOptions {
   initialImages?: IImage[];
   onChange?: (images: TImages) => void;
+  onImagesChange?: (updatedImages: TImages) => void;
 }
 
 /**
@@ -20,12 +21,16 @@ interface UseFilesUploadOptions {
 export function useFilesUpload({
   initialImages = [],
   onChange,
+  onImagesChange,
 }: UseFilesUploadOptions = {}) {
   const { t } = useTranslation("toast");
 
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [deleteMedia, { isLoading: isImageDeleting }] =
     useDeleteMediaMutation();
+
+  const onImagesChangeRef = useRef(onImagesChange);
+  onImagesChangeRef.current = onImagesChange;
 
   const imagesRef = useRef<HTMLDivElement>(null);
   const [images, setImages] = useState<IImageUpload[]>([]);
@@ -73,8 +78,20 @@ export function useFilesUpload({
         isPrimary: false,
       }));
 
-      setImages((prev) => [...prev, ...placeholders]);
+      setImages((prev) => {
+        // If there are no existing images, the first new image becomes primary
+        const isFirstUpload = prev.length === 0;
+        return [
+          ...prev,
+          ...placeholders.map((p, i) => ({
+            ...p,
+            isPrimary: isFirstUpload && i === 0,
+          })),
+        ];
+      });
       imagesRef.current?.scrollIntoView({ behavior: "smooth" });
+
+      let finalImages: IImageUpload[] = [];
 
       for (const item of placeholders) {
         try {
@@ -98,28 +115,39 @@ export function useFilesUpload({
 
           URL.revokeObjectURL(item.previewUrl);
 
-          setImages((prev) =>
-            prev.map((img) =>
+          setImages((prev) => {
+            const next = prev.map((img) =>
               img.id === item.id
                 ? {
                     ...img,
                     previewUrl: gcsURL,
                     gcsURL,
                     progress: 100,
-                    status: "success",
+                    status: "success" as const,
                   }
                 : img,
-            ),
-          );
+            );
+            finalImages = next;
+            return next;
+          });
           toast.success(t("image_upload_success"));
         } catch {
-          setImages((prev) =>
-            prev.map((img) =>
+          setImages((prev) => {
+            const next = prev.map((img) =>
               img.id === item.id ? { ...img, status: "error" } : img,
-            ),
-          );
+            );
+            finalImages = next;
+            return next;
+          });
           toast.error(t("image_upload_failed"));
         }
+      }
+
+      if (finalImages.length) {
+        const payload: TImages = finalImages
+          .filter((img) => img.status === "success")
+          .map((img) => ({ image: img.gcsURL!, isPrimary: img.isPrimary }));
+        onImagesChangeRef.current?.(payload);
       }
     },
     [createSignedUrl, t],
@@ -131,17 +159,31 @@ export function useFilesUpload({
     setImages((prev) =>
       prev.map((img, i) => ({ ...img, isPrimary: i === index })),
     );
+    const payload: TImages = images
+      .filter((img) => img.status === "success")
+      .map((img, i) => ({ image: img.gcsURL!, isPrimary: i === index }));
+    onImagesChangeRef.current?.(payload);
   };
 
   /* ─── Remove locally ─────────────────────────────────────────────── */
   const removeImage = (index: number) => {
+    const newPrimaryIndex =
+      primaryImageIndex === index
+        ? 0
+        : index < primaryImageIndex
+          ? primaryImageIndex - 1
+          : primaryImageIndex;
+
     setImages((prev) => {
       const img = prev[index];
       if (img?.previewUrl?.startsWith("blob:"))
         URL.revokeObjectURL(img.previewUrl);
-      return prev.filter((_, i) => i !== index);
+      return prev
+        .filter((_, i) => i !== index)
+        .map((img, i) => ({ ...img, isPrimary: i === newPrimaryIndex }));
     });
-    if (primaryImageIndex === index) setPrimaryImageIndex(0);
+
+    setPrimaryImageIndex(newPrimaryIndex);
   };
 
   /* ─── Delete (local or from GCS) ────────────────────────────────── */
@@ -157,7 +199,25 @@ export function useFilesUpload({
     if (!deleteTarget) return;
     try {
       await deleteMedia({ imageUrl: deleteTarget.imageUrl });
+
+      const deletedIdx = deleteTarget.index;
+      const newPrimaryIdx =
+        primaryImageIndex === deletedIdx
+          ? 0
+          : deletedIdx < primaryImageIndex
+            ? primaryImageIndex - 1
+            : primaryImageIndex;
+
+      const updatedImages: TImages = images
+        .filter((_, i) => i !== deletedIdx)
+        .filter((img) => img.status === "success")
+        .map((img, i) => ({
+          image: img.gcsURL!,
+          isPrimary: i === newPrimaryIdx,
+        }));
+
       removeImage(deleteTarget.index);
+      onImagesChangeRef.current?.(updatedImages);
       toast.success(t("image_deleted"));
     } catch {
       toast.error(t("delete_failed"));
