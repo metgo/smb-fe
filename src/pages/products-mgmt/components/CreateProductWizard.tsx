@@ -45,7 +45,7 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { detectLanguage, modelTitle, removeNulls } from "@/helpers";
+import { detectLanguage, getLngWiseStr, modelTitle, removeNulls } from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
@@ -191,6 +191,20 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
+
+  const nameForGen = getLngWiseStr(
+    language,
+    formData.name,
+    formData.nameHe,
+    formData.nameAr,
+  );
+  const descriptionForGen = getLngWiseStr(
+    language,
+    formData.fullDescription,
+    formData.fullDescriptionHe,
+    formData.fullDescriptionAr,
+  );
+
   const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
     setIsSameAsBusiness(v);
     setFormData((prev: any) => ({ ...prev, deliveryInfoSameAsBusiness: v }));
@@ -742,12 +756,6 @@ export default function CreateProductWizard({
       case 2:
         return (
           <Attributes
-            name={formData.nameHe || formData.name || formData.nameAr}
-            description={
-              formData.fullDescriptionHe ||
-              formData.fullDescription ||
-              formData.fullDescriptionAr
-            }
             {...commonProps}
             editData={product}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
@@ -755,6 +763,8 @@ export default function CreateProductWizard({
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}
+            nameForGen={nameForGen}
+            descriptionForGen={descriptionForGen}
           />
         );
       case 3:

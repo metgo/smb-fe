@@ -594,6 +594,7 @@ export default function ArticleDetails() {
         <CreateArticleWizard
           onClose={() => setIsEditOpen(false)}
           existingArticle={blogDetailsRaw}
+          refetch={refetch}
         />
       )}
     </div>

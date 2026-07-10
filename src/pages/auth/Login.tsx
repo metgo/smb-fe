@@ -38,7 +38,6 @@ export function Login({ setCurrentTab }: LoginProps) {
     blockDurationMs: 0,
     loginBlockedAt: "",
   });
-  console.log("🚀 ~ Login ~ rateLimit:", rateLimit);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
 

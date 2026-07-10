@@ -26,7 +26,7 @@ import { ReactSelect } from "@/components/form-fields";
 
 import ArticleContentForm from "./sub-components/ArticleContentForm";
 import ArticleSeoSettings from "./sub-components/ArticleSeoSettings";
-import { detectLanguage } from "@/helpers";
+import { detectLanguage, getLngWiseStr } from "@/helpers";
 // import ArticleTranslateButton from "./sub-components/ArticleTranslateButton";
 import ArticleReviewSection from "./sub-components/ArticleReviewSection";
 import { useFilesUpload } from "@/hooks/useFilesUpload";
@@ -60,7 +60,6 @@ const EMPTY_FORM: IArticleFormData = {
   metaDescription: "",
   metaDescriptionHe: "",
   metaDescriptionAr: "",
-  slug: "",
   status: "DRAFT",
 };
 
@@ -91,7 +90,6 @@ function buildFormFromArticle(article: any): IArticleFormData {
     metaDescription: article.metaDescription || "",
     metaDescriptionHe: article.metaDescriptionHe || "",
     metaDescriptionAr: article.metaDescriptionAr || "",
-    slug: article.slug || "",
     status:
       (article?.status?.toUpperCase() as IArticleFormData["status"]) || "DRAFT",
   };
@@ -102,6 +100,7 @@ function buildFormFromArticle(article: any): IArticleFormData {
 interface CreateArticleWizardProps {
   onClose: () => void;
   existingArticle?: any;
+  refetch: () => void;
 }
 
 function getTagsField(lang: Language): keyof IArticleFormData {
@@ -113,6 +112,7 @@ function getTagsField(lang: Language): keyof IArticleFormData {
 const CreateArticleWizard = ({
   onClose,
   existingArticle,
+  refetch,
 }: CreateArticleWizardProps) => {
   const { t } = useTranslation("article");
   const { t: tc } = useTranslation("common");
@@ -158,10 +158,12 @@ const CreateArticleWizard = ({
             const mapped = updatedImages.map((img) => ({
               image: img.image,
               alt:
-                existingArticle.title ||
-                existingArticle.titleHe ||
-                existingArticle.titleAr ||
-                "",
+                getLngWiseStr(
+                  language,
+                  existingArticle.title,
+                  existingArticle.titleHe,
+                  existingArticle.titleAr,
+                ) || "",
               isPrimary: img.isPrimary,
             }));
             updateBlog({
@@ -268,13 +270,24 @@ const CreateArticleWizard = ({
   const handleGenerateSeo = async () => {
     try {
       // Get the first available language content
-      const titleText = formData.title || formData.titleHe || formData.titleAr;
-      const descText =
-        formData.shortDescription ||
-        formData.shortDescriptionHe ||
-        formData.shortDescriptionAr;
-      const contentText =
-        formData.content || formData.contentHe || formData.contentAr;
+      const titleText = getLngWiseStr(
+        language,
+        formData.title,
+        formData.titleHe,
+        formData.titleAr,
+      );
+      const descText = getLngWiseStr(
+        language,
+        formData.shortDescription,
+        formData.shortDescriptionHe,
+        formData.shortDescriptionAr,
+      );
+      const contentText = getLngWiseStr(
+        language,
+        formData.content,
+        formData.contentHe,
+        formData.contentAr,
+      );
 
       const result = await generateBlogSeo({
         title: titleText,
@@ -296,10 +309,6 @@ const CreateArticleWizard = ({
         metaTitleAr: result.metaTitleAr ?? prev.metaTitleAr,
         metaDescriptionAr: result.metaDescriptionAr ?? prev.metaDescriptionAr,
         tagsAr: result.tagsAr?.length ? result.tagsAr : prev.tagsAr,
-        slug:
-          prev.slug ||
-          result.slug ||
-          titleText.toLowerCase().replace(/\s+/g, "-"),
       }));
       toast.success(t("seo_generated_success"));
     } catch (err: any) {
@@ -503,6 +512,7 @@ const CreateArticleWizard = ({
 
       // Step 2: Save with processed data
       await saveArticle(true, processedFormData);
+      refetch();
     } finally {
       setIsPublishing(false);
     }
