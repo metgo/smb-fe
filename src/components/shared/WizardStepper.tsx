@@ -90,7 +90,7 @@ export default function WizardStepper({
                   )}
                 >
                   {step.number < currentStep ? (
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-5 h-5" />
                   ) : (
                     <step.icon className="w-4 h-4" />
                   )}

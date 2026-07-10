@@ -10,6 +10,7 @@ type WizardFooterProps = {
   totalSteps: number;
   isSaving: boolean;
   isPublishing: boolean;
+  isDisabled?: boolean;
   onPrevious: () => void;
   onNext: () => void;
   onSaveDraft?: () => void;
@@ -23,6 +24,7 @@ export default function WizardFooter({
   totalSteps,
   isSaving,
   isPublishing,
+  isDisabled = false,
   onPrevious,
   onNext,
   onSaveDraft,
@@ -72,11 +74,16 @@ export default function WizardFooter({
         {onSaveDraft && (
           <button
             onClick={onSaveDraft}
-            disabled={isSaving}
+            disabled={isSaving || isDisabled}
+            title={isDisabled ? "Wait for AI assignment to finish" : undefined}
             className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg border cursor-pointer transition-colors ${
-              isDark
-                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                : "border-gray-300 hover:bg-gray-100"
+              isSaving || isDisabled
+                ? isDark
+                  ? "border-gray-700 text-gray-600 opacity-50"
+                  : "border-gray-300 text-gray-400 opacity-50 cursor-not-allowed"
+                : isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100"
             }`}
           >
             {isSaving ? (
@@ -115,8 +122,15 @@ export default function WizardFooter({
             {isPublishButton && (
               <button
                 onClick={onPublish}
-                disabled={isPublishing}
-                className="px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-1.5 sm:gap-2 cursor-pointer"
+                disabled={isPublishing || isDisabled}
+                title={
+                  isDisabled ? "Wait for AI assignment to finish" : undefined
+                }
+                className={`px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base rounded-lg text-white transition-colors flex items-center gap-1.5 sm:gap-2 ${
+                  isPublishing || isDisabled
+                    ? "bg-green-600 opacity-50 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 cursor-pointer"
+                }`}
               >
                 {isPublishing ? (
                   <>

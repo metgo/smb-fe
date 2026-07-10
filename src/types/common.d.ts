@@ -40,6 +40,7 @@ interface IWebsite {
   dmoIds: string[];
   authorityIds: string[];
   isActive?: boolean;
+  purpose: "MARKETPLACE" | "TRAVELING" | "OTHER";
 }
 
 interface ITag {
