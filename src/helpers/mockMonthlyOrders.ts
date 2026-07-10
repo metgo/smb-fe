@@ -207,10 +207,7 @@ const cancelReasons = [
   "Duplicate order",
 ];
 
-export function generateMockMonthlyOrders(
-  count: number,
-  vendorId: string,
-): MonthlyOrder[] {
+export function generateMockMonthlyOrders(count: number): MonthlyOrder[] {
   return Array.from({ length: count }, (_, i) => {
     const product = products[Math.floor(Math.random() * products.length)];
     const customer = customers[Math.floor(Math.random() * customers.length)];

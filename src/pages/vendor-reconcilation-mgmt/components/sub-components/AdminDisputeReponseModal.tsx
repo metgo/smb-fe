@@ -14,7 +14,7 @@ export const AdminDisputeResponseModal = ({
   onClose,
   onResolve,
 }: AdminDisputeResponseModalProps) => {
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { theme } = useAppSelector((state) => state.settings);
 
   const [internalNotes, setInternalNotes] = useState("");
   const [responseToVendor, setResponseToVendor] = useState("");

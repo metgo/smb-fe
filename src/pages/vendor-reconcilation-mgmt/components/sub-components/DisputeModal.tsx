@@ -25,7 +25,7 @@ export default function DisputeModal({
   onClose,
   onSubmit,
 }: DisputeModalProps) {
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { theme } = useAppSelector((state) => state.settings);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);

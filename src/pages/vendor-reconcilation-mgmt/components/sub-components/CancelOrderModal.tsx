@@ -23,7 +23,7 @@ export default function CancelOrderModal({
   onClose,
   onSubmit,
 }: CancelOrderModalProps) {
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { theme } = useAppSelector((state) => state.settings);
 
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");

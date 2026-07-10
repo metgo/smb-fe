@@ -115,7 +115,7 @@ export const VendorMonthlyReport = ({
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
-      const mockOrders = generateMockMonthlyOrders(150, vendorId);
+      const mockOrders = generateMockMonthlyOrders(150);
       setOrders(mockOrders);
       setLoading(false);
     }, 800);
@@ -617,7 +617,7 @@ export const VendorMonthlyReport = ({
 
         {stats.heldForDisputes > 0 && (
           <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
             <div>
               <p
                 className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
@@ -635,7 +635,7 @@ export const VendorMonthlyReport = ({
 
         {!adminView && stats.pending > 0 && (
           <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p
                 className={`text-sm font-medium text-yellow-900 dark:text-yellow-200`}
@@ -1002,7 +1002,6 @@ export const VendorMonthlyReport = ({
       {showDisputeModal && selectedOrder && (
         <DisputeModal
           order={selectedOrder}
-          theme={theme}
           onClose={() => {
             setShowDisputeModal(false);
             setSelectedOrder(null);
