@@ -129,11 +129,15 @@ export default function PoiDetailsPage() {
   };
 
   const renderContent = () => {
+    const poiImages = poi?.images ?? [];
     const mediaProps = {
-      images: (poi?.images ?? []).map((img: IImage) => ({
+      images: poiImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        poiImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
 
     switch (activeTab) {
@@ -239,6 +243,7 @@ export default function PoiDetailsPage() {
           editData={poi}
           onClose={() => setIsEditClicked(false)}
           refetch={refetch}
+          poiDataRefetch={poiDataRefetch}
           opMode={IOpMode.EDIT}
         />
       )}

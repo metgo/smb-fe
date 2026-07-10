@@ -1,31 +1,36 @@
-import Select from "react-select";
-
-import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, X } from "lucide-react";
 import { ImageWithFallback } from "../shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export type ItemOption = {
   value: string;
   label: string;
   logo?: string | undefined;
+  purpose?: string;
 };
+
+// const PURPOSE_ICON: Record<string, React.ReactNode> = {
+//   MARKETPLACE: <ShoppingBag className="w-3.5 h-3.5 shrink-0 text-orange-400" />,
+//   TRAVELING: <MapPin className="w-3.5 h-3.5 shrink-0 text-teal-500" />,
+//   OTHER: <Layers className="w-3.5 h-3.5 shrink-0 text-gray-400" />,
+// };
 
 type Props = {
   items?: {
     _id: string;
     name: string;
     logo?: string | undefined;
+    purpose?: string;
   }[];
   value?: string | null;
   onChange: (value: string) => void;
-
   onSearch?: (keyword: string) => void;
   isLoading?: boolean;
-
   placeholder?: string;
   isClearable?: boolean;
   isDisabled?: boolean;
   minWidth?: number;
-
   logoSize?: {
     width: number;
     height: number;
@@ -47,129 +52,242 @@ export default function ReactSelect({
   optionGap = 4,
 }: Props) {
   const { isDark } = useThemeClasses();
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const options: ItemOption[] =
     items?.map((site) => ({
       value: site._id,
       label: site.name,
       logo: site.logo,
+      purpose: site.purpose,
     })) || [];
 
   const selectedOption = options.find((o) => o.value === value) || null;
 
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isOpen) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
+  const handleSelect = (option: ItemOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange("");
+    setSearchTerm("");
+  };
+
   return (
-    <Select
-      options={options}
-      value={selectedOption}
-      isClearable={isClearable}
-      isSearchable
-      isDisabled={isDisabled}
-      placeholder={placeholder}
-      onChange={(opt) => onChange(opt?.value ?? "")}
-      isLoading={isLoading}
-      onInputChange={(inputValue, { action }) => {
-        if (action === "input-change") {
-          onSearch?.(inputValue);
-        }
-      }}
-      styles={{
-        container: (base) => ({ ...base, minWidth, zIndex: 40 }),
-        control: (base, state) => ({
-          ...base,
-          borderRadius: 8,
-          height: 44,
-          borderColor: state.isFocused
-            ? isDark
-              ? "#2dd4bf"
-              : "#14b8a6"
-            : isDark
-              ? "#374151"
-              : "#d1d5db",
-          backgroundColor: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#ffffff" : "#111827",
-          boxShadow: state.isFocused
-            ? isDark
-              ? "0 0 0 2px #2dd4bf"
-              : "0 0 0 2px #14b8a6"
-            : undefined,
-          "&:hover": {
-            borderColor: state.isFocused
+    <div
+      ref={containerRef}
+      className="relative"
+      style={{ minWidth, zIndex: isOpen ? 99999 : 40 }}
+    >
+      {/* Select Trigger */}
+      <div
+        className={`
+          flex items-center justify-between
+          h-11 px-3 py-2
+          rounded-lg border
+          transition-all duration-200
+          cursor-pointer
+          ${
+            isOpen
               ? isDark
-                ? "#2dd4bf"
-                : "#14b8a6"
+                ? "border-teal-400 shadow-[0_0_0_2px_#2dd4bf]"
+                : "border-teal-500 shadow-[0_0_0_2px_#14b8a6]"
               : isDark
-                ? "#4b5563"
-                : "#9ca3af",
-          },
-        }),
-        input: (base) => ({
-          ...base,
-          color: isDark ? "#ffffff" : "#111827",
-        }),
-        menu: (base) => ({
-          ...base,
-          borderRadius: 8,
-          borderColor: isDark ? "#374151" : "#e5e7eb",
-          backgroundColor: isDark ? "#111827" : "#ffffff",
-          color: isDark ? "#ffffff" : "#111827",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        }),
-        option: (base, state) => ({
-          ...base,
-          backgroundColor: state.isSelected
-            ? isDark
-              ? "#0f766e"
-              : "#d1fae5"
-            : state.isFocused
-              ? isDark
-                ? "#1f2937"
-                : "#f3f4f6"
-              : isDark
-                ? "#111827"
-                : "#ffffff",
-          color: isDark ? "#fff" : "#111827",
-          cursor: "pointer",
-        }),
-        singleValue: (base) => ({
-          ...base,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          color: isDark ? "#fff" : "#111827",
-        }),
-        placeholder: (base) => ({
-          ...base,
-          color: isDark ? "#9ca3af" : "#6b7280",
-        }),
-        indicatorSeparator: () => ({ display: "none" }),
-        dropdownIndicator: (base) => ({
-          ...base,
-          color: isDark ? "#9ca3af" : "#6b7280",
-        }),
-        clearIndicator: (base) => ({
-          ...base,
-          color: isDark ? "#9ca3af" : "#6b7280",
-          "&:hover": {
-            color: isDark ? "#f87171" : "#ef4444",
-          },
-        }),
-      }}
-      formatOptionLabel={(option: ItemOption) => (
-        <div style={{ display: "flex", alignItems: "center", gap: optionGap }}>
-          {option.logo && (
+                ? "border-gray-600 hover:border-gray-500"
+                : "border-gray-300 hover:border-gray-400"
+          }
+          ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+          ${isDark ? "bg-gray-800" : "bg-white"}
+        `}
+        onClick={() => !isDisabled && setIsOpen(!isOpen)}
+      >
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          {selectedOption?.logo && (
             <ImageWithFallback
-              src={option.logo}
-              alt={option.label}
+              src={selectedOption.logo}
+              alt={selectedOption.label}
               style={{
                 width: logoSize.width,
                 height: logoSize.height,
                 objectFit: "contain",
+                flexShrink: 0,
               }}
             />
           )}
-          <span className="font-semibold">{option.label}</span>
+          <span
+            className={`
+              truncate font-semibold
+              ${selectedOption ? (isDark ? "text-white" : "text-gray-900") : ""}
+              ${!selectedOption ? (isDark ? "text-gray-400" : "text-gray-500") : ""}
+            `}
+          >
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isClearable && selectedOption && (
+            <button
+              onClick={handleClear}
+              className={`
+                p-0.5 rounded-full
+                transition-colors duration-200
+                hover:bg-gray-200 dark:hover:bg-gray-600
+              `}
+              type="button"
+            >
+              <X
+                size={16}
+                className={isDark ? "text-gray-400" : "text-gray-500"}
+              />
+            </button>
+          )}
+          <ChevronDown
+            size={20}
+            className={`
+              transition-transform duration-200
+              ${isOpen ? "rotate-180" : ""}
+              ${isDark ? "text-gray-400" : "text-gray-500"}
+            `}
+          />
+        </div>
+      </div>
+
+      {/* Dropdown Menu */}
+      {isOpen && !isDisabled && (
+        <div
+          className={`
+            absolute left-0 right-0 mt-1
+            rounded-lg border shadow-lg
+            overflow-hidden
+            ${isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"}
+          `}
+          style={{ zIndex: 99999 }}
+        >
+          {/* Search Input */}
+          <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                onSearch?.(e.target.value);
+              }}
+              className={`
+                w-full px-3 py-1.5 text-sm rounded-md border
+                focus:outline-none focus:ring-2
+                transition-all duration-200
+                ${
+                  isDark
+                    ? "bg-gray-800 border-gray-600 text-white focus:ring-teal-400 focus:border-teal-400"
+                    : "bg-white border-gray-300 text-gray-900 focus:ring-teal-500 focus:border-teal-500"
+                }
+              `}
+              onClick={(e) => e.stopPropagation()}
+              autoFocus
+            />
+          </div>
+
+          {/* Options List */}
+          <div className="overflow-y-auto max-h-60">
+            {isLoading ? (
+              <div
+                className={`
+                  px-4 py-3 text-center text-sm
+                  ${isDark ? "text-gray-400" : "text-gray-500"}
+                `}
+              >
+                Loading...
+              </div>
+            ) : filteredOptions.length === 0 ? (
+              <div
+                className={`
+                  px-4 py-3 text-center text-sm
+                  ${isDark ? "text-gray-400" : "text-gray-500"}
+                `}
+              >
+                No options found
+              </div>
+            ) : (
+              filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  onClick={() => handleSelect(option)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2.5
+                    transition-colors duration-150
+                    cursor-pointer
+                    ${
+                      option.value === value
+                        ? isDark
+                          ? "bg-teal-900/50 text-white"
+                          : "bg-teal-50 text-gray-900"
+                        : isDark
+                          ? "hover:bg-gray-800 text-gray-200"
+                          : "hover:bg-gray-50 text-gray-900"
+                    }
+                  `}
+                  style={{ gap: optionGap }}
+                >
+                  {option.logo && (
+                    <ImageWithFallback
+                      src={option.logo}
+                      alt={option.label}
+                      style={{
+                        width: logoSize.width,
+                        height: logoSize.height,
+                        objectFit: "contain",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  <span className="font-semibold truncate">{option.label}</span>
+                  {option.value === value && (
+                    <span className="ml-auto text-teal-500">✓</span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
-    />
+    </div>
   );
 }

@@ -20,6 +20,7 @@ import { BackToListBtn, StatusChangeBtn } from "@/components/btns";
 import { useUpdateBlogMutation } from "@/store/api/blogMutationApi";
 import { ImageWithFallback, Spinner, TabsSection } from "@/components/shared";
 import { formatDateTime } from "@/helpers/formatter";
+import { getLngWiseStr } from "@/helpers";
 
 interface BlogImage {
   image: string;
@@ -32,13 +33,27 @@ interface BlogDetails {
   _id: string;
   status: string;
   title: string;
+  titleHe: string;
+  titleAr: string;
   shortDescription: string;
+  shortDescriptionHe: string;
+  shortDescriptionAr: string;
+  contentHe: string;
+  contentAr: string;
   content: string;
   summary: string;
+  summaryHe: string;
+  summaryAr: string;
   slug: string;
   metaTitle: string;
+  metaTitleHe: string;
+  metaTitleAr: string;
   metaDescription: string;
+  metaDescriptionHe: string;
+  metaDescriptionAr: string;
   tags: string[];
+  tagsHe: string[];
+  tagsAr: string[];
   images: BlogImage[];
   createdAt: string;
   updatedAt: string | null;
@@ -59,13 +74,28 @@ function mapBlogDetailsToArticle(blogDetails: any): BlogDetails {
     _id: blogDetails?._id,
     status: blogDetails?.status?.toLowerCase() ?? "draft",
     title: blogDetails?.title ?? "",
+    titleHe: blogDetails?.titleHe ?? "",
+    titleAr: blogDetails?.titleAr ?? "",
     shortDescription: blogDetails?.shortDescription ?? "",
+    shortDescriptionHe: blogDetails?.shortDescriptionHe ?? "",
+    shortDescriptionAr: blogDetails?.shortDescriptionAr ?? "",
+
     content: blogDetails?.content ?? "",
+    contentHe: blogDetails?.contentHe ?? "",
+    contentAr: blogDetails?.contentAr ?? "",
     summary: blogDetails?.summary ?? "",
+    summaryHe: blogDetails?.summaryHe ?? "",
+    summaryAr: blogDetails?.summaryAr ?? "",
     slug: blogDetails?.slug ?? "",
     metaTitle: blogDetails?.metaTitle ?? "",
+    metaTitleHe: blogDetails?.metaTitleHe ?? "",
+    metaTitleAr: blogDetails?.metaTitleAr ?? "",
     metaDescription: blogDetails?.metaDescription ?? "",
+    metaDescriptionHe: blogDetails?.metaDescriptionHe ?? "",
+    metaDescriptionAr: blogDetails?.metaDescriptionAr ?? "",
     tags: blogDetails?.tags ?? [],
+    tagsHe: blogDetails?.tagsHe ?? [],
+    tagsAr: blogDetails?.tagsAr ?? [],
     images: blogDetails?.images ?? [],
     createdAt: blogDetails?.createdAt ?? "",
     updatedAt: blogDetails?.updatedAt ?? null,
@@ -176,37 +206,63 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("short_description")}
         </h3>
-        <p className={textPrimary}>{blogDetails?.shortDescription || "-"}</p>
+        <p className={textPrimary}>
+          {getLngWiseStr(
+            language,
+            blogDetails?.shortDescription,
+            blogDetails?.shortDescriptionHe,
+            blogDetails?.shortDescriptionAr,
+          ) || "-"}
+        </p>
       </div>
 
       {/* Subtitle */}
       {blogDetails?.summary && (
         <div>
           <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("summary")}</h3>
-          <p className={textSecondary}>{blogDetails?.summary}</p>
+          <p className={textSecondary}>
+            {getLngWiseStr(
+              language,
+              blogDetails?.summary,
+              blogDetails?.summaryHe,
+              blogDetails?.summaryAr,
+            ) || "-"}
+          </p>
         </div>
       )}
 
       {/* Tags */}
-      {blogDetails && blogDetails?.tags?.length > 0 && (
-        <div>
-          <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("tags")}</h3>
-          <div className="flex flex-wrap gap-2">
-            {blogDetails?.tags?.map((tag, idx) => (
-              <span
-                key={idx}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  isDark
-                    ? "bg-blue-900/30 text-blue-400"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      {blogDetails &&
+        (() => {
+          const localizedTags =
+            language === "he"
+              ? blogDetails?.tagsHe
+              : language === "ar"
+                ? blogDetails?.tagsAr
+                : blogDetails?.tags;
+
+          return (
+            localizedTags?.length > 0 && (
+              <div>
+                <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("tags")}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {localizedTags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        isDark
+                          ? "bg-blue-900/30 text-blue-400"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          );
+        })()}
     </div>
   );
 
@@ -214,7 +270,15 @@ export default function ArticleDetails() {
     <div className="space-y-6">
       <div
         className={`p-6 rounded-lg border ${borderColor} ${bgSecondary} ${textPrimary} prose max-w-none`}
-        dangerouslySetInnerHTML={{ __html: blogDetails?.content || "" }}
+        dangerouslySetInnerHTML={{
+          __html:
+            getLngWiseStr(
+              language,
+              blogDetails?.content,
+              blogDetails?.contentHe,
+              blogDetails?.contentAr,
+            ) || "",
+        }}
       />
     </div>
   );
@@ -237,7 +301,14 @@ export default function ArticleDetails() {
       {/* Meta Title */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("meta_title")}</h3>
-        <p className={textSecondary}>{blogDetails?.metaTitle || "—"}</p>
+        <p className={textSecondary}>
+          {getLngWiseStr(
+            language,
+            blogDetails?.metaTitle,
+            blogDetails?.metaTitleHe,
+            blogDetails?.metaTitleAr,
+          ) || "-"}
+        </p>
       </div>
 
       {/* Meta Description */}
@@ -245,14 +316,26 @@ export default function ArticleDetails() {
         <h3 className={`text-sm mb-2 ${textTertiary}`}>
           {t("meta_description")}
         </h3>
-        <p className={textSecondary}>{blogDetails?.metaDescription || "—"}</p>
+        <p className={textSecondary}>
+          {getLngWiseStr(
+            language,
+            blogDetails?.metaDescription,
+            blogDetails?.metaDescriptionHe,
+            blogDetails?.metaDescriptionAr,
+          ) || "-"}
+        </p>
       </div>
 
       {/* Summary */}
       <div>
         <h3 className={`text-sm mb-2 ${textTertiary}`}>{t("summary")}</h3>
         <p className={`${textSecondary} leading-relaxed`}>
-          {blogDetails?.summary || "—"}
+          {getLngWiseStr(
+            language,
+            blogDetails?.summary,
+            blogDetails?.summaryHe,
+            blogDetails?.summaryAr,
+          ) || "-"}
         </p>
       </div>
     </div>
@@ -371,7 +454,14 @@ export default function ArticleDetails() {
         <div className="flex items-center gap-3">
           <ImageWithFallback
             src={primaryImage}
-            alt={blogDetails?.title}
+            alt={
+              getLngWiseStr(
+                language,
+                blogDetails?.title,
+                blogDetails?.titleHe,
+                blogDetails?.titleAr,
+              ) || "-"
+            }
             className={clsx(
               "w-14 h-14 rounded-xl object-cover shrink-0 border",
               isDark ? "border-gray-600" : "border-gray-200",
@@ -384,7 +474,12 @@ export default function ArticleDetails() {
                   isDark ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {blogDetails?.title}
+                {getLngWiseStr(
+                  language,
+                  blogDetails?.title,
+                  blogDetails?.titleHe,
+                  blogDetails?.titleAr,
+                ) || "-"}
               </h1>
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {blogDetails?.createdAt && (
@@ -499,6 +594,7 @@ export default function ArticleDetails() {
         <CreateArticleWizard
           onClose={() => setIsEditOpen(false)}
           existingArticle={blogDetailsRaw}
+          refetch={refetch}
         />
       )}
     </div>

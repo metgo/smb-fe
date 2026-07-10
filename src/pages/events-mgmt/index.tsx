@@ -10,10 +10,12 @@ import {
   useGetAllEventsQuery,
   useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
-import { EventsWithViewMode, CreateEventWizard } from "./components";
+import { CreateEventWizardNew, EventsWithViewMode } from "./components";
 import SearchInput from "@/components/shared/SearchInput";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterByStatus } from "@/components/filter-fields";
+
+const STORAGE_KEY = "event_query_state";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
@@ -31,8 +33,6 @@ export default function EventsMgmtPage() {
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
-
-  const STORAGE_KEY = "event_query_state";
 
   const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   const [searchQuery, setSearchQuery] = useState(savedState?.searchQuery || "");
@@ -448,7 +448,7 @@ export default function EventsMgmtPage() {
         <div className="flex-1 overflow-y-auto min-h-0">
           <EventsWithViewMode
             isLoading={isLoading}
-            events={(events?.data as any) || []}
+            events={(events?.data as IEventListRes[]) || []}
             refetch={refetch}
             eventTypeFilter={eventTypeFilter}
             registrationFilter={registrationFilter}
@@ -459,7 +459,7 @@ export default function EventsMgmtPage() {
         </div>
       </div>
       {/* Create Event Wizard */}
-      <CreateEventWizard
+      <CreateEventWizardNew
         isOpen={isCreateWizardOpen}
         onClose={handleCreateWizardClose}
         refetch={refetch}

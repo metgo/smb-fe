@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Image as ImageIcon,
@@ -12,7 +12,8 @@ import {
   Eye,
   CreditCard,
   FileText,
-  LanguagesIcon,
+  // LanguagesIcon,
+  // LanguagesIcon,
 } from "lucide-react";
 import {
   ProductBasicInfo,
@@ -44,13 +45,18 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { detectLanguage, modelTitle, removeNulls } from "@/helpers";
+import {
+  detectLanguage,
+  getLngWiseStr,
+  modelTitle,
+  removeNulls,
+} from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";
 import { routes } from "@/lib/routes";
 import Media from "@/components/details-sections/Media";
-import ProductTranslateButton from "./sub-components/ProductTranslateButton";
+// import ProductTranslateButton from "./sub-components/ProductTranslateButton";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -69,17 +75,19 @@ export default function CreateProductWizard({
   const navigate = useNavigate();
   const { t } = useTranslation("products");
   const { t: tc } = useTranslation("toast");
-
   const { t: tp } = useTranslation("common");
-  const [_detecedLanguage, setDetectedLanguage] = useState("");
 
   const [searchParams] = useSearchParams();
   const { isTraveller } = useUserRoles();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const productId = searchParams?.get("productId");
-  const bzIdForProdCreate = searchParams?.get("businessId");
   const businessName = searchParams?.get("businessName");
+  // Only pre-select business when explicitly coming from the "create product" flow (businessName param present).
+  // When coming from "view products" (businessNameProduct param, no businessName), open the modal clean.
+  const bzIdForProdCreate = businessName
+    ? searchParams?.get("businessId")
+    : null;
 
   const { language, textPrimary, textTertiary, borderColor, isDark } =
     useThemeClasses();
@@ -100,10 +108,13 @@ export default function CreateProductWizard({
 
   const initialBusinessData = useMemo(() => {
     if (product?.businessId || bzIdForProdCreate) {
+      const biz = product?.businessId;
       return [
         {
-          _id: product?.businessId?._id ?? bzIdForProdCreate,
-          name: product?.businessId?.name || businessName,
+          _id: biz?._id ?? bzIdForProdCreate,
+          name: biz?.name || businessName,
+          nameHe: biz?.nameHe || businessName,
+          nameAr: biz?.nameAr || businessName,
           slug: "",
         },
       ];
@@ -144,31 +155,6 @@ export default function CreateProductWizard({
   const [isDraftBtnClicked, setIsDraftBtnClicked] = useState(false);
   const [showClosePopup, setShowClosePopup] = useState(false);
   const [isSameAsBusiness, setIsSameAsBusiness] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<TImages>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedFormLanguage, setSelectedFormLanguage] =
-    useState<Language>("he");
-  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
-  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
-    [],
-  );
-
-  const {
-    images,
-    imagesRef,
-    primaryImageIndex,
-    handleImageUpload,
-    setPrimaryImage,
-    deleteTarget,
-    setDeleteTarget,
-    confirmDelete,
-    isImageDeleting,
-    handleDeleteImage,
-  } = useFilesUpload({
-    initialImages: galleryImages,
-    onChange: setGalleryImages,
-  });
-
   const [formData, setFormData] = useState<any>({
     businessId: businessId,
     name: "",
@@ -194,8 +180,13 @@ export default function CreateProductWizard({
     additionalImages: [],
     serviceDuration: "",
     vendorDelivers: false,
+    vendorDeliveryArea: [] as any[],
+
     pickupAvailable: false,
     deliveryArea: [] as any[],
+
+    globalDelivery: false,
+    globalDeliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -205,9 +196,62 @@ export default function CreateProductWizard({
     accessibility: [] as string[],
     groupTypes: [] as string[],
   });
-  const handleChange = useCallback((updates: Partial<IArticleFormData>) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }));
+
+  const nameForGen = getLngWiseStr(
+    language,
+    formData.name,
+    formData.nameHe,
+    formData.nameAr,
+  );
+  const descriptionForGen = getLngWiseStr(
+    language,
+    formData.fullDescription,
+    formData.fullDescriptionHe,
+    formData.fullDescriptionAr,
+  );
+
+  const handleSetIsSameAsBusiness = useCallback((v: boolean) => {
+    setIsSameAsBusiness(v);
+    setFormData((prev: any) => ({ ...prev, deliveryInfoSameAsBusiness: v }));
   }, []);
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("he");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
+
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    setPrimaryImage,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useFilesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+    onImagesChange:
+      opMode === IOpMode.EDIT && productId
+        ? (updatedImages) => {
+            updateProduct({
+              productId: productId!,
+              body: { images: updatedImages },
+            });
+          }
+        : undefined,
+  });
+
   const initialFormData = useRef(formData);
   const initialAccessibilitiesId = useRef<string[]>([]);
   const initialGroupTypesId = useRef<string[]>([]);
@@ -223,13 +267,19 @@ export default function CreateProductWizard({
 
   useEffect(() => {
     const fetchBusinessDelivery = async () => {
-      if (isSameAsBusiness && businessId) {
+      const effectiveBusinessId = businessId || formData.businessId;
+      if (isSameAsBusiness && effectiveBusinessId) {
         try {
-          const { data } = await getBusinessDelivery({ businessId });
+          const { data } = await getBusinessDelivery({
+            businessId: effectiveBusinessId,
+          });
 
           setFormData((prev: any) => ({
             ...prev,
             vendorDelivers: data?.vendorDelivers ?? false,
+            vendorDeliveryArea: data?.vendorDeliveryArea ?? [],
+            globalDelivery: data?.globalDelivery ?? false,
+            globalDeliveryArea: data?.globalDeliveryArea ?? [],
             pickupAvailable: data?.isPickUpAvailable ?? false,
             deliveryArea: data?.deliveryArea ?? [],
             deliveryReturnExchange: data?.deliveryReturnExchange ?? [],
@@ -243,7 +293,7 @@ export default function CreateProductWizard({
     };
 
     fetchBusinessDelivery();
-  }, [isSameAsBusiness, businessId, getBusinessDelivery]);
+  }, [isSameAsBusiness, businessId, formData.businessId, getBusinessDelivery]);
 
   useEffect(() => {
     if (!productId || !product) return;
@@ -295,10 +345,13 @@ export default function CreateProductWizard({
       enableHomeDelivery: product?.enableHomeDelivery || false,
       enableStorePickup: product?.enableStorePickup || false,
       serviceDuration: product?.serviceDuration || "",
-
+      deliveryInfoSameAsBusiness: product?.deliveryInfoSameAsBusiness ?? false,
       vendorDelivers: product?.vendorDelivers ?? false,
       pickupAvailable: product?.isPickUpAvailable ?? false,
+      globalDelivery: product?.globalDelivery ?? false,
       deliveryArea: product?.deliveryArea ?? [],
+      vendorDeliveryArea: product?.vendorDeliveryArea ?? [],
+      globalDeliveryArea: product?.globalDeliveryArea ?? [],
       deliveryReturnExchange: product?.deliveryReturnExchange ?? [],
       deliveryAdditionalInfo: product?.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo ?? [],
@@ -314,15 +367,15 @@ export default function CreateProductWizard({
     initialGroupTypesId.current = loadedGroupTypes;
 
     if (opMode === IOpMode.EDIT) {
+      setIsSameAsBusiness(product?.deliveryInfoSameAsBusiness ?? false);
       setGalleryImages(product?.images);
     } else {
+      setIsSameAsBusiness(false);
       setGalleryImages([]);
     }
   }, [productId, product]);
 
-  const [initProductCreate, { isLoading: isCreating }] =
-    useInitProductCreateMutation();
-  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
 
   const completionPercent = useMemo(() => {
     const checks = [
@@ -385,15 +438,13 @@ export default function CreateProductWizard({
 
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: FileText },
-    { number: 2, title: tp("translation"), icon: LanguagesIcon },
-
-    { number: 3, title: t("product_segmentation"), icon: Package },
-    { number: 4, title: t("product_pricing"), icon: CreditCard },
-    { number: 5, title: t("product_media"), icon: ImageIcon },
-    { number: 6, title: t("product_delivery_service"), icon: Truck },
-    { number: 7, title: t("product_review"), icon: Eye },
+    // { number: 2, title: tp("translation"), icon: LanguagesIcon },
+    { number: 2, title: t("product_segmentation"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: CreditCard },
+    { number: 4, title: t("product_media"), icon: ImageIcon },
+    { number: 5, title: t("product_delivery_service"), icon: Truck },
+    { number: 6, title: t("product_review"), icon: Eye },
   ];
-
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -408,6 +459,7 @@ export default function CreateProductWizard({
           !formData.shortDescriptionHe
         )
           newErrors.shortDescEn = t("field_required");
+
         break;
       case 2:
         if (!formData.primaryCategory)
@@ -424,7 +476,7 @@ export default function CreateProductWizard({
           newErrors.quantity = t("invalid_quantity");
         }
         break;
-      case 4:
+      case 5:
         break;
     }
     setErrors(newErrors);
@@ -441,7 +493,7 @@ export default function CreateProductWizard({
       return;
     }
     setIsDraftBtnClicked(true);
-    await saveDraft(false);
+    await saveDraft(false, stepPayloadMap);
   };
 
   const handleNext = async () => {
@@ -462,6 +514,25 @@ export default function CreateProductWizard({
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
 
+    if (
+      (formData.shortDescription || "").length > 150 ||
+      (formData.shortDescriptionHe || "").length > 150 ||
+      (formData.shortDescriptionAr || "").length > 150
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 150 }));
+      return;
+    }
+    if (
+      (formData.fullDescription || "").length > 500 ||
+      (formData.fullDescriptionHe || "").length > 500 ||
+      (formData.fullDescriptionAr || "").length > 500
+    ) {
+      setCurrentStep(1);
+      toast.error(tp("exceeds_char_limit", { limit: 500 }));
+      return;
+    }
+
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
       if (!validateStep(i)) {
@@ -481,44 +552,57 @@ export default function CreateProductWizard({
     await saveDraft(true, processedFormData);
     setIsPublishing(false);
   };
+  const getActiveField = (base: string, lang: string): string => {
+    if (lang === "en") return base;
+    const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
+    return `${base}${suffix}`; // "nameHe", "nameAr", etc.
+  };
+
   const detectAndAssignLanguageFields = (data: any): any => {
-    const name = data.name?.trim() || "";
-    const shortDescription = data.shortDescription?.trim() || "";
-    const description = data.description?.trim() || "";
-
-    // Prioritize title, then short desc, then content for detection
-    const textToDetect = name || shortDescription || description;
-    if (!textToDetect) return data;
-
-    const detectedLang = detectLanguage(textToDetect);
-    setDetectedLanguage(detectedLang);
     const updated = { ...data };
 
-    if (detectedLang === "he") {
-      // Move to Hebrew fields
-      updated.nameHe = name || data.nameHe;
-      updated.shortDescriptionHe = shortDescription || data.shortDescriptionHe;
-      updated.descriptionHe = description || data.descriptionHe;
+    const fieldGroups = [
+      { base: "name", en: "name", he: "nameHe", ar: "nameAr" },
+      {
+        base: "shortDescription",
+        en: "shortDescription",
+        he: "shortDescriptionHe",
+        ar: "shortDescriptionAr",
+      },
+      {
+        base: "description",
+        en: "description",
+        he: "descriptionHe",
+        ar: "descriptionAr",
+      },
+    ];
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    } else if (detectedLang === "ar") {
-      // Move to Arabic fields
-      updated.nameAr = name || data.nameAr;
-      updated.shortDescriptionAr = shortDescription || data.shortDescriptionAr;
-      updated.descriptionAr = description || data.descriptionAr;
+    fieldGroups.forEach(({ base, en, he, ar }) => {
+      // Whichever field the user was actually typing into for THIS group,
+      // based on the global language at the time of entry
+      const activeField = getActiveField(base, language);
+      const text = data[activeField]?.trim();
+      if (!text) return;
 
-      // Clear English fields
-      updated.name = "";
-      updated.shortDescription = "";
-      updated.description = "";
-    }
-    // else: remains in English fields (default)
+      const detectedLang = detectLanguage(text); // "en" | "he" | "ar"
+
+      // Clear all three first, then assign to wherever it actually belongs
+      updated[en] = "";
+      updated[he] = "";
+      updated[ar] = "";
+
+      if (detectedLang === "he") {
+        updated[he] = text;
+      } else if (detectedLang === "ar") {
+        updated[ar] = text;
+      } else {
+        updated[en] = text;
+      }
+    });
 
     return updated;
   };
+
   // Draft Save Payload per Step
   const stepPayloadMap = {
     completionPercent: completionPercent,
@@ -559,8 +643,20 @@ export default function CreateProductWizard({
     images: galleryImages,
 
     serviceDuration: formData.serviceDuration,
+    deliveryInfoSameAsBusiness: isSameAsBusiness,
+    vendorDelivers: formData.vendorDelivers,
+    vendorDeliveryArea: formData.vendorDelivers
+      ? formData.vendorDeliveryArea
+      : [],
+
     isPickUpAvailable: formData.pickupAvailable,
     deliveryArea: formData.deliveryArea,
+
+    globalDelivery: formData.globalDelivery,
+
+    globalDeliveryArea: formData.globalDelivery
+      ? formData.globalDeliveryArea
+      : [],
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -568,23 +664,31 @@ export default function CreateProductWizard({
 
   const saveDraft = async (isPublish = false, processedFormData?: any) => {
     try {
-      let internalProductId;
+      const payload = processedFormData;
+      if (!payload || !Object.keys(payload).length) return;
 
-      // 1️⃣ Initialize product if not created yet
-      if (!productId || opMode !== IOpMode.EDIT) {
+      let internalProductId: string | undefined;
+
+      // Resolve which product ID to use for this save
+      const existingId = productId || createdProductId;
+
+      if (!existingId || opMode === IOpMode.DUPLICATE) {
+        // First save in CREATE mode, or a DUPLICATE — initialize a new product
         const res = await initProductCreate({
           businessId: product?.businessId?._id || formData?.businessId,
         }).unwrap();
         internalProductId = res?.id;
+        // Track the created ID so subsequent saves in this session patch instead of re-creating
+        if (opMode !== IOpMode.DUPLICATE) {
+          setCreatedProductId(internalProductId ?? null);
+        }
+      } else {
+        internalProductId = existingId;
       }
 
-      // Only send payload for the current step
-      const payload = processedFormData;
-      if (!payload || !Object.keys(payload).length) return;
-
-      // 4️⃣ Update product
+      // Update product
       await updateProduct({
-        productId: internalProductId || productId!,
+        productId: internalProductId!,
         body: {
           ...payload,
           status: isPublish
@@ -650,19 +754,13 @@ export default function CreateProductWizard({
             presetBusinessId={bzIdForProdCreate || product?.businessId?._id}
           />
         );
+      // case 2:
+      //   return (
+      //     <ProductTranslateButton formData={formData} onChange={handleChange} />
+      //   );
       case 2:
         return (
-          <ProductTranslateButton formData={formData} onChange={handleChange} />
-        );
-      case 3:
-        return (
           <Attributes
-            name={formData.nameHe || formData.name || formData.nameAr}
-            description={
-              formData.fullDescriptionHe ||
-              formData.fullDescription ||
-              formData.fullDescriptionAr
-            }
             {...commonProps}
             editData={product}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
@@ -670,23 +768,25 @@ export default function CreateProductWizard({
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}
+            nameForGen={nameForGen}
+            descriptionForGen={descriptionForGen}
           />
         );
-      case 4:
+      case 3:
         return <ProductPricingAvailability {...commonProps} />;
-      case 5:
+      case 4:
         return <Media {...mediaProps} {...commonProps} />;
-      case 6:
+      case 5:
         return (
           <DeliveryPolicyOption
             isProduct
             formData={formData}
             setFormData={setFormData}
             isSameAsBusiness={isSameAsBusiness}
-            setIsSameAsBusiness={setIsSameAsBusiness}
+            setIsSameAsBusiness={handleSetIsSameAsBusiness}
           />
         );
-      case 7:
+      case 6:
         return (
           <ProductReviewSubmit
             {...commonProps}

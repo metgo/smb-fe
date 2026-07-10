@@ -3,6 +3,7 @@ import { FileText, AlignLeft, BriefcaseBusinessIcon } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DescriptionCard from "@/components/shared/DescriptionCard";
 import clsx from "clsx";
+import { getLngWiseStr } from "@/helpers";
 
 interface ProductInfoDetailsProps {
   t: (key: string) => string;
@@ -15,6 +16,7 @@ interface ProductInfoDetailsProps {
 const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
   t,
   product,
+  language,
 }) => {
   const { isDark } = useThemeClasses();
   // const [showQRDropdown, setShowQRDropdown] = useState(false);
@@ -75,12 +77,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Short Description */}
       <DescriptionCard
         title={t("short_description")}
-        content={
-          product?.shortDescriptionHe ||
-          product?.shortDescription ||
-          product?.shortDescriptionAr ||
-          "-"
-        }
+        content={getLngWiseStr(
+          language,
+          product?.shortDescription,
+          product?.shortDescriptionHe,
+          product?.shortDescriptionAr,
+        )}
         icon={
           <FileText
             className={clsx(
@@ -96,12 +98,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/*  Description */}
       <DescriptionCard
         title={t("full_description")}
-        content={
-          product?.descriptionHe ||
-          product?.description ||
-          product?.description ||
-          "-"
-        }
+        content={getLngWiseStr(
+          language,
+          product?.description,
+          product?.descriptionHe,
+          product?.descriptionAr,
+        )}
         icon={
           <AlignLeft
             className={clsx(
@@ -117,7 +119,12 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
 
       <DescriptionCard
         title={t("business_name")}
-        content={product?.businessId?.name ? product?.businessId?.name : "-"}
+        content={getLngWiseStr(
+          language,
+          product?.businessId?.name,
+          product?.businessId?.nameHe,
+          product?.businessId?.nameAr,
+        )}
         icon={
           <BriefcaseBusinessIcon
             className={clsx(

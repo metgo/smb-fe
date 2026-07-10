@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-@custom-variant ltr (&:is(:dir(ltr) *));
-@custom-variant rtl (&:is(:dir(rtl) *));
-
 .goog-te-banner-frame {
   display: none !important;
 }
@@ -260,8 +256,15 @@ input.auth-input:-webkit-autofill:active {
 html {
   font-size: var(--font-size);
 }
-button {
-  cursor: pointer;
+
+/* Remove spin buttons from all number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 /* NProgress – top loading bar */

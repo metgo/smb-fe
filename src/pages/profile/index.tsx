@@ -59,7 +59,7 @@ export default function ProfilePage() {
     navigate(routes.auth, { replace: true });
     localStorage.clear();
     window.dispatchEvent(new Event("session:updated"));
-    window.location.reload();
+    // window.location.reload();
   };
 
   const bank = banks?.find(
@@ -304,7 +304,7 @@ export default function ProfilePage() {
 
       <Activity mode={showBankModal ? "visible" : "hidden"}>
         <AssignBankAccountModal
-          isDark
+          isDark={isDark}
           banks={banks}
           refetch={refetch}
           userId={userInfo?.id || ""}

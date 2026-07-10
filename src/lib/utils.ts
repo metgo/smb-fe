@@ -2,15 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { routes } from "./routes";
 import { UserRole } from "@/enums/user.types";
-import {
-  User,
-  Shield,
-  ShieldCheck,
-  Map,
-  MapPin,
-  Building2,
-  Building,
-} from "lucide-react";
+import { User, Shield, ShieldCheck, Map, Building2 } from "lucide-react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,6 +13,13 @@ export const locales: { value: Language; label: string; flag?: string }[] = [
   { value: "he", label: "עברית", flag: "/assets/images/il.png" },
   { value: "ar", label: "العربية", flag: "/assets/images/sa.png" },
 ];
+
+export const TICKET_TYPE_STYLES: Record<string, string> = {
+  free: "bg-green-500/20 text-green-600 dark:text-green-400",
+  vip: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  donation: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+  paid: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+};
 
 export const itemStatuses = [
   { value: "DRAFT", label: "draft" },
@@ -110,9 +109,7 @@ export const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
 export const ROLE_TABS = [
   { id: UserRole.SUPERADMIN, label: "Super Admins", icon: ShieldCheck },
   { id: UserRole.ADMIN, label: "Admins", icon: Shield },
-  { id: UserRole.DMOADMIN, label: "DMO Admins", icon: MapPin },
   { id: UserRole.DMO, label: "DMOs", icon: Map },
-  { id: UserRole.AUTHORITY_ADMIN, label: "Authority Admins", icon: Building },
   { id: UserRole.AUTHORITY, label: "Authorities", icon: Building2 },
   { id: UserRole.TRAVELLER, label: "Travellers", icon: User },
 ];

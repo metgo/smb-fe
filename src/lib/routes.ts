@@ -5,12 +5,15 @@ export const routes = {
 
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
+  pendingApprovals: "/pending-approvals",
 
   articleMgmt: "/articles-management",
   articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
   documentMgmt: "/documents-management",
+  eventSessionMgmt: "/event-session-management",
+
   productsMgmt: "/products-management",
   productDetails: "/product-details",
 
@@ -46,6 +49,11 @@ export const routes = {
   promotionMgmt: "/promotions-management",
 
   users: "/users",
+
+  publicTicket: "/verify-ticket",
+  publicSession: "/verify-session",
+  websiteCrashes: "/website-crashes",
+  websiteCrashDetails: "/website-crash-details",
 };
 
 export type RouteKey = keyof typeof routes;

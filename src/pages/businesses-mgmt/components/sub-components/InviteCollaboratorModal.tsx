@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Mail, User, Phone, UserPlus, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
 import { ModalWrapper } from "@/components/wrapper";
 
 interface InviteCollaboratorModalProps {
@@ -40,9 +39,7 @@ export default function InviteCollaboratorModal({
   const { t } = useTranslation("businesses");
   const { t: tc } = useTranslation("common");
 
-  const { isDark } = useThemeClasses();
-
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { isDark, isRTL } = useThemeClasses();
 
   const [step, setStep] = useState<"email" | "details">("email");
   const [email, setEmail] = useState("");

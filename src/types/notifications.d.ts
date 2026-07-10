@@ -25,6 +25,8 @@ interface INotification {
   itemType: TItemType;
   isRead: boolean;
   isUrgent: boolean;
+  changesCount?: number;
+  hasChanges?: boolean;
   actionData?: {
     suggestedCategory?: string;
   };

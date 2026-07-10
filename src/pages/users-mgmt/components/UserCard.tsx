@@ -1,22 +1,75 @@
 import clsx from "clsx";
-import { Mail, Phone, MapPin, Clock, Pencil, Trash2 } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Trash2,
+  PenBox,
+  RefreshCcw,
+  RotateCcw,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
+import { ActionIconButtons } from "@/components/btns";
 
 interface UserCardProps {
   user: IUser;
   onEdit: (user: IUser) => void;
   onDelete: (user: IUser) => void;
+  handleLoginAttemptReset: (v: string) => void;
+  isLoginAttemptReseting: boolean;
 }
 
-const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
-  const { cardClasses, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+const UserCard = ({
+  user,
+  onEdit,
+  onDelete,
+  handleLoginAttemptReset,
+  isLoginAttemptReseting,
+}: UserCardProps) => {
+  const { t } = useTranslation("user");
+  const { t: tc } = useTranslation("common");
+
+  const {
+    cardClasses,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    isDark,
+  } = useThemeClasses();
   const initials =
     `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();
   const fullName = `${user.firstName} ${user.lastName}`;
   const avatarColor = getAvatarColor(fullName);
   const phone = [user.countryCode, user.phoneNumber].filter(Boolean).join("");
+
+  const actions: IActionIconButton[] = [
+    {
+      title: tc("edit"),
+      icon: PenBox,
+      color: "gray",
+      onClick: () => onEdit(user),
+    },
+    {
+      title: tc("delete"),
+      icon: Trash2,
+      color: "red",
+      onClick: () => onDelete(user),
+    },
+  ];
+
+  if (user.loginAttempts > 0) {
+    actions.push({
+      title: `${t("reset_login_attempts")}: ${user.loginAttempts}`,
+      icon: isLoginAttemptReseting ? RotateCcw : RefreshCcw,
+      color: "green",
+      isLoading: isLoginAttemptReseting,
+      onClick: () => handleLoginAttemptReset(user._id),
+    });
+  }
 
   return (
     <div
@@ -47,22 +100,7 @@ const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => onEdit(user)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-            title="Edit user"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => onDelete(user)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-            title="Delete user"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <ActionIconButtons isDark={isDark} actions={actions} />
       </div>
 
       {/* Contact & location */}
@@ -106,7 +144,9 @@ const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
         )}
       >
         <Clock className="w-3 h-3 shrink-0" />
-        <span>Last login: {formatLastLogin(user.lastLogin)}</span>
+        <span>
+          {t("last_login")}: {formatLastLogin(user.lastLogin)}
+        </span>
       </div>
     </div>
   );

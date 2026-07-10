@@ -50,6 +50,13 @@ export const websiteConfigApi = createApi({
       }),
     }),
 
+    getAllWebsiteList: builder.query<IWebsiteListRes[], Language>({
+      query: (locale) => ({
+        url: `${endpoints.websiteList}?locale=${locale}`,
+        method: "GET",
+      }),
+    }),
+
     //  ============== DMOs Config ==============
     // Mutations
     createDmo: builder.mutation<any, TDmoReqPayload>({
@@ -218,6 +225,7 @@ export const {
   useGetWebsiteSettingDetailsQuery,
   useGetAllWebsitesQuery,
   useDeleteWebsiteMutation,
+  useGetAllWebsiteListQuery,
 
   useCreateDmoMutation,
   useUpdateDmoMutation,

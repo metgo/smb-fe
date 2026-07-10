@@ -18,7 +18,7 @@ import { routes } from "@/lib/routes";
 import { useCommon } from "@/hooks/useCommon";
 import { toggleEditMode, toggleMobileSidebar } from "@/features/uiSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { setLanguage, setTheme } from "@/features/settingsSlice";
+import { setTheme } from "@/features/settingsSlice";
 import {
   setAuthority,
   setDmo,
@@ -124,8 +124,11 @@ export default function Header() {
   }, []);
 
   const handleLanguageChange = (lng: Language) => {
-    dispatch(setLanguage(lng));
-    i18n.changeLanguage(lng);
+    // Redux `settings.language`/`isRTL` are updated via the i18n
+    // "languageChanged" listener once the bundle actually loads — see src/i18n/index.ts.
+    i18n.changeLanguage(lng).catch((error) => {
+      console.error("Failed to change language", error);
+    });
   };
 
   return (
@@ -169,8 +172,8 @@ export default function Header() {
             {/* Center: selects — desktop only */}
             <div className="hidden lg:flex items-center gap-3 flex-1 justify-center">
               <ReactSelect
-                isClearable={userRole !== "authority"}
-                isDisabled={userRole === "authority"}
+                isClearable={userRole !== "authority" && userRole !== "dmo"}
+                isDisabled={userRole === "authority" || userRole === "dmo"}
                 value={dmoId}
                 onChange={(value) => dispatch(setDmo(value))}
                 placeholder={t("select_dmo")}
@@ -181,7 +184,7 @@ export default function Header() {
                 }))}
               />
               <ReactSelect
-                isClearable
+                isClearable={userRole !== "authority"}
                 value={authorityId}
                 isDisabled={userRole === "authority"}
                 onChange={(value) => dispatch(setAuthority(value))}
@@ -189,7 +192,7 @@ export default function Header() {
                 items={selectedParent?.authorities?.map((item) => ({
                   _id: item._id,
                   name: item.name,
-                  logo: item?.logoPath,
+                  logo: item?.logoPath ?? "",
                 }))}
               />
               <ReactSelect
@@ -353,8 +356,8 @@ export default function Header() {
             </button>
           </div>
           <ReactSelect
-            isClearable={userRole !== "authority"}
-            isDisabled={userRole === "authority"}
+            isClearable={userRole !== "authority" && userRole !== "dmo"}
+            isDisabled={userRole === "authority" || userRole === "dmo"}
             value={dmoId}
             onChange={(value) => dispatch(setDmo(value))}
             placeholder={t("select_dmo")}
@@ -365,15 +368,15 @@ export default function Header() {
             }))}
           />
           <ReactSelect
-            isClearable
+            isClearable={userRole !== "dmo"}
             value={authorityId}
-            isDisabled={userRole === "authority"}
+            isDisabled={userRole === "authority" || userRole === "dmo"}
             onChange={(value) => dispatch(setAuthority(value))}
             placeholder={t("select_authority")}
             items={selectedParent?.authorities?.map((item) => ({
               _id: item._id,
               name: item.name,
-              logo: item?.logoPath,
+              logo: item?.logoPath ?? "",
             }))}
           />
           <ReactSelect

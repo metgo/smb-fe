@@ -24,6 +24,14 @@ interface RichTextEditorProps {
   borderColor: string;
   // Passed so the editor can re-sync when switching articles
   syncKey?: string | number;
+  label?: string;
+  required?: boolean;
+  placeholder?: string;
+  minHeight?: string;
+  // When set, shows a char count against this limit (counted on plain text, not HTML)
+  maxLength?: number;
+  charCountLabel?: (count: number, limit: number) => string;
+  exceedsLimitLabel?: (limit: number) => string;
 }
 
 const RichTextEditor = ({
@@ -36,6 +44,13 @@ const RichTextEditor = ({
   textTertiary,
   borderColor,
   syncKey,
+  label = "Content",
+  required = true,
+  placeholder = "Write your article content here...",
+  minHeight = "min-h-[400px]",
+  maxLength,
+  charCountLabel,
+  exceedsLimitLabel,
 }: RichTextEditorProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -46,8 +61,7 @@ const RichTextEditor = ({
     if (contentRef.current && contentRef.current.innerHTML !== content) {
       contentRef.current.innerHTML = content;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [syncKey]);
+  }, [syncKey, content]); //
 
   const syncContent = () => {
     if (contentRef.current) {
@@ -189,10 +203,14 @@ const RichTextEditor = ({
     ],
   ];
 
+  const plainTextLength = content.replace(/<[^>]*>/g, "").length;
+  const exceedsLimit =
+    typeof maxLength === "number" && plainTextLength > maxLength;
+
   return (
     <div>
       <label className={`block text-sm font-medium ${textTertiary} mb-2`}>
-        Content <span className="text-red-500">*</span>
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       {/* Toolbar */}
@@ -223,14 +241,23 @@ const RichTextEditor = ({
         ref={contentRef}
         contentEditable
         onInput={syncContent}
-        className={`w-full min-h-[400px] ${bgSecondary} ${textPrimary} border-x border-b ${borderColor} rounded-b-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-y-auto prose prose-sm max-w-none`}
+        className={`w-full ${minHeight} ${bgSecondary} ${textPrimary} border-x border-b ${borderColor} rounded-b-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-y-auto prose prose-sm max-w-none`}
         style={{ direction: editingLanguage !== "en" ? "rtl" : "ltr" }}
-        data-placeholder="Write your article content here..."
+        data-placeholder={placeholder}
         suppressContentEditableWarning
       />
 
+      {exceedsLimit && exceedsLimitLabel && (
+        <p className="text-red-500 text-sm mt-1">
+          {exceedsLimitLabel(maxLength as number)}
+        </p>
+      )}
       <p className={`text-xs ${textTertiary} mt-1`}>
-        {content.length} characters
+        {maxLength
+          ? charCountLabel
+            ? charCountLabel(plainTextLength, maxLength)
+            : `${plainTextLength} / ${maxLength} characters`
+          : `${plainTextLength} characters`}
       </p>
 
       {/* Hidden file inputs */}

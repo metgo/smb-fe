@@ -187,6 +187,7 @@ export default function ArticlesManagement() {
       refetch();
     } else {
       setPage(1);
+      refetch();
     }
   }, [page, refetch]);
 
@@ -372,7 +373,10 @@ export default function ArticlesManagement() {
         />
 
         {isCreateModalOpen && (
-          <CreateArticleWizard onClose={() => setIsCreateModalOpen(false)} />
+          <CreateArticleWizard
+            onClose={() => setIsCreateModalOpen(false)}
+            refetch={handleRefetch}
+          />
         )}
       </div>
     </>

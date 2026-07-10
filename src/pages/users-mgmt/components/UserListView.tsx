@@ -1,10 +1,13 @@
 import clsx from "clsx";
 import type React from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { PenBox, RefreshCcw, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
+import { UserRole } from "@/enums/user.types";
+import { ActionIconButtons } from "@/components/btns";
 
 interface UserListViewProps {
   users: IUser[];
@@ -13,6 +16,9 @@ interface UserListViewProps {
   fetchNextPage: () => void;
   onEdit: (user: IUser) => void;
   onDelete: (user: IUser) => void;
+  activeRole?: string;
+  handleLoginAttemptReset: (v: string) => void;
+  isLoginAttemptReseting: boolean;
 }
 
 const UserListView: React.FC<UserListViewProps> = ({
@@ -22,13 +28,20 @@ const UserListView: React.FC<UserListViewProps> = ({
   fetchNextPage,
   onEdit,
   onDelete,
+  activeRole,
+  handleLoginAttemptReset,
+  isLoginAttemptReseting,
 }) => {
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { t } = useTranslation("user");
+  const { t: tc } = useTranslation("common");
 
-  const columns = [
+  const { textPrimary, textSecondary, textTertiary, isDark } =
+    useThemeClasses();
+
+  const baseColumns = [
     {
       key: "name",
-      label: "Name",
+      label: t("name"),
       render: (user: IUser) => {
         const fullName = `${user.firstName} ${user.lastName}`;
         const initials =
@@ -58,7 +71,7 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "email",
-      label: "Email",
+      label: t("email"),
       render: (user: IUser) =>
         user.email ? (
           <a
@@ -77,7 +90,7 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "phone",
-      label: "Phone",
+      label: t("phone"),
       render: (user: IUser) =>
         user.phoneNumber ? (
           <a
@@ -96,49 +109,109 @@ const UserListView: React.FC<UserListViewProps> = ({
     },
     {
       key: "address",
-      label: "Address",
+      label: t("address"),
       render: (user: IUser) => (
         <span className={clsx("text-xs", textTertiary)}>{user.address}</span>
       ),
     },
-    {
-      key: "lastLogin",
-      label: "Last Login",
-      render: (user: IUser) => (
-        <span className={clsx("text-xs", textTertiary)}>
-          {formatLastLogin(user.lastLogin)}
-        </span>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (user: IUser) => (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(user);
-            }}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-            title="Edit user"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(user);
-            }}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-            title="Delete user"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
-    },
   ];
+
+  const dmoColumn = {
+    key: "dmo",
+    label: t("dmo"),
+    render: (user: IUser) =>
+      user.dmo?.name ? (
+        <div className="flex items-center gap-2">
+          {user.dmo.logoPath && (
+            <img
+              src={user.dmo.logoPath}
+              alt={user.dmo.name}
+              className="w-5 h-5 rounded-full object-cover shrink-0"
+            />
+          )}
+          <span className={clsx("text-sm truncate", textSecondary)}>
+            {user.dmo.name}
+          </span>
+        </div>
+      ) : (
+        <span className={clsx("text-sm", textTertiary)}>—</span>
+      ),
+  };
+
+  const authorityColumn = {
+    key: "authority",
+    label: t("authority"),
+    render: (user: IUser) =>
+      user.authority?.name ? (
+        <div className="flex items-center gap-2">
+          {user.authority.logoPath && (
+            <img
+              src={user.authority.logoPath}
+              alt={user.authority.name}
+              className="w-5 h-5 rounded-full object-cover shrink-0"
+            />
+          )}
+          <span className={clsx("text-sm truncate", textSecondary)}>
+            {user.authority.name}
+          </span>
+        </div>
+      ) : (
+        <span className={clsx("text-sm", textTertiary)}>—</span>
+      ),
+  };
+
+  const lastLoginColumn = {
+    key: "lastLogin",
+    label: t("last_login"),
+    render: (user: IUser) => (
+      <span className={clsx("text-xs", textTertiary)}>
+        {formatLastLogin(user.lastLogin)}
+      </span>
+    ),
+  };
+
+  const actionsColumn = {
+    key: "actions",
+    label: t("actions"),
+    render: (user: IUser) => {
+      const actions: IActionIconButton[] = [
+        {
+          title: tc("edit"),
+          icon: PenBox,
+          color: "gray",
+          onClick: () => onEdit(user),
+        },
+        {
+          title: tc("delete"),
+          icon: Trash2,
+          color: "red",
+          onClick: () => onDelete(user),
+        },
+      ];
+
+      if (user.loginAttempts > 0) {
+        actions.push({
+          title: `${t("reset_login_attempts")}: ${user.loginAttempts}`,
+          icon: RefreshCcw,
+          color: "green",
+          isLoading: isLoginAttemptReseting,
+          onClick: () => handleLoginAttemptReset(user._id),
+        });
+      }
+
+      return <ActionIconButtons isDark={isDark} actions={actions} />;
+    },
+  };
+
+  let columns: any[] = baseColumns;
+
+  if (activeRole === UserRole.DMO) {
+    columns = [...baseColumns, dmoColumn, lastLoginColumn, actionsColumn];
+  } else if (activeRole === UserRole.AUTHORITY) {
+    columns = [...baseColumns, authorityColumn, lastLoginColumn, actionsColumn];
+  } else {
+    columns = [...baseColumns, lastLoginColumn, actionsColumn];
+  }
 
   return (
     <ReordableDataTable

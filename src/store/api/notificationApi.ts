@@ -22,6 +22,7 @@ export const notificationApi = createApi({
         method: "GET",
         params,
       }),
+      providesTags: ["NotificationData"],
     }),
 
     getNotificatonStats: builder.query<INotificationStats, void>({
@@ -29,6 +30,15 @@ export const notificationApi = createApi({
         url: endpoints.notificationStats,
         method: "GET",
       }),
+      providesTags: ["NotificationData"],
+    }),
+
+    getNotificationCount: builder.query<INotificationStats, void>({
+      query: () => ({
+        url: endpoints.notificationCount,
+        method: "GET",
+      }),
+      providesTags: ["NotificationData"],
     }),
 
     markNotificationsAsRead: builder.mutation<INotifListRes, string>({
@@ -36,6 +46,31 @@ export const notificationApi = createApi({
         url: `${endpoints.notifications}/${notificationId}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["NotificationData"],
+    }),
+
+    bulkMarkNotificationsAsRead: builder.mutation<void, string[] | undefined>({
+      query: (ids) => ({
+        url: endpoints.notificationsBulkMarkRead,
+        method: "PATCH",
+        data: { ids },
+      }),
+      invalidatesTags: ["NotificationData"],
+    }),
+
+    updateNotification: builder.mutation<
+      INotification,
+      {
+        notificationId: string;
+        body: Partial<Pick<INotification, "status" | "isRead">>;
+      }
+    >({
+      query: ({ notificationId, body }) => ({
+        url: `${endpoints.notifications}/${notificationId}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["NotificationData"],
     }),
   }),
 });
@@ -44,5 +79,8 @@ export const {
   useGetAllNotificationsQuery,
   useLazyGetAllNotificationsQuery,
   useMarkNotificationsAsReadMutation,
+  useBulkMarkNotificationsAsReadMutation,
+  useUpdateNotificationMutation,
   useGetNotificatonStatsQuery,
+  useGetNotificationCountQuery,
 } = notificationApi;

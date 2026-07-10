@@ -11,20 +11,25 @@ interface BusinessStatsParams {
   averageCompletion?: number;
 }
 interface BusinessListParams {
-  page?: string;
-  limit?: string;
+  page?: string | number;
+  limit?: string | number;
   search?: string;
   businessType?: string;
   status?: string;
   isRegistration?: boolean;
   isFree?: boolean;
-  authorityId?: boolean;
-  dmoId?: boolean;
-  hasProductFilter?: string;
+  authorityId?: boolean | string;
+  dmoId?: boolean | string;
+  hasProductFilter?: string | boolean;
   sortOrder?: string;
   sortBy?: string;
   startDate?: string;
   endDate?: string;
+  externalApiId?: string;
+  locale?: string;
+  primaryCategoryId?: string;
+  assignmentStatus?: string;
+  viewCategory?: string;
 }
 
 interface BusinessesForProductParams {
@@ -37,6 +42,25 @@ interface BusinessesForProductParams {
   page?: number;
   startDate?: string;
   endDate?: string;
+}
+
+interface ChangeHistoryParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+}
+
+interface ApproveChangesParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+  changeId: string;
+  comment?: string;
+}
+
+interface RejectChangesParams {
+  entityType: "business" | "product" | "event" | "poi";
+  entityId: string;
+  changeId: string;
+  reason: string;
 }
 
 export const businessQueryApi = createApi({
@@ -102,6 +126,41 @@ export const businessQueryApi = createApi({
         params,
       }),
     }),
+
+    getPendingApprovals: builder.query<any, { page?: number; limit?: number }>({
+      query: (params) => ({
+        url: endpoints.pendingApprovals,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Business"],
+    }),
+
+    getChangesByEntity: builder.query<any, ChangeHistoryParams>({
+      query: ({ entityType, entityId }) => ({
+        url: `/admin/${entityType}/${entityId}/changes`,
+        method: "GET",
+      }),
+      providesTags: ["Business"],
+    }),
+
+    approveChanges: builder.mutation<any, ApproveChangesParams>({
+      query: ({ entityType, entityId, changeId, comment }) => ({
+        url: `/admin/${entityType}/${entityId}/changes/${changeId}/approve`,
+        method: "PATCH",
+        data: { approvalComment: comment },
+      }),
+      invalidatesTags: ["Business"],
+    }),
+
+    rejectChanges: builder.mutation<any, RejectChangesParams>({
+      query: ({ entityType, entityId, changeId, reason }) => ({
+        url: `/admin/${entityType}/${entityId}/changes/${changeId}/reject`,
+        method: "PATCH",
+        data: { rejectionReason: reason },
+      }),
+      invalidatesTags: ["Business"],
+    }),
   }),
 });
 
@@ -115,4 +174,8 @@ export const {
   useGetbusinessByIdQuery,
   useGetIndividualBusinessStatsQuery,
   useLazyGetBusinessDeliveryInfoByIdQuery,
+  useGetPendingApprovalsQuery,
+  useGetChangesByEntityQuery,
+  useApproveChangesMutation,
+  useRejectChangesMutation,
 } = businessQueryApi;

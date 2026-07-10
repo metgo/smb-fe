@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next";
 import { detectLanguage } from "@/helpers";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGenerateBlogNameMutation } from "@/store/api/blogQueryApi";
+import RichTextEditor from "./RichTextEditor";
 
 interface ArticleTranslateButtonProps {
   formData: any;
   onChange: (updates: Record<string, any>) => void;
+  syncKey?: string | number;
 }
 
 type LangKey = "en" | "he" | "ar";
@@ -50,10 +52,18 @@ const LANG_FIELDS: Record<
 const ArticleTranslateButton = ({
   formData,
   onChange,
+  syncKey,
 }: ArticleTranslateButtonProps) => {
   const { t } = useTranslation("article");
-  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor } =
-    useThemeClasses();
+  const { t: tc } = useTranslation("common");
+  const {
+    bgPrimary,
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+  } = useThemeClasses();
   const [generateBlogName, { isLoading: isTranslating }] =
     useGenerateBlogNameMutation();
 
@@ -201,36 +211,40 @@ const ArticleTranslateButton = ({
                   className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow`}
                 />
               </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("short_description")}
-                </label>
-                <textarea
-                  dir={dir}
-                  rows={3}
-                  value={formData[shortDescription] || ""}
-                  onChange={(e) =>
-                    onChange({ [shortDescription]: e.target.value })
-                  }
-                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
-                />
-              </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${textSecondary} mb-1`}
-                >
-                  {t("content")}
-                </label>
-                <textarea
-                  dir={dir}
-                  rows={6}
-                  value={formData[content] || ""}
-                  onChange={(e) => onChange({ [content]: e.target.value })}
-                  className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-shadow`}
-                />
-              </div>
+              <RichTextEditor
+                content={formData[shortDescription] || ""}
+                onChange={(html) => onChange({ [shortDescription]: html })}
+                bgPrimary={bgPrimary}
+                bgSecondary={bgSecondary}
+                textPrimary={textPrimary}
+                textTertiary={textTertiary}
+                borderColor={borderColor}
+                editingLanguage={lang}
+                syncKey={syncKey}
+                label={t("short_description")}
+                placeholder={t("short_description_placeholder")}
+                minHeight="min-h-[120px]"
+                maxLength={150}
+                charCountLabel={(count, limit) =>
+                  tc("char_count", { count, limit })
+                }
+                exceedsLimitLabel={(limit) =>
+                  tc("exceeds_char_limit", { limit })
+                }
+              />
+              <RichTextEditor
+                content={formData[content] || ""}
+                onChange={(html) => onChange({ [content]: html })}
+                bgPrimary={bgPrimary}
+                bgSecondary={bgSecondary}
+                textPrimary={textPrimary}
+                textTertiary={textTertiary}
+                borderColor={borderColor}
+                editingLanguage={lang}
+                syncKey={syncKey}
+                label={t("content")}
+                placeholder={t("full_description_placeholder")}
+              />
             </div>
           </div>
         );

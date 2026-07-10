@@ -44,13 +44,17 @@ export const endpoints = {
   searchBusiness: "/search-businesses",
   businessStatDashboard: "/businesses-stat",
   bulkBusinessesUpdate: "/bulk-businesses-update",
+  pendingApprovals: "/admin/pending-approvals",
 
   //products
   products: "/products",
+  contentManagementProducts: "/content-management-products",
   bulkProductsUpdate: "/bulk-products-update",
 
   //orders
   orders: "/orders",
+  orderDetails: "/order-details",
+
   orderSummary: "/orders-summary",
 
   ordersStats: "/orders-stats",
@@ -59,16 +63,39 @@ export const endpoints = {
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
+  cancleOrderProduct: "/cancel-order-product",
+  updateOrderStatus: "/update-order-status",
+
+  // public
+  publicEventTicket: "/public/event-tickets",
+  publicSessionTicket: "/public/session-tickets",
 
   // events
   events: "/events",
   eventsStats: "/events-stats",
   upcomingEvents: "/upcoming-events",
+  contentManagementEvents: "/content-management-events",
 
+  // event sessions
+  tickets: "/tickets",
+  eventTickets: "/event-tickets",
+  eventSessions: "/event-sessions",
+  eventSessionPreviwLink: "/event-sessions/preview-link",
+  ticketsForEventSession: "/event-sessions/tickets-without-sessions",
+  eventSessionCapacityReport: "/event-sessions/capacity-report",
+  eventSessionReg: "/event-sessions/registrations",
+  eventSessionTargetAudience: "/event-sessions/target-audience",
+  eventSessionSendNotification: "/event-sessions/send-notification",
+  eventSessionSendHistory: "/event-sessions/send-history",
+  eventSessionSendHistoryDetails: "/event-sessions/send-history-detail",
+  eventSessionResendNotification: "/event-sessions/resend-notification",
+
+  // users
   users: "/users",
   userInfo: "/users/me",
   userAdmin: "/users/admin",
-  tickets: "/tickets",
+  createUser: "/users/create",
+  resetLoginAttempts: "/users/reset-login-attempts",
 
   // Media
   mediaSignedUrl: "/media-signed-url",
@@ -85,10 +112,17 @@ export const endpoints = {
 
   // Content
   contentConfig: "/site-filter-config",
+  contentConfigActivate: "/site-filter-config",
+  wizardGenerateTopics: "/site-filter-config/wizard/generate-topics",
+  wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
+  wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
+  wizardTranslate: "/site-filter-config/wizard/translate",
 
   // Notifications
   notifications: "/notifications",
   notificationStats: "/notifications/stats",
+  notificationCount: "/notifications/count",
+  notificationsBulkMarkRead: "/notifications/bulk/mark-read",
 
   // trips
   trips: "/trips",
@@ -97,7 +131,6 @@ export const endpoints = {
   //voucher
   vouchers: "/vouchers",
   voucher: "/voucher-id",
-  postVoucher: "/vouchers",
   searchVoucher: "/search-vouchers",
   voucherStatDashboard: "/vouchers-stats",
   bulkVouchersUpdate: "/bulk-vouchers-update",
@@ -119,12 +152,16 @@ export const endpoints = {
   dmos: "/dmos",
   authorities: "/authorities",
   websiteSettings: "/site-settings",
+  websiteList: "/site-settings/list",
   partners: "/partners",
   campaigns: "/campaigns",
 
   // Promotions
   promotions: "/promotions",
   promotionGroups: "/promotion-groups",
+
+  // Website error report
+  websiteCrashes: "/website-crashes",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

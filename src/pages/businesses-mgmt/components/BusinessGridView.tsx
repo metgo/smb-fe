@@ -74,7 +74,7 @@ function BusinessGridView<T extends Business>({
           {data?.map((business) => (
             <GridCard
               key={business._id}
-              image={business.images?.[0]?.image}
+              image={business?.logo?.image || business.images?.[0]?.image}
               imageAlt={business.name}
               fallbackIcon={Image}
               fallbackGradient="from-gray-300 to-teal-400"
@@ -98,11 +98,11 @@ function BusinessGridView<T extends Business>({
               meta={[
                 business?.address && {
                   icon: MapPin,
-                  label: `${business.address.country}, ${business.address.city}`,
+                  label: `${business?.address?.city ? business?.address?.city + ", " : ""}${business?.address?.location ? business?.address?.location : "-"}`,
                 },
                 business?.phoneNumber && {
                   icon: Phone,
-                  label: business.phoneNumber,
+                  label: business?.phoneNumber,
                 },
               ]}
             />

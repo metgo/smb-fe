@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  AlertTriangle,
   Bell,
   Box,
   Calendar,
@@ -7,7 +8,9 @@ import {
   FileText,
   Globe,
   ImageIcon,
+  LayoutList,
   MapPin,
+  Monitor,
   Ticket,
   Truck,
   Users,
@@ -31,6 +34,7 @@ export const businessTabs = [
 
 export const eventTabs = [
   { id: "overview", label: "overview", icon: FileText },
+  { id: "sessions", label: "landing_pages", icon: LayoutList },
   { id: "attributes", label: "attributes", icon: Accessibility },
   { id: "date_time", label: "date_time", icon: Calendar },
   { id: "location", label: "location_map", icon: MapPin },
@@ -43,6 +47,15 @@ export const eventTabs = [
     icon: Bell,
   },
 ];
+
+export const getEventTabs = (hasExternalTicket?: boolean) => {
+  return eventTabs.filter((tab) => {
+    if (hasExternalTicket) {
+      return tab.id !== "sessions" && tab.id !== "registration";
+    }
+    return true;
+  });
+};
 
 export const productTabs = [
   { id: "overview", label: "overview", icon: FileText },
@@ -69,4 +82,11 @@ export const voucherTabs = [
   { id: "assignee", label: "assignee_and_creator", icon: Users },
   { id: "timeline", label: "usage_timeline", icon: Clock },
   { id: "transactions", label: "transactions_and_usage", icon: Truck },
+];
+
+export const crashTabs = [
+  { id: "error", label: "Error", icon: AlertTriangle },
+  { id: "stack", label: "Stack Trace", icon: FileText },
+  { id: "user", label: "User", icon: Users },
+  { id: "device", label: "Device & Browser", icon: Monitor },
 ];

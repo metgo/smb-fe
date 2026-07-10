@@ -27,5 +27,7 @@
   "edit_bank_account": "עריכת חשבון בנק",
 
   "no_bank_account_added": "לא נוספו פרטי חשבון בנק",
-  "click_add_bank_account": "לחץ על \"הוסף חשבון בנק\" כדי להוסיף פרטי בנק"
+  "click_add_bank_account": "לחץ על \"הוסף חשבון בנק\" כדי להוסיף פרטי בנק",
+  "bank_account_subtitle": "מלא את הפרטים למטה",
+  "required": "שדה חובה"
 }

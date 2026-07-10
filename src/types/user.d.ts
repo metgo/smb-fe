@@ -73,6 +73,23 @@ interface UserInfoRes {
   authority: string | null;
 }
 
+interface IDMOData {
+  _id: string;
+  name: string;
+  adminIds?: string[];
+  logoPath?: string;
+  [key: string]: any;
+}
+
+interface IAuthorityData {
+  _id: string;
+  name: string;
+  dmoId?: string;
+  adminIds?: string[];
+  logoPath?: string;
+  [key: string]: any;
+}
+
 interface IUser {
   _id: string;
   firstName: string;
@@ -83,25 +100,25 @@ interface IUser {
   isPhoneVerify: boolean;
   isEmailVerify: boolean;
   loginAttempts: number;
-  role: "superadmin" | "admin" | "user";
+  role: "superadmin" | "admin" | "user" | "dmo" | "authority" | "traveller";
   hasBusiness: boolean;
   lastLogin: string;
   countryCode: string;
   phoneNumber: string;
   languagePreference: string;
   address: string;
+  dmo?: IDMOData;
+  authority?: IAuthorityData;
 }
 interface IUsersRes {
-  datas: {
-    data: IUser[];
-    totalData: number;
-    meta: {
-      page: number;
-      limit: number;
-      data: number;
-      pageCount: number;
-      hasPreviousPage: boolean;
-      hasNextPage: boolean;
-    };
+  data: IUser[];
+  totalData: number;
+  meta: {
+    page: number;
+    limit: number;
+    data: number;
+    pageCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
   };
 }

@@ -69,6 +69,8 @@
   "documents": "Documents",
   "version": "Version",
   "max_characters": "Max characters",
+  "char_count": "{{count}} / {{limit}} characters",
+  "exceeds_char_limit": "Exceeds {{limit}} character limit",
   "website_config": "Website Config",
   "dmos": "DMOs",
   "authorities": "Authorities",
@@ -124,11 +126,15 @@
 
   "delete_ticket": "Delete Ticket",
   "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
+
+  "delete_session": "Delete Session",
+  "delete_session_confirm": "Are you sure you want to delete this session?",
   "deletd_notification": "Delete Notification",
   "delete_notification_cofirm": "Are you sure you want to delete this notification?",
   "notifications": "Notifications",
   "unsaved_changes": "Unsaved Changes",
   "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
+  "leave": "Leave",
   "delete_event": "Delete Event",
   "delete_event_confirm": "Are you sure you want to delete this event?",
 
@@ -172,9 +178,13 @@
   "weekly_schedule": "Weekly Schedule",
   "no_schedule_available": "No schedule available",
   "not_set_opening_hours": "Business hours haven't been set yet",
+  "by_appointment": "By appointment",
+  "for_entire_week": "for entire week",
+  "add_time_slot": "Add time slot",
 
   "all": "All",
   "select_dmo": "Select DMO",
+  "your_geographic_location": "Your geographic location",
   "select_authority": "Select Authority",
   "select_website": "Select Website",
   "website_visibility": "Website Visibility",
@@ -185,7 +195,7 @@
   "download_csv": "Download CSV",
 
   "error_title": "Oh no, something went wrong!",
-  "error_description": "An unexpected error has occurred. Please try again later or contact support if the issue persists.",
+  "error_description": "An unexpected error has occurred. An error report has been sent — we'll look into it and push a fix as soon as possible.",
   "go_back_home": "Go Back Home",
   "reload_page": "Reload Page",
 
@@ -198,6 +208,8 @@
   "media": "Media",
   "attributes": "Attributes",
   "schedual_notification": "Notification Schedule",
+  "sessions": "Sessions",
+  "landing_pages": "Landing Pages",
   "pricing": "Pricing & Sales",
   "inventory": "Inventory",
   "availability": "Availability",
@@ -224,6 +236,7 @@
   "no_images_uploaded": "No Images Uploaded",
   "upload_image_info": "Upload images to create your event gallery",
   "upload_up_to_10_images": "Upload up to 10 images",
+  "upload_up_to_3_images": "Upload up to 3 images",
 
   "attributes_desc": "Categories, accessibility features, and suitable audience",
   "subcategories": "Subcategories",
@@ -292,6 +305,8 @@
   "translating": "Translating...",
   "subtitle": "Subtitle",
   "short_description": "Short Description",
+  "generate_tags": "Generate Tags",
+  "generate_tags_with_ai": "Generate Tags with AI",
   "generating_tags": "Generating tags",
   "change_business_owner": "Change Business Owner",
   "current_owner": "Current owner:",
@@ -367,5 +382,7 @@
   "website_delete_failed": "Failed to delete website",
 
   "deactivate_website": "Deactivate Website",
-  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?"
+  "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
+  "pending_approvals": "Pending Approvals",
+  "service_unavailable": "This service is unavailable at the moment"
 }

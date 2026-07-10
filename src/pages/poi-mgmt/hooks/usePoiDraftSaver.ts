@@ -9,7 +9,8 @@ import { useNavigate } from "react-router-dom";
 
 interface UsePoiDraftSaverProps {
   opMode: IOpMode;
-  refetch: () => void;
+  refetch?: () => void;
+  poiDataRefetch?: () => void;
   onClose: () => void;
   currentStep: number;
   poiId: string;
@@ -23,6 +24,7 @@ export function usePoiDraftSaver({
   opMode,
   onClose,
   refetch,
+  poiDataRefetch,
   currentStep,
   poiId,
   setPoiId,
@@ -41,7 +43,7 @@ export function usePoiDraftSaver({
   }, []);
 
   const saveDraft = useCallback(
-    async (isPublish = false) => {
+    async (isPublish = false, processedFormData?: any) => {
       try {
         let internalPoiId: string | undefined;
 
@@ -51,7 +53,7 @@ export function usePoiDraftSaver({
           setPoiId(res?.id);
         }
 
-        let payload = stepPayloadMap;
+        let payload = processedFormData || stepPayloadMap;
 
         if (isPublish) {
           payload = {
@@ -76,10 +78,12 @@ export function usePoiDraftSaver({
         if (opMode === IOpMode.DUPLICATE) {
           navigate(`${routes.poiDetails}?poiId=${internalPoiId}`);
         } else {
-          refetch();
+          poiDataRefetch?.();
+          refetch?.();
         }
         onClose();
         toast.success(isPublish ? tp("poi_published") : tp("draft_saved"));
+        return internalPoiId || poiId || undefined;
       } catch (err: any) {
         toast.error(err?.data?.message || tp("draft_failed"));
       }
@@ -95,6 +99,7 @@ export function usePoiDraftSaver({
       setPoiId,
       isTraveller,
       refetch,
+      poiDataRefetch,
       onClose,
       navigate,
       opMode,

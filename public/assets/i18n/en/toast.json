@@ -9,11 +9,14 @@
   "draft_failed": "Failed to save draft",
   "fill_all_fields": "Fill all required fields before proceeding",
   "name_required": "Please enter a name before saving",
+  "short_description_required": "Please enter a short description before saving",
+  "full_description_required": "Please enter a full description before saving",
   "image_upload_info": "Image upload has started. Please wait…",
   "image_upload_success": "Image uploaded successfully",
   "image_upload_failed": "Image upload failed",
   "image_deleted": "Image deleted successfully",
   "delete_failed": "Failed to delete image",
+  "max_images_limit": "You can upload up to {{count}} images only",
   "login_failed": "Login failed",
 
   "poi_delete_loading": "Deleting POIs...",
@@ -67,5 +70,7 @@
 
   "unsaved_changes": "Unsaved Changes",
   "close_without_saving": "You have unsaved changes. Are you sure you want to close without saving?",
-  "close": "Close"
+  "close": "Close",
+
+  "login_attempt_rest_success": "Login attempts have been reset successfully"
 }

@@ -137,12 +137,16 @@ export default function ProductDetailsPage() {
 
   const renderContent = () => {
     const commonProps = { t, language, product };
+    const productImages = product?.images ?? [];
     const mediaProps = {
       logoImage: null,
-      images: (product?.images ?? []).map((img: IImage) => ({
+      images: productImages.map((img: IImage) => ({
         previewUrl: img.image,
       })),
-      primaryImageIndex: 0,
+      primaryImageIndex: Math.max(
+        0,
+        productImages.findIndex((img: IImage) => img.isPrimary),
+      ),
     };
     switch (activeTab) {
       case "overview":
@@ -161,7 +165,7 @@ export default function ProductDetailsPage() {
       case "availability":
         return <ProductAvailabilityDetails {...commonProps} />;
       case "delivery":
-        return <DeliveryPolicyOptionDetails data={product} />;
+        return <DeliveryPolicyOptionDetails data={product} isProduct />;
       case "media":
         return <MediaDetails {...mediaProps} />;
       default:

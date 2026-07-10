@@ -6,8 +6,9 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BackToListBtnProps {
   navPath: string;
+  label?: string;
 }
-const BackToListBtn: React.FC<BackToListBtnProps> = ({ navPath }) => {
+const BackToListBtn: React.FC<BackToListBtnProps> = ({ navPath, label }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("common");
   const { isDark, isRTL } = useThemeClasses();
@@ -26,7 +27,9 @@ const BackToListBtn: React.FC<BackToListBtnProps> = ({ navPath }) => {
       )}
     >
       <Arrow className="w- h-4 transition-transform duration-200 group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
-      <span className="hidden md:inline">{t("back_to_list")}</span>
+      <span className="hidden md:inline">
+        {label ? label : t("back_to_list")}
+      </span>
     </button>
   );
 };
