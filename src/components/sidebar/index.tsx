@@ -36,6 +36,8 @@ import {
   ChevronLeft,
   CheckSquare,
   AlertTriangle,
+  CalendarArrowDown,
+  ShoppingBag,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useTranslation } from "react-i18next";
@@ -105,10 +107,33 @@ export default function Sidebar() {
     },
     {
       id: "orders",
-      path: routes.ordersMgmt,
+      path: "#orders",
       label: t("orders") || "Orders",
       icon: ShoppingCart,
       isEnabled: true,
+      subItems: [
+        {
+          id: "all-orders",
+          path: routes.ordersMgmt,
+          label: t("orders") || "All Orders",
+          icon: ShoppingBag,
+          isEnabled: true,
+        },
+        {
+          id: "all-orders-summary",
+          path: routes.ordersSummaryMgmt,
+          label: t("order_summary") || "Orders Summary",
+          icon: CalendarArrowDown,
+          isEnabled: true,
+        },
+        {
+          id: "vendor-reconciliation",
+          path: routes.vendorReconciliationMgmt,
+          label: t("vendor_reconciliation") || "Vendor Reconciliation",
+          icon: Receipt,
+          isEnabled: true,
+        },
+      ],
     },
     {
       id: "events",
@@ -125,13 +150,6 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "vendor-reconciliation",
-      path: routes.vendorReconciliationMgmt,
-      label: t("vendor_reconciliation") || "Vendor Reconciliation",
-      icon: BellIcon,
-      isEnabled: true,
-    },
-    {
       id: "poi",
       path: routes.poiMgmt,
       label: t("pois") || "Points of Interest",
@@ -139,10 +157,10 @@ export default function Sidebar() {
       isEnabled: true,
     },
     {
-      id: "notifications",
-      path: routes.notificationMgmt,
-      label: t("notifications") || "Notifications",
-      icon: BellIcon,
+      id: "article",
+      path: routes.articleMgmt,
+      label: t("article") || "Article",
+      icon: FileText,
       isEnabled: true,
     },
     ...(isAdminRole
@@ -229,13 +247,7 @@ export default function Sidebar() {
           icon: Megaphone,
           isEnabled: true,
         },
-        {
-          id: "article",
-          path: routes.articleMgmt,
-          label: t("article") || "Article",
-          icon: FileText,
-          isEnabled: true,
-        },
+
         {
           id: "news-feed",
           path: routes.dashboard,
@@ -379,7 +391,7 @@ export default function Sidebar() {
   };
 
   const isItemActive = (path: string) =>
-    location.pathname.slice(0, 5) === path.slice(0, 5);
+    location.pathname === path || location.pathname.startsWith(path + "/");
 
   const isExpanded = (path: string) => expandedItems.includes(path);
 

@@ -46,6 +46,7 @@ import {
   WebsiteCrashDetailsPage,
   EventSessionMgmtPage,
 } from "@/pages";
+import OrdersSummaryMgmtPage from "@/pages/orders-summary-mgmt";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
 import RouterProgressBar from "./components/shared/RouterProgressBar";
@@ -526,6 +527,7 @@ function App() {
             { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
 
             { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
+            { path: routes.ordersSummaryMgmt, element: <OrdersSummaryMgmtPage /> },
             {
               path: routes.notificationMgmt,
               element: <NotificationsMgmtPage />,
