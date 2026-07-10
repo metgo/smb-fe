@@ -6,7 +6,6 @@ import {
   AlertCircle,
   FileText,
   Calendar,
-  Package,
   CheckCircle,
   XCircle,
   Clock,
@@ -21,6 +20,7 @@ import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
 import { useGetOrderProductsQuery } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
+import { ReordableDataTable } from "@/components/shared";
 
 interface VendorMonthlyReportProps {
   adminView?: boolean;
@@ -101,7 +101,6 @@ export const VendorMonthlyReport = ({
   // Pagination state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get auth data
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
@@ -148,10 +147,7 @@ export const VendorMonthlyReport = ({
   const { data: orderProductsData, isLoading: isApiLoading } =
     useGetOrderProductsQuery(apiParams);
 
-  // Map API response to MonthlyOrder format and handle infinite scrolling.
-  // IMPORTANT: apiParams is in the dependency array so this re-syncs even
-  // when RTK Query returns a cached (referentially-equal) result for a
-  // filter combo we've already fetched before.
+  // Map API response to MonthlyOrder format and handle pagination.
   useEffect(() => {
     setLoading(isApiLoading);
     if (orderProductsData?.data) {
@@ -185,7 +181,6 @@ export const VendorMonthlyReport = ({
           }) as MonthlyOrder,
       );
 
-      // For first page, replace; for subsequent pages, append
       if (page === 1) {
         setOrders(mappedOrders);
       } else {
@@ -198,7 +193,6 @@ export const VendorMonthlyReport = ({
         });
       }
 
-      // Check if there are more pages
       setHasMore(
         orderProductsData.data.length === 20 &&
           orderProductsData.meta?.page < orderProductsData.meta?.pages,
@@ -206,33 +200,13 @@ export const VendorMonthlyReport = ({
     }
   }, [orderProductsData, isApiLoading, apiParams]);
 
-  // Handle infinite scrolling
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
-
-      const { scrollTop, scrollHeight, clientHeight } =
-        scrollContainerRef.current;
-      if (
-        scrollHeight - scrollTop <= clientHeight + 100 &&
-        hasMore &&
-        !isApiLoading
-      ) {
-        setPage((prev) => prev + 1);
-      }
-    };
-
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
-  }, [hasMore, isApiLoading]);
+  // ReordableDataTable calls this to fetch the next page
+  const loadNextPage = () => {
+    if (!hasMore || isApiLoading) return;
+    setPage((prev) => prev + 1);
+  };
 
   // Reset pagination whenever search or ANY filter changes.
-  // We intentionally do NOT clear `orders` here — the sync effect above
-  // fully replaces `orders` once page 1's data comes back, so manually
-  // clearing it here was causing the "stuck empty" bug.
   useEffect(() => {
     setPage(1);
   }, [
@@ -287,8 +261,7 @@ export const VendorMonthlyReport = ({
     };
   }, [orders]);
 
-  // Search filter only — status/date/amount are now applied server-side
-  // via apiParams, so we don't re-filter them again here.
+  // Search filter only — status/date/amount are applied server-side via apiParams
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       if (searchTerm) {
@@ -450,11 +423,7 @@ export const VendorMonthlyReport = ({
     }
   };
 
-  const handleAdminResolveDispute = (
-    // resolution: string,
-    response: string,
-    action: string,
-  ) => {
+  const handleAdminResolveDispute = (response: string, action: string) => {
     if (!selectedOrder) return;
 
     setOrders((prev) =>
@@ -485,36 +454,11 @@ export const VendorMonthlyReport = ({
   };
 
   const handleExportCSV = () => {
-    // CSV export logic
     toast.success("Report exported to CSV");
   };
 
   const handleExportPDF = () => {
-    // PDF export logic
     toast.success("Report exported to PDF");
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const pendingOrders = filteredOrders
-        .filter((o) => o.status === "pending")
-        .map((o) => o.id);
-      setSelectedOrders(new Set(pendingOrders));
-    } else {
-      setSelectedOrders(new Set());
-    }
-  };
-
-  const handleSelectOrder = (orderId: string) => {
-    setSelectedOrders((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(orderId)) {
-        newSet.delete(orderId);
-      } else {
-        newSet.add(orderId);
-      }
-      return newSet;
-    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -571,7 +515,141 @@ export const VendorMonthlyReport = ({
     });
   };
 
-  if (loading) {
+  // Columns for ReordableDataTable
+  const columns = [
+    ...(!adminView ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+
+    {
+      key: "product",
+      sortable: false,
+      label: "Product",
+      render: (order: MonthlyOrder) => (
+        <div className="flex items-center gap-3">
+          <img
+            src={order.productImage}
+            alt={order.productName}
+            className="w-12 h-12 rounded object-cover"
+          />
+          <div>
+            <div className={`font-medium ${textPrimary}`}>
+              {order.productName}
+            </div>
+            <div className={`text-xs ${textTertiary}`}>
+              SKU: {order.productSKU}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    {
+      key: "customer",
+      sortable: false,
+      label: "Customer",
+      render: (order: MonthlyOrder) => (
+        <div>
+          <div className={`font-medium ${textPrimary}`}>
+            {order.customerName}
+          </div>
+          <div className={`text-xs ${textTertiary}`}>{order.customerEmail}</div>
+        </div>
+      ),
+    },
+
+    {
+      key: "purchaseDate",
+      sortable: true,
+      label: "Date",
+      render: (order: MonthlyOrder) => (
+        <span className={textSecondary}>{formatDate(order.purchaseDate)}</span>
+      ),
+    },
+
+    {
+      key: "quantity",
+      sortable: true,
+      label: "Qty",
+      render: (order: MonthlyOrder) => (
+        <span className={textSecondary}>{order.quantity}</span>
+      ),
+    },
+
+    {
+      key: "totalPrice",
+      sortable: true,
+      label: "Price",
+      render: (order: MonthlyOrder) => (
+        <div>
+          <div className={`font-medium ${textPrimary}`}>
+            {formatCurrency(order.totalPrice)}
+          </div>
+          <div className={`text-xs ${textTertiary}`}>
+            Fee: {formatCurrency(order.platformFee)}
+          </div>
+        </div>
+      ),
+    },
+
+    {
+      key: "status",
+      sortable: true,
+      label: "Status",
+      render: (order: MonthlyOrder) => getStatusBadge(order.status),
+    },
+
+    {
+      key: "actions",
+      label: "Actions",
+      render: (order: MonthlyOrder) => (
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {!adminView && order.status === "pending" && (
+            <>
+              <button
+                onClick={() => handleApprove(order.id)}
+                className="p-1.5 rounded text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                title="Approve"
+              >
+                <CheckCircle className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleOpenDispute(order)}
+                className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                title="Dispute"
+              >
+                <AlertTriangle className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleCancelOrder(order)}
+                className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                title="Cancel"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {adminView && order.status === "disputed" && (
+            <button
+              onClick={() => handleViewDetails(order)}
+              className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            >
+              Respond
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: MonthlyOrder) => React.ReactNode;
+  }[];
+
+  if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -883,188 +961,18 @@ export const VendorMonthlyReport = ({
       </div>
 
       {/* Orders Table */}
-      <div
-        ref={scrollContainerRef}
-        className={`${bgPrimary} rounded-lg border ${borderColor} overflow-hidden flex flex-col max-h-[calc(100vh-500px)]`}
-      >
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full">
-            <thead className={`${bgSecondary} border-b ${borderColor}`}>
-              <tr>
-                {!adminView && (
-                  <th className="px-4 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={
-                        selectedOrders.size > 0 &&
-                        selectedOrders.size ===
-                          filteredOrders.filter((o) => o.status === "pending")
-                            .length
-                      }
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </th>
-                )}
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Product
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Customer
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Date
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Qty
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Price
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Status
-                </th>
-                <th
-                  className={`px-4 py-3 text-${isRTL ? "right" : "left"} text-xs font-medium ${textTertiary} uppercase tracking-wider`}
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className={`${hoverBg} cursor-pointer transition-colors`}
-                  onClick={() => handleViewDetails(order)}
-                >
-                  {!adminView && (
-                    <td
-                      className="px-4 py-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {order.status === "pending" && (
-                        <input
-                          type="checkbox"
-                          checked={selectedOrders.has(order.id)}
-                          onChange={() => handleSelectOrder(order.id)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      )}
-                    </td>
-                  )}
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={order.productImage}
-                        alt={order.productName}
-                        className="w-12 h-12 rounded object-cover"
-                      />
-                      <div>
-                        <div className={`font-medium ${textPrimary}`}>
-                          {order.productName}
-                        </div>
-                        <div className={`text-xs ${textTertiary}`}>
-                          SKU: {order.productSKU}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div>
-                      <div className={`font-medium ${textPrimary}`}>
-                        {order.customerName}
-                      </div>
-                      <div className={`text-xs ${textTertiary}`}>
-                        {order.customerEmail}
-                      </div>
-                    </div>
-                  </td>
-                  <td className={`px-4 py-4 text-sm ${textSecondary}`}>
-                    {formatDate(order.purchaseDate)}
-                  </td>
-                  <td className={`px-4 py-4 text-sm ${textSecondary}`}>
-                    {order.quantity}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className={`font-medium ${textPrimary}`}>
-                      {formatCurrency(order.totalPrice)}
-                    </div>
-                    <div className={`text-xs ${textTertiary}`}>
-                      Fee: {formatCurrency(order.platformFee)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">{getStatusBadge(order.status)}</td>
-                  <td
-                    className="px-4 py-4"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center gap-2">
-                      {!adminView && order.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => handleApprove(order.id)}
-                            className="p-1.5 rounded text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                            title="Approve"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleOpenDispute(order)}
-                            className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                            title="Dispute"
-                          >
-                            <AlertTriangle className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleCancelOrder(order)}
-                            className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            title="Cancel"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                      {adminView && order.status === "disputed" && (
-                        <button
-                          onClick={() => handleViewDetails(order)}
-                          className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-                        >
-                          Respond
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-12">
-              <Package className={`w-12 h-12 ${textTertiary} mx-auto mb-3`} />
-              <p className={`text-lg ${textSecondary} mb-1`}>No orders found</p>
-              <p className={`text-sm ${textTertiary}`}>
-                {searchTerm || filters.status !== "all"
-                  ? "Try adjusting your filters or search term"
-                  : "Orders will appear here once customers make purchases"}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      <ReordableDataTable
+        rowKey="id"
+        data={filteredOrders}
+        isDataLoading={loading}
+        selectedItems={selectedOrders}
+        onSelectionChange={setSelectedOrders}
+        onRowClick={(order: MonthlyOrder) => handleViewDetails(order)}
+        storageKey="vendorMonthlyReportColumnOrder"
+        columns={columns}
+        hasMore={hasMore}
+        next={loadNextPage}
+      />
 
       {/* Modals */}
       {showOrderDetails && selectedOrder && (
