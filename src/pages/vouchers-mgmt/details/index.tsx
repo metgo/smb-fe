@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 import {
   Mail,
@@ -89,6 +90,7 @@ export default function VoucherDetailsPage() {
   const { t } = useTranslation("vouchers");
   const [searchParams] = useSearchParams();
   const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   const [sendEmail] = useSendEmailMutation();
   const [sendSMS] = useSendSMSMutation();
@@ -246,34 +248,38 @@ export default function VoucherDetailsPage() {
               <div className="flex items-center justify-between px-4 pt-4 pb-3">
                 {/* Code + copy + status */}
                 <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                  <span
-                    className={`font-mono text-xl sm:text-2xl font-bold tracking-wider ${
-                      isExpired(voucher?.expireDate)
-                        ? "text-red-500"
-                        : isDark
-                          ? "text-white"
-                          : "text-gray-900"
-                    }`}
-                  >
-                    {voucher?.code || "—"}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    title="Copy code"
-                    className={`p-1.5 rounded-lg transition-all duration-200 ${
-                      copied
-                        ? "bg-teal-500/20 text-teal-500"
-                        : isDark
-                          ? "text-gray-500 hover:text-teal-400 hover:bg-gray-700"
-                          : "text-gray-400 hover:text-teal-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {copied ? (
-                      <CheckIcon className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
+                  {isSuperadmin && (
+                    <>
+                      <span
+                        className={`font-mono text-xl sm:text-2xl font-bold tracking-wider ${
+                          isExpired(voucher?.expireDate)
+                            ? "text-red-500"
+                            : isDark
+                              ? "text-white"
+                              : "text-gray-900"
+                        }`}
+                      >
+                        {voucher?.code || "—"}
+                      </span>
+                      <button
+                        onClick={handleCopy}
+                        title={t("copy_code", { defaultValue: "Copy code" })}
+                        className={`p-1.5 rounded-lg transition-all duration-200 ${
+                          copied
+                            ? "bg-teal-500/20 text-teal-500"
+                            : isDark
+                              ? "text-gray-500 hover:text-teal-400 hover:bg-gray-700"
+                              : "text-gray-400 hover:text-teal-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {copied ? (
+                          <CheckIcon className="w-3.5 h-3.5" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </>
+                  )}
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(voucher?.status)}`}
                   >

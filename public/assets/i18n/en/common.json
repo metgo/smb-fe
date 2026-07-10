@@ -305,6 +305,8 @@
   "translating": "Translating...",
   "subtitle": "Subtitle",
   "short_description": "Short Description",
+  "generate_tags": "Generate Tags",
+  "generate_tags_with_ai": "Generate Tags with AI",
   "generating_tags": "Generating tags",
   "change_business_owner": "Change Business Owner",
   "current_owner": "Current owner:",

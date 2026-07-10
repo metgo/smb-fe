@@ -72,17 +72,12 @@ const Attributes: FC<AttributesProps> = ({
     formData?.nameHe,
     formData?.nameAr,
   );
-  console.log("🚀 ~ Attributes ~ currentNameForGen:", currentNameForGen);
 
   const currentDescriptionForGen = getLngWiseStr(
     language,
     formData?.fullDescription,
     formData?.fullDescriptionHe,
     formData?.fullDescriptionAr,
-  );
-  console.log(
-    "🚀 ~ Attributes ~ currentDescriptionForGen:",
-    currentDescriptionForGen,
   );
   useEffect(() => {
     selectedCatRef.current?.scrollIntoView({
@@ -294,7 +289,7 @@ const Attributes: FC<AttributesProps> = ({
                 type="button"
                 onClick={handleGenerateTags}
                 disabled={isLoading}
-                title="Generate Tags with AI"
+                title={t("generate_tags_with_ai")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? (
@@ -320,7 +315,11 @@ const Attributes: FC<AttributesProps> = ({
                 .map((tag, idx) => (
                   <span
                     key={`${tag.en}-${idx}`}
-                    className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-black dark:text-teal-400 rounded flex items-center gap-1 text-sm"
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium ${
+                      isDark
+                        ? "bg-gray-700 text-gray-200"
+                        : "bg-gray-100 text-gray-900 border-teal-50 border"
+                    }`}
                   >
                     {tag[language]}
                     <button

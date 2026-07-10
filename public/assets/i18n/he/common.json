@@ -31,6 +31,8 @@
   "translate_hint": "תרגם",
   "auto_translate": "תרגום אוטומטי",
   "translating": "מתרגם...",
+  "generate_tags": "צור תגיות",
+  "generate_tags_with_ai": "צור תגיות עם AI",
   "generating_tags": "מייצר תגיות",
 
   "delete_business": "מחיקת עסק",

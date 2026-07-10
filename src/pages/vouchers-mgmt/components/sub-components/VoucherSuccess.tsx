@@ -1,4 +1,5 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import clsx from "clsx";
 import { Download } from "lucide-react";
 interface IVoucherResponse {
@@ -23,22 +24,23 @@ const VoucherSuccess = ({
   response,
 }: Props) => {
   const { isDark } = useThemeClasses();
+  const { isSuperadmin } = useUserRoles();
 
   const handleDownload = () => {
-    const headers = [
-      "Voucher Code",
-      "Assignee Name",
-      "Email",
-      "Amount",
-      "Status",
-    ];
-    const rows = response.map((v) => [
-      v.campCode || "-",
-      v.name || "-",
-      v.email || "-",
-      v.amount ?? "-",
-      v.paymentStatus || "-",
-    ]);
+    const headers = isSuperadmin
+      ? ["Voucher Code", "Assignee Name", "Email", "Amount", "Status"]
+      : ["Assignee Name", "Email", "Amount", "Status"];
+    const rows = response.map((v) =>
+      isSuperadmin
+        ? [
+            v.campCode || "-",
+            v.name || "-",
+            v.email || "-",
+            v.amount ?? "-",
+            v.paymentStatus || "-",
+          ]
+        : [v.name || "-", v.email || "-", v.amount ?? "-", v.paymentStatus || "-"],
+    );
 
     const csvContent = [
       headers.join(","),
@@ -82,18 +84,19 @@ const VoucherSuccess = ({
               }`}
             >
               <tr>
-                {["voucher_code", "name", "email", "amount", "status"].map(
-                  (key) => (
-                    <th
-                      key={key}
-                      className={`px-4 py-3 text-left text-xs ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}
-                    >
-                      {t(key)}
-                    </th>
-                  ),
-                )}
+                {(isSuperadmin
+                  ? ["voucher_code", "name", "email", "amount", "status"]
+                  : ["name", "email", "amount", "status"]
+                ).map((key) => (
+                  <th
+                    key={key}
+                    className={`px-4 py-3 text-left text-xs ${
+                      isDark ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {t(key)}
+                  </th>
+                ))}
               </tr>
             </thead>
 
@@ -103,7 +106,7 @@ const VoucherSuccess = ({
               {!response?.length ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={isSuperadmin ? 5 : 4}
                     className={`px-4 py-6 text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   >
                     {t("no_vouchers")}
@@ -112,11 +115,13 @@ const VoucherSuccess = ({
               ) : (
                 response.map((item, index) => (
                   <tr key={index}>
-                    <td
-                      className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
-                    >
-                      {item.campCode || "-"}
-                    </td>
+                    {isSuperadmin && (
+                      <td
+                        className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
+                      >
+                        {item.campCode || "-"}
+                      </td>
+                    )}
                     <td
                       className={`${isDark ? "text-gray-100" : "text-gray-900"} px-4 py-3 text-sm`}
                     >

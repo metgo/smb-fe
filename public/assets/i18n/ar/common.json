@@ -43,6 +43,8 @@
   "opening_hours": "ساعات العمل",
   "open_24_7": "مفتوح 24/7",
   "search_placeholder": "حقل البحث",
+  "generate_tags": "إنشاء الوسوم",
+  "generate_tags_with_ai": "إنشاء الوسوم باستخدام الذكاء الاصطناعي",
   "generating_tags": "جارٍ إنشاء العلامات",
 
   "orders": "الطلبات",
