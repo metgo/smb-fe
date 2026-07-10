@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
-  Search,
   Filter,
   Download,
   ChevronDown,
@@ -14,16 +13,16 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { generateMockMonthlyOrders } from "@/helpers/mockMonthlyOrders";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
 import CancelOrderModal from "./CancelOrderModal";
 
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
+import { useGetOrderProductsQuery } from "@/store/api/reconciliationQueryApi";
+import SearchInput from "@/components/shared/SearchInput";
 
 interface VendorMonthlyReportProps {
-  vendorId?: string;
   adminView?: boolean;
 }
 
@@ -73,7 +72,6 @@ export interface MonthlyOrder {
 }
 
 export const VendorMonthlyReport = ({
-  vendorId = "vendor-1",
   adminView = false,
 }: VendorMonthlyReportProps) => {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -100,26 +98,151 @@ export const VendorMonthlyReport = ({
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
   const hoverBg = theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-50";
 
-  // Filters
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Get auth data
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+
+  // Filters — names match backend query params (startDate, endDate, minAmount, maxAmount)
   const [filters, setFilters] = useState({
     status: "all",
-    dateFrom: "",
-    dateTo: "",
-    priceMin: "",
-    priceMax: "",
-    product: "all",
-    customer: "all",
+    startDate: "",
+    endDate: "",
+    minAmount: "",
+    maxAmount: "",
   });
 
-  // Load mock data
+  // Build API params dynamically
+  const apiParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit: 20,
+      dmoId,
+      authorityId,
+    };
+
+    if (filters.status !== "all") params.status = filters.status;
+    if (searchTerm) params.search = searchTerm;
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
+    if (filters.minAmount) params.minAmount = filters.minAmount;
+    if (filters.maxAmount) params.maxAmount = filters.maxAmount;
+
+    return params;
+  }, [
+    page,
+    filters.status,
+    filters.startDate,
+    filters.endDate,
+    filters.minAmount,
+    filters.maxAmount,
+    searchTerm,
+    dmoId,
+    authorityId,
+  ]);
+
+  // Fetch order products from API
+  const { data: orderProductsData, isLoading: isApiLoading } =
+    useGetOrderProductsQuery(apiParams);
+
+  // Map API response to MonthlyOrder format and handle infinite scrolling.
+  // IMPORTANT: apiParams is in the dependency array so this re-syncs even
+  // when RTK Query returns a cached (referentially-equal) result for a
+  // filter combo we've already fetched before.
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      const mockOrders = generateMockMonthlyOrders(150);
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 800);
-  }, [vendorId, selectedMonth]);
+    setLoading(isApiLoading);
+    if (orderProductsData?.data) {
+      const mappedOrders = orderProductsData.data.map(
+        (item: any) =>
+          ({
+            id: item._id,
+            productId: item.product._id,
+            productName: item.product.name,
+            productImage: item.product.image?.image || "",
+            productSKU: "",
+            productCategory: "",
+            customerId: "",
+            customerName:
+              `${item.customer.firstName} ${item.customer.lastName || ""}`.trim(),
+            customerEmail: item.customer.email,
+            customerPhone: item.customer.phone || "",
+            customerLocation: "",
+            purchaseDate: item.date,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            totalPrice: item.totalAmount,
+            platformFee: item.fee,
+            netToVendor: item.totalAmount - item.fee,
+            status: item.status === "processing" ? "pending" : item.status,
+            paymentMethod: "",
+            paymentStatus: item.reconciliationStatus,
+            deliveryMethod: "",
+            deliveryAddress: "",
+            transactionId: item.orderId,
+          }) as MonthlyOrder,
+      );
+
+      // For first page, replace; for subsequent pages, append
+      if (page === 1) {
+        setOrders(mappedOrders);
+      } else {
+        setOrders((prev) => {
+          const existingIds = new Set(prev.map((o: MonthlyOrder) => o.id));
+          const newOrders = mappedOrders.filter(
+            (o: MonthlyOrder) => !existingIds.has(o.id),
+          );
+          return [...prev, ...newOrders];
+        });
+      }
+
+      // Check if there are more pages
+      setHasMore(
+        orderProductsData.data.length === 20 &&
+          orderProductsData.meta?.page < orderProductsData.meta?.pages,
+      );
+    }
+  }, [orderProductsData, isApiLoading, apiParams]);
+
+  // Handle infinite scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+
+      const { scrollTop, scrollHeight, clientHeight } =
+        scrollContainerRef.current;
+      if (
+        scrollHeight - scrollTop <= clientHeight + 100 &&
+        hasMore &&
+        !isApiLoading
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [hasMore, isApiLoading]);
+
+  // Reset pagination whenever search or ANY filter changes.
+  // We intentionally do NOT clear `orders` here — the sync effect above
+  // fully replaces `orders` once page 1's data comes back, so manually
+  // clearing it here was causing the "stuck empty" bug.
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchTerm,
+    filters.status,
+    filters.startDate,
+    filters.endDate,
+    filters.minAmount,
+    filters.maxAmount,
+  ]);
 
   // Close month picker on outside click
   useEffect(() => {
@@ -164,10 +287,10 @@ export const VendorMonthlyReport = ({
     };
   }, [orders]);
 
-  // Filter and search orders
+  // Search filter only — status/date/amount are now applied server-side
+  // via apiParams, so we don't re-filter them again here.
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      // Search filter
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
         const matchesSearch =
@@ -177,35 +300,9 @@ export const VendorMonthlyReport = ({
           order.customerEmail.toLowerCase().includes(search);
         if (!matchesSearch) return false;
       }
-
-      // Status filter
-      if (filters.status !== "all" && order.status !== filters.status) {
-        return false;
-      }
-
-      // Date range filter
-      if (filters.dateFrom) {
-        const orderDate = new Date(order.purchaseDate);
-        const fromDate = new Date(filters.dateFrom);
-        if (orderDate < fromDate) return false;
-      }
-      if (filters.dateTo) {
-        const orderDate = new Date(order.purchaseDate);
-        const toDate = new Date(filters.dateTo);
-        if (orderDate > toDate) return false;
-      }
-
-      // Price range filter
-      if (filters.priceMin && order.totalPrice < parseFloat(filters.priceMin)) {
-        return false;
-      }
-      if (filters.priceMax && order.totalPrice > parseFloat(filters.priceMax)) {
-        return false;
-      }
-
       return true;
     });
-  }, [orders, searchTerm, filters]);
+  }, [orders, searchTerm]);
 
   // Handle actions
   const handleApprove = (orderId: string) => {
@@ -657,18 +754,12 @@ export const VendorMonthlyReport = ({
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search
-                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`}
-              />
-              <input
-                type="text"
-                placeholder="Search orders by ID, product, customer..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
-            </div>
+            <SearchInput
+              placeholder="Search orders by ID, product, customer..."
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              storageKey="vendorReconSearchTerm"
+            />
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
@@ -739,9 +830,9 @@ export const VendorMonthlyReport = ({
               </label>
               <input
                 type="date"
-                value={filters.dateFrom}
+                value={filters.startDate}
                 onChange={(e) =>
-                  setFilters({ ...filters, dateFrom: e.target.value })
+                  setFilters({ ...filters, startDate: e.target.value })
                 }
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
@@ -752,22 +843,22 @@ export const VendorMonthlyReport = ({
               </label>
               <input
                 type="date"
-                value={filters.dateTo}
+                value={filters.endDate}
                 onChange={(e) =>
-                  setFilters({ ...filters, dateTo: e.target.value })
+                  setFilters({ ...filters, endDate: e.target.value })
                 }
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Min Price
+                Min Amount
               </label>
               <input
                 type="number"
-                value={filters.priceMin}
+                value={filters.minAmount}
                 onChange={(e) =>
-                  setFilters({ ...filters, priceMin: e.target.value })
+                  setFilters({ ...filters, minAmount: e.target.value })
                 }
                 placeholder="$0"
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
@@ -775,13 +866,13 @@ export const VendorMonthlyReport = ({
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Max Price
+                Max Amount
               </label>
               <input
                 type="number"
-                value={filters.priceMax}
+                value={filters.maxAmount}
                 onChange={(e) =>
-                  setFilters({ ...filters, priceMax: e.target.value })
+                  setFilters({ ...filters, maxAmount: e.target.value })
                 }
                 placeholder="$1000"
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
@@ -793,9 +884,10 @@ export const VendorMonthlyReport = ({
 
       {/* Orders Table */}
       <div
-        className={`${bgPrimary} rounded-lg border ${borderColor} overflow-hidden`}
+        ref={scrollContainerRef}
+        className={`${bgPrimary} rounded-lg border ${borderColor} overflow-hidden flex flex-col max-h-[calc(100vh-500px)]`}
       >
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto flex-1">
           <table className="w-full">
             <thead className={`${bgSecondary} border-b ${borderColor}`}>
               <tr>

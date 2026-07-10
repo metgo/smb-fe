@@ -55,6 +55,7 @@ export const endpoints = {
   orders: "/orders",
   orderDetails: "/order-details",
   orderSummary: "/orders-summary",
+  orderProducts: "/order-products",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
