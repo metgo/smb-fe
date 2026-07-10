@@ -39,6 +39,11 @@ const ContentConfigHeader = ({
 
     const newTopic: IContentTemplate = {
       topic: newTopicName,
+      topicHe: newTopicName,
+      topicAr: newTopicName,
+      description: "",
+      descriptionHe: "",
+      descriptionAr: "",
       groups: [],
     };
 
@@ -62,10 +67,20 @@ const ContentConfigHeader = ({
             ...topic.groups,
             {
               category: newCategoryName,
+              categoryHe: newCategoryName,
+              categoryAr: newCategoryName,
               description: newCategoryDescription,
+              descriptionHe: newCategoryDescription,
+              descriptionAr: newCategoryDescription,
               isPrimary: false,
               contents: [],
               isHideCategory: false,
+              synonyms: [],
+              synonymsHe: [],
+              synonymsAr: [],
+              searchKeywords: [],
+              searchKeywordsHe: [],
+              searchKeywordsAr: [],
             },
           ],
         };

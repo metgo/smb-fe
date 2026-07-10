@@ -23,6 +23,7 @@ i18n
       "products",
       "poi",
       "tour",
+      "content",
     ],
     defaultNS: "common",
 

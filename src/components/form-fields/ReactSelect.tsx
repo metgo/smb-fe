@@ -7,13 +7,21 @@ export type ItemOption = {
   value: string;
   label: string;
   logo?: string | undefined;
+  purpose?: string;
 };
+
+// const PURPOSE_ICON: Record<string, React.ReactNode> = {
+//   MARKETPLACE: <ShoppingBag className="w-3.5 h-3.5 shrink-0 text-orange-400" />,
+//   TRAVELING: <MapPin className="w-3.5 h-3.5 shrink-0 text-teal-500" />,
+//   OTHER: <Layers className="w-3.5 h-3.5 shrink-0 text-gray-400" />,
+// };
 
 type Props = {
   items?: {
     _id: string;
     name: string;
     logo?: string | undefined;
+    purpose?: string;
   }[];
   value?: string | null;
   onChange: (value: string) => void;
@@ -53,6 +61,7 @@ export default function ReactSelect({
       value: site._id,
       label: site.name,
       logo: site.logo,
+      purpose: site.purpose,
     })) || [];
 
   const selectedOption = options.find((o) => o.value === value) || null;

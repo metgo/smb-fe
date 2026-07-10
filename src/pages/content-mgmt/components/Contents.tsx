@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { useCommon } from "@/hooks/useCommon";
@@ -32,6 +32,9 @@ interface Filters {
     end: string;
   };
   isTrip: string;
+  assignmentStatus: string; // 'all' | 'assigned' | 'unassigned'
+  viewCategory: string; // category titleHe or 'all'
+  sortOrder: string; // 'recent' | 'alpha'
 }
 
 interface ContentsProps {
@@ -55,8 +58,9 @@ interface ContentsProps {
   currentTab: string;
   loadMore?: () => void;
   hasMore?: boolean;
+  hiddenTabs?: string[];
 }
-const FILTER_OPTIONS = [
+const ALL_FILTER_OPTIONS = [
   "Businesses",
   "Products",
   // "Trips",
@@ -174,7 +178,14 @@ const Contents = ({
   currentTab,
   loadMore,
   hasMore,
+  templateContents,
+  hiddenTabs = [],
 }: ContentsProps) => {
+  console.log("🚀 ~ Contents ~ hiddenTabs:", hiddenTabs);
+  const FILTER_OPTIONS = ALL_FILTER_OPTIONS.filter(
+    (tab) => !hiddenTabs.includes(tab),
+  );
+  console.log("🚀 ~ Contents ~ FILTER_OPTIONS:", FILTER_OPTIONS);
   const { t } = useTranslation("content");
   const { t: tc } = useTranslation("common");
 
@@ -214,28 +225,103 @@ const Contents = ({
       return { data: res?.data };
     },
   });
+  // ─── Derive assigned IDs and view categories from templateContents ────────
+  // templateContents uses IContentTemplate: { topic, groups: [{ category, contents: [{ _id, contentType }] }] }
+  // const assignedBusinessIds = useMemo(() => {
+  //   const ids = new Set<string>();
+  //   templateContents?.forEach((topic) =>
+  //     topic.groups?.forEach((group) =>
+  //       group.contents
+  //         ?.filter((c) => c.contentType === "business")
+  //         .forEach((c) => ids.add(c._id?.toString())),
+  //     ),
+  //   );
+  //   return ids;
+  // }, [templateContents]);
+
+  // const assignedProductIds = useMemo(() => {
+  //   const ids = new Set<string>();
+  //   templateContents?.forEach((topic) =>
+  //     topic.groups?.forEach((group) =>
+  //       group.contents
+  //         ?.filter((c) => c.contentType === "product")
+  //         .forEach((c) => ids.add(c._id?.toString())),
+  //     ),
+  //   );
+  //   return ids;
+  // }, [templateContents]);
+
+  const viewCategories = useMemo(() => {
+    const cats: {
+      label: string;
+      businessIds: string[];
+      productIds: string[];
+    }[] = [];
+    templateContents?.forEach((topic) =>
+      topic.groups?.forEach((group) => {
+        const label = group.category;
+        if (!label) return;
+        const businessIds = (group.contents ?? [])
+          .filter((c) => c.contentType === "business")
+          .map((c) => c._id?.toString());
+        const productIds = (group.contents ?? [])
+          .filter((c) => c.contentType === "product")
+          .map((c) => c._id?.toString());
+        cats.push({ label, businessIds, productIds });
+      }),
+    );
+    return cats;
+  }, [templateContents]);
+
+  const filteredItems = useMemo(() => {
+    let items = combinedBusinesses ?? [];
+
+    // NOTE: assignmentStatus and viewCategory are now filtered server-side
+    // via useContentData → backend handlers. Only client-side sort applied here.
+
+    if (filters.sortOrder === "alpha") {
+      items = [...items].sort((a, b) => {
+        const nameA = (a.name || a.nameHe || "").toLowerCase();
+        const nameB = (b.name || b.nameHe || "").toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+    } else {
+      // 'recent' — newest first (default)
+      items = [...items].sort((a, b) => {
+        const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tB - tA;
+      });
+    }
+
+    return items;
+  }, [combinedBusinesses, filters.sortOrder]);
+
   // ─── Selection handler ────────────────────────────────────────────────────
-  const handleSelect = useCallback((item: any, isMulti: boolean) => {
-    setSelectedItems((prev) => {
-      const next = new Map(prev);
-      if (isMulti) {
-        // Ctrl/Cmd/Shift: toggle this item
-        if (next.has(item._id)) {
-          next.delete(item._id);
+  const handleSelect = useCallback(
+    (item: any, isMulti: boolean) => {
+      setSelectedItems((prev) => {
+        const next = new Map(prev);
+        if (isMulti) {
+          // Ctrl/Cmd/Shift: toggle this item
+          if (next.has(item._id)) {
+            next.delete(item._id);
+          } else {
+            next.set(item._id, item);
+          }
         } else {
-          next.set(item._id, item);
+          // Plain click: if it's the only selected item, deselect it; otherwise select only it
+          if (next.has(item._id)) {
+            next.delete(item._id);
+          } else {
+            next.set(item._id, item);
+          }
         }
-      } else {
-        // Plain click: if it's the only selected item, deselect it; otherwise select only it
-        if (next.has(item._id)) {
-          next.delete(item._id);
-        } else {
-          next.set(item._id, item);
-        }
-      }
-      return next;
-    });
-  }, []);
+        return next;
+      });
+    },
+    [setSelectedItems],
+  );
 
   const handleClick = useCallback(
     (e: React.MouseEvent, item: any) => {
@@ -245,15 +331,18 @@ const Contents = ({
     [handleSelect],
   );
 
-  const handleContextMenu = useCallback((item: any) => {
-    // Right-click selects the card if not already in selection
-    setSelectedItems((prev) => {
-      if (prev.has(item._id)) return prev; // already selected — keep selection
-      const next = new Map();
-      next.set(item._id, item);
-      return next;
-    });
-  }, []);
+  const handleContextMenu = useCallback(
+    (item: any) => {
+      // Right-click selects the card if not already in selection
+      setSelectedItems((prev) => {
+        if (prev.has(item._id)) return prev; // already selected — keep selection
+        const next = new Map();
+        next.set(item._id, item);
+        return next;
+      });
+    },
+    [setSelectedItems],
+  );
 
   // Click on the empty area of the list clears the selection
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -457,6 +546,83 @@ const Contents = ({
                       onSearch={searchBusiness}
                       isLoading={isSearching || _isBusinessesLoading}
                     />
+                  </div>
+                )}
+
+                {/* ── Assignment status filter (Businesses + Products) ── */}
+                {(currentTab === "Businesses" || currentTab === "Products") && (
+                  <>
+                    <div className="flex flex-col sm:col-span-4">
+                      <label
+                        className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                      >
+                        Assignment Status
+                      </label>
+                      <select
+                        value={filters.assignmentStatus}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            assignmentStatus: e.target.value,
+                            viewCategory: "all",
+                          })
+                        }
+                        className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                      >
+                        <option value="all">All</option>
+                        <option value="assigned">Assigned to category</option>
+                        <option value="unassigned">Unassigned</option>
+                      </select>
+                    </div>
+
+                    {filters.assignmentStatus !== "unassigned" &&
+                      viewCategories.length > 0 && (
+                        <div className="flex flex-col sm:col-span-4">
+                          <label
+                            className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                          >
+                            Filter by Category
+                          </label>
+                          <select
+                            value={filters.viewCategory}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                viewCategory: e.target.value,
+                              })
+                            }
+                            className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                          >
+                            <option value="all">All categories</option>
+                            {viewCategories.map((cat) => (
+                              <option key={cat.label} value={cat.label}>
+                                {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                  </>
+                )}
+
+                {/* ── Sort order (Businesses + Products) ── */}
+                {(currentTab === "Businesses" || currentTab === "Products") && (
+                  <div className="flex flex-col sm:col-span-4">
+                    <label
+                      className={`block text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      Sort
+                    </label>
+                    <select
+                      value={filters.sortOrder}
+                      onChange={(e) =>
+                        setFilters({ ...filters, sortOrder: e.target.value })
+                      }
+                      className={`w-full px-3 py-2 rounded-lg border ${isDark ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                    >
+                      <option value="recent">Most recently added</option>
+                      <option value="alpha">Alphabetical (A–Z)</option>
+                    </select>
                   </div>
                 )}
 
@@ -694,7 +860,7 @@ const Contents = ({
           }
         >
           <div className={clsx("grid grid-cols-12 gap-2")}>
-            {combinedBusinesses?.map((item: any) => (
+            {filteredItems?.map((item: any) => (
               <ContentCard
                 key={item._id}
                 _id={item._id}

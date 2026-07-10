@@ -7,7 +7,7 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 export const contentMutationApi = createApi({
   reducerPath: "contentMutationApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["Content"],
+  tagTypes: ["Content", "Views"],
 
   endpoints: (builder) => ({
     createContent: builder.mutation<any, any>({
@@ -16,7 +16,7 @@ export const contentMutationApi = createApi({
         method: "POST",
         data: payload,
       }),
-      invalidatesTags: ["Content"],
+      invalidatesTags: ["Content", "Views"],
     }),
 
     updateContent: builder.mutation<any, { body: any; contentId: string }>({
@@ -25,7 +25,7 @@ export const contentMutationApi = createApi({
         method: "PATCH",
         data: body,
       }),
-      invalidatesTags: ["Content"],
+      invalidatesTags: ["Content", "Views"],
     }),
 
     deleteContent: builder.mutation<any, { eventId: string }>({
@@ -33,10 +33,87 @@ export const contentMutationApi = createApi({
         url: `${endpoints.contentConfig}/${eventId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Content", "Views"],
+    }),
+
+    activateView: builder.mutation<any, { viewId: string }>({
+      query: ({ viewId }) => ({
+        url: `${endpoints.contentConfigActivate}/${viewId}/activate`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Content", "Views"],
+    }),
+
+    generateTopics: builder.mutation<
+      WizardTopic[],
+      { externalApiId: string; themeContext?: string }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardGenerateTopics,
+        method: "POST",
+        data: body,
+      }),
+    }),
+
+    generateCategories: builder.mutation<
+      WizardCategory[],
+      {
+        topicTitle: string;
+        topicDescription: string;
+        externalApiId: string;
+        existingCategories?: string[];
+      }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardGenerateCategories,
+        method: "POST",
+        data: body,
+      }),
+    }),
+
+    assignAllEntities: builder.mutation<
+      {
+        summary: {
+          categoryId: string;
+          businessCount: number;
+          productCount: number;
+        }[];
+        unassignedCount: number;
+      },
+      { viewId: string; reAssignAll?: boolean }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardAssignEntities,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Content", "Views"],
+    }),
+
+    translateTopic: builder.mutation<
+      {
+        title: string;
+        titleHe: string;
+        titleAr: string;
+        description: string;
+        descriptionHe: string;
+        descriptionAr: string;
+      },
+      { title: string; description?: string }
+    >({
+      query: (body) => ({
+        url: endpoints.wizardTranslate,
+        method: "POST",
+        data: body,
+      }),
     }),
 
     aiSuggestCategoryEntities: builder.mutation<
-      { businesses: IAiSuggestedEntity[]; products: IAiSuggestedEntity[] },
+      {
+        businesses: IAiSuggestedEntity[];
+        products: IAiSuggestedEntity[];
+        aiUnavailable?: boolean;
+      },
       {
         categoryName: string;
         categoryDescription: string;
@@ -44,7 +121,7 @@ export const contentMutationApi = createApi({
       }
     >({
       query: (body) => ({
-        url: "/businesses/ai-suggest-category-entities",
+        url: "/ai/suggest-category-entities",
         method: "POST",
         data: body,
       }),
@@ -63,5 +140,11 @@ export interface IAiSuggestedEntity {
 export const {
   useCreateContentMutation,
   useUpdateContentMutation,
+  useDeleteContentMutation,
+  useActivateViewMutation,
+  useGenerateTopicsMutation,
+  useGenerateCategoriesMutation,
+  useAssignAllEntitiesMutation,
   useAiSuggestCategoryEntitiesMutation,
+  useTranslateTopicMutation,
 } = contentMutationApi;

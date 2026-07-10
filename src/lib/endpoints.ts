@@ -109,6 +109,11 @@ export const endpoints = {
 
   // Content
   contentConfig: "/site-filter-config",
+  contentConfigActivate: "/site-filter-config",
+  wizardGenerateTopics: "/site-filter-config/wizard/generate-topics",
+  wizardGenerateCategories: "/site-filter-config/wizard/generate-categories",
+  wizardAssignEntities: "/site-filter-config/wizard/assign-entities",
+  wizardTranslate: "/site-filter-config/wizard/translate",
 
   // Notifications
   notifications: "/notifications",
