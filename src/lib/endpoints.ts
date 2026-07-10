@@ -54,12 +54,10 @@ export const endpoints = {
   //orders
   orders: "/orders",
   orderDetails: "/order-details",
-
   orderSummary: "/orders-summary",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",
-  orderStatus: "/orders",
   orderProductStatus: "/admin/orderProduct",
   orderConfirmation: "/admin/send-success-emails",
   productsStats: "/products-stat",
