@@ -6,7 +6,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
-import { getLngWiseStr } from "@/helpers";
 
 interface Tag {
   en: string;
@@ -14,18 +13,13 @@ interface Tag {
   ar: string;
 }
 
+// Only `tags` is guaranteed across all consumers (business, poi, event, article).
+// Everything else (primaryCategory etc.) is only read/written in "full" variant,
+// and each parent's own formData already carries whatever extra fields it needs.
 interface AttributesFormData {
-  name: string;
-  nameHe: string;
-  nameAr: string;
-  fullDescription: string;
-  fullDescriptionHe: string;
-  fullDescriptionAr: string;
-  primaryCategory: string;
-  serviceType: string;
   tags: Tag[];
-  accessibility: string[];
-  groupTypes: string[];
+  primaryCategory?: string;
+  [key: string]: any;
 }
 
 interface FormErrors {
@@ -39,22 +33,29 @@ interface AttributesProps {
   selectedFormLanguage: Language;
   errors: FormErrors;
   selectedGroupTypesId?: string[];
-  setGroupTypesId: (v: string[]) => void;
+  setGroupTypesId?: (v: string[]) => void;
   selectedAccessiblitiesId?: string[];
-  setAccessiblitiesId: (v: string[]) => void;
+  setAccessiblitiesId?: (v: string[]) => void;
   opMode?: string;
+  variant?: "full" | "tagsOnly";
+  /** Parent computes this from its OWN field names (e.g. name/nameHe/nameAr for business, title/titleHe/titleAr for poi) */
+  nameForGen: string;
+  /** Parent computes this from its OWN field names (e.g. fullDescription* for business, shortDescription* or content* for poi) */
+  descriptionForGen: string;
 }
 
 const Attributes: FC<AttributesProps> = ({
   errors,
-
   formData,
   setFormData,
-  setGroupTypesId,
+  setGroupTypesId = () => {},
   selectedGroupTypesId = [],
   selectedAccessiblitiesId = [],
-  setAccessiblitiesId,
+  setAccessiblitiesId = () => {},
   editData,
+  variant = "full",
+  nameForGen,
+  descriptionForGen,
 }) => {
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
@@ -67,19 +68,6 @@ const Attributes: FC<AttributesProps> = ({
   const selectedCatRef = useRef<HTMLButtonElement | null>(null);
   const hasGeneratedRef = useRef(false);
 
-  const currentNameForGen = getLngWiseStr(
-    language,
-    formData?.name,
-    formData?.nameHe,
-    formData?.nameAr,
-  );
-
-  const currentDescriptionForGen = getLngWiseStr(
-    language,
-    formData?.fullDescription,
-    formData?.fullDescriptionHe,
-    formData?.fullDescriptionAr,
-  );
   useEffect(() => {
     selectedCatRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -125,11 +113,11 @@ const Attributes: FC<AttributesProps> = ({
 
   /* ---------------- Generate Tags (manual trigger) ---------------- */
   const handleGenerateTags = () => {
-    if (!currentNameForGen && !currentDescriptionForGen) return;
+    if (!nameForGen && !descriptionForGen) return;
 
     getGeneratedTags({
-      name: currentNameForGen,
-      description: currentDescriptionForGen,
+      name: nameForGen,
+      description: descriptionForGen,
     })
       .then((res: any) => {
         if (!res?.data?.length) return;
@@ -201,86 +189,90 @@ const Attributes: FC<AttributesProps> = ({
       )}
 
       <div className="space-y-6">
-        {/* Primary Category */}
-        <div>
-          <label
-            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("primary_category")} <span className="text-red-500">*</span>
-          </label>
+        {variant === "full" && (
+          <>
+            {/* Primary Category */}
+            <div>
+              <label
+                className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("primary_category")} <span className="text-red-500">*</span>
+              </label>
 
-          <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
-            {categories?.map((cat: any) => {
-              const isSelected = formData.primaryCategory === cat._id;
+              <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
+                {categories?.map((cat: any) => {
+                  const isSelected = formData.primaryCategory === cat._id;
 
-              return (
-                <button
-                  key={cat._id}
-                  ref={isSelected ? selectedCatRef : null}
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, primaryCategory: cat._id })
-                  }
-                  className={`
-                shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
-                ${
-                  isSelected
-                    ? "border-4 border-teal-600 text-teal-600"
-                    : isDark
-                      ? "border border-gray-700 text-gray-300 hover:border-teal-500"
-                      : "border border-gray-300 text-gray-700 hover:border-teal-500"
-                }
-              `}
-                >
-                  {/* Icon */}
-                  <img
-                    src={cat.icon?.iconPath}
-                    alt={cat.icon?.iconAlt || cat.name}
-                    className={`w-14 h-14 object-contain transition-all ${
-                      isSelected ? "" : "opacity-70"
-                    }`}
-                  />
+                  return (
+                    <button
+                      key={cat._id}
+                      ref={isSelected ? selectedCatRef : null}
+                      type="button"
+                      onClick={() =>
+                        setFormData({ ...formData, primaryCategory: cat._id })
+                      }
+                      className={`
+                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                    ${
+                      isSelected
+                        ? "border-4 border-teal-600 text-teal-600"
+                        : isDark
+                          ? "border border-gray-700 text-gray-300 hover:border-teal-500"
+                          : "border border-gray-300 text-gray-700 hover:border-teal-500"
+                    }
+                  `}
+                    >
+                      {/* Icon */}
+                      <img
+                        src={cat.icon?.iconPath}
+                        alt={cat.icon?.iconAlt || cat.name}
+                        className={`w-14 h-14 object-contain transition-all ${
+                          isSelected ? "" : "opacity-70"
+                        }`}
+                      />
 
-                  {/* Text */}
-                  <span className="text-sm font-medium text-center">
-                    {cat.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {errors.primaryCategory && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.primaryCategory}
-            </p>
-          )}
-        </div>
+                      {/* Text */}
+                      <span className="text-sm font-medium text-center">
+                        {cat.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.primaryCategory && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.primaryCategory}
+                </p>
+              )}
+            </div>
 
-        <SelectableChips
-          label="accessiblities"
-          items={accessibility}
-          selectedIds={selectedAccessiblitiesId}
-          onSelect={(itemId: string) =>
-            setAccessiblitiesId(
-              selectedAccessiblitiesId.includes(itemId)
-                ? selectedAccessiblitiesId.filter((id) => id !== itemId)
-                : [...selectedAccessiblitiesId, itemId],
-            )
-          }
-        />
+            <SelectableChips
+              label="accessiblities"
+              items={accessibility}
+              selectedIds={selectedAccessiblitiesId}
+              onSelect={(itemId: string) =>
+                setAccessiblitiesId(
+                  selectedAccessiblitiesId.includes(itemId)
+                    ? selectedAccessiblitiesId.filter((id) => id !== itemId)
+                    : [...selectedAccessiblitiesId, itemId],
+                )
+              }
+            />
 
-        <SelectableChips
-          label="group_types"
-          items={groupTypes}
-          selectedIds={selectedGroupTypesId}
-          onSelect={(itemId: string) =>
-            setGroupTypesId(
-              selectedGroupTypesId.includes(itemId)
-                ? selectedGroupTypesId.filter((id) => id !== itemId)
-                : [...selectedGroupTypesId, itemId],
-            )
-          }
-        />
+            <SelectableChips
+              label="group_types"
+              items={groupTypes}
+              selectedIds={selectedGroupTypesId}
+              onSelect={(itemId: string) =>
+                setGroupTypesId(
+                  selectedGroupTypesId.includes(itemId)
+                    ? selectedGroupTypesId.filter((id) => id !== itemId)
+                    : [...selectedGroupTypesId, itemId],
+                )
+              }
+            />
+          </>
+        )}
 
         {/* Tags */}
         <div className="space-y-1">
@@ -290,7 +282,7 @@ const Attributes: FC<AttributesProps> = ({
             >
               {t("tags")}
             </label>
-            {currentNameForGen !== "-" && currentDescriptionForGen !== "-" ? (
+            {nameForGen !== "-" && descriptionForGen !== "-" ? (
               <button
                 type="button"
                 onClick={handleGenerateTags}
