@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import { X, Loader, Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
@@ -152,6 +153,11 @@ const Attributes: FC<AttributesProps> = ({
       })
       .catch((err) => {
         console.error("Tag generation failed:", err);
+        toast.error(
+          t("service_unavailable", {
+            defaultValue: "This service is unavailable at the moment",
+          }),
+        );
       });
   };
 

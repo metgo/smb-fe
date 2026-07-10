@@ -175,9 +175,9 @@ export const getStatusColor = (status: IVoucher["status"]) => {
     case "ACTIVE":
       return "bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50";
     case "ASSIGNED":
-      return "bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/50";
+      return "bg-purple-100 text-white border border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/50";
     case "UNASSIGNED":
-      return "bg-gray-200 text-gray-900 border border-gray-400 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700/50";
+      return "bg-gray-200 text-white border border-gray-400 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700/50";
     case "REDEEMED":
       return "bg-green-100 text-green-900 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50";
     case "EXPIRED":

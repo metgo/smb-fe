@@ -383,5 +383,6 @@
 
   "deactivate_website": "Deactivate Website",
   "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
-  "pending_approvals": "Pending Approvals"
+  "pending_approvals": "Pending Approvals",
+  "service_unavailable": "This service is unavailable at the moment"
 }
