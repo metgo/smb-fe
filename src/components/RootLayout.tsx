@@ -5,16 +5,17 @@ import Header from "./header";
 import Sidebar from "./sidebar";
 import { useAppSelector } from "@/hooks/hooks";
 import RouterProgressBar from "./shared/RouterProgressBar";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const RootLayout = () => {
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { isDark, isRTL } = useThemeClasses();
 
   return (
     <main
       className={clsx(
         "min-h-screen transition-colors flex flex-col",
-        theme === "dark" ? "bg-gray-950" : "bg-gray-50",
+        isDark ? "bg-gray-950" : "bg-gray-50",
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >

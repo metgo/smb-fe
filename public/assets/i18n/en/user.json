@@ -61,5 +61,7 @@
   "edit_user_action": "Edit user",
   "delete_user_action": "Delete user",
   "last_login": "Last Login",
-  "actions": "Actions"
+  "actions": "Actions",
+
+  "reset_login_attempts": "Reset login attempts"
 }

@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import type React from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { PenBox, RefreshCcw, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ReordableDataTable } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatLastLogin, getAvatarColor } from "@/helpers";
 import { UserRole } from "@/enums/user.types";
+import { ActionIconButtons } from "@/components/btns";
 
 interface UserListViewProps {
   users: IUser[];
@@ -16,6 +17,8 @@ interface UserListViewProps {
   onEdit: (user: IUser) => void;
   onDelete: (user: IUser) => void;
   activeRole?: string;
+  handleLoginAttemptReset: (v: string) => void;
+  isLoginAttemptReseting: boolean;
 }
 
 const UserListView: React.FC<UserListViewProps> = ({
@@ -26,9 +29,14 @@ const UserListView: React.FC<UserListViewProps> = ({
   onEdit,
   onDelete,
   activeRole,
+  handleLoginAttemptReset,
+  isLoginAttemptReseting,
 }) => {
   const { t } = useTranslation("user");
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { t: tc } = useTranslation("common");
+
+  const { textPrimary, textSecondary, textTertiary, isDark } =
+    useThemeClasses();
 
   const baseColumns = [
     {
@@ -165,30 +173,34 @@ const UserListView: React.FC<UserListViewProps> = ({
   const actionsColumn = {
     key: "actions",
     label: t("actions"),
-    render: (user: IUser) => (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(user);
-          }}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-          title={t("edit_user_action")}
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(user);
-          }}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-          title={t("delete_user_action")}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    ),
+    render: (user: IUser) => {
+      const actions: IActionIconButton[] = [
+        {
+          title: tc("edit"),
+          icon: PenBox,
+          color: "gray",
+          onClick: () => onEdit(user),
+        },
+        {
+          title: tc("delete"),
+          icon: Trash2,
+          color: "red",
+          onClick: () => onDelete(user),
+        },
+      ];
+
+      if (user.loginAttempts > 0) {
+        actions.push({
+          title: `${t("reset_login_attempts")}: ${user.loginAttempts}`,
+          icon: RefreshCcw,
+          color: "green",
+          isLoading: isLoginAttemptReseting,
+          onClick: () => handleLoginAttemptReset(user._id),
+        });
+      }
+
+      return <ActionIconButtons isDark={isDark} actions={actions} />;
+    },
   };
 
   let columns: any[] = baseColumns;

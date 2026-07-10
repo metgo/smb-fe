@@ -289,4 +289,47 @@ interface ITicketPayload {
   images?: [{ image: string }];
   status: string;
   type: string;
+  wrapperId?: string;
+}
+
+interface IEventListRes {
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  nameHe: string;
+  nameAr: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  image: string;
+  slug: string;
+  dayDescription: IEventDayDescription[];
+  hasExternalTicket: boolean;
+  ticketBuyLink: string;
+  ticketCount: number;
+  wrapperCount: number;
+  business: IEventBusiness;
+  address: {
+    country: string;
+    city: string;
+    location: string;
+    additional_information: string;
+  };
+  pricing: {
+    price: {
+      sellingPrice: number;
+    };
+    type: string;
+  }[];
+}
+
+interface IEventDayDescription {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface IEventBusiness {
+  _id: string;
+  name: string;
+  logoUrl: string;
 }

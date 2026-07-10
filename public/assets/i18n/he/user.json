@@ -61,5 +61,7 @@
   "edit_user_action": "ערוך משתמש",
   "delete_user_action": "מחק משתמש",
   "last_login": "כניסה אחרונה",
-  "actions": "פעולות"
+  "actions": "פעולות",
+
+  "reset_login_attempts": "איפוס ניסיונות התחברות"
 }

@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface DatesEditorProps {
@@ -27,14 +29,13 @@ interface DatesEditorProps {
 
 export function DatesEditor({
   event,
-  onAddDate,
   onPatchDate,
   onRemoveDate,
-  onAddSlot,
   onPatchSlot,
   onRemoveSlot,
   labels,
 }: DatesEditorProps) {
+  const { t } = useTranslation("event_session");
   const { isDark, textTertiary, inputClasses, cardClasses } = useThemeClasses();
   const today = new Date().toISOString().split("T")[0];
 
@@ -45,16 +46,16 @@ export function DatesEditor({
       ? "focus:border-blue-400 focus:ring-blue-400/10"
       : "focus:border-blue-500 focus:ring-blue-500/10",
   );
-  const BTN_SOLID_XS = clsx(
-    "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold text-white hover:brightness-110 transition-[transform,filter] active:translate-y-px",
-    isDark ? "bg-blue-500" : "bg-blue-600",
-  );
-  const BTN_GHOST_XS = clsx(
-    "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold transition-[transform,filter] active:translate-y-px",
-    isDark
-      ? "bg-blue-950/40 text-blue-400 hover:bg-blue-900/40"
-      : "bg-blue-50 text-blue-600 hover:bg-blue-100",
-  );
+  // const BTN_SOLID_XS = clsx(
+  //   "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold text-white hover:brightness-110 transition-[transform,filter] active:translate-y-px",
+  //   isDark ? "bg-blue-500" : "bg-blue-600",
+  // );
+  // const BTN_GHOST_XS = clsx(
+  //   "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold transition-[transform,filter] active:translate-y-px",
+  //   isDark
+  //     ? "bg-blue-950/40 text-blue-400 hover:bg-blue-900/40"
+  //     : "bg-blue-50 text-blue-600 hover:bg-blue-100",
+  // );
   const BTN_DANGER_XS = clsx(
     "px-2.75 py-1.5 text-[12.5px] rounded-[9px] font-bold transition-[transform,filter] active:translate-y-px",
     isDark
@@ -64,22 +65,25 @@ export function DatesEditor({
 
   return (
     <div className={clsx(cardClasses, "rounded-[14px] p-5")}>
-      <div className="flex items-center justify-between mb-3.5">
+      {/* <div className="flex items-center justify-between mb-3.5">
         <h3 className="m-0 text-[15.5px] font-extrabold tracking-tight">
           {labels.datesTitle}
         </h3>
         <button className={BTN_SOLID_XS} onClick={onAddDate}>
           {labels.addDate}
         </button>
-      </div>
-      <p
+      </div> */}
+      <div
         className={clsx("text-sm leading-relaxed -mt-1.5 mb-3.5", textTertiary)}
       >
-        {(event.rooms || []).length
-          ? labels.groupSizeHelpRoom
-          : labels.groupSizeHelp}
-      </p>
-      {event.dates.map((d, di) => (
+        <p>
+          {(event.rooms || []).length
+            ? labels.groupSizeHelpRoom
+            : labels.groupSizeHelp}
+        </p>
+        <p className=" italic">{t("ticket_date_time_notice")}</p>
+      </div>
+      {event?.dates?.map((d, di) => (
         <div
           key={di}
           className={clsx(
@@ -96,6 +100,7 @@ export function DatesEditor({
               value={d.date}
               min={today}
               onChange={(e) => onPatchDate(di, { date: e.target.value })}
+              readOnly
             />
             {event.dates.length > 1 ? (
               <button
@@ -153,9 +158,9 @@ export function DatesEditor({
                 )}
               </div>
             ))}
-            <button className={BTN_GHOST_XS} onClick={() => onAddSlot(di)}>
+            {/* <button className={BTN_GHOST_XS} onClick={() => onAddSlot(di)}>
               {labels.addSlot}
-            </button>
+            </button> */}
           </div>
         </div>
       ))}

@@ -279,5 +279,7 @@
   "wizard_edit_btn": "Edit",
   "wizard_no_images": "No images added.",
   "wizard_no_instructors": "No instructors added.",
-  "wizard_no_rooms": "No rooms added."
+  "wizard_no_rooms": "No rooms added.",
+
+  "ticket_date_time_notice": "The date and time below are based on your selected ticket(s). If you need to change them, please update your ticket selection."
 }

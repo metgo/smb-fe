@@ -139,6 +139,14 @@ export const eventQueryApi = createApi({
       providesTags: ["Event"],
       keepUnusedDataFor: 0,
     }),
+
+    getContentManagementEvents: builder.query<any, any>({
+      query: (params) => ({
+        url: `${endpoints.contentManagementEvents}?sortBy=DESC`,
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
@@ -155,4 +163,5 @@ export const {
   useGetPublicEventTicketQuery,
   useLazyGetPublicEventTicketQuery,
   useGetSessionsByEventIdQuery,
+  useGetContentManagementEventsQuery,
 } = eventQueryApi;

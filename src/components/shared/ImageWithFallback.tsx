@@ -16,7 +16,6 @@ export default function ImageWithFallback(
   };
 
   const { src, alt, style, className, ...rest } = props;
-
   return didError || !src ? (
     <div
       className={`inline-block text-center align-middle ${className ?? ""}`}
@@ -25,7 +24,7 @@ export default function ImageWithFallback(
       <div
         className={clsx(
           "flex items-center justify-center w-full h-full",
-          isDark ? "bg-orange-500/20" : "",
+          isDark ? "invert" : "",
         )}
       >
         <img

@@ -188,3 +188,12 @@ type TOrderStatus =
 type TPaymentStatus = "PAID" | "UNPAID" | "PARTIAL" | "REFUNDED" | "SUCCESS";
 
 type TSortDirection = "asc" | "desc" | null;
+
+interface IActionIconButton {
+  title: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  color?: "blue" | "green" | "red" | "yellow" | "gray";
+  isLoading?: boolean;
+  disabled?: boolean;
+}

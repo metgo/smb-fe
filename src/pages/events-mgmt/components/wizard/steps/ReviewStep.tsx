@@ -1,14 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import {
-  CopyCheck,
-  FileText,
-  ImageIcon,
-  MapPin,
-  Pencil,
-  TicketCheck,
-} from "lucide-react";
+import { CopyCheck, FileText, ImageIcon, MapPin, Pencil } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatDate } from "@/helpers/formatter";
 import { extractCenterAddressText } from "@/helpers";
@@ -19,7 +12,6 @@ const WIZARD_STEPS = {
   BASIC_INFO: 1,
   DATE_TIME: 3,
   REGISTRATION: 4,
-  TICKETS: 5,
   IMAGES: 7,
 } as const;
 
@@ -38,7 +30,6 @@ interface ReviewStepProps {
   capacityType: "limited" | "unlimited";
   capacity: number;
   customQuestions: CustomQuestion[];
-  tickets: TicketData[];
   images?: any[];
 }
 
@@ -57,7 +48,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   capacityType,
   capacity,
   customQuestions,
-  tickets,
   images,
 }) => {
   const { t } = useTranslation("events");
@@ -225,37 +215,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
               </>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* ── Tickets ───────────────────────────────────────────────────── */}
-      <div className={sectionCard}>
-        <SectionHeader
-          icon={<TicketCheck className="w-4 h-4" />}
-          label={t("tickets")}
-          step={WIZARD_STEPS.TICKETS}
-        />
-        <div className="p-5 space-y-3">
-          <Row
-            label={t("total_tickets")}
-            value={String(tickets?.length ?? 0)}
-          />
-          {tickets?.length > 0 ? (
-            <ul className="space-y-1.5 ml-5 list-disc">
-              {tickets.map((ticket, i) => (
-                <li key={ticket._id ?? i}>
-                  <span className={clsx("font-medium", textPrimary)}>
-                    {ticket.name}
-                  </span>{" "}
-                  <span className="text-teal-500">({t(ticket.type)})</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className={clsx("text-sm italic", textTertiary)}>
-              {t("no_tickets_created")}
-            </p>
-          )}
         </div>
       </div>
 

@@ -13,6 +13,7 @@ import { UserRole } from "@/enums/user.types";
 import { useAppSelector } from "@/hooks/hooks";
 import { useCommon } from "@/hooks/useCommon";
 import ImageWithFallback from "@/components/shared/ImageWithFallback";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const CREATABLE_ROLES: Partial<Record<UserRole, UserRole[]>> = {
   [UserRole.SUPERADMIN]: [
@@ -71,6 +72,8 @@ const CreateUserWizard = ({
   onSuccess,
 }: CreateUserWizardProps) => {
   const { t } = useTranslation("user");
+  const { isSuperadmin } = useUserRoles();
+
   const { isDark, borderColor } = useThemeClasses();
   const isEdit = !!editUser;
 
@@ -204,41 +207,65 @@ const CreateUserWizard = ({
       languagePreference: formData.languagePreference,
     };
 
-    // Only include role when creating, not when editing
     if (!isEdit) {
       payload.role = formData.role;
 
       if (formData.role === UserRole.DMO && formData.dmoId) {
         payload.dmoId = formData.dmoId;
       }
+
       if (formData.role === UserRole.AUTHORITY && formData.authorityId) {
         payload.authorityId = formData.authorityId;
       }
     } else {
-      // When editing, allow updating dmoId/authorityId but not role
-      if (formData.dmoId) {
-        payload.dmoId = formData.dmoId;
+      // Allow Super Admin to change role while editing
+      if (isSuperadmin) {
+        payload.role = formData.role;
       }
-      if (formData.authorityId) {
-        payload.authorityId = formData.authorityId;
+
+      switch (formData.role) {
+        case UserRole.DMO:
+          if (formData.dmoId) {
+            payload.dmoId = formData.dmoId;
+          }
+          break;
+
+        case UserRole.AUTHORITY:
+          if (formData.authorityId) {
+            payload.authorityId = formData.authorityId;
+          }
+          break;
+      }
+
+      // Optional: if backend expects empty values when changing role
+      if (formData.role !== UserRole.DMO) {
+        payload.dmoId = "";
+      }
+
+      if (formData.role !== UserRole.AUTHORITY) {
+        payload.authorityId = "";
       }
     }
 
     try {
       if (isEdit && editUser) {
-        await updateUser({ userId: editUser._id, body: payload }).unwrap();
+        await updateUser({
+          userId: editUser._id,
+          body: payload,
+        }).unwrap();
+
         toast.success(t("user_updated_success"));
 
-        // Trigger refetch immediately to ensure fresh data in parent
         onSuccess?.();
 
-        // Close modal after a brief moment to allow refetch to start
         setTimeout(() => {
           onClose();
         }, 50);
       } else {
         await createUser(payload).unwrap();
+
         toast.success(t("user_created_success"));
+
         onClose();
       }
     } catch (err: any) {
@@ -363,23 +390,26 @@ const CreateUserWizard = ({
           <div>
             <label className={labelClass}>
               {t("role")} *{" "}
-              {isEdit && (
+              {isEdit && !isSuperadmin && (
                 <span className="text-xs text-gray-500">{t("locked")}</span>
               )}
             </label>
             <select
               value={formData.role}
-              onChange={(e) =>
-                !isEdit &&
-                setFormData((prev) => ({
-                  ...prev,
-                  role: e.target.value,
-                  authorityId: "",
-                  dmoId: "",
-                }))
+              onChange={(e) => {
+                if (!isEdit || isSuperadmin) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    role: e.target.value,
+                    authorityId: "",
+                    dmoId: "",
+                  }));
+                }
+              }}
+              disabled={isEdit && !isSuperadmin}
+              className={
+                isEdit && !isSuperadmin ? disabledInputClass : inputClass
               }
-              disabled={isEdit}
-              className={isEdit ? disabledInputClass : inputClass}
             >
               {allowedRoleOptions.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -388,7 +418,7 @@ const CreateUserWizard = ({
               ))}
             </select>
             {errors.role && <p className={errorClass}>{errors.role}</p>}
-            {isEdit && (
+            {isEdit && !isSuperadmin && (
               <p className="text-xs text-gray-500 mt-1">
                 {t("role_locked_hint")}
               </p>
