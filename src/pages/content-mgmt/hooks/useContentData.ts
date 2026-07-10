@@ -4,7 +4,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
 import { useGetAllTripsQuery } from "@/store/api/tripsQueryApi";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import type { TabState } from "./useContentTabs";
 
@@ -151,7 +151,9 @@ export function useContentData({
     data: eventData,
     isLoading: isLoadingEvent,
     isFetching: isFetchingEvent,
-  } = useGetAllEventsQuery(selected === "Events" ? eventParams : skipToken);
+  } = useGetContentManagementEventsQuery(
+    selected === "Events" ? eventParams : skipToken,
+  );
 
   const {
     data: poiData,
@@ -376,6 +378,7 @@ export function useContentData({
     tabCounts,
     tabLoadings,
     totalData,
+
     activeIsLoading: active?.isLoading,
     activeLoadMore: active?.loadMore,
     activeHasMore: active?.hasMore,

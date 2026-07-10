@@ -26,7 +26,7 @@ import {
 import { useGetViewByIdQuery } from "@/store/api/contentQueryApi";
 import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 import { useGetContentManagementProductsQuery } from "@/store/api/productQueryApi";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { useGetContentManagementEventsQuery } from "@/store/api/eventQueryApi";
 import { useGetAllPOIQuery } from "@/store/api/poiQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -178,18 +178,6 @@ function SearchSelect({
                 : "bg-white border-gray-200",
             )}
           >
-            {query.length < 1 && options.length > 50 && (
-              <li
-                className={clsx(
-                  "px-3 py-1.5 text-xs italic border-b sticky top-0",
-                  isDark
-                    ? "text-gray-500 border-gray-700 bg-gray-800"
-                    : "text-gray-400 border-gray-100 bg-white",
-                )}
-              >
-                Showing first 50 — type to search all {options.length}
-              </li>
-            )}
             {filtered.map((item) => (
               <li
                 key={item._id}
@@ -733,7 +721,7 @@ export default function Step3Assign({
       : skipToken,
   );
   // Events: only needed for TRAVELING mode
-  const { data: allEventsData } = useGetAllEventsQuery(
+  const { data: allEventsData } = useGetContentManagementEventsQuery(
     externalApiId && !isMarketplace
       ? {
           externalApiId: [externalApiId],
