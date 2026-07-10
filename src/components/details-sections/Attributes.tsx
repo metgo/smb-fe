@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { X, Loader } from "lucide-react";
+import { X, Loader, Sparkles, Loader2 } from "lucide-react";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
@@ -32,8 +32,6 @@ interface FormErrors {
 }
 
 interface AttributesProps {
-  name: string;
-  description: string;
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
   editData?: any;
@@ -48,8 +46,7 @@ interface AttributesProps {
 
 const Attributes: FC<AttributesProps> = ({
   errors,
-  name,
-  description,
+
   formData,
   setFormData,
   setGroupTypesId,
@@ -57,41 +54,7 @@ const Attributes: FC<AttributesProps> = ({
   selectedAccessiblitiesId = [],
   setAccessiblitiesId,
   editData,
-  selectedFormLanguage,
 }) => {
-  const currentName = getLngWiseStr(
-    selectedFormLanguage,
-    formData?.name,
-    formData?.nameHe,
-    formData?.nameAr,
-  );
-  const currentDescription = getLngWiseStr(
-    selectedFormLanguage,
-    formData?.fullDescription,
-    formData?.fullDescriptionHe,
-    formData?.fullDescriptionAr,
-  );
-
-  const originalName = getLngWiseStr(
-    selectedFormLanguage,
-    editData?.name,
-    editData?.nameHe,
-    editData?.nameAr,
-  );
-
-  const originalDescription = getLngWiseStr(
-    selectedFormLanguage,
-    editData?.description,
-    editData?.descriptionHe,
-    editData?.descriptionAr,
-  );
-
-  const isNameChanged = () => {
-    return currentName !== originalName;
-  };
-  const isDescriptionChanged = () => {
-    return currentDescription !== originalDescription;
-  };
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
@@ -103,6 +66,24 @@ const Attributes: FC<AttributesProps> = ({
   const selectedCatRef = useRef<HTMLButtonElement | null>(null);
   const hasGeneratedRef = useRef(false);
 
+  const currentNameForGen = getLngWiseStr(
+    language,
+    formData?.name,
+    formData?.nameHe,
+    formData?.nameAr,
+  );
+  console.log("🚀 ~ Attributes ~ currentNameForGen:", currentNameForGen);
+
+  const currentDescriptionForGen = getLngWiseStr(
+    language,
+    formData?.fullDescription,
+    formData?.fullDescriptionHe,
+    formData?.fullDescriptionAr,
+  );
+  console.log(
+    "🚀 ~ Attributes ~ currentDescriptionForGen:",
+    currentDescriptionForGen,
+  );
   useEffect(() => {
     selectedCatRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -141,66 +122,43 @@ const Attributes: FC<AttributesProps> = ({
       );
     }) ?? [];
 
-  /* ---------------- Auto Generate Tags ---------------- */
+  /* ---------------- Reset generated flag on record change ---------------- */
   useEffect(() => {
     hasGeneratedRef.current = false;
   }, [editData?._id]);
 
-  /* ---------------- Auto Generate Tags ---------------- */
-  useEffect(() => {
-    const currentName = getLngWiseStr(
-      language,
-      formData?.name,
-      formData?.nameHe,
-      formData?.nameAr,
-    );
+  /* ---------------- Generate Tags (manual trigger) ---------------- */
+  const handleGenerateTags = () => {
+    if (!currentNameForGen && !currentDescriptionForGen) return;
 
-    const currentDescription = getLngWiseStr(
-      language,
-      formData?.fullDescription,
-      formData?.fullDescriptionHe,
-      formData?.fullDescriptionAr,
-    );
+    getGeneratedTags({
+      name: currentNameForGen,
+      description: currentDescriptionForGen,
+    })
+      .then((res: any) => {
+        if (!res?.data?.length) return;
 
-    if (!currentName && !currentDescription) return;
+        const newTags: Tag[] = res.data
+          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
+          .map((tag: Tag) => ({
+            en: tag.en || "",
+            he: tag.he || "",
+            ar: tag.ar || "",
+          }));
 
-    const noTagsYet = !formData?.tags?.length;
-    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
+        if (newTags.length > 0) {
+          setFormData({
+            ...formData,
+            tags: [...formData.tags, ...newTags],
+          });
+        }
 
-    if (!noTagsYet && !nameOrDescChanged) return;
-
-    // Debounce: cancels any pending call if name/description changes again
-    // before this timer fires. Only the last change in a burst triggers a call.
-    const timer = setTimeout(() => {
-      getGeneratedTags({
-        name: currentName,
-        description: currentDescription,
+        hasGeneratedRef.current = true;
       })
-        .then((res: any) => {
-          if (!res?.data?.length) return;
-
-          const newTags: Tag[] = res.data
-            .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
-            .map((tag: Tag) => ({
-              en: tag.en || "",
-              he: tag.he || "",
-              ar: tag.ar || "",
-            }));
-
-          if (newTags.length > 0) {
-            setFormData({
-              ...formData,
-              tags: [...formData.tags, ...newTags],
-            });
-          }
-        })
-        .catch((err) => {
-          console.error("Tag generation failed:", err);
-        });
-    }, 600); // adjust delay to taste
-
-    return () => clearTimeout(timer); // cleanup cancels the stale call
-  }, [name, description, language]);
+      .catch((err) => {
+        console.error("Tag generation failed:", err);
+      });
+  };
 
   /* ---------------- Handlers ---------------- */
 
@@ -324,12 +282,30 @@ const Attributes: FC<AttributesProps> = ({
         />
 
         {/* Tags */}
-        <div>
-          <label
-            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("tags")}
-          </label>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label
+              className={`flex text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("tags")}
+            </label>
+            {currentNameForGen !== "-" && currentDescriptionForGen !== "-" ? (
+              <button
+                type="button"
+                onClick={handleGenerateTags}
+                disabled={isLoading}
+                title="Generate Tags with AI"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                {isLoading ? t("generating_tags") : t("generate_tags")}
+              </button>
+            ) : null}
+          </div>
 
           <div
             className={`relative p-3 rounded-lg border min-h-14 ${
@@ -344,7 +320,7 @@ const Attributes: FC<AttributesProps> = ({
                 .map((tag, idx) => (
                   <span
                     key={`${tag.en}-${idx}`}
-                    className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
+                    className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-black dark:text-teal-400 rounded flex items-center gap-1 text-sm"
                   >
                     {tag[language]}
                     <button
@@ -455,7 +431,7 @@ const Attributes: FC<AttributesProps> = ({
                         idx === selectedTagIndex
                           ? isDark
                             ? "bg-teal-900/30 text-teal-400"
-                            : "bg-teal-50 text-teal-800"
+                            : "bg-white text-black"
                           : isDark
                             ? "text-gray-300 hover:bg-gray-700"
                             : "text-gray-700 hover:bg-gray-50"
