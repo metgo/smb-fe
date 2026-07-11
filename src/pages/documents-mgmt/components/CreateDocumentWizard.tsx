@@ -3,84 +3,96 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback } from "react";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Loader2 } from "lucide-react";
 import clsx from "clsx";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
 import { ModalWrapper } from "@/components/wrapper";
-import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import {
+  useCreateDocumentMutation,
+  useUpdateDocumentMutation,
+  type DocumentPayload,
+} from "@/store/api/doumentMutationApi";
 import { ReactSelect } from "@/components/form-fields";
+import { EMAIL_TEMPLATE_IMAGE_KEYS } from "@/lib/utils";
 
 interface CreateDocumentWizardProps {
   onClose: () => void;
   refetch: () => void;
+  documentToEdit?: IDoucment | null;
 }
 
 type DocumentFormData = {
   title: string;
-  subTitle: string;
 };
 
 export const CreateDocumentWizard = ({
   onClose,
   refetch,
+  documentToEdit,
 }: CreateDocumentWizardProps) => {
   const { t } = useTranslation("documents");
   const { isDark, borderColor, textPrimary } = useThemeClasses();
+  const isEditMode = !!documentToEdit;
 
   const [formData, setFormData] = useState<DocumentFormData>({
-    title: "",
-    subTitle: "",
+    title: documentToEdit?.title ?? "",
   });
   const { associatedWebsite } = useAppSelector((state) => state.auth);
-  const [externalApiId, setExternalApiId] = useState("");
+  const [externalApiId, setExternalApiId] = useState(
+    documentToEdit?.externalApiId ?? "",
+  );
+  const [emailTempKey, setEmailTempKey] = useState(
+    documentToEdit?.templateKey ?? "",
+  );
 
   const [dragActive, setDragActive] = useState(false);
 
-  const { docState, isLoading, handleFileSelect, removeFile, upload } =
-    useDocumentUpload({ onSuccess: onClose });
+  const [createDocument, { isLoading: isCreating }] =
+    useCreateDocumentMutation();
+  const [updateDocument, { isLoading: isUpdating }] =
+    useUpdateDocumentMutation();
+
+  const {
+    image,
+    isImageDeleting,
+    handleImageSelect,
+    uploadImage,
+    deleteTarget,
+    setDeleteTarget,
+    handleDeleteImage,
+    confirmDelete,
+  } = useSingleImageUpload({
+    initialImage: documentToEdit?.imageUrl,
+    onChange: () => {},
+  });
 
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
     },
     [],
   );
 
-  const handleFileChange = useCallback(
+  const handleImageFile = useCallback(
     (file: File) => {
-      if (!file) return;
-
-      const allowedTypes = [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
-      ];
-
-      if (
-        !allowedTypes.includes(file.type) &&
-        !file.name.toLowerCase().endsWith(".pdf")
-      ) {
-        toast.error(t("invalid_file_type"));
+      if (!file.type.startsWith("image/")) {
+        toast.error(t("invalid_image_type"));
         return;
       }
-
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(t("file_too_large"));
-        return;
-      }
-
-      handleFileSelect(file);
+      handleImageSelect(file);
     },
-    [t, handleFileSelect],
+    [t, handleImageSelect],
   );
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleFileChange(file);
+    if (file) handleImageFile(file);
+    e.target.value = "";
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -97,8 +109,11 @@ export const CreateDocumentWizard = ({
     e.preventDefault();
     setDragActive(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) handleFileChange(file);
+    if (file) handleImageFile(file);
   };
+
+  const isUploadingImage = image?.status === "uploading";
+  const isSubmitting = isCreating || isUpdating || isUploadingImage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,24 +123,41 @@ export const CreateDocumentWizard = ({
       return;
     }
 
-    if (!docState.file) {
-      toast.error(t("file_required"));
+    if (!image) {
+      toast.error(t("image_required"));
       return;
     }
 
-    await upload({
-      title: formData.title.trim(),
-      subTitle: formData.subTitle.trim(),
-      externalApiId: externalApiId || "",
-      docUrl: docState.url ?? "",
-      docType: docState.file.type,
-      docSize: String(docState.file.size),
-    });
-    refetch();
-  };
+    try {
+      const imageUrl =
+        image.status === "success" && image.gcsURL
+          ? image.gcsURL
+          : await uploadImage();
 
-  const isSubmitting = isLoading || docState.status === "uploading";
-  const isUploading = docState.status === "uploading";
+      if (!imageUrl) return;
+
+      const payload: DocumentPayload = {
+        title: formData.title.trim(),
+        externalApiId,
+        templateKey: emailTempKey,
+        imageUrl,
+      };
+
+      if (documentToEdit) {
+        await updateDocument({ docId: documentToEdit._id, payload }).unwrap();
+        toast.success(t("document_updated_success"));
+      } else {
+        await createDocument(payload).unwrap();
+        toast.success(t("document_uploaded_success"));
+      }
+
+      refetch();
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error(documentToEdit ? t("update_failed") : t("upload_failed"));
+    }
+  };
 
   return (
     <ModalWrapper onClose={onClose} height="" maxWidth="max-w-3xl">
@@ -135,7 +167,7 @@ export const CreateDocumentWizard = ({
           <h2
             className={`text-2xl mt-1 ${isDark ? "text-gray-300" : "text-black"}`}
           >
-            {t("upload_new_document")}
+            {isEditMode ? t("edit_document") : t("upload_new_document")}
           </h2>
           <p
             className={`text-sm mt-1 ${
@@ -188,31 +220,23 @@ export const CreateDocumentWizard = ({
               />
             </div>
           </div>
-
-          {/* Subtitle */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
-              {t("subtitle")}
+              {t("email_template_key")} <span className="text-red-500">*</span>
             </label>
-            <textarea
-              name="subTitle"
-              value={formData.subTitle}
-              onChange={handleInputChange}
-              placeholder={t("enter_document_subtitle_optional")}
-              rows={1}
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y min-h-[30px] ${
-                isDark
-                  ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
-                  : "bg-white border-gray-200"
-              }`}
-              disabled={isSubmitting}
+            <ReactSelect
+              minWidth={180}
+              value={emailTempKey}
+              items={EMAIL_TEMPLATE_IMAGE_KEYS}
+              onChange={(value) => setEmailTempKey(value)}
+              placeholder={t("select_email_template_key")}
             />
           </div>
 
-          {/* Document Upload */}
+          {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
-              {t("document_file")} <span className="text-red-500">*</span>
+              {t("image")} <span className="text-red-500">*</span>
             </label>
 
             <div
@@ -228,69 +252,53 @@ export const CreateDocumentWizard = ({
                     : "border-gray-300 hover:border-gray-400",
               )}
             >
-              {docState.file ? (
+              {image ? (
                 <div className="flex flex-col items-center gap-2">
-                  <FileText className="w-12 h-12 text-violet-600 mb-1" />
-                  <p className="font-medium text-sm break-all">
-                    {docState.file.name}
-                  </p>
+                  <div className="relative w-32 h-32 rounded-xl overflow-hidden border">
+                    <ImageWithFallback
+                      src={image.previewUrl}
+                      alt={formData.title || "preview"}
+                      className="w-full h-full object-cover"
+                    />
 
-                  {/* Progress bar */}
-                  {isUploading && (
-                    <div className="w-full mt-2">
-                      <div
-                        className={`w-full h-1.5 rounded-full ${
-                          isDark ? "bg-gray-700" : "bg-gray-200"
-                        }`}
-                      >
-                        <div
-                          className="h-1.5 rounded-full bg-violet-600 transition-all duration-300"
-                          style={{ width: `${docState.progress}%` }}
-                        />
+                    {isUploadingImage && (
+                      <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        <span className="mt-1 text-white font-bold text-xs">
+                          {image.progress}%
+                        </span>
                       </div>
-                      <p className="text-xs text-violet-500 mt-1">
-                        {docState.progress < 50
-                          ? t("uploading_to_storage")
-                          : t("saving_document")}{" "}
-                        {docState.progress}%
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {!isUploading && (
+                  {!isUploadingImage && (
                     <button
                       type="button"
-                      onClick={removeFile}
+                      onClick={() => handleDeleteImage(image)}
                       className="mt-1 text-xs text-red-500 hover:underline"
                       disabled={isSubmitting}
                     >
-                      {t("remove_file")}
+                      {t("remove_image")}
                     </button>
                   )}
                 </div>
               ) : (
                 <>
-                  <Upload
+                  <ImageIcon
                     className={`w-10 h-10 mx-auto mb-4 ${
                       isDark ? "text-gray-500" : "text-gray-400"
                     }`}
                   />
-                  <p className="font-medium mb-1">{t("drag_drop_or_click")}</p>
-                  <p
-                    className={`text-xs ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    PDF, DOC, DOCX, TXT • Max 10MB
+                  <p className="font-medium mb-1">
+                    {t("drag_drop_image_or_click")}
                   </p>
-
                   <label className="mt-4 inline-block">
                     <span className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-full cursor-pointer transition">
-                      {t("select_file")}
+                      {t("select_image")}
                     </span>
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx,.txt"
+                      accept="image/*"
                       onChange={handleFileInput}
                       className="hidden"
                       disabled={isSubmitting}
@@ -320,22 +328,36 @@ export const CreateDocumentWizard = ({
             disabled={
               isSubmitting ||
               !formData.title.trim() ||
-              !docState.file ||
-              !externalApiId
+              !image ||
+              !externalApiId ||
+              !emailTempKey
             }
-            className="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:brightness-105"
+            className="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-violet-600 to-fuchsia-600 hover:brightness-105"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                {t("uploading")}
+                {isEditMode ? t("updating") : t("uploading")}
               </>
+            ) : isEditMode ? (
+              t("update_document")
             ) : (
               t("upload_document")
             )}
           </button>
         </div>
       </form>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="delete_image"
+        message="delete_image_confirm"
+        confirmText="delete"
+        variant="danger"
+        loading={isImageDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </ModalWrapper>
   );
 };

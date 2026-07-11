@@ -86,6 +86,14 @@ export function Login({ setCurrentTab }: LoginProps) {
     return formatTimeRemaining(timeRemaining);
   }, [isBlocked, timeRemaining]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent Enter key from triggering form submission in input fields
+    // Users should click the submit button instead
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -182,6 +190,7 @@ export function Login({ setCurrentTab }: LoginProps) {
               value={username}
               placeholder={t("username_email")}
               onChange={setUsername}
+              onKeyDown={handleKeyDown}
             />
 
             <AuthInputField
@@ -190,6 +199,7 @@ export function Login({ setCurrentTab }: LoginProps) {
               placeholder="••••••••"
               value={password}
               onChange={setPassword}
+              onKeyDown={handleKeyDown}
             />
 
             {error && <p className="text-red-300 text-sm">{error}</p>}

@@ -1,44 +1,52 @@
 import { toast } from "sonner";
-import { FileText, X } from "lucide-react";
+import { PenBox, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useCallback } from "react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { PageHeader } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ActionIconButtons } from "@/components/btns";
 
 import EmptyState from "@/components/shared/EmptyState";
-import { ReordableDataTable } from "@/components/shared";
-import { useGetDocumentQuery } from "@/store/api/doumentMutationApi";
+import {
+  ReordableDataTable,
+  ConfirmDialog,
+  ImageWithFallback,
+} from "@/components/shared";
+import {
+  useGetAllDocumentsQuery,
+  useDeleteDocumentMutation,
+} from "@/store/api/doumentMutationApi";
 import { CreateDocumentWizard } from "./components";
 
 const STORAGE_KEY = "document_query_state";
 
 export default function DocumentsManagement() {
   const { t } = useTranslation("documents");
+  const { t: tc } = useTranslation("common");
   const { isDark, borderColor, bgSecondary } = useThemeClasses();
 
-  const { websiteId } = useAppSelector((state) => state.auth);
+  const { websiteId, associatedWebsite } = useAppSelector(
+    (state) => state.auth,
+  );
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [wizardDocument, setWizardDocument] = useState<
+    IDoucment | null | undefined
+  >(undefined);
+  const [deleteTarget, setDeleteTarget] = useState<IDoucment | null>(null);
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(
     new Set(),
   );
-  const [combinedDocuments, setCombinedDocuments] = useState<any[]>([]);
+  const [combinedDocuments, setCombinedDocuments] = useState<IDoucment[]>([]);
   const [page, setPage] = useState(1);
 
-  // popup state
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [selectedFile, _setSelectedFile] = useState<any>(null);
-
-  const { data, isLoading, isFetching, refetch } = useGetDocumentQuery();
+  const { data, isLoading, isFetching, refetch } = useGetAllDocumentsQuery();
+  const [deleteDocument, { isLoading: isDeleting }] =
+    useDeleteDocumentMutation();
 
   useEffect(() => {
-    if (data?.data) {
-      setCombinedDocuments(Array.isArray(data.data) ? data.data : []);
-    } else if (data) {
-      setCombinedDocuments(Array.isArray(data) ? data : []);
-    }
+    setCombinedDocuments(Array.isArray(data?.data) ? data.data : []);
   }, [data]);
 
   useEffect(() => {
@@ -56,95 +64,77 @@ export default function DocumentsManagement() {
     toast.info("No more documents to load");
   }, []);
 
-  const getFileType = (docType: string) => {
-    if (docType?.includes("pdf")) return "pdf";
-    if (docType?.includes("png")) return "png";
-    if (docType?.includes("jpeg")) return "jpg";
-    if (docType?.includes("jpg")) return "jpg";
-    if (docType?.includes("doc")) return "docx";
-    if (docType?.includes("sheet")) return "xlsx";
-    return "pdf";
+  const getWebsiteName = useCallback(
+    (externalApiId: string) =>
+      associatedWebsite.find((website) => website._id === externalApiId)
+        ?.name ?? "-",
+    [associatedWebsite],
+  );
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteDocument(deleteTarget._id).unwrap();
+      toast.success(t("document_deleted_success"));
+      setDeleteTarget(null);
+      refetch();
+    } catch (error) {
+      console.error(error);
+      toast.error(t("delete_failed"));
+    }
   };
 
-  const openDocumentInNewTab = (file: any) => {
-    const url = file.docUrl;
-    const type = file.docType?.toLowerCase() || "";
-
-    // PDF
-    if (type.includes("pdf")) {
-      window.open(url, "_blank");
-      return;
-    }
-
-    // CSV / TXT
-    if (type.includes("csv") || type.includes("text")) {
-      window.open(url, "_blank");
-      return;
-    }
-
-    // Word / Excel / PowerPoint
-    if (
-      type.includes("word") ||
-      type.includes("officedocument") ||
-      type.includes("excel") ||
-      type.includes("spreadsheet") ||
-      type.includes("presentation")
-    ) {
-      const officeViewer = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(
-        url,
-      )}`;
-      window.open(officeViewer, "_blank");
-      return;
-    }
-
-    // Fallback
-    window.open(url, "_blank");
-  };
   const columns = [
     {
+      key: "imageUrl",
+      label: t("image"),
+      sortable: false,
+      render: (doc: IDoucment) => (
+        <ImageWithFallback
+          src={doc.imageUrl}
+          alt={doc.title}
+          className="w-14 h-10 rounded-lg object-cover"
+        />
+      ),
+    },
+    {
       key: "title",
-      label: t("title") || "Title",
+      label: t("title"),
       sortable: true,
     },
     {
-      key: "subTitle",
-      label: t("subtitle") || "Subtitle",
+      key: "externalApiId",
+      label: t("website"),
       sortable: false,
-      render: (doc: any) => {
-        const subtitle = doc.subTitle || doc.subtitle;
-        return subtitle && subtitle.trim() !== "" ? subtitle : "-";
-      },
+      render: (doc: IDoucment) => getWebsiteName(doc.externalApiId),
     },
     {
-      key: "createdAt",
-      label: t("created_at") || "Created At",
+      key: "templateKey",
+      label: t("email_template_key"),
       sortable: true,
-      render: (doc: any) => new Date(doc.createdAt).toLocaleDateString(),
     },
     {
-      key: "docType",
-      label: t("file_type") || "File Type",
+      key: "actions",
+      label: t("actions"),
       sortable: false,
-    },
-    {
-      key: "file",
-      label: t("file") || "Uploaded File",
-      sortable: false,
-      render: (doc: any) => {
-        const fileName =
-          doc.fileName || `${doc.title}.${getFileType(doc.docType || "pdf")}`;
+      render: (doc: IDoucment) => {
+        const actions: IActionIconButton[] = [
+          {
+            title: tc("edit"),
+            icon: PenBox,
+            color: "gray",
+            onClick: () => setWizardDocument(doc),
+          },
+          {
+            title: tc("delete"),
+            icon: Trash2,
+            color: "red",
+            onClick: () => setDeleteTarget(doc),
+          },
+        ];
 
-        return (
-          <div
-            onClick={() => openDocumentInNewTab(doc)}
-            className="flex items-center gap-2 cursor-pointer hover:text-violet-600"
-          >
-            <FileText className="w-4 h-4 text-violet-600 shrink-0" />
-            <span className="text-sm truncate max-w-50" title={fileName}>
-              {fileName}
-            </span>
-          </div>
-        );
+        return <ActionIconButtons isDark={isDark} actions={actions} />;
       },
     },
   ];
@@ -162,7 +152,7 @@ export default function DocumentsManagement() {
             title={t("page_title")}
             description={t("page_description")}
             btnLabel={t("upload_document")}
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => setWizardDocument(null)}
             h1Gradient="bg-linear-to-r text-transparent from-violet-500 via-fuchsia-600 to-pink-600"
             totalCount={totalData}
           />
@@ -191,60 +181,27 @@ export default function DocumentsManagement() {
           )}
         </div>
 
-        {/* Upload Modal */}
-        {isCreateModalOpen && (
+        {/* Create / Edit Modal */}
+        {wizardDocument !== undefined && (
           <CreateDocumentWizard
-            onClose={() => setIsCreateModalOpen(false)}
+            documentToEdit={wizardDocument}
+            onClose={() => setWizardDocument(undefined)}
             refetch={refetch}
           />
         )}
-
-        {/* File Viewer Popup */}
-        {isViewerOpen && selectedFile && (
-          <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center p-6">
-            <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-5xl h-[90vh] relative overflow-hidden shadow-2xl">
-              {/* Header */}
-              <div className="flex justify-between items-center px-4 py-3 border-b">
-                <h2 className="font-semibold text-lg truncate">
-                  {selectedFile.title}
-                </h2>
-
-                <button onClick={() => setIsViewerOpen(false)}>
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Viewer */}
-              <div className="h-[calc(100%-60px)] overflow-auto">
-                {selectedFile.docType?.includes("pdf") ? (
-                  <iframe
-                    src={selectedFile.docUrl}
-                    title="Document Viewer"
-                    className="w-full h-full"
-                  />
-                ) : selectedFile.docType?.includes("image") ? (
-                  <img
-                    src={selectedFile.docUrl}
-                    alt="Preview"
-                    className="max-w-full max-h-full mx-auto p-4"
-                  />
-                ) : (
-                  <div className="p-6 text-center">
-                    <a
-                      href={selectedFile.docUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-600 underline"
-                    >
-                      Open File
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Delete Confirm */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        variant="danger"
+        title={t("delete_document")}
+        message={t("delete_document_confirm", { title: deleteTarget?.title })}
+        confirmText="delete"
+        loading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </>
   );
 }

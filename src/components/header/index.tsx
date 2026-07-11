@@ -234,9 +234,9 @@ export default function Header() {
                 >
                   <div className="relative">
                     <span className="text-lg absolute -top-3 left-2">
-                      {language === "en" && "🇬🇧"}
-                      {language === "he" && "🇮🇱"}
-                      {language === "ar" && "🇸🇦"}
+                      {language === "en" && locales[0]?.flag}
+                      {language === "he" && locales[1]?.flag}
+                      {language === "ar" && locales[2]?.flag}
                     </span>
                     <Languages size={20} />
                   </div>
@@ -265,13 +265,7 @@ export default function Header() {
                           textPrimary,
                         )}
                       >
-                        {lang.flag && (
-                          <img
-                            src={lang.flag}
-                            alt={lang.label}
-                            className="w-5 h-4 object-contain shrink-0"
-                          />
-                        )}
+                        <div>{lang.flag}</div>
                         <span>{lang.label}</span>
                       </button>
                     ))}

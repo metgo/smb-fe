@@ -35,6 +35,7 @@ export const routes = {
   offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
   auth: "/authentication",
+  noInternet: "/no-internet",
   miniSite: "/mini-site",
 
   profile: "/profile",

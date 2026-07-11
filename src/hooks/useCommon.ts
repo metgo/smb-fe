@@ -23,7 +23,6 @@ export function useCommon() {
 
   const dmosAuthorities: IDmo[] = data?.data;
   const { data: allWebsites } = useGetAllWebsitesQuery();
-  console.log("🚀 ~ useCommon ~ allWebsites:", allWebsites);
 
   const { data: allTags } = useGetAllTagsQuery();
 
