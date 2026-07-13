@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, AlertTriangle, FileText } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -9,7 +9,7 @@ import { useRespondDisputeMutation } from "@/store/api/reconciliationQueryApi";
 interface AdminDisputeResponseModalProps {
   order: MonthlyOrder;
   onClose: () => void;
-  onResolve: (resolution: string, response: string, action: string) => void;
+  onResolve: () => void;
 }
 
 export const AdminDisputeResponseModal = ({
@@ -75,29 +75,22 @@ export const AdminDisputeResponseModal = ({
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    if (!order.disputeInfo?._id) {
-      toast.error("Dispute ID not found");
-      return;
-    }
-
     try {
       await respondDispute({
-        disputeId: order.disputeInfo._id,
+        disputeId: order._id,
         action: resolutionAction,
         internalNotes,
         vendorFacingResponse: responseToVendor,
       }).unwrap();
 
       toast.success("Dispute resolved successfully");
-      onResolve(resolutionAction, responseToVendor, resolutionAction);
+      onResolve();
       onClose();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("dispute_failed"));
     }
   };
-
-  if (!order.disputeInfo) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -116,9 +109,7 @@ export const AdminDisputeResponseModal = ({
               <h2 className={`text-xl font-bold ${textPrimary}`}>
                 Dispute Resolution
               </h2>
-              <p className={`text-sm ${textTertiary}`}>
-                Dispute #{order.disputeInfo.id} - Order #{order._id}
-              </p>
+              <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
             </div>
           </div>
           <button
@@ -135,9 +126,6 @@ export const AdminDisputeResponseModal = ({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
               🔴 Awaiting Admin Response
-            </span>
-            <span className={`text-xs ${textTertiary}`}>
-              Submitted {formatDate(order.disputeInfo.submittedAt)}
             </span>
           </div>
 
@@ -156,9 +144,6 @@ export const AdminDisputeResponseModal = ({
                 <div>
                   <div className={`font-medium ${textPrimary}`}>
                     {order.productName}
-                  </div>
-                  <div className={`text-xs ${textTertiary} mt-1`}>
-                    SKU: {order.productSKU}
                   </div>
                 </div>
               </div>
@@ -191,56 +176,15 @@ export const AdminDisputeResponseModal = ({
             </div>
           </div>
 
-          {/* Vendor's Dispute Information */}
+          {/* Vendor's Dispute Information - Placeholder */}
           <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
             <h3
               className={`text-sm font-semibold text-orange-900 dark:text-orange-200 mb-3`}
             >
-              Vendor's Dispute Information
+              Dispute Information
             </h3>
-            <div className="space-y-3">
-              <div>
-                <div
-                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
-                >
-                  Reason
-                </div>
-                <div
-                  className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
-                >
-                  {order.disputeInfo.reason}
-                </div>
-              </div>
-              <div>
-                <div
-                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
-                >
-                  Vendor's Notes
-                </div>
-                <div className={`text-sm text-orange-900 dark:text-orange-100`}>
-                  "{order.disputeInfo.details}"
-                </div>
-              </div>
-              {order.disputeInfo.files.length > 0 && (
-                <div>
-                  <div
-                    className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
-                  >
-                    Attachments
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {order.disputeInfo.files.map((file, idx) => (
-                      <button
-                        key={idx}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded text-xs hover:bg-orange-200 dark:hover:bg-orange-900/40 transition-colors"
-                      >
-                        <FileText className="w-3 h-3" />
-                        {file}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className={`text-sm text-orange-700 dark:text-orange-300`}>
+              Dispute details for Order #{order._id}
             </div>
           </div>
 

@@ -14,7 +14,6 @@ import CancelOrderModal from "./CancelOrderModal";
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useFileUpload } from "@/hooks/useFileUpload";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
 import { uploadWithProgress } from "@/helpers";
 import {
@@ -145,6 +144,7 @@ function mapOrderProductDetails(d: OrderProduct) {
     netToVendor:
       (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
     status,
+    reconciliationStatus: status,
     paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
     paymentStatus: d.paymentInformation?.paymentStatus || "",
     deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
@@ -173,12 +173,10 @@ export const VendorMonthlyReport = () => {
 
   const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ReturnType<
-    typeof mapOrderProduct
+    typeof mapOrderProductDetails
   > | null>(null);
-  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -250,8 +248,10 @@ export const VendorMonthlyReport = () => {
         setOrders(mappedOrders);
       } else {
         setOrders((prev) => {
-          const existingIds = new Set(prev.map((o) => o._id));
-          const newOrders = mappedOrders.filter((o) => !existingIds.has(o._id));
+          const existingIds = new Set(prev.map((o: MonthlyOrder) => o._id));
+          const newOrders = mappedOrders.filter(
+            (o: MonthlyOrder) => !existingIds.has(o._id),
+          );
           return [...prev, ...newOrders];
         });
       }
@@ -418,7 +418,7 @@ export const VendorMonthlyReport = () => {
     setDetailsOrderId(null);
   };
 
-  const handleAdminResolveDispute = (response: string, action: string) => {
+  const handleAdminResolveDispute = () => {
     toast.success(t("dispute_resolved"));
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);

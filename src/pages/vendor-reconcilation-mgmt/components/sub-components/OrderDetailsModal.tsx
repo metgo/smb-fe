@@ -1,4 +1,4 @@
-import { Package, User, CreditCard, Truck, AlertCircle } from "lucide-react";
+import { Package, User, CreditCard, Truck } from "lucide-react";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -10,6 +10,7 @@ interface OrderDetailsModalProps {
   onCancel: () => void;
   onApprove: () => void;
   loading?: boolean;
+  adminView?: boolean;
 }
 
 export default function OrderDetailsModal({
@@ -185,12 +186,6 @@ export default function OrderDetailsModal({
                   {order.customerPhone}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>Location</span>
-                <span className={`${textSecondary} font-medium`}>
-                  {order.customerLocation}
-                </span>
-              </div>
             </div>
           </div>
 
@@ -252,130 +247,6 @@ export default function OrderDetailsModal({
               </div>
             </div>
           </div>
-
-          {/* Dispute Information */}
-          {order.disputeInfo && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-              <div className="flex items-start gap-2 mb-3">
-                <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3
-                    className={`text-sm font-semibold text-orange-900 dark:text-orange-200 mb-1`}
-                  >
-                    Dispute Information
-                  </h3>
-                  <p className={`text-xs text-orange-700 dark:text-orange-300`}>
-                    Submitted on {formatDate(order.disputeInfo.submittedAt)}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <div
-                    className={`text-orange-700 dark:text-orange-300 text-xs mb-1`}
-                  >
-                    Reason
-                  </div>
-                  <div
-                    className={`text-orange-900 dark:text-orange-100 font-medium`}
-                  >
-                    {order.disputeInfo.reason}
-                  </div>
-                </div>
-                <div>
-                  <div
-                    className={`text-orange-700 dark:text-orange-300 text-xs mb-1`}
-                  >
-                    Details
-                  </div>
-                  <div className={`text-orange-900 dark:text-orange-100`}>
-                    {order.disputeInfo.details}
-                  </div>
-                </div>
-                {order.disputeInfo.files.length > 0 && (
-                  <div>
-                    <div
-                      className={`text-orange-700 dark:text-orange-300 text-xs mb-1`}
-                    >
-                      Attachments
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {order.disputeInfo.files.map((file, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded text-xs"
-                        >
-                          {file}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {order.disputeInfo.adminResponse && (
-                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
-                    <div
-                      className={`text-orange-700 dark:text-orange-300 text-xs mb-1`}
-                    >
-                      Admin Response
-                    </div>
-                    <div className={`text-orange-900 dark:text-orange-100`}>
-                      {order.disputeInfo.adminResponse}
-                    </div>
-                    <div
-                      className={`text-orange-700 dark:text-orange-300 text-xs mt-1`}
-                    >
-                      Responded on{" "}
-                      {order.disputeInfo.respondedAt &&
-                        formatDate(order.disputeInfo.respondedAt)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Cancel Information */}
-          {order.cancelInfo && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <div className="flex items-start gap-2 mb-3">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3
-                    className={`text-sm font-semibold text-red-900 dark:text-red-200 mb-1`}
-                  >
-                    Cancellation Information
-                  </h3>
-                  <p className={`text-xs text-red-700 dark:text-red-300`}>
-                    Cancelled on {formatDate(order.cancelInfo.cancelledAt)}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <div
-                    className={`text-red-700 dark:text-red-300 text-xs mb-1`}
-                  >
-                    Reason
-                  </div>
-                  <div className={`text-red-900 dark:text-red-100 font-medium`}>
-                    {order.cancelInfo.reason}
-                  </div>
-                </div>
-                {order.cancelInfo.notes && (
-                  <div>
-                    <div
-                      className={`text-red-700 dark:text-red-300 text-xs mb-1`}
-                    >
-                      Notes
-                    </div>
-                    <div className={`text-red-900 dark:text-red-100`}>
-                      {order.cancelInfo.notes}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Actions */}
