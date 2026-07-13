@@ -28,7 +28,6 @@ import {
   BellIcon,
   Layers2,
   BookOpen,
-  LayoutList,
   LocateFixed,
   Wrench,
   UserRoundCog,
