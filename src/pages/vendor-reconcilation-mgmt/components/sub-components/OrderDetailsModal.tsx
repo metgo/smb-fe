@@ -250,50 +250,40 @@ export default function OrderDetailsModal({
         </div>
 
         {/* Actions */}
-        {order.status === "pending" && (
-          <div
-            className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
-          >
-            {
-              <>
-                {order.status !== "canceled" && (
-                  <button
-                    onClick={onCancel}
-                    className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                  >
-                    Cancel Order
-                  </button>
-                )}
-                <button
-                  onClick={onApprove}
-                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-                >
-                  ✓ Approve Order
-                </button>
-              </>
-            }
-            {isTraveller && (
-              <>
-                {order.status !== "canceled" && (
-                  <button
-                    onClick={onCancel}
-                    className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                  >
-                    Cancel Order
-                  </button>
-                )}
-                {order.reconciliationStatus !== "disputed" && (
-                  <button
-                    onClick={onDispute}
-                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
-                  >
-                    Open Dispute
-                  </button>
-                )}
-              </>
+        <div
+          className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
+        >
+          <>
+            {userRole === "superadmin" && order.status !== "canceled" && (
+              <button
+                onClick={onApprove}
+                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+              >
+                ✓ Approve Order
+              </button>
             )}
+          </>
+
+          <div>
+            {order.status !== "canceled" && (
+              <button
+                onClick={onCancel}
+                className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+              >
+                Cancel Order
+              </button>
+            )}
+            {order.reconciliationStatus !== "disputed" &&
+              userRole === "traveller" && (
+                <button
+                  onClick={onDispute}
+                  className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
+                >
+                  Open Dispute
+                </button>
+              )}
           </div>
-        )}
+        </div>
       </div>
     </ModalWrapper>
   );

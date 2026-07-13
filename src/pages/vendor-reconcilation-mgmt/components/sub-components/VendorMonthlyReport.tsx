@@ -367,7 +367,7 @@ export const VendorMonthlyReport = () => {
       }
 
       // TODO: Replace hardcoded disputeId with actual dispute ID from order
-      const HARDCODED_DISPUTE_ID = "6a54c6ae4da6d6ccb082347f";
+      const HARDCODED_DISPUTE_ID = "6a54c8654da6d6ccb08235b7";
 
       // Call respond dispute endpoint with hardcoded ID for testing
       await respondDispute({
