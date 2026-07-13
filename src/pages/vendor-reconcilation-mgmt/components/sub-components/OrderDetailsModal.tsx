@@ -23,7 +23,6 @@ export default function OrderDetailsModal({
 }: OrderDetailsModalProps) {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const { userRole } = useAppSelector((state) => state.auth);
-  const isTraveller = userRole === "traveller";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";

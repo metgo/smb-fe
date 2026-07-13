@@ -49,6 +49,7 @@ interface OrderProduct {
     unitPrice: number;
     total: number;
     platformFee: number;
+    disputeId?: string;
   };
   customerInformation: {
     name: string;
@@ -107,6 +108,7 @@ function mapOrderProductList(d: any) {
     deliveryMethod: "",
     deliveryAddress: "",
     specialInstructions: "",
+    disputeId: d.disputeId,
   };
 }
 
@@ -150,7 +152,7 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d.deliveryInformation?.specialInstructions || "",
-    disputeId: d._id,
+    disputeId: d.orderInformation?.disputeId,
   };
 }
 
@@ -223,7 +225,7 @@ export const VendorMonthlyReport = () => {
     authorityId,
   ]);
 
-  const { data: orderProductsData, isLoading } =
+  const { data: orderProductsData, isLoading, refetch: refetchOrders } =
     useGetOrderProductsQuery(apiParams);
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
@@ -347,6 +349,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
       setSelectedOrder(null);
+      refetchOrders();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       if (errorMessage?.includes("cannot be disputed")) {
@@ -361,17 +364,14 @@ export const VendorMonthlyReport = () => {
 
   const handleApprove = async (order: MonthlyOrder) => {
     try {
-      if (!order._id) {
-        toast.error("Invalid order data");
+      if (!order._id || !order.disputeId) {
+        toast.error("Invalid order or dispute data");
         return;
       }
 
-      // TODO: Replace hardcoded disputeId with actual dispute ID from order
-      const HARDCODED_DISPUTE_ID = "6a54c8654da6d6ccb08235b7";
-
-      // Call respond dispute endpoint with hardcoded ID for testing
+      // Use actual disputeId from order data
       await respondDispute({
-        disputeId: HARDCODED_DISPUTE_ID,
+        disputeId: order.disputeId,
         action: "accept",
         internalNotes: "Approved by admin",
         vendorFacingResponse: "Your dispute has been accepted. Refund will be processed.",
@@ -403,6 +403,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("order_cancelled"));
       setShowCancelModal(false);
       setSelectedOrder(null);
+      refetchOrders();
     } catch (error) {
       toast.error(t("cancel_failed"));
     }
