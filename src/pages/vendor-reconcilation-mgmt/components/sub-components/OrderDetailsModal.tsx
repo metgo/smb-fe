@@ -1,4 +1,4 @@
-import {  Package, User, CreditCard, Truck, AlertCircle } from "lucide-react";
+import { Package, User, CreditCard, Truck, AlertCircle } from "lucide-react";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -9,7 +9,6 @@ interface OrderDetailsModalProps {
   onDispute: () => void;
   onCancel: () => void;
   onApprove: () => void;
-  adminView?: boolean;
   loading?: boolean;
 }
 
@@ -19,10 +18,11 @@ export default function OrderDetailsModal({
   onDispute,
   onCancel,
   onApprove,
-  adminView = false,
   loading,
 }: OrderDetailsModalProps) {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { userRole } = useAppSelector((state) => state.auth);
+  const isTraveller = userRole === "traveller";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
   const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
@@ -84,10 +84,6 @@ export default function OrderDetailsModal({
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className={textTertiary}>SKU:</span>{" "}
-                    <span className={textSecondary}>{order.productSKU}</span>
-                  </div>
-                  <div>
                     <span className={textTertiary}>Category:</span>{" "}
                     <span className={textSecondary}>
                       {order.productCategory}
@@ -106,7 +102,9 @@ export default function OrderDetailsModal({
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className={`${textTertiary} mb-1`}>Order ID</div>
-                <div className={`${textSecondary} font-medium`}>{order._id}</div>
+                <div className={`${textSecondary} font-medium`}>
+                  {order._id}
+                </div>
               </div>
               <div>
                 <div className={`${textTertiary} mb-1`}>Purchase Date</div>
@@ -245,14 +243,7 @@ export default function OrderDetailsModal({
                   {order.paymentMethod}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className={textTertiary}>Transaction ID</span>
-                <span
-                  className={`${textSecondary} font-medium font-mono text-xs`}
-                >
-                  {order.transactionId}
-                </span>
-              </div>
+
               <div className="flex justify-between">
                 <span className={textTertiary}>Payment Status</span>
                 <span className={`${textSecondary} font-medium`}>
@@ -388,28 +379,42 @@ export default function OrderDetailsModal({
         </div>
 
         {/* Actions */}
-        {!adminView && order.status === "pending" && (
+        {order.status === "pending" && (
           <div
             className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
           >
-            <button
-              onClick={onCancel}
-              className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-            >
-              Cancel Order
-            </button>
-            <button
-              onClick={onDispute}
-              className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
-            >
-              Open Dispute
-            </button>
-            <button
-              onClick={onApprove}
-              className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-            >
-              ✓ Approve Order
-            </button>
+            {!isTraveller && (
+              <>
+                <button
+                  onClick={onCancel}
+                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                >
+                  Cancel Order
+                </button>
+                <button
+                  onClick={onApprove}
+                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+                >
+                  ✓ Approve Order
+                </button>
+              </>
+            )}
+            {isTraveller && (
+              <>
+                <button
+                  onClick={onCancel}
+                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                >
+                  Cancel Order
+                </button>
+                <button
+                  onClick={onDispute}
+                  className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
+                >
+                  Open Dispute
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

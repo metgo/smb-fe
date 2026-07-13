@@ -27,10 +27,6 @@ import {
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
 
-interface VendorMonthlyReportProps {
-  adminView?: boolean;
-}
-
 interface OrderProduct {
   _id: string;
   orderId: string;
@@ -84,10 +80,11 @@ interface OrderProduct {
 }
 
 function mapOrderProductList(d: any) {
-  const customerName = [d.customer?.firstName, d.customer?.lastName]
-    .filter(Boolean)
-    .join(" ")
-    .trim() || "";
+  const customerName =
+    [d.customer?.firstName, d.customer?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || "";
 
   return {
     _id: d._id,
@@ -104,7 +101,7 @@ function mapOrderProductList(d: any) {
     totalPrice: d.totalAmount || 0,
     platformFee: d.fee || 0,
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
-    status: d.status === "processing" ? "pending" : d.status || "pending",
+    status: d.reconciliationStatus,
     paymentMethod: "",
     paymentStatus: d.reconciliationStatus || "",
     deliveryMethod: "",
@@ -144,7 +141,8 @@ function mapOrderProductDetails(d: OrderProduct) {
     unitPrice: d.orderInformation?.unitPrice || 0,
     totalPrice: d.orderInformation?.total || 0,
     platformFee: d.orderInformation?.platformFee || 0,
-    netToVendor: (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
+    netToVendor:
+      (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
     status,
     paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
     paymentStatus: d.paymentInformation?.paymentStatus || "",
@@ -156,13 +154,10 @@ function mapOrderProductDetails(d: OrderProduct) {
 
 export type MonthlyOrder = ReturnType<typeof mapOrderProductList>;
 
-export const VendorMonthlyReport = ({
-  adminView = false,
-}: VendorMonthlyReportProps) => {
+export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
   const {
     isDark,
-    isRTL,
     bgPrimary,
     bgSecondary,
     textPrimary,
@@ -170,18 +165,19 @@ export const VendorMonthlyReport = ({
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { dmoId, authorityId, userRole } = useAppSelector((state) => state.auth);
-
-  const [orders, setOrders] = useState<MonthlyOrder[]>(
-    [],
+  const { dmoId, authorityId, userRole } = useAppSelector(
+    (state) => state.auth,
   );
+  const adminView = userRole === "superadmin";
+
+  const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ReturnType<
     typeof mapOrderProduct
   > | null>(null);
-  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder)
+  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -281,32 +277,29 @@ export const VendorMonthlyReport = ({
     filters.maxAmount,
   ]);
 
-  const stats = useMemo(
-    () => {
-      const pending = orders.filter((o) => o.status === "pending");
-      const approved = orders.filter((o) => o.status === "approved");
-      const disputed = orders.filter((o) => o.status === "disputed");
-      const cancelled = orders.filter((o) => o.status === "canceled");
+  const stats = useMemo(() => {
+    const pending = orders.filter((o) => o.status === "pending");
+    const approved = orders.filter((o) => o.status === "approved");
+    const disputed = orders.filter((o) => o.status === "disputed");
+    const cancelled = orders.filter((o) => o.status === "canceled");
 
-      const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
-      const platformFees = orders.reduce((sum, o) => sum + o.platformFee, 0);
-      const heldForDisputes = disputed.reduce((sum, o) => sum + o.totalPrice, 0);
-      const netPayout = totalRevenue - platformFees;
+    const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+    const platformFees = orders.reduce((sum, o) => sum + o.platformFee, 0);
+    const heldForDisputes = disputed.reduce((sum, o) => sum + o.totalPrice, 0);
+    const netPayout = totalRevenue - platformFees;
 
-      return {
-        pending: pending.length,
-        approved: approved.length,
-        disputed: disputed.length,
-        cancelled: cancelled.length,
-        totalOrders: orders.length,
-        totalRevenue,
-        platformFees,
-        netPayout,
-        heldForDisputes,
-      };
-    },
-    [orders],
-  );
+    return {
+      pending: pending.length,
+      approved: approved.length,
+      disputed: disputed.length,
+      cancelled: cancelled.length,
+      totalOrders: orders.length,
+      totalRevenue,
+      platformFees,
+      netPayout,
+      heldForDisputes,
+    };
+  }, [orders]);
 
   const handleOpenDispute = (order: MonthlyOrder) => {
     if (userRole !== "traveller") {
@@ -366,14 +359,21 @@ export const VendorMonthlyReport = ({
 
   const handleApprove = async (order: MonthlyOrder) => {
     try {
+      if (!order.orderId || !order._id) {
+        toast.error("Invalid order data");
+        return;
+      }
+
       await approveOrderProduct({
         orderId: order.orderId,
         orderProductId: order._id,
       }).unwrap();
 
       toast.success(t("order_approved"));
-    } catch (error) {
-      toast.error(t("approve_failed"));
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("approve_failed"));
+      console.error("Approve error:", error);
     }
   };
 
@@ -551,8 +551,7 @@ export const VendorMonthlyReport = ({
       key: "status",
       sortable: true,
       label: t("status"),
-      render: (order: MonthlyOrder) =>
-        getStatusBadge(order.status),
+      render: (order: MonthlyOrder) => getStatusBadge(order.status),
     },
     {
       key: "actions",
@@ -562,8 +561,9 @@ export const VendorMonthlyReport = ({
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {!adminView && order.status === "pending" && (
-            <>
+          {!adminView &&
+            order.status === "pending" &&
+            userRole !== "traveller" && (
               <button
                 onClick={() => handleApprove(order)}
                 className="p-1.5 rounded text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
@@ -571,32 +571,33 @@ export const VendorMonthlyReport = ({
               >
                 <CheckCircle className="w-4 h-4" />
               </button>
-              {userRole !== "superadmin" && (
-                <button
-                  onClick={() => handleOpenDispute(order)}
-                  className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                  title={t("dispute")}
-                >
-                  <AlertTriangle className="w-4 h-4" />
-                </button>
-              )}
+            )}
+          {(order.status !== "canceled" && order.status !== "disputed") &&
+            userRole === "traveller" && (
               <button
-                onClick={() => handleCancelOrder(order)}
-                className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                title={t("cancel")}
+                onClick={() => handleOpenDispute(order)}
+                className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                title={t("dispute")}
               >
-                <XCircle className="w-4 h-4" />
+                <AlertTriangle className="w-4 h-4" />
               </button>
-            </>
-          )}
-          {adminView && order.status === "disputed" && userRole !== "traveller" && (
+            )}
+          {order.status === "disputed" && userRole !== "traveller" && (
             <button
               onClick={() => handleViewDetails(order)}
-              className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              title={t("respond")}
             >
-              {t("respond")}
+              <CheckCircle className="w-5 h-5" />
             </button>
           )}
+          <button
+            onClick={() => handleCancelOrder(order)}
+            className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            title={t("cancel")}
+          >
+            <XCircle className="w-4 h-4" />
+          </button>
         </div>
       ),
     },
@@ -690,7 +691,8 @@ export const VendorMonthlyReport = ({
               <p
                 className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
               >
-                ₪{(stats.heldForDisputes || 0).toLocaleString()} held for disputes
+                ₪{(stats.heldForDisputes || 0).toLocaleString()} held for
+                disputes
               </p>
               <p
                 className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
@@ -807,9 +809,7 @@ export const VendorMonthlyReport = ({
         rowKey="_id"
         data={orders}
         isDataLoading={isLoading}
-        onRowClick={(order: MonthlyOrder) =>
-          handleViewDetails(order)
-        }
+        onRowClick={(order: MonthlyOrder) => handleViewDetails(order)}
         storageKey="vendorMonthlyReportColumnOrder"
         columns={columns}
         hasMore={hasMore}

@@ -26,6 +26,12 @@ export default function DisputeModal({
   onSubmit,
 }: DisputeModalProps) {
   const { theme } = useAppSelector((state) => state.settings);
+  const { userRole } = useAppSelector((state) => state.auth);
+
+  // Only traveller can raise disputes
+  if (userRole !== "traveller") {
+    return null;
+  }
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
