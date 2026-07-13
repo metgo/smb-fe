@@ -582,7 +582,7 @@ export const VendorMonthlyReport = () => {
               </button>
             )}
           {order.status !== "canceled" &&
-            order.status !== "disputed" &&
+            order.reconciliationStatus !== "disputed" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -592,22 +592,25 @@ export const VendorMonthlyReport = () => {
                 <AlertTriangle className="w-4 h-4" />
               </button>
             )}
-          {userRole !== "traveller" && (
+          {order.reconciliationStatus === "disputed" &&
+            userRole !== "traveller" && (
+              <button
+                onClick={() => handleViewDetails(order)}
+                className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                title={t("respond")}
+              >
+                <CheckCircle className="w-5 h-5" />
+              </button>
+            )}
+          {order.status !== "canceled" && (
             <button
-              onClick={() => handleViewDetails(order)}
-              className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-              title={t("respond")}
+              onClick={() => handleCancelOrder(order)}
+              className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              title={t("cancel")}
             >
-              <CheckCircle className="w-5 h-5" />
+              <XCircle className="w-4 h-4" />
             </button>
           )}
-          <button
-            onClick={() => handleCancelOrder(order)}
-            className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title={t("cancel")}
-          >
-            <XCircle className="w-4 h-4" />
-          </button>
         </div>
       ),
     },

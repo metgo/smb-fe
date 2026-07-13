@@ -254,14 +254,16 @@ export default function OrderDetailsModal({
           <div
             className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
           >
-            {!isTraveller && (
+            {
               <>
-                <button
-                  onClick={onCancel}
-                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                >
-                  Cancel Order
-                </button>
+                {order.status !== "canceled" && (
+                  <button
+                    onClick={onCancel}
+                    className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                  >
+                    Cancel Order
+                  </button>
+                )}
                 <button
                   onClick={onApprove}
                   className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
@@ -269,21 +271,25 @@ export default function OrderDetailsModal({
                   ✓ Approve Order
                 </button>
               </>
-            )}
+            }
             {isTraveller && (
               <>
-                <button
-                  onClick={onCancel}
-                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                >
-                  Cancel Order
-                </button>
-                <button
-                  onClick={onDispute}
-                  className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
-                >
-                  Open Dispute
-                </button>
+                {order.status !== "canceled" && (
+                  <button
+                    onClick={onCancel}
+                    className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                  >
+                    Cancel Order
+                  </button>
+                )}
+                {order.reconciliationStatus !== "disputed" && (
+                  <button
+                    onClick={onDispute}
+                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
+                  >
+                    Open Dispute
+                  </button>
+                )}
               </>
             )}
           </div>
