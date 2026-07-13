@@ -9,6 +9,11 @@ export interface CancelOrderProductRequest {
   additionalInfo?: string;
 }
 
+export interface ApproveOrderProductRequest {
+  orderId: string;
+  orderProductId: string;
+}
+
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -30,10 +35,19 @@ export const reconciliationQueryApi = createApi({
       }),
     }),
 
-    // POST /cancel-order-product
+    // PATCH /cancel-order-product
     cancelOrderProduct: builder.mutation<void, CancelOrderProductRequest>({
       query: (body) => ({
         url: endpoints.cancelOrderProduct,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
+
+    // PATCH /approve-order-product
+    approveOrderProduct: builder.mutation<void, ApproveOrderProductRequest>({
+      query: (body) => ({
+        url: endpoints.approveOrderProduct,
         method: "PATCH",
         data: body,
       }),
@@ -45,4 +59,5 @@ export const {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
+  useApproveOrderProductMutation,
 } = reconciliationQueryApi;

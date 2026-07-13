@@ -1,11 +1,7 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Filter,
-  Download,
-  ChevronDown,
-  AlertCircle,
-  FileText,
-  Calendar,
   CheckCircle,
   XCircle,
   Clock,
@@ -15,13 +11,14 @@ import { toast } from "sonner";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
 import CancelOrderModal from "./CancelOrderModal";
-
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
+  useApproveOrderProductMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
@@ -30,54 +27,89 @@ interface VendorMonthlyReportProps {
   adminView?: boolean;
 }
 
-export interface MonthlyOrder {
-  id: string;
-  productId: string;
-  productName: string;
-  productImage: string;
-  productSKU: string;
-  productCategory: string;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerLocation: string;
-  purchaseDate: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-  platformFee: number;
-  netToVendor: number;
-  status: "pending" | "approved" | "disputed" | "canceled";
-  paymentMethod: string;
-  paymentStatus: string;
-  deliveryMethod: string;
-  deliveryAddress: string;
-  specialInstructions?: string;
-  transactionId: string;
-  disputeInfo?: {
-    id: string;
-    reason: string;
-    details: string;
-    files: string[];
-    submittedAt: string;
-    adminResponse?: string;
-    respondedAt?: string;
-    resolution?: "approved" | "denied" | "partial" | "pending";
+interface OrderProduct {
+  _id: string;
+  orderId: string;
+  productInformation: {
+    _id: string;
+    name: string;
+    image: string;
+    category: { _id: string; name: string };
   };
-  cancelInfo?: {
-    reason: string;
-    notes?: string;
-    cancelledAt: string;
-    cancelledBy: string;
+  orderInformation: {
+    orderId: string;
+    purchaseDate: string;
+    status:
+      | "pending"
+      | "approved"
+      | "disputed"
+      | "canceled"
+      | "processing"
+      | "completed";
+    quantity: number;
+    unitPrice: number;
+    total: number;
+    platformFee: number;
   };
-  approvedAt?: string;
-  approvedBy?: string;
+  customerInformation: {
+    name: string;
+    firstName: string;
+    lastName?: string;
+    email: string;
+    phone?: string;
+  };
+  deliveryInformation: {
+    deliveryMethod: string;
+    address: {
+      houseNo?: string;
+      apartment?: string;
+      street?: string;
+      city?: string;
+    };
+    specialInstructions?: string;
+  };
+  paymentInformation: {
+    paymentMethod: string[];
+    paymentStatus: string;
+    totalAmount: number;
+  };
+  vendorInformation: {
+    _id: string;
+    name: string;
+  };
 }
 
-// Maps the full order-details API response (single-order shape) into a MonthlyOrder.
-// Pure function — no component state involved, so it's trivial to test/reuse.
-function mapOrderDetails(d: any): MonthlyOrder {
+function mapOrderProductList(d: any) {
+  const customerName = [d.customer?.firstName, d.customer?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim() || "";
+
+  return {
+    id: d._id,
+    orderId: d.orderId,
+    productName: d.product?.name || "",
+    productImage: d.product?.image?.image || "",
+    productCategory: "",
+    customerName,
+    customerEmail: d.customer?.email || "",
+    customerPhone: d.customer?.phone || "",
+    purchaseDate: d.date || "",
+    quantity: d.quantity || 0,
+    unitPrice: d.price || 0,
+    totalPrice: d.totalAmount || 0,
+    platformFee: d.fee || 0,
+    netToVendor: (d.totalAmount || 0) - (d.fee || 0),
+    status: d.status === "processing" ? "pending" : d.status || "pending",
+    paymentMethod: "",
+    paymentStatus: d.reconciliationStatus || "",
+    deliveryMethod: "",
+    deliveryAddress: "",
+    specialInstructions: "",
+  };
+}
+
+function mapOrderProductDetails(d: OrderProduct) {
   const address = [
     d.deliveryInformation?.address?.houseNo,
     d.deliveryInformation?.address?.apartment,
@@ -87,77 +119,72 @@ function mapOrderDetails(d: any): MonthlyOrder {
     .filter(Boolean)
     .join(", ");
 
+  const status =
+    d.orderInformation?.status === "completed"
+      ? "approved"
+      : d.orderInformation?.status === "processing"
+        ? "pending"
+        : d.orderInformation?.status;
+
   return {
     id: d._id,
-    productId: d.productInformation?._id || "",
+    orderId: d.orderId,
     productName: d.productInformation?.name || "",
     productImage: d.productInformation?.image || "",
-    productSKU: "",
     productCategory: d.productInformation?.category?.name || "",
-    customerId: "",
     customerName: d.customerInformation?.name?.trim() || "",
     customerEmail: d.customerInformation?.email || "",
     customerPhone: d.customerInformation?.phone || "",
-    customerLocation: d.customerInformation?.location || "",
-    purchaseDate: d.orderInformation?.purchaseDate,
-    quantity: d.orderInformation?.quantity,
-    unitPrice: d.orderInformation?.unitPrice,
-    totalPrice: d.orderInformation?.total,
-    platformFee: d.orderInformation?.platformFee,
-    netToVendor: d.orderInformation?.total - d.orderInformation?.platformFee,
-    status:
-      d.orderInformation?.status === "completed"
-        ? "approved"
-        : d.orderInformation?.status === "processing"
-          ? "pending"
-          : d.orderInformation?.status,
+    purchaseDate: d.orderInformation?.purchaseDate || "",
+    quantity: d.orderInformation?.quantity || 0,
+    unitPrice: d.orderInformation?.unitPrice || 0,
+    totalPrice: d.orderInformation?.total || 0,
+    platformFee: d.orderInformation?.platformFee || 0,
+    netToVendor: (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
+    status,
     paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
     paymentStatus: d.paymentInformation?.paymentStatus || "",
     deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d.deliveryInformation?.specialInstructions || "",
-    transactionId: d.orderId,
   };
 }
+
+export type MonthlyOrder = ReturnType<typeof mapOrderProductList>;
 
 export const VendorMonthlyReport = ({
   adminView = false,
 }: VendorMonthlyReportProps) => {
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const [orders, setOrders] = useState<MonthlyOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation("reconciliation");
+  const {
+    isDark,
+    isRTL,
+    bgPrimary,
+    textPrimary,
+    borderColor,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+
+  const [orders, setOrders] = useState<MonthlyOrder[]>(
+    [],
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<ReturnType<
+    typeof mapOrderProduct
+  > | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState("10-2026"); // October 2026
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const monthPickerRef = useRef<HTMLDivElement>(null);
-
-  // ID of the order whose full details we want to fetch (null = don't fetch)
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
 
-  // Text color utilities
-  const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
-  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
-  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
-  const bgPrimary = theme === "dark" ? "bg-gray-900" : "bg-white";
-  const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
-  const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
-  const hoverBg = theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-50";
+  const hoverBg = isDark ? "hover:bg-gray-800" : "hover:bg-gray-50";
 
-  // Pagination state
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-
-  // Get auth data
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
-
-  // Filters — names match backend query params (startDate, endDate, minAmount, maxAmount)
   const [filters, setFilters] = useState({
     status: "all",
     startDate: "",
@@ -166,7 +193,6 @@ export const VendorMonthlyReport = ({
     maxAmount: "",
   });
 
-  // Build API params dynamically
   const apiParams = useMemo(() => {
     const params: any = {
       page,
@@ -195,89 +221,47 @@ export const VendorMonthlyReport = ({
     authorityId,
   ]);
 
-  // Fetch order products from API
-  const { data: orderProductsData, isLoading: isApiLoading } =
+  const { data: orderProductsData, isLoading } =
     useGetOrderProductsQuery(apiParams);
-
-  // Fetch full order details when a row is clicked (skip until we have an id)
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
     });
+  const [cancelOrderProduct] = useCancelOrderProductMutation();
+  const [approveOrderProduct] = useApproveOrderProductMutation();
 
-  const [cancelOrderProduct, { isLoading: isCancelling }] =
-    useCancelOrderProductMutation();
-
-  // What the details modal actually renders: the fresh detail payload once it
-  // arrives for the currently-selected order, otherwise the lightweight row
-  // data we already had (so the modal shows something instantly on click).
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?.id) {
-      return mapOrderDetails(orderDetailsData);
+      return mapOrderProductDetails(orderDetailsData);
     }
     return selectedOrder;
   }, [orderDetailsData, detailsOrderId, selectedOrder]);
 
-  // Map API response to MonthlyOrder format and handle pagination.
   useEffect(() => {
-    setLoading(isApiLoading);
     if (orderProductsData?.data) {
-      const mappedOrders = orderProductsData.data.map(
-        (item: any) =>
-          ({
-            id: item._id,
-            productId: item.product._id,
-            productName: item.product.name,
-            productImage: item.product.image?.image || "",
-            productSKU: "",
-            productCategory: "",
-            customerId: "",
-            customerName:
-              `${item.customer.firstName} ${item.customer.lastName || ""}`.trim(),
-            customerEmail: item.customer.email,
-            customerPhone: item.customer.phone || "",
-            customerLocation: "",
-            purchaseDate: item.date,
-            quantity: item.quantity,
-            unitPrice: item.price,
-            totalPrice: item.totalAmount,
-            platformFee: item.fee,
-            netToVendor: item.totalAmount - item.fee,
-            status: item.status === "processing" ? "pending" : item.status,
-            paymentMethod: "",
-            paymentStatus: item.reconciliationStatus,
-            deliveryMethod: "",
-            deliveryAddress: "",
-            transactionId: item.orderId,
-          }) as MonthlyOrder,
-      );
+      const mappedOrders = orderProductsData.data.map(mapOrderProductList);
 
       if (page === 1) {
         setOrders(mappedOrders);
       } else {
         setOrders((prev) => {
-          const existingIds = new Set(prev.map((o: MonthlyOrder) => o.id));
-          const newOrders = mappedOrders.filter(
-            (o: MonthlyOrder) => !existingIds.has(o.id),
-          );
+          const existingIds = new Set(prev.map((o) => o.id));
+          const newOrders = mappedOrders.filter((o) => !existingIds.has(o.id));
           return [...prev, ...newOrders];
         });
       }
-
-      setHasMore(
-        orderProductsData.data.length === 20 &&
-          orderProductsData.meta?.page < orderProductsData.meta?.pages,
-      );
     }
-  }, [orderProductsData, isApiLoading, apiParams]);
+  }, [orderProductsData, page]);
 
-  // ReordableDataTable calls this to fetch the next page
+  const hasMore =
+    orderProductsData?.data?.length === 20 &&
+    orderProductsData?.meta?.page < orderProductsData?.meta?.pages;
+
   const loadNextPage = () => {
-    if (!hasMore || isApiLoading) return;
+    if (!hasMore || isLoading) return;
     setPage((prev) => prev + 1);
   };
 
-  // Reset pagination whenever search or ANY filter changes.
   useEffect(() => {
     setPage(1);
   }, [
@@ -289,172 +273,47 @@ export const VendorMonthlyReport = ({
     filters.maxAmount,
   ]);
 
-  // Close month picker on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        monthPickerRef.current &&
-        !monthPickerRef.current.contains(event.target as Node)
-      ) {
-        setShowMonthPicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Calculate summary statistics
-  const stats = useMemo(() => {
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
-    const platformFees = orders.reduce((sum, o) => sum + o.platformFee, 0);
-    const netPayout = orders
-      .filter((o) => o.status === "approved")
-      .reduce((sum, o) => sum + o.netToVendor, 0);
-    const pending = orders.filter((o) => o.status === "pending").length;
-    const approved = orders.filter((o) => o.status === "approved").length;
-    const disputed = orders.filter((o) => o.status === "disputed").length;
-    const canceled = orders.filter((o) => o.status === "canceled").length;
-    const heldForDisputes = orders
-      .filter((o) => o.status === "disputed")
-      .reduce((sum, o) => sum + o.netToVendor, 0);
-
-    return {
-      totalOrders,
-      totalRevenue,
-      platformFees,
-      netPayout,
-      pending,
-      approved,
-      disputed,
-      canceled,
-      heldForDisputes,
-    };
-  }, [orders]);
-
-  // Search filter only — status/date/amount are applied server-side via apiParams
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        const matchesSearch =
-          order.id.toLowerCase().includes(search) ||
-          order.productName.toLowerCase().includes(search) ||
-          order.customerName.toLowerCase().includes(search) ||
-          order.customerEmail.toLowerCase().includes(search);
-        if (!matchesSearch) return false;
-      }
-      return true;
-    });
-  }, [orders, searchTerm]);
-
-  // Handle actions
-  const handleApprove = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: "approved",
-              approvedAt: new Date().toISOString(),
-              approvedBy: "current-user",
-            }
-          : o,
-      ),
-    );
-    toast.success("Order approved successfully!", {
-      action: {
-        label: "Undo",
-        onClick: () => handleUndo(orderId),
-      },
-    });
-  };
-
-  const handleBulkApprove = () => {
-    const selectedIds = Array.from(selectedOrders);
-    setOrders((prev) =>
-      prev.map((o) =>
-        selectedIds.includes(o.id) && o.status === "pending"
-          ? {
-              ...o,
-              status: "approved",
-              approvedAt: new Date().toISOString(),
-              approvedBy: "current-user",
-            }
-          : o,
-      ),
-    );
-    toast.success(`${selectedIds.length} orders approved successfully!`);
-    setSelectedOrders(new Set());
-  };
-
-  const handleApproveAll = () => {
-    const pendingCount = orders.filter((o) => o.status === "pending").length;
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.status === "pending"
-          ? {
-              ...o,
-              status: "approved",
-              approvedAt: new Date().toISOString(),
-              approvedBy: "current-user",
-            }
-          : o,
-      ),
-    );
-    toast.success(`All ${pendingCount} pending orders approved!`);
-  };
-
-  const handleUndo = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: "pending",
-              approvedAt: undefined,
-              approvedBy: undefined,
-            }
-          : o,
-      ),
-    );
-    toast.info("Approval undone");
-  };
+  const stats = useMemo(
+    () => ({
+      pending: orders.filter((o) => o.status === "pending").length,
+      approved: orders.filter((o) => o.status === "approved").length,
+      disputed: orders.filter((o) => o.status === "disputed").length,
+      canceled: orders.filter((o) => o.status === "canceled").length,
+    }),
+    [orders],
+  );
 
   const handleOpenDispute = (order: MonthlyOrder) => {
     setSelectedOrder(order);
     setShowDisputeModal(true);
   };
 
-  const handleSubmitDispute = (
+  const handleSubmitDispute = async (
     reason: string,
     details: string,
     files: File[],
   ) => {
     if (!selectedOrder) return;
+    try {
+      toast.success(t("dispute_submitted"));
+      setShowDisputeModal(false);
+      setSelectedOrder(null);
+    } catch (error) {
+      toast.error(t("dispute_failed"));
+    }
+  };
 
-    const disputeInfo = {
-      id: `D-${Date.now()}`,
-      reason,
-      details,
-      files: files.map((f) => f.name),
-      submittedAt: new Date().toISOString(),
-      resolution: "pending" as const,
-    };
+  const handleApprove = async (order: MonthlyOrder) => {
+    try {
+      await approveOrderProduct({
+        orderId: order.orderId,
+        orderProductId: order.id,
+      }).unwrap();
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder.id
-          ? { ...o, status: "disputed", disputeInfo }
-          : o,
-      ),
-    );
-
-    toast.success("Dispute submitted successfully", {
-      description: "Admin will review your dispute shortly.",
-    });
-    setShowDisputeModal(false);
-    setSelectedOrder(null);
+      toast.success(t("order_approved"));
+    } catch (error) {
+      toast.error(t("approve_failed"));
+    }
   };
 
   const handleCancelOrder = (order: MonthlyOrder) => {
@@ -464,41 +323,23 @@ export const VendorMonthlyReport = ({
 
   const handleSubmitCancel = async (reason: string, notes: string) => {
     if (!selectedOrder) return;
-
     try {
       await cancelOrderProduct({
-        orderId: selectedOrder.transactionId,
+        orderId: selectedOrder.orderId,
         orderProductId: selectedOrder.id,
         cancelReason: reason,
         additionalInfo: notes,
       }).unwrap();
 
-      const cancelInfo = {
-        reason,
-        notes,
-        cancelledAt: new Date().toISOString(),
-        cancelledBy: "current-user",
-      };
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === selectedOrder.id
-            ? { ...o, status: "canceled", cancelInfo }
-            : o,
-        ),
-      );
-
-      toast.success("Order cancelled successfully");
+      toast.success(t("order_cancelled"));
       setShowCancelModal(false);
       setSelectedOrder(null);
     } catch (error) {
-      toast.error("Failed to cancel order");
+      toast.error(t("cancel_failed"));
     }
   };
 
   const handleViewDetails = (order: MonthlyOrder) => {
-    // Show the row's data immediately; displayedOrder swaps in the full
-    // record automatically once the details query resolves.
     setSelectedOrder(order);
     setDetailsOrderId(order.id);
 
@@ -516,72 +357,43 @@ export const VendorMonthlyReport = ({
   };
 
   const handleAdminResolveDispute = (response: string, action: string) => {
-    if (!selectedOrder) return;
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder.id && o.disputeInfo
-          ? {
-              ...o,
-              status: action === "approve_dispute" ? "canceled" : "approved",
-              disputeInfo: {
-                ...o.disputeInfo,
-                adminResponse: response,
-                respondedAt: new Date().toISOString(),
-                resolution:
-                  action === "approve_dispute"
-                    ? "approved"
-                    : action === "deny_dispute"
-                      ? "denied"
-                      : "partial",
-              },
-            }
-          : o,
-      ),
-    );
-
-    toast.success("Dispute resolved successfully");
+    toast.success(t("dispute_resolved"));
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
   };
 
-  const handleExportCSV = () => {
-    toast.success("Report exported to CSV");
-  };
-
-  const handleExportPDF = () => {
-    toast.success("Report exported to PDF");
-  };
-
   const getStatusBadge = (status: string) => {
-    const badges = {
+    const badges: Record<
+      string,
+      { bg: string; text: string; icon: any; label: string }
+    > = {
       pending: {
         bg: "bg-yellow-100 dark:bg-yellow-900/20",
         text: "text-yellow-800 dark:text-yellow-400",
         icon: Clock,
-        label: "Pending",
+        label: t("pending"),
       },
       approved: {
         bg: "bg-green-100 dark:bg-green-900/20",
         text: "text-green-800 dark:text-green-400",
         icon: CheckCircle,
-        label: "Approved",
+        label: t("approved"),
       },
       disputed: {
         bg: "bg-orange-100 dark:bg-orange-900/20",
         text: "text-orange-800 dark:text-orange-400",
         icon: AlertTriangle,
-        label: "Disputed",
+        label: t("disputed"),
       },
       canceled: {
         bg: "bg-red-100 dark:bg-red-900/20",
         text: "text-red-800 dark:text-red-400",
         icon: XCircle,
-        label: "Canceled",
+        label: t("canceled"),
       },
     };
-    const badge = badges[status as keyof typeof badges] || badges.pending;
+    const badge = badges[status] || badges.pending;
     const Icon = badge.icon;
     return (
       <span
@@ -593,29 +405,25 @@ export const VendorMonthlyReport = ({
     );
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+  const formatCurrency = (amount?: number) => {
+    if (amount === null || amount === undefined) return "₪0";
+    return `₪${amount.toLocaleString()}`;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   };
 
-  // Columns for ReordableDataTable
   const columns = [
-    ...(!adminView ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-
     {
       key: "product",
       sortable: false,
-      label: "Product",
+      label: t("product"),
       render: (order: MonthlyOrder) => (
         <div className="flex items-center gap-3">
           <img
@@ -628,17 +436,16 @@ export const VendorMonthlyReport = ({
               {order.productName}
             </div>
             <div className={`text-xs ${textTertiary}`}>
-              SKU: {order.productSKU}
+              {order.productCategory}
             </div>
           </div>
         </div>
       ),
     },
-
     {
       key: "customer",
       sortable: false,
-      label: "Customer",
+      label: t("customer"),
       render: (order: MonthlyOrder) => (
         <div>
           <div className={`font-medium ${textPrimary}`}>
@@ -648,51 +455,47 @@ export const VendorMonthlyReport = ({
         </div>
       ),
     },
-
     {
       key: "purchaseDate",
       sortable: true,
-      label: "Date",
+      label: t("date"),
       render: (order: MonthlyOrder) => (
         <span className={textSecondary}>{formatDate(order.purchaseDate)}</span>
       ),
     },
-
     {
       key: "quantity",
       sortable: true,
-      label: "Qty",
+      label: t("quantity"),
       render: (order: MonthlyOrder) => (
         <span className={textSecondary}>{order.quantity}</span>
       ),
     },
-
     {
       key: "totalPrice",
       sortable: true,
-      label: "Price",
+      label: t("price"),
       render: (order: MonthlyOrder) => (
         <div>
           <div className={`font-medium ${textPrimary}`}>
             {formatCurrency(order.totalPrice)}
           </div>
           <div className={`text-xs ${textTertiary}`}>
-            Fee: {formatCurrency(order.platformFee)}
+            {t("fee")}: {formatCurrency(order.platformFee)}
           </div>
         </div>
       ),
     },
-
     {
       key: "status",
       sortable: true,
-      label: "Status",
-      render: (order: MonthlyOrder) => getStatusBadge(order.status),
+      label: t("status"),
+      render: (order: MonthlyOrder) =>
+        getStatusBadge(order.status),
     },
-
     {
       key: "actions",
-      label: "Actions",
+      label: t("actions"),
       render: (order: MonthlyOrder) => (
         <div
           className="flex items-center gap-2"
@@ -701,23 +504,23 @@ export const VendorMonthlyReport = ({
           {!adminView && order.status === "pending" && (
             <>
               <button
-                onClick={() => handleApprove(order.id)}
+                onClick={() => handleApprove(order)}
                 className="p-1.5 rounded text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                title="Approve"
+                title={t("approve")}
               >
                 <CheckCircle className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleOpenDispute(order)}
                 className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                title="Dispute"
+                title={t("dispute")}
               >
                 <AlertTriangle className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleCancelOrder(order)}
                 className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                title="Cancel"
+                title={t("cancel")}
               >
                 <XCircle className="w-4 h-4" />
               </button>
@@ -728,26 +531,20 @@ export const VendorMonthlyReport = ({
               onClick={() => handleViewDetails(order)}
               className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors"
             >
-              Respond
+              {t("respond")}
             </button>
           )}
         </div>
       ),
     },
-  ].filter(Boolean) as {
-    key: string;
-    label: string;
-    width?: string;
-    sortable?: boolean;
-    render?: (row: MonthlyOrder) => React.ReactNode;
-  }[];
+  ];
 
-  if (loading && page === 1) {
+  if (isLoading && page === 1) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className={textSecondary}>Loading monthly report...</p>
+          <p className={textSecondary}>{t("loading")}</p>
         </div>
       </div>
     );
@@ -757,229 +554,41 @@ export const VendorMonthlyReport = ({
     <div className="p-6">
       {/* Header */}
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
-              {adminView ? "Vendor Monthly Report" : "Monthly Report"}
-            </h1>
-            <p className={textTertiary}>
-              Review and approve your orders for {selectedMonth}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleExportPDF}
-              className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-            >
-              <FileText className="w-4 h-4" />
-              Export PDF
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
-            </button>
-            <div className="relative" ref={monthPickerRef}>
-              <button
-                onClick={() => setShowMonthPicker(!showMonthPicker)}
-                className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-              >
-                <Calendar className="w-4 h-4" />
-                {selectedMonth}
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              {showMonthPicker && (
-                <div
-                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 ${bgPrimary} border ${borderColor} rounded-lg shadow-lg p-4 z-10 w-64`}
-                >
-                  <div className="space-y-2">
-                    {[
-                      "11-2026",
-                      "10-2026",
-                      "09-2026",
-                      "08-2026",
-                      "07-2026",
-                      "06-2026",
-                    ].map((month) => (
-                      <button
-                        key={month}
-                        onClick={() => {
-                          setSelectedMonth(month);
-                          setShowMonthPicker(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded ${hoverBg} ${textSecondary} ${
-                          selectedMonth === month
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                            : ""
-                        }`}
-                      >
-                        {month === "11-2026" && "(Current) "}
-                        {month}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        <div>
+          <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
+            {adminView ? t("vendor_monthly_report") : t("monthly_report")}
+          </h1>
+          <p className={textTertiary}>{t("review_and_approve_orders")}</p>
         </div>
-
-        {/* Summary Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Total Orders</div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
-              {stats.totalOrders}
-            </div>
-          </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Total Revenue</div>
-            <div className={`text-2xl font-bold ${textPrimary}`}>
-              {formatCurrency(stats.totalRevenue)}
-            </div>
-          </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Platform Fee</div>
-            <div
-              className={`text-2xl font-bold text-orange-600 dark:text-orange-400`}
-            >
-              -{formatCurrency(stats.platformFees)}
-            </div>
-          </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Net Payout</div>
-            <div
-              className={`text-2xl font-bold text-green-600 dark:text-green-400`}
-            >
-              {formatCurrency(stats.netPayout)}
-            </div>
-          </div>
-          <div className={`${bgSecondary} rounded-lg p-4 col-span-2`}>
-            <div className={`text-xs ${textTertiary} mb-2`}>
-              Status Overview
-            </div>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4 text-yellow-600" />
-                <span className={textSecondary}>{stats.pending} Pending</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className={textSecondary}>{stats.approved} Approved</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span className={textSecondary}>{stats.disputed} Disputed</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <XCircle className="w-4 h-4 text-red-600" />
-                <span className={textSecondary}>
-                  {stats.canceled} Cancelled
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {stats.heldForDisputes > 0 && (
-          <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
-            <div>
-              <p
-                className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
-              >
-                {formatCurrency(stats.heldForDisputes)} held for disputes
-              </p>
-              <p
-                className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
-              >
-                These amounts will be paid after dispute resolution
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!adminView && stats.pending > 0 && (
-          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p
-                className={`text-sm font-medium text-yellow-900 dark:text-yellow-200`}
-              >
-                Deadline: November 7, 2026 (5 days remaining)
-              </p>
-              <p
-                className={`text-xs text-yellow-700 dark:text-yellow-300 mt-1`}
-              >
-                Orders not reviewed by the deadline will be automatically
-                approved
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Actions and Search Bar */}
+      {/* Search and Filters */}
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 flex items-center gap-3">
+          <div className="flex-1">
             <SearchInput
-              placeholder="Search orders by ID, product, customer..."
+              placeholder={t("search_by_order")}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               storageKey="vendorReconSearchTerm"
             />
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </button>
           </div>
-          {!adminView && (
-            <div className="flex items-center gap-2">
-              {selectedOrders.size > 0 && (
-                <button
-                  onClick={handleBulkApprove}
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 transition-colors"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve Selected ({selectedOrders.size})
-                </button>
-              )}
-              {stats.pending > 0 && (
-                <button
-                  onClick={handleApproveAll}
-                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 transition-colors"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Approve All Pending
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setFilters({ ...filters, status: "disputed" });
-                }}
-                className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-              >
-                <AlertTriangle className="w-4 h-4" />
-                View Disputes ({stats.disputed})
-              </button>
-            </div>
-          )}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
+          >
+            <Filter className="w-4 h-4" />
+            {t("filters")}
+          </button>
         </div>
 
-        {/* Filters Panel */}
         {showFilters && (
           <div
-            className={`mt-4 pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4`}
+            className={`mt-4 pt-4 border-t ${borderColor} grid grid-cols-1 md:grid-cols-3 gap-4`}
           >
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Status
+                {t("status")}
               </label>
               <select
                 value={filters.status}
@@ -988,16 +597,16 @@ export const VendorMonthlyReport = ({
                 }
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="disputed">Disputed</option>
-                <option value="canceled">Cancelled</option>
+                <option value="all">{t("all_statuses")}</option>
+                <option value="pending">{t("pending")}</option>
+                <option value="approved">{t("approved")}</option>
+                <option value="disputed">{t("disputed")}</option>
+                <option value="canceled">{t("canceled")}</option>
               </select>
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Date From
+                {t("date_from")}
               </label>
               <input
                 type="date"
@@ -1010,7 +619,7 @@ export const VendorMonthlyReport = ({
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Date To
+                {t("date_to")}
               </label>
               <input
                 type="date"
@@ -1023,7 +632,7 @@ export const VendorMonthlyReport = ({
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Min Amount
+                {t("min_amount")}
               </label>
               <input
                 type="number"
@@ -1031,13 +640,13 @@ export const VendorMonthlyReport = ({
                 onChange={(e) =>
                   setFilters({ ...filters, minAmount: e.target.value })
                 }
-                placeholder="$0"
+                placeholder="₪0"
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
             </div>
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                Max Amount
+                {t("max_amount")}
               </label>
               <input
                 type="number"
@@ -1045,7 +654,7 @@ export const VendorMonthlyReport = ({
                 onChange={(e) =>
                   setFilters({ ...filters, maxAmount: e.target.value })
                 }
-                placeholder="$1000"
+                placeholder="₪10000"
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
             </div>
@@ -1056,11 +665,11 @@ export const VendorMonthlyReport = ({
       {/* Orders Table */}
       <ReordableDataTable
         rowKey="id"
-        data={filteredOrders}
-        isDataLoading={loading}
-        selectedItems={selectedOrders}
-        onSelectionChange={setSelectedOrders}
-        onRowClick={(order: MonthlyOrder) => handleViewDetails(order)}
+        data={orders}
+        isDataLoading={isLoading}
+        onRowClick={(order: MonthlyOrder) =>
+          handleViewDetails(order)
+        }
         storageKey="vendorMonthlyReportColumnOrder"
         columns={columns}
         hasMore={hasMore}
