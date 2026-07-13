@@ -90,7 +90,7 @@ function mapOrderProductList(d: any) {
     .trim() || "";
 
   return {
-    id: d._id,
+    _id: d._id,
     orderId: d.orderId,
     productName: d.product?.name || "",
     productImage: d.product?.image?.image || "",
@@ -131,7 +131,7 @@ function mapOrderProductDetails(d: OrderProduct) {
         : d.orderInformation?.status;
 
   return {
-    id: d._id,
+    _id: d._id,
     orderId: d.orderId,
     productName: d.productInformation?.name || "",
     productImage: d.productInformation?.image || "",
@@ -180,6 +180,7 @@ export const VendorMonthlyReport = ({
   const [selectedOrder, setSelectedOrder] = useState<ReturnType<
     typeof mapOrderProduct
   > | null>(null);
+  console.log("🚀 ~ VendorMonthlyReport ~ selectedOrder:", selectedOrder)
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -237,7 +238,7 @@ export const VendorMonthlyReport = ({
   const [createSignedUrl] = useCreateSignedUrlMutation();
 
   const displayedOrder = useMemo(() => {
-    if (orderDetailsData && detailsOrderId === selectedOrder?.id) {
+    if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
       return mapOrderProductDetails(orderDetailsData);
     }
     return selectedOrder;
@@ -251,8 +252,8 @@ export const VendorMonthlyReport = ({
         setOrders(mappedOrders);
       } else {
         setOrders((prev) => {
-          const existingIds = new Set(prev.map((o) => o.id));
-          const newOrders = mappedOrders.filter((o) => !existingIds.has(o.id));
+          const existingIds = new Set(prev.map((o) => o._id));
+          const newOrders = mappedOrders.filter((o) => !existingIds.has(o._id));
           return [...prev, ...newOrders];
         });
       }
@@ -320,7 +321,7 @@ export const VendorMonthlyReport = ({
       }
 
       await openDispute({
-        orderId: selectedOrder.id,
+        orderId: selectedOrder._id,
         reason,
         description: details,
         attachments: attachmentUrls,
@@ -338,7 +339,7 @@ export const VendorMonthlyReport = ({
     try {
       await approveOrderProduct({
         orderId: order.orderId,
-        orderProductId: order.id,
+        orderProductId: order._id,
       }).unwrap();
 
       toast.success(t("order_approved"));
@@ -357,7 +358,7 @@ export const VendorMonthlyReport = ({
     try {
       await cancelOrderProduct({
         orderId: selectedOrder.orderId,
-        orderProductId: selectedOrder.id,
+        orderProductId: selectedOrder._id,
         cancelReason: reason,
         additionalInfo: notes,
       }).unwrap();
@@ -372,7 +373,7 @@ export const VendorMonthlyReport = ({
 
   const handleViewDetails = (order: MonthlyOrder) => {
     setSelectedOrder(order);
-    setDetailsOrderId(order.id);
+    setDetailsOrderId(order._id);
 
     if (adminView && order.status === "disputed") {
       setShowAdminDisputeModal(true);
@@ -695,7 +696,7 @@ export const VendorMonthlyReport = ({
 
       {/* Orders Table */}
       <ReordableDataTable
-        rowKey="id"
+        rowKey="_id"
         data={orders}
         isDataLoading={isLoading}
         onRowClick={(order: MonthlyOrder) =>
@@ -722,7 +723,7 @@ export const VendorMonthlyReport = ({
             setShowCancelModal(true);
           }}
           onApprove={() => {
-            handleApprove(displayedOrder.id);
+            handleApprove(displayedOrder);
             closeDetails();
           }}
           adminView={adminView}

@@ -76,7 +76,7 @@ export default function CancelOrderModal({
               <h2 className={`text-xl font-bold ${textPrimary}`}>
                 Cancel Order
               </h2>
-              <p className={`text-sm ${textTertiary}`}>Order #{order.id}</p>
+              <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
             </div>
           </div>
           <button

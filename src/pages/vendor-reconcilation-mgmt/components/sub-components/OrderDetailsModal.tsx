@@ -55,7 +55,7 @@ export default function OrderDetailsModal({
         {/* Header */}
         <div>
           <h2 className={`text-xl font-bold ${textPrimary}`}>
-            Order Details - {order.id}
+            Order Details - {order._id}
           </h2>
           <p className={`text-sm ${textTertiary} mt-1`}>
             Complete order information
@@ -106,7 +106,7 @@ export default function OrderDetailsModal({
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className={`${textTertiary} mb-1`}>Order ID</div>
-                <div className={`${textSecondary} font-medium`}>{order.id}</div>
+                <div className={`${textSecondary} font-medium`}>{order._id}</div>
               </div>
               <div>
                 <div className={`${textTertiary} mb-1`}>Purchase Date</div>

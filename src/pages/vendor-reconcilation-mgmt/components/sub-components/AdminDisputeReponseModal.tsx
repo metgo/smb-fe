@@ -93,7 +93,7 @@ export const AdminDisputeResponseModal = ({
                 Dispute Resolution
               </h2>
               <p className={`text-sm ${textTertiary}`}>
-                Dispute #{order.disputeInfo.id} - Order #{order.id}
+                Dispute #{order.disputeInfo.id} - Order #{order._id}
               </p>
             </div>
           </div>

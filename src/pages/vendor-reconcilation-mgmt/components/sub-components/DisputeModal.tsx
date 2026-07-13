@@ -124,7 +124,7 @@ export default function DisputeModal({
               <h2 className={`text-xl font-bold ${textPrimary}`}>
                 Open Dispute
               </h2>
-              <p className={`text-sm ${textTertiary}`}>Order #{order.id}</p>
+              <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
             </div>
           </div>
           <button
@@ -173,7 +173,7 @@ export default function DisputeModal({
                   {order.productName}
                 </div>
                 <div className={`text-xs ${textTertiary} mt-1`}>
-                  Order ID: {order.id}
+                  Order ID: {order._id}
                 </div>
               </div>
             </div>
