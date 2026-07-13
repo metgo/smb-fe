@@ -4,7 +4,7 @@ import PoiReviewSubmit from "./PoiReviewSubmit";
 import PoiContactInfo from "./PoiContactInfo";
 import PoiMedia from "./PoiMedia";
 import PoiTranslateButton from "./PoiTranslateButton";
-import  PoiContentForm from "./PoiContentForm";
+import PoiContentForm from "./PoiContentForm";
 
 export {
   PoiBasicInfo,

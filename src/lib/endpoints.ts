@@ -101,6 +101,10 @@ export const endpoints = {
   mediaSignedUrl: "/media-signed-url",
   mediaFileDelete: "/media",
 
+  //document
+  docUpload: "doc-upload",
+  checkTemplateKey: "doc-upload/check-template-key",
+
   websites: "/site-settings/websites",
   socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",

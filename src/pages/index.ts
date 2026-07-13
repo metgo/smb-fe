@@ -1,5 +1,6 @@
 import AuthPage from "./auth";
 import ErrorUiPage from "./error-ui";
+import NoInternetPage from "./no-internet";
 import ProfilePage from "./profile";
 import EventsMgmtPage from "./events-mgmt";
 import ProductsMgmtPage from "./products-mgmt";
@@ -33,6 +34,7 @@ import EventSessionMgmtPage from "./event-session-mgmt";
 export {
   AuthPage,
   ErrorUiPage,
+  NoInternetPage,
   ProfilePage,
   DmosMgmtPage,
   CampaignsMgmtPage,

@@ -39,7 +39,12 @@ const VoucherSuccess = ({
             v.amount ?? "-",
             v.paymentStatus || "-",
           ]
-        : [v.name || "-", v.email || "-", v.amount ?? "-", v.paymentStatus || "-"],
+        : [
+            v.name || "-",
+            v.email || "-",
+            v.amount ?? "-",
+            v.paymentStatus || "-",
+          ],
     );
 
     const csvContent = [

@@ -87,17 +87,8 @@ interface IEventSessionListItem {
   sessionCount: number;
 }
 
-interface IEventSessionListResponse {
+interface IEventSessionListResponse extends IPagination {
   data: IEventSessionListItem[];
-  totalData: number;
-  meta: {
-    page: number;
-    limit: number;
-    data: number;
-    pageCount: number;
-    hasPreviousPage: boolean;
-    hasNextPage: boolean;
-  };
 }
 
 //  Event session ticktets
@@ -196,24 +187,13 @@ interface IRegistrationsResponse {
   data: IRegistrationsData;
 }
 
-interface IRegistrationsData {
+interface IRegistrationsData extends IPagination {
   wrapperId: string;
   wrapperName: string;
   registrations: IRegistration[];
   totalRegistrations: number;
-  meta: IMetaData;
-  totalData: number;
   confirmed: number;
   attended: number;
-}
-
-interface IMetaData {
-  page: number;
-  limit: number;
-  data: number;
-  pageCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
 }
 
 interface IRegistration {
@@ -232,23 +212,17 @@ interface IRegistration {
 }
 
 type RegistrationStatus =
-  | "CONFIRMED"
-  | "ATTENDED"
-  | "CANCELLED"
-  | "HELD"
-  | "PENDING";
+  "CONFIRMED" | "ATTENDED" | "CANCELLED" | "HELD" | "PENDING";
 
 interface ITargetAudienceResponse {
   success: boolean;
   data: ITargetAudienceData;
 }
 
-interface ITargetAudienceData {
+interface ITargetAudienceData extends IPagination {
   wrapperId: string;
   wrapperName: string;
   users: ITargetAudience[];
-  meta: IMetaData;
-  totalData: number;
 }
 
 interface ITargetAudience {

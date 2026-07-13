@@ -45,7 +45,12 @@ import {
 } from "@/components/details-sections";
 import { useAppSelector } from "@/hooks/hooks";
 import { useRemoteSelectData } from "@/hooks/useRemoteSelectData";
-import { detectLanguage, getLngWiseStr, modelTitle, removeNulls } from "@/helpers";
+import {
+  detectLanguage,
+  getLngWiseStr,
+  modelTitle,
+  removeNulls,
+} from "@/helpers";
 import { ItemStatus } from "@/enums/status.types";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { IOpMode } from "@/enums/operation.types";

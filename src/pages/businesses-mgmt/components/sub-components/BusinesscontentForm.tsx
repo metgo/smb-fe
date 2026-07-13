@@ -12,8 +12,14 @@ export const BusinessContentForm = ({
   onChange,
 }: ArticleContentFormProps) => {
   const { t } = useTranslation("common");
-  const { bgSecondary, textPrimary, textSecondary, textTertiary, borderColor, language } =
-    useThemeClasses();
+  const {
+    bgSecondary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    language,
+  } = useThemeClasses();
 
   // Get correct field name based on current global language
   const getFieldName = (baseField: string): string => {
@@ -41,7 +47,7 @@ export const BusinessContentForm = ({
         </label>
         <input
           type="text"
-          value={formData[titleField] || ""}          //  uses correct field
+          value={formData[titleField] || ""} //  uses correct field
           onChange={(e) => onChange({ [titleField]: e.target.value })}
           placeholder={t("title_placeholder")}
           className={`w-full text-2xl font-bold ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
@@ -63,7 +69,7 @@ export const BusinessContentForm = ({
         }
       >
         <textarea
-          value={formData[shortDescField] || ""}    
+          value={formData[shortDescField] || ""}
           onChange={(e) => onChange({ [shortDescField]: e.target.value })}
           placeholder={t("short_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
@@ -90,7 +96,7 @@ export const BusinessContentForm = ({
         }
       >
         <textarea
-          value={formData[fullDescField] || ""}     
+          value={formData[fullDescField] || ""}
           onChange={(e) => onChange({ [fullDescField]: e.target.value })}
           placeholder={t("full_description_placeholder")}
           className={`w-full ${bgSecondary} ${textPrimary} border ${borderColor} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow`}
