@@ -1,5 +1,3 @@
-import { useGetOrderProductsQuery } from "@/store/api/reconciliationQueryApi";
-
 export const endpoints = {
   login: "/auth/login",
   forgotPassword: "/auth/send-otp",
@@ -62,6 +60,7 @@ export const endpoints = {
   cancelOrderProduct: "/cancel-order-product",
   approveOrderProduct: "/approve-order-product",
   openDispute: "/orders/dispute",
+  respondDispute: "/disputes/respond",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",

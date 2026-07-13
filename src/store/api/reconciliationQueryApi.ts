@@ -21,6 +21,13 @@ export interface OpenDisputeRequest {
   attachments: string[];
 }
 
+export interface RespondDisputeRequest {
+  disputeId: string;
+  action: string;
+  internalNotes: string;
+  vendorFacingResponse: string;
+}
+
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -72,6 +79,19 @@ export const reconciliationQueryApi = createApi({
         },
       }),
     }),
+
+    // POST /disputes/respond/:disputeId
+    respondDispute: builder.mutation<void, RespondDisputeRequest>({
+      query: (body) => ({
+        url: `${endpoints.respondDispute}/${body.disputeId}`,
+        method: "POST",
+        data: {
+          action: body.action,
+          internalNotes: body.internalNotes,
+          vendorFacingResponse: body.vendorFacingResponse,
+        },
+      }),
+    }),
   }),
 });
 
@@ -81,4 +101,5 @@ export const {
   useCancelOrderProductMutation,
   useApproveOrderProductMutation,
   useOpenDisputeMutation,
+  useRespondDisputeMutation,
 } = reconciliationQueryApi;

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { X, AlertTriangle, FileText } from "lucide-react";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
+import { useRespondDisputeMutation } from "@/store/api/reconciliationQueryApi";
 
 interface AdminDisputeResponseModalProps {
   order: MonthlyOrder;
@@ -14,7 +17,9 @@ export const AdminDisputeResponseModal = ({
   onClose,
   onResolve,
 }: AdminDisputeResponseModalProps) => {
+  const { t } = useTranslation("reconciliation");
   const { theme } = useAppSelector((state) => state.settings);
+  const [respondDispute, { isLoading }] = useRespondDisputeMutation();
 
   const [internalNotes, setInternalNotes] = useState("");
   const [responseToVendor, setResponseToVendor] = useState("");
@@ -67,9 +72,28 @@ export const AdminDisputeResponseModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validate()) {
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    if (!order.disputeInfo?._id) {
+      toast.error("Dispute ID not found");
+      return;
+    }
+
+    try {
+      await respondDispute({
+        disputeId: order.disputeInfo._id,
+        action: resolutionAction,
+        internalNotes,
+        vendorFacingResponse: responseToVendor,
+      }).unwrap();
+
+      toast.success("Dispute resolved successfully");
       onResolve(resolutionAction, responseToVendor, resolutionAction);
+      onClose();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("dispute_failed"));
     }
   };
 
@@ -514,15 +538,20 @@ export const AdminDisputeResponseModal = ({
         >
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Send Response & Resolve
+            {isLoading && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
+            {isLoading ? "Resolving..." : "Send Response & Resolve"}
           </button>
         </div>
       </div>

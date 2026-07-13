@@ -169,7 +169,7 @@ export const VendorMonthlyReport = ({
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+  const { dmoId, authorityId, userRole } = useAppSelector((state) => state.auth);
 
   const [orders, setOrders] = useState<MonthlyOrder[]>(
     [],
@@ -291,6 +291,10 @@ export const VendorMonthlyReport = ({
   );
 
   const handleOpenDispute = (order: MonthlyOrder) => {
+    if (userRole !== "traveller") {
+      toast.error("Only traveller role can open disputes");
+      return;
+    }
     setSelectedOrder(order);
     setShowDisputeModal(true);
   };
@@ -321,7 +325,7 @@ export const VendorMonthlyReport = ({
       }
 
       await openDispute({
-        orderId: selectedOrder._id,
+        orderId: selectedOrder.orderId,
         reason,
         description: details,
         attachments: attachmentUrls,
@@ -330,8 +334,15 @@ export const VendorMonthlyReport = ({
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
       setSelectedOrder(null);
-    } catch (error) {
-      toast.error(t("dispute_failed"));
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      if (errorMessage?.includes("cannot be disputed")) {
+        toast.error("This order cannot be disputed");
+      } else if (errorMessage?.includes("role")) {
+        toast.error("Only traveller role can open disputes");
+      } else {
+        toast.error(t("dispute_failed"));
+      }
     }
   };
 
