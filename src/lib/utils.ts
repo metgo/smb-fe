@@ -125,4 +125,8 @@ export const EMAIL_TEMPLATE_IMAGE_KEYS = [
   { _id: "FOOTER_BANNER_MOBILE", name: "FOOTER_BANNER_MOBILE" },
   { _id: "BANNER_IMG", name: "BANNER_IMG" },
   { _id: "MOBILE_BANNER_IMG", name: "MOBILE_BANNER_IMG" },
+  {
+    _id: "FOOTER_BANNER_MINISITE_BANNER",
+    name: "FOOTER_BANNER_MINISITE_BANNER",
+  },
 ];

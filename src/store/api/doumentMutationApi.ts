@@ -6,7 +6,7 @@ export interface DocumentPayload {
   title: string;
   externalApiId: string;
   templateKey: string;
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 export const documentMutationApi = createApi({
@@ -29,17 +29,9 @@ export const documentMutationApi = createApi({
     >({
       query: ({ docId, payload }) => ({
         url: `${endpoints.docUpload}/${docId}`,
-        method: "POST",
+        method: "PATCH",
         data: payload,
       }),
-    }),
-
-    getDocument: builder.query<any, string>({
-      query: (docId) => ({
-        url: `${endpoints.docUpload}/${docId}`,
-        method: "GET",
-      }),
-      providesTags: ["Document"],
     }),
 
     getAllDocuments: builder.query<IDocumentRes, void>({
@@ -57,6 +49,17 @@ export const documentMutationApi = createApi({
       }),
       invalidatesTags: ["Document"],
     }),
+
+    checkTemplateKeyUsage: builder.query<
+      { message: string },
+      { externalApiId: string; templateKey: string }
+    >({
+      query: ({ externalApiId, templateKey }) => ({
+        url: endpoints.checkTemplateKey,
+        method: "GET",
+        params: { externalApiId, templateKey },
+      }),
+    }),
   }),
 });
 
@@ -64,6 +67,6 @@ export const {
   useCreateDocumentMutation,
   useUpdateDocumentMutation,
   useGetAllDocumentsQuery,
-  useGetDocumentQuery,
   useDeleteDocumentMutation,
+  useLazyCheckTemplateKeyUsageQuery,
 } = documentMutationApi;

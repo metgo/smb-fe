@@ -24,11 +24,13 @@ import WebsiteSelect from "./WebsiteSelect";
 import WizardFooter from "./WizardFooter";
 import WizardStepper from "./WizardStepper";
 import ShowColumns from "./ShowColumns";
+import UploadZone from "./UploadZone";
 
 export {
   Spinner,
   SplashLoader,
   RouterProgressBar,
+  UploadZone,
   PageStats,
   PageHeader,
   IdleLogout,

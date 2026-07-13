@@ -103,6 +103,7 @@ export const endpoints = {
 
   //document
   docUpload: "doc-upload",
+  checkTemplateKey: "doc-upload/check-template-key",
 
   websites: "/site-settings/websites",
   socialmedia: "admin/social-media",

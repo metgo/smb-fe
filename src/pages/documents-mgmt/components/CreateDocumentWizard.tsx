@@ -1,19 +1,20 @@
 "use client";
 
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useState, useCallback } from "react";
-import { Image as ImageIcon, Loader2 } from "lucide-react";
-import clsx from "clsx";
+import { Image as ImageIcon, Loader2, Trash2 } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
 import { ModalWrapper } from "@/components/wrapper";
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { ImageWithFallback } from "@/components/shared";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import {
   useCreateDocumentMutation,
   useUpdateDocumentMutation,
+  useLazyCheckTemplateKeyUsageQuery,
   type DocumentPayload,
 } from "@/store/api/doumentMutationApi";
 import { ReactSelect } from "@/components/form-fields";
@@ -50,25 +51,20 @@ export const CreateDocumentWizard = ({
   );
 
   const [dragActive, setDragActive] = useState(false);
+  const [imageDeleted, setImageDeleted] = useState(false);
 
   const [createDocument, { isLoading: isCreating }] =
     useCreateDocumentMutation();
   const [updateDocument, { isLoading: isUpdating }] =
     useUpdateDocumentMutation();
+  const [checkTemplateKeyUsage, { isFetching: isCheckingTemplateKey }] =
+    useLazyCheckTemplateKeyUsageQuery();
+  const [templateKeyError, setTemplateKeyError] = useState("");
 
-  const {
-    image,
-    isImageDeleting,
-    handleImageSelect,
-    uploadImage,
-    deleteTarget,
-    setDeleteTarget,
-    handleDeleteImage,
-    confirmDelete,
-  } = useSingleImageUpload({
-    initialImage: documentToEdit?.imageUrl,
-    onChange: () => {},
-  });
+  const { previewUrl, gcsUrl, progress, status, handleFileSelect, deleteFile } =
+    useFileUpload({
+      initialUrl: documentToEdit?.imageUrl,
+    });
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,9 +80,10 @@ export const CreateDocumentWizard = ({
         toast.error(t("invalid_image_type"));
         return;
       }
-      handleImageSelect(file);
+      handleFileSelect(file);
+      setImageDeleted(false);
     },
-    [t, handleImageSelect],
+    [t, handleFileSelect],
   );
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,8 +109,33 @@ export const CreateDocumentWizard = ({
     if (file) handleImageFile(file);
   };
 
-  const isUploadingImage = image?.status === "uploading";
-  const isSubmitting = isCreating || isUpdating || isUploadingImage;
+  useEffect(() => {
+    if (isEditMode || !externalApiId || !emailTempKey) {
+      setTemplateKeyError("");
+      return;
+    }
+
+    let cancelled = false;
+
+    checkTemplateKeyUsage({ externalApiId, templateKey: emailTempKey })
+      .unwrap()
+      .then(() => {
+        if (!cancelled) setTemplateKeyError("");
+      })
+      .catch((err: any) => {
+        if (!cancelled) {
+          setTemplateKeyError(err?.data?.message || t("template_key_used"));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, externalApiId, emailTempKey, checkTemplateKeyUsage, t]);
+
+  const isUploadingImage = status === "uploading";
+  const isSubmitting =
+    isCreating || isUpdating || isUploadingImage || isCheckingTemplateKey;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,24 +145,33 @@ export const CreateDocumentWizard = ({
       return;
     }
 
-    if (!image) {
+    // In edit mode, if image was deleted, allow submission without image
+    if (!previewUrl && !imageDeleted) {
       toast.error(t("image_required"));
       return;
     }
 
-    try {
-      const imageUrl =
-        image.status === "success" && image.gcsURL
-          ? image.gcsURL
-          : await uploadImage();
+    if (!isEditMode && templateKeyError) {
+      toast.error(templateKeyError);
+      return;
+    }
 
-      if (!imageUrl) return;
+    try {
+      let imageUrl: string | null = null;
+
+      if (imageDeleted) {
+        // Image was deleted, send null to remove it
+        imageUrl = null;
+      } else if (previewUrl) {
+        // Use existing or uploaded image
+        imageUrl = status === "success" && gcsUrl ? gcsUrl : previewUrl;
+      }
 
       const payload: DocumentPayload = {
         title: formData.title.trim(),
         externalApiId,
         templateKey: emailTempKey,
-        imageUrl,
+        imageUrl: imageUrl || "",
       };
 
       if (documentToEdit) {
@@ -217,6 +248,7 @@ export const CreateDocumentWizard = ({
                 items={associatedWebsite}
                 onChange={(value) => setExternalApiId(value)}
                 placeholder={t("select_website")}
+                isDisabled={isEditMode || isSubmitting}
               />
             </div>
           </div>
@@ -230,7 +262,18 @@ export const CreateDocumentWizard = ({
               items={EMAIL_TEMPLATE_IMAGE_KEYS}
               onChange={(value) => setEmailTempKey(value)}
               placeholder={t("select_email_template_key")}
+              isDisabled={isEditMode || isSubmitting}
             />
+            {!isEditMode && templateKeyError && (
+              <p className="mt-1.5 text-sm text-red-500">
+                {t("wraning_message", {
+                  website_name: associatedWebsite.find(
+                    (item) => item._id === externalApiId,
+                  )?.name,
+                  template_key: emailTempKey,
+                })}
+              </p>
+            )}
           </div>
 
           {/* Image Upload */}
@@ -244,7 +287,7 @@ export const CreateDocumentWizard = ({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={clsx(
-                "border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer",
+                "border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer",
                 dragActive
                   ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30"
                   : isDark
@@ -252,11 +295,11 @@ export const CreateDocumentWizard = ({
                     : "border-gray-300 hover:border-gray-400",
               )}
             >
-              {image ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="relative w-32 h-32 rounded-xl overflow-hidden border">
+              {previewUrl ? (
+                <div className="flex flex-col items-center gap-2 relative">
+                  <div className="relative w-full h-40 rounded-xl overflow-hidden border">
                     <ImageWithFallback
-                      src={image.previewUrl}
+                      src={previewUrl}
                       alt={formData.title || "preview"}
                       className="w-full h-full object-cover"
                     />
@@ -265,7 +308,7 @@ export const CreateDocumentWizard = ({
                       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
                         <Loader2 className="w-8 h-8 text-white animate-spin" />
                         <span className="mt-1 text-white font-bold text-xs">
-                          {image.progress}%
+                          {progress}%
                         </span>
                       </div>
                     )}
@@ -274,16 +317,19 @@ export const CreateDocumentWizard = ({
                   {!isUploadingImage && (
                     <button
                       type="button"
-                      onClick={() => handleDeleteImage(image)}
-                      className="mt-1 text-xs text-red-500 hover:underline"
+                      onClick={() => {
+                        deleteFile();
+                        setImageDeleted(true);
+                      }}
+                      className="absolute -top-2 -right-2 z-50 bg-red-500/30 text-red-500 rounded-full p-1.5 cursor-pointer"
                       disabled={isSubmitting}
                     >
-                      {t("remove_image")}
+                      <Trash2 size={18} />
                     </button>
                   )}
                 </div>
               ) : (
-                <>
+                <div className="p-3">
                   <ImageIcon
                     className={`w-10 h-10 mx-auto mb-4 ${
                       isDark ? "text-gray-500" : "text-gray-400"
@@ -304,7 +350,7 @@ export const CreateDocumentWizard = ({
                       disabled={isSubmitting}
                     />
                   </label>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -328,9 +374,10 @@ export const CreateDocumentWizard = ({
             disabled={
               isSubmitting ||
               !formData.title.trim() ||
-              !image ||
+              (!previewUrl && !imageDeleted) ||
               !externalApiId ||
-              !emailTempKey
+              !emailTempKey ||
+              (!isEditMode && !!templateKeyError)
             }
             className="flex-1 py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-violet-600 to-fuchsia-600 hover:brightness-105"
           >
@@ -347,17 +394,6 @@ export const CreateDocumentWizard = ({
           </button>
         </div>
       </form>
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="delete_image"
-        message="delete_image_confirm"
-        confirmText="delete"
-        variant="danger"
-        loading={isImageDeleting}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={confirmDelete}
-      />
     </ModalWrapper>
   );
 };
