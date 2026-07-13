@@ -102,6 +102,7 @@ function mapOrderProductList(d: any) {
     platformFee: d.fee || 0,
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
     status: d.reconciliationStatus,
+    reconciliationStatus: d.reconciliationStatus,
     paymentMethod: "",
     paymentStatus: d.reconciliationStatus || "",
     deliveryMethod: "",
@@ -572,7 +573,8 @@ export const VendorMonthlyReport = () => {
                 <CheckCircle className="w-4 h-4" />
               </button>
             )}
-          {(order.status !== "canceled" && order.status !== "disputed") &&
+          {order.status !== "canceled" &&
+            order.status !== "disputed" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -582,15 +584,16 @@ export const VendorMonthlyReport = () => {
                 <AlertTriangle className="w-4 h-4" />
               </button>
             )}
-          {order.status === "disputed" && userRole !== "traveller" && (
-            <button
-              onClick={() => handleViewDetails(order)}
-              className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-              title={t("respond")}
-            >
-              <CheckCircle className="w-5 h-5" />
-            </button>
-          )}
+          {order.reconciliationStatus === "disputed" &&
+            userRole !== "traveller" && (
+              <button
+                onClick={() => handleViewDetails(order)}
+                className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                title={t("respond")}
+              >
+                <CheckCircle className="w-5 h-5" />
+              </button>
+            )}
           <button
             onClick={() => handleCancelOrder(order)}
             className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
