@@ -164,6 +164,7 @@ export const VendorMonthlyReport = ({
     isDark,
     isRTL,
     bgPrimary,
+    bgSecondary,
     textPrimary,
     borderColor,
     textSecondary,
@@ -281,12 +282,29 @@ export const VendorMonthlyReport = ({
   ]);
 
   const stats = useMemo(
-    () => ({
-      pending: orders.filter((o) => o.status === "pending").length,
-      approved: orders.filter((o) => o.status === "approved").length,
-      disputed: orders.filter((o) => o.status === "disputed").length,
-      canceled: orders.filter((o) => o.status === "canceled").length,
-    }),
+    () => {
+      const pending = orders.filter((o) => o.status === "pending");
+      const approved = orders.filter((o) => o.status === "approved");
+      const disputed = orders.filter((o) => o.status === "disputed");
+      const cancelled = orders.filter((o) => o.status === "canceled");
+
+      const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+      const platformFees = orders.reduce((sum, o) => sum + o.platformFee, 0);
+      const heldForDisputes = disputed.reduce((sum, o) => sum + o.totalPrice, 0);
+      const netPayout = totalRevenue - platformFees;
+
+      return {
+        pending: pending.length,
+        approved: approved.length,
+        disputed: disputed.length,
+        cancelled: cancelled.length,
+        totalOrders: orders.length,
+        totalRevenue,
+        platformFees,
+        netPayout,
+        heldForDisputes,
+      };
+    },
     [orders],
   );
 
@@ -553,13 +571,15 @@ export const VendorMonthlyReport = ({
               >
                 <CheckCircle className="w-4 h-4" />
               </button>
-              <button
-                onClick={() => handleOpenDispute(order)}
-                className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                title={t("dispute")}
-              >
-                <AlertTriangle className="w-4 h-4" />
-              </button>
+              {userRole !== "superadmin" && (
+                <button
+                  onClick={() => handleOpenDispute(order)}
+                  className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                  title={t("dispute")}
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                </button>
+              )}
               <button
                 onClick={() => handleCancelOrder(order)}
                 className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -569,7 +589,7 @@ export const VendorMonthlyReport = ({
               </button>
             </>
           )}
-          {adminView && order.status === "disputed" && (
+          {adminView && order.status === "disputed" && userRole !== "traveller" && (
             <button
               onClick={() => handleViewDetails(order)}
               className="px-3 py-1 rounded text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors"
@@ -605,10 +625,87 @@ export const VendorMonthlyReport = ({
         </div>
       </div>
 
+      {/* Stats Dashboard */}
+      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+          <div className={`${bgSecondary} rounded-lg p-4`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>Total Orders</div>
+            <div className={`text-2xl font-bold ${textPrimary}`}>
+              {stats.totalOrders}
+            </div>
+          </div>
+          <div className={`${bgSecondary} rounded-lg p-4`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>Total Revenue</div>
+            <div className={`text-2xl font-bold ${textPrimary}`}>
+              ₪{(stats.totalRevenue || 0).toLocaleString()}
+            </div>
+          </div>
+          <div className={`${bgSecondary} rounded-lg p-4`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>Platform Fee</div>
+            <div
+              className={`text-2xl font-bold text-orange-600 dark:text-orange-400`}
+            >
+              -₪{(stats.platformFees || 0).toLocaleString()}
+            </div>
+          </div>
+          <div className={`${bgSecondary} rounded-lg p-4`}>
+            <div className={`text-xs ${textTertiary} mb-1`}>Net Payout</div>
+            <div
+              className={`text-2xl font-bold text-green-600 dark:text-green-400`}
+            >
+              ₪{(stats.netPayout || 0).toLocaleString()}
+            </div>
+          </div>
+          <div className={`${bgSecondary} rounded-lg p-4 col-span-2`}>
+            <div className={`text-xs ${textTertiary} mb-2`}>
+              Status Overview
+            </div>
+            <div className="flex flex-wrap gap-2 text-sm">
+              <span className="flex items-center gap-1">
+                <Clock className="w-4 h-4 text-yellow-600" />
+                <span className={textSecondary}>{stats.pending} Pending</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className={textSecondary}>{stats.approved} Approved</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <span className={textSecondary}>{stats.disputed} Disputed</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <XCircle className="w-4 h-4 text-red-600" />
+                <span className={textSecondary}>
+                  {stats.cancelled} Cancelled
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {stats.heldForDisputes > 0 && (
+          <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
+            <div>
+              <p
+                className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
+              >
+                ₪{(stats.heldForDisputes || 0).toLocaleString()} held for disputes
+              </p>
+              <p
+                className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
+              >
+                These amounts will be paid after dispute resolution
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Search and Filters */}
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <div className="flex-1 w-full min-w-0">
             <SearchInput
               placeholder={t("search_by_order")}
               searchTerm={searchTerm}
@@ -618,7 +715,7 @@ export const VendorMonthlyReport = ({
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
+            className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors whitespace-nowrap`}
           >
             <Filter className="w-4 h-4" />
             {t("filters")}
