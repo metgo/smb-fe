@@ -14,11 +14,15 @@ import CancelOrderModal from "./CancelOrderModal";
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
+import { uploadWithProgress } from "@/helpers";
 import {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
   useApproveOrderProductMutation,
+  useOpenDisputeMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
@@ -229,6 +233,8 @@ export const VendorMonthlyReport = ({
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
   const [approveOrderProduct] = useApproveOrderProductMutation();
+  const [openDispute] = useOpenDisputeMutation();
+  const [createSignedUrl] = useCreateSignedUrlMutation();
 
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?.id) {
@@ -295,6 +301,31 @@ export const VendorMonthlyReport = ({
   ) => {
     if (!selectedOrder) return;
     try {
+      const attachmentUrls: string[] = [];
+
+      // Upload files if any
+      if (files.length > 0) {
+        for (const file of files) {
+          const res = await createSignedUrl([
+            { originalName: file.name, mimeType: file.type },
+          ]);
+          const { signedUrl, gcsURL } = res.data[0] as {
+            signedUrl: string;
+            gcsURL: string;
+          };
+
+          await uploadWithProgress(file, signedUrl, () => {});
+          attachmentUrls.push(gcsURL);
+        }
+      }
+
+      await openDispute({
+        orderId: selectedOrder.id,
+        reason,
+        description: details,
+        attachments: attachmentUrls,
+      }).unwrap();
+
       toast.success(t("dispute_submitted"));
       setShowDisputeModal(false);
       setSelectedOrder(null);

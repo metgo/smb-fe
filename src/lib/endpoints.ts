@@ -61,6 +61,7 @@ export const endpoints = {
   orderProductsDetails: "/order-products/details",
   cancelOrderProduct: "/cancel-order-product",
   approveOrderProduct: "/approve-order-product",
+  openDispute: "/orders/dispute",
 
   ordersStats: "/orders-stats",
   bulkOrdersUpdate: "/resend-order-emails",

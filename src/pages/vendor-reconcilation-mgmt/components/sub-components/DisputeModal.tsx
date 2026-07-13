@@ -10,14 +10,14 @@ interface DisputeModalProps {
 }
 
 const disputeReasons = [
-  "Wrong item shipped",
-  "Item damaged/defective",
-  "Customer fraudulent claim",
-  "Pricing error",
-  "Quantity mismatch",
-  "Payment issue",
-  "Delivery problem",
-  "Other (please specify)",
+  { label: "Wrong item shipped", value: "wrong_item_shipped" },
+  { label: "Item damaged/defective", value: "item_damaged_defective" },
+  { label: "Customer fraudulent claim", value: "customer_fraudulent_claim" },
+  { label: "Pricing error", value: "pricing_error" },
+  { label: "Quantity mismatch", value: "quantity_mismatch" },
+  { label: "Payment issue", value: "payment_issue" },
+  { label: "Delivery problem", value: "delivery_problem" },
+  { label: "Other (please specify)", value: "other" },
 ];
 
 export default function DisputeModal({
@@ -218,8 +218,8 @@ export default function DisputeModal({
             >
               <option value="">Select a reason</option>
               {disputeReasons.map((r) => (
-                <option key={r} value={r}>
-                  {r}
+                <option key={r.value} value={r.value}>
+                  {r.label}
                 </option>
               ))}
             </select>
