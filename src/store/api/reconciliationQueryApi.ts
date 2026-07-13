@@ -14,7 +14,16 @@ export const reconciliationQueryApi = createApi({
         params,
       }),
     }),
+
+    // GET /order-products/details/:id
+    getOrderProductDetails: builder.query<any, string>({
+      query: (id) => ({
+        url: `${endpoints.orderProductsDetails}/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetOrderProductsQuery } = reconciliationQueryApi;
+export const { useGetOrderProductsQuery, useGetOrderProductDetailsQuery } =
+  reconciliationQueryApi;

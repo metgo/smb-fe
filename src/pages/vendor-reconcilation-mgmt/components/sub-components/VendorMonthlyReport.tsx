@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Filter,
   Download,
@@ -18,7 +18,10 @@ import CancelOrderModal from "./CancelOrderModal";
 
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
-import { useGetOrderProductsQuery } from "@/store/api/reconciliationQueryApi";
+import {
+  useGetOrderProductsQuery,
+  useGetOrderProductDetailsQuery,
+} from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
 
@@ -71,6 +74,51 @@ export interface MonthlyOrder {
   approvedBy?: string;
 }
 
+// Maps the full order-details API response (single-order shape) into a MonthlyOrder.
+// Pure function — no component state involved, so it's trivial to test/reuse.
+function mapOrderDetails(d: any): MonthlyOrder {
+  const address = [
+    d.deliveryInformation?.address?.houseNo,
+    d.deliveryInformation?.address?.apartment,
+    d.deliveryInformation?.address?.street,
+    d.deliveryInformation?.address?.city,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return {
+    id: d._id,
+    productId: d.productInformation?._id || "",
+    productName: d.productInformation?.name || "",
+    productImage: d.productInformation?.image || "",
+    productSKU: "",
+    productCategory: d.productInformation?.category?.name || "",
+    customerId: "",
+    customerName: d.customerInformation?.name?.trim() || "",
+    customerEmail: d.customerInformation?.email || "",
+    customerPhone: d.customerInformation?.phone || "",
+    customerLocation: d.customerInformation?.location || "",
+    purchaseDate: d.orderInformation?.purchaseDate,
+    quantity: d.orderInformation?.quantity,
+    unitPrice: d.orderInformation?.unitPrice,
+    totalPrice: d.orderInformation?.total,
+    platformFee: d.orderInformation?.platformFee,
+    netToVendor: d.orderInformation?.total - d.orderInformation?.platformFee,
+    status:
+      d.orderInformation?.status === "completed"
+        ? "approved"
+        : d.orderInformation?.status === "processing"
+          ? "pending"
+          : d.orderInformation?.status,
+    paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
+    paymentStatus: d.paymentInformation?.paymentStatus || "",
+    deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
+    deliveryAddress: address,
+    specialInstructions: d.deliveryInformation?.specialInstructions || "",
+    transactionId: d.orderId,
+  };
+}
+
 export const VendorMonthlyReport = ({
   adminView = false,
 }: VendorMonthlyReportProps) => {
@@ -88,6 +136,9 @@ export const VendorMonthlyReport = ({
   const [selectedMonth, setSelectedMonth] = useState("10-2026"); // October 2026
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const monthPickerRef = useRef<HTMLDivElement>(null);
+
+  // ID of the order whose full details we want to fetch (null = don't fetch)
+  const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
 
   // Text color utilities
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
@@ -146,6 +197,22 @@ export const VendorMonthlyReport = ({
   // Fetch order products from API
   const { data: orderProductsData, isLoading: isApiLoading } =
     useGetOrderProductsQuery(apiParams);
+
+  // Fetch full order details when a row is clicked (skip until we have an id)
+  const { data: orderDetailsData, isFetching: isDetailsLoading } =
+    useGetOrderProductDetailsQuery(detailsOrderId as string, {
+      skip: !detailsOrderId,
+    });
+
+  // What the details modal actually renders: the fresh detail payload once it
+  // arrives for the currently-selected order, otherwise the lightweight row
+  // data we already had (so the modal shows something instantly on click).
+  const displayedOrder = useMemo(() => {
+    if (orderDetailsData && detailsOrderId === selectedOrder?.id) {
+      return mapOrderDetails(orderDetailsData);
+    }
+    return selectedOrder;
+  }, [orderDetailsData, detailsOrderId, selectedOrder]);
 
   // Map API response to MonthlyOrder format and handle pagination.
   useEffect(() => {
@@ -415,12 +482,22 @@ export const VendorMonthlyReport = ({
   };
 
   const handleViewDetails = (order: MonthlyOrder) => {
+    // Show the row's data immediately; displayedOrder swaps in the full
+    // record automatically once the details query resolves.
     setSelectedOrder(order);
+    setDetailsOrderId(order.id);
+
     if (adminView && order.status === "disputed") {
       setShowAdminDisputeModal(true);
     } else {
       setShowOrderDetails(true);
     }
+  };
+
+  const closeDetails = () => {
+    setShowOrderDetails(false);
+    setSelectedOrder(null);
+    setDetailsOrderId(null);
   };
 
   const handleAdminResolveDispute = (response: string, action: string) => {
@@ -451,6 +528,7 @@ export const VendorMonthlyReport = ({
     toast.success("Dispute resolved successfully");
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
+    setDetailsOrderId(null);
   };
 
   const handleExportCSV = () => {
@@ -975,13 +1053,11 @@ export const VendorMonthlyReport = ({
       />
 
       {/* Modals */}
-      {showOrderDetails && selectedOrder && (
+      {showOrderDetails && displayedOrder && (
         <OrderDetailsModal
-          order={selectedOrder}
-          onClose={() => {
-            setShowOrderDetails(false);
-            setSelectedOrder(null);
-          }}
+          order={displayedOrder}
+          loading={isDetailsLoading}
+          onClose={closeDetails}
           onDispute={() => {
             setShowOrderDetails(false);
             setShowDisputeModal(true);
@@ -991,9 +1067,8 @@ export const VendorMonthlyReport = ({
             setShowCancelModal(true);
           }}
           onApprove={() => {
-            handleApprove(selectedOrder.id);
-            setShowOrderDetails(false);
-            setSelectedOrder(null);
+            handleApprove(displayedOrder.id);
+            closeDetails();
           }}
           adminView={adminView}
         />
@@ -1021,12 +1096,14 @@ export const VendorMonthlyReport = ({
         />
       )}
 
-      {showAdminDisputeModal && selectedOrder && (
+      {showAdminDisputeModal && displayedOrder && (
         <AdminDisputeResponseModal
-          order={selectedOrder}
+          order={displayedOrder}
+          // loading={isDetailsLoading}
           onClose={() => {
             setShowAdminDisputeModal(false);
             setSelectedOrder(null);
+            setDetailsOrderId(null);
           }}
           onResolve={handleAdminResolveDispute}
         />
