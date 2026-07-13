@@ -20,8 +20,8 @@ import {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
   useCancelOrderProductMutation,
-  useApproveOrderProductMutation,
   useOpenDisputeMutation,
+  useRespondDisputeMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
@@ -230,8 +230,8 @@ export const VendorMonthlyReport = () => {
       skip: !detailsOrderId,
     });
   const [cancelOrderProduct] = useCancelOrderProductMutation();
-  const [approveOrderProduct] = useApproveOrderProductMutation();
   const [openDispute] = useOpenDisputeMutation();
+  const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
 
   const displayedOrder = useMemo(() => {
@@ -361,14 +361,20 @@ export const VendorMonthlyReport = () => {
 
   const handleApprove = async (order: MonthlyOrder) => {
     try {
-      if (!order.orderId || !order._id) {
+      if (!order._id) {
         toast.error("Invalid order data");
         return;
       }
 
-      await approveOrderProduct({
-        orderId: order.orderId,
-        orderProductId: order._id,
+      // TODO: Replace hardcoded disputeId with actual dispute ID from order
+      const HARDCODED_DISPUTE_ID = "6a54c6ae4da6d6ccb082347f";
+
+      // Call respond dispute endpoint with hardcoded ID for testing
+      await respondDispute({
+        disputeId: HARDCODED_DISPUTE_ID,
+        action: "accept",
+        internalNotes: "Approved by admin",
+        vendorFacingResponse: "Your dispute has been accepted. Refund will be processed.",
       }).unwrap();
 
       toast.success(t("order_approved"));
@@ -406,7 +412,7 @@ export const VendorMonthlyReport = () => {
     setSelectedOrder(order);
     setDetailsOrderId(order._id);
 
-    if (adminView && order.status === "disputed") {
+    if (order.status === "disputed") {
       setShowAdminDisputeModal(true);
     } else {
       setShowOrderDetails(true);
