@@ -21,6 +21,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import {
   useGetOrderProductsQuery,
   useGetOrderProductDetailsQuery,
+  useCancelOrderProductMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
@@ -47,7 +48,7 @@ export interface MonthlyOrder {
   totalPrice: number;
   platformFee: number;
   netToVendor: number;
-  status: "pending" | "approved" | "disputed" | "cancelled";
+  status: "pending" | "approved" | "disputed" | "canceled";
   paymentMethod: string;
   paymentStatus: string;
   deliveryMethod: string;
@@ -204,6 +205,9 @@ export const VendorMonthlyReport = ({
       skip: !detailsOrderId,
     });
 
+  const [cancelOrderProduct, { isLoading: isCancelling }] =
+    useCancelOrderProductMutation();
+
   // What the details modal actually renders: the fresh detail payload once it
   // arrives for the currently-selected order, otherwise the lightweight row
   // data we already had (so the modal shows something instantly on click).
@@ -310,7 +314,7 @@ export const VendorMonthlyReport = ({
     const pending = orders.filter((o) => o.status === "pending").length;
     const approved = orders.filter((o) => o.status === "approved").length;
     const disputed = orders.filter((o) => o.status === "disputed").length;
-    const cancelled = orders.filter((o) => o.status === "cancelled").length;
+    const canceled = orders.filter((o) => o.status === "canceled").length;
     const heldForDisputes = orders
       .filter((o) => o.status === "disputed")
       .reduce((sum, o) => sum + o.netToVendor, 0);
@@ -323,7 +327,7 @@ export const VendorMonthlyReport = ({
       pending,
       approved,
       disputed,
-      cancelled,
+      canceled,
       heldForDisputes,
     };
   }, [orders]);
@@ -458,27 +462,38 @@ export const VendorMonthlyReport = ({
     setShowCancelModal(true);
   };
 
-  const handleSubmitCancel = (reason: string, notes: string) => {
+  const handleSubmitCancel = async (reason: string, notes: string) => {
     if (!selectedOrder) return;
 
-    const cancelInfo = {
-      reason,
-      notes,
-      cancelledAt: new Date().toISOString(),
-      cancelledBy: "current-user",
-    };
+    try {
+      await cancelOrderProduct({
+        orderId: selectedOrder.transactionId,
+        orderProductId: selectedOrder.id,
+        cancelReason: reason,
+        additionalInfo: notes,
+      }).unwrap();
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder.id
-          ? { ...o, status: "cancelled", cancelInfo }
-          : o,
-      ),
-    );
+      const cancelInfo = {
+        reason,
+        notes,
+        cancelledAt: new Date().toISOString(),
+        cancelledBy: "current-user",
+      };
 
-    toast.success("Order cancelled successfully");
-    setShowCancelModal(false);
-    setSelectedOrder(null);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === selectedOrder.id
+            ? { ...o, status: "canceled", cancelInfo }
+            : o,
+        ),
+      );
+
+      toast.success("Order cancelled successfully");
+      setShowCancelModal(false);
+      setSelectedOrder(null);
+    } catch (error) {
+      toast.error("Failed to cancel order");
+    }
   };
 
   const handleViewDetails = (order: MonthlyOrder) => {
@@ -508,7 +523,7 @@ export const VendorMonthlyReport = ({
         o.id === selectedOrder.id && o.disputeInfo
           ? {
               ...o,
-              status: action === "approve_dispute" ? "cancelled" : "approved",
+              status: action === "approve_dispute" ? "canceled" : "approved",
               disputeInfo: {
                 ...o.disputeInfo,
                 adminResponse: response,
@@ -559,11 +574,11 @@ export const VendorMonthlyReport = ({
         icon: AlertTriangle,
         label: "Disputed",
       },
-      cancelled: {
+      canceled: {
         bg: "bg-red-100 dark:bg-red-900/20",
         text: "text-red-800 dark:text-red-400",
         icon: XCircle,
-        label: "Cancelled",
+        label: "Canceled",
       },
     };
     const badge = badges[status as keyof typeof badges] || badges.pending;
@@ -861,7 +876,7 @@ export const VendorMonthlyReport = ({
               <span className="flex items-center gap-1">
                 <XCircle className="w-4 h-4 text-red-600" />
                 <span className={textSecondary}>
-                  {stats.cancelled} Cancelled
+                  {stats.canceled} Cancelled
                 </span>
               </span>
             </div>
@@ -977,7 +992,7 @@ export const VendorMonthlyReport = ({
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
                 <option value="disputed">Disputed</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="canceled">Cancelled</option>
               </select>
             </div>
             <div>
@@ -1088,6 +1103,7 @@ export const VendorMonthlyReport = ({
       {showCancelModal && selectedOrder && (
         <CancelOrderModal
           order={selectedOrder}
+          // loading={isCancelling}
           onClose={() => {
             setShowCancelModal(false);
             setSelectedOrder(null);
