@@ -20,6 +20,7 @@ import { SmsModule } from 'src/services/sms/sms.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
     JwtAuthModule,
     MailChimpModule,
     QrTokenModule,
+    DocUploadModule,
     SmsModule,
     forwardRef(() => VoucherModule),
     forwardRef(() => OrdersModule),

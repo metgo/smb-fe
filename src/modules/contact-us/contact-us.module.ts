@@ -6,6 +6,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { SendInquiryFundayHandler } from './commands/handler/send-inquiry-funday.handler';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ExternalApiModule } from '../external-api/external-api.module';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ExternalApiModule } from '../external-api/external-api.module';
     GoogleSheetsModule,
     MailChimpModule,
     ExternalApiModule,
+    DocUploadModule,
   ],
   controllers: [ContactUsController],
   providers: [SendInquiryFundayHandler],

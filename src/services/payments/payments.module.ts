@@ -14,6 +14,7 @@ import { BusinessModule } from 'src/modules/business/business.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { DocUploadModule } from 'src/modules/doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,
+    DocUploadModule,
     forwardRef(() => BusinessModule),
     forwardRef(() => ProductsModule),
     forwardRef(() => UsersModule),

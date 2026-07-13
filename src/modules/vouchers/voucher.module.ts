@@ -23,6 +23,7 @@ import { GetByCodeHandler } from './queries/handler/get-by-code.handler';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { TicketSchema } from 'src/modules/tickets/schema/tickets.schema';
 import { EventSchema } from 'src/modules/events/schema/events.schema';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { EventSchema } from 'src/modules/events/schema/events.schema';
     forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
     MailChimpModule,
+    DocUploadModule,
     forwardRef(() => OrdersModule),
     forwardRef(() => RewardsModule),
     ProductsModule,

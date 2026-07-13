@@ -53,6 +53,7 @@ import { CartService } from 'src/modules/cart/cart.service';
 import { SmsService } from 'src/services/sms/sms.service';
 import { FindByIdAndPopulateQuery } from '../external-api/queries/find-by-id-and-populate.query';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
+import { DocUploadService } from '../doc-upload/doc-upload.service';
 
 @Injectable()
 export class VoucherService {
@@ -74,8 +75,9 @@ export class VoucherService {
     private mailchimpService: MailChimpService,
     private productService: ProductsService,
     private cartService: CartService,
+    private readonly docUploadService: DocUploadService,
     private queryBus: QueryBus,
-  ) {}
+  ) { }
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
@@ -1126,9 +1128,9 @@ export class VoucherService {
     link: string,
     GREETINGS?: string,
   ) {
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi?.identifierId,
-      externalApi?.themeId,
+    const { bucketUrl, emailFields } = await getCommonEmailFields(
+      externalApi,
+      this.docUploadService,
     );
 
     const emailColor = externalApi?.themeId?.secondaryColor || '#F4F7F5';
@@ -1158,7 +1160,6 @@ export class VoucherService {
       templatedId: DynamicEmailTemplate.PurchaseVoucher,
       mergeVars: {
         ...emailFields,
-        WEBSITE_NAME: externalApi?.name,
         USER_NAME: BUYERNAME,
         VOUCHER_LIST,
         BUTTON_LINK: link,

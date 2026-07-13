@@ -16,19 +16,10 @@ export class DocUpload extends AuditableSchema {
     title: string;
 
   @Prop({ default: '' })
-    subTitle: string;
+    imageUrl: string;
 
   @Prop({ default: '' })
-    slug: string;
-
-  @Prop({ default: '' })
-    docUrl: string;
-
-  @Prop({ default: '' })
-    docType: string;
-
-  @Prop({ default: '' })
-    docSize: string;
+    templateKey: string;
 }
 
 export type DocUploadDocument = HydratedDocument<DocUpload>;

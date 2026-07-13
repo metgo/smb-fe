@@ -29,6 +29,7 @@ import {
   SearchDictionary,
   SearchDictionarySchema,
 } from './schema/search-dictionary.schema';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import {
     ConfigModule,
     CqrsModule,
     MailChimpModule,
+    DocUploadModule,
     MongooseModule.forFeature([
       { name: BusinessesAudit.name, schema: BusinessesAuditSchema },
       { name: EventsAudit.name, schema: EventsAuditSchema },

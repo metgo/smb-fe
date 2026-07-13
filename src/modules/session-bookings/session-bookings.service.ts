@@ -27,6 +27,7 @@ import { QRCodeService } from 'src/services/qr-code/qr-code.service';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
+import { DocUploadService } from '../doc-upload/doc-upload.service';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const HOLD_TTL_MINUTES = 7;
@@ -48,7 +49,8 @@ export class SessionBookingsService {
     private readonly configService: ConfigService,
     private readonly qrCodeService: QRCodeService,
     private readonly externalApiService: ExternalApiServices,
-  ) {}
+    private readonly docUploadService: DocUploadService,
+  ) { }
 
   // ── Helper Methods ───────────────────────────────────────────────────────────
 
@@ -804,9 +806,9 @@ export class SessionBookingsService {
         if (!externalApi) {
           this.logger.warn('[SESSION_BOOKINGS]: ExternalApi not found, skipping email');
         } else {
-          const { bucketUrl, emailFields } = getCommonEmailFields(
-            externalApi.identifierId,
+          const { emailFields } = await getCommonEmailFields(
             externalApi,
+            this.docUploadService,
           );
 
           const { FE } = this.configService.baseUrl;
@@ -856,9 +858,6 @@ export class SessionBookingsService {
                 QR_CODE_URL: checkInQrUrl || checkInUrl,
                 CHECK_IN_URL: checkInUrl,
                 BUTTON_LINK: externalApi?.websiteUrl,
-                BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-                MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-                WEBSITE_NAME: externalApi?.name,
                 BUSINESSADDRESS: '',
                 SUPPORT_EMAIL: externalApi?.email || 'support@metgo.app',
                 SUPPORT_PHONE: externalApi?.whatsappNumber || '',

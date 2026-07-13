@@ -17,10 +17,10 @@ import { ScheduledEventNotification } from './scheduled-event-notification.schem
 @Schema({ _id: false })
 export class CommonQuestionOptions {
   @Prop({ required: false })
-  label: string;
+    label: string;
 
   @Prop({ required: false })
-  value: string;
+    value: string;
 }
 export const CommonQuestionOptionsSchema = SchemaFactory.createForClass(
   CommonQuestionOptions,
@@ -29,19 +29,19 @@ export const CommonQuestionOptionsSchema = SchemaFactory.createForClass(
 @Schema({ _id: false })
 export class CustomQuestion {
   @Prop({ required: false })
-  question: string;
+    question: string;
 
   @Prop({
     enum: CommonQuestionAnswerType,
     default: CommonQuestionAnswerType.TEXT,
   })
-  answerType: CommonQuestionAnswerType;
+    answerType: CommonQuestionAnswerType;
 
   @Prop({ default: false })
-  required?: boolean;
+    required?: boolean;
 
   @Prop({ type: [CommonQuestionOptionsSchema], default: [] })
-  commonQuestionOptions?: CommonQuestionOptions[];
+    commonQuestionOptions?: CommonQuestionOptions[];
 }
 export const CustomQuestionSchema
   = SchemaFactory.createForClass(CustomQuestion);
@@ -54,16 +54,16 @@ export class Event extends AuditableSchema {
     required: true,
     auto: true,
   })
-  _id: mongoose.Types.ObjectId;
+    _id: mongoose.Types.ObjectId;
 
   @Prop({ required: false, default: null })
-  name: string;
+    name: string;
 
   @Prop()
-  nameHe: string;
+    nameHe: string;
 
   @Prop()
-  nameAr: string;
+    nameAr: string;
 
   @Prop({
     type: {
@@ -75,7 +75,7 @@ export class Event extends AuditableSchema {
     _id: false,
     default: null,
   })
-  address: {
+    address: {
     country: { type: string; default: null };
     city: { type: string; default: null };
     location: { type: string; default: null };
@@ -83,31 +83,31 @@ export class Event extends AuditableSchema {
   };
 
   @Prop()
-  shortDescription: string;
+    shortDescription: string;
 
   @Prop()
-  shortDescriptionHe: string;
+    shortDescriptionHe: string;
 
   @Prop()
-  shortDescriptionAr: string;
+    shortDescriptionAr: string;
 
   @Prop()
-  description: string;
+    description: string;
 
   @Prop()
-  descriptionHe: string;
+    descriptionHe: string;
 
   @Prop()
-  descriptionAr: string;
+    descriptionAr: string;
 
   @Prop()
-  internalNotes: string;
+    internalNotes: string;
 
   @Prop({ enum: CommonStatus, default: CommonStatus.DRAFT })
-  status: CommonStatus;
+    status: CommonStatus;
 
   @Prop()
-  rejected_reason: string;
+    rejected_reason: string;
 
   @Prop({
     type: {
@@ -117,27 +117,27 @@ export class Event extends AuditableSchema {
     },
     _id: false,
   })
-  registration: {
+    registration: {
     isRegistration: boolean;
     noOfPeople?: number;
     isUnlimited: boolean;
   };
 
   @Prop({ type: [CustomQuestionSchema], default: [] })
-  customQuestions: CustomQuestion[];
+    customQuestions: CustomQuestion[];
 
   @Prop({ enum: EventType, default: EventType.PHYSICAL })
-  eventType: EventType;
+    eventType: EventType;
 
   @Prop()
-  onlineLink: string;
+    onlineLink: string;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: User.name,
     required: false,
   })
-  userId: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -145,7 +145,7 @@ export class Event extends AuditableSchema {
     required: false,
     default: null,
   })
-  authorityId: mongoose.Types.ObjectId;
+    authorityId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -153,7 +153,7 @@ export class Event extends AuditableSchema {
     required: false,
     default: null,
   })
-  dmoId: mongoose.Types.ObjectId;
+    dmoId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -161,7 +161,7 @@ export class Event extends AuditableSchema {
     required: false,
     default: null,
   })
-  businessId: mongoose.Types.ObjectId;
+    businessId: mongoose.Types.ObjectId;
 
   @Prop({
     type: {
@@ -171,13 +171,13 @@ export class Event extends AuditableSchema {
     _id: false,
     default: null,
   })
-  geoLocation: {
+    geoLocation: {
     lat: { type: string; default: null };
     long: { type: string; default: null };
   };
 
   @Prop()
-  images: [
+    images: [
     {
       image: string;
       caption: string;
@@ -196,22 +196,22 @@ export class Event extends AuditableSchema {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
     required: false,
   })
-  groupTypesId: mongoose.Types.ObjectId[];
+    groupTypesId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
     required: false,
   })
-  accessibilitiesId: mongoose.Types.ObjectId[];
+    accessibilitiesId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
     required: false,
   })
-  subCategoriesId: mongoose.Types.ObjectId[];
+    subCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop()
-  slug: string;
+    slug: string;
 
   @Prop({
     type: [
@@ -224,30 +224,30 @@ export class Event extends AuditableSchema {
     _id: false,
     default: [],
   })
-  dayDescription: {
+    dayDescription: {
     date: Date;
     startTime?: string;
     endTime?: string;
   }[];
 
   @Prop({ default: 200, required: false })
-  impact: number;
+    impact: number;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: RecurringEventRule.name,
     required: false,
   })
-  recurringEventRuleId: mongoose.Types.ObjectId;
+    recurringEventRuleId: mongoose.Types.ObjectId;
 
   @Prop({
     default: false,
     required: false,
   })
-  hasExternalTicket: boolean;
+    hasExternalTicket: boolean;
 
   @Prop({ required: false, default: null })
-  ticketBuyLink: string;
+    ticketBuyLink: string;
 
   @Prop({
     type: [
@@ -258,7 +258,7 @@ export class Event extends AuditableSchema {
     ],
     required: false,
   })
-  scheduledNotificationId: mongoose.Types.ObjectId[];
+    scheduledNotificationId: mongoose.Types.ObjectId[];
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

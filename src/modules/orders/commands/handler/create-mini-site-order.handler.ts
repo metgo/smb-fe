@@ -30,6 +30,7 @@ import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
+import { DocUploadService } from 'src/modules/doc-upload/doc-upload.service';
 
 @CommandHandler(CreateMiniSiteOrderCommand)
 export class CreateMiniSiteOrderHandler
@@ -51,7 +52,8 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
     private readonly orderProductService: OrderProductService,
     private readonly mailchimpService: MailChimpService,
     private readonly businessService: BusinessService,
-  ) {}
+    private readonly docUploadService: DocUploadService,
+  ) { }
 
   async execute(command: CreateMiniSiteOrderCommand): Promise<any> {
     const { body, loggedInUser } = command;
@@ -318,23 +320,19 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
       businessIds,
     );
 
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
-      externalApi.themeId,
+    const { emailFields } = await getCommonEmailFields(
+      externalApi,
+      this.docUploadService,
     );
 
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.themeId?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      WEBSITE_NAME: externalApi?.name,
       BUSINESSNAME: businessDetails[0]?.name || '',
       BUSINESSPHONE:
         `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
         || '',
       BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-      FOOTER_BANNER_MINISITE_BANNER: `${bucketUrl}footer/footer-banner-mini-site.png`,
     };
 
     type EmailOrderGroup = {
@@ -389,20 +387,17 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
             product => `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
+                  <td style="padding: 10px; background: ${externalApi?.themeId.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
                         <td style="padding: 0; vertical-align: middle;">
-                          <img src="${product?.image || ''}" alt="${
-  product?.name
+                          <img src="${product?.image || ''}" alt="${product?.name
 }"
                             style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                         </td>
                         <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                          <span style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
+                          <span style="display: block; font-size: 16px; color: #333333;">${product?.name
 }</span>
                           
                         </td>
@@ -463,28 +458,24 @@ implements ICommandHandler<CreateMiniSiteOrderCommand> {
             return `
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
-                <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
+                <td style="padding: 10px; background: ${externalApi?.themeId.secondaryColor
 }; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                       <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product.images?.[0]?.image || ''}" alt="${
-  product?.name
+                        <img src="${product.images?.[0]?.image || ''}" alt="${product?.name
 }"
                           style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                       </td>
                       <td style="padding: 0 10px; vertical-align: middle;" width="100%">
                         <span
-                          style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
+                          style="display: block; font-size: 16px; color: #333333;">${product?.name
 }</span>
                         <span style="display: block; font-size: 14px; color: #666666;">כמות:
                             ${quantity}</span>
                         <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${deliveryFee}</span>
-  <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
-  address || 'לא ישים'
+  <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${address || 'לא ישים'
 }</span>
                       </td>
                       <td style="padding: 0; vertical-align: middle; white-space: nowrap;">

@@ -13,6 +13,7 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
     JwtModule,
     MailChimpModule,
     ConfigModule,
+    DocUploadModule,
     QRCodeModule,
     forwardRef(() => ExternalApiModule),
     forwardRef(() => UsersModule),

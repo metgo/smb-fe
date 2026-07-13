@@ -37,6 +37,7 @@ import {
 import { GetSiteSettingIdentityThemeHandler } from './queries/handler/get-site-setting-identity-theme.handler';
 import { GetSiteSettingSeoHandler } from './queries/handler/get-site-setting-seo.handler';
 import { GetSiteSettingSocialContactHandler } from './queries/handler/get-site-setting-social-contact.handler';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { GetSiteSettingSocialContactHandler } from './queries/handler/get-site-s
     forwardRef(() => DMOModule),
     GcpBucketModule,
     MailChimpModule,
+    DocUploadModule,
     forwardRef(() => UsersModule),
     PaymentsModule,
     ConfigModule,

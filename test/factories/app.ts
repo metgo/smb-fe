@@ -18,6 +18,7 @@ import { JwtAuthStrategyStub } from 'test/stubs/jwt/jwt-strategy.stub';
 import { MailerStub } from 'test/stubs/mailer/mailer.stub';
 import { StorageStub } from 'test/stubs/storage/storage.stub';
 import { PaymentsStub } from 'test/stubs/payments/payments.stub';
+import { DocUploadModule } from 'src/modules/doc-upload/doc-upload.module';
 
 export const appFactory = async () => {
   const mongoServer = await MongoMemoryServer.create();
@@ -36,6 +37,7 @@ export const appFactory = async () => {
       ProductFactory,
       UsersFactory,
       VouchersFactory,
+      DocUploadModule,
     ],
   })
     .overrideProvider(JwtStrategyProvider)

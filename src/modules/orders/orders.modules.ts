@@ -26,6 +26,7 @@ import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { QrTokenModule } from 'src/services/qr-token/qr-token.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-order.handler';
+import { DocUploadModule } from '../doc-upload/doc-upload.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-
     ConfigModule,
     forwardRef(() => DMOModule),
     MailChimpModule,
+    DocUploadModule,
     OrderProductModule,
     CartModule,
     QRCodeModule,

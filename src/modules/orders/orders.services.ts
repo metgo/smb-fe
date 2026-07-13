@@ -57,6 +57,7 @@ import { SessionBookingsService } from 'src/modules/session-bookings/session-boo
 import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
 import { Ticket } from '../tickets/schema/tickets.schema';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
+import { DocUploadService } from '../doc-upload/doc-upload.service';
 
 function hexToRgba(hex: string, opacity: number): string {
   if (!hex) return `rgba(0, 0, 0, ${opacity})`;
@@ -106,6 +107,7 @@ export class OrdersService {
     private readonly qrTokenService: QrTokenService,
     private readonly configService: ConfigService,
     private readonly campaignService: CampaignService,
+    private readonly docUploadService: DocUploadService,
     private readonly sessionBookingsService: SessionBookingsService,
   ) { }
 
@@ -1229,17 +1231,14 @@ export class OrdersService {
       ),
     ]);
 
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
+    const { emailFields } = await getCommonEmailFields(
       externalApi,
+      this.docUploadService,
     );
 
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      WEBSITE_NAME: externalApi?.name,
     };
 
     const buildProductRow = (
@@ -1785,9 +1784,9 @@ export class OrdersService {
       firstEventUserId: eventDetails?.[0]?.userId ? JSON.stringify(eventDetails?.[0]?.userId) : 'NOT_POPULATED',
     });
 
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
+    const { emailFields } = await getCommonEmailFields(
       externalApi,
+      this.docUploadService,
     );
 
     // Format event date and time for display
@@ -1814,9 +1813,6 @@ export class OrdersService {
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      WEBSITE_NAME: externalApi?.name,
       BUSINESSNAME: eventDetails[0].name || '',
       EVENT_DATE: eventDate,
       EVENT_START_TIME: eventStartTime || '',
@@ -2320,17 +2316,13 @@ export class OrdersService {
       businessIds,
     );
 
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
+    const { emailFields } = await getCommonEmailFields(
       externalApi,
+      this.docUploadService,
     );
-
     const orderEmailFields = {
       ...emailFields,
       BUTTON_LINK: externalApi?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      WEBSITE_NAME: externalApi?.name,
     };
 
     type EmailOrderGroup = {
