@@ -10,12 +10,14 @@ interface AdminDisputeResponseModalProps {
   order: MonthlyOrder;
   onClose: () => void;
   onResolve: () => void;
+  disputeId?: string;
 }
 
 export const AdminDisputeResponseModal = ({
   order,
   onClose,
   onResolve,
+  disputeId,
 }: AdminDisputeResponseModalProps) => {
   const { t } = useTranslation("reconciliation");
   const { theme } = useAppSelector((state) => state.settings);
@@ -75,9 +77,11 @@ export const AdminDisputeResponseModal = ({
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    const actualDisputeId = disputeId || order.disputeId || order._id;
+
     try {
       await respondDispute({
-        disputeId: order._id,
+        disputeId: actualDisputeId,
         action: resolutionAction,
         internalNotes,
         vendorFacingResponse: responseToVendor,
@@ -244,7 +248,7 @@ export const AdminDisputeResponseModal = ({
               <div className="space-y-2">
                 <label
                   className={`flex items-start gap-3 p-3 border ${borderColor} rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    resolutionAction === "approve_dispute"
+                    resolutionAction === "accept"
                       ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                       : ""
                   }`}
@@ -252,8 +256,8 @@ export const AdminDisputeResponseModal = ({
                   <input
                     type="radio"
                     name="resolution"
-                    value="approve_dispute"
-                    checked={resolutionAction === "approve_dispute"}
+                    value="accept"
+                    checked={resolutionAction === "accept"}
                     onChange={(e) => {
                       setResolutionAction(e.target.value);
                       setErrors({ ...errors, action: undefined });
@@ -262,7 +266,7 @@ export const AdminDisputeResponseModal = ({
                   />
                   <div className="flex-1">
                     <div className={`text-sm font-medium ${textPrimary}`}>
-                      Approve Dispute
+                      Accept Dispute
                     </div>
                     <div className={`text-xs ${textTertiary}`}>
                       Issue full refund to customer. Vendor will not be paid for
@@ -273,7 +277,7 @@ export const AdminDisputeResponseModal = ({
 
                 <label
                   className={`flex items-start gap-3 p-3 border ${borderColor} rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    resolutionAction === "deny_dispute"
+                    resolutionAction === "reject"
                       ? "border-red-500 bg-red-50 dark:bg-red-900/20"
                       : ""
                   }`}
@@ -281,8 +285,8 @@ export const AdminDisputeResponseModal = ({
                   <input
                     type="radio"
                     name="resolution"
-                    value="deny_dispute"
-                    checked={resolutionAction === "deny_dispute"}
+                    value="reject"
+                    checked={resolutionAction === "reject"}
                     onChange={(e) => {
                       setResolutionAction(e.target.value);
                       setErrors({ ...errors, action: undefined });
@@ -291,7 +295,7 @@ export const AdminDisputeResponseModal = ({
                   />
                   <div className="flex-1">
                     <div className={`text-sm font-medium ${textPrimary}`}>
-                      Deny Dispute
+                      Reject Dispute
                     </div>
                     <div className={`text-xs ${textTertiary}`}>
                       Vendor must fulfill the order. Payment will proceed as

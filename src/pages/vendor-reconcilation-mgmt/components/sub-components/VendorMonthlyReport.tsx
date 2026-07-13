@@ -100,7 +100,7 @@ function mapOrderProductList(d: any) {
     totalPrice: d.totalAmount || 0,
     platformFee: d.fee || 0,
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
-    status: d.reconciliationStatus,
+    status: d.status,
     reconciliationStatus: d.reconciliationStatus,
     paymentMethod: "",
     paymentStatus: d.reconciliationStatus || "",
@@ -110,7 +110,7 @@ function mapOrderProductList(d: any) {
   };
 }
 
-function mapOrderProductDetails(d: OrderProduct) {
+function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
   const address = [
     d.deliveryInformation?.address?.houseNo,
     d.deliveryInformation?.address?.apartment,
@@ -150,10 +150,13 @@ function mapOrderProductDetails(d: OrderProduct) {
     deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
     deliveryAddress: address,
     specialInstructions: d.deliveryInformation?.specialInstructions || "",
+    disputeId: d._id,
   };
 }
 
-export type MonthlyOrder = ReturnType<typeof mapOrderProductList>;
+export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
+  disputeId?: string;
+};
 
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
@@ -174,9 +177,7 @@ export const VendorMonthlyReport = () => {
   const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<ReturnType<
-    typeof mapOrderProductDetails
-  > | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<MonthlyOrder | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -337,7 +338,7 @@ export const VendorMonthlyReport = () => {
       }
 
       await openDispute({
-        orderId: selectedOrder.orderId,
+        orderId: selectedOrder._id,
         reason,
         description: details,
         attachments: attachmentUrls,
@@ -555,6 +556,13 @@ export const VendorMonthlyReport = () => {
       render: (order: MonthlyOrder) => getStatusBadge(order.status),
     },
     {
+      key: "reconciliationStatus",
+      sortable: true,
+      label: "Reconciliation Status",
+      render: (order: MonthlyOrder) =>
+        getStatusBadge(order.reconciliationStatus),
+    },
+    {
       key: "actions",
       label: t("actions"),
       render: (order: MonthlyOrder) => (
@@ -584,16 +592,15 @@ export const VendorMonthlyReport = () => {
                 <AlertTriangle className="w-4 h-4" />
               </button>
             )}
-          {order.reconciliationStatus === "disputed" &&
-            userRole !== "traveller" && (
-              <button
-                onClick={() => handleViewDetails(order)}
-                className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                title={t("respond")}
-              >
-                <CheckCircle className="w-5 h-5" />
-              </button>
-            )}
+          {userRole !== "traveller" && (
+            <button
+              onClick={() => handleViewDetails(order)}
+              className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              title={t("respond")}
+            >
+              <CheckCircle className="w-5 h-5" />
+            </button>
+          )}
           <button
             onClick={() => handleCancelOrder(order)}
             className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -867,6 +874,7 @@ export const VendorMonthlyReport = () => {
       {showAdminDisputeModal && displayedOrder && (
         <AdminDisputeResponseModal
           order={displayedOrder}
+          disputeId={displayedOrder.disputeId}
           // loading={isDetailsLoading}
           onClose={() => {
             setShowAdminDisputeModal(false);
