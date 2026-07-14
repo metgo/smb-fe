@@ -114,7 +114,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       ([entry]) => {
         if (entry.isIntersecting) next?.();
       },
-      { root: container, threshold: 0 },
+      { root: container, threshold: 0, rootMargin: "50px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
