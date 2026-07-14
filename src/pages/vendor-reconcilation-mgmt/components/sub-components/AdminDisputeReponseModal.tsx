@@ -4,7 +4,11 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
-import { useRespondDisputeMutation, useGetDisputeDetailsQuery } from "@/store/api/reconciliationQueryApi";
+import {
+  useRespondDisputeMutation,
+  useGetDisputeDetailsQuery,
+} from "@/store/api/reconciliationQueryApi";
+import ModalWrapper from "@/components/wrapper/ModalWrapper";
 
 interface AdminDisputeResponseModalProps {
   order: MonthlyOrder;
@@ -23,17 +27,15 @@ export const AdminDisputeResponseModal = ({
   const { theme } = useAppSelector((state) => state.settings);
   const [respondDispute, { isLoading }] = useRespondDisputeMutation();
   const actualDisputeId = disputeId || order.disputeId;
-  const { data: disputeDetails, isLoading: isLoadingDispute } = useGetDisputeDetailsQuery(
-    actualDisputeId as string,
-    { skip: !actualDisputeId }
-  );
+  const { data: disputeDetails, isLoading: isLoadingDispute } =
+    useGetDisputeDetailsQuery(actualDisputeId as string, {
+      skip: !actualDisputeId,
+    });
 
   const [internalNotes, setInternalNotes] = useState("");
   const [responseToVendor, setResponseToVendor] = useState("");
   const [resolutionAction, setResolutionAction] = useState("");
-  const [errors, setErrors] = useState<{ action?: string }>(
-    {},
-  );
+  const [errors, setErrors] = useState<{ action?: string }>({});
 
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
   const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
@@ -77,9 +79,11 @@ export const AdminDisputeResponseModal = ({
 
     let defaultResponse = "";
     if (resolutionAction === "accept") {
-      defaultResponse = "Your dispute has been approved. A refund will be processed shortly.";
+      defaultResponse =
+        "Your dispute has been approved. A refund will be processed shortly.";
     } else if (resolutionAction === "reject") {
-      defaultResponse = "Your dispute has been reviewed and rejected. The order will proceed as normal.";
+      defaultResponse =
+        "Your dispute has been reviewed and rejected. The order will proceed as normal.";
     }
 
     try {
@@ -100,31 +104,22 @@ export const AdminDisputeResponseModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <ModalWrapper onClose={onClose} maxWidth="max-w-2xl">
       <div
-        className={`${bgPrimary} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto`}
+        className={`${bgPrimary} rounded-lg  w-full max-h-[90vh] overflow-y-auto p-4`}
       >
         {/* Header */}
-        <div
-          className={`sticky top-0 ${bgPrimary} border-b ${borderColor} p-6 flex items-center justify-between z-10`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div>
-              <h2 className={`text-xl font-bold ${textPrimary}`}>
-                Dispute Resolution
-              </h2>
-              <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
-            </div>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${textSecondary} transition-colors`}
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div>
+            <h2 className={`text-xl font-bold ${textPrimary}`}>
+              Dispute Resolution
+            </h2>
+            <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
+          </div>
         </div>
 
         {/* Content */}
@@ -171,7 +166,7 @@ export const AdminDisputeResponseModal = ({
               <div>
                 <div className={`text-xs ${textTertiary} mb-1`}>Amount</div>
                 <div className={`text-sm font-bold ${textPrimary}`}>
-                  {formatCurrency(order.totalPrice)}
+                  ₪{order.totalPrice.toFixed(2)}
                 </div>
               </div>
               <div>
@@ -202,11 +197,16 @@ export const AdminDisputeResponseModal = ({
 
               {/* Raised By */}
               <div>
-                <div className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}>
+                <div
+                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
+                >
                   Raised By
                 </div>
-                <div className={`text-sm font-medium text-orange-900 dark:text-orange-100`}>
-                  {disputeDetails.raisedBy?.firstName} {disputeDetails.raisedBy?.lastName}
+                <div
+                  className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
+                >
+                  {disputeDetails.raisedBy?.firstName}{" "}
+                  {disputeDetails.raisedBy?.lastName}
                 </div>
                 <div className={`text-xs text-orange-700 dark:text-orange-300`}>
                   {disputeDetails.raisedBy?.email}
@@ -215,17 +215,23 @@ export const AdminDisputeResponseModal = ({
 
               {/* Reason */}
               <div>
-                <div className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}>
+                <div
+                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
+                >
                   Reason
                 </div>
-                <div className={`text-sm font-medium text-orange-900 dark:text-orange-100 capitalize`}>
+                <div
+                  className={`text-sm font-medium text-orange-900 dark:text-orange-100 capitalize`}
+                >
                   {disputeDetails.reason?.replace(/_/g, " ")}
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <div className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}>
+                <div
+                  className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
+                >
                   Description
                 </div>
                 <div className={`text-sm text-orange-900 dark:text-orange-100`}>
@@ -236,7 +242,9 @@ export const AdminDisputeResponseModal = ({
               {/* Product Details */}
               {disputeDetails.product && (
                 <div className="border-t border-orange-200 dark:border-orange-700 pt-3">
-                  <div className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}>
+                  <div
+                    className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
+                  >
                     Product in Dispute
                   </div>
                   <div className="flex gap-3">
@@ -248,12 +256,17 @@ export const AdminDisputeResponseModal = ({
                       />
                     )}
                     <div>
-                      <div className={`text-sm font-medium text-orange-900 dark:text-orange-100`}>
+                      <div
+                        className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
+                      >
                         {disputeDetails.product?.name}
                       </div>
                       {disputeDetails.orderProduct && (
-                        <div className={`text-xs text-orange-700 dark:text-orange-300`}>
-                          Qty: {disputeDetails.orderProduct.quantity} | Amount: ₪{disputeDetails.orderProduct.amount}
+                        <div
+                          className={`text-xs text-orange-700 dark:text-orange-300`}
+                        >
+                          Qty: {disputeDetails.orderProduct.quantity} | Amount:
+                          ₪{disputeDetails.orderProduct.amount}
                         </div>
                       )}
                     </div>
@@ -262,27 +275,32 @@ export const AdminDisputeResponseModal = ({
               )}
 
               {/* Attachments */}
-              {disputeDetails.attachments && disputeDetails.attachments.length > 0 && (
-                <div className="border-t border-orange-200 dark:border-orange-700 pt-3">
-                  <div className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}>
-                    Attachments
+              {disputeDetails.attachments &&
+                disputeDetails.attachments.length > 0 && (
+                  <div className="border-t border-orange-200 dark:border-orange-700 pt-3">
+                    <div
+                      className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
+                    >
+                      Attachments
+                    </div>
+                    <div className="space-y-2">
+                      {disputeDetails.attachments.map(
+                        (attachment: any, idx: number) => (
+                          <a
+                            key={idx}
+                            href={attachment}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                          >
+                            <Download className="w-3 h-3" />
+                            Attachment {idx + 1}
+                          </a>
+                        ),
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    {disputeDetails.attachments.map((attachment: any, idx: number) => (
-                      <a
-                        key={idx}
-                        href={attachment}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                      >
-                        <Download className="w-3 h-3" />
-                        Attachment {idx + 1}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           ) : null}
 
@@ -309,7 +327,8 @@ export const AdminDisputeResponseModal = ({
                 className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
               />
               <p className={`text-xs ${textTertiary} mt-1`}>
-                If left blank, a default response will be sent based on your decision.
+                If left blank, a default response will be sent based on your
+                decision.
               </p>
             </div>
 
@@ -340,11 +359,14 @@ export const AdminDisputeResponseModal = ({
                     className="mt-0.5"
                   />
                   <div className="flex-1">
-                    <div className={`text-sm font-semibold text-green-600 dark:text-green-400`}>
+                    <div
+                      className={`text-sm font-semibold text-green-600 dark:text-green-400`}
+                    >
                       ✓ Approve Dispute
                     </div>
                     <div className={`text-xs ${textTertiary} mt-1`}>
-                      Issue full refund to customer. Vendor will not be paid for this order.
+                      Issue full refund to customer. Vendor will not be paid for
+                      this order.
                     </div>
                   </div>
                 </label>
@@ -368,11 +390,14 @@ export const AdminDisputeResponseModal = ({
                     className="mt-0.5"
                   />
                   <div className="flex-1">
-                    <div className={`text-sm font-semibold text-red-600 dark:text-red-400`}>
+                    <div
+                      className={`text-sm font-semibold text-red-600 dark:text-red-400`}
+                    >
                       ✕ Reject Dispute
                     </div>
                     <div className={`text-xs ${textTertiary} mt-1`}>
-                      Vendor must fulfill the order. Payment will proceed as normal.
+                      Vendor must fulfill the order. Payment will proceed as
+                      normal.
                     </div>
                   </div>
                 </label>
@@ -443,6 +468,6 @@ export const AdminDisputeResponseModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
 };

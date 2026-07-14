@@ -47,12 +47,7 @@ export default function DisputeModal({
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+ 
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -187,23 +182,23 @@ export default function DisputeModal({
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className={textTertiary}>Customer:</span>{" "}
-                <span className={textSecondary}>{order.customerName}</span>
+                <span className={textSecondary}>{order.customerName || "-"}</span>
               </div>
               <div>
                 <span className={textTertiary}>Date:</span>{" "}
                 <span className={textSecondary}>
-                  {formatDate(order.purchaseDate)}
+                  {formatDate(order.purchaseDate) || "-"}
                 </span>
               </div>
               <div>
                 <span className={textTertiary}>Amount:</span>{" "}
                 <span className={textSecondary}>
-                  {formatCurrency(order.totalPrice)}
+                  ₪{order.totalPrice.toFixed(2) || "-"}
                 </span>
               </div>
               <div>
                 <span className={textTertiary}>Qty:</span>{" "}
-                <span className={textSecondary}>{order.quantity}</span>
+                <span className={textSecondary}>{order.quantity || "-"}</span>
               </div>
             </div>
           </div>

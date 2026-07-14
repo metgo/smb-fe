@@ -32,13 +32,6 @@ export default function OrderDetailsModal({
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -82,13 +75,13 @@ export default function OrderDetailsModal({
               />
               <div className="flex-1">
                 <h4 className={`text-lg font-semibold ${textPrimary} mb-1`}>
-                  {order.productName}
+                  {order.productName || "-"}
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className={textTertiary}>Category:</span>{" "}
                     <span className={textSecondary}>
-                      {order.productCategory}
+                      {order.productCategory || "-"}
                     </span>
                   </div>
                 </div>
@@ -136,25 +129,25 @@ export default function OrderDetailsModal({
               <div>
                 <div className={`${textTertiary} mb-1`}>Quantity</div>
                 <div className={`${textSecondary} font-medium`}>
-                  {order.quantity}
+                  {order.quantity || "-"}
                 </div>
               </div>
               <div>
                 <div className={`${textTertiary} mb-1`}>Unit Price</div>
                 <div className={`${textSecondary} font-medium`}>
-                  {formatCurrency(order.unitPrice)}
+                  ₪{order.unitPrice.toFixed(2) || "-"}
                 </div>
               </div>
               <div>
                 <div className={`${textTertiary} mb-1`}>Total</div>
                 <div className={`${textPrimary} font-bold`}>
-                  {formatCurrency(order.totalPrice)}
+                  ₪{order.totalPrice.toFixed(2) || "-"}
                 </div>
               </div>
               <div className="col-span-2">
                 <div className={`${textTertiary} mb-1`}>Platform Fee (10%)</div>
                 <div className={`${textSecondary} font-medium`}>
-                  {formatCurrency(order.platformFee)}
+                  ₪{order.platformFee.toFixed(2) || "-"}
                 </div>
               </div>
             </div>
@@ -172,19 +165,19 @@ export default function OrderDetailsModal({
               <div className="flex justify-between">
                 <span className={textTertiary}>Name</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.customerName}
+                  {order.customerName || "-"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className={textTertiary}>Email</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.customerEmail}
+                  {order.customerEmail || "-"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className={textTertiary}>Phone</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.customerPhone}
+                  {order.customerPhone || "-"}
                 </span>
               </div>
             </div>
@@ -202,7 +195,7 @@ export default function OrderDetailsModal({
               <div className="flex justify-between">
                 <span className={textTertiary}>Delivery Method</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.deliveryMethod}
+                  {order.deliveryMethod || "-"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -210,7 +203,7 @@ export default function OrderDetailsModal({
                 <span
                   className={`${textSecondary} font-medium text-right ${isRTL ? "text-left" : "text-right"}`}
                 >
-                  {order.deliveryAddress}
+                  {order.deliveryAddress || "-"}
                 </span>
               </div>
               {order.specialInstructions && (
@@ -236,14 +229,14 @@ export default function OrderDetailsModal({
               <div className="flex justify-between">
                 <span className={textTertiary}>Payment Method</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.paymentMethod}
+                  {order.paymentMethod || "-"}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className={textTertiary}>Payment Status</span>
                 <span className={`${textSecondary} font-medium`}>
-                  {order.paymentStatus}
+                  {order.paymentStatus || "-"}
                 </span>
               </div>
             </div>
