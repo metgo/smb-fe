@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, AlertTriangle, Download } from "lucide-react";
+import {  AlertTriangle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -44,12 +44,7 @@ export const AdminDisputeResponseModal = ({
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

@@ -15,6 +15,7 @@ import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
+import { useGetAllWebsitesQuery } from "@/store/api/websiteConfigApi";
 import { uploadWithProgress } from "@/helpers";
 import {
   useGetOrderProductsQuery,
@@ -25,7 +26,7 @@ import {
   useBulkApproveOrderProductsMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
-import { ReordableDataTable } from "@/components/shared";
+import { ReordableDataTable, FilterChips } from "@/components/shared";
 
 interface OrderProduct {
   _id: string;
@@ -105,6 +106,7 @@ function mapOrderProductList(d: any) {
     status: d.status,
     reconciliationStatus: d.reconciliationStatus,
     paymentStatus: d.reconciliationStatus || "",
+    externalApiId: d.externalApiId || "",
 
     paymentMethod: "",
     deliveryMethod: "",
@@ -149,6 +151,7 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
       (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
     status,
     reconciliationStatus: status,
+    externalApiId: (d as any).externalApiId || "",
     paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
     paymentStatus: d.paymentInformation?.paymentStatus || "",
     deliveryMethod: d.deliveryInformation?.deliveryMethod || "",
@@ -172,7 +175,6 @@ export const VendorMonthlyReport = () => {
     borderColor,
     textSecondary,
     textTertiary,
-    theme,
   } = useThemeClasses();
   const { dmoId, authorityId, userRole } = useAppSelector(
     (state) => state.auth,
@@ -199,6 +201,7 @@ export const VendorMonthlyReport = () => {
     endDate: "",
     minAmount: "",
     maxAmount: "",
+    businessId: "",
   });
 
   const apiParams = useMemo(() => {
@@ -209,6 +212,7 @@ export const VendorMonthlyReport = () => {
       authorityId,
     };
 
+    if (filters.businessId) params.vendorId = filters.businessId;
     if (filters.status !== "all") params.status = filters.status;
     if (searchTerm) params.search = searchTerm;
     if (filters.startDate) params.startDate = filters.startDate;
@@ -224,6 +228,7 @@ export const VendorMonthlyReport = () => {
     filters.endDate,
     filters.minAmount,
     filters.maxAmount,
+    filters.businessId,
     searchTerm,
     dmoId,
     authorityId,
@@ -243,6 +248,18 @@ export const VendorMonthlyReport = () => {
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
+  const { data: allWebsites } = useGetAllWebsitesQuery();
+
+  const websiteMap = useMemo(() => {
+    if (!allWebsites) return {} as Record<string, any>;
+    return allWebsites.reduce(
+      (map, w) => {
+        map[w._id] = w;
+        return map;
+      },
+      {} as Record<string, any>,
+    );
+  }, [allWebsites]);
 
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
@@ -250,6 +267,43 @@ export const VendorMonthlyReport = () => {
     }
     return selectedOrder;
   }, [orderDetailsData, detailsOrderId, selectedOrder]);
+
+  const uniqueBusinesses = useMemo(() => {
+    const businessMap = new Map<string, string>();
+    if (orderProductsData?.data) {
+      orderProductsData.data.forEach((order: any) => {
+        if (order.business?._id && order.business?.name) {
+          businessMap.set(order.business._id, order.business.name);
+        }
+      });
+    }
+    return Array.from(businessMap.entries()).map(([id, name]) => ({
+      _id: id,
+      name,
+    }));
+  }, [orderProductsData]);
+
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.status !== "all" ||
+      filters.businessId !== "" ||
+      filters.startDate !== "" ||
+      filters.endDate !== "" ||
+      filters.minAmount !== "" ||
+      filters.maxAmount !== ""
+    );
+  }, [filters]);
+
+  const handleClearAllFilters = () => {
+    setFilters({
+      status: "all",
+      startDate: "",
+      endDate: "",
+      minAmount: "",
+      maxAmount: "",
+      businessId: "",
+    });
+  };
 
   useEffect(() => {
     if (orderProductsData?.data) {
@@ -424,7 +478,11 @@ export const VendorMonthlyReport = () => {
     setShowCancelModal(true);
   };
 
-  const handleSubmitCancel = async (reason: string, notes: string, sendEmail: boolean) => {
+  const handleSubmitCancel = async (
+    reason: string,
+    notes: string,
+    sendEmail: boolean,
+  ) => {
     if (!selectedOrder) return;
     try {
       await cancelOrderProduct({
@@ -649,6 +707,28 @@ export const VendorMonthlyReport = () => {
         getStatusBadge(order.reconciliationStatus),
     },
     {
+      key: "externalApiId",
+      sortable: false,
+      label: t("website"),
+      render: (order: MonthlyOrder) => {
+        const website = websiteMap[order.externalApiId ?? ""];
+        if (!website)
+          return <span className={`text-sm ${textTertiary}`}>-</span>;
+        return (
+          <div className="flex items-center gap-1.5">
+            {website.logoUrl && (
+              <img
+                src={website.logoUrl}
+                alt={website.websiteName}
+                className="w-5 h-5 object-contain rounded"
+              />
+            )}
+            <span className="text-sm">{website.websiteName}</span>
+          </div>
+        );
+      },
+    },
+    {
       key: "actions",
       label: t("actions"),
       render: (order: MonthlyOrder) => (
@@ -661,7 +741,7 @@ export const VendorMonthlyReport = () => {
             userRole !== "traveller" && (
               <button
                 onClick={() => handleApprove(order)}
-                className="p-1.5 rounded text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                className="p-1.5 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
                 title={t("approve")}
               >
                 <CheckCircle className="w-4 h-4" />
@@ -674,7 +754,7 @@ export const VendorMonthlyReport = () => {
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
-                className="p-1.5 rounded text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                className="p-1.5 rounded text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
                 title={t("dispute")}
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -684,7 +764,7 @@ export const VendorMonthlyReport = () => {
             userRole !== "traveller" && (
               <button
                 onClick={() => handleApproveDispute(order)}
-                className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
                 title={t("approve")}
               >
                 <CheckCircle className="w-5 h-5" />
@@ -693,7 +773,7 @@ export const VendorMonthlyReport = () => {
           {order.status !== "canceled" && (
             <button
               onClick={() => handleCancelOrder(order)}
-              className="p-1.5 rounded text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               title={t("cancel")}
             >
               <XCircle className="w-4 h-4" />
@@ -764,19 +844,19 @@ export const VendorMonthlyReport = () => {
             </div>
             <div className="flex flex-wrap gap-2 text-sm">
               <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4 text-yellow-600" />
+                <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                 <span className={textSecondary}>{stats.pending} Pending</span>
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                 <span className={textSecondary}>{stats.approved} Approved</span>
               </span>
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 <span className={textSecondary}>{stats.disputed} Disputed</span>
               </span>
               <span className="flex items-center gap-1">
-                <XCircle className="w-4 h-4 text-red-600" />
+                <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                 <span className={textSecondary}>
                   {stats.cancelled} Cancelled
                 </span>
@@ -858,6 +938,7 @@ export const VendorMonthlyReport = () => {
                 <option value="canceled">{t("canceled")}</option>
               </select>
             </div>
+
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
                 {t("date_from")}
@@ -912,22 +993,63 @@ export const VendorMonthlyReport = () => {
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
             </div>
-            <div className="flex items-end">
-              <button
-                onClick={() =>
-                  setFilters({
-                    status: "all",
-                    startDate: "",
-                    endDate: "",
-                    minAmount: "",
-                    maxAmount: "",
-                  })
-                }
-                className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} text-sm transition-colors`}
-              >
-                {t("clear_filters")}
-              </button>
-            </div>
+
+            {hasActiveFilters && (
+              <div className="col-span-full w-full">
+                <div className="flex flex-wrap gap-1.5 items-center pt-2">
+                  {filters.status !== "all" && (
+                    <FilterChips
+                      label={t(filters.status)}
+                      onRemove={() => setFilters({ ...filters, status: "all" })}
+                    />
+                  )}
+                  {filters.businessId && (
+                    <FilterChips
+                      label={
+                        uniqueBusinesses.find(
+                          (b) => b._id === filters.businessId,
+                        )?.name || filters.businessId
+                      }
+                      onRemove={() =>
+                        setFilters({ ...filters, businessId: "" })
+                      }
+                    />
+                  )}
+                  {filters.startDate && (
+                    <FilterChips
+                      label={`From: ${filters.startDate}`}
+                      onRemove={() => setFilters({ ...filters, startDate: "" })}
+                    />
+                  )}
+                  {filters.endDate && (
+                    <FilterChips
+                      label={`To: ${filters.endDate}`}
+                      onRemove={() => setFilters({ ...filters, endDate: "" })}
+                    />
+                  )}
+                  {filters.minAmount && (
+                    <FilterChips
+                      label={`Min: ₪${filters.minAmount}`}
+                      onRemove={() => setFilters({ ...filters, minAmount: "" })}
+                    />
+                  )}
+                  {filters.maxAmount && (
+                    <FilterChips
+                      label={`Max: ₪${filters.maxAmount}`}
+                      onRemove={() => setFilters({ ...filters, maxAmount: "" })}
+                    />
+                  )}
+                  {hasActiveFilters && (
+                    <button
+                      onClick={handleClearAllFilters}
+                      className="px-2.5 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors shrink-0"
+                    >
+                      {t("clear_filters")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -126,5 +126,6 @@
   "invalid_order_data": "بيانات الطلب غير صحيحة",
   "bulk_approve": "الموافقة الجماعية",
   "orders_approved": "تم الموافقة على الطلبات بنجاح",
-  "clear_filters": "مسح الكل"
+  "clear_filters": "مسح الكل",
+  "website": "الموقع الإلكتروني"
 }

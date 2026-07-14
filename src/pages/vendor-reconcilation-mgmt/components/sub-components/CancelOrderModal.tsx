@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { XCircle, AlertTriangle } from "lucide-react";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
-import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
 
 interface CancelOrderModalProps {
@@ -24,19 +24,19 @@ export default function CancelOrderModal({
   onClose,
   onSubmit,
 }: CancelOrderModalProps) {
-  const { theme } = useAppSelector((state) => state.settings);
+  const {
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    bgPrimary,
+    bgSecondary,
+    borderColor,
+  } = useThemeClasses();
 
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
   const [errors, setErrors] = useState<{ reason?: string }>({});
-
-  const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
-  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
-  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
-  const bgPrimary = theme === "dark" ? "bg-gray-900" : "bg-white";
-  const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
-  const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
   const validate = () => {
     const newErrors: { reason?: string } = {};
@@ -75,7 +75,9 @@ export default function CancelOrderModal({
       {/* Content - scrollable */}
       <div className="p-6 space-y-6 overflow-y-auto max-h-[65vh]">
         {/* Warning */}
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div
+          className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4`}
+        >
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
