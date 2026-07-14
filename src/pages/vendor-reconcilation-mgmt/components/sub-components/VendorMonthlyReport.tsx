@@ -420,7 +420,7 @@ export const VendorMonthlyReport = () => {
     setShowCancelModal(true);
   };
 
-  const handleSubmitCancel = async (reason: string, notes: string) => {
+  const handleSubmitCancel = async (reason: string, notes: string, sendEmail: boolean) => {
     if (!selectedOrder) return;
     try {
       await cancelOrderProduct({
@@ -428,6 +428,7 @@ export const VendorMonthlyReport = () => {
         orderProductId: selectedOrder._id,
         cancelReason: reason,
         additionalInfo: notes,
+        sendEmail,
       }).unwrap();
 
       toast.success(t("order_cancelled"));

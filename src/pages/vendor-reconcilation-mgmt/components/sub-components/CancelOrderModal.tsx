@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, XCircle, AlertTriangle } from "lucide-react";
+import { XCircle, AlertTriangle } from "lucide-react";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -7,7 +7,7 @@ import ModalWrapper from "@/components/wrapper/ModalWrapper";
 interface CancelOrderModalProps {
   order: MonthlyOrder;
   onClose: () => void;
-  onSubmit: (reason: string, notes: string) => void;
+  onSubmit: (reason: string, notes: string, sendEmail: boolean) => void;
 }
 
 const cancelReasons = [
@@ -38,13 +38,6 @@ export default function CancelOrderModal({
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   const validate = () => {
     const newErrors: { reason?: string } = {};
 
@@ -58,7 +51,7 @@ export default function CancelOrderModal({
 
   const handleSubmit = () => {
     if (validate()) {
-      onSubmit(reason, notes);
+      onSubmit(reason, notes, sendEmail);
     }
   };
 
