@@ -17,7 +17,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
     @InjectModel(BusinessesAudit.name)
     private BusinessesAuditModel: Model<BusinessesAudit>,
     private readonly businessService: BusinessService,
-  ) {}
+  ) { }
 
   async execute(queries: GetBusinessDetailForTourismQuery): Promise<any> {
     try {
@@ -45,12 +45,11 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
         const business = await this.BusinessesAuditModel.findOne({
           slug,
           status: CommonStatus.APPROVED,
-          isActive: true,
         })
+          .sort({ isActive: -1, createdAt: -1 })
           .select(select)
           .lean()
           .populate(populate);
-
         if (!business) {
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }
