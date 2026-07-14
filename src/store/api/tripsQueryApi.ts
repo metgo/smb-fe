@@ -8,7 +8,7 @@ export const tripQueryApi = createApi({
   tagTypes: ["Trips"],
 
   endpoints: (builder) => ({
-    getAllTrips: builder.query<any, any>({
+    getAllTrips: builder.query<ITripsRes, any>({
       query: (params) => ({
         url: endpoints.trips,
         method: "GET",

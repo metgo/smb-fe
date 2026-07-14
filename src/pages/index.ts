@@ -30,6 +30,8 @@ import PoiDetailsPage from "./poi-mgmt/details";
 import WebsiteCrashesPage from "./website-crashes";
 import WebsiteCrashDetailsPage from "./website-crashes/details";
 import EventSessionMgmtPage from "./event-session-mgmt";
+import TripsMgmtPage from "./trips-mgmt";
+
 
 export {
   AuthPage,
@@ -39,6 +41,7 @@ export {
   DmosMgmtPage,
   CampaignsMgmtPage,
   AuthoritiesMgmtPage,
+  TripsMgmtPage,
   BusinessesMgmtPage,
   PendingApprovalsPage,
   BusinessDetailsPage,

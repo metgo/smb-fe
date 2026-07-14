@@ -5,6 +5,7 @@ import settingsReducer from "@/features/settingsSlice";
 import notificationSlice from "@/features/notificationSlice";
 import filterReducer from "@/features/filterSlice";
 import themeSlice from "@/features/themeSlice";
+import stationsReducer from "@/features/stationsSlice";
 import { authApi } from "@/store/api/authApi";
 import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
@@ -29,6 +30,7 @@ import { contentMutationApi } from "./api/contentMutationApi";
 import { contentQueryApi } from "./api/contentQueryApi";
 import { notificationApi } from "./api/notificationApi";
 import { tripQueryApi } from "./api/tripsQueryApi";
+import { tripMutationApi } from "./api/tripsMutationApi";
 import { poiQueryApi } from "./api/poiQueryApi";
 import { poiMutationApi } from "./api/poiMutationApi";
 import { dynamicPageApi } from "./api/dynamicPageApi";
@@ -51,6 +53,7 @@ export const store = configureStore({
     filters: filterReducer,
     theme: themeSlice,
     notification: notificationSlice,
+    stations: stationsReducer,
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
@@ -79,6 +82,7 @@ export const store = configureStore({
 
     [voucherQueryApi.reducerPath]: voucherQueryApi.reducer,
     [tripQueryApi.reducerPath]: tripQueryApi.reducer,
+    [tripMutationApi.reducerPath]: tripMutationApi.reducer,
     [blogQueryApi.reducerPath]: blogQueryApi.reducer,
     [blogMutationApi.reducerPath]: blogMutationApi.reducer,
 
@@ -122,6 +126,7 @@ export const store = configureStore({
       notificationApi.middleware,
       dynamicPageApi.middleware,
       tripQueryApi.middleware,
+      tripMutationApi.middleware,
       blogMutationApi.middleware,
       blogQueryApi.middleware,
       poiQueryApi.middleware,
