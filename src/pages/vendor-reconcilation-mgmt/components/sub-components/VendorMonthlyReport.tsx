@@ -103,8 +103,9 @@ function mapOrderProductList(d: any) {
     netToVendor: (d.totalAmount || 0) - (d.fee || 0),
     status: d.status,
     reconciliationStatus: d.reconciliationStatus,
-    paymentMethod: "",
     paymentStatus: d.reconciliationStatus || "",
+
+    paymentMethod: "",
     deliveryMethod: "",
     deliveryAddress: "",
     specialInstructions: "",
@@ -390,7 +391,7 @@ export const VendorMonthlyReport = () => {
     }
   };
 
-   const handleReject = async (order: MonthlyOrder) => {
+  const handleReject = async (order: MonthlyOrder) => {
     try {
       if (!order._id || !order.disputeId) {
         toast.error("Invalid order or dispute data");
@@ -402,8 +403,7 @@ export const VendorMonthlyReport = () => {
         disputeId: order.disputeId,
         action: "reject",
         internalNotes: "Rejected by admin",
-        vendorFacingResponse:
-          "Your dispute has been rejected.",
+        vendorFacingResponse: "Your dispute has been rejected.",
       }).unwrap();
 
       toast.success(t("status_updated"));
@@ -494,6 +494,12 @@ export const VendorMonthlyReport = () => {
         icon: XCircle,
         label: t("canceled"),
       },
+      rejected: {
+        bg: "bg-red-100 dark:bg-red-900/20",
+        text: "text-red-800 dark:text-red-400",
+        icon: XCircle,
+        label: t("rejected"),
+      },
     };
     const badge = badges[status] || badges.pending;
     const Icon = badge.icon;
@@ -508,7 +514,7 @@ export const VendorMonthlyReport = () => {
   };
 
   const formatCurrency = (amount?: number) => {
-    if (amount === null || amount === undefined) return "₪0";
+    if (amount === null || amount === undefined) return "-";
     return `₪${amount.toLocaleString()}`;
   };
 
@@ -623,6 +629,7 @@ export const VendorMonthlyReport = () => {
           {order.status !== "canceled" &&
             order.reconciliationStatus !== "disputed" &&
             order.reconciliationStatus !== "approved" &&
+            order.reconciliationStatus !== "rejected" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
