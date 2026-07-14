@@ -225,8 +225,11 @@ export const VendorMonthlyReport = () => {
     authorityId,
   ]);
 
-  const { data: orderProductsData, isLoading, refetch: refetchOrders } =
-    useGetOrderProductsQuery(apiParams);
+  const {
+    data: orderProductsData,
+    isLoading,
+    refetch: refetchOrders,
+  } = useGetOrderProductsQuery(apiParams);
   const { data: orderDetailsData, isFetching: isDetailsLoading } =
     useGetOrderProductDetailsQuery(detailsOrderId as string, {
       skip: !detailsOrderId,
@@ -374,7 +377,8 @@ export const VendorMonthlyReport = () => {
         disputeId: order.disputeId,
         action: "accept",
         internalNotes: "Approved by admin",
-        vendorFacingResponse: "Your dispute has been accepted. Refund will be processed.",
+        vendorFacingResponse:
+          "Your dispute has been accepted. Refund will be processed.",
       }).unwrap();
 
       toast.success(t("order_approved"));
@@ -412,12 +416,13 @@ export const VendorMonthlyReport = () => {
   const handleViewDetails = (order: MonthlyOrder) => {
     setSelectedOrder(order);
     setDetailsOrderId(order._id);
+    setShowOrderDetails(true);
+  };
 
-    if (order.status === "disputed") {
-      setShowAdminDisputeModal(true);
-    } else {
-      setShowOrderDetails(true);
-    }
+  const handleApproveDispute = (order: MonthlyOrder) => {
+    setSelectedOrder(order);
+    setDetailsOrderId(order._id);
+    setShowAdminDisputeModal(true);
   };
 
   const closeDetails = () => {
@@ -590,6 +595,7 @@ export const VendorMonthlyReport = () => {
             )}
           {order.status !== "canceled" &&
             order.reconciliationStatus !== "disputed" &&
+            order.reconciliationStatus !== "approved" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -602,9 +608,9 @@ export const VendorMonthlyReport = () => {
           {order.reconciliationStatus === "disputed" &&
             userRole !== "traveller" && (
               <button
-                onClick={() => handleViewDetails(order)}
+                onClick={() => handleApproveDispute(order)}
                 className="p-1.5 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                title={t("respond")}
+                title={t("approve")}
               >
                 <CheckCircle className="w-5 h-5" />
               </button>

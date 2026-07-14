@@ -80,6 +80,14 @@ export const reconciliationQueryApi = createApi({
       }),
     }),
 
+    // GET /disputes/:disputeId
+    getDisputeDetails: builder.query<any, string>({
+      query: (disputeId) => ({
+        url: `/disputes/${disputeId}`,
+        method: "GET",
+      }),
+    }),
+
     // POST /disputes/respond/:disputeId
     respondDispute: builder.mutation<void, RespondDisputeRequest>({
       query: (body) => ({
@@ -102,4 +110,5 @@ export const {
   useApproveOrderProductMutation,
   useOpenDisputeMutation,
   useRespondDisputeMutation,
+  useGetDisputeDetailsQuery,
 } = reconciliationQueryApi;
