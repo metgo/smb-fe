@@ -123,5 +123,8 @@
   "reconciliation_status": "סטטוס התיישוב",
   "only_traveller_can_dispute": "רק תפקיד נוסע יכול לפתוח תלונה",
   "order_cannot_be_disputed": "לא ניתן להטיל ספק בהזמנה זו",
-  "invalid_order_data": "נתוני הזמנה לא תקינים"
+  "invalid_order_data": "נתוני הזמנה לא תקינים",
+  "bulk_approve": "אישור ומיון",
+  "orders_approved": "הזמנות אושרו בהצלחה",
+  "clear_filters": "נקה הכל"
 }

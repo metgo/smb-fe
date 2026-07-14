@@ -7,6 +7,7 @@ export interface CancelOrderProductRequest {
   orderProductId: string;
   cancelReason: string;
   additionalInfo?: string;
+  sendEmail?: boolean;
 }
 
 export interface ApproveOrderProductRequest {
@@ -26,6 +27,10 @@ export interface RespondDisputeRequest {
   action: string;
   internalNotes: string;
   vendorFacingResponse: string;
+}
+
+export interface BulkApproveOrderProductsRequest {
+  orderProductIds: string[];
 }
 
 export const reconciliationQueryApi = createApi({
@@ -100,6 +105,18 @@ export const reconciliationQueryApi = createApi({
         },
       }),
     }),
+
+    // POST /orders/bulk-approve
+    bulkApproveOrderProducts: builder.mutation<
+      void,
+      BulkApproveOrderProductsRequest
+    >({
+      query: (body) => ({
+        url: "/orders/bulk-approve",
+        method: "POST",
+        data: body,
+      }),
+    }),
   }),
 });
 
@@ -111,4 +128,5 @@ export const {
   useOpenDisputeMutation,
   useRespondDisputeMutation,
   useGetDisputeDetailsQuery,
+  useBulkApproveOrderProductsMutation,
 } = reconciliationQueryApi;

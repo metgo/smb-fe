@@ -22,6 +22,7 @@ import {
   useCancelOrderProductMutation,
   useOpenDisputeMutation,
   useRespondDisputeMutation,
+  useBulkApproveOrderProductsMutation,
 } from "@/store/api/reconciliationQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable } from "@/components/shared";
@@ -171,6 +172,7 @@ export const VendorMonthlyReport = () => {
     borderColor,
     textSecondary,
     textTertiary,
+    theme,
   } = useThemeClasses();
   const { dmoId, authorityId, userRole } = useAppSelector(
     (state) => state.auth,
@@ -186,6 +188,7 @@ export const VendorMonthlyReport = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const hoverBg = isDark ? "hover:bg-gray-800" : "hover:bg-gray-50";
 
@@ -239,6 +242,7 @@ export const VendorMonthlyReport = () => {
   const [openDispute] = useOpenDisputeMutation();
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
+  const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
 
   const displayedOrder = useMemo(() => {
     if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
@@ -466,6 +470,33 @@ export const VendorMonthlyReport = () => {
     refetchOrders();
   };
 
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const disputedOrders = new Set<string>();
+    newSelection.forEach((id) => {
+      const order = orders.find((o) => o._id === id);
+      if (order?.reconciliationStatus === "disputed") {
+        disputedOrders.add(id);
+      }
+    });
+    setSelectedItems(disputedOrders);
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedItems.size === 0) return;
+    try {
+      await bulkApproveOrderProducts({
+        orderProductIds: Array.from(selectedItems),
+      }).unwrap();
+
+      toast.success(t("order_approved"));
+      setSelectedItems(new Set());
+      refetchOrders();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("approve_failed"));
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const badges: Record<
       string,
@@ -529,6 +560,15 @@ export const VendorMonthlyReport = () => {
   };
 
   const columns = [
+    ...(adminView
+      ? [
+          {
+            key: "checkbox",
+            sortable: false,
+            label: "",
+          },
+        ]
+      : []),
     {
       key: "product",
       sortable: false,
@@ -668,7 +708,7 @@ export const VendorMonthlyReport = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
           <p className={textSecondary}>{t("loading")}</p>
         </div>
       </div>
@@ -776,13 +816,24 @@ export const VendorMonthlyReport = () => {
               storageKey="vendorReconSearchTerm"
             />
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors whitespace-nowrap`}
-          >
-            <Filter className="w-4 h-4" />
-            {t("filters")}
-          </button>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            {adminView && selectedItems.size > 0 && (
+              <button
+                onClick={handleBulkApprove}
+                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {t("approve")} ({selectedItems.size})
+              </button>
+            )}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
+            >
+              <Filter className="w-4 h-4" />
+              {t("filters")}
+            </button>
+          </div>
         </div>
 
         {showFilters && (
@@ -861,6 +912,22 @@ export const VendorMonthlyReport = () => {
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
             </div>
+            <div className="flex items-end">
+              <button
+                onClick={() =>
+                  setFilters({
+                    status: "all",
+                    startDate: "",
+                    endDate: "",
+                    minAmount: "",
+                    maxAmount: "",
+                  })
+                }
+                className={`w-full px-3 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} text-sm transition-colors`}
+              >
+                {t("clear_filters")}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -875,6 +942,8 @@ export const VendorMonthlyReport = () => {
         columns={columns}
         hasMore={hasMore}
         next={loadNextPage}
+        selectedItems={adminView ? selectedItems : undefined}
+        onSelectionChange={adminView ? handleSelectionChange : undefined}
       />
 
       {/* Modals */}

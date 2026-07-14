@@ -123,5 +123,8 @@
   "reconciliation_status": "حالة المصالحة",
   "only_traveller_can_dispute": "فقط دور المسافر يمكنه فتح النزاعات",
   "order_cannot_be_disputed": "لا يمكن الطعن في هذا الطلب",
-  "invalid_order_data": "بيانات الطلب غير صحيحة"
+  "invalid_order_data": "بيانات الطلب غير صحيحة",
+  "bulk_approve": "الموافقة الجماعية",
+  "orders_approved": "تم الموافقة على الطلبات بنجاح",
+  "clear_filters": "مسح الكل"
 }

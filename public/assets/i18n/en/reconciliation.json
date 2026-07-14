@@ -123,5 +123,8 @@
   "reconciliation_status": "Reconciliation Status",
   "only_traveller_can_dispute": "Only traveller role can open disputes",
   "order_cannot_be_disputed": "This order cannot be disputed",
-  "invalid_order_data": "Invalid order or dispute data"
+  "invalid_order_data": "Invalid order or dispute data",
+  "bulk_approve": "Bulk Approve",
+  "orders_approved": "Orders approved successfully",
+  "clear_filters": "Clear All"
 }
