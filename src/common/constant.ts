@@ -148,6 +148,8 @@ export const ServerErrors = {
     CANNOT_ASSIGN:
       'This voucher no longer exists or you lack the required permissions',
     LIMIT_EXCEEDED: 'You can no longer create voucher under this campaign',
+    CONCURRENT_REDEMPTION:
+      'This voucher was just redeemed by another request. Please try again.',
   },
 
   CAMPAIGN: {

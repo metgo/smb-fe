@@ -732,14 +732,24 @@ export class VoucherService {
           : twoYearExpireDate(),
       };
 
+      // Conditioned on the remainingAmount read above so that two concurrent
+      // redemptions of the same voucher can't both succeed against a stale balance.
       const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
-        { _id: voucherId },
+        { _id: voucherId, remainingAmount: voucher.remainingAmount },
         updatedField,
         { new: true },
       );
 
       if (!updatedVoucher) {
-        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+        const stillExists = await this.VoucherModel.exists({ _id: voucherId });
+
+        if (!stillExists) {
+          throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+        }
+
+        throw new UnprocessableEntityException(
+          ServerErrors.VOUCHER.CONCURRENT_REDEMPTION,
+        );
       }
 
       this.logger.info('[VOUCHER]: AMOUNT UPDATED', {
@@ -762,12 +772,24 @@ export class VoucherService {
     try {
       await Promise.all(
         vouchers.map(async voucherDetail => {
+          // Capped at the voucher's original face value ("amount") so a
+          // duplicate/retried refund can never inflate remainingAmount above
+          // what the voucher was ever actually worth.
           await this.VoucherModel.findOneAndUpdate(
             { _id: voucherDetail.id },
-            {
-              $set: { updatedAt: new Date() },
-              $inc: { remainingAmount: +voucherDetail.redeemedAmount },
-            },
+            [
+              {
+                $set: {
+                  updatedAt: new Date(),
+                  remainingAmount: {
+                    $min: [
+                      '$amount',
+                      { $add: ['$remainingAmount', +voucherDetail.redeemedAmount] },
+                    ],
+                  },
+                },
+              },
+            ],
             { new: true },
           );
         }),

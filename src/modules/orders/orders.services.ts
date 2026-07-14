@@ -1069,8 +1069,20 @@ export class OrdersService {
     cart: Cart,
     externalApi: any,
   ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
+    const totalVendorsAmount = cart.vendorProducts.reduce(
+      (sum, vendor) => sum + vendor.totalAmount + (vendor.deliveryFee || 0),
+      0,
+    );
+
     const vendorOrders = await Promise.all(
       cart.vendorProducts.map(async vendor => {
+        const vendorGrossAmount = vendor.totalAmount + (vendor.deliveryFee || 0);
+        const vendorCreditCardPayment = totalVendorsAmount > 0
+          ? Math.round(
+            (parentOrder.creditCardPayment * (vendorGrossAmount / totalVendorsAmount)) * 100,
+          ) / 100
+          : vendorGrossAmount;
+
         const vendorOrder = new this.OrderModel({
           products: vendor.products.map(p => ({ id: p._id })),
           userId: parentOrder.userId,
@@ -1084,8 +1096,8 @@ export class OrdersService {
           status: OrderStatus.PROCESSING,
           paymentMode: parentOrder.paymentMode,
           voucher: parentOrder.voucher,
-          totalAmount: vendor.totalAmount,
-          creditCardPayment: vendor.totalAmount,
+          totalAmount: vendorGrossAmount,
+          creditCardPayment: vendorCreditCardPayment,
           deliveryFee: vendor.deliveryFee || 0,
           externalApiId: parentOrder.externalApiId,
           campId: parentOrder.campId,
@@ -1575,24 +1587,36 @@ export class OrdersService {
 
   async updateAfterPaymentFailure(orderId: string): Promise<Order> {
     try {
-      const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
       const updatedField = {
         paymentStatus: PaymentStatus.FAILURE,
         status: OrderStatus.CANCELED,
       };
 
-      if (orderDetail?.voucher && orderDetail?.voucher?.length) {
+      // Atomically claim this order for failure-handling: only proceed if it
+      // is still PENDING. This prevents a duplicate trigger (e.g. the payment
+      // gateway's failure webhook firing alongside the order-expiry cron) from
+      // refunding the same order's voucher more than once.
+      const claimedOrder = await this.OrderModel.findOneAndUpdate(
+        { _id: orderId, paymentStatus: PaymentStatus.PENDING },
+        updatedField,
+      );
+
+      if (!claimedOrder) {
+        this.logger.info(
+          '[ORDER]: SKIPPED PAYMENT FAILURE HANDLING — ALREADY PROCESSED',
+          { orderId },
+        );
+        return await findOneById<Order>(this.OrderModel, orderId);
+      }
+
+      if (claimedOrder?.voucher && claimedOrder?.voucher?.length) {
         // update vouchers detail and add the deducted voucher amounts
         await this.voucherService.updateAmountAfterOrderFailed(
-          orderDetail.voucher,
+          claimedOrder.voucher,
         );
       }
 
-      const updateOrder = await updateById<Order>(
-        this.OrderModel,
-        orderId,
-        updatedField,
-      );
+      const updateOrder = await findOneById<Order>(this.OrderModel, orderId);
 
       this.logger.info('[ORDER]: UPDATED AFTER PAYMENT FAILED', {
         message: updateOrder,
