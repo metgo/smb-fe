@@ -382,10 +382,36 @@ export const VendorMonthlyReport = () => {
       }).unwrap();
 
       toast.success(t("order_approved"));
+      refetchOrders();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
       console.error("Approve error:", error);
+    }
+  };
+
+   const handleReject = async (order: MonthlyOrder) => {
+    try {
+      if (!order._id || !order.disputeId) {
+        toast.error("Invalid order or dispute data");
+        return;
+      }
+
+      // Use actual disputeId from order data
+      await respondDispute({
+        disputeId: order.disputeId,
+        action: "reject",
+        internalNotes: "Rejected by admin",
+        vendorFacingResponse:
+          "Your dispute has been rejected.",
+      }).unwrap();
+
+      toast.success(t("status_updated"));
+      refetchOrders();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("approve_failed"));
+      console.error("Update error:", error);
     }
   };
 
@@ -436,6 +462,7 @@ export const VendorMonthlyReport = () => {
     setShowAdminDisputeModal(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
+    refetchOrders();
   };
 
   const getStatusBadge = (status: string) => {
@@ -857,8 +884,22 @@ export const VendorMonthlyReport = () => {
             setShowCancelModal(true);
           }}
           onApprove={() => {
-            handleApprove(displayedOrder);
-            closeDetails();
+            if (displayedOrder.reconciliationStatus === "disputed") {
+              setShowOrderDetails(false);
+              setShowAdminDisputeModal(true);
+            } else {
+              handleApprove(displayedOrder);
+              closeDetails();
+            }
+          }}
+          onReject={() => {
+            if (displayedOrder.reconciliationStatus === "disputed") {
+              setShowOrderDetails(false);
+              setShowAdminDisputeModal(true);
+            } else {
+              handleReject(displayedOrder);
+              closeDetails();
+            }
           }}
           adminView={adminView}
         />

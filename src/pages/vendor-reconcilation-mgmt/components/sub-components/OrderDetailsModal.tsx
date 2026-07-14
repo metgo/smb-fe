@@ -9,6 +9,7 @@ interface OrderDetailsModalProps {
   onDispute: () => void;
   onCancel: () => void;
   onApprove: () => void;
+  onReject: () => void;
   loading?: boolean;
   adminView?: boolean;
 }
@@ -19,6 +20,7 @@ export default function OrderDetailsModal({
   onDispute,
   onCancel,
   onApprove,
+  onReject,
   loading,
 }: OrderDetailsModalProps) {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -258,7 +260,15 @@ export default function OrderDetailsModal({
                 onClick={onApprove}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
               >
-                ✓ Approve Order
+                ✓ Approve Dispute
+              </button>
+            )}
+            {userRole === "superadmin" && order.status !== "canceled" && (
+              <button
+                onClick={onReject}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+              >
+                ✗ Reject Dispute
               </button>
             )}
           </>
@@ -273,7 +283,8 @@ export default function OrderDetailsModal({
               </button>
             )}
             {order.reconciliationStatus !== "disputed" &&
-              userRole === "traveller" && order.status !== "canceled" && (
+              userRole === "traveller" &&
+              order.status !== "canceled" && (
                 <button
                   onClick={onDispute}
                   className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
