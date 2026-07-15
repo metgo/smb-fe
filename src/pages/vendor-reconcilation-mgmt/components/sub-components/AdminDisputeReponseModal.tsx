@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {  AlertTriangle, Download } from "lucide-react";
+import { AlertTriangle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
@@ -44,8 +44,6 @@ export const AdminDisputeResponseModal = ({
   const bgSecondary = theme === "dark" ? "bg-gray-800" : "bg-gray-50";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-200";
 
-  
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -60,7 +58,7 @@ export const AdminDisputeResponseModal = ({
     const newErrors: { response?: string; action?: string } = {};
 
     if (!resolutionAction) {
-      newErrors.action = "Please select a resolution action";
+      newErrors.action = t("please_select_resolution_action");
     }
 
     setErrors(newErrors);
@@ -74,11 +72,9 @@ export const AdminDisputeResponseModal = ({
 
     let defaultResponse = "";
     if (resolutionAction === "accept") {
-      defaultResponse =
-        "Your dispute has been approved. A refund will be processed shortly.";
+      defaultResponse = t("dispute_approved_message");
     } else if (resolutionAction === "reject") {
-      defaultResponse =
-        "Your dispute has been reviewed and rejected. The order will proceed as normal.";
+      defaultResponse = t("dispute_rejected_message");
     }
 
     try {
@@ -89,7 +85,7 @@ export const AdminDisputeResponseModal = ({
         vendorFacingResponse: responseToVendor || defaultResponse,
       }).unwrap();
 
-      toast.success("Dispute resolved successfully");
+      toast.success(t("dispute_resolved"));
       onResolve();
       onClose();
     } catch (error: any) {
@@ -111,9 +107,11 @@ export const AdminDisputeResponseModal = ({
           </div>
           <div>
             <h2 className={`text-xl font-bold ${textPrimary}`}>
-              Dispute Resolution
+              {t("dispute_resolution")}
             </h2>
-            <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("order_number")} #{order._id}
+            </p>
           </div>
         </div>
 
@@ -122,14 +120,14 @@ export const AdminDisputeResponseModal = ({
           {/* Status Badge */}
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
-              🔴 Awaiting Admin Response
+              {t("awaiting_response")}
             </span>
           </div>
 
           {/* Order Details */}
           <div className={`${bgSecondary} rounded-lg p-4`}>
             <h3 className={`text-sm font-semibold ${textPrimary} mb-3`}>
-              Order Details
+              {t("order_details")}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 flex items-start gap-3">
@@ -145,7 +143,9 @@ export const AdminDisputeResponseModal = ({
                 </div>
               </div>
               <div>
-                <div className={`text-xs ${textTertiary} mb-1`}>Customer</div>
+                <div className={`text-xs ${textTertiary} mb-1`}>
+                  {t("customer")}
+                </div>
                 <div className={`text-sm ${textSecondary}`}>
                   {order.customerName}
                   <br />
@@ -153,19 +153,25 @@ export const AdminDisputeResponseModal = ({
                 </div>
               </div>
               <div>
-                <div className={`text-xs ${textTertiary} mb-1`}>Order Date</div>
+                <div className={`text-xs ${textTertiary} mb-1`}>
+                  {t("order_date")}
+                </div>
                 <div className={`text-sm ${textSecondary}`}>
                   {formatDate(order.purchaseDate)}
                 </div>
               </div>
               <div>
-                <div className={`text-xs ${textTertiary} mb-1`}>Amount</div>
+                <div className={`text-xs ${textTertiary} mb-1`}>
+                  {t("amount")}
+                </div>
                 <div className={`text-sm font-bold ${textPrimary}`}>
                   ₪{order.totalPrice.toFixed(2)}
                 </div>
               </div>
               <div>
-                <div className={`text-xs ${textTertiary} mb-1`}>Quantity</div>
+                <div className={`text-xs ${textTertiary} mb-1`}>
+                  {t("quantity")}
+                </div>
                 <div className={`text-sm ${textSecondary}`}>
                   {order.quantity}
                 </div>
@@ -186,7 +192,7 @@ export const AdminDisputeResponseModal = ({
                 <h3
                   className={`text-sm font-semibold text-orange-900 dark:text-orange-200 mb-3`}
                 >
-                  Dispute Information
+                  {t("dispute_information")}
                 </h3>
               </div>
 
@@ -195,7 +201,7 @@ export const AdminDisputeResponseModal = ({
                 <div
                   className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
                 >
-                  Raised By
+                  {t("raised_by")}
                 </div>
                 <div
                   className={`text-sm font-medium text-orange-900 dark:text-orange-100`}
@@ -213,7 +219,7 @@ export const AdminDisputeResponseModal = ({
                 <div
                   className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
                 >
-                  Reason
+                  {t("reason")}
                 </div>
                 <div
                   className={`text-sm font-medium text-orange-900 dark:text-orange-100 capitalize`}
@@ -227,7 +233,7 @@ export const AdminDisputeResponseModal = ({
                 <div
                   className={`text-xs text-orange-700 dark:text-orange-300 mb-1`}
                 >
-                  Description
+                  {t("description")}
                 </div>
                 <div className={`text-sm text-orange-900 dark:text-orange-100`}>
                   {disputeDetails.description}
@@ -240,7 +246,7 @@ export const AdminDisputeResponseModal = ({
                   <div
                     className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
                   >
-                    Product in Dispute
+                    {t("product_in_dispute")}
                   </div>
                   <div className="flex gap-3">
                     {disputeDetails.product?.image?.image && (
@@ -260,8 +266,8 @@ export const AdminDisputeResponseModal = ({
                         <div
                           className={`text-xs text-orange-700 dark:text-orange-300`}
                         >
-                          Qty: {disputeDetails.orderProduct.quantity} | Amount:
-                          ₪{disputeDetails.orderProduct.amount}
+                          {t("qty")}: {disputeDetails.orderProduct.quantity} |{" "}
+                          {t("amount")}: ₪{disputeDetails.orderProduct.amount}
                         </div>
                       )}
                     </div>
@@ -276,7 +282,7 @@ export const AdminDisputeResponseModal = ({
                     <div
                       className={`text-xs text-orange-700 dark:text-orange-300 mb-2`}
                     >
-                      Attachments
+                      {t("attachments")}
                     </div>
                     <div className="space-y-2">
                       {disputeDetails.attachments.map(
@@ -289,7 +295,7 @@ export const AdminDisputeResponseModal = ({
                             className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm"
                           >
                             <Download className="w-3 h-3" />
-                            Attachment {idx + 1}
+                            {t("attachment")} {idx + 1}
                           </a>
                         ),
                       )}
@@ -302,7 +308,7 @@ export const AdminDisputeResponseModal = ({
           {/* Admin Response Section */}
           <div className="border-t pt-6">
             <h3 className={`text-lg font-semibold ${textPrimary} mb-4`}>
-              Dispute Resolution
+              {t("dispute_resolution")}
             </h3>
 
             {/* Response to Vendor */}
@@ -310,20 +316,19 @@ export const AdminDisputeResponseModal = ({
               <label
                 className={`block text-sm font-medium ${textPrimary} mb-2`}
               >
-                Custom Response to Vendor (Optional)
+                {t("custom_response")}
               </label>
               <textarea
                 value={responseToVendor}
                 onChange={(e) => {
                   setResponseToVendor(e.target.value);
                 }}
-                placeholder="Enter a custom response to the vendor (leave blank for default)..."
+                placeholder={t("custom_response_placeholder")}
                 rows={3}
                 className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
               />
               <p className={`text-xs ${textTertiary} mt-1`}>
-                If left blank, a default response will be sent based on your
-                decision.
+                {t("custom_response_helper")}
               </p>
             </div>
 
@@ -332,7 +337,7 @@ export const AdminDisputeResponseModal = ({
               <label
                 className={`block text-sm font-medium ${textPrimary} mb-3`}
               >
-                Decision <span className="text-red-500">*</span>
+                {t("decision")} <span className="text-red-500">*</span>
               </label>
               <div className="space-y-2">
                 <label
@@ -357,11 +362,10 @@ export const AdminDisputeResponseModal = ({
                     <div
                       className={`text-sm font-semibold text-green-600 dark:text-green-400`}
                     >
-                      ✓ Approve Dispute
+                      {t("approve_dispute")}
                     </div>
                     <div className={`text-xs ${textTertiary} mt-1`}>
-                      Issue full refund to customer. Vendor will not be paid for
-                      this order.
+                      {t("approve_full_refund")}
                     </div>
                   </div>
                 </label>
@@ -388,11 +392,10 @@ export const AdminDisputeResponseModal = ({
                     <div
                       className={`text-sm font-semibold text-red-600 dark:text-red-400`}
                     >
-                      ✕ Reject Dispute
+                      {t("reject_dispute")}
                     </div>
                     <div className={`text-xs ${textTertiary} mt-1`}>
-                      Vendor must fulfill the order. Payment will proceed as
-                      normal.
+                      {t("reject_keep_payment")}
                     </div>
                   </div>
                 </label>
@@ -407,12 +410,12 @@ export const AdminDisputeResponseModal = ({
               <label
                 className={`block text-sm font-medium ${textPrimary} mb-2`}
               >
-                Internal Notes (Optional)
+                {t("internal_notes")}
               </label>
               <textarea
                 value={internalNotes}
                 onChange={(e) => setInternalNotes(e.target.value)}
-                placeholder="Add internal notes for admin reference..."
+                placeholder={t("internal_notes_placeholder")}
                 rows={2}
                 className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
               />
@@ -429,7 +432,7 @@ export const AdminDisputeResponseModal = ({
             disabled={isLoading}
             className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            Cancel
+            {t("cancel_btn")}
           </button>
           <div className="flex gap-3">
             <button
@@ -444,7 +447,7 @@ export const AdminDisputeResponseModal = ({
               {isLoading && resolutionAction === "reject" && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              Reject Dispute
+              {t("reject_dispute")}
             </button>
             <button
               onClick={handleSubmit}
@@ -458,7 +461,7 @@ export const AdminDisputeResponseModal = ({
               {isLoading && resolutionAction === "accept" && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              Approve Dispute
+              {t("approve_dispute")}
             </button>
           </div>
         </div>

@@ -24,6 +24,7 @@ i18n
       "poi",
       "tour",
       "content",
+      "reconciliation",
     ],
     defaultNS: "common",
 

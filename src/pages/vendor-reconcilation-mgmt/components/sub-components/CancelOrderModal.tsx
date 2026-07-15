@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { XCircle, AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ModalWrapper from "@/components/wrapper/ModalWrapper";
@@ -24,6 +25,7 @@ export default function CancelOrderModal({
   onClose,
   onSubmit,
 }: CancelOrderModalProps) {
+  const { t } = useTranslation("reconciliation");
   const {
     textPrimary,
     textSecondary,
@@ -42,7 +44,7 @@ export default function CancelOrderModal({
     const newErrors: { reason?: string } = {};
 
     if (!reason) {
-      newErrors.reason = "Please select a cancellation reason";
+      newErrors.reason = t("select_cancel_reason");
     }
 
     setErrors(newErrors);
@@ -66,8 +68,8 @@ export default function CancelOrderModal({
             <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h2 className={`text-xl font-bold ${textPrimary}`}>Cancel Order</h2>
-            <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
+            <h2 className={`text-xl font-bold ${textPrimary}`}>{t("cancel_order")}</h2>
+            <p className={`text-sm ${textTertiary}`}>{t("order_number")} #{order._id}</p>
           </div>
         </div>
       </div>
@@ -84,11 +86,10 @@ export default function CancelOrderModal({
               <p
                 className={`text-sm font-medium text-red-900 dark:text-red-200`}
               >
-                Warning: This action will cancel the order and initiate a refund
+                {t("warning_cancel_refund")}
               </p>
               <p className={`text-xs text-red-700 dark:text-red-300 mt-1`}>
-                The customer will be refunded and you will not receive payment
-                for this order.
+                {t("cancel_refund_desc")}
               </p>
             </div>
           </div>
@@ -97,19 +98,19 @@ export default function CancelOrderModal({
         {/* Order Summary */}
         <div className={`${bgSecondary} rounded-lg p-4`}>
           <h3 className={`text-sm font-semibold ${textPrimary} mb-3`}>
-            Order Information
+            {t("order_information")}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className={textTertiary}>Product</span>
+              <span className={textTertiary}>{t("product_label")}</span>
               <span className={textSecondary}>{order.productName}</span>
             </div>
             <div className="flex justify-between">
-              <span className={textTertiary}>Customer</span>
+              <span className={textTertiary}>{t("customer")}</span>
               <span className={textSecondary}>{order.customerName}</span>
             </div>
             <div className="flex justify-between">
-              <span className={textTertiary}>Amount</span>
+              <span className={textTertiary}>{t("amount_label")}</span>
               <span className={`${textPrimary} font-bold`}>
                 ₪{order.totalPrice.toFixed(2)}
               </span>
@@ -120,7 +121,7 @@ export default function CancelOrderModal({
         {/* Cancellation Reason */}
         <div>
           <label className={`block text-sm font-medium ${textPrimary} mb-2`}>
-            Cancellation Reason <span className="text-red-500">*</span>
+            {t("cancel_reason_label")} <span className="text-red-500">*</span>
           </label>
           <select
             value={reason}
@@ -132,10 +133,10 @@ export default function CancelOrderModal({
               errors.reason ? "border-red-500" : ""
             }`}
           >
-            <option value="">Select a reason</option>
+            <option value="">{t("select_reason")}</option>
             {cancelReasons.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {t(r.toLowerCase().replace(/\s+/g, "_"))}
               </option>
             ))}
           </select>
@@ -147,12 +148,12 @@ export default function CancelOrderModal({
         {/* Additional Notes */}
         <div>
           <label className={`block text-sm font-medium ${textPrimary} mb-2`}>
-            Additional Notes (Optional)
+            {t("additional_notes_optional")}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add any additional information about the cancellation..."
+            placeholder={t("add_cancellation_notes")}
             rows={3}
             className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-red-500 resize-none`}
           />
@@ -168,7 +169,7 @@ export default function CancelOrderModal({
             className="rounded border-gray-300 text-red-600 focus:ring-red-500"
           />
           <label htmlFor="send-email" className={`text-sm ${textSecondary}`}>
-            Send cancellation email to customer
+            {t("send_cancel_email")}
           </label>
         </div>
       </div>
@@ -181,13 +182,13 @@ export default function CancelOrderModal({
           onClick={onClose}
           className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
         >
-          Go Back
+          {t("go_back")}
         </button>
         <button
           onClick={handleSubmit}
           className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
         >
-          Confirm Cancel
+          {t("confirm_cancel")}
         </button>
       </div>
     </ModalWrapper>

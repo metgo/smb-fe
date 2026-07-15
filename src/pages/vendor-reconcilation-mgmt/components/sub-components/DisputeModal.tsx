@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, AlertTriangle, Upload, FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { MonthlyOrder } from "./VendorMonthlyReport";
 import { useAppSelector } from "@/hooks/hooks";
 
@@ -25,6 +26,7 @@ export default function DisputeModal({
   onClose,
   onSubmit,
 }: DisputeModalProps) {
+  const { t } = useTranslation("reconciliation");
   const { theme } = useAppSelector((state) => state.settings);
   const { userRole } = useAppSelector((state) => state.auth);
 
@@ -63,7 +65,7 @@ export default function DisputeModal({
       const totalFiles = files.length + newFiles.length;
 
       if (totalFiles > 5) {
-        alert("Maximum 5 files allowed");
+        alert(t("maximum_files"));
         return;
       }
 
@@ -72,7 +74,7 @@ export default function DisputeModal({
         0,
       );
       if (totalSize > 10 * 1024 * 1024) {
-        alert("Total file size cannot exceed 10MB");
+        alert(t("file_size_limit"));
         return;
       }
 
@@ -88,15 +90,15 @@ export default function DisputeModal({
     const newErrors: { reason?: string; details?: string } = {};
 
     if (!reason) {
-      newErrors.reason = "Please select a dispute reason";
+      newErrors.reason = t("select_dispute_reason");
     }
 
     if (!details || details.trim().length < 10) {
-      newErrors.details = "Please provide details (minimum 10 characters)";
+      newErrors.details = t("provide_details_minimum");
     }
 
     if (details.length > 250) {
-      newErrors.details = "Details cannot exceed 250 characters";
+      newErrors.details = t("details_max_length");
     }
 
     setErrors(newErrors);
@@ -124,9 +126,9 @@ export default function DisputeModal({
             </div>
             <div>
               <h2 className={`text-xl font-bold ${textPrimary}`}>
-                Open Dispute
+                {t("open_dispute")}
               </h2>
-              <p className={`text-sm ${textTertiary}`}>Order #{order._id}</p>
+              <p className={`text-sm ${textTertiary}`}>{t("order_number")} #{order._id}</p>
             </div>
           </div>
           <button
@@ -147,13 +149,12 @@ export default function DisputeModal({
                 <p
                   className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
                 >
-                  Warning: This action will freeze the order
+                  {t("warning_freeze_order")}
                 </p>
                 <p
                   className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
                 >
-                  The order will be held until the admin reviews and resolves
-                  your dispute. Payment will be frozen during this period.
+                  {t("dispute_warning_desc")}
                 </p>
               </div>
             </div>
@@ -162,7 +163,7 @@ export default function DisputeModal({
           {/* Order Summary */}
           <div className={`${bgSecondary} rounded-lg p-4`}>
             <h3 className={`text-sm font-semibold ${textPrimary} mb-3`}>
-              Order Information
+              {t("order_information")}
             </h3>
             <div className="flex items-start gap-3 mb-3">
               <img
@@ -175,29 +176,29 @@ export default function DisputeModal({
                   {order.productName}
                 </div>
                 <div className={`text-xs ${textTertiary} mt-1`}>
-                  Order ID: {order._id}
+                  {t("order_id_label")}: {order._id}
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className={textTertiary}>Customer:</span>{" "}
+                <span className={textTertiary}>{t("customer")}:</span>{" "}
                 <span className={textSecondary}>{order.customerName || "-"}</span>
               </div>
               <div>
-                <span className={textTertiary}>Date:</span>{" "}
+                <span className={textTertiary}>{t("date")}:</span>{" "}
                 <span className={textSecondary}>
                   {formatDate(order.purchaseDate) || "-"}
                 </span>
               </div>
               <div>
-                <span className={textTertiary}>Amount:</span>{" "}
+                <span className={textTertiary}>{t("amount_label")}:</span>{" "}
                 <span className={textSecondary}>
                   ₪{order.totalPrice.toFixed(2) || "-"}
                 </span>
               </div>
               <div>
-                <span className={textTertiary}>Qty:</span>{" "}
+                <span className={textTertiary}>{t("qty")}:</span>{" "}
                 <span className={textSecondary}>{order.quantity || "-"}</span>
               </div>
             </div>
@@ -206,7 +207,7 @@ export default function DisputeModal({
           {/* Dispute Reason */}
           <div>
             <label className={`block text-sm font-medium ${textPrimary} mb-2`}>
-              Dispute Reason <span className="text-red-500">*</span>
+              {t("dispute_reason")} <span className="text-red-500">*</span>
             </label>
             <select
               value={reason}
@@ -218,10 +219,10 @@ export default function DisputeModal({
                 errors.reason ? "border-red-500" : ""
               }`}
             >
-              <option value="">Select a reason</option>
+              <option value="">{t("select_reason")}</option>
               {disputeReasons.map((r) => (
                 <option key={r.value} value={r.value}>
-                  {r.label}
+                  {t(r.value)}
                 </option>
               ))}
             </select>
@@ -233,7 +234,7 @@ export default function DisputeModal({
           {/* Details */}
           <div>
             <label className={`block text-sm font-medium ${textPrimary} mb-2`}>
-              Additional Details <span className="text-red-500">*</span>
+              {t("additional_details")} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={details}
@@ -241,7 +242,7 @@ export default function DisputeModal({
                 setDetails(e.target.value);
                 setErrors({ ...errors, details: undefined });
               }}
-              placeholder="Please provide detailed information about the dispute (10-250 characters)"
+              placeholder={t("provide_dispute_details")}
               rows={4}
               maxLength={250}
               className={`w-full px-4 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none ${
@@ -255,7 +256,7 @@ export default function DisputeModal({
                 )}
               </div>
               <p className={`text-xs ${textTertiary}`}>
-                {details.length}/250 characters
+                {details.length}/250 {t("characters")}
               </p>
             </div>
           </div>
@@ -263,7 +264,7 @@ export default function DisputeModal({
           {/* File Upload */}
           <div>
             <label className={`block text-sm font-medium ${textPrimary} mb-2`}>
-              Attach Evidence (Optional)
+              {t("attach_evidence")}
             </label>
             <div
               className={`border-2 border-dashed ${borderColor} rounded-lg p-6 text-center ${
@@ -279,10 +280,10 @@ export default function DisputeModal({
             >
               <Upload className={`w-8 h-8 ${textTertiary} mx-auto mb-2`} />
               <p className={`text-sm ${textSecondary} mb-1`}>
-                Click to upload or drag and drop
+                {t("click_to_upload")}
               </p>
               <p className={`text-xs ${textTertiary}`}>
-                Images or PDFs - Max 5 files, 10MB total
+                {t("images_pdfs_format")}
               </p>
               <input
                 id="file-upload"
@@ -335,13 +336,13 @@ export default function DisputeModal({
             onClick={onClose}
             className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
           >
-            Cancel
+            {t("cancel_btn")}
           </button>
           <button
             onClick={handleSubmit}
             className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition-colors"
           >
-            Submit Dispute
+            {t("submit_dispute")}
           </button>
         </div>
       </div>

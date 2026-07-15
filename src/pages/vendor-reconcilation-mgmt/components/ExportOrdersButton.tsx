@@ -65,7 +65,7 @@ export default function ExportOrdersButton({
 
   const buildRows = (data: MonthlyOrder[]) =>
     data.map((order) => ({
-      [t("orderId")]: order.orderId,
+      [t("order_id")]: order.orderId,
       [t("product")]: order.productName,
       [t("customer")]: order.customerName,
       [t("email")]: order.customerEmail,
@@ -75,7 +75,7 @@ export default function ExportOrdersButton({
         : "-",
       [t("quantity")]: order.quantity,
       [t("unit_price")]: order.unitPrice,
-      [t("total_price")]: order.totalPrice,
+      [t("total")]: order.totalPrice,
       [t("platform_fee")]: order.platformFee,
       [t("net_to_vendor")]: order.netToVendor,
       [t("status")]: order.status,
