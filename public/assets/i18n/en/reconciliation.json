@@ -180,5 +180,9 @@
   "reject_dispute_btn": "✗ Reject Dispute",
   "cancel_order_btn": "Cancel Order",
   "open_dispute_btn": "Open Dispute",
-  "reconciliation_status": "Reconciliation Status"
+  "reconciliation_status": "Reconciliation Status",
+  "vendor_business": "Vendor / Business",
+  "search_vendors": "Search vendors...",
+  "selected_vendor": "Selected",
+  "no_businesses_found": "No businesses found"
 }

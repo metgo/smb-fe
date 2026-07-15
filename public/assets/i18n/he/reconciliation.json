@@ -180,5 +180,9 @@
   "reject_dispute_btn": "✗ דחה תלונה",
   "cancel_order_btn": "בטל הזמנה",
   "open_dispute_btn": "פתח תלונה",
-  "reconciliation_status": "סטטוס התיישוב"
+  "reconciliation_status": "סטטוס התיישוב",
+  "vendor_business": "ספק / עסק",
+  "search_vendors": "חפש ספקים...",
+  "selected_vendor": "נבחר",
+  "no_businesses_found": "לא נמצאו עסקים"
 }

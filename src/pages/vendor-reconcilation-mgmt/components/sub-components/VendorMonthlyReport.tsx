@@ -26,6 +26,7 @@ import {
   useRespondDisputeMutation,
   useBulkApproveOrderProductsMutation,
 } from "@/store/api/reconciliationQueryApi";
+import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { ReordableDataTable, FilterChips } from "@/components/shared";
 
@@ -204,7 +205,14 @@ export const VendorMonthlyReport = () => {
     maxAmount: "",
     businessId: "",
   });
+  const [businessSearch, setBusinessSearch] = useState("");
+  const [businesses, setBusinesses] = useState<
+    Array<{ _id: string; name: string }>
+  >([]);
+  const [showBusinessDropdown, setShowBusinessDropdown] = useState(false);
+  const [isSearchingBusinesses, setIsSearchingBusinesses] = useState(false);
   const isLoadingNextPageRef = useRef(false);
+  const [searchBusinessesTrigger] = useLazyGetBusinessForProductQuery();
 
   const apiParams = useMemo(() => {
     const params: any = {
@@ -307,6 +315,31 @@ export const VendorMonthlyReport = () => {
     });
   };
 
+  const searchBusinesses = async (search: string) => {
+    setBusinessSearch(search);
+    if (!search.trim()) {
+      setBusinesses([]);
+      return;
+    }
+
+    try {
+      setIsSearchingBusinesses(true);
+      const result = await searchBusinessesTrigger({
+        search,
+        locale: "en" as any,
+        limit: 10,
+      });
+      if (result.data?.data) {
+        setBusinesses(result.data.data);
+      }
+    } catch (error) {
+      console.error("Error searching businesses:", error);
+      setBusinesses([]);
+    } finally {
+      setIsSearchingBusinesses(false);
+    }
+  };
+
   useEffect(() => {
     if (orderProductsData?.data) {
       const mappedOrders = orderProductsData.data.map(mapOrderProductList);
@@ -346,7 +379,19 @@ export const VendorMonthlyReport = () => {
     filters.endDate,
     filters.minAmount,
     filters.maxAmount,
+    filters.businessId,
   ]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".business-search-container")) {
+        setShowBusinessDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const stats = useMemo(() => {
     const pending = orders.filter((o) => o.status === "pending");
@@ -949,6 +994,56 @@ export const VendorMonthlyReport = () => {
               </select>
             </div>
 
+            <div className="relative business-search-container">
+              <label className={`block text-xs ${textTertiary} mb-1`}>
+                {t("vendor_business")}
+              </label>
+              <input
+                type="text"
+                placeholder={
+                  filters.businessId
+                    ? t("selected_vendor")
+                    : t("search_vendors")
+                }
+                value={businessSearch}
+                onChange={(e) => searchBusinesses(e.target.value)}
+                onFocus={() => {
+                  if (!filters.businessId) setShowBusinessDropdown(true);
+                }}
+                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
+              />
+              {showBusinessDropdown && businessSearch && (
+                <div
+                  className={`absolute top-full left-0 right-0 mt-1 border ${borderColor} rounded-lg ${bgSecondary} shadow-lg z-50 max-h-48 overflow-y-auto`}
+                >
+                  {isSearchingBusinesses ? (
+                    <div className={`p-2 text-center text-sm ${textTertiary}`}>
+                      {t("loading")}
+                    </div>
+                  ) : businesses.length > 0 ? (
+                    businesses.map((business) => (
+                      <button
+                        key={business._id}
+                        onClick={() => {
+                          setFilters({ ...filters, businessId: business._id });
+                          setShowBusinessDropdown(false);
+                          setBusinessSearch("");
+                          setBusinesses([]);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${textPrimary}`}
+                      >
+                        {business.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className={`p-2 text-center text-sm ${textTertiary}`}>
+                      {t("no_businesses_found")}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
                 {t("date_from")}
@@ -1018,11 +1113,16 @@ export const VendorMonthlyReport = () => {
                       label={
                         uniqueBusinesses.find(
                           (b) => b._id === filters.businessId,
-                        )?.name || filters.businessId
+                        )?.name ||
+                        businesses.find((b) => b._id === filters.businessId)
+                          ?.name ||
+                        filters.businessId
                       }
-                      onRemove={() =>
-                        setFilters({ ...filters, businessId: "" })
-                      }
+                      onRemove={() => {
+                        setFilters({ ...filters, businessId: "" });
+                        setBusinessSearch("");
+                        setBusinesses([]);
+                      }}
                     />
                   )}
                   {filters.startDate && (

@@ -180,5 +180,9 @@
   "reject_dispute_btn": "✗ رفض النزاع",
   "cancel_order_btn": "إلغاء الطلب",
   "open_dispute_btn": "فتح تنازع",
-  "reconciliation_status": "حالة المصالحة"
+  "reconciliation_status": "حالة المصالحة",
+  "vendor_business": "الموزع / النشاط التجاري",
+  "search_vendors": "ابحث عن الموزعين...",
+  "selected_vendor": "تم التحديد",
+  "no_businesses_found": "لم يتم العثور على أعمال"
 }
