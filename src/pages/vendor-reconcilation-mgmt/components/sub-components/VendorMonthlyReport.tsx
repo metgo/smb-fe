@@ -28,7 +28,7 @@ import {
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
-import { ReordableDataTable, FilterChips } from "@/components/shared";
+import { ReordableDataTable, FilterChips, ImageWithFallback } from "@/components/shared";
 
 interface OrderProduct {
   _id: string;
@@ -211,6 +211,7 @@ export const VendorMonthlyReport = () => {
   >([]);
   const [showBusinessDropdown, setShowBusinessDropdown] = useState(false);
   const [isSearchingBusinesses, setIsSearchingBusinesses] = useState(false);
+  const [selectedBusinessName, setSelectedBusinessName] = useState("");
   const isLoadingNextPageRef = useRef(false);
   const [searchBusinessesTrigger] = useLazyGetBusinessForProductQuery();
 
@@ -277,21 +278,6 @@ export const VendorMonthlyReport = () => {
     }
     return selectedOrder;
   }, [orderDetailsData, detailsOrderId, selectedOrder]);
-
-  const uniqueBusinesses = useMemo(() => {
-    const businessMap = new Map<string, string>();
-    if (orderProductsData?.data) {
-      orderProductsData.data.forEach((order: any) => {
-        if (order.business?._id && order.business?.name) {
-          businessMap.set(order.business._id, order.business.name);
-        }
-      });
-    }
-    return Array.from(businessMap.entries()).map(([id, name]) => ({
-      _id: id,
-      name,
-    }));
-  }, [orderProductsData]);
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -683,7 +669,7 @@ export const VendorMonthlyReport = () => {
       label: t("product"),
       render: (order: MonthlyOrder) => (
         <div className="flex items-center gap-3">
-          <img
+          <ImageWithFallback
             src={order.productImage}
             alt={order.productName}
             className="w-12 h-12 rounded object-cover"
@@ -1026,6 +1012,7 @@ export const VendorMonthlyReport = () => {
                         key={business._id}
                         onClick={() => {
                           setFilters({ ...filters, businessId: business._id });
+                          setSelectedBusinessName(business.name);
                           setShowBusinessDropdown(false);
                           setBusinessSearch("");
                           setBusinesses([]);
@@ -1110,16 +1097,10 @@ export const VendorMonthlyReport = () => {
                   )}
                   {filters.businessId && (
                     <FilterChips
-                      label={
-                        uniqueBusinesses.find(
-                          (b) => b._id === filters.businessId,
-                        )?.name ||
-                        businesses.find((b) => b._id === filters.businessId)
-                          ?.name ||
-                        filters.businessId
-                      }
+                      label={selectedBusinessName || filters.businessId}
                       onRemove={() => {
                         setFilters({ ...filters, businessId: "" });
+                        setSelectedBusinessName("");
                         setBusinessSearch("");
                         setBusinesses([]);
                       }}
