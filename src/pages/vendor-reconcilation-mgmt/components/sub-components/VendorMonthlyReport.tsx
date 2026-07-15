@@ -1,12 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Filter,
-  CheckCircle,
-  XCircle,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
@@ -34,6 +28,8 @@ import {
   ImageWithFallback,
 } from "@/components/shared";
 import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
+import FilterButton from "@/components/btns/FilterButton";
+import clsx from "clsx";
 
 interface OrderProduct {
   _id: string;
@@ -175,19 +171,20 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
   const {
-    isDark,
     bgPrimary,
     bgSecondary,
     textPrimary,
     borderColor,
     textSecondary,
     textTertiary,
+    isDark,
   } = useThemeClasses();
   const { dmoId, authorityId, userRole } = useAppSelector(
     (state) => state.auth,
   );
   const adminView = userRole === "superadmin";
 
+  const businessSearchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -198,8 +195,6 @@ export const VendorMonthlyReport = () => {
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-
-  const hoverBg = isDark ? "hover:bg-gray-800" : "hover:bg-gray-50";
 
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
@@ -302,22 +297,18 @@ export const VendorMonthlyReport = () => {
       startDate: "",
       endDate: "",
       month: "all",
-
       businessId: "",
     });
+    setSelectedBusinessName("");
+    setBusinessSearch("");
+    fetchDefaultBusinesses();
   };
 
-  const searchBusinesses = async (search: string) => {
-    setBusinessSearch(search);
-    if (!search.trim()) {
-      setBusinesses([]);
-      return;
-    }
-
+  const fetchDefaultBusinesses = async () => {
     try {
       setIsSearchingBusinesses(true);
       const result = await searchBusinessesTrigger({
-        search,
+        search: "",
         locale: "en" as any,
         limit: 10,
       });
@@ -325,12 +316,55 @@ export const VendorMonthlyReport = () => {
         setBusinesses(result.data.data);
       }
     } catch (error) {
-      console.error("Error searching businesses:", error);
+      console.error("Error fetching default businesses:", error);
       setBusinesses([]);
     } finally {
       setIsSearchingBusinesses(false);
     }
   };
+
+  const searchBusinesses = (search: string) => {
+    setBusinessSearch(search);
+
+    if (businessSearchDebounceRef.current) {
+      clearTimeout(businessSearchDebounceRef.current);
+    }
+
+    if (!search.trim()) {
+      // Back to empty input -> show default list again
+      fetchDefaultBusinesses();
+      return;
+    }
+
+    businessSearchDebounceRef.current = setTimeout(async () => {
+      try {
+        setIsSearchingBusinesses(true);
+        const result = await searchBusinessesTrigger({
+          search,
+          locale: "en" as any,
+          limit: 10,
+        });
+        if (result.data?.data) {
+          setBusinesses(result.data.data);
+        }
+      } catch (error) {
+        console.error("Error searching businesses:", error);
+        setBusinesses([]);
+      } finally {
+        setIsSearchingBusinesses(false);
+      }
+    }, 400);
+  };
+  useEffect(() => {
+    fetchDefaultBusinesses();
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (businessSearchDebounceRef.current) {
+        clearTimeout(businessSearchDebounceRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (orderProductsData?.data) {
@@ -580,10 +614,9 @@ export const VendorMonthlyReport = () => {
   };
 
   const handleBulkApprove = async () => {
-    if (selectedItems.size === 0) return;
     try {
       await bulkApproveOrderProducts({
-        orderProductIds: Array.from(selectedItems),
+        approveAllDisputed: true,
       }).unwrap();
 
       toast.success(t("order_approved"));
@@ -601,41 +634,47 @@ export const VendorMonthlyReport = () => {
       { bg: string; text: string; icon: any; label: string }
     > = {
       pending: {
-        bg: "bg-yellow-100 dark:bg-yellow-900/20",
-        text: "text-yellow-800 dark:text-yellow-400",
+        bg: isDark ? "bg-yellow-900/20" : "bg-yellow-100",
+        text: isDark ? "text-yellow-400" : "text-yellow-800",
         icon: Clock,
         label: t("pending"),
       },
       approved: {
-        bg: "bg-green-100 dark:bg-green-900/20",
-        text: "text-green-800 dark:text-green-400",
+        bg: isDark ? "bg-green-900/20" : "bg-green-100",
+        text: isDark ? "text-green-400" : "text-green-800",
         icon: CheckCircle,
         label: t("approved"),
       },
       disputed: {
-        bg: "bg-orange-100 dark:bg-orange-900/20",
-        text: "text-orange-800 dark:text-orange-400",
+        bg: isDark ? "bg-orange-900/20" : "bg-orange-100",
+        text: isDark ? "text-orange-400" : "text-orange-800",
         icon: AlertTriangle,
         label: t("disputed"),
       },
       canceled: {
-        bg: "bg-red-100 dark:bg-red-900/20",
-        text: "text-red-800 dark:text-red-400",
+        bg: isDark ? "bg-red-900/20" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
         icon: XCircle,
         label: t("canceled"),
       },
       rejected: {
-        bg: "bg-red-100 dark:bg-red-900/20",
-        text: "text-red-800 dark:text-red-400",
+        bg: isDark ? "bg-red-900/20" : "bg-red-100",
+        text: isDark ? "text-red-400" : "text-red-800",
         icon: XCircle,
         label: t("rejected"),
       },
     };
+
     const badge = badges[status] || badges.pending;
     const Icon = badge.icon;
+
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
+        className={clsx(
+          "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
+          badge.bg,
+          badge.text,
+        )}
       >
         <Icon className="w-3 h-3" />
         {badge.label}
@@ -662,19 +701,17 @@ export const VendorMonthlyReport = () => {
       key: "product",
       sortable: false,
       label: t("product"),
+      minWidth: 200, // if your ReordableDataTable columns support width hints
       render: (order: MonthlyOrder) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 min-w-[200px]">
           <ImageWithFallback
             src={order.productImage}
             alt={order.productName}
-            className="w-12 h-12 rounded object-cover"
+            className="w-12 h-12 rounded-lg object-cover shrink-0"
           />
-          <div>
-            <div className={`font-medium ${textPrimary}`}>
+          <div className="min-w-0">
+            <div className={`font-medium text-base ${textPrimary} truncate`}>
               {order.productName}
-            </div>
-            <div className={`text-xs ${textTertiary}`}>
-              {order.productCategory}
             </div>
           </div>
         </div>
@@ -767,21 +804,17 @@ export const VendorMonthlyReport = () => {
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {!adminView &&
-            order.status === "pending" &&
-            userRole !== "traveller" && (
-              <button
-                onClick={() => handleApprove(order)}
-                className="p-1.5 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                title={t("approve")}
-              >
-                <CheckCircle className="w-4 h-4" />
-              </button>
-            )}
+          {order.status === "pending" && userRole !== "traveller" && (
+            <button
+              onClick={() => handleApprove(order)}
+              className="p-1.5 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              title={t("approve")}
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
           {order.status !== "canceled" &&
-            order.reconciliationStatus !== "disputed" &&
-            order.reconciliationStatus !== "approved" &&
-            order.reconciliationStatus !== "rejected" &&
+            order.reconciliationStatus == "pending" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -910,7 +943,7 @@ export const VendorMonthlyReport = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className={`${bgPrimary} rounded-lg border ${borderColor} p-4 mb-6`}>
+      <div className={`$ p-4 mb-6`}>
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
           <div className="flex-1 w-full min-w-0">
             <SearchInput
@@ -921,13 +954,13 @@ export const VendorMonthlyReport = () => {
             />
           </div>
           <div className="flex items-center gap-2 whitespace-nowrap">
-            {adminView && selectedItems.size > 0 && (
+            {adminView && (
               <button
                 onClick={handleBulkApprove}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
-                {t("approve")} ({selectedItems.size})
+                {t("approve_disputed_orders")}
               </button>
             )}
             <ExportOrdersButton
@@ -935,13 +968,7 @@ export const VendorMonthlyReport = () => {
               selectedOrders={selectedItems}
               t={t}
             />
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-1.5 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
-            >
-              <Filter className="w-3 h-3" />
-              {t("filters")}
-            </button>
+            <FilterButton value={showFilters} onChange={setShowFilters} />
           </div>
         </div>
 
@@ -982,11 +1009,13 @@ export const VendorMonthlyReport = () => {
                 value={businessSearch}
                 onChange={(e) => searchBusinesses(e.target.value)}
                 onFocus={() => {
-                  if (!filters.businessId) setShowBusinessDropdown(true);
+                  if (!filters.businessId && !showBusinessDropdown) {
+                    setShowBusinessDropdown(true);
+                  }
                 }}
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               />
-              {showBusinessDropdown && businessSearch && (
+              {(showBusinessDropdown || businessSearch) && (
                 <div
                   className={`absolute top-full left-0 right-0 mt-1 border ${borderColor} rounded-lg ${bgSecondary} shadow-lg z-50 max-h-48 overflow-y-auto`}
                 >
@@ -1005,7 +1034,7 @@ export const VendorMonthlyReport = () => {
                           setBusinessSearch("");
                           setBusinesses([]);
                         }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${textPrimary}`}
+                        className={`w-full text-left px-3 py-2 text-sm cursor-pointer transition-colors ${textPrimary}`}
                       >
                         {business.name}
                       </button>
@@ -1052,7 +1081,7 @@ export const VendorMonthlyReport = () => {
                         setFilters({ ...filters, businessId: "" });
                         setSelectedBusinessName("");
                         setBusinessSearch("");
-                        setBusinesses([]);
+                        fetchDefaultBusinesses();
                       }}
                     />
                   )}

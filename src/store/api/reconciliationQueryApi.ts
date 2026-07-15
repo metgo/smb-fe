@@ -30,7 +30,7 @@ export interface RespondDisputeRequest {
 }
 
 export interface BulkApproveOrderProductsRequest {
-  orderProductIds: string[];
+  approveAllDisputed: boolean;
 }
 
 export const reconciliationQueryApi = createApi({

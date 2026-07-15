@@ -118,7 +118,7 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
                 <p
                   className={`text-sm font-bold leading-none ${hasValue ? textPrimary : textTertiary}`}
                 >
-                  {stat.value.toLocaleString()}
+                  {stat?.value?.toLocaleString()}
                 </p>
                 <p
                   className={`text-[10px] font-medium mt-0.5 truncate ${textTertiary}`}

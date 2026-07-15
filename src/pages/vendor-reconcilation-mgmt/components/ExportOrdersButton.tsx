@@ -130,7 +130,7 @@ export default function ExportOrdersButton({
     setOpen(false);
   };
 
-  const btnBase = `px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
+  const btnBase = `px-4 py-2 rounded-lg border flex items-center gap-1.5 transition-colors text-sm ${
     isDark
       ? "border-gray-700 hover:bg-gray-800 text-gray-300"
       : "border-gray-300 hover:bg-gray-100 text-gray-700"
