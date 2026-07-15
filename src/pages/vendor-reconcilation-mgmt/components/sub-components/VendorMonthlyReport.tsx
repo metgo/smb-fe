@@ -19,6 +19,7 @@ import {
   useOpenDisputeMutation,
   useRespondDisputeMutation,
   useBulkApproveOrderProductsMutation,
+  useGetReconciliationStatsQuery,
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
@@ -261,6 +262,7 @@ export const VendorMonthlyReport = () => {
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
+  const { data: reconciliationStats } = useGetReconciliationStatsQuery();
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -420,26 +422,30 @@ export const VendorMonthlyReport = () => {
   }, []);
 
   const stats = useMemo(() => {
-    const pending = orders.filter((o) => o.status === "pending");
-    const approved = orders.filter((o) => o.status === "approved");
-    const disputed = orders.filter((o) => o.status === "disputed");
-    const cancelled = orders.filter((o) => o.status === "cancelled");
-
-    const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
-    const heldForDisputes = disputed.reduce((sum, o) => sum + o.totalPrice, 0);
-    const netPayout = totalRevenue;
+    if (!reconciliationStats) {
+      return {
+        pending: 0,
+        approved: 0,
+        disputed: 0,
+        cancelled: 0,
+        totalOrders: 0,
+        totalRevenue: 0,
+        netPayout: 0,
+        heldForDisputes: 0,
+      };
+    }
 
     return {
-      pending: pending.length,
-      approved: approved.length,
-      disputed: disputed.length,
-      cancelled: cancelled.length,
-      totalOrders: orders.length,
-      totalRevenue,
-      netPayout,
-      heldForDisputes,
+      pending: reconciliationStats.statusOverview?.pending || 0,
+      approved: reconciliationStats.statusOverview?.approved || 0,
+      disputed: reconciliationStats.statusOverview?.disputed || 0,
+      cancelled: reconciliationStats.statusOverview?.cancelled || 0,
+      totalOrders: reconciliationStats.totalOrders || 0,
+      totalRevenue: reconciliationStats.totalRevenue || 0,
+      netPayout: reconciliationStats.netPayout || 0,
+      heldForDisputes: 0,
     };
-  }, [orders]);
+  }, [reconciliationStats]);
 
   const handleOpenDispute = (order: MonthlyOrder) => {
     if (userRole !== "traveller") {

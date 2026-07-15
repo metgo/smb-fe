@@ -117,6 +117,14 @@ export const reconciliationQueryApi = createApi({
         data: body,
       }),
     }),
+
+    // GET /orders/reconciliation-stats
+    getReconciliationStats: builder.query<any, void>({
+      query: () => ({
+        url: "/orders/reconciliation-stats",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -129,4 +137,5 @@ export const {
   useRespondDisputeMutation,
   useGetDisputeDetailsQuery,
   useBulkApproveOrderProductsMutation,
+  useGetReconciliationStatsQuery,
 } = reconciliationQueryApi;
