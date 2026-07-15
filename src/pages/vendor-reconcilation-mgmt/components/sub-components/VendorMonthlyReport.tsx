@@ -12,6 +12,7 @@ import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
 import CancelOrderModal from "./CancelOrderModal";
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
+import ExportOrdersButton from "../ExportOrdersButton";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation } from "@/store/api/mediaMutationApi";
@@ -906,6 +907,11 @@ export const VendorMonthlyReport = () => {
                 {t("approve")} ({selectedItems.size})
               </button>
             )}
+            <ExportOrdersButton
+              orders={orders}
+              selectedOrders={selectedItems}
+              t={t}
+            />
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
