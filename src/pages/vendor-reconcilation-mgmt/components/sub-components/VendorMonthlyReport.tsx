@@ -185,7 +185,7 @@ export const VendorMonthlyReport = () => {
   );
   const adminView = userRole === "superadmin";
 
-  const businessSearchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const businessSearchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
