@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Filter,
@@ -204,6 +204,7 @@ export const VendorMonthlyReport = () => {
     maxAmount: "",
     businessId: "",
   });
+  const isLoadingNextPageRef = useRef(false);
 
   const apiParams = useMemo(() => {
     const params: any = {
@@ -324,14 +325,17 @@ export const VendorMonthlyReport = () => {
     }
   }, [orderProductsData, page]);
 
-  const hasMore =
-    orderProductsData?.data?.length === 20 &&
-    orderProductsData?.meta?.page < orderProductsData?.meta?.pages;
+  const hasMore = orderProductsData?.meta?.hasNextPage ?? false;
 
   const loadNextPage = () => {
-    if (!hasMore || isLoading) return;
+    if (!hasMore || isLoading || isLoadingNextPageRef.current) return;
+    isLoadingNextPageRef.current = true;
     setPage((prev) => prev + 1);
   };
+
+  useEffect(() => {
+    isLoadingNextPageRef.current = isLoading;
+  }, [isLoading]);
 
   useEffect(() => {
     setPage(1);
