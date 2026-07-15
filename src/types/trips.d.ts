@@ -25,12 +25,9 @@ interface ITrip {
   stations: number;
 }
 
-
 interface ITripsRes extends IMetaData {
-  data: ITrip[]
+  data: ITrip[];
 }
-
-
 
 interface ImageData {
   image: string;
@@ -67,6 +64,15 @@ interface ITripStations {
   serviceType: string;
   geoLocation: GeoLocation;
   iconPath: string;
+}
+
+interface ITripStationsRes extends IMetaData {
+  data: ITripStations[];
+}
+
+interface ITripStationReq {
+  dmoId: string;
+  authorityId: string;
 }
 
 type TRouteResponse = {

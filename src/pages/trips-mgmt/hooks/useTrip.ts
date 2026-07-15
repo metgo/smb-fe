@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
-import { UserRole } from "@/enums/user.types";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import {
@@ -24,17 +23,7 @@ import {
   resetSelected,
 } from "@/features/stationsSlice";
 import { useTripFilters } from "./useTripFilters";
-
-function createQueryParams(
-  items: string[],
-  key: string,
-  isCategory: boolean = false
-): string {
-  if (!items || items?.length === 0) return "";
-
-  const params = items?.map((item) => `${key}=${item}`)?.join("&");
-  return isCategory ? params : `&${params}`;
-}
+import { skipToken } from "@reduxjs/toolkit/query";
 
 export const useTrip = () => {
   const navigate = useNavigate();
@@ -42,7 +31,6 @@ export const useTrip = () => {
   const { isRTL: isHebrew } = useThemeClasses();
   const { t: commonText } = useTranslation("common");
   const { t: fundayText } = useTranslation("funday");
-  const { user, dmoId, authorityId } = useAppSelector((state) => state.auth);
   const id = searchParams.get("id");
 
   const [, setClickedStation] = useState<IClickedStationProps>();
@@ -51,7 +39,7 @@ export const useTrip = () => {
   const [description, setDescription] = useState("<p></p>");
   const [shortDescription, setshortDescription] = useState("<p></p>");
   const [tripDetails, setTripDetails] = useState<ITripDetails | undefined>(
-    undefined
+    undefined,
   );
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
     { title: "", startTime: null, endTime: null },
@@ -59,23 +47,29 @@ export const useTrip = () => {
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [selectedTab, setSelectedTab] = useState<string>("details");
 
+  const [selectedDmoId, setSelectedDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState<string[]>(
+    [],
+  );
+
   const dispatch = useAppDispatch();
   const businesses = useAppSelector((state) => state.stations.businesses);
   const originalStations = useAppSelector(
-    (state) => state.stations.originalStations
+    (state) => state.stations.originalStations,
   );
   const selectedStationList = useAppSelector(
-    (state) => state.stations.selectedStationList
+    (state) => state.stations.selectedStationList,
   );
   const selectedStations = useAppSelector(
-    (state) => state.stations.selectedStations
+    (state) => state.stations.selectedStations,
   );
   const selectedStationDetails = useAppSelector(
-    (state) => state.stations.selectedStationDetails
+    (state) => state.stations.selectedStationDetails,
   );
+  console.log("🚀 ~ useTrip ~ selectedStationDetails:", selectedStationDetails);
 
   const {
-    searchTerm,
     isPoiChecked,
     activeCategoryIds,
     setIsPoiChecked,
@@ -115,7 +109,7 @@ export const useTrip = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!dmoId || !authorityId) {
+    if (!selectedDmoId || !selectedAuthorityId) {
       toast.error(commonText("dmo_authority_select_info_text"));
       return;
     }
@@ -141,13 +135,14 @@ export const useTrip = () => {
     const payload = {
       description,
       shortDescription,
-      dmoId,
-      authorityId,
+      dmoId: selectedDmoId,
+      authorityId: selectedAuthorityId,
       name: formData.name,
       status: formData.status,
       estimatedDuration: Number(formData.estimatedDuration),
       isTrip: true,
       images: selectedImages,
+      itenary: schedules,
       stations: selectedStationDetails?.map((station, index) => {
         return {
           _id: station._id,
@@ -175,72 +170,56 @@ export const useTrip = () => {
     dispatch(resetSelected());
   }, []);
 
-  const stationsQueryParams = (() => {
-    if (
-      !(
-        activeCategoryIds ||
-        selectedSubCategoryIds ||
-        selectedGroupTypeIds ||
-        selectedAccessibilityIds ||
-        searchTerm ||
-        isBusinessChecked ||
-        isPoiChecked ||
-        isMyAreaChecked ||
-        dmoId ||
-        authorityId
-      )
-    ) {
-      return null;
-    }
+  // const stationsQueryParams = (() => {
+  //   if (
+  //     !(
+  //       activeCategoryIds ||
+  //       searchTerm ||
+  //       isBusinessChecked ||
+  //       isPoiChecked ||
+  //       isMyAreaChecked ||
+  //       selectedDmoId ||
+  //       selectedAuthorityId
+  //     )
+  //   ) {
+  //     return null;
+  //   }
 
-    let params = ``;
-    if (activeCategoryIds)
-      params += createQueryParams(activeCategoryIds, "bussCategoriesId", true);
+  //   let params = ``;
+  //   if (searchTerm) params += `&search=${searchTerm}`;
+  //   if (selectedDmoId) params += `&dmoId=${selectedDmoId}`;
+  //   if (selectedAuthorityId) params += `&authorityId=${selectedAuthorityId}`;
+  //   if (user?.role === UserRole.AUTHORITY) params += `&isMyArea=true`;
 
-    if (selectedGroupTypeIds)
-      params += createQueryParams(selectedGroupTypeIds, "groupTypesId");
-    if (selectedSubCategoryIds)
-      params += createQueryParams(
-        selectedSubCategoryIds,
-        "bussSubCategoriesId"
-      );
-    if (selectedAccessibilityIds)
-      params += createQueryParams(
-        selectedAccessibilityIds,
-        "accessibilitiesId"
-      );
-    if (searchTerm) params += `&search=${searchTerm}`;
-    if (dmoId) params += `&dmoId=${dmoId}`;
-    if (authorityId) params += `&authorityId=${authorityId}`;
-    if (user?.role === UserRole.AUTHORITY) params += `&isMyArea=true`;
+  //   const serviceTypeOnlyBusiness = isBusinessChecked && !isPoiChecked;
+  //   const serviceTypeOnlyPoi = !isBusinessChecked && isPoiChecked;
 
-    const serviceTypeOnlyBusiness = isBusinessChecked && !isPoiChecked;
-    const serviceTypeOnlyPoi = !isBusinessChecked && isPoiChecked;
+  //   if (serviceTypeOnlyBusiness) {
+  //     params += `&serviceType=business`;
+  //   } else if (serviceTypeOnlyPoi) {
+  //     params += `&serviceType=point_of_interest`;
+  //   }
 
-    if (serviceTypeOnlyBusiness) {
-      params += `&serviceType=business`;
-    } else if (serviceTypeOnlyPoi) {
-      params += `&serviceType=point_of_interest`;
-    }
+  //   if (isMyAreaChecked) {
+  //     params += `&isMyArea=${isMyAreaChecked}`;
+  //   }
 
-    if (isMyAreaChecked) {
-      params += `&isMyArea=${isMyAreaChecked}`;
-    }
+  //   return params;
+  // })();
 
-    return params;
-  })();
-
-  const { data: stationsData } = useGetAllStationsQuery(stationsQueryParams, {
-    skip: stationsQueryParams === null,
-  });
+  const { data: stationsData } = useGetAllStationsQuery(
+    selectedDmoId && selectedAuthorityId
+      ? { dmoId: selectedDmoId, authorityId: selectedAuthorityId }
+      : skipToken,
+  );
 
   useEffect(() => {
-    if (stationsQueryParams === null) return;
+    if (!selectedAuthorityId && !selectedDmoId) return;
 
     const data = stationsData?.data ?? [];
 
     const uniqueSelected = selectedStationList.filter(
-      (selected) => !data.some((item: any) => item._id === selected._id)
+      (selected) => !data.some((item: any) => item._id === selected._id),
     );
 
     const mergedData = [...data, ...uniqueSelected];
@@ -260,8 +239,8 @@ export const useTrip = () => {
     if (isShowSelectedRouteChecked) {
       const filteredStations = businesses?.filter((business) =>
         selectedStationDetails?.some(
-          (station) => station?._id === business?._id
-        )
+          (station) => station?._id === business?._id,
+        ),
       );
       dispatch(setBusinesses(filteredStations));
     } else {
@@ -271,7 +250,7 @@ export const useTrip = () => {
 
   const { data: tripDetailsData } = useGetTripByIdQuery(
     { tripId: id },
-    { skip: !id }
+    { skip: !id },
   );
 
   useEffect(() => {
@@ -302,8 +281,8 @@ export const useTrip = () => {
                 images: station?._id?.images || [],
                 logo: station?._id?.logo || {},
               };
-            }) as IStationDetailsProps[]) || []
-          )
+            }) as IStationDetailsProps[]) || [],
+          ),
         );
         dispatch(
           setSelectStations(
@@ -312,14 +291,14 @@ export const useTrip = () => {
                 stationId: item?._id?._id,
                 geoLocation: item?._id?.geoLocation,
               };
-            }) || []
-          )
+            }) || [],
+          ),
         );
         const stationIdsFromTrip = tripDetails?.stations?.map(
-          (item) => item?._id?._id
+          (item) => item?._id?._id,
         );
         const matchedStations = originalStations?.filter((station) =>
-          stationIdsFromTrip?.includes(station?._id)
+          stationIdsFromTrip?.includes(station?._id),
         );
         dispatch(setSelectedStationList(matchedStations));
       }
@@ -362,5 +341,12 @@ export const useTrip = () => {
     selectedImages,
     setSelectedImages,
     isSubmitting,
+
+    selectedDmoId,
+    setSelectedDmoId,
+    selectedAuthorityId,
+    setSelectAuthorityId,
+    websiteVisibilityIds,
+    setWebsiteVisibilityIds,
   };
 };

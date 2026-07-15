@@ -1,12 +1,13 @@
-import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import clsx from "clsx";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { addSelectedStation } from '@/features/stationsSlice';
-import { endpoints } from '@/lib/endpoints';
-import { ImageWithFallback } from '@/components/shared';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { useTranslation } from 'react-i18next';
+import { ImageWithFallback } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { addSelectedStation } from "@/features/stationsSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { useGetStationDetailsQuery } from "@/store/api/tripsQueryApi";
+import { CircleChevronLeft, CircleChevronRight } from "lucide-react";
 
 interface CustomInfoWindowProps {
   isHebrew: boolean;
@@ -20,9 +21,15 @@ const CustomInfoWindow = ({
   clickedStation,
   setIsModalClose,
 }: CustomInfoWindowProps) => {
-  const { t } = useTranslation('common')
-  const { isRTL } = useThemeClasses()
+  const { t } = useTranslation("common");
+  const { isRTL } = useThemeClasses();
   const dispatch = useAppDispatch();
+
+  const { data, isLoading, isFetching } = useGetStationDetailsQuery(
+    clickedStation?.stationId,
+  );
+  const stationDetails = data?.[0];
+
   const selectedStationList = useAppSelector(
     (state) => state.stations.selectedStationList,
   );
@@ -30,8 +37,6 @@ const CustomInfoWindow = ({
     selectedStationList.some((s) => s._id === stationId);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
-  const [isStationDetailLoading, setIsSationDetailLoading] = useState(false);
-  const [stationDetails, setStationDetails] = useState<IStationDetailsProps>();
 
   const handlePrev = () => {
     if (activeImageIndex > 0) {
@@ -56,30 +61,6 @@ const CustomInfoWindow = ({
     setIsModalClose?.(true);
   }
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsSationDetailLoading(true);
-      try {
-        const response = await fetch(
-          `${endpoints.stations}/${clickedStation?.stationId}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        const data = await response?.json();
-        setStationDetails(data?.[0]);
-      } catch (error) {
-        // silent
-      } finally {
-        setIsSationDetailLoading(false);
-      }
-    }
-
-    if (clickedStation) fetchData();
-  }, [clickedStation]);
-
   const [windowHeight, setWindowHeight] = useState(0);
 
   useEffect(() => {
@@ -89,29 +70,29 @@ const CustomInfoWindow = ({
     };
 
     updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, []);
 
   const getCardSize = () => {
     const smallestSide = Math.min(windowWidth, windowHeight);
 
     if (smallestSide < 320) {
-      return { size: 140, fontSize: 'xs', logoSize: 28, iconSize: 28 };
+      return { size: 140, fontSize: "xs", logoSize: 28, iconSize: 28 };
     } else if (smallestSide < 375) {
-      return { size: 160, fontSize: 'sm', logoSize: 32, iconSize: 30 };
+      return { size: 160, fontSize: "sm", logoSize: 32, iconSize: 30 };
     } else if (smallestSide < 768) {
-      return { size: 200, fontSize: 'base', logoSize: 36, iconSize: 32 };
+      return { size: 200, fontSize: "base", logoSize: 36, iconSize: 32 };
     } else if (smallestSide < 1024) {
-      return { size: 240, fontSize: 'base', logoSize: 40, iconSize: 34 };
+      return { size: 240, fontSize: "base", logoSize: 40, iconSize: 34 };
     } else {
-      return { size: 280, fontSize: 'lg', logoSize: 44, iconSize: 36 };
+      return { size: 280, fontSize: "lg", logoSize: 44, iconSize: 36 };
     }
   };
 
   const cardConfig = getCardSize();
 
-  if (isStationDetailLoading) {
+  if (isFetching || isLoading) {
     return (
       <div
         className="rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white aspect-square"
@@ -125,7 +106,7 @@ const CustomInfoWindow = ({
             width: `${cardConfig.size}px`,
             height: `${cardConfig.size}px`,
           }}
-          className={clsx('skeleton')}
+          className={clsx("skeleton")}
         />
       </div>
     );
@@ -142,9 +123,9 @@ const CustomInfoWindow = ({
         height={cardConfig.size}
         src={
           stationDetails?.images?.[activeImageIndex]?.image ||
-          '/assets/img/image-placeholder.jpg'
+          "/assets/img/image-placeholder.jpg"
         }
-        alt={stationDetails?.images?.[activeImageIndex]?.alt || 'station image'}
+        alt={stationDetails?.images?.[activeImageIndex]?.alt || "station image"}
         className="object-cover w-full h-full rounded-md overflow-hidden"
       />
 
@@ -154,34 +135,21 @@ const CustomInfoWindow = ({
       {/* Top Section */}
       <div className="absolute top-0 right-0 w-full z-20">
         <div className="flex items-center justify-between w-full p-2 overflow-hidden">
-          <ImageWithFallback
-            width={cardConfig.logoSize}
-            height={cardConfig.logoSize}
-            src={
-              stationDetails?.logo?.image || '/assets/img/image-placeholder.jpg'
-            }
-            alt={stationDetails?.logo?.alt || 'Station logo'}
-            style={{
-              width: `${cardConfig.logoSize}px`,
-              height: `${cardConfig.logoSize}px`,
-            }}
-            className="rounded-md shadow-md border border-white overflow-hidden"
-          />
-
           <button
             type="button"
             onClick={handleAddStationOnRoute}
             disabled={isStationSelected(stationDetails?._id ?? "")}
             className={`
-              ${!isStationSelected(stationDetails?._id ?? "")
-                ? 'bg-eventGreen'
-                : 'bg-gray-200 cursor-not-allowed'
+              ${
+                !isStationSelected(stationDetails?._id ?? "")
+                  ? "bg-eventGreen"
+                  : "bg-gray-200 cursor-not-allowed"
               } text-white rounded-4xl px-6 py-1.5 text-${cardConfig.fontSize} font-bold whitespace-nowrap`}
           >
             <span>
               {isStationSelected(stationDetails?._id ?? "")
-                ? t('added')
-                : t('add')}
+                ? t("added")
+                : t("add")}
             </span>
           </button>
         </div>
@@ -196,15 +164,16 @@ const CustomInfoWindow = ({
             </h3>
             <div
               dangerouslySetInnerHTML={{
-                __html: stationDetails?.description || '',
+                __html: stationDetails?.description || "",
               }}
               className={`line-clamp-1 text-xs opacity-90`}
             />
           </div>
 
           <div
-            className={`flex items-center justify-between w-full ${isRTL ? 'flex-row-reverse' : 'flex-row'
-              }`}
+            className={`flex items-center justify-between w-full ${
+              isRTL ? "flex-row-reverse" : "flex-row"
+            }`}
           >
             <button
               type="button"
@@ -212,25 +181,25 @@ const CustomInfoWindow = ({
               disabled={activeImageIndex === 0}
               className="disabled:opacity-50 cursor-pointer"
             >
-              <ImageWithFallback
-                width={cardConfig.iconSize}
-                height={cardConfig.iconSize}
-                alt="Previous icon"
-                src="/assets/img/icons/prev.svg"
-              />
+              <CircleChevronLeft />
             </button>
 
             <div className="flex items-center gap-1.5">
-              {stationDetails?.images?.slice(0, 5)?.map((_, index) => {
-                const isActive = index === activeImageIndex;
-                return (
-                  <span
-                    key={index}
-                    className={`${isActive ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-gray-400'
+              {stationDetails?.images
+                ?.slice(0, 5)
+                ?.map((_: any, index: number) => {
+                  const isActive = index === activeImageIndex;
+                  return (
+                    <span
+                      key={index}
+                      className={`${
+                        isActive
+                          ? "w-2 h-2 bg-white"
+                          : "w-1.5 h-1.5 bg-gray-400"
                       } rounded-full transition-all duration-300`}
-                  />
-                );
-              })}
+                    />
+                  );
+                })}
             </div>
 
             <button
@@ -241,12 +210,7 @@ const CustomInfoWindow = ({
               }
               className="disabled:opacity-50 cursor-pointer"
             >
-              <ImageWithFallback
-                width={cardConfig.iconSize}
-                height={cardConfig.iconSize}
-                alt="Next icon"
-                src="/assets/img/icons/next.svg"
-              />
+              <CircleChevronRight />
             </button>
           </div>
         </div>

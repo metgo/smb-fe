@@ -30,10 +30,15 @@
   "of": "of",
   "step_basic_info": "Basic Info",
   "step_stations": "Stations",
+  "step_itenary": "Itinerary",
   "step_media": "Media",
   "step_review_submit": "Review & Submit",
   "basic_information": "Basic Information",
   "description": "Description",
+  "itenary_title": "Title",
+  "start_time": "Start Time",
+  "end_time": "End Time",
+  "add_itenary_item": "Add Itinerary Item",
   "images": "Images",
   "media": "Media",
   "primary_image": "Primary",
@@ -43,5 +48,6 @@
   "search_stations_placeholder": "Search stations...",
   "selected_stations": "Selected Stations",
   "no_stations_found": "No stations found",
+  "station_not_selected_yet": "No stations selected yet",
   "review_submit": "Review & Submit"
 }

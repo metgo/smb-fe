@@ -160,6 +160,8 @@
   "delete_image": "מחיקת תמונה",
   "delete_image_confirm": "האם אתה בטוח שברצונך למחוק תמונה זו? פעולה זו אינה ניתנת לביטול.",
   "image_deleted": "התמונה נמחקה",
+  "delete_station": "מחיקת תחנה",
+  "delete_station_confirm": "האם אתה בטוח שברצונך להסיר תחנה זו מהטיול?",
 
   "image_upload_success": "התמונה הועלתה בהצלחה!",
   "image_delete_success": "התמונה נמחקה בהצלחה!",

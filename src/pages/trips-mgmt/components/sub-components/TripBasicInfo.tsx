@@ -1,7 +1,10 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper } from "@/components/form-fields";
+import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+import { useRef } from "react";
 
 interface TripBasicInfoProps {
+  isEdit: boolean;
   t: (key: string) => string;
   formData: {
     name: string | null;
@@ -16,10 +19,21 @@ interface TripBasicInfoProps {
   setDescription: (v: string) => void;
   shortDescription: string;
   setshortDescription: (v: string) => void;
+
+  // errors: FormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  selectedDmoId: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+  selectedAuthorityId: string;
+  setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  websiteVisibilityIds: string[];
+  setWebsiteVisibilityIds: (v: any) => void;
+  associatedWebsiteIds?: string[];
 }
 
 const TripBasicInfo = ({
   t,
+  isEdit,
   formData,
   errors,
   handleInputChange,
@@ -27,22 +41,39 @@ const TripBasicInfo = ({
   setDescription,
   shortDescription,
   setshortDescription,
+
+  setErrors,
+  setSelectDmoId,
+  selectedDmoId,
+  setSelectAuthorityId,
+  selectedAuthorityId,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+  associatedWebsiteIds = [],
 }: TripBasicInfoProps) => {
-  const { isDark, borderColor, bgTertiary, textPrimary } = useThemeClasses();
+  const { borderColor, bgTertiary, textPrimary } = useThemeClasses();
+  const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   const inputClass = `w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-teal-500`;
 
   return (
     <div className="space-y-6">
-      <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-        {t("basic_information")}
-      </h3>
+      <DmoAuthorityWebsiteSelector
+        errors={errors}
+        setErrors={setErrors}
+        isEdit={isEdit}
+        keyId="externalApiId"
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={associatedWebsiteIds}
+      />
 
-      <FormFieldWrapper
-        label={t("trip_name")}
-        required
-        error={errors.name}
-      >
+      <FormFieldWrapper label={t("trip_name")} required error={errors.name}>
         <input
           type="text"
           name="name"
@@ -53,7 +84,10 @@ const TripBasicInfo = ({
         />
       </FormFieldWrapper>
 
-      <FormFieldWrapper label={t("short_description")} error={errors.shortDescription}>
+      <FormFieldWrapper
+        label={t("short_description")}
+        error={errors.shortDescription}
+      >
         <textarea
           value={shortDescription}
           onChange={(e) => setshortDescription(e.target.value)}

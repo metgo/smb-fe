@@ -1,7 +1,13 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, MapPin, Image as ImageIcon, CheckCircle } from "lucide-react";
+import {
+  FileText,
+  MapPin,
+  CalendarClock,
+  Image as ImageIcon,
+  CheckCircle,
+} from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
@@ -10,6 +16,7 @@ import { useTrip } from "../hooks/useTrip";
 import {
   TripBasicInfo,
   TripImageSelection,
+  TripItenary,
   TripPreview,
   TripStationsSelection,
 } from "./sub-components";
@@ -38,18 +45,29 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
     stationsData,
     activeCategoryIds,
     setClickedStation,
+    schedules,
+    setSchedules,
     isSubmitting,
+
+    selectedDmoId,
+    setSelectedDmoId,
+    selectedAuthorityId,
+    setSelectAuthorityId,
+    websiteVisibilityIds,
+    setWebsiteVisibilityIds,
   } = useTrip();
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_stations"), icon: MapPin },
-    { number: 3, title: t("step_media"), icon: ImageIcon },
-    { number: 4, title: t("step_review_submit"), icon: CheckCircle },
+    { number: 3, title: t("step_itenary"), icon: CalendarClock },
+    { number: 4, title: t("step_media"), icon: ImageIcon },
+    { number: 5, title: t("step_review_submit"), icon: CheckCircle },
   ];
   const totalSteps = steps.length;
 
-  const handleNext = () => setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+  const handleNext = () =>
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   const handlePrevious = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handlePublish = () => {
@@ -62,6 +80,7 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
         return (
           <TripBasicInfo
             t={t}
+            isEdit={false}
             formData={formData}
             errors={{}}
             handleInputChange={handleInputChange}
@@ -69,6 +88,15 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
             setDescription={setDescription}
             shortDescription={shortDescription}
             setshortDescription={setshortDescription}
+
+            setErrors={() => {}}
+            selectedDmoId={selectedDmoId}
+            setSelectDmoId={setSelectedDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            setSelectAuthorityId={setSelectAuthorityId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            associatedWebsiteIds={[]}
           />
         );
       case 2:
@@ -83,13 +111,21 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
         );
       case 3:
         return (
+          <TripItenary
+            t={t}
+            schedules={schedules}
+            setSchedules={setSchedules}
+          />
+        );
+      case 4:
+        return (
           <TripImageSelection
             t={t}
             selectedImages={selectedImages}
             setSelectedImages={setSelectedImages}
           />
         );
-      case 4:
+      case 5:
         return (
           <TripPreview
             t={t}
@@ -107,8 +143,8 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isSubmitting}>
-      <div className={clsx("px-4 py-3 md:px-6 md:py-4 border-b", textPrimary)}>
-        <div className="flex items-center justify-between gap-3 mb-3 md:mb-4">
+      <div className={clsx("px-4 pt-3 md:px-6 border-b", textPrimary)}>
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className={clsx("text-lg md:text-2xl truncate", textPrimary)}>
               {t("create_trip")}
@@ -130,7 +166,7 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">{renderStep()}</div>
+      <div className="flex-1 overflow-y-auto p-4">{renderStep()}</div>
 
       <WizardFooter
         currentStep={currentStep}

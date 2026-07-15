@@ -30,10 +30,15 @@
   "of": "מתוך",
   "step_basic_info": "מידע בסיסי",
   "step_stations": "תחנות",
+  "step_itenary": "מסלול",
   "step_media": "מדיה",
   "step_review_submit": "סקירה ואישור",
   "basic_information": "מידע בסיסי",
   "description": "תיאור",
+  "itenary_title": "כותרת",
+  "start_time": "שעת התחלה",
+  "end_time": "שעת סיום",
+  "add_itenary_item": "הוסף פריט למסלול",
   "images": "תמונות",
   "media": "מדיה",
   "primary_image": "ראשי",
@@ -43,5 +48,6 @@
   "search_stations_placeholder": "חפש תחנות...",
   "selected_stations": "תחנות נבחרות",
   "no_stations_found": "לא נמצאו תחנות",
+  "station_not_selected_yet": "טרם נבחרו תחנות",
   "review_submit": "סקירה ואישור"
 }

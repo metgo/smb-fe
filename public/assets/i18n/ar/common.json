@@ -151,6 +151,8 @@
   "delete_image": "حذف الصورة",
   "delete_image_confirm": "هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.",
   "image_deleted": "تم حذف الصورة",
+  "delete_station": "حذف المحطة",
+  "delete_station_confirm": "هل أنت متأكد من إزالة هذه المحطة من الرحلة؟",
 
   "image_upload_success": "تم رفع الصورة بنجاح!",
   "image_delete_success": "تم حذف الصورة بنجاح!",

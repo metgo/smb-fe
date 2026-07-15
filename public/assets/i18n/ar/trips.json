@@ -30,10 +30,15 @@
   "of": "من",
   "step_basic_info": "معلومات أساسية",
   "step_stations": "المحطات",
+  "step_itenary": "المسار",
   "step_media": "الوسائط",
   "step_review_submit": "مراجعة وتأكيد",
   "basic_information": "معلومات أساسية",
   "description": "الوصف",
+  "itenary_title": "العنوان",
+  "start_time": "وقت البدء",
+  "end_time": "وقت الانتهاء",
+  "add_itenary_item": "إضافة عنصر إلى المسار",
   "images": "الصور",
   "media": "الوسائط",
   "primary_image": "أساسية",
@@ -43,5 +48,6 @@
   "search_stations_placeholder": "البحث في المحطات...",
   "selected_stations": "المحطات المختارة",
   "no_stations_found": "لم يتم العثور على محطات",
+  "station_not_selected_yet": "لم يتم اختيار أي محطات بعد",
   "review_submit": "مراجعة وتأكيد"
 }

@@ -1,14 +1,18 @@
-'use client';
+import { Provider } from "react-redux";
+import { createRoot } from "react-dom/client";
+import { useEffect, useRef, useState } from "react";
 
-import { createRoot } from 'react-dom/client';
-import { useEffect, useRef, useState } from 'react';
-
-
-import { envKeys } from '@/lib/envKeys';
-import { useAppSelector } from '@/hooks/hooks';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import CustomInfoWindow from '../components/sub-components/CustomInfoWindow';
-import { centerIseral, decodePolyline, goolgeMapControlers, loadGoogleMapsScript } from '@/utils/googleMapUtils';
+import { envKeys } from "@/lib/envKeys";
+import { store } from "@/store/store";
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import CustomInfoWindow from "../components/sub-components/CustomInfoWindow";
+import {
+  centerIseral,
+  decodePolyline,
+  goolgeMapControlers,
+  loadGoogleMapsScript,
+} from "@/utils/googleMapUtils";
 
 // Simplified icon sizing - only two states
 function getIconSize(isActiveOrInRoute: boolean) {
@@ -20,12 +24,12 @@ function getIconSize(isActiveOrInRoute: boolean) {
 const fetchSegmentRoute = async (
   from: GeoLocation,
   to: GeoLocation,
-  signal: AbortSignal
+  signal: AbortSignal,
 ) => {
-  const modes: Array<'DRIVE' | 'BICYCLE' | 'WALK'> = [
-    'DRIVE',
-    'BICYCLE',
-    'WALK',
+  const modes: Array<"DRIVE" | "BICYCLE" | "WALK"> = [
+    "DRIVE",
+    "BICYCLE",
+    "WALK",
   ];
 
   for (const mode of modes) {
@@ -33,11 +37,11 @@ const fetchSegmentRoute = async (
       const response = await fetch(
         `https://routes.googleapis.com/directions/v2:computeRoutes`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': envKeys.googleMapApiKey,
-            'X-Goog-FieldMask': 'routes.polyline.encodedPolyline',
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": envKeys.googleMapApiKey,
+            "X-Goog-FieldMask": "routes.polyline.encodedPolyline",
           },
           body: JSON.stringify({
             origin: {
@@ -59,18 +63,20 @@ const fetchSegmentRoute = async (
             travelMode: mode,
           }),
           signal,
-        }
+        },
       );
 
       if (signal.aborted) return [];
 
       const data: TRouteResponse = await response.json();
 
-      if (data.routes?.[0]) {
-        return decodePolyline(data.routes[0].polyline?.encodedPolyline || '');
+      const encodedPolyline = data.routes?.[0]?.polyline?.encodedPolyline;
+      if (encodedPolyline) {
+        return decodePolyline(encodedPolyline);
       }
+      // No route for this mode (e.g. car can't reach the destination) — try the next mode.
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
+      if (error.name !== "AbortError") {
         console.error(`Error with travelMode ${mode}:`, error);
       }
     }
@@ -83,7 +89,7 @@ export const useGoogleRouteMap = (
   activeCategoryIds: string[],
   setClickedStation: (v: IClickedStationProps) => void,
 ) => {
-  const { isRTL } = useThemeClasses()
+  const { isRTL } = useThemeClasses();
   const markers = useAppSelector((state) => state.stations.businesses);
   const selectedStations = useAppSelector(
     (state) => state.stations.selectedStations,
@@ -99,7 +105,6 @@ export const useGoogleRouteMap = (
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isModalClose, setIsModalClose] = useState(false);
   // const isInitialLoadRef = useRef(true);
-
 
   useEffect(() => {
     loadGoogleMapsScript(() => {
@@ -119,14 +124,14 @@ export const useGoogleRouteMap = (
           pixelOffset: new google.maps.Size(0, -10),
         });
 
-        googleMap.addListener('click', () => {
+        googleMap.addListener("click", () => {
           infoWindowRef.current?.close();
           if (activeMarkerRef.current) {
             // Reset active marker to normal or in-route size
             const stationId = (activeMarkerRef.current as any).stationId;
             const iconUrl = (activeMarkerRef.current as any).iconUrl;
             const isInRoute = selectedStations?.some(
-              (s) => s?.stationId === stationId
+              (s) => s?.stationId === stationId,
             );
             activeMarkerRef.current.setIcon({
               url: iconUrl,
@@ -177,7 +182,7 @@ export const useGoogleRouteMap = (
           : false;
 
       // Get icon URL
-      const iconUrl = location?.iconPath || '/assets/img/metgo/map-pin.png';
+      const iconUrl = location?.iconPath || "/assets/images/map-pin.png";
 
       const marker = new google.maps.Marker({
         position,
@@ -192,13 +197,13 @@ export const useGoogleRouteMap = (
       (marker as any).stationId = location._id;
       (marker as any).iconUrl = iconUrl;
 
-      marker.addListener('click', () => {
+      marker.addListener("click", () => {
         setClickedStation({
           stationId: location?._id,
           geoLocation: location?.geoLocation,
         });
         const isSameMarker = activeMarkerRef.current === marker;
-        const isOpen = infoWindowRef.current?.get('map') != null;
+        const isOpen = infoWindowRef.current?.get("map") != null;
 
         // Toggle info window if clicking same marker
         if (isSameMarker && isOpen) {
@@ -206,7 +211,7 @@ export const useGoogleRouteMap = (
 
           // Reset to in-route size or normal
           const stillInRoute = selectedStations?.some(
-            (s) => s?.stationId === location?._id
+            (s) => s?.stationId === location?._id,
           );
           marker.setIcon({
             url: iconUrl,
@@ -221,7 +226,7 @@ export const useGoogleRouteMap = (
           const prevStationId = (activeMarkerRef.current as any).stationId;
           const prevIconUrl = (activeMarkerRef.current as any).iconUrl;
           const prevInRoute = selectedStations?.some(
-            (s) => s.stationId === prevStationId
+            (s) => s.stationId === prevStationId,
           );
           activeMarkerRef.current.setIcon({
             url: prevIconUrl,
@@ -240,17 +245,19 @@ export const useGoogleRouteMap = (
         centerMapOnMarker(marker);
 
         // Create info window content
-        const container = document.createElement('div');
+        const container = document.createElement("div");
         createRoot(container).render(
-          <CustomInfoWindow
-            isHebrew={isRTL}
-            markers={markers}
-            setIsModalClose={setIsModalClose}
-            clickedStation={{
-              stationId: location?._id,
-              geoLocation: location?.geoLocation,
-            }}
-          />
+          <Provider store={store}>
+            <CustomInfoWindow
+              isHebrew={isRTL}
+              markers={markers}
+              setIsModalClose={setIsModalClose}
+              clickedStation={{
+                stationId: location?._id,
+                geoLocation: location?.geoLocation,
+              }}
+            />
+          </Provider>,
         );
 
         if (!infoWindowRef.current) {
@@ -278,7 +285,7 @@ export const useGoogleRouteMap = (
       const stationId = (marker as any).stationId;
       const iconUrl = (marker as any).iconUrl;
       const isInRoute = selectedStations?.some(
-        (s) => s?.stationId === stationId
+        (s) => s?.stationId === stationId,
       );
       const isActive = activeMarkerRef.current === marker;
 
@@ -297,7 +304,7 @@ export const useGoogleRouteMap = (
         const stationId = (activeMarkerRef.current as any).stationId;
         const iconUrl = (activeMarkerRef.current as any).iconUrl;
         const isInRoute = selectedStations?.some(
-          (s) => s.stationId === stationId
+          (s) => s.stationId === stationId,
         );
         activeMarkerRef.current.setIcon({
           url: iconUrl,
@@ -342,15 +349,15 @@ export const useGoogleRouteMap = (
           map,
           label: {
             text: String(i + 1),
-            color: '#fff',
-            fontSize: '12px',
-            fontWeight: 'bold',
+            color: "#fff",
+            fontSize: "12px",
+            fontWeight: "bold",
           },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
-            fillColor: '#1976D2',
+            fillColor: "#1976D2",
             fillOpacity: 1,
-            strokeColor: '#fff',
+            strokeColor: "#fff",
             strokeWeight: 2,
             scale: 14,
           },
@@ -365,14 +372,14 @@ export const useGoogleRouteMap = (
           const pathPoints = await fetchSegmentRoute(
             station.geoLocation,
             next.geoLocation,
-            signal
+            signal,
           );
           if (!pathPoints.length) continue;
 
           const polyline = new google.maps.Polyline({
             path: pathPoints,
             geodesic: true,
-            strokeColor: '#1976D2',
+            strokeColor: "#1976D2",
             strokeOpacity: 1.0,
             strokeWeight: 6,
           });

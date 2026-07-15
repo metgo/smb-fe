@@ -30,7 +30,7 @@ export const tripQueryApi = createApi({
     }),
 
     // Stations
-    getAllStations: builder.query<any, any>({
+    getAllStations: builder.query<ITripStationsRes, any>({
       query: (params) => ({
         url: endpoints.stations,
         method: "GET",
