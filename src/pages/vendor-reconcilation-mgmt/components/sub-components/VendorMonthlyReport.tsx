@@ -28,7 +28,12 @@ import {
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
-import { ReordableDataTable, FilterChips, ImageWithFallback } from "@/components/shared";
+import {
+  ReordableDataTable,
+  FilterChips,
+  ImageWithFallback,
+} from "@/components/shared";
+import MonthFilter from "@/pages/orders-mgmt/components/MonthFilter";
 
 interface OrderProduct {
   _id: string;
@@ -201,8 +206,8 @@ export const VendorMonthlyReport = () => {
     status: "all",
     startDate: "",
     endDate: "",
-    minAmount: "",
-    maxAmount: "",
+    month: "all",
+
     businessId: "",
   });
   const [businessSearch, setBusinessSearch] = useState("");
@@ -224,26 +229,28 @@ export const VendorMonthlyReport = () => {
     };
 
     if (filters.businessId) params.vendorId = filters.businessId;
-    if (filters.status !== "all") params.status = filters.status;
+    if (filters.status !== "all") {
+      params.status = filters.status;
+    }
     if (searchTerm) params.search = searchTerm;
-    if (filters.startDate) params.startDate = filters.startDate;
-    if (filters.endDate) params.endDate = filters.endDate;
-    if (filters.minAmount) params.minAmount = filters.minAmount;
-    if (filters.maxAmount) params.maxAmount = filters.maxAmount;
 
+    if (filters.month !== "all" && filters.month !== "custom") {
+      const [month, year] = filters.month.split("-");
+
+      const firstDay = new Date(Number(year), Number(month) - 1, 1);
+      const lastDay = new Date(Number(year), Number(month), 0);
+
+      params.startDate = firstDay.toISOString().split("T")[0];
+      params.endDate = lastDay.toISOString().split("T")[0];
+    }
+
+    // Custom date range
+    if (filters.month === "custom") {
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
+    }
     return params;
-  }, [
-    page,
-    filters.status,
-    filters.startDate,
-    filters.endDate,
-    filters.minAmount,
-    filters.maxAmount,
-    filters.businessId,
-    searchTerm,
-    dmoId,
-    authorityId,
-  ]);
+  }, [page, filters, searchTerm, dmoId, authorityId]);
 
   const {
     data: orderProductsData,
@@ -283,10 +290,9 @@ export const VendorMonthlyReport = () => {
     return (
       filters.status !== "all" ||
       filters.businessId !== "" ||
+      filters.month !== "all" ||
       filters.startDate !== "" ||
-      filters.endDate !== "" ||
-      filters.minAmount !== "" ||
-      filters.maxAmount !== ""
+      filters.endDate !== ""
     );
   }, [filters]);
 
@@ -295,8 +301,8 @@ export const VendorMonthlyReport = () => {
       status: "all",
       startDate: "",
       endDate: "",
-      minAmount: "",
-      maxAmount: "",
+      month: "all",
+
       businessId: "",
     });
   };
@@ -361,10 +367,10 @@ export const VendorMonthlyReport = () => {
   }, [
     searchTerm,
     filters.status,
+    filters.month,
     filters.startDate,
     filters.endDate,
-    filters.minAmount,
-    filters.maxAmount,
+
     filters.businessId,
   ]);
 
@@ -383,12 +389,11 @@ export const VendorMonthlyReport = () => {
     const pending = orders.filter((o) => o.status === "pending");
     const approved = orders.filter((o) => o.status === "approved");
     const disputed = orders.filter((o) => o.status === "disputed");
-    const cancelled = orders.filter((o) => o.status === "canceled");
+    const cancelled = orders.filter((o) => o.status === "cancelled");
 
     const totalRevenue = orders.reduce((sum, o) => sum + o.totalPrice, 0);
-    const platformFees = orders.reduce((sum, o) => sum + o.platformFee, 0);
     const heldForDisputes = disputed.reduce((sum, o) => sum + o.totalPrice, 0);
-    const netPayout = totalRevenue - platformFees;
+    const netPayout = totalRevenue;
 
     return {
       pending: pending.length,
@@ -397,7 +402,6 @@ export const VendorMonthlyReport = () => {
       cancelled: cancelled.length,
       totalOrders: orders.length,
       totalRevenue,
-      platformFees,
       netPayout,
       heldForDisputes,
     };
@@ -731,13 +735,13 @@ export const VendorMonthlyReport = () => {
     },
     {
       key: "status",
-      sortable: true,
+      sortable: false,
       label: t("status"),
       render: (order: MonthlyOrder) => getStatusBadge(order.status),
     },
     {
       key: "reconciliationStatus",
-      sortable: true,
+      sortable: false,
       label: "Reconciliation Status",
       render: (order: MonthlyOrder) =>
         getStatusBadge(order.reconciliationStatus),
@@ -837,7 +841,7 @@ export const VendorMonthlyReport = () => {
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
         <div>
           <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
-            {adminView ? t("vendor_monthly_report") : t("monthly_report")}
+            {t("vendor_reconciliation")}
           </h1>
           <p className={textTertiary}>{t("review_and_approve_orders")}</p>
         </div>
@@ -845,7 +849,7 @@ export const VendorMonthlyReport = () => {
 
       {/* Stats Dashboard */}
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
           <div className={`${bgSecondary} rounded-lg p-4`}>
             <div className={`text-xs ${textTertiary} mb-1`}>Total Orders</div>
             <div className={`text-2xl font-bold ${textPrimary}`}>
@@ -858,14 +862,7 @@ export const VendorMonthlyReport = () => {
               ₪{(stats.totalRevenue || 0).toLocaleString()}
             </div>
           </div>
-          <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Platform Fee</div>
-            <div
-              className={`text-2xl font-bold text-orange-600 dark:text-orange-400`}
-            >
-              -₪{(stats.platformFees || 0).toLocaleString()}
-            </div>
-          </div>
+
           <div className={`${bgSecondary} rounded-lg p-4`}>
             <div className={`text-xs ${textTertiary} mb-1`}>Net Payout</div>
             <div
@@ -949,9 +946,9 @@ export const VendorMonthlyReport = () => {
             />
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
+              className={`px-4 py-1.5 rounded-lg border ${borderColor} ${hoverBg} ${textSecondary} flex items-center gap-2 transition-colors`}
             >
-              <Filter className="w-4 h-4" />
+              <Filter className="w-3 h-3" />
               {t("filters")}
             </button>
           </div>
@@ -974,9 +971,9 @@ export const VendorMonthlyReport = () => {
               >
                 <option value="all">{t("all_statuses")}</option>
                 <option value="pending">{t("pending")}</option>
-                <option value="approved">{t("approved")}</option>
+                {/* <option value="approved">{t("approved")}</option> */}
                 <option value="disputed">{t("disputed")}</option>
-                <option value="canceled">{t("canceled")}</option>
+                <option value="cancelled">{t("canceled")}</option>
               </select>
             </div>
 
@@ -1031,60 +1028,22 @@ export const VendorMonthlyReport = () => {
               )}
             </div>
 
-            <div>
-              <label className={`block text-xs ${textTertiary} mb-1`}>
-                {t("date_from")}
-              </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, startDate: e.target.value })
-                }
-                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
-              />
-            </div>
-            <div>
-              <label className={`block text-xs ${textTertiary} mb-1`}>
-                {t("date_to")}
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, endDate: e.target.value })
-                }
-                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
-              />
-            </div>
-            <div>
-              <label className={`block text-xs ${textTertiary} mb-1`}>
-                {t("min_amount")}
-              </label>
-              <input
-                type="number"
-                value={filters.minAmount}
-                onChange={(e) =>
-                  setFilters({ ...filters, minAmount: e.target.value })
-                }
-                placeholder="₪0"
-                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
-              />
-            </div>
-            <div>
-              <label className={`block text-xs ${textTertiary} mb-1`}>
-                {t("max_amount")}
-              </label>
-              <input
-                type="number"
-                value={filters.maxAmount}
-                onChange={(e) =>
-                  setFilters({ ...filters, maxAmount: e.target.value })
-                }
-                placeholder="₪10000"
-                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
-              />
-            </div>
+            <MonthFilter
+              label={t("month")}
+              value={filters.month}
+              onChange={(value) =>
+                setFilters((prev) => ({ ...prev, month: value }))
+              }
+              dateFrom={filters.startDate}
+              dateTo={filters.endDate}
+              onDateFromChange={(value) =>
+                setFilters((prev) => ({ ...prev, startDate: value }))
+              }
+              onDateToChange={(value) =>
+                setFilters((prev) => ({ ...prev, endDate: value }))
+              }
+              t={t}
+            />
 
             {hasActiveFilters && (
               <div className="col-span-full w-full">
@@ -1106,30 +1065,25 @@ export const VendorMonthlyReport = () => {
                       }}
                     />
                   )}
-                  {filters.startDate && (
+                  {filters.month !== "all" && filters.month !== "custom" && (
+                    <FilterChips
+                      label={filters.month}
+                      onRemove={() => setFilters({ ...filters, month: "all" })}
+                    />
+                  )}
+                  {filters.month === "custom" && filters.startDate && (
                     <FilterChips
                       label={`From: ${filters.startDate}`}
                       onRemove={() => setFilters({ ...filters, startDate: "" })}
                     />
                   )}
-                  {filters.endDate && (
+                  {filters.month === "custom" && filters.endDate && (
                     <FilterChips
                       label={`To: ${filters.endDate}`}
                       onRemove={() => setFilters({ ...filters, endDate: "" })}
                     />
                   )}
-                  {filters.minAmount && (
-                    <FilterChips
-                      label={`Min: ₪${filters.minAmount}`}
-                      onRemove={() => setFilters({ ...filters, minAmount: "" })}
-                    />
-                  )}
-                  {filters.maxAmount && (
-                    <FilterChips
-                      label={`Max: ₪${filters.maxAmount}`}
-                      onRemove={() => setFilters({ ...filters, maxAmount: "" })}
-                    />
-                  )}
+
                   {hasActiveFilters && (
                     <button
                       onClick={handleClearAllFilters}

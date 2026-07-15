@@ -80,6 +80,8 @@ export default function Sidebar() {
     "siteManager",
   ].includes(userRole);
 
+  const isVendorReconciliation = ["superadmin", "traveller"].includes(userRole);
+
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const subItemsRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -126,13 +128,17 @@ export default function Sidebar() {
           icon: CalendarArrowDown,
           isEnabled: true,
         },
-        {
-          id: "vendor-reconciliation",
-          path: routes.vendorReconciliationMgmt,
-          label: t("vendor_reconciliation") || "Vendor Reconciliation",
-          icon: Receipt,
-          isEnabled: true,
-        },
+        ...(isVendorReconciliation
+          ? [
+              {
+                id: "vendor-reconciliation",
+                path: routes.vendorReconciliationMgmt,
+                label: t("vendor_reconciliation") || "Vendor Reconciliation",
+                icon: Receipt,
+                isEnabled: true,
+              },
+            ]
+          : []),
       ],
     },
     {

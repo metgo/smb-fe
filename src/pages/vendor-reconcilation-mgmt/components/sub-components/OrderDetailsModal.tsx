@@ -98,13 +98,17 @@ export default function OrderDetailsModal({
             </h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <div className={`${textTertiary} mb-1`}>{t("order_id_label")}</div>
+                <div className={`${textTertiary} mb-1`}>
+                  {t("order_id_label")}
+                </div>
                 <div className={`${textSecondary} font-medium`}>
                   {order._id}
                 </div>
               </div>
               <div>
-                <div className={`${textTertiary} mb-1`}>{t("purchase_date")}</div>
+                <div className={`${textTertiary} mb-1`}>
+                  {t("purchase_date")}
+                </div>
                 <div className={`${textSecondary} font-medium`}>
                   {formatDate(order.purchaseDate)}
                 </div>
@@ -143,12 +147,6 @@ export default function OrderDetailsModal({
                 <div className={`${textTertiary} mb-1`}>{t("total")}</div>
                 <div className={`${textPrimary} font-bold`}>
                   ₪{order.totalPrice.toFixed(2) || "-"}
-                </div>
-              </div>
-              <div className="col-span-2">
-                <div className={`${textTertiary} mb-1`}>{t("platform_fee")}</div>
-                <div className={`${textSecondary} font-medium`}>
-                  ₪{order.platformFee.toFixed(2) || "-"}
                 </div>
               </div>
             </div>
@@ -209,7 +207,9 @@ export default function OrderDetailsModal({
               </div>
               {order.specialInstructions && (
                 <div className="flex justify-between">
-                  <span className={textTertiary}>{t("special_instructions")}</span>
+                  <span className={textTertiary}>
+                    {t("special_instructions")}
+                  </span>
                   <span className={`${textSecondary} font-medium`}>
                     {order.specialInstructions}
                   </span>
@@ -249,22 +249,26 @@ export default function OrderDetailsModal({
           className={`sticky bottom-0 ${bgPrimary} border-t ${borderColor} p-6 flex items-center justify-end gap-3`}
         >
           <>
-            {userRole === "superadmin" && order.status !== "canceled" && (
-              <button
-                onClick={onApprove}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-              >
-                {t("approve_dispute_btn")}
-              </button>
-            )}
-            {userRole === "superadmin" && order.status !== "canceled" && (
-              <button
-                onClick={onReject}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
-              >
-                {t("reject_dispute_btn")}
-              </button>
-            )}
+            {userRole === "superadmin" &&
+              order.status !== "canceled" &&
+              order.reconciliationStatus === "disputed" && (
+                <button
+                  onClick={onApprove}
+                  className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+                >
+                  {t("approve_dispute_btn")}
+                </button>
+              )}
+            {userRole === "superadmin" &&
+              order.status !== "canceled" &&
+              order.reconciliationStatus === "disputed" && (
+                <button
+                  onClick={onReject}
+                  className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+                >
+                  {t("reject_dispute_btn")}
+                </button>
+              )}
           </>
 
           <div>

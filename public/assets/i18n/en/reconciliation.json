@@ -1,6 +1,9 @@
 {
   "loading": "Loading orders...",
   "vendor_monthly_report": "Vendor Monthly Report",
+  "vendor_reconciliation": "Vendor Reconciliation",
+  "month": "Month",
+  "all": "All",
   "monthly_report": "Monthly Report",
   "review_and_approve_orders": "Review and manage your orders",
   "search_by_order": "Search by Order ID, Product, Customer...",

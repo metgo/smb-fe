@@ -1,6 +1,9 @@
 {
   "loading": "טוען...",
   "vendor_monthly_report": "דוח חודשי של ספק",
+  "vendor_reconciliation": "התיישוב של ספק",
+  "month": "חודש",
+  "all": "הכל",
   "monthly_report": "דוח חודשי",
   "review_and_approve_orders": "בדוק וניהול הזמנות שלך",
   "search_by_order": "חפש לפי מזהה הזמנה, מוצר, לקוח...",
