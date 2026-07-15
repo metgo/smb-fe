@@ -658,15 +658,6 @@ export const VendorMonthlyReport = () => {
   };
 
   const columns = [
-    ...(adminView
-      ? [
-          {
-            key: "checkbox",
-            sortable: false,
-            label: "",
-          },
-        ]
-      : []),
     {
       key: "product",
       sortable: false,
