@@ -1,26 +1,25 @@
 import { envKeys } from "@/lib/envKeys";
 
-
 export const googlePointOfInterest = [
   {
-    featureType: 'poi',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.business',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.business",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.attraction',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.attraction",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.place_of_worship',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.place_of_worship",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
 ];
 
@@ -28,28 +27,28 @@ export const centerIseral = { lat: 31.471959, lng: 34.624 };
 
 export async function getAddressFromLatLng(
   lat: string,
-  lng: string
+  lng: string,
 ): Promise<string | null> {
   const geoLat = Number(lat);
   const geoLng = Number(lng);
 
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${geoLat},${geoLng}&key=${envKeys.googleMapApiKey}`
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${geoLat},${geoLng}&key=${envKeys.googleMapApiKey}`,
     );
 
-    if (!response.ok) throw new Error('Failed to fetch location');
+    if (!response.ok) throw new Error("Failed to fetch location");
 
     const data = await response.json();
 
-    if (data.status === 'OK' && data.results.length > 0) {
+    if (data.status === "OK" && data.results.length > 0) {
       return data.results[0].formatted_address; // Plain address
     } else {
-      console.warn('No address found for the given coordinates.');
+      console.warn("No address found for the given coordinates.");
       return null;
     }
   } catch (error) {
-    console.error('Geocoding error:', error);
+    console.error("Geocoding error:", error);
     return null;
   }
 }
@@ -64,7 +63,7 @@ export const goolgeMapControlers = {
   center: centerIseral,
   mapTypeControl: false,
   streetViewControl: false,
-  gestureHandling: 'greedy',
+  gestureHandling: "greedy",
   zoomControl: false,
   fullscreenControl: false,
   keyboardShortcuts: false,
@@ -80,7 +79,7 @@ export const loadGoogleMapsScript = (callback: () => void) => {
   }
 
   if (googleMapsScriptLoaded.callbacks.length === 0) {
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${envKeys.googleMapApiKey}&language=he&v=3.54`;
     script.async = true;
     script.onload = () => {
@@ -89,7 +88,7 @@ export const loadGoogleMapsScript = (callback: () => void) => {
       googleMapsScriptLoaded.callbacks = [];
     };
     script.onerror = () => {
-      console.error('Failed to load Google Maps script');
+      console.error("Failed to load Google Maps script");
     };
     document.body.appendChild(script);
   }
@@ -97,74 +96,74 @@ export const loadGoogleMapsScript = (callback: () => void) => {
   googleMapsScriptLoaded.callbacks.push(callback);
 };
 
-const selectedTheme = { colors: { primary: '#fff' } };
+const selectedTheme = { colors: { primary: "#fff" } };
 
 export const addMapTypeControl = (googleMap: google.maps.Map) => {
-  const mapTypeControlDiv = document.createElement('div');
-  mapTypeControlDiv.style.backgroundColor = '#fff';
-  mapTypeControlDiv.style.border = '2px solid #fff';
-  mapTypeControlDiv.style.borderRadius = '3px';
-  mapTypeControlDiv.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-  mapTypeControlDiv.style.margin = '10px';
-  mapTypeControlDiv.style.textAlign = 'center';
-  mapTypeControlDiv.style.display = 'flex';
+  const mapTypeControlDiv = document.createElement("div");
+  mapTypeControlDiv.style.backgroundColor = "#fff";
+  mapTypeControlDiv.style.border = "2px solid #fff";
+  mapTypeControlDiv.style.borderRadius = "3px";
+  mapTypeControlDiv.style.boxShadow = "0 2px 6px rgba(0,0,0,.3)";
+  mapTypeControlDiv.style.margin = "10px";
+  mapTypeControlDiv.style.textAlign = "center";
+  mapTypeControlDiv.style.display = "flex";
 
-  const streetButton = document.createElement('button');
-  streetButton.textContent = 'רְחוֹב';
-  streetButton.style.padding = '8px 15px';
-  streetButton.style.fontSize = '16px';
-  streetButton.style.border = 'none';
-  streetButton.style.cursor = 'pointer';
+  const streetButton = document.createElement("button");
+  streetButton.textContent = "רְחוֹב";
+  streetButton.style.padding = "8px 15px";
+  streetButton.style.fontSize = "16px";
+  streetButton.style.border = "none";
+  streetButton.style.cursor = "pointer";
   streetButton.style.backgroundColor =
     googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
       ? selectedTheme.colors.primary
-      : '#fff';
+      : "#fff";
   streetButton.style.color =
     googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
-      ? '#fff'
-      : '#000';
-  streetButton.style.transition = 'background-color 0.3s, color 0.3s';
+      ? "#fff"
+      : "#000";
+  streetButton.style.transition = "background-color 0.3s, color 0.3s";
 
-  const satelliteButton = document.createElement('button');
-  satelliteButton.textContent = 'לוויין';
-  satelliteButton.style.padding = '8px 15px';
-  satelliteButton.style.fontSize = '16px';
-  satelliteButton.style.border = 'none';
-  satelliteButton.style.cursor = 'pointer';
+  const satelliteButton = document.createElement("button");
+  satelliteButton.textContent = "לוויין";
+  satelliteButton.style.padding = "8px 15px";
+  satelliteButton.style.fontSize = "16px";
+  satelliteButton.style.border = "none";
+  satelliteButton.style.cursor = "pointer";
   satelliteButton.style.backgroundColor =
     googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID
       ? selectedTheme.colors.primary
-      : '#fff';
+      : "#fff";
   satelliteButton.style.color =
-    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID ? '#fff' : '#000';
-  satelliteButton.style.transition = 'background-color 0.3s, color 0.3s';
+    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID ? "#fff" : "#000";
+  satelliteButton.style.transition = "background-color 0.3s, color 0.3s";
 
   const updateButtonStyles = () => {
     const isRoadmap =
       googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP;
     streetButton.style.backgroundColor = isRoadmap
       ? selectedTheme.colors.primary
-      : '#fff';
-    streetButton.style.color = isRoadmap ? '#fff' : '#000';
+      : "#fff";
+    streetButton.style.color = isRoadmap ? "#fff" : "#000";
     satelliteButton.style.backgroundColor = !isRoadmap
       ? selectedTheme.colors.primary
-      : '#fff';
-    satelliteButton.style.color = !isRoadmap ? '#fff' : '#000';
+      : "#fff";
+    satelliteButton.style.color = !isRoadmap ? "#fff" : "#000";
   };
 
-  streetButton.addEventListener('click', (e) => {
+  streetButton.addEventListener("click", (e) => {
     e.preventDefault();
     googleMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
     updateButtonStyles();
   });
 
-  satelliteButton.addEventListener('click', (e) => {
+  satelliteButton.addEventListener("click", (e) => {
     e.preventDefault();
     googleMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
     updateButtonStyles();
   });
 
-  googleMap.addListener('maptypeid_changed', updateButtonStyles);
+  googleMap.addListener("maptypeid_changed", updateButtonStyles);
 
   mapTypeControlDiv.appendChild(streetButton);
   mapTypeControlDiv.appendChild(satelliteButton);
@@ -211,12 +210,12 @@ export const decodePolyline = (encoded: string): google.maps.LatLng[] => {
 export const fetchSegmentRoute = async (
   from: GeoLocation,
   to: GeoLocation,
-  signal: AbortSignal
+  signal: AbortSignal,
 ) => {
-  const modes: Array<'DRIVE' | 'BICYCLE' | 'WALK'> = [
-    'DRIVE',
-    'BICYCLE',
-    'WALK',
+  const modes: Array<"DRIVE" | "BICYCLE" | "WALK"> = [
+    "DRIVE",
+    "BICYCLE",
+    "WALK",
   ];
 
   for (const mode of modes) {
@@ -224,11 +223,11 @@ export const fetchSegmentRoute = async (
       const response = await fetch(
         `https://routes.googleapis.com/directions/v2:computeRoutes`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': envKeys.googleMapApiKey!,
-            'X-Goog-FieldMask': 'routes.polyline.encodedPolyline',
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": envKeys.googleMapApiKey!,
+            "X-Goog-FieldMask": "routes.polyline.encodedPolyline",
           },
           body: JSON.stringify({
             origin: {
@@ -250,7 +249,7 @@ export const fetchSegmentRoute = async (
             travelMode: mode,
           }),
           signal,
-        }
+        },
       );
 
       if (signal.aborted) return [];
@@ -262,7 +261,7 @@ export const fetchSegmentRoute = async (
         return decodePolyline(encodedPolyline);
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
+      if (error.name !== "AbortError") {
         console.error(`Error with travelMode ${mode}:`, error);
       }
     }
@@ -274,7 +273,7 @@ export const fetchSegmentRoute = async (
 
 export const createGradientRoute = async (
   currentStationColor: string,
-  nextStationColor: string
+  nextStationColor: string,
 ) => {
   // Convert hex to RGB
   const hexToRgb = (hex: string) => {
@@ -315,7 +314,7 @@ export const getScreenDimensions = () => {
 
 export const centerMapOnMarker = (
   marker: google.maps.Marker,
-  map: google.maps.Map | null
+  map: google.maps.Map | null,
 ) => {
   if (!map) return;
 

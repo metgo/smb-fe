@@ -56,7 +56,10 @@ const stationsSlice = createSlice({
       state.selectedStationList = action.payload;
     },
 
-    setSelectStations: (state, action: PayloadAction<IClickedStationProps[]>) => {
+    setSelectStations: (
+      state,
+      action: PayloadAction<IClickedStationProps[]>,
+    ) => {
       state.selectedStations = action.payload;
     },
 

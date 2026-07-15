@@ -26,5 +26,4 @@ export const tripMutationApi = createApi({
   }),
 });
 
-export const { useCreateTripMutation, useUpdateTripMutation } =
-  tripMutationApi;
+export const { useCreateTripMutation, useUpdateTripMutation } = tripMutationApi;

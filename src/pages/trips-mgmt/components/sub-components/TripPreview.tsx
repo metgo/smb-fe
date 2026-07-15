@@ -25,9 +25,13 @@ const TripPreview = ({
   const { isDark, borderColor, textPrimary } = useThemeClasses();
 
   const row = (label: string, value: React.ReactNode) => (
-    <div className={`flex items-start justify-between gap-4 py-3 border-b ${borderColor}`}>
+    <div
+      className={`flex items-start justify-between gap-4 py-3 border-b ${borderColor}`}
+    >
       <span className="text-sm text-gray-500 shrink-0">{label}</span>
-      <span className={`text-sm text-right ${textPrimary}`}>{value || "-"}</span>
+      <span className={`text-sm text-right ${textPrimary}`}>
+        {value || "-"}
+      </span>
     </div>
   );
 
@@ -41,8 +45,7 @@ const TripPreview = ({
         {row(t("trip_name"), formData.name)}
         {row(t("short_description"), shortDescription?.replace(/<[^>]*>/g, ""))}
         {row(t("description"), description?.replace(/<[^>]*>/g, ""))}
-        {row(t("estimated_duration"), formData.estimatedDuration)
-        }
+        {row(t("estimated_duration"), formData.estimatedDuration)}
         {row(t("status"), <StatusPill status={formData.status} />)}
         {row(t("stations"), selectedStationDetails.length)}
         {row(t("images"), selectedImages.length)}

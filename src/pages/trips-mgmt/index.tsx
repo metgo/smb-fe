@@ -7,7 +7,11 @@ import { PageHeader, ShowColumns } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
 
-import { CreateTripWizard, TripsFiltersPanel, TripsListView } from "./components";
+import {
+  CreateTripWizard,
+  TripsFiltersPanel,
+  TripsListView,
+} from "./components";
 import { useTripListFilters } from "./hooks/useTripListFilters";
 import { useTripListData } from "./hooks/useTripListData";
 
@@ -31,7 +35,10 @@ const defaultColumns: ColumnVisibility = {
   createdAt: true,
 };
 
-const columnDefinitions: Array<{ key: keyof ColumnVisibility; isDefault: boolean }> = [
+const columnDefinitions: Array<{
+  key: keyof ColumnVisibility;
+  isDefault: boolean;
+}> = [
   { key: "name", isDefault: true },
   { key: "shortDescription", isDefault: true },
   { key: "estimatedDuration", isDefault: true },
@@ -53,13 +60,8 @@ const TripsMgmtPage = () => {
     hasSavedFilters,
   } = useTripListFilters();
 
-  const {
-    combinedTrips,
-    isLoading,
-    isFetching,
-    hasMore,
-    fetchNextPage,
-  } = useTripListData(filters, searchTerm);
+  const { combinedTrips, isLoading, isFetching, hasMore, fetchNextPage } =
+    useTripListData(filters, searchTerm);
 
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);

@@ -6,10 +6,7 @@ import type { TripListFilters } from "./useTripListFilters";
 
 const LIMIT = 20;
 
-export function useTripListData(
-  filters: TripListFilters,
-  searchTerm: string,
-) {
+export function useTripListData(filters: TripListFilters, searchTerm: string) {
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [page, setPage] = useState(1);

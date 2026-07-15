@@ -32,7 +32,6 @@ import WebsiteCrashDetailsPage from "./website-crashes/details";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 
-
 export {
   AuthPage,
   ErrorUiPage,

@@ -1,8 +1,5 @@
-
 const TripDetailsPage = () => {
-  return (
-    <div>TripDetailsPage</div>
-  )
-}
+  return <div>TripDetailsPage</div>;
+};
 
-export default TripDetailsPage
+export default TripDetailsPage;
