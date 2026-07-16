@@ -3,8 +3,8 @@ import React, { useEffect, useRef } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  DmoAuthorityWebsiteSelector,
   SelectableChips,
+  DmoAuthorityWebsiteIdsSelector,
 } from "@/components/shared";
 import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
@@ -38,7 +38,6 @@ interface EventBasicInformationProps {
   errors: Record<string, string>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
-  eventAssociatedWebsites?: IAssociatedWebsiteIds[] | string[];
   selectedBusinessId: string;
   setSelectedBusinessId: (id: string) => void;
   businesses: ISearchBusiness[];
@@ -67,7 +66,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   errors,
   selectAssociatedWebsiteIds,
   setSelectAssociatedWebsiteIds,
-  eventAssociatedWebsites = [],
   selectedBusinessId,
   setSelectedBusinessId,
   businesses,
@@ -183,18 +181,15 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onSearch={searchBusiness}
         />
       </FormFieldWrapper>
-      <DmoAuthorityWebsiteSelector
-        keyId="_id"
+      <DmoAuthorityWebsiteIdsSelector
         errors={errors}
-        isEdit={true}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={selectAssociatedWebsiteIds}
-        setWebsiteVisibilityIds={setSelectAssociatedWebsiteIds}
-        itemAssociatedWebsites={eventAssociatedWebsites}
+        selectedWebsiteIds={selectAssociatedWebsiteIds}
+        setSelectWebsiteIds={setSelectAssociatedWebsiteIds}
       />
 
       <div className="font-semibold text-md text-gray-700">

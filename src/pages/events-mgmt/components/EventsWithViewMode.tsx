@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -10,7 +10,6 @@ import {
   Grid3x3,
   Clock,
   MapPin,
-  AlertCircle,
   Loader,
   Ticket,
   LayoutList,
@@ -21,6 +20,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import {
   BulkActionBar,
   ConfirmDialog,
@@ -47,6 +47,8 @@ interface EventsWithViewModeProps {
   events: IEventListRes[];
   viewMode: string;
   isLoading: boolean;
+  hasMore: boolean;
+  fetchNextPage: () => void;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
@@ -94,9 +96,8 @@ export default function EventsWithViewMode({
   viewMode,
   refetch,
   isLoading,
-  eventTypeFilter,
-  registrationFilter,
-  statusFilter,
+  hasMore,
+  fetchNextPage,
   searchQuery,
 }: EventsWithViewModeProps) {
   const navigate = useNavigate();
@@ -104,14 +105,7 @@ export default function EventsWithViewMode({
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("toast");
 
-  const {
-    bgSecondary,
-    borderColor,
-    textTertiary,
-    textPrimary,
-    language,
-    isDark,
-  } = useThemeClasses();
+  const { bgSecondary, borderColor, language, isDark } = useThemeClasses();
   const { allWebsites } = useCommon();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
@@ -139,7 +133,6 @@ export default function EventsWithViewMode({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
 
-  const [displayedListCount, setDisplayedListCount] = useState(12);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
 
@@ -432,10 +425,23 @@ export default function EventsWithViewMode({
 
   // Grid View
   const GridView = () => {
-    if (isLoading) {
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    useInfiniteScroll({
+      ref: scrollRef,
+      hasMore,
+      isLoading,
+      onLoadMore: fetchNextPage,
+    });
+
+    if (isLoading && (!displayedEvents || displayedEvents.length === 0)) {
       return (
-        <div className="flex justify-center items-center">
-          <Loader className="w-10 h-10 animate-spin text-teal-600" />{" "}
+        <div className="py-4 px-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+            {Array.from({ length: 7 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))}
+          </div>
         </div>
       );
     }
@@ -444,89 +450,46 @@ export default function EventsWithViewMode({
     if (!displayedEvents || displayedEvents.length === 0) {
       return <EmptyState searchQuery={searchQuery} />;
     }
-    const displayed = events?.slice(0, displayedListCount);
-
-    if (events?.length === 0 && !isLoading) {
-      return (
-        <div className="text-center py-12">
-          <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
-          <h3 className={`text-lg mb-2 ${textPrimary}`}>
-            {t("no_events_found")}
-          </h3>
-          <p className={textTertiary}>
-            {searchQuery ||
-            eventTypeFilter !== "all" ||
-            registrationFilter !== "all" ||
-            statusFilter !== "all"
-              ? t("no_events_found_desc")
-              : t("no_events_available")}
-          </p>
-        </div>
-      );
-    }
 
     return (
-      <div className="py-4 px-3">
+      <div ref={scrollRef} className="py-4 px-3 overflow-y-auto max-h-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-          {isLoading
-            ? Array.from({ length: 7 }).map((_, index) => (
-                <EventCardSkeleton key={index} />
-              ))
-            : displayed?.map((event) => (
-                <GridCard
-                  key={event._id}
-                  image={event?.image}
-                  imageAlt={event.name}
-                  imageHeight="h-36"
-                  fallbackIcon={Calendar}
-                  fallbackGradient="from-purple-400 to-pink-400"
-                  title={event.name}
-                  status={event?.status?.toLowerCase()}
-                  isChecked={selectedEvents?.has(event._id) ?? false}
-                  onCheckChange={() => toggleCheckBox(event._id)}
-                  onDelete={(e) => {
-                    e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setEventToDelete(event._id);
-                  }}
-                  onClick={() => handleEventSelect(event)}
-                  meta={[
-                    {
-                      icon: Calendar,
-                      label: extractEventDates(event?.dayDescription),
-                    },
-                    {
-                      icon: MapPin,
-                      label:
-                        extractCenterAddressText(event?.address?.location) ||
-                        "",
-                    },
-                  ]}
-                  // footer={
-                  //   <div className="flex items-center justify-between">
-                  //     <span
-                  //       className={
-                  //         event.isFree
-                  //           ? "text-emerald-600 font-medium text-xs"
-                  //           : "text-purple-600 font-medium text-xs"
-                  //       }
-                  //     >
-                  //       {event?.isFree ? t("free") : `₪ 0`}
-                  //     </span>
-                  //   </div>
-                  // }
-                />
-              ))}
+          {displayedEvents?.map((event) => (
+            <GridCard
+              key={event._id}
+              image={event?.image}
+              imageAlt={event.name}
+              imageHeight="h-36"
+              fallbackIcon={Calendar}
+              fallbackGradient="from-purple-400 to-pink-400"
+              title={event.name}
+              status={event?.status?.toLowerCase()}
+              isChecked={selectedEvents?.has(event._id) ?? false}
+              onCheckChange={() => toggleCheckBox(event._id)}
+              onDelete={(e) => {
+                e.stopPropagation();
+                setIsConfirmOpen(true);
+                setEventToDelete(event._id);
+              }}
+              onClick={() => handleEventSelect(event)}
+              meta={[
+                {
+                  icon: Calendar,
+                  label: extractEventDates(event?.dayDescription),
+                },
+                {
+                  icon: MapPin,
+                  label:
+                    extractCenterAddressText(event?.address?.location) || "",
+                },
+              ]}
+            />
+          ))}
         </div>
 
-        {events?.length > displayedListCount && (
-          <div className="mt-10 text-center">
-            <button
-              onClick={() => setDisplayedListCount((prev) => prev + 12)}
-              className="px-8 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
-            >
-              {t("load_more")}
-            </button>
+        {isLoading && (
+          <div className="flex justify-center items-center py-6">
+            <Loader className="w-8 h-8 animate-spin text-teal-600" />
           </div>
         )}
       </div>
@@ -546,6 +509,8 @@ export default function EventsWithViewMode({
         }
         onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
+        hasMore={hasMore}
+        next={fetchNextPage}
         columns={[
           { key: "checkbox", label: "", width: "50px" },
           {
@@ -578,11 +543,11 @@ export default function EventsWithViewMode({
                       event?.associatedWebsiteIds?.includes(item._id),
                     )
                     ?.map((website) => (
-                      <div key={website?._id} className="">
+                      <div key={website?._id}>
                         <ImageWithFallback
                           src={website.logo}
                           alt={website.name}
-                          className="w-8 h-8"
+                          className="w-4 h-4"
                         />
                       </div>
                     ))}

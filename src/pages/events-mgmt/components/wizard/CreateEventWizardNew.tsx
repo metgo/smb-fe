@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Loader,
   Mail,
-  // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -66,10 +65,7 @@ export default function CreateEventWizardNew({
 
   if (!isOpen) return null;
 
-  const isBusy =
-    wizard.isEventCreating ||
-    wizard.isEventUpdating ||
-    wizard.isWebsiteAccessItemCreating;
+  const isBusy = wizard.isEventCreating || wizard.isEventUpdating;
 
   return (
     <ModalWrapper onClose={wizard.handleClose} showSpinner={isBusy}>
@@ -146,7 +142,6 @@ export default function CreateEventWizardNew({
             setSubCategoriesId={wizard.setSubCategoriesId}
             websiteVisibilityIds={wizard.websiteVisibilityIds}
             setWebsiteVisibilityIds={wizard.setWebsiteVisibilityIds}
-            eventAssociatedWebsites={wizard.editAssociatedWebsites}
             selectedBusinessId={wizard.selectedBusinessId}
             setSelectedBusinessId={wizard.setSelectedBusinessId}
             businesses={wizard.businesses}

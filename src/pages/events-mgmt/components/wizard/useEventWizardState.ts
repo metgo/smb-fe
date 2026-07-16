@@ -17,7 +17,6 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import { detectLanguage } from "@/helpers";
 
 interface UseEventWizardStateProps {
@@ -144,8 +143,6 @@ export function useEventWizardState({
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
     useInitEventCreateMutation();
-  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
-    useCreateWebsiteAccessItemMutation();
 
   // ─── API: Business search ────────────────────────────────────────────
   const { data: initialBusinessData, isLoading: isBusinessesLoading } =
@@ -695,13 +692,7 @@ export function useEventWizardState({
       return;
     }
     setIsDraftBtnClicked(true);
-    const resolvedEventId = await saveDraft(false);
-    if (resolvedEventId) {
-      await createWebsiteAccessItem({
-        body: buildWebsiteAccessPayload(),
-        itemId: resolvedEventId,
-      });
-    }
+    await saveDraft(false);
     refetch?.();
     eventDataRefetch?.();
   }, [
@@ -710,7 +701,6 @@ export function useEventWizardState({
     eventNameAr,
     tc,
     saveDraft,
-    createWebsiteAccessItem,
     buildWebsiteAccessPayload,
     refetch,
     eventDataRefetch,
@@ -791,21 +781,13 @@ export function useEventWizardState({
     setFullDescriptionHe(processed.descriptionHe);
     setFullDescriptionAr(processed.descriptionAr);
     handleMarkDirty(1);
-    const resolvedEventId = await saveDraft(true, processed);
-    if (resolvedEventId) {
-      await createWebsiteAccessItem({
-        body: buildWebsiteAccessPayload(),
-        itemId: resolvedEventId,
-      });
-      await Promise.all([refetch?.(), eventDataRefetch?.()]);
-    }
+    await saveDraft(true, processed);
     setIsPublishing(false);
     onClose();
   }, [
     validateStep,
     saveDraft,
     tc,
-    createWebsiteAccessItem,
     buildWebsiteAccessPayload,
     refetch,
     eventDataRefetch,
@@ -863,7 +845,6 @@ export function useEventWizardState({
     // Loading
     isEventCreating,
     isEventUpdating,
-    isWebsiteAccessItemCreating,
 
     // Shared
     eventId,
@@ -898,7 +879,6 @@ export function useEventWizardState({
     isBusinessesLoading,
     isBusinessSearching,
     searchBusiness,
-    editAssociatedWebsites: editData?.associatedWebsiteIds ?? [],
 
     // Step 3 — Date & Time
     isMultiDay,

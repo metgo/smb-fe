@@ -45,14 +45,6 @@ export default function DmoAuthorityWebsiteSelector({
   itemAssociatedWebsites,
   keyId,
 }: Props) {
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteSelector ~ websiteVisibilityIds:",
-    websiteVisibilityIds,
-  );
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteSelector ~ itemAssociatedWebsites:",
-    itemAssociatedWebsites,
-  );
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
