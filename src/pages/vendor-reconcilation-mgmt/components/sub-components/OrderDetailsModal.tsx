@@ -24,6 +24,7 @@ export default function OrderDetailsModal({
   onReject,
   loading,
 }: OrderDetailsModalProps) {
+  console.log("order.reconciliationStatus", order.reconciliationStatus);
   const { t } = useTranslation("reconciliation");
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const { userRole } = useAppSelector((state) => state.auth);

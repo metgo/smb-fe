@@ -649,6 +649,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_approved"));
       setSelectedItems(new Set());
+      setPage(1);
       refetchOrders();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
