@@ -18,7 +18,7 @@ const disputeReasons = [
   { label: "Quantity mismatch", value: "quantity_mismatch" },
   { label: "Payment issue", value: "payment_issue" },
   { label: "Delivery problem", value: "delivery_problem" },
-  { label: "Other (please specify)", value: "other" },
+  { label: "Other (please specify)", value: "other_please_specify" },
 ];
 
 export default function DisputeModal({

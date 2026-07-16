@@ -32,7 +32,9 @@ export interface RespondDisputeRequest {
 export interface BulkApproveOrderProductsRequest {
   approveAllDisputed: boolean;
 }
-
+export interface BulkMarkAsCompletedRequest {
+  markAllAsCompleted: boolean;
+}
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -112,7 +114,19 @@ export const reconciliationQueryApi = createApi({
       BulkApproveOrderProductsRequest
     >({
       query: (body) => ({
-        url: "/orders/bulk-approve",
+        url: endpoints.bulkApprove,
+        method: "POST",
+        data: body,
+      }),
+    }),
+
+    // POST /bulk-order-product-status
+    bulkMarkOrderAsCompleted: builder.mutation<
+      void,
+      BulkMarkAsCompletedRequest
+    >({
+      query: (body) => ({
+        url: endpoints.bulkMarkAsComplete,
         method: "POST",
         data: body,
       }),
@@ -121,7 +135,7 @@ export const reconciliationQueryApi = createApi({
     // GET /orders/reconciliation-stats
     getReconciliationStats: builder.query<any, void>({
       query: () => ({
-        url: "/orders/reconciliation-stats",
+        url: endpoints.reconciliationStats,
         method: "GET",
       }),
     }),
@@ -137,5 +151,6 @@ export const {
   useRespondDisputeMutation,
   useGetDisputeDetailsQuery,
   useBulkApproveOrderProductsMutation,
+  useBulkMarkOrderAsCompletedMutation,
   useGetReconciliationStatsQuery,
 } = reconciliationQueryApi;

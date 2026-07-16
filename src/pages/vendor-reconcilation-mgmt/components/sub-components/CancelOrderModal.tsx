@@ -17,7 +17,7 @@ const cancelReasons = [
   "Customer requested cancellation",
   "Pricing error",
   "Duplicate order",
-  "Other (please specify)",
+  "Other please specify",
 ];
 
 export default function CancelOrderModal({

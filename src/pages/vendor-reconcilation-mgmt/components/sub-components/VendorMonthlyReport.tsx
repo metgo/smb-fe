@@ -21,6 +21,7 @@ import {
   useRespondDisputeMutation,
   useBulkApproveOrderProductsMutation,
   useGetReconciliationStatsQuery,
+  useBulkMarkOrderAsCompletedMutation,
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
@@ -133,9 +134,9 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
 
   const status =
     d.orderInformation?.status === "completed"
-      ? "approved"
+      ? "completed"
       : d.orderInformation?.status === "processing"
-        ? "pending"
+        ? "processing"
         : d.orderInformation?.status;
 
   // Use reconciliationStatus from API response, fallback to status if not available
@@ -202,6 +203,10 @@ export const VendorMonthlyReport = () => {
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [disputedCount, setDisputedCount] = useState(0);
+    const [pendingCount, setPendingCount] = useState(0);
+
+  
 
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
@@ -267,8 +272,9 @@ export const VendorMonthlyReport = () => {
   const [openDispute] = useOpenDisputeMutation();
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
+  const [bulkMarkOrderAsCompleted]= useBulkMarkOrderAsCompletedMutation()
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
-  const { data: reconciliationStats } = useGetReconciliationStatsQuery();
+  const { data: reconciliationStats, refetch: refetchReconciliationStats } = useGetReconciliationStatsQuery();
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -454,10 +460,14 @@ export const VendorMonthlyReport = () => {
       };
     }
 
+    const disputed = reconciliationStats.statusOverview?.disputed || 0;
+    setDisputedCount(disputed);
+    const pending = reconciliationStats.statusOverview?.pending || 0;
+    setPendingCount(pending);
     return {
-      pending: reconciliationStats.statusOverview?.pending || 0,
+      pending,
       approved: reconciliationStats.statusOverview?.approved || 0,
-      disputed: reconciliationStats.statusOverview?.disputed || 0,
+      disputed,
       cancelled: reconciliationStats.statusOverview?.cancelled || 0,
       totalOrders: reconciliationStats.totalOrders || 0,
       totalRevenue: reconciliationStats.totalRevenue || 0,
@@ -468,7 +478,7 @@ export const VendorMonthlyReport = () => {
 
   const handleOpenDispute = (order: MonthlyOrder) => {
     if (userRole !== "traveller") {
-      toast.error("Only traveller role can open disputes");
+      toast.error(t("only_traveller_can_open_disputes"));
       return;
     }
     setSelectedOrder(order);
@@ -511,12 +521,13 @@ export const VendorMonthlyReport = () => {
       setShowDisputeModal(false);
       setSelectedOrder(null);
       refetchOrders();
+      refetchReconciliationStats()
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       if (errorMessage?.includes("cannot be disputed")) {
-        toast.error("This order cannot be disputed");
+        toast.error(t("order_cannot_be_disputed"));
       } else if (errorMessage?.includes("role")) {
-        toast.error("Only traveller role can open disputes");
+        toast.error(t("only_traveller_can_open_disputes"));
       } else {
         toast.error(t("dispute_failed"));
       }
@@ -526,7 +537,7 @@ export const VendorMonthlyReport = () => {
   const handleApprove = async (order: MonthlyOrder) => {
     try {
       if (!order._id || !order.disputeId) {
-        toast.error("Invalid order or dispute data");
+        toast.error(t("invalid_order_data"));
         return;
       }
 
@@ -541,6 +552,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_approved"));
       refetchOrders();
+      refetchReconciliationStats()
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -551,7 +563,7 @@ export const VendorMonthlyReport = () => {
   const handleReject = async (order: MonthlyOrder) => {
     try {
       if (!order._id || !order.disputeId) {
-        toast.error("Invalid order or dispute data");
+        toast.error(t("invalid_order_data"));
         return;
       }
 
@@ -565,6 +577,8 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("status_updated"));
       refetchOrders();
+            refetchReconciliationStats()
+
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -596,6 +610,8 @@ export const VendorMonthlyReport = () => {
       setShowCancelModal(false);
       setSelectedOrder(null);
       refetchOrders();
+            refetchReconciliationStats()
+
     } catch (error) {
       toast.error(t("cancel_failed"));
     }
@@ -649,8 +665,27 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_approved"));
       setSelectedItems(new Set());
-      setPage(1);
       refetchOrders();
+            refetchReconciliationStats()
+
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("approve_failed"));
+    }
+  };
+
+
+   const handleBulkMarkOrderCompleted = async () => {
+    try {
+      await bulkMarkOrderAsCompleted({
+        markAllAsCompleted: true,
+      }).unwrap();
+
+      toast.success(t("orders_mark_as_completed"));
+      setSelectedItems(new Set());
+      refetchOrders();
+            refetchReconciliationStats()
+
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -668,11 +703,23 @@ export const VendorMonthlyReport = () => {
         icon: Clock,
         label: t("pending"),
       },
+      processing: {
+        bg: isDark ? "bg-yellow-900/20" : "bg-yellow-100",
+        text: isDark ? "text-yellow-400" : "text-yellow-800",
+        icon: Clock,
+        label: t("processing"),
+      },
       approved: {
         bg: isDark ? "bg-green-900/20" : "bg-green-100",
         text: isDark ? "text-green-400" : "text-green-800",
         icon: CheckCircle,
         label: t("approved"),
+      },
+      completed: {
+        bg: isDark ? "bg-green-900/20" : "bg-green-100",
+        text: isDark ? "text-green-400" : "text-green-800",
+        icon: CheckCircle,
+        label: t("completed"),
       },
       disputed: {
         bg: isDark ? "bg-orange-900/20" : "bg-orange-100",
@@ -694,7 +741,10 @@ export const VendorMonthlyReport = () => {
       },
     };
 
-    const badge = badges[status] || badges.pending;
+    const badge = badges[status] || badges.pending || badges.processing;
+    if (!badge) {
+      return <span>{status}</span>;
+    }
     const Icon = badge.icon;
 
     return (
@@ -730,7 +780,7 @@ export const VendorMonthlyReport = () => {
       key: "product",
       sortable: false,
       label: t("product"),
-      minWidth: 200, // if your ReordableDataTable columns support width hints
+      minWidth: 200, 
       render: (order: MonthlyOrder) => (
         <div className="flex items-center gap-4 min-w-[200px]">
           <ImageWithFallback
@@ -793,7 +843,7 @@ export const VendorMonthlyReport = () => {
     {
       key: "status",
       sortable: false,
-      label: t("status"),
+      label: t("order_status"),
       render: (order: MonthlyOrder) => getStatusBadge(order.status),
     },
     {
@@ -904,20 +954,20 @@ export const VendorMonthlyReport = () => {
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Total Orders</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>{t("total_orders")}</div>
             <div className={`text-2xl font-bold ${textPrimary}`}>
               {stats.totalOrders}
             </div>
           </div>
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Total Revenue</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>{t("total_revenue")}</div>
             <div className={`text-2xl font-bold ${textPrimary}`}>
               ₪{(stats.totalRevenue || 0).toLocaleString()}
             </div>
           </div>
 
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>Net Payout</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>{t("net_payout")}</div>
             <div
               className={`text-2xl font-bold text-green-600 dark:text-green-400`}
             >
@@ -926,49 +976,32 @@ export const VendorMonthlyReport = () => {
           </div>
           <div className={`${bgSecondary} rounded-lg p-4 col-span-2`}>
             <div className={`text-xs ${textTertiary} mb-2`}>
-              Status Overview
+              {t("status_overview")}
             </div>
             <div className="flex flex-wrap gap-2 text-sm">
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                <span className={textSecondary}>{stats.pending} Pending</span>
+                <span className={textSecondary}>{stats.pending} {t("pending")}</span>
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className={textSecondary}>{stats.approved} Approved</span>
+                <span className={textSecondary}>{stats.approved} {t("approved")}</span>
               </span>
               <span className="flex items-center gap-1">
                 <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                <span className={textSecondary}>{stats.disputed} Disputed</span>
+                <span className={textSecondary}>{stats.disputed} {t("disputed")}</span>
               </span>
               <span className="flex items-center gap-1">
                 <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                 <span className={textSecondary}>
-                  {stats.cancelled} Cancelled
+                  {stats.cancelled} {t("canceled")}
                 </span>
               </span>
             </div>
           </div>
         </div>
 
-        {stats.heldForDisputes > 0 && (
-          <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
-            <div>
-              <p
-                className={`text-sm font-medium text-orange-900 dark:text-orange-200`}
-              >
-                ₪{(stats.heldForDisputes || 0).toLocaleString()} held for
-                disputes
-              </p>
-              <p
-                className={`text-xs text-orange-700 dark:text-orange-300 mt-1`}
-              >
-                These amounts will be paid after dispute resolution
-              </p>
-            </div>
-          </div>
-        )}
+      
       </div>
 
       {/* Search and Filters */}
@@ -983,7 +1016,7 @@ export const VendorMonthlyReport = () => {
             />
           </div>
           <div className="flex items-center gap-2 whitespace-nowrap">
-            {adminView && (
+            {disputedCount > 0 && (
               <button
                 onClick={handleBulkApprove}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
@@ -992,6 +1025,15 @@ export const VendorMonthlyReport = () => {
                 {t("approve_disputed_orders")}
               </button>
             )}
+            
+              <button
+                onClick={handleBulkMarkOrderCompleted}
+                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {t("approve_pending_orders")}
+              </button>
+
             <ExportOrdersButton
               orders={orders}
               selectedOrders={selectedItems}
@@ -1007,7 +1049,7 @@ export const VendorMonthlyReport = () => {
           >
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
-                {t("status")}
+                {t("order_status")}
               </label>
               <select
                 value={filters.status}
@@ -1018,9 +1060,30 @@ export const VendorMonthlyReport = () => {
               >
                 <option value="all">{t("all_statuses")}</option>
                 <option value="pending">{t("pending")}</option>
-                {/* <option value="approved">{t("approved")}</option> */}
-                <option value="disputed">{t("disputed")}</option>
+                <option value="processing">{t("processing")}</option>
+                <option value="shipped">{t("shipped")}</option>
+                <option value="completed">{t("completed")}</option>
                 <option value="cancelled">{t("canceled")}</option>
+              </select>
+            </div>
+
+
+            <div>
+              <label className={`block text-xs ${textTertiary} mb-1`}>
+                {t("reconciliation_status")}
+              </label>
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value })
+                }
+                className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
+              >
+                <option value="all">{t("all_statuses")}</option>
+                <option value="pending">{t("pending")}</option>
+                <option value="approved">{t("approved")}</option>
+                <option value="disputed">{t("disputed")}</option>
+                <option value="rejected">{t("rejected")}</option>
               </select>
             </div>
 
