@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ interface OrderProduct {
     total: number;
     platformFee: number;
     disputeId?: string;
+    reconciliationStatus?: string;
   };
   customerInformation: {
     name: string;
@@ -120,7 +121,6 @@ function mapOrderProductList(d: any) {
     disputeId: d.disputeId,
   };
 }
-
 function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
   const address = [
     d.deliveryInformation?.address?.houseNo,
@@ -137,6 +137,9 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
       : d.orderInformation?.status === "processing"
         ? "pending"
         : d.orderInformation?.status;
+
+  // Use reconciliationStatus from API response, fallback to status if not available
+  const reconciliationStatus = d?.orderInformation?.reconciliationStatus || status;
 
   return {
     _id: d._id,
@@ -155,7 +158,7 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
     netToVendor:
       (d.orderInformation?.total || 0) - (d.orderInformation?.platformFee || 0),
     status,
-    reconciliationStatus: status,
+    reconciliationStatus,
     externalApiId: (d as any).externalApiId || "",
     paymentMethod: d.paymentInformation?.paymentMethod?.join(", ") || "",
     paymentStatus: d.paymentInformation?.paymentStatus || "",
@@ -173,6 +176,7 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const {
     bgPrimary,
     bgSecondary,
@@ -613,6 +617,9 @@ export const VendorMonthlyReport = () => {
     setShowOrderDetails(false);
     setSelectedOrder(null);
     setDetailsOrderId(null);
+    // Clear orderProductId from URL
+    searchParams.delete("orderProductId");
+    navigate(`${window.location.pathname}?${searchParams.toString()}`, { replace: true });
   };
 
   const handleAdminResolveDispute = () => {
