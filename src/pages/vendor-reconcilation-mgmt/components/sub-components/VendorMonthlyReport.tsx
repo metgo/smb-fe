@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
@@ -329,7 +329,8 @@ export const VendorMonthlyReport = () => {
     fetchDefaultBusinesses();
   };
 
-  const fetchDefaultBusinesses = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchDefaultBusinesses = useCallback(async () => {
     try {
       setIsSearchingBusinesses(true);
       const result = await searchBusinessesTrigger({
@@ -346,7 +347,7 @@ export const VendorMonthlyReport = () => {
     } finally {
       setIsSearchingBusinesses(false);
     }
-  };
+  }, []);
 
   const searchBusinesses = (search: string) => {
     setBusinessSearch(search);
@@ -380,9 +381,9 @@ export const VendorMonthlyReport = () => {
       }
     }, 400);
   };
-  useEffect(() => {
+ useEffect(() => {
     fetchDefaultBusinesses();
-  }, []);
+  }, [fetchDefaultBusinesses]);
   useEffect(() => {
     return () => {
       if (businessSearchDebounceRef.current) {
@@ -463,11 +464,14 @@ export const VendorMonthlyReport = () => {
         totalOrders: 0,
         totalRevenue: 0,
         netPayout: 0,
+        heldForDisputes: 0,
+        orderProductPending: 0,
+        orderProductProcessing: 0,
+        orderProductShipped: 0,
       };
     }
 
     const disputed = reconciliationStats.statusOverview?.disputed || 0;
-    setDisputedCount(disputed);
 
     return {
       pending: reconciliationStats.statusOverview?.pending || 0,
@@ -477,7 +481,20 @@ export const VendorMonthlyReport = () => {
       totalOrders: reconciliationStats.totalOrders || 0,
       totalRevenue: reconciliationStats.totalRevenue || 0,
       netPayout: reconciliationStats.netPayout || 0,
+      heldForDisputes: 0,
+      orderProductPending:
+        reconciliationStats.orderProductOverview?.pending || 0,
+      orderProductProcessing:
+        reconciliationStats.orderProductOverview?.processing || 0,
+      orderProductShipped:
+        reconciliationStats.orderProductOverview?.shipped || 0,
     };
+  }, [reconciliationStats]);
+
+  useEffect(() => {
+    if (reconciliationStats) {
+      setDisputedCount(reconciliationStats.statusOverview?.disputed || 0);
+    }
   }, [reconciliationStats]);
 
   const handleOpenDispute = (order: MonthlyOrder) => {
