@@ -174,5 +174,8 @@
   "vendor_business": "ספק / עסק",
   "search_vendors": "חפש ספקים...",
   "selected_vendor": "נבחר",
-  "no_businesses_found": "לא נמצאו עסקים"
+  "no_businesses_found": "לא נמצאו עסקים",
+  "customRange": "טווח מותאם אישית",
+  "shipped": "שנשלח",
+  "closed": "סגור"
 }

@@ -272,14 +272,16 @@ export default function OrderDetailsModal({
           </>
 
           <div className="flex gap-3">
-            {order.status !== "canceled" && order.reconciliationStatus !== "disputed" && (
-              <button
-                onClick={onCancel}
-                className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-              >
-                {t("cancel_order_btn")}
-              </button>
-            )}
+            {order.status !== "canceled" &&
+              order.reconciliationStatus !== "disputed" &&
+              order.status !== "completed" && (
+                <button
+                  onClick={onCancel}
+                  className={`px-4 py-2 rounded-lg border ${borderColor} ${textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                >
+                  {t("cancel_order")}
+                </button>
+              )}
             {order.reconciliationStatus !== "disputed" &&
               userRole === "traveller" &&
               order.status !== "canceled" && (

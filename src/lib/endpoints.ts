@@ -71,7 +71,7 @@ export const endpoints = {
   updateOrderStatus: "/update-order-status",
   bulkApprove : "/orders/bulk-approve",
   reconciliationStats: "/orders/reconciliation-stats",
-  bulkMarkAsComplete: "/bulk-order-product-status",
+  bulkMarkAsComplete: "/orders/bulk-order-product-status",
   // public
   publicEventTicket: "/public/event-tickets",
   publicSessionTicket: "/public/session-tickets",

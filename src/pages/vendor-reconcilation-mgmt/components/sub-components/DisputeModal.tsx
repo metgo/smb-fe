@@ -90,7 +90,7 @@ export default function DisputeModal({
     const newErrors: { reason?: string; details?: string } = {};
 
     if (!reason) {
-      newErrors.reason = t("select_dispute_reason");
+      newErrors.reason = t("please_select_dispute_reason");
     }
 
     if (!details || details.trim().length < 10) {

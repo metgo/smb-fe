@@ -175,5 +175,8 @@
   "vendor_business": "Vendor / Business",
   "search_vendors": "Search vendors...",
   "selected_vendor": "Selected",
-  "no_businesses_found": "No businesses found"
+  "no_businesses_found": "No businesses found",
+  "customRange": "Custom Range",
+  "shipped": "Shipped",
+  "closed": "Closed"
 }

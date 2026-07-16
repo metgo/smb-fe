@@ -46,19 +46,19 @@ interface OrderProduct {
   orderInformation: {
     orderId: string;
     purchaseDate: string;
-    status:
-      | "pending"
-      | "approved"
-      | "disputed"
-      | "canceled"
-      | "processing"
-      | "completed";
+    status: "pending" | "shipped" | "canceled" | "processing" | "completed";
     quantity: number;
     unitPrice: number;
     total: number;
     platformFee: number;
     disputeId?: string;
-    reconciliationStatus?: string;
+    reconciliationStatus?:
+      | "pending"
+      | "approved"
+      | "canceled"
+      | "disputed"
+      | "rejected"
+      | "closed";
   };
   customerInformation: {
     name: string;
@@ -140,7 +140,8 @@ function mapOrderProductDetails(d: OrderProduct & { _id?: string }) {
         : d.orderInformation?.status;
 
   // Use reconciliationStatus from API response, fallback to status if not available
-  const reconciliationStatus = d?.orderInformation?.reconciliationStatus || status;
+  const reconciliationStatus =
+    d?.orderInformation?.reconciliationStatus || status;
 
   return {
     _id: d._id,
@@ -192,7 +193,9 @@ export const VendorMonthlyReport = () => {
   );
   const adminView = userRole === "superadmin";
 
-  const businessSearchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const businessSearchDebounceRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [orders, setOrders] = useState<MonthlyOrder[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -204,17 +207,14 @@ export const VendorMonthlyReport = () => {
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [disputedCount, setDisputedCount] = useState(0);
-    const [pendingCount, setPendingCount] = useState(0);
-
-  
 
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     status: "all",
+    reconciliationStatus: "all",
     startDate: "",
     endDate: "",
     month: "all",
-
     businessId: "",
   });
   const [businessSearch, setBusinessSearch] = useState("");
@@ -239,6 +239,10 @@ export const VendorMonthlyReport = () => {
     if (filters.status !== "all") {
       params.status = filters.status;
     }
+    if (filters.reconciliationStatus !== "all") {
+      params.reconciliationStatus = filters.reconciliationStatus;
+    }
+
     if (searchTerm) params.search = searchTerm;
 
     if (filters.month !== "all" && filters.month !== "custom") {
@@ -272,9 +276,10 @@ export const VendorMonthlyReport = () => {
   const [openDispute] = useOpenDisputeMutation();
   const [respondDispute] = useRespondDisputeMutation();
   const [createSignedUrl] = useCreateSignedUrlMutation();
-  const [bulkMarkOrderAsCompleted]= useBulkMarkOrderAsCompletedMutation()
+  const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
-  const { data: reconciliationStats, refetch: refetchReconciliationStats } = useGetReconciliationStatsQuery();
+  const { data: reconciliationStats, refetch: refetchReconciliationStats } =
+    useGetReconciliationStatsQuery();
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const websiteMap = useMemo(() => {
@@ -302,6 +307,7 @@ export const VendorMonthlyReport = () => {
   const hasActiveFilters = useMemo(() => {
     return (
       filters.status !== "all" ||
+      filters.reconciliationStatus !== "all" ||
       filters.businessId !== "" ||
       filters.month !== "all" ||
       filters.startDate !== "" ||
@@ -312,6 +318,7 @@ export const VendorMonthlyReport = () => {
   const handleClearAllFilters = () => {
     setFilters({
       status: "all",
+      reconciliationStatus: "all",
       startDate: "",
       endDate: "",
       month: "all",
@@ -428,10 +435,10 @@ export const VendorMonthlyReport = () => {
   }, [
     searchTerm,
     filters.status,
+    filters.reconciliationStatus,
     filters.month,
     filters.startDate,
     filters.endDate,
-
     filters.businessId,
   ]);
 
@@ -456,23 +463,20 @@ export const VendorMonthlyReport = () => {
         totalOrders: 0,
         totalRevenue: 0,
         netPayout: 0,
-        heldForDisputes: 0,
       };
     }
 
     const disputed = reconciliationStats.statusOverview?.disputed || 0;
     setDisputedCount(disputed);
-    const pending = reconciliationStats.statusOverview?.pending || 0;
-    setPendingCount(pending);
+
     return {
-      pending,
+      pending: reconciliationStats.statusOverview?.pending || 0,
       approved: reconciliationStats.statusOverview?.approved || 0,
       disputed,
       cancelled: reconciliationStats.statusOverview?.cancelled || 0,
       totalOrders: reconciliationStats.totalOrders || 0,
       totalRevenue: reconciliationStats.totalRevenue || 0,
       netPayout: reconciliationStats.netPayout || 0,
-      heldForDisputes: 0,
     };
   }, [reconciliationStats]);
 
@@ -521,7 +525,7 @@ export const VendorMonthlyReport = () => {
       setShowDisputeModal(false);
       setSelectedOrder(null);
       refetchOrders();
-      refetchReconciliationStats()
+      refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       if (errorMessage?.includes("cannot be disputed")) {
@@ -552,7 +556,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("order_approved"));
       refetchOrders();
-      refetchReconciliationStats()
+      refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -577,8 +581,7 @@ export const VendorMonthlyReport = () => {
 
       toast.success(t("status_updated"));
       refetchOrders();
-            refetchReconciliationStats()
-
+      refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -610,8 +613,7 @@ export const VendorMonthlyReport = () => {
       setShowCancelModal(false);
       setSelectedOrder(null);
       refetchOrders();
-            refetchReconciliationStats()
-
+      refetchReconciliationStats();
     } catch (error) {
       toast.error(t("cancel_failed"));
     }
@@ -635,7 +637,9 @@ export const VendorMonthlyReport = () => {
     setDetailsOrderId(null);
     // Clear orderProductId from URL
     searchParams.delete("orderProductId");
-    navigate(`${window.location.pathname}?${searchParams.toString()}`, { replace: true });
+    navigate(`${window.location.pathname}?${searchParams.toString()}`, {
+      replace: true,
+    });
   };
 
   const handleAdminResolveDispute = () => {
@@ -666,16 +670,14 @@ export const VendorMonthlyReport = () => {
       toast.success(t("order_approved"));
       setSelectedItems(new Set());
       refetchOrders();
-            refetchReconciliationStats()
-
+      refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
     }
   };
 
-
-   const handleBulkMarkOrderCompleted = async () => {
+  const handleBulkMarkOrderCompleted = async () => {
     try {
       await bulkMarkOrderAsCompleted({
         markAllAsCompleted: true,
@@ -684,8 +686,7 @@ export const VendorMonthlyReport = () => {
       toast.success(t("orders_mark_as_completed"));
       setSelectedItems(new Set());
       refetchOrders();
-            refetchReconciliationStats()
-
+      refetchReconciliationStats();
     } catch (error: any) {
       const errorMessage = error?.data?.message || error?.message;
       toast.error(errorMessage || t("approve_failed"));
@@ -780,7 +781,7 @@ export const VendorMonthlyReport = () => {
       key: "product",
       sortable: false,
       label: t("product"),
-      minWidth: 200, 
+      minWidth: 200,
       render: (order: MonthlyOrder) => (
         <div className="flex items-center gap-4 min-w-[200px]">
           <ImageWithFallback
@@ -849,7 +850,7 @@ export const VendorMonthlyReport = () => {
     {
       key: "reconciliationStatus",
       sortable: false,
-      label: "Reconciliation Status",
+      label: t("reconciliation_status"),
       render: (order: MonthlyOrder) =>
         getStatusBadge(order.reconciliationStatus),
     },
@@ -913,15 +914,17 @@ export const VendorMonthlyReport = () => {
                 <CheckCircle className="w-5 h-5" />
               </button>
             )}
-          {order.status !== "canceled" && order.reconciliationStatus !== "disputed" && (
-            <button
-              onClick={() => handleCancelOrder(order)}
-              className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              title={t("cancel")}
-            >
-              <XCircle className="w-4 h-4" />
-            </button>
-          )}
+          {order.status !== "canceled" &&
+            order.reconciliationStatus !== "disputed" &&
+            order.status !== "completed" && (
+              <button
+                onClick={() => handleCancelOrder(order)}
+                className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                title={t("cancel")}
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
         </div>
       ),
     },
@@ -954,20 +957,26 @@ export const VendorMonthlyReport = () => {
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>{t("total_orders")}</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>
+              {t("total_orders")}
+            </div>
             <div className={`text-2xl font-bold ${textPrimary}`}>
               {stats.totalOrders}
             </div>
           </div>
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>{t("total_revenue")}</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>
+              {t("total_revenue")}
+            </div>
             <div className={`text-2xl font-bold ${textPrimary}`}>
               ₪{(stats.totalRevenue || 0).toLocaleString()}
             </div>
           </div>
 
           <div className={`${bgSecondary} rounded-lg p-4`}>
-            <div className={`text-xs ${textTertiary} mb-1`}>{t("net_payout")}</div>
+            <div className={`text-xs ${textTertiary} mb-1`}>
+              {t("net_payout")}
+            </div>
             <div
               className={`text-2xl font-bold text-green-600 dark:text-green-400`}
             >
@@ -981,15 +990,21 @@ export const VendorMonthlyReport = () => {
             <div className="flex flex-wrap gap-2 text-sm">
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                <span className={textSecondary}>{stats.pending} {t("pending")}</span>
+                <span className={textSecondary}>
+                  {stats.pending} {t("pending")}
+                </span>
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className={textSecondary}>{stats.approved} {t("approved")}</span>
+                <span className={textSecondary}>
+                  {stats.approved} {t("approved")}
+                </span>
               </span>
               <span className="flex items-center gap-1">
                 <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                <span className={textSecondary}>{stats.disputed} {t("disputed")}</span>
+                <span className={textSecondary}>
+                  {stats.disputed} {t("disputed")}
+                </span>
               </span>
               <span className="flex items-center gap-1">
                 <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
@@ -1000,8 +1015,6 @@ export const VendorMonthlyReport = () => {
             </div>
           </div>
         </div>
-
-      
       </div>
 
       {/* Search and Filters */}
@@ -1016,7 +1029,7 @@ export const VendorMonthlyReport = () => {
             />
           </div>
           <div className="flex items-center gap-2 whitespace-nowrap">
-            {disputedCount > 0 && (
+            {disputedCount > 0 && adminView && (
               <button
                 onClick={handleBulkApprove}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
@@ -1025,7 +1038,10 @@ export const VendorMonthlyReport = () => {
                 {t("approve_disputed_orders")}
               </button>
             )}
-            
+
+            {(stats.orderProductPending > 0 ||
+              stats.orderProductProcessing > 0 ||
+              stats.orderProductShipped > 0) && (
               <button
                 onClick={handleBulkMarkOrderCompleted}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
@@ -1033,6 +1049,7 @@ export const VendorMonthlyReport = () => {
                 <CheckCircle className="w-4 h-4" />
                 {t("approve_pending_orders")}
               </button>
+            )}
 
             <ExportOrdersButton
               orders={orders}
@@ -1067,15 +1084,17 @@ export const VendorMonthlyReport = () => {
               </select>
             </div>
 
-
             <div>
               <label className={`block text-xs ${textTertiary} mb-1`}>
                 {t("reconciliation_status")}
               </label>
               <select
-                value={filters.status}
+                value={filters.reconciliationStatus}
                 onChange={(e) =>
-                  setFilters({ ...filters, status: e.target.value })
+                  setFilters({
+                    ...filters,
+                    reconciliationStatus: e.target.value,
+                  })
                 }
                 className={`w-full px-3 py-2 border ${borderColor} rounded-lg ${bgPrimary} ${textPrimary} text-sm`}
               >
@@ -1084,6 +1103,7 @@ export const VendorMonthlyReport = () => {
                 <option value="approved">{t("approved")}</option>
                 <option value="disputed">{t("disputed")}</option>
                 <option value="rejected">{t("rejected")}</option>
+                <option value="closed">{t("closed")}</option>
               </select>
             </div>
 
@@ -1164,6 +1184,14 @@ export const VendorMonthlyReport = () => {
                     <FilterChips
                       label={t(filters.status)}
                       onRemove={() => setFilters({ ...filters, status: "all" })}
+                    />
+                  )}
+                  {filters.reconciliationStatus !== "all" && (
+                    <FilterChips
+                      label={t(filters.reconciliationStatus)}
+                      onRemove={() =>
+                        setFilters({ ...filters, reconciliationStatus: "all" })
+                      }
                     />
                   )}
                   {filters.businessId && (
