@@ -54,6 +54,7 @@ export const itemEndpoint: Record<string, string> = {
   POI: routes.poiDetails,
   PRODUCT: routes.productDetails,
   EVENT: routes.eventDetails,
+  DISPUTE: routes.vendorReconciliationMgmt,
 };
 
 export const googlePointOfInterest = [

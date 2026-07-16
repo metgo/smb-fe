@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -171,6 +172,7 @@ export type MonthlyOrder = ReturnType<typeof mapOrderProductList> & {
 
 export const VendorMonthlyReport = () => {
   const { t } = useTranslation("reconciliation");
+  const [searchParams] = useSearchParams();
   const {
     bgPrimary,
     bgSecondary,
@@ -280,6 +282,10 @@ export const VendorMonthlyReport = () => {
     if (orderDetailsData && detailsOrderId === selectedOrder?._id) {
       return mapOrderProductDetails(orderDetailsData);
     }
+    // Handle case when navigating from URL with orderProductId
+    if (orderDetailsData && detailsOrderId && !selectedOrder) {
+      return mapOrderProductDetails(orderDetailsData);
+    }
     return selectedOrder;
   }, [orderDetailsData, detailsOrderId, selectedOrder]);
 
@@ -367,6 +373,15 @@ export const VendorMonthlyReport = () => {
       }
     };
   }, []);
+
+  // Auto-open order details modal when orderProductId is in URL
+  useEffect(() => {
+    const orderProductId = searchParams.get("orderProductId");
+    if (orderProductId) {
+      setDetailsOrderId(orderProductId);
+      setShowOrderDetails(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (orderProductsData?.data) {

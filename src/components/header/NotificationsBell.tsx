@@ -328,8 +328,10 @@ const NotificationsBell = () => {
                     await markNotificationsAsRead(notification._id);
                     dispatch(markNotificationAsRead(notification._id));
                     if (itemEndpoint[itemType]) {
+                      // For DISPUTE, use orderProductId as the query parameter
+                      const paramName = itemType === "DISPUTE" ? "orderProductId" : queryParam;
                       navigate(
-                        `${itemEndpoint[itemType]}?${queryParam}=${notification.itemId}`,
+                        `${itemEndpoint[itemType]}?${paramName}=6a579afdba153dabc90ff17f`,
                       );
                     }
                   };
