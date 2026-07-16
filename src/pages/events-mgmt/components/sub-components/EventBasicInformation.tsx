@@ -3,8 +3,8 @@ import React, { useEffect, useRef } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  DmoAuthorityWebsiteSelector,
   SelectableChips,
+  DmoAuthorityWebsiteIdsSelector,
 } from "@/components/shared";
 import { useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import {
@@ -38,16 +38,16 @@ interface EventBasicInformationProps {
   errors: Record<string, string>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
-  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
   selectedBusinessId: string;
   setSelectedBusinessId: (id: string) => void;
   businesses: ISearchBusiness[];
   isBusinessLoading: boolean;
   searchBusiness: (key: string) => void;
+  selectAssociatedWebsiteIds: string[];
+  setSelectAssociatedWebsiteIds: (v: any) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
-  eventId,
   markDirty,
   selectedDmoId,
   setSelectDmoId,
@@ -64,9 +64,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
-  websiteVisibilityIds,
-  setWebsiteVisibilityIds,
-  eventAssociatedWebsites = [],
+  selectAssociatedWebsiteIds,
+  setSelectAssociatedWebsiteIds,
   selectedBusinessId,
   setSelectedBusinessId,
   businesses,
@@ -182,18 +181,15 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onSearch={searchBusiness}
         />
       </FormFieldWrapper>
-      <DmoAuthorityWebsiteSelector
-        keyId="_id"
+      <DmoAuthorityWebsiteIdsSelector
         errors={errors}
-        isEdit={!!eventId}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={eventAssociatedWebsites}
+        selectedWebsiteIds={selectAssociatedWebsiteIds}
+        setSelectWebsiteIds={setSelectAssociatedWebsiteIds}
       />
 
       <div className="font-semibold text-md text-gray-700">

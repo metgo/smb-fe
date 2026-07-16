@@ -33,6 +33,7 @@ interface CreateTicketWizardProps {
 type TicketErrors = {
   name?: string;
   description?: string;
+  greeting?: string;
   ticketDays: string[];
   markedPrice?: string;
   sellingPrice?: string;
@@ -194,6 +195,7 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
       eventId,
       name: editData.name.trim(),
       description: editData.description?.trim() ?? "",
+      greeting: editData.greeting?.trim() ?? "",
       price: {
         markedPrice: editData.price?.markedPrice ?? 0,
         sellingPrice: editData.price?.sellingPrice ?? 0,
@@ -388,6 +390,34 @@ const CreateTicketWizard: React.FC<CreateTicketWizardProps> = ({
                   "w-full px-4 py-2.5 rounded-lg border transition-colors",
                   inputClasses,
                   errors.description && "field-error",
+                )}
+              />
+            </FormFieldWrapper>
+          </div>
+
+          {/* ── Greetings ──────────────────────────────────────────── */}
+          <div>
+            <FormFieldWrapper
+              label={t("greeting_message")}
+              error={errors.greeting}
+              inputHintText={`${editData?.greeting?.length ?? 0}/100 ${t("max_characters")}`}
+            >
+              <textarea
+                maxLength={50}
+                value={editData?.greeting ?? ""}
+                onChange={(e) => {
+                  setEditData((prev: ITicketPayload) => ({
+                    ...prev,
+                    greeting: e.target.value,
+                  }));
+                  clearError("greeting");
+                }}
+                placeholder={t("greeting_message_placeholder")}
+                rows={2}
+                className={clsx(
+                  "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                  inputClasses,
+                  errors.greeting && "field-error",
                 )}
               />
             </FormFieldWrapper>
