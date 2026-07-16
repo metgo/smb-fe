@@ -23,7 +23,6 @@ import {
   PoiBasicInfo,
   PoiLocation,
   PoiReviewSubmit,
-  PoiAttributes,
   PoiContactInfo,
   PoiMedia,
   // PoiTranslateButton,
@@ -40,10 +39,11 @@ import { useFilesUpload } from "@/hooks/useFilesUpload";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { usePoiDraftSaver } from "../hooks/usePoiDraftSaver";
-import { detectLanguage, parseAddress } from "@/helpers";
+import { detectLanguage, getLngWiseStr, parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
 import { IOpMode } from "@/enums/operation.types";
+import Attributes from "@/components/details-sections/Attributes";
 
 interface CreatePoiWizardProps {
   onClose: () => void;
@@ -106,6 +106,18 @@ export default function CreatePoiWizard({
     videoUrl: "",
     virtualTourUrl: "",
   });
+  const nameForGen = getLngWiseStr(
+    language,
+    formData.title,
+    formData.titleHe,
+    formData.titleAr,
+  );
+  const descriptionForGen = getLngWiseStr(
+    language,
+    formData.shortDescription,
+    formData.shortDescriptionHe,
+    formData.shortDescriptionAr,
+  );
 
   const { userRole, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
@@ -598,15 +610,15 @@ export default function CreatePoiWizard({
         );
       case 4:
         return (
-          <PoiAttributes
+          <Attributes
+            selectedFormLanguage={language}
+            editData={editData}
+            {...commonProps}
             formData={formData}
-            setFormData={setFormData}
-            name={formData.title || formData.titleHe || formData.titleAr}
-            description={
-              formData.shortDescription ||
-              formData.shortDescriptionHe ||
-              formData.shortDescriptionAr
-            }
+            opMode={opMode}
+            variant="tagsOnly"
+            nameForGen={nameForGen}
+            descriptionForGen={descriptionForGen}
           />
         );
       case 5:

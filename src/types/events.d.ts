@@ -270,6 +270,7 @@ interface ITicketPayload {
   _id?: string;
   name: string;
   description: string;
+  greeting: string;
   eventId: string;
   dayDescription: ITicketDateTime[];
   price: {
@@ -307,7 +308,7 @@ interface IEventListRes {
   ticketBuyLink: string;
   ticketCount: number;
   wrapperCount: number;
-  business: IEventBusiness;
+  associatedWebsiteIds: string[];
   address: {
     country: string;
     city: string;

@@ -43,6 +43,8 @@
   "opening_hours": "ساعات العمل",
   "open_24_7": "مفتوح 24/7",
   "search_placeholder": "حقل البحث",
+  "generate_tags": "إنشاء الوسوم",
+  "generate_tags_with_ai": "إنشاء الوسوم باستخدام الذكاء الاصطناعي",
   "generating_tags": "جارٍ إنشاء العلامات",
 
   "orders": "الطلبات",
@@ -69,7 +71,7 @@
   "dynamic_pages": "الصفحات الديناميكية",
   "my_profile": "ملفي الشخصي",
   "settings": "الإعدادات",
-  "documents": "المستندات",
+  "documents": "صور قوالب البريد الإلكتروني",
   "version": "الإصدار",
   "max_characters": "الحد الأقصى للحروف",
   "char_count": "{{count}} / {{limit}} حرف",
@@ -373,5 +375,6 @@
 
   "deactivate_website": "تعطيل الموقع",
   "deactivate_website_confirm": "بمجرد التعطيل، سيرى الزوار شاشة \"قيد الإنشاء\" بدلاً من موقعك الفعلي. هل أنت متأكد من رغبتك في التعطيل؟",
-  "pending_approvals": "الموافقات المعلقة"
+  "pending_approvals": "الموافقات المعلقة",
+  "service_unavailable": "هذه الخدمة غير متاحة في الوقت الحالي"
 }

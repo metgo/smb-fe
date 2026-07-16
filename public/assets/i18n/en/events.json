@@ -159,6 +159,8 @@
   "no_tickets_yet_desc": "You haven't created any tickets yet. Create your first ticket to start selling.",
   "create_first_ticket": "Create First Ticket",
   "ticket_name": "Ticket",
+  "greeting_message": "Greeting Message",
+  "greeting_message_placeholder": "Enter your greeting message",
   "ticket_type": "Ticket Type",
   "vip": "VIP",
   "marked_price": "Marked Price",

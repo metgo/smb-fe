@@ -17,7 +17,6 @@ import {
   useGetBusinessForProductQuery,
   useLazyGetBusinessForProductQuery,
 } from "@/store/api/businessQueryApi";
-import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import { detectLanguage } from "@/helpers";
 
 interface UseEventWizardStateProps {
@@ -60,6 +59,9 @@ export function useEventWizardState({
   const [selectedBusinessId, setSelectedBusinessId] = useState<string>("");
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [selectAssociatedWebsiteIds, setSelectAssociatedWebsiteIds] = useState<
+    string[]
+  >([]);
 
   // ─── Step 1: Basic Information ───────────────────────────────────────
   const [eventName, setEventName] = useState("");
@@ -127,10 +129,6 @@ export function useEventWizardState({
   const [capacity, setCapacity] = useState(100);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
-  // ─── Step 5: Tickets ─────────────────────────────────────────────────
-  const [ticketBuyLink, setTicketBuyLink] = useState<null | string>(null);
-  const [hasExternalTicket, setHasExternalTicket] = useState<boolean>(false);
-
   // ─── Step 6: Messaging ───────────────────────────────────────────────
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [showNotificationForm, setShowNotificationForm] = useState(false);
@@ -145,8 +143,6 @@ export function useEventWizardState({
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
     useInitEventCreateMutation();
-  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
-    useCreateWebsiteAccessItemMutation();
 
   // ─── API: Business search ────────────────────────────────────────────
   const { data: initialBusinessData, isLoading: isBusinessesLoading } =
@@ -247,14 +243,13 @@ export function useEventWizardState({
       descriptionAr: fullDescriptionAr,
       authorityId: selectedAuthorityId,
       dmoId: selectedDmoId,
+      associatedWebsiteIds: selectAssociatedWebsiteIds,
       businessId: selectedBusinessId,
       status: eventStatus?.toUpperCase(),
       groupTypesId: selectedGroupTypesId,
       accessibilitiesId: selectedAccessiblitiesId,
       subCategoriesId: selectedSubCategoriesId,
       internalNotes,
-      hasExternalTicket,
-      ticketBuyLink,
     }),
     [
       eventName,
@@ -274,8 +269,7 @@ export function useEventWizardState({
       selectedAccessiblitiesId,
       selectedSubCategoriesId,
       internalNotes,
-      hasExternalTicket,
-      ticketBuyLink,
+      selectAssociatedWebsiteIds,
     ],
   );
 
@@ -393,7 +387,7 @@ export function useEventWizardState({
   // ─── Draft saver ─────────────────────────────────────────────────────
   const { markDirty, saveDraft } = useEventDraftSaver({
     currentStep,
-    eventId,
+    eventId: editId || eventId,
     setEventId,
     initEventCreate,
     updateEvent,
@@ -472,8 +466,6 @@ export function useEventWizardState({
     setAccessiblitiesId([]);
     setEventImages([]);
     setNotifications([]);
-    setHasExternalTicket(false);
-    setTicketBuyLink(null);
     initialImagesCountRef.current = 0;
   }, [isOpen, editId]);
 
@@ -529,16 +521,13 @@ export function useEventWizardState({
     setAddress(editData.address?.location ?? "");
     setOnlineLink(editData.onlineLink ?? "");
 
-    setHasExternalTicket(editData.hasExternalTicket ?? false);
-    setTicketBuyLink(editData.ticketBuyLink ?? null);
-
     setRegistrationRequired(editData.registration?.isRegistration ?? true);
     setCapacity(editData.registration?.capacity ?? 100);
     setCapacityType(
       editData.registration?.isUnlimited ? "unlimited" : "limited",
     );
     setCustomQuestions(editData.customQuestions ?? []);
-
+    setSelectAssociatedWebsiteIds(editData?.associatedWebsiteIds);
     setEventImages(editData.images ?? []);
 
     const mappedNotifications: NotificationData[] = (
@@ -703,13 +692,7 @@ export function useEventWizardState({
       return;
     }
     setIsDraftBtnClicked(true);
-    const resolvedEventId = await saveDraft(false);
-    if (resolvedEventId) {
-      await createWebsiteAccessItem({
-        body: buildWebsiteAccessPayload(),
-        itemId: resolvedEventId,
-      });
-    }
+    await saveDraft(false);
     refetch?.();
     eventDataRefetch?.();
   }, [
@@ -718,7 +701,6 @@ export function useEventWizardState({
     eventNameAr,
     tc,
     saveDraft,
-    createWebsiteAccessItem,
     buildWebsiteAccessPayload,
     refetch,
     eventDataRefetch,
@@ -799,21 +781,13 @@ export function useEventWizardState({
     setFullDescriptionHe(processed.descriptionHe);
     setFullDescriptionAr(processed.descriptionAr);
     handleMarkDirty(1);
-    const resolvedEventId = await saveDraft(true, processed);
-    if (resolvedEventId) {
-      await createWebsiteAccessItem({
-        body: buildWebsiteAccessPayload(),
-        itemId: resolvedEventId,
-      });
-      await Promise.all([refetch?.(), eventDataRefetch?.()]);
-    }
+    await saveDraft(true, processed);
     setIsPublishing(false);
     onClose();
   }, [
     validateStep,
     saveDraft,
     tc,
-    createWebsiteAccessItem,
     buildWebsiteAccessPayload,
     refetch,
     eventDataRefetch,
@@ -871,7 +845,6 @@ export function useEventWizardState({
     // Loading
     isEventCreating,
     isEventUpdating,
-    isWebsiteAccessItemCreating,
 
     // Shared
     eventId,
@@ -890,6 +863,8 @@ export function useEventWizardState({
     setSelectDmoId,
     selectedAuthorityId,
     setSelectAuthorityId,
+    selectAssociatedWebsiteIds,
+    setSelectAssociatedWebsiteIds,
     selectedAccessiblitiesId,
     setAccessiblitiesId,
     selectedGroupTypesId,
@@ -904,7 +879,6 @@ export function useEventWizardState({
     isBusinessesLoading,
     isBusinessSearching,
     searchBusiness,
-    editAssociatedWebsites: editData?.associatedWebsites ?? [],
 
     // Step 3 — Date & Time
     isMultiDay,

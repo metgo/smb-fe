@@ -11,6 +11,7 @@ export const routes = {
   articleDetails: "/article-details",
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
+  documentMgmt: "/documents-management",
   eventSessionMgmt: "/event-session-management",
 
   productsMgmt: "/products-management",
@@ -35,6 +36,7 @@ export const routes = {
   offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
   auth: "/authentication",
+  noInternet: "/no-internet",
   miniSite: "/mini-site",
 
   profile: "/profile",

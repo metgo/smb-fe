@@ -11,6 +11,7 @@ import {
 import { formatDate } from "@/helpers";
 import { toast } from "sonner";
 import { useUpdateVoucherMutation } from "@/store/api/voucherMutationApi";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface Voucher {
   code: string;
@@ -45,6 +46,7 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
   voucherId,
   onSuccess,
 }) => {
+  const { isSuperadmin } = useUserRoles();
   const [updateVoucher, { isLoading: isExtending }] =
     useUpdateVoucherMutation();
 
@@ -122,18 +124,20 @@ const VoucherOverview: React.FC<VoucherOverviewProps> = ({
             </h3>
           </div>
           <div className="space-y-4">
-            <div>
-              <label
-                className={`block text-xs mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}
-              >
-                {t("voucher_code")}
-              </label>
-              <div
-                className={`font-mono font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
-              >
-                {voucher?.code}
+            {isSuperadmin && (
+              <div>
+                <label
+                  className={`block text-xs mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}
+                >
+                  {t("voucher_code")}
+                </label>
+                <div
+                  className={`font-mono font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                >
+                  {voucher?.code}
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <label
                 className={`block text-xs mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}

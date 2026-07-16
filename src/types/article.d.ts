@@ -70,7 +70,6 @@ interface IArticleFormData {
   metaDescriptionHe: string;
   metaDescriptionAr: string;
   // Common
-  slug: string;
   status:
     "DRAFT" | "PUBLISHED" | "SCHEDULED" | "ARCHIVED" | "APPROVED" | "PENDING";
 }

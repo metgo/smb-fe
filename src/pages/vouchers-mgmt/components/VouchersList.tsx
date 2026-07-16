@@ -148,18 +148,22 @@ const VouchersList = ({
           ? [{ key: "checkbox", label: "", width: "50px" }]
           : []),
 
-        {
-          key: "code",
-          label: t("code"),
-          sortable: true,
-          render: (voucher: IVoucherItem) => (
-            <span
-              className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
-            >
-              {voucher.code}
-            </span>
-          ),
-        },
+        ...(isSuperadmin
+          ? [
+              {
+                key: "code",
+                label: t("code"),
+                sortable: true,
+                render: (voucher: IVoucherItem) => (
+                  <span
+                    className={`text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}
+                  >
+                    {voucher.code}
+                  </span>
+                ),
+              },
+            ]
+          : []),
 
         {
           key: "assignee",
@@ -504,7 +508,9 @@ const VouchersList = ({
     };
 
     const columns = [
-      { key: "code", header: t("code"), get: (v: any) => v.code ?? "-" },
+      ...(isSuperadmin
+        ? [{ key: "code", header: t("code"), get: (v: any) => v.code ?? "-" }]
+        : []),
       {
         key: "assignee",
         header: t("assignee"),

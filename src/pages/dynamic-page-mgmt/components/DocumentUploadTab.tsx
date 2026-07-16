@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
+import { canPreview } from "../utils";
+import FileUploadSlot from "./FileUploadSlot";
+import PdfPreviewModal from "./PdfPreviewModal";
 import { Input } from "@/components/ui/input";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import type { FileSlot, IUploadedFile, PageFormData } from "../types";
-import FileUploadSlot from "./FileUploadSlot";
-import PdfPreviewModal from "./PdfPreviewModal";
-import { canPreview } from "../utils";
 
 interface DocumentUploadTabProps {
   currentForm: PageFormData;
