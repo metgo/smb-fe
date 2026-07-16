@@ -862,7 +862,7 @@ export const VendorMonthlyReport = () => {
                 <CheckCircle className="w-5 h-5" />
               </button>
             )}
-          {order.status !== "canceled" && (
+          {order.status !== "canceled" && order.reconciliationStatus !== "disputed" && (
             <button
               onClick={() => handleCancelOrder(order)}
               className="p-1.5 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

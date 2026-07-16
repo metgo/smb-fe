@@ -331,7 +331,7 @@ const NotificationsBell = () => {
                       // For DISPUTE, use orderProductId as the query parameter
                       const paramName = itemType === "DISPUTE" ? "orderProductId" : queryParam;
                       navigate(
-                        `${itemEndpoint[itemType]}?${paramName}=6a579afdba153dabc90ff17f`,
+                        `${itemEndpoint[itemType]}?${paramName}=${notification.itemId}`,
                       );
                     }
                   };
