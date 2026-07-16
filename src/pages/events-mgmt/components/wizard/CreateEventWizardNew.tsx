@@ -42,8 +42,8 @@ export default function CreateEventWizardNew({
   eventDataRefetch,
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
-
   const { t: tc } = useTranslation("toast");
+
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
   const wizard = useEventWizardState({
@@ -136,6 +136,8 @@ export default function CreateEventWizardNew({
             setSelectDmoId={wizard.setSelectDmoId}
             selectedAuthorityId={wizard.selectedAuthorityId}
             setSelectAuthorityId={wizard.setSelectAuthorityId}
+            selectAssociatedWebsiteIds={wizard.selectAssociatedWebsiteIds}
+            setSelectAssociatedWebsiteIds={wizard.setSelectAssociatedWebsiteIds}
             selectedAccessiblitiesId={wizard.selectedAccessiblitiesId}
             setAccessiblitiesId={wizard.setAccessiblitiesId}
             selectedGroupTypesId={wizard.selectedGroupTypesId}

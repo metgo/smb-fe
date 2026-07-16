@@ -173,6 +173,8 @@
   "ticket_name": "اسم البطاقة",
   "ticket_type": "نوع البطاقة",
   "vip": "VIP",
+  "greeting_message": "رسالة الترحيب",
+  "greeting_message_placeholder": "أدخل رسالة الترحيب الخاصة بك",
   "marked_price": "السعر المحدد",
   "selling_price": "سعر البيع",
   "discount_amount": "قيمة الخصم",

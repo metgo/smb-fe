@@ -172,6 +172,8 @@
 
   "ticket_name": "כרטיס",
   "ticket_type": "סוג הכרטיס",
+  "greeting_message": "הודעת ברכה",
+  "greeting_message_placeholder": "הזן את הודעת הברכה שלך",
   "vip": "VIP",
   "marked_price": "מחיר סימולתי",
   "selling_price": "מחיר מכירה",

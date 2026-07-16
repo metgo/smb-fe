@@ -25,6 +25,7 @@ import {
   BulkActionBar,
   ConfirmDialog,
   GridCard,
+  ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
@@ -40,6 +41,7 @@ import { StatusPill } from "@/components/pills";
 import { ActionIconButtons } from "@/components/btns";
 import TicketsModal from "./TicketsModal";
 import { routes } from "@/lib/routes";
+import { useCommon } from "@/hooks/useCommon";
 
 interface EventsWithViewModeProps {
   events: IEventListRes[];
@@ -110,6 +112,7 @@ export default function EventsWithViewMode({
     language,
     isDark,
   } = useThemeClasses();
+  const { allWebsites } = useCommon();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [updateEvent] = useUpdateEventMutation();
@@ -135,8 +138,6 @@ export default function EventsWithViewMode({
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
-  const [clickedEventData, setClickedEventData] =
-    useState<IEventListRes | null>(null);
 
   const [displayedListCount, setDisplayedListCount] = useState(12);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -144,18 +145,15 @@ export default function EventsWithViewMode({
 
   const [getEventEditData] = useLazyGetEventByIdQuery();
 
-  const handleEditEvent = async () => {
+  const handleEditEvent = async (eventId: string) => {
     const toastId = toast.loading(tc("event_edit_data_fetching"));
-    if (clickedEventData) {
-      const eventDetails = await getEventEditData({
-        eventId: clickedEventData?._id,
-      }).unwrap();
+    if (eventId) {
+      const eventDetails = await getEventEditData({ eventId }).unwrap();
       if (eventDetails) {
         setIsEditModalOpen(true);
-        setClickedEventData(null);
         setEditData(eventDetails);
         toast.success(tc("event_details_fetched"), { id: toastId });
-        navigate(`?eventId=${clickedEventData?._id}`);
+        navigate(`?eventId=${eventId}`);
       }
     }
   };
@@ -236,9 +234,8 @@ export default function EventsWithViewMode({
   }, [currentDate]);
 
   // Handle events sets
-  const handleEventSelect = (event: IEventListRes) => {
+  const handleEventSelect = (_event: IEventListRes) => {
     // setShowQuickViewModal(true);
-    setClickedEventData(event);
     // navigate(`?eventId=${event?._id}`, { replace: true });
   };
 
@@ -570,6 +567,30 @@ export default function EventsWithViewMode({
             render: (event) => extractEventDates(event?.dayDescription),
           },
           {
+            key: "associatedWebsites",
+            label: t("websites"),
+            sortable: true,
+            render: (event) => {
+              return (
+                <div className="flex items-center gap-2">
+                  {allWebsites
+                    ?.filter((item) =>
+                      event?.associatedWebsiteIds?.includes(item._id),
+                    )
+                    ?.map((website) => (
+                      <div key={website?._id} className="">
+                        <ImageWithFallback
+                          src={website.logo}
+                          alt={website.name}
+                          className="w-8 h-8"
+                        />
+                      </div>
+                    ))}
+                </div>
+              );
+            },
+          },
+          {
             key: "price",
             label: t("price"),
             sortable: true,
@@ -639,7 +660,7 @@ export default function EventsWithViewMode({
                     icon: PenBox,
                     color: "blue",
                     onClick: () => {
-                      handleEditEvent();
+                      handleEditEvent(event._id);
                     },
                   },
                   {

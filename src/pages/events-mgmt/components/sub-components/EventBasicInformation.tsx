@@ -38,16 +38,17 @@ interface EventBasicInformationProps {
   errors: Record<string, string>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
-  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
+  eventAssociatedWebsites?: IAssociatedWebsiteIds[] | string[];
   selectedBusinessId: string;
   setSelectedBusinessId: (id: string) => void;
   businesses: ISearchBusiness[];
   isBusinessLoading: boolean;
   searchBusiness: (key: string) => void;
+  selectAssociatedWebsiteIds: string[];
+  setSelectAssociatedWebsiteIds: (v: any) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
-  eventId,
   markDirty,
   selectedDmoId,
   setSelectDmoId,
@@ -64,8 +65,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
-  websiteVisibilityIds,
-  setWebsiteVisibilityIds,
+  selectAssociatedWebsiteIds,
+  setSelectAssociatedWebsiteIds,
   eventAssociatedWebsites = [],
   selectedBusinessId,
   setSelectedBusinessId,
@@ -185,14 +186,14 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       <DmoAuthorityWebsiteSelector
         keyId="_id"
         errors={errors}
-        isEdit={!!eventId}
+        isEdit={true}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        websiteVisibilityIds={selectAssociatedWebsiteIds}
+        setWebsiteVisibilityIds={setSelectAssociatedWebsiteIds}
         itemAssociatedWebsites={eventAssociatedWebsites}
       />
 
