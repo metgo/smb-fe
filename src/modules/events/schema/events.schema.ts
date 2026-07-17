@@ -13,6 +13,7 @@ import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { RecurringEventRule } from './recurring-event.schema';
 import { ScheduledEventNotification } from './scheduled-event-notification.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @Schema({ _id: false })
 export class CommonQuestionOptions {
@@ -259,6 +260,14 @@ export class Event extends AuditableSchema {
     required: false,
   })
     scheduledNotificationId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: ExternalApi.name,
+    required: false,
+    default: null,
+  })
+    associatedWebsiteIds: mongoose.Types.ObjectId[];
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

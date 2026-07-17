@@ -35,6 +35,9 @@ export class Ticket extends AuditableSchema {
     description: string;
 
   @Prop()
+    greeting: string;
+
+  @Prop()
     images: Image[];
 
   @Prop({

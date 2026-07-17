@@ -5,7 +5,7 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
-import { Locale } from 'src/common/enum';
+import { Locale, CommonStatus } from 'src/common/enum';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { SiteFiltersConfigStatus } from '../../site-filters-config.type';
@@ -13,6 +13,9 @@ import { SiteFiltersConfig } from '../../schema/site-filters-config.schema';
 import { GetSiteConfigByIdentifierIdQuery } from '../get-site-config-by-identifierId.query';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { ServicesTypes } from 'src/modules/dashboard/dashboard.type';
+import { EventsAudit } from 'src/modules/events/schema/events-audit.schema';
+import { Trip } from 'src/modules/trips/schema/trips.schema';
+import { TripStatus } from 'src/modules/trips/trips.types';
 
 @QueryHandler(GetSiteConfigByIdentifierIdQuery)
 export class GetSiteConfigByIdentifierIdHandler
@@ -24,6 +27,10 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
     private SiteFiltersConfigModel: Model<SiteFiltersConfig>,
     @InjectModel(ExternalApi.name)
     private ExternalApiModel: Model<ExternalApi>,
+    @InjectModel(EventsAudit.name)
+    private EventsAuditModel: Model<EventsAudit>,
+    @InjectModel(Trip.name)
+    private TripModel: Model<Trip>,
   ) {}
 
   async execute(queries: GetSiteConfigByIdentifierIdQuery) {
@@ -58,15 +65,6 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
               'slug name nameHe nameAr shortDescription shortDescriptionHe shortDescriptionAr geoLocation images primaryCategoryId groupTypesId accessibilitiesId tagsId address',
           },
           {
-            path: 'siteTopics.siteCategories.eventIds',
-            select:
-              'slug name shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address dayDescription',
-          },
-          {
-            path: 'siteTopics.siteCategories.tripIds',
-            select: 'slug name shortDescription images groupTypesId accessibilitiesId',
-          },
-          {
             path: 'siteTopics.siteCategories.fundayIds',
             select: 'slug name shortDescription images groupTypesId accessibilitiesId',
           },
@@ -88,17 +86,54 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
       const { locale } = query;
       const result = siteSettings.toObject();
 
-      // Filter out expired events (where all dayDescription dates are in the past)
-      // Also deduplicate eventIds across all categories to prevent duplicates
+      // Events are no longer curated per-category via SiteFiltersConfig.
+      // Site scoping for events is determined solely by EventsAudit.associatedWebsiteIds -
+      // any matching event shows up under every category on the site.
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
-      const seenEventIds = new Set<string>();
 
-      const isEventExpired = (event: any): boolean => {
-        const dayDescriptions: Array<{ date: Date }> = event.dayDescription ?? [];
-        if (dayDescriptions.length === 0) return false; // no dates — keep it
-        return !dayDescriptions.some(d => new Date(d.date) >= today);
-      };
+      const events = await this.EventsAuditModel.find({
+        associatedWebsiteIds: siteSetting._id,
+        isDeleted: { $ne: true },
+        status: CommonStatus.APPROVED,
+        isActive: true,
+        // Filter out expired events - events with all dayDescription dates in the past
+        $or: [
+          { dayDescription: { $exists: false } },
+          { dayDescription: { $size: 0 } },
+          {
+            dayDescription: {
+              $elemMatch: {
+                date: { $gte: today },
+              },
+            },
+          },
+        ],
+      })
+        .select('slug name shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address dayDescription eventId')
+        .lean();
+
+      const siteEvents = events.map((event: any) => ({
+        ...event,
+        _id: event.eventId,
+        images: this.sanitizeImages(event.images),
+        serviceType: ServicesTypes.EVENT,
+      }));
+
+      // Trips have no TripsAudit collection and no website-association field,
+      // so - same as events - they're no longer curated per-category via cat.tripIds:
+      // every APPROVED trip shows up under every category on every site.
+      const trips = await this.TripModel.find({
+        status: TripStatus.APPROVED,
+      })
+        .select('slug name shortDescription images groupTypesId accessibilitiesId')
+        .lean();
+
+      const siteTrips = trips.map((trip: any) => ({
+        ...trip,
+        images: this.sanitizeImages(trip.images),
+        serviceType: ServicesTypes.TRIPS,
+      }));
 
       result.header = this.localizeString(
         { base: result.header, he: result.headerHe, ar: result.headerAr },
@@ -176,26 +211,8 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
                       ...this.localizeItem(item, locale),
                       serviceType: ServicesTypes.PRODUCT,
                     })),
-                  eventIds: (cat.eventIds || [])
-                    .filter((event: any) => {
-                      if (!event?._id || !event || isEventExpired(event)) return false;
-                      const eventIdStr = event._id.toString();
-                      if (seenEventIds.has(eventIdStr)) return false;
-                      seenEventIds.add(eventIdStr);
-                      return true;
-                    })
-                    .map(({ images, dayDescription, ...item }: any) => ({
-                      ...item,
-                      images: this.sanitizeImages(images),
-                      serviceType: ServicesTypes.EVENT,
-                    })),
-                  tripIds: (cat.tripIds || [])
-                    .filter(Boolean)
-                    .map(({ images, ...item }: any) => ({
-                      ...item,
-                      images: this.sanitizeImages(images),
-                      serviceType: ServicesTypes.TRIPS,
-                    })),
+                  eventIds: siteEvents,
+                  tripIds: siteTrips,
                   fundayIds: (cat.fundayIds || [])
                     .filter(Boolean)
                     .map(({ images, ...item }: any) => ({

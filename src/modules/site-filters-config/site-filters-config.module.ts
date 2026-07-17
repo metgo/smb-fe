@@ -39,6 +39,11 @@ import {
   PointOfInterest,
   PointOfInterestSchema,
 } from '../point-of-interests/schema/point-of-interest.schema';
+import {
+  EventsAudit,
+  EventsAuditSchema,
+} from '../events/schema/events-audit.schema';
+import { Trip, TripSchema } from '../trips/schema/trips.schema';
 
 @Module({
   imports: [
@@ -52,6 +57,8 @@ import {
       { name: Tags.name, schema: TagsSchema },
       { name: Campaign.name, schema: CampaignSchema },
       { name: PointOfInterest.name, schema: PointOfInterestSchema },
+      { name: EventsAudit.name, schema: EventsAuditSchema },
+      { name: Trip.name, schema: TripSchema },
     ]),
     ConfigModule,
     UsersModule,

@@ -1857,6 +1857,7 @@ export class OrdersService {
         price: number;
         deliveryFee: number;
         qrCodeUrl?: string;
+        greeting?: string;
       }[];
       totalAmount: number;
     };
@@ -1986,6 +1987,7 @@ export class OrdersService {
             price,
             deliveryFee: 0, // Delivery fee counted once in total, not per ticket
             qrCodeUrl: qrUrl,
+            greeting: product?.greeting,
           });
 
           this.logger.info('[EMAIL]: TICKET PRODUCT ADDED', {
@@ -2093,6 +2095,7 @@ export class OrdersService {
                 TOTALAMOUNT: group.totalAmount || 0,
                 CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
                 BUSINESSADDRESS: eventLocationForBusinessAddress || '',
+                GREETING: group.products.find(p => p.greeting)?.greeting || '',
               },
             });
             this.logger.info('[EMAIL]: CUSTOMER EMAIL SENT', { email });
@@ -2215,6 +2218,7 @@ export class OrdersService {
                   TOKEN_EXPIRY_DAYS: String(ttlDays),
                   HOLD_EXPIRY_MINUTES: '7',
                   CHANGE_SETTINGS_LINK: externalApi?.websiteUrl,
+                  GREETING: group.products.find(p => p.greeting)?.greeting || '',
                   PRODUCTS_HTML: lumenProductsHtml,
                   TOTALAMOUNT: group.totalAmount || 0,
                   BUSINESSADDRESS: eventLocationForBusinessAddress || '',
