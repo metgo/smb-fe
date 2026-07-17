@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Loader,
   Mail,
-  // Languages,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -42,8 +41,8 @@ export default function CreateEventWizardNew({
   eventDataRefetch,
 }: CreateEventWizardNewProps) {
   const { t } = useTranslation("events");
-
   const { t: tc } = useTranslation("toast");
+
   const { textPrimary, textTertiary, isDark } = useThemeClasses();
 
   const wizard = useEventWizardState({
@@ -66,10 +65,7 @@ export default function CreateEventWizardNew({
 
   if (!isOpen) return null;
 
-  const isBusy =
-    wizard.isEventCreating ||
-    wizard.isEventUpdating ||
-    wizard.isWebsiteAccessItemCreating;
+  const isBusy = wizard.isEventCreating || wizard.isEventUpdating;
 
   return (
     <ModalWrapper onClose={wizard.handleClose} showSpinner={isBusy}>
@@ -136,6 +132,8 @@ export default function CreateEventWizardNew({
             setSelectDmoId={wizard.setSelectDmoId}
             selectedAuthorityId={wizard.selectedAuthorityId}
             setSelectAuthorityId={wizard.setSelectAuthorityId}
+            selectAssociatedWebsiteIds={wizard.selectAssociatedWebsiteIds}
+            setSelectAssociatedWebsiteIds={wizard.setSelectAssociatedWebsiteIds}
             selectedAccessiblitiesId={wizard.selectedAccessiblitiesId}
             setAccessiblitiesId={wizard.setAccessiblitiesId}
             selectedGroupTypesId={wizard.selectedGroupTypesId}
@@ -144,7 +142,6 @@ export default function CreateEventWizardNew({
             setSubCategoriesId={wizard.setSubCategoriesId}
             websiteVisibilityIds={wizard.websiteVisibilityIds}
             setWebsiteVisibilityIds={wizard.setWebsiteVisibilityIds}
-            eventAssociatedWebsites={wizard.editAssociatedWebsites}
             selectedBusinessId={wizard.selectedBusinessId}
             setSelectedBusinessId={wizard.setSelectedBusinessId}
             businesses={wizard.businesses}

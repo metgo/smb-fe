@@ -29,6 +29,7 @@ import {
   VoucherDetailsPage,
   ContentMgmtPage,
   ErrorUiPage,
+  NoInternetPage,
   NotificationsMgmtPage,
   AnalyticsDashboardPage,
   WebsiteMgmtPage,
@@ -65,6 +66,7 @@ import {
 import ArticlesManagement from "./pages/articles";
 import ArticleDetails from "./pages/articles/details";
 import { VendorReconciliationMgmt } from "./pages/vendor-reconcilation-mgmt";
+import DocumentsManagement from "./pages/documents-mgmt";
 import PublicTicketPage from "./pages/public-ticket";
 import PublicSessionPage from "./pages/public-session";
 import { UserRole } from "./enums/user.types";
@@ -114,6 +116,50 @@ interface ProtectedRouteProps {
 function App() {
   const socket = useSocket();
   const dispatch = useAppDispatch();
+
+  // Handle internet connection monitoring
+  useEffect(() => {
+    const handleOffline = () => {
+      // Only redirect if not already on no-internet page
+      if (window.location.pathname !== routes.noInternet) {
+        // Save current URL for restoration
+        sessionStorage.setItem(
+          "last_valid_url",
+          window.location.pathname + window.location.search,
+        );
+        window.location.href = routes.noInternet;
+      }
+    };
+
+    const handleOnline = () => {
+      // When connection is restored, reload to restore original content
+      const lastUrl = sessionStorage.getItem("last_valid_url");
+      if (lastUrl && window.location.pathname === routes.noInternet) {
+        sessionStorage.removeItem("last_valid_url");
+        window.location.href = lastUrl;
+      } else if (window.location.pathname === routes.noInternet) {
+        // If no saved URL, go to dashboard
+        window.location.href = routes.dashboard;
+      }
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+
+    // Check initial connection status
+    if (!navigator.onLine && window.location.pathname !== routes.noInternet) {
+      sessionStorage.setItem(
+        "last_valid_url",
+        window.location.pathname + window.location.search,
+      );
+      window.location.href = routes.noInternet;
+    }
+
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
 
   const { notifications, unreadCount } = useAppSelector(
     (state) => state.notification,
@@ -468,6 +514,14 @@ function App() {
           errorElement: <ErrorUiPage />,
         },
         {
+          path: routes.noInternet,
+          element: (
+            <Suspense fallback={<SplashLoader />}>
+              <NoInternetPage />
+            </Suspense>
+          ),
+        },
+        {
           element: (
             <Suspense fallback={<SplashLoader />}>
               <ProtectedRoute>
@@ -500,6 +554,10 @@ function App() {
             { path: routes.articleMgmt, element: <ArticlesManagement /> },
             { path: routes.articleDetails, element: <ArticleDetails /> },
 
+            { path: routes.documentMgmt, element: <DocumentsManagement /> },
+
+            { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+            { path: routes.eventDetails, element: <EventDetailsPage /> },
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },
 

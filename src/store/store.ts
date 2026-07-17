@@ -35,6 +35,7 @@ import { dynamicPageApi } from "./api/dynamicPageApi";
 import { blogQueryApi } from "./api/blogQueryApi";
 import { blogMutationApi } from "./api/blogMutationApi";
 import { websiteSettingsApi } from "./api/websiteSettingsApi";
+import { documentMutationApi } from "./api/doumentMutationApi";
 import { promotionsApi } from "./api/promotionsApi";
 import { websiteConfigApi } from "./api/websiteConfigApi";
 import { websiteCrashApi } from "./api/websiteCrashApi";
@@ -61,7 +62,7 @@ export const store = configureStore({
 
     [productMutationApi.reducerPath]: productMutationApi.reducer,
     [productQueryApi.reducerPath]: productQueryApi.reducer,
-
+    [documentMutationApi.reducerPath]: documentMutationApi.reducer,
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
     [businessMutationApi.reducerPath]: businessMutationApi.reducer,
 
@@ -114,7 +115,7 @@ export const store = configureStore({
       mediaMutationApi.middleware,
       productMutationApi.middleware,
       productQueryApi.middleware,
-
+      documentMutationApi.middleware,
       commonMutationApi.middleware,
       contentMutationApi.middleware,
       contentQueryApi.middleware,

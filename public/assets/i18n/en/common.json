@@ -69,7 +69,7 @@
   "order_summary": "Orders Summary",
   "vendor_reconciliation": "Vendor Reconciliation",
   "settings": "Settings",
-  "documents": "Documents",
+  "documents": "Email Template Images",
   "version": "Version",
   "max_characters": "Max characters",
   "char_count": "{{count}} / {{limit}} characters",
@@ -308,6 +308,8 @@
   "translating": "Translating...",
   "subtitle": "Subtitle",
   "short_description": "Short Description",
+  "generate_tags": "Generate Tags",
+  "generate_tags_with_ai": "Generate Tags with AI",
   "generating_tags": "Generating tags",
   "change_business_owner": "Change Business Owner",
   "current_owner": "Current owner:",
@@ -384,5 +386,6 @@
 
   "deactivate_website": "Deactivate Website",
   "deactivate_website_confirm": "Once inactive, visitors will see an under-construction screen instead of your live website. Are you sure you want to deactivate?",
-  "pending_approvals": "Pending Approvals"
+  "pending_approvals": "Pending Approvals",
+  "service_unavailable": "This service is unavailable at the moment"
 }

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import { locales } from "@/lib/utils";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { ImageWithFallback } from "@/components/shared";
 
 interface AuthHeaderProps {
   title: string;
@@ -108,13 +107,7 @@ const AuthHeader = ({
         }}
         formatOptionLabel={(option: ItemOption) => (
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {option.flag && (
-              <ImageWithFallback
-                src={option.flag}
-                alt={option.label}
-                style={{ width: 24, height: 26, objectFit: "contain" }}
-              />
-            )}
+            <div>{option.flag}</div>
             <span className="font-semibold">{option.label}</span>
           </div>
         )}

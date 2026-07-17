@@ -344,10 +344,10 @@ export default function Sidebar() {
         },
         {
           id: "documents",
-          path: routes.dashboard,
+          path: routes.documentMgmt,
           label: t("documents") || "Documents",
           icon: File,
-          isEnabled: false,
+          isEnabled: true,
         },
         ...(isSuperadmin
           ? [

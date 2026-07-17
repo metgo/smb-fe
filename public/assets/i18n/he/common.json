@@ -31,6 +31,8 @@
   "translate_hint": "תרגם",
   "auto_translate": "תרגום אוטומטי",
   "translating": "מתרגם...",
+  "generate_tags": "צור תגיות",
+  "generate_tags_with_ai": "צור תגיות עם AI",
   "generating_tags": "מייצר תגיות",
 
   "delete_business": "מחיקת עסק",
@@ -46,10 +48,6 @@
   "cancel": "בטל",
   "city": "עיר",
   "update": "עדכן",
-  "translation": "תרגום",
-  "translate_hint": "תרגם",
-  "auto_translate": "תרגום אוטומטי",
-  "translating": "מתרגם...",
   "opening_hours": "שעות פתיחה",
   "open_24_7": "פתוח 24/7",
   "search_placeholder": "חיפוש...",
@@ -73,15 +71,6 @@
   "promotions": "מבצעים",
   "primary_category": "קטגוריה ראשית",
 
-  "title_placeholder": "הזן כותרת...",
-  "subtitle_placeholder": "הזן כותרת משנה...",
-  "short_description_placeholder": "הזן תיאור קצר המוצג בתצוגות מקדימות ובתוצאות חיפוש...",
-  "full_description_placeholder": "הזן כאן את תוכן התיאור המלא...",
-  "full_description": "תיאור מלא",
-  "title": "כותרת",
-  "subtitle": "כתובית",
-  "short_description": "תיאור קצר",
-
   "blog": "בלוג",
   "artilce": "מאמר",
   "news_feed": "פיד חדשות",
@@ -91,7 +80,7 @@
   "dynamic_pages": "דפים דינמיים",
   "my_profile": "הפרופיל שלי",
   "settings": "הגדרות",
-  "documents": "מסמכים",
+  "documents": "תמונות תבנית אימייל",
   "version": "גרסה",
   "max_characters": "מקסימום תווים",
   "char_count": "{{count}} / {{limit}} תווים",
@@ -401,5 +390,6 @@
 
   "deactivate_website": "השבתת אתר",
   "deactivate_website_confirm": "לאחר השבתה, מבקרי האתר יראו מסך \"בנייה\" במקום האתר הפעיל. האם אתה בטוח שברצונך להשבית?",
-  "pending_approvals": "אישורים ממתינים"
+  "pending_approvals": "אישורים ממתינים",
+  "service_unavailable": "השירות אינו זמין כרגע"
 }

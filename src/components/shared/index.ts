@@ -24,11 +24,14 @@ import WebsiteSelect from "./WebsiteSelect";
 import WizardFooter from "./WizardFooter";
 import WizardStepper from "./WizardStepper";
 import ShowColumns from "./ShowColumns";
+import UploadZone from "./UploadZone";
+import DmoAuthorityWebsiteIdsSelector from "./DmoAuthorityWebsiteIdsSelector";
 
 export {
   Spinner,
   SplashLoader,
   RouterProgressBar,
+  UploadZone,
   PageStats,
   PageHeader,
   IdleLogout,
@@ -50,6 +53,7 @@ export {
   ConnectedWebsites,
   ReordableDataTable,
   DmoAuthorityWebsiteSelector,
+  DmoAuthorityWebsiteIdsSelector,
   WizardStepper,
   GridCard,
 };

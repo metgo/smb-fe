@@ -100,6 +100,9 @@ export function useContentData({
     const { searchQuery, filters } = tabState["Events"];
     const params: any = {
       status: "APPROVED",
+      dmoId,
+      authorityId,
+      externalApiId,
       limit: PAGE_LIMIT,
       page: eventPage,
     };
@@ -111,7 +114,7 @@ export function useContentData({
     if (filters.dateRangeFilter.end)
       params.endDate = filters.dateRangeFilter.end;
     return params;
-  }, [eventTab, eventPage]);
+  }, [eventTab, eventPage, dmoId, authorityId, externalApiId]);
 
   const poiParams = useMemo(() => {
     const { searchQuery } = tabState["POI"];

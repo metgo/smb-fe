@@ -78,6 +78,15 @@ export default function ArticleSeoSettings({
   const metaTitleLen = (formData[metaTitleField] || "").length;
   const metaDescLen = (formData[metaDescField] || "").length;
 
+  const titleField = `title${suffix}`;
+  const shortDescField = `shortDescription${suffix}`;
+  const contentField = `content${suffix}`;
+  const canGenerateSeo = Boolean(
+    (formData[titleField] || "").trim() &&
+    (formData[shortDescField] || "").trim() &&
+    (formData[contentField] || "").trim(),
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -86,19 +95,21 @@ export default function ArticleSeoSettings({
           {t("settings")}
         </h3>
         <div className="flex items-center gap-2">
-          <button
-            onClick={onGenerateSeo}
-            disabled={isGeneratingSeo}
-            title="Generate SEO with AI"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isGeneratingSeo ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5" />
-            )}
-            {isGeneratingSeo ? t("generating") : t("auto_seo")}
-          </button>
+          {canGenerateSeo && (
+            <button
+              onClick={onGenerateSeo}
+              disabled={isGeneratingSeo}
+              title="Generate SEO with AI"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isGeneratingSeo ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {isGeneratingSeo ? t("generating") : t("auto_seo")}
+            </button>
+          )}
           <button
             onClick={onTogglePreview}
             className={`p-2 rounded-lg ${textTertiary} lg:hidden`}
@@ -106,37 +117,6 @@ export default function ArticleSeoSettings({
             <Eye className="w-4 h-4" />
           </button>
         </div>
-      </div>
-
-      {/* Slug */}
-      <div>
-        <label
-          className={`block text-xs font-semibold uppercase tracking-wider ${textTertiary} mb-2`}
-        >
-          {t("url_slug")}
-        </label>
-        <div
-          className={`flex items-center border ${borderColor} rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500`}
-        >
-          <span
-            className={`px-3 py-2.5 text-sm ${textTertiary} ${bgSecondary} border-r ${borderColor} select-none`}
-          >
-            /
-          </span>
-          <input
-            type="text"
-            value={formData.slug || ""}
-            onChange={(e) =>
-              onChange({
-                slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
-              })
-            }
-            placeholder={t("url_slug_placeholder")}
-            className={`flex-1 px-3 py-2.5 ${bgPrimary} ${textPrimary} focus:outline-none text-sm font-mono`}
-            dir="ltr"
-          />
-        </div>
-        <p className={`text-xs ${textTertiary} mt-1`}>{t("url_slug_hint")}</p>
       </div>
 
       {/* Summary */}

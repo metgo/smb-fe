@@ -177,3 +177,29 @@ interface IActionIconButton {
   isLoading?: boolean;
   disabled?: boolean;
 }
+
+interface IMetaData {
+  page: number;
+  limit: number;
+  data: number;
+  pageCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+interface IPagination {
+  meta: IMetaData;
+  totalData: number;
+}
+
+interface IDoucment {
+  _id: string;
+  title: string;
+  imageUrl: string;
+  templateKey: string;
+  externalApiId: string;
+}
+
+interface IDocumentRes extends IPagination {
+  data: Array<IDoucment>;
+}

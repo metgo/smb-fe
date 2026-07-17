@@ -88,6 +88,7 @@ const TicketsModal: React.FC<TicketsStepProps> = ({
       _id: "",
       name: "",
       description: "",
+      greeting: "",
       eventId,
       type: "free",
       dayDescription: [{ date: "", startTime: "", endTime: "" }],

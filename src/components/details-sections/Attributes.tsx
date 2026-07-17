@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { X, Loader } from "lucide-react";
+import { X, Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { useTranslation } from "react-i18next";
 import { useGenerateTagsMutation } from "@/store/api/masterDataApi";
-import { getLngWiseStr } from "@/helpers";
 
 interface Tag {
   en: string;
@@ -13,18 +13,13 @@ interface Tag {
   ar: string;
 }
 
+// Only `tags` is guaranteed across all consumers (business, poi, event, article).
+// Everything else (primaryCategory etc.) is only read/written in "full" variant,
+// and each parent's own formData already carries whatever extra fields it needs.
 interface AttributesFormData {
-  name: string;
-  nameHe: string;
-  nameAr: string;
-  fullDescription: string;
-  fullDescriptionHe: string;
-  fullDescriptionAr: string;
-  primaryCategory: string;
-  serviceType: string;
   tags: Tag[];
-  accessibility: string[];
-  groupTypes: string[];
+  primaryCategory?: string;
+  [key: string]: any;
 }
 
 interface FormErrors {
@@ -32,66 +27,36 @@ interface FormErrors {
 }
 
 interface AttributesProps {
-  name: string;
-  description: string;
   formData: AttributesFormData;
   setFormData: (data: AttributesFormData) => void;
   editData?: any;
   selectedFormLanguage: Language;
   errors: FormErrors;
   selectedGroupTypesId?: string[];
-  setGroupTypesId: (v: string[]) => void;
+  setGroupTypesId?: (v: string[]) => void;
   selectedAccessiblitiesId?: string[];
-  setAccessiblitiesId: (v: string[]) => void;
+  setAccessiblitiesId?: (v: string[]) => void;
   opMode?: string;
+  variant?: "full" | "tagsOnly";
+  /** Parent computes this from its OWN field names (e.g. name/nameHe/nameAr for business, title/titleHe/titleAr for poi) */
+  nameForGen: string;
+  /** Parent computes this from its OWN field names (e.g. fullDescription* for business, shortDescription* or content* for poi) */
+  descriptionForGen: string;
 }
 
 const Attributes: FC<AttributesProps> = ({
   errors,
-  name,
-  description,
   formData,
   setFormData,
-  setGroupTypesId,
+  setGroupTypesId = () => {},
   selectedGroupTypesId = [],
   selectedAccessiblitiesId = [],
-  setAccessiblitiesId,
+  setAccessiblitiesId = () => {},
   editData,
-  selectedFormLanguage,
+  variant = "full",
+  nameForGen,
+  descriptionForGen,
 }) => {
-  const currentName = getLngWiseStr(
-    selectedFormLanguage,
-    formData?.name,
-    formData?.nameHe,
-    formData?.nameAr,
-  );
-  const currentDescription = getLngWiseStr(
-    selectedFormLanguage,
-    formData?.fullDescription,
-    formData?.fullDescriptionHe,
-    formData?.fullDescriptionAr,
-  );
-
-  const originalName = getLngWiseStr(
-    selectedFormLanguage,
-    editData?.name,
-    editData?.nameHe,
-    editData?.nameAr,
-  );
-
-  const originalDescription = getLngWiseStr(
-    selectedFormLanguage,
-    editData?.description,
-    editData?.descriptionHe,
-    editData?.descriptionAr,
-  );
-
-  const isNameChanged = () => {
-    return currentName !== originalName;
-  };
-  const isDescriptionChanged = () => {
-    return currentDescription !== originalDescription;
-  };
   const { t } = useTranslation("common");
   const { isDark, language } = useThemeClasses();
   const { categories, accessibility, groupTypes, allTags } = useCommon();
@@ -141,66 +106,48 @@ const Attributes: FC<AttributesProps> = ({
       );
     }) ?? [];
 
-  /* ---------------- Auto Generate Tags ---------------- */
+  /* ---------------- Reset generated flag on record change ---------------- */
   useEffect(() => {
     hasGeneratedRef.current = false;
   }, [editData?._id]);
 
-  /* ---------------- Auto Generate Tags ---------------- */
-  useEffect(() => {
-    const currentName = getLngWiseStr(
-      language,
-      formData?.name,
-      formData?.nameHe,
-      formData?.nameAr,
-    );
+  /* ---------------- Generate Tags (manual trigger) ---------------- */
+  const handleGenerateTags = () => {
+    if (!nameForGen && !descriptionForGen) return;
 
-    const currentDescription = getLngWiseStr(
-      language,
-      formData?.fullDescription,
-      formData?.fullDescriptionHe,
-      formData?.fullDescriptionAr,
-    );
+    getGeneratedTags({
+      name: nameForGen,
+      description: descriptionForGen,
+    })
+      .then((res: any) => {
+        if (!res?.data?.length) return;
 
-    if (!currentName && !currentDescription) return;
+        const newTags: Tag[] = res.data
+          .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
+          .map((tag: Tag) => ({
+            en: tag.en || "",
+            he: tag.he || "",
+            ar: tag.ar || "",
+          }));
 
-    const noTagsYet = !formData?.tags?.length;
-    const nameOrDescChanged = isNameChanged() || isDescriptionChanged();
+        if (newTags.length > 0) {
+          setFormData({
+            ...formData,
+            tags: [...formData.tags, ...newTags],
+          });
+        }
 
-    if (!noTagsYet && !nameOrDescChanged) return;
-
-    // Debounce: cancels any pending call if name/description changes again
-    // before this timer fires. Only the last change in a burst triggers a call.
-    const timer = setTimeout(() => {
-      getGeneratedTags({
-        name: currentName,
-        description: currentDescription,
+        hasGeneratedRef.current = true;
       })
-        .then((res: any) => {
-          if (!res?.data?.length) return;
-
-          const newTags: Tag[] = res.data
-            .filter((tag: Tag) => !formData.tags.some((t) => t.en === tag.en))
-            .map((tag: Tag) => ({
-              en: tag.en || "",
-              he: tag.he || "",
-              ar: tag.ar || "",
-            }));
-
-          if (newTags.length > 0) {
-            setFormData({
-              ...formData,
-              tags: [...formData.tags, ...newTags],
-            });
-          }
-        })
-        .catch((err) => {
-          console.error("Tag generation failed:", err);
-        });
-    }, 600); // adjust delay to taste
-
-    return () => clearTimeout(timer); // cleanup cancels the stale call
-  }, [name, description, language]);
+      .catch((err) => {
+        console.error("Tag generation failed:", err);
+        toast.error(
+          t("service_unavailable", {
+            defaultValue: "This service is unavailable at the moment",
+          }),
+        );
+      });
+  };
 
   /* ---------------- Handlers ---------------- */
 
@@ -228,108 +175,117 @@ const Attributes: FC<AttributesProps> = ({
 
   return (
     <div className="relative">
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0  bg-white dark:bg-black/30 z-50 flex items-center justify-center rounded-lg">
-          {" "}
-          <div className="flex flex-col items-center gap-3 text-black dark:text-white">
-            <Loader className="w-10 h-10 animate-spin" />
-            <p className="text-sm font-medium">
-              {t("generating_tags") || "Generating tags..."}
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-6">
-        {/* Primary Category */}
-        <div>
-          <label
-            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("primary_category")} <span className="text-red-500">*</span>
-          </label>
+        {variant === "full" && (
+          <>
+            {/* Primary Category */}
+            <div>
+              <label
+                className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("primary_category")} <span className="text-red-500">*</span>
+              </label>
 
-          <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
-            {categories?.map((cat: any) => {
-              const isSelected = formData.primaryCategory === cat._id;
+              <div className="flex gap-1 md:gap-3 overflow-x-auto pb-2">
+                {categories?.map((cat: any) => {
+                  const isSelected = formData.primaryCategory === cat._id;
 
-              return (
-                <button
-                  key={cat._id}
-                  ref={isSelected ? selectedCatRef : null}
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, primaryCategory: cat._id })
-                  }
-                  className={`
-                shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
-                ${
-                  isSelected
-                    ? "border-4 border-teal-600 text-teal-600"
-                    : isDark
-                      ? "border border-gray-700 text-gray-300 hover:border-teal-500"
-                      : "border border-gray-300 text-gray-700 hover:border-teal-500"
-                }
-              `}
-                >
-                  {/* Icon */}
-                  <img
-                    src={cat.icon?.iconPath}
-                    alt={cat.icon?.iconAlt || cat.name}
-                    className={`w-14 h-14 object-contain transition-all ${
-                      isSelected ? "" : "opacity-70"
-                    }`}
-                  />
+                  return (
+                    <button
+                      key={cat._id}
+                      ref={isSelected ? selectedCatRef : null}
+                      type="button"
+                      onClick={() =>
+                        setFormData({ ...formData, primaryCategory: cat._id })
+                      }
+                      className={`
+                    shrink-0 w-28 h-28 sm:w-32 sm:h-32 flex flex-col items-center justify-center gap-2 rounded-md border transition-all
+                    ${
+                      isSelected
+                        ? "border-4 border-teal-600 text-teal-600"
+                        : isDark
+                          ? "border border-gray-700 text-gray-300 hover:border-teal-500"
+                          : "border border-gray-300 text-gray-700 hover:border-teal-500"
+                    }
+                  `}
+                    >
+                      {/* Icon */}
+                      <img
+                        src={cat.icon?.iconPath}
+                        alt={cat.icon?.iconAlt || cat.name}
+                        className={`w-14 h-14 object-contain transition-all ${
+                          isSelected ? "" : "opacity-70"
+                        }`}
+                      />
 
-                  {/* Text */}
-                  <span className="text-sm font-medium text-center">
-                    {cat.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {errors.primaryCategory && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.primaryCategory}
-            </p>
-          )}
-        </div>
+                      {/* Text */}
+                      <span className="text-sm font-medium text-center">
+                        {cat.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.primaryCategory && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.primaryCategory}
+                </p>
+              )}
+            </div>
 
-        <SelectableChips
-          label="accessiblities"
-          items={accessibility}
-          selectedIds={selectedAccessiblitiesId}
-          onSelect={(itemId: string) =>
-            setAccessiblitiesId(
-              selectedAccessiblitiesId.includes(itemId)
-                ? selectedAccessiblitiesId.filter((id) => id !== itemId)
-                : [...selectedAccessiblitiesId, itemId],
-            )
-          }
-        />
+            <SelectableChips
+              label="accessiblities"
+              items={accessibility}
+              selectedIds={selectedAccessiblitiesId}
+              onSelect={(itemId: string) =>
+                setAccessiblitiesId(
+                  selectedAccessiblitiesId.includes(itemId)
+                    ? selectedAccessiblitiesId.filter((id) => id !== itemId)
+                    : [...selectedAccessiblitiesId, itemId],
+                )
+              }
+            />
 
-        <SelectableChips
-          label="group_types"
-          items={groupTypes}
-          selectedIds={selectedGroupTypesId}
-          onSelect={(itemId: string) =>
-            setGroupTypesId(
-              selectedGroupTypesId.includes(itemId)
-                ? selectedGroupTypesId.filter((id) => id !== itemId)
-                : [...selectedGroupTypesId, itemId],
-            )
-          }
-        />
+            <SelectableChips
+              label="group_types"
+              items={groupTypes}
+              selectedIds={selectedGroupTypesId}
+              onSelect={(itemId: string) =>
+                setGroupTypesId(
+                  selectedGroupTypesId.includes(itemId)
+                    ? selectedGroupTypesId.filter((id) => id !== itemId)
+                    : [...selectedGroupTypesId, itemId],
+                )
+              }
+            />
+          </>
+        )}
 
         {/* Tags */}
-        <div>
-          <label
-            className={`block text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-          >
-            {t("tags")}
-          </label>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label
+              className={`flex text-sm mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {t("tags")}
+            </label>
+            {nameForGen !== "-" && descriptionForGen !== "-" ? (
+              <button
+                type="button"
+                onClick={handleGenerateTags}
+                disabled={isLoading}
+                title={t("generate_tags_with_ai")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                {isLoading ? t("generating_tags") : t("generate_tags")}
+              </button>
+            ) : null}
+          </div>
 
           <div
             className={`relative p-3 rounded-lg border min-h-14 ${
@@ -344,7 +300,11 @@ const Attributes: FC<AttributesProps> = ({
                 .map((tag, idx) => (
                   <span
                     key={`${tag.en}-${idx}`}
-                    className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium ${
+                      isDark
+                        ? "bg-gray-700 text-gray-200"
+                        : "bg-gray-100 text-gray-900 border-teal-50 border"
+                    }`}
                   >
                     {tag[language]}
                     <button
@@ -455,7 +415,7 @@ const Attributes: FC<AttributesProps> = ({
                         idx === selectedTagIndex
                           ? isDark
                             ? "bg-teal-900/30 text-teal-400"
-                            : "bg-teal-50 text-teal-800"
+                            : "bg-white text-black"
                           : isDark
                             ? "text-gray-300 hover:bg-gray-700"
                             : "text-gray-700 hover:bg-gray-50"

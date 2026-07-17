@@ -45,6 +45,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import {
   detectLanguage,
+  getLngWiseStr,
   modelTitle,
   parseAddress,
   removeNulls,
@@ -249,7 +250,18 @@ function CreateBusinessWizardInner({
     // Step 8
     socialMedia: [],
   });
-
+  const nameForGen = getLngWiseStr(
+    language,
+    formData.name,
+    formData.nameHe,
+    formData.nameAr,
+  );
+  const descriptionForGen = getLngWiseStr(
+    language,
+    formData.fullDescription,
+    formData.fullDescriptionHe,
+    formData.fullDescriptionAr,
+  );
   const getActiveField = (base: string, lang: string): string => {
     if (lang === "en") return base;
     const suffix = lang.charAt(0).toUpperCase() + lang.slice(1);
@@ -979,18 +991,14 @@ function CreateBusinessWizardInner({
             selectedFormLanguage={selectedFormLanguage}
             editData={editData}
             {...commonProps}
-            name={formData.name || formData.nameHe || formData.nameAr}
-            description={
-              formData.fullDescriptionHe ||
-              formData.fullDescription ||
-              formData.fullDescriptionAr
-            }
             formData={formData}
             opMode={opMode}
             selectedAccessiblitiesId={selectedAccessiblitiesId}
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}
+            nameForGen={nameForGen}
+            descriptionForGen={descriptionForGen}
           />
         );
       case 5:

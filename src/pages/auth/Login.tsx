@@ -38,7 +38,6 @@ export function Login({ setCurrentTab }: LoginProps) {
     blockDurationMs: 0,
     loginBlockedAt: "",
   });
-  console.log("🚀 ~ Login ~ rateLimit:", rateLimit);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
 
@@ -86,6 +85,14 @@ export function Login({ setCurrentTab }: LoginProps) {
     if (!isBlocked) return null;
     return formatTimeRemaining(timeRemaining);
   }, [isBlocked, timeRemaining]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent Enter key from triggering form submission in input fields
+    // Users should click the submit button instead
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -183,6 +190,7 @@ export function Login({ setCurrentTab }: LoginProps) {
               value={username}
               placeholder={t("username_email")}
               onChange={setUsername}
+              onKeyDown={handleKeyDown}
             />
 
             <AuthInputField
@@ -191,6 +199,7 @@ export function Login({ setCurrentTab }: LoginProps) {
               placeholder="••••••••"
               value={password}
               onChange={setPassword}
+              onKeyDown={handleKeyDown}
             />
 
             {error && <p className="text-red-300 text-sm">{error}</p>}
