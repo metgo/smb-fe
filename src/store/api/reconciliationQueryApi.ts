@@ -35,6 +35,9 @@ export interface BulkApproveOrderProductsRequest {
 export interface BulkMarkAsCompletedRequest {
   markAllAsCompleted: boolean;
 }
+export interface FinalizeClosedOrdersRequest {
+  confirmFinalize: boolean;
+}
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -139,6 +142,15 @@ export const reconciliationQueryApi = createApi({
         method: "GET",
       }),
     }),
+
+    // POST /admin/monthly-reports/finalize-closed-orders
+    finalizeClosedOrders: builder.mutation<void, FinalizeClosedOrdersRequest>({
+      query: (body) => ({
+        url: endpoints.finaliseApprovedOrders,
+        method: "POST",
+        data: body,
+      }),
+    }),
   }),
 });
 
@@ -153,4 +165,5 @@ export const {
   useBulkApproveOrderProductsMutation,
   useBulkMarkOrderAsCompletedMutation,
   useGetReconciliationStatsQuery,
+  useFinalizeClosedOrdersMutation,
 } = reconciliationQueryApi;

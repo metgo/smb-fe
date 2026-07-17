@@ -22,6 +22,7 @@ import {
   useBulkApproveOrderProductsMutation,
   useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
+  useFinalizeClosedOrdersMutation,
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
@@ -104,7 +105,7 @@ function mapOrderProductList(d: any) {
     customerName,
     customerEmail: d.customer?.email || "",
     customerPhone: d.customer?.phone || "",
-    purchaseDate: d.date || "",
+    purchaseDate: d.createdAt || "",
     quantity: d.quantity || 0,
     unitPrice: d.price || 0,
     totalPrice: d.totalAmount || 0,
@@ -278,6 +279,7 @@ export const VendorMonthlyReport = () => {
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
+  const [finalizeClosedOrders] = useFinalizeClosedOrdersMutation();
   const { data: reconciliationStats, refetch: refetchReconciliationStats } =
     useGetReconciliationStatsQuery();
   const { data: allWebsites } = useGetAllWebsitesQuery();
@@ -710,6 +712,21 @@ export const VendorMonthlyReport = () => {
     }
   };
 
+  const handleCloseAllOrders = async () => {
+    try {
+      await finalizeClosedOrders({
+        confirmFinalize: true,
+      }).unwrap();
+
+      toast.success(t("orders_closed_successfully"));
+      refetchOrders();
+      refetchReconciliationStats();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message;
+      toast.error(errorMessage || t("close_orders_failed"));
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const badges: Record<
       string,
@@ -962,11 +979,19 @@ export const VendorMonthlyReport = () => {
     <div className="p-6">
       {/* Header */}
       <div className={`${bgPrimary} rounded-lg border ${borderColor} p-6 mb-6`}>
-        <div>
-          <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
-            {t("vendor_reconciliation")}
-          </h1>
-          <p className={textTertiary}>{t("review_and_approve_orders")}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className={`text-2xl font-bold ${textPrimary} mb-1`}>
+              {t("vendor_reconciliation")}
+            </h1>
+            <p className={textTertiary}>{t("review_and_approve_orders")}</p>
+          </div>
+          <button
+            onClick={handleCloseAllOrders}
+            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+          >
+            {t("close_all_orders")}
+          </button>
         </div>
       </div>
 
@@ -1046,7 +1071,7 @@ export const VendorMonthlyReport = () => {
             />
           </div>
           <div className="flex items-center gap-2 whitespace-nowrap">
-            {disputedCount > 0 && adminView && (
+            {/* {disputedCount > 0 && adminView && (
               <button
                 onClick={handleBulkApprove}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
@@ -1054,7 +1079,7 @@ export const VendorMonthlyReport = () => {
                 <CheckCircle className="w-4 h-4" />
                 {t("approve_disputed_orders")}
               </button>
-            )}
+            )} */}
 
             {(stats.orderProductPending > 0 ||
               stats.orderProductProcessing > 0 ||

@@ -137,13 +137,15 @@ export default function GAOverview() {
     (state) => state.auth,
   );
 
-  const { data } = useGetGoogleAnalyticsViewsQuery({
-    startDate,
-    endDate,
-    dmoId,
-    authorityId,
-    externalApiId: websiteId,
-  });
+  const { data } = useGetGoogleAnalyticsViewsQuery(
+    {
+      startDate,
+      endDate,
+      dmoId,
+      authorityId,
+      externalApiId: websiteId,
+    }
+  );
 
   const result = transformAnalyticsData(data);
 

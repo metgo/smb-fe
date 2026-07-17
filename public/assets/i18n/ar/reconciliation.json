@@ -177,5 +177,8 @@
   "no_businesses_found": "لم يتم العثور على أعمال",
   "customRange": "نطاق مخصص",
   "shipped": "تم الشحن",
-  "closed": "مغلق"
+  "closed": "مغلق",
+  "close_all_orders": "إغلاق جميع الطلبات",
+  "orders_closed_successfully": "تم إغلاق جميع الطلبات بنجاح",
+  "close_orders_failed": "فشل إغلاق الطلبات"
 }

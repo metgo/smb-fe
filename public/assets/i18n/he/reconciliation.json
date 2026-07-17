@@ -177,5 +177,8 @@
   "no_businesses_found": "לא נמצאו עסקים",
   "customRange": "טווח מותאם אישית",
   "shipped": "שנשלח",
-  "closed": "סגור"
+  "closed": "סגור",
+  "close_all_orders": "סגור את כל ההזמנות",
+  "orders_closed_successfully": "כל ההזמנות סגורות בהצלחה",
+  "close_orders_failed": "סגירת הזמנות נכשלה"
 }

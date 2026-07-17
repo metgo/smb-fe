@@ -178,5 +178,8 @@
   "no_businesses_found": "No businesses found",
   "customRange": "Custom Range",
   "shipped": "Shipped",
-  "closed": "Closed"
+  "closed": "Closed",
+  "close_all_orders": "Close All Orders",
+  "orders_closed_successfully": "All orders closed successfully",
+  "close_orders_failed": "Failed to close orders"
 }

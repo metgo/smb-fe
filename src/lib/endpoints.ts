@@ -69,9 +69,10 @@ export const endpoints = {
   productsStats: "/products-stat",
   cancleOrderProduct: "/cancel-order-product",
   updateOrderStatus: "/update-order-status",
-  bulkApprove : "/orders/bulk-approve",
+  bulkApprove: "/orders/bulk-approve",
   reconciliationStats: "/orders/reconciliation-stats",
   bulkMarkAsComplete: "/orders/bulk-order-product-status",
+  finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
   // public
   publicEventTicket: "/public/event-tickets",
   publicSessionTicket: "/public/session-tickets",
