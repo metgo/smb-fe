@@ -14,6 +14,7 @@ import { saveUserInfo } from "@/lib/storage";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
 import {
+  ChatPage,
   AuthPage,
   BusinessesMgmtPage,
   PendingApprovalsPage,
@@ -537,7 +538,7 @@ function App() {
               path: routes.analyticsDashboard,
               element: <AnalyticsDashboardPage />,
             },
-
+            { path: routes.chat, element: <ChatPage /> },
             { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
             { path: routes.businessDetails, element: <BusinessDetailsPage /> },
             {

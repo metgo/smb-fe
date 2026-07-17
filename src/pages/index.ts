@@ -32,8 +32,10 @@ import WebsiteCrashDetailsPage from "./website-crashes/details";
 import EventSessionMgmtPage from "./event-session-mgmt";
 import TripsMgmtPage from "./trips-mgmt";
 import TripDetailsPage from "./trips-mgmt/details";
+import ChatPage from "./chat";
 
 export {
+  ChatPage,
   AuthPage,
   ErrorUiPage,
   NoInternetPage,
