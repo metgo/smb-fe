@@ -28,6 +28,7 @@ export const routes = {
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
   tripsMgmt: "/trips-management",
+  tripDetails: "/trip-details",
   notificationMgmt: "/notifications-management",
 
   funDays: "/fun-days",

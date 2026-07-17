@@ -6,6 +6,15 @@
   "trip_name": "اسم الرحلة",
   "short_description": "وصف مختصر",
   "estimated_duration": "المدة المقدرة",
+  "total_distance_covered": "إجمالي المسافة المقطوعة",
+  "edit": "تعديل",
+  "contact_details": "تفاصيل الاتصال",
+  "contact_name": "اسم جهة الاتصال",
+  "contact_phone_number": "رقم هاتف جهة الاتصال",
+  "contact_email": "البريد الإلكتروني لجهة الاتصال",
+  "select_dmo": "اختر منظمة تسويق الوجهة (DMO)",
+  "select_authority": "اختر الجهة المسؤولة",
+  "website_visibility": "رؤية الموقع",
   "stations": "المحطات",
   "status": "الحالة",
   "created_at": "تاريخ الإنشاء",
@@ -48,6 +57,14 @@
   "search_stations_placeholder": "البحث في المحطات...",
   "selected_stations": "المحطات المختارة",
   "no_stations_found": "لم يتم العثور على محطات",
+  "no_station_images_found": "لا توجد صور متاحة لهذه المحطة",
   "station_not_selected_yet": "لم يتم اختيار أي محطات بعد",
-  "review_submit": "مراجعة وتأكيد"
+  "review_submit": "مراجعة وتأكيد",
+
+  "required_fields_missing": "يرجى تعبئة جميع الحقول المطلوبة",
+  "website_visibility_required": "يرجى اختيار موقع إلكتروني واحد على الأقل للعرض",
+  "short_description_length_exceeded": "يجب ألا يتجاوز الوصف المختصر 150 حرفًا",
+  "description_length_exceeded": "يجب ألا يتجاوز الوصف 500 حرف",
+  "stationsTooltip": "يرجى اختيار محطة واحدة على الأقل",
+  "imagesTooltip": "يرجى رفع صورة واحدة على الأقل"
 }

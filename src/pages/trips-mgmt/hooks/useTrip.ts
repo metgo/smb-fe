@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import {
   useCreateTripMutation,
   useUpdateTripMutation,
@@ -24,21 +24,31 @@ import {
 } from "@/features/stationsSlice";
 import { useTripFilters } from "./useTripFilters";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { getPlainTextFromRichText } from "@/helpers";
 
-export const useTrip = () => {
+export const useTrip = ({
+  onClose,
+  onPublishSuccess,
+}: {
+  onClose: () => void;
+  onPublishSuccess?: () => void;
+}) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isTraveller } = useUserRoles();
+
   const [searchParams] = useSearchParams();
-  const { isRTL: isHebrew } = useThemeClasses();
-  const { t: commonText } = useTranslation("common");
-  const { t: fundayText } = useTranslation("funday");
-  const id = searchParams.get("id");
+  const tripId = searchParams.get("id");
+
+  const { t: ct } = useTranslation("common");
+  const { t: ft } = useTranslation("trips");
 
   const [, setClickedStation] = useState<IClickedStationProps>();
   const [isShowSelectedRouteChecked, setIsShowSelectedRouteChecked] =
     useState(false);
   const [description, setDescription] = useState("<p></p>");
   const [shortDescription, setshortDescription] = useState("<p></p>");
-  const [tripDetails, setTripDetails] = useState<ITripDetails | undefined>(
+  const [tripDetails, setTripDetails] = useState<ITripDetailsRes | undefined>(
     undefined,
   );
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
@@ -53,7 +63,6 @@ export const useTrip = () => {
     [],
   );
 
-  const dispatch = useAppDispatch();
   const businesses = useAppSelector((state) => state.stations.businesses);
   const originalStations = useAppSelector(
     (state) => state.stations.originalStations,
@@ -67,7 +76,6 @@ export const useTrip = () => {
   const selectedStationDetails = useAppSelector(
     (state) => state.stations.selectedStationDetails,
   );
-  console.log("🚀 ~ useTrip ~ selectedStationDetails:", selectedStationDetails);
 
   const {
     isPoiChecked,
@@ -86,10 +94,18 @@ export const useTrip = () => {
     name: string | null;
     estimatedDuration: number | null;
     status: string;
+    totalDistanceCovered: number | null;
+    contactName: string;
+    contactPhoneNumber: string;
+    contactEmail: string;
   }>({
     name: null,
     estimatedDuration: null,
     status: "PENDING",
+    totalDistanceCovered: null,
+    contactName: "",
+    contactPhoneNumber: "",
+    contactEmail: "",
   });
 
   const [createTrip, { isLoading: isCreating }] = useCreateTripMutation();
@@ -106,43 +122,79 @@ export const useTrip = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
 
     if (!selectedDmoId || !selectedAuthorityId) {
-      toast.error(commonText("dmo_authority_select_info_text"));
+      toast.error(ct("dmo_authority_select_info_text"));
       return;
     }
 
-    if (!formData?.name || !formData?.estimatedDuration || !formData?.status) {
+    if (!formData?.name || !formData?.estimatedDuration) {
       setSelectedTab("details");
-      toast.error(fundayText("required_fields_missing"));
+      toast.error(ft("required_fields_missing"));
+      return;
+    }
+
+    if (!websiteVisibilityIds?.length) {
+      setSelectedTab("details");
+      toast.error(ft("website_visibility_required"));
+      return;
+    }
+
+    if (shortDescription.replace(/<[^>]*>/g, "").length > 150) {
+      setSelectedTab("details");
+      toast.error(ft("short_description_length_exceeded"));
+      return;
+    }
+
+    if (description.replace(/<[^>]*>/g, "").length > 500) {
+      setSelectedTab("details");
+      toast.error(ft("description_length_exceeded"));
       return;
     }
 
     if (!selectedStationDetails?.length) {
       setSelectedTab("stations");
-      toast.error(fundayText("stationsTooltip"));
+      toast.error(ft("stationsTooltip"));
       return;
     }
 
     if (!selectedImages?.length) {
       setSelectedTab("image");
-      toast.error(fundayText("imagesTooltip"));
+      toast.error(ft("imagesTooltip"));
       return;
     }
 
-    const payload = {
+    const status = isDraft ? "DRAFT" : isTraveller ? "PENDING" : "APPROVED";
+
+    const payload: ITripPayload = {
       description,
       shortDescription,
       dmoId: selectedDmoId,
       authorityId: selectedAuthorityId,
       name: formData.name,
-      status: formData.status,
+      status: status as TStatus,
       estimatedDuration: Number(formData.estimatedDuration),
+      totalDistanceCovered: Number(formData.totalDistanceCovered) || 0,
       isTrip: true,
-      images: selectedImages,
-      itenary: schedules,
+      associatedWebsiteIds: websiteVisibilityIds,
+      contactDetails: {
+        name: formData.contactName,
+        phoneNumber: formData.contactPhoneNumber,
+        email: formData.contactEmail,
+      },
+      images: selectedImages.map((image) => ({
+        image: image.image,
+        alt: image.alt,
+        isPrimary: image.isPrimary,
+        stationId: image.stationId ?? "",
+      })),
+      itenary: schedules.map((schedule) => ({
+        title: schedule.title,
+        startTime: schedule.startTime ?? "",
+        endTime: schedule.endTime ?? "",
+      })),
       stations: selectedStationDetails?.map((station, index) => {
         return {
           _id: station._id,
@@ -153,14 +205,21 @@ export const useTrip = () => {
     };
 
     try {
-      if (id) {
-        await updateTrip({ body: payload, tripId: id }).unwrap();
+      if (tripId) {
+        await updateTrip({ body: payload, tripId: tripId }).unwrap();
       } else {
         await createTrip(payload).unwrap();
       }
 
-      toast(id ? "Trip updated successfully!" : "Trip created successfully!");
-      navigate(routes.tripsMgmt);
+      toast(
+        tripId ? "Trip updated successfully!" : "Trip created successfully!",
+      );
+
+      if (!isDraft) {
+        onClose();
+        onPublishSuccess?.();
+        navigate(routes.tripsMgmt);
+      }
     } catch (err: any) {
       toast.error(err?.data?.message?.[0] || "Failed to create Trip");
     }
@@ -170,51 +229,18 @@ export const useTrip = () => {
     dispatch(resetSelected());
   }, []);
 
-  // const stationsQueryParams = (() => {
-  //   if (
-  //     !(
-  //       activeCategoryIds ||
-  //       searchTerm ||
-  //       isBusinessChecked ||
-  //       isPoiChecked ||
-  //       isMyAreaChecked ||
-  //       selectedDmoId ||
-  //       selectedAuthorityId
-  //     )
-  //   ) {
-  //     return null;
-  //   }
-
-  //   let params = ``;
-  //   if (searchTerm) params += `&search=${searchTerm}`;
-  //   if (selectedDmoId) params += `&dmoId=${selectedDmoId}`;
-  //   if (selectedAuthorityId) params += `&authorityId=${selectedAuthorityId}`;
-  //   if (user?.role === UserRole.AUTHORITY) params += `&isMyArea=true`;
-
-  //   const serviceTypeOnlyBusiness = isBusinessChecked && !isPoiChecked;
-  //   const serviceTypeOnlyPoi = !isBusinessChecked && isPoiChecked;
-
-  //   if (serviceTypeOnlyBusiness) {
-  //     params += `&serviceType=business`;
-  //   } else if (serviceTypeOnlyPoi) {
-  //     params += `&serviceType=point_of_interest`;
-  //   }
-
-  //   if (isMyAreaChecked) {
-  //     params += `&isMyArea=${isMyAreaChecked}`;
-  //   }
-
-  //   return params;
-  // })();
-
-  const { data: stationsData } = useGetAllStationsQuery(
-    selectedDmoId && selectedAuthorityId
+  const {
+    data: stationsData,
+    isFetching,
+    isLoading,
+  } = useGetAllStationsQuery(
+    selectedDmoId || selectedAuthorityId
       ? { dmoId: selectedDmoId, authorityId: selectedAuthorityId }
       : skipToken,
   );
 
   useEffect(() => {
-    if (!selectedAuthorityId && !selectedDmoId) return;
+    if (!selectedAuthorityId || !selectedDmoId) return;
 
     const data = stationsData?.data ?? [];
 
@@ -249,8 +275,7 @@ export const useTrip = () => {
   }, [isShowSelectedRouteChecked]);
 
   const { data: tripDetailsData } = useGetTripByIdQuery(
-    { tripId: id },
-    { skip: !id },
+    tripId ? tripId : skipToken,
   );
 
   useEffect(() => {
@@ -260,14 +285,23 @@ export const useTrip = () => {
   }, [tripDetailsData]);
 
   useEffect(() => {
-    if (tripDetails && id) {
-      setDescription(tripDetails?.description);
-      setshortDescription(tripDetails?.shortDescription);
+    if (tripDetails && tripId) {
+      setDescription(getPlainTextFromRichText(tripDetails?.description));
+      setshortDescription(
+        getPlainTextFromRichText(tripDetails?.shortDescription),
+      );
       setFormData({
         name: tripDetails.name,
         estimatedDuration: tripDetails.estimatedDuration || null,
         status: tripDetails.status || "PENDING",
+        totalDistanceCovered: tripDetails.totalDistanceCovered || null,
+        contactName: tripDetails.contactDetails?.name || "",
+        contactPhoneNumber: tripDetails.contactDetails?.phoneNumber || "",
+        contactEmail: tripDetails.contactDetails?.email || "",
       });
+      setSelectedDmoId(tripDetails?.dmoId);
+      setSelectAuthorityId(tripDetails?.authorityId);
+      setWebsiteVisibilityIds(tripDetails?.associatedWebsiteIds || []);
       setSelectedImages(tripDetails?.images);
       setSchedules(tripDetails?.itenary);
       if (tripDetails?.stations?.[0]?._id !== null) {
@@ -275,11 +309,12 @@ export const useTrip = () => {
           setSelectStationDetails(
             (tripDetails?.stations?.map((station) => {
               return {
-                _id: station?._id?._id,
-                name: station?._id?.name,
-                shortDescription: station?._id?.shortDescription || "",
-                images: station?._id?.images || [],
-                logo: station?._id?.logo || {},
+                _id: station?._id,
+                name: station?.name,
+                shortDescription: station?.shortDescription || "",
+                images: tripDetails.images?.filter(
+                  (item) => item.stationId === station._id,
+                ),
               };
             }) as IStationDetailsProps[]) || [],
           ),
@@ -288,14 +323,14 @@ export const useTrip = () => {
           setSelectStations(
             tripDetails?.stations?.map((item) => {
               return {
-                stationId: item?._id?._id,
-                geoLocation: item?._id?.geoLocation,
+                stationId: item?._id,
+                geoLocation: item?.geoLocation,
               };
             }) || [],
           ),
         );
         const stationIdsFromTrip = tripDetails?.stations?.map(
-          (item) => item?._id?._id,
+          (item) => item?._id,
         );
         const matchedStations = originalStations?.filter((station) =>
           stationIdsFromTrip?.includes(station?._id),
@@ -318,7 +353,6 @@ export const useTrip = () => {
   ]);
 
   return {
-    isHebrew,
     handleSubmit,
     handleInputChange,
     formData,
@@ -348,5 +382,8 @@ export const useTrip = () => {
     setSelectAuthorityId,
     websiteVisibilityIds,
     setWebsiteVisibilityIds,
+
+    isLoading,
+    isFetching,
   };
 };

@@ -269,12 +269,6 @@ export const useGoogleRouteMap = (
 
       markersRef.current.push(marker);
     });
-
-    // Fit bounds on initial load only
-    // if (isInitialLoadRef.current && markersRef.current.length > 0) {
-    //   fitBoundsToContent();
-    //   isInitialLoadRef.current = false;
-    // }
   }, [map, markers, activeCategoryIds]);
 
   // Update marker sizes when selectedStations changes

@@ -6,6 +6,15 @@
   "trip_name": "Trip Name",
   "short_description": "Short Description",
   "estimated_duration": "Estimated Duration",
+  "total_distance_covered": "Total Distance Covered",
+  "edit": "Edit",
+  "contact_details": "Contact Details",
+  "contact_name": "Contact Name",
+  "contact_phone_number": "Contact Phone Number",
+  "contact_email": "Contact Email",
+  "select_dmo": "Select DMO",
+  "select_authority": "Select Authority",
+  "website_visibility": "Website Visibility",
   "stations": "Stations",
   "status": "Status",
   "created_at": "Created At",
@@ -48,6 +57,14 @@
   "search_stations_placeholder": "Search stations...",
   "selected_stations": "Selected Stations",
   "no_stations_found": "No stations found",
+  "no_station_images_found": "No images available for this station",
   "station_not_selected_yet": "No stations selected yet",
-  "review_submit": "Review & Submit"
+  "review_submit": "Review & Submit",
+
+  "required_fields_missing": "Please fill in all required fields",
+  "website_visibility_required": "Please select at least one website visibility",
+  "short_description_length_exceeded": "Short description must be 150 characters or less",
+  "description_length_exceeded": "Description must be 500 characters or less",
+  "stationsTooltip": "Please select at least one station",
+  "imagesTooltip": "Please upload at least one image"
 }

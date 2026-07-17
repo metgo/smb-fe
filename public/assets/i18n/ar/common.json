@@ -29,6 +29,10 @@
 
   "delete_business": "حذف العمل التجاري",
   "delete_business_confirm": "تأكيد حذف العمل التجاري؟",
+  "delete_trip": "حذف الرحلة",
+  "delete_trip_confirm": "تأكيد حذف الرحلة؟",
+  "delete_success": "تم الحذف بنجاح",
+  "delete_failed": "فشل الحذف",
   "edit_location": "تعديل الموقع",
   "add_location": "إضافة موقع",
   "location_address": "عنوان الموقع",
@@ -95,6 +99,7 @@
   "confirm": "تأكيد",
   "details": "التفاصيل",
   "edit": "تعديل",
+  "actions": "الإجراءات",
   "create": "إنشاء",
   "duplicate": "نسخ مكرر",
   "continue": "متابعة",
@@ -209,6 +214,9 @@
   "reload_page": "إعادة تحميل الصفحة",
 
   "overview": "نظرة عامة",
+  "stations": "المحطات",
+  "step_itenary": "خط سير الرحلة",
+  "contact_details": "تفاصيل الاتصال",
   "date_time": "التاريخ والوقت",
   "location_map": "الموقع والخريطة",
   "registration": "التسجيل",

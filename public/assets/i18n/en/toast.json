@@ -72,5 +72,8 @@
   "close_without_saving": "You have unsaved changes. Are you sure you want to close without saving?",
   "close": "Close",
 
-  "login_attempt_rest_success": "Login attempts have been reset successfully"
+  "login_attempt_rest_success": "Login attempts have been reset successfully",
+
+  "trip_status_updated_success": "Trip status updated successfully",
+  "trip_status_updated_faild": "Failed to update trip status"
 }

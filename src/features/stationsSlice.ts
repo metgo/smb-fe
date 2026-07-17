@@ -1,26 +1,24 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export function formatAndDedupeBusinesses(businesses: ITripStations[]) {
-  const seen = new Set();
+// export function formatAndDedupeBusinesses(businesses: ITripStations[]) {
+//   const seen = new Set();
 
-  return businesses
-    .filter((b) => {
-      const key = `${b.geoLocation?.lat}-${b.geoLocation?.long}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .map((b) => ({
-      _id: b._id,
-      geoLocation: b.geoLocation,
-      name: b.name,
-      serviceType: b.serviceType,
-      dmoId: b.dmoId,
-      authorityId: b.authorityId,
-      primaryCategoryId: b.primaryCategoryId,
-      bussCategoriesId: b.bussCategoriesId,
-    }));
-}
+//   return businesses
+//     .filter((b) => {
+//       const key = `${b.geoLocation?.lat}-${b.geoLocation?.long}`;
+//       if (seen.has(key)) return false;
+//       seen.add(key);
+//       return true;
+//     })
+//     .map((b) => ({
+//       _id: b._id,
+//       geoLocation: b.geoLocation,
+//       name: b.,
+//       serviceType: b.serviceType,
+//       dmoId: b.dmoId,
+//       authorityId: b.authorityId,
+//     }));
+// }
 
 interface StationsState {
   businesses: ITripStations[];

@@ -23,7 +23,18 @@ export const tripMutationApi = createApi({
       }),
       invalidatesTags: ["Trips"],
     }),
+    deleteTrip: builder.mutation<any, { tripId: string }>({
+      query: ({ tripId }) => ({
+        url: `${endpoints.trips}/${tripId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Trips"],
+    }),
   }),
 });
 
-export const { useCreateTripMutation, useUpdateTripMutation } = tripMutationApi;
+export const {
+  useCreateTripMutation,
+  useUpdateTripMutation,
+  useDeleteTripMutation,
+} = tripMutationApi;

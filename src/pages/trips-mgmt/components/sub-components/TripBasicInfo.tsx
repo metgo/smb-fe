@@ -1,6 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper } from "@/components/form-fields";
-import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+import { DmoAuthorityWebsiteIdsSelector } from "@/components/shared";
 import { useRef } from "react";
 
 interface TripBasicInfoProps {
@@ -10,6 +10,10 @@ interface TripBasicInfoProps {
     name: string | null;
     estimatedDuration: number | null;
     status: string;
+    totalDistanceCovered: number | null;
+    contactName: string;
+    contactPhoneNumber: string;
+    contactEmail: string;
   };
   errors: Record<string, string>;
   handleInputChange: (
@@ -28,12 +32,10 @@ interface TripBasicInfoProps {
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   websiteVisibilityIds: string[];
   setWebsiteVisibilityIds: (v: any) => void;
-  associatedWebsiteIds?: string[];
 }
 
 const TripBasicInfo = ({
   t,
-  isEdit,
   formData,
   errors,
   handleInputChange,
@@ -49,7 +51,6 @@ const TripBasicInfo = ({
   selectedAuthorityId,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
-  associatedWebsiteIds = [],
 }: TripBasicInfoProps) => {
   const { borderColor, bgTertiary, textPrimary } = useThemeClasses();
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -58,19 +59,17 @@ const TripBasicInfo = ({
 
   return (
     <div className="space-y-6">
-      <DmoAuthorityWebsiteSelector
+      <DmoAuthorityWebsiteIdsSelector
         errors={errors}
         setErrors={setErrors}
-        isEdit={isEdit}
-        keyId="externalApiId"
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
+        selectedWebsiteIds={websiteVisibilityIds}
+        setSelectWebsiteIds={setWebsiteVisibilityIds}
         dmoSectionRef={dmoSectionRef}
-        websiteVisibilityIds={websiteVisibilityIds}
-        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        itemAssociatedWebsites={associatedWebsiteIds}
+        isAuthorityRequired={false}
       />
 
       <FormFieldWrapper label={t("trip_name")} required error={errors.name}>
@@ -90,21 +89,29 @@ const TripBasicInfo = ({
       >
         <textarea
           value={shortDescription}
-          onChange={(e) => setshortDescription(e.target.value)}
+          onChange={(e) => setshortDescription(e.target.value.slice(0, 150))}
           placeholder={t("short_description")}
           rows={2}
+          maxLength={150}
           className={inputClass}
         />
+        <p className={`text-xs mt-1 text-right ${textPrimary}`}>
+          {shortDescription.length}/150
+        </p>
       </FormFieldWrapper>
 
       <FormFieldWrapper label={t("description")} error={errors.description}>
         <textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value.slice(0, 500))}
           placeholder={t("description")}
           rows={4}
+          maxLength={500}
           className={inputClass}
         />
+        <p className={`text-xs mt-1 text-right ${textPrimary}`}>
+          {description.length}/500
+        </p>
       </FormFieldWrapper>
 
       <div className="grid grid-cols-2 gap-4">
@@ -123,19 +130,46 @@ const TripBasicInfo = ({
             className={inputClass}
           />
         </FormFieldWrapper>
+      </div>
 
-        <FormFieldWrapper label={t("status")} required error={errors.status}>
-          <select
-            name="status"
-            value={formData.status}
+      <div className="grid grid-cols-3 gap-4">
+        <FormFieldWrapper label={t("contact_name")} error={errors.contactName}>
+          <input
+            type="text"
+            name="contactName"
+            value={formData.contactName}
             onChange={handleInputChange}
+            placeholder={t("contact_name")}
             className={inputClass}
-          >
-            <option value="DRAFT">{t("draft")}</option>
-            <option value="PENDING">{t("pending")}</option>
-            <option value="APPROVED">{t("approved")}</option>
-            <option value="REJECTED">{t("rejected")}</option>
-          </select>
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          label={t("contact_phone_number")}
+          error={errors.contactPhoneNumber}
+        >
+          <input
+            type="text"
+            name="contactPhoneNumber"
+            value={formData.contactPhoneNumber}
+            onChange={handleInputChange}
+            placeholder={t("contact_phone_number")}
+            className={inputClass}
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          label={t("contact_email")}
+          error={errors.contactEmail}
+        >
+          <input
+            type="email"
+            name="contactEmail"
+            value={formData.contactEmail}
+            onChange={handleInputChange}
+            placeholder={t("contact_email")}
+            className={inputClass}
+          />
         </FormFieldWrapper>
       </div>
     </div>

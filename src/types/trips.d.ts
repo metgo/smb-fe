@@ -46,9 +46,7 @@ interface IStationDetailsProps {
   description: string;
   serviceType: string;
   shortDescription: string;
-  images: ImageData[];
-  logo: ImageData;
-  slug: string;
+  images: ITripImage[];
 }
 
 interface IAtrribute {
@@ -104,9 +102,115 @@ interface ITripDetails {
   description: string;
   shortDescription: string;
   estimatedDuration: number;
+  totalDistanceCovered: number;
+  associatedWebsiteIds: string[];
+  contactDetails: {
+    name: string;
+    phoneNumber: string;
+    email: string;
+  };
   images: SelectedImage[];
   itenary: ScheduleItem[];
   stations: {
     _id: IStationDetailsProps & { geoLocation: GeoLocation };
   }[];
+}
+
+interface ITripPayload {
+  // Step 1
+  name: string;
+  status: TStatus;
+  shortDescription: string;
+  description: string;
+  estimatedDuration: number;
+  totalDistanceCovered: number;
+  isTrip: boolean;
+
+  dmoId: string;
+  authorityId: string;
+  associatedWebsiteIds: string[];
+
+  contactDetails: ITripContactDetails;
+
+  // Step 2
+  stations: Array<{
+    _id: string; // StationId
+    order: number;
+    type: "businesses" | "poi";
+  }>;
+
+  // Step 3
+  images: Array<{
+    image: string;
+    alt: string;
+    isPrimary: boolean;
+    stationId: string;
+  }>;
+
+  // Step 4.
+  itenary: Array<{
+    title: string;
+    startTime: string;
+    endTime: string;
+  }>;
+}
+
+// TripResponse
+interface ITripDetailsRes {
+  _id: string;
+  createdAt: string;
+  updatedAt: string | null;
+  createdBy: string;
+  updatedBy: string | null;
+
+  name: string;
+  status: string;
+  shortDescription: string;
+  description: string;
+  contactDetails: ITripContactDetails;
+  userId: string;
+  authorityId: string;
+  dmoId: string;
+  associatedWebsiteIds: string[] | null;
+  slug: string;
+  stations: ITripStation[];
+  itenary: ITripItinerary[];
+  estimatedDuration: number;
+  totalDistanceCovered: number;
+  images: Array<ITripImage>;
+}
+
+interface ITripImage {
+  image: string;
+  alt: string;
+  isPrimary: boolean;
+  stationId: string;
+}
+
+interface ITripContactDetails {
+  name: string;
+  phoneNumber: string;
+  email: string;
+}
+
+interface ITripStation {
+  _id: string;
+  name: string;
+  shortDescription: string;
+  geoLocation: ITripGeoLocation;
+  image: string;
+  order: number;
+  type: string;
+}
+
+interface ITripGeoLocation {
+  lat: string;
+  long: string;
+  _id?: string;
+}
+
+interface ITripItinerary {
+  title: string;
+  startTime: string;
+  endTime: string;
 }

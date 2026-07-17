@@ -47,6 +47,7 @@ import {
   WebsiteCrashDetailsPage,
   EventSessionMgmtPage,
   TripsMgmtPage,
+  TripDetailsPage,
 } from "@/pages";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { IdleLogout, SplashLoader } from "./components/shared";
@@ -549,6 +550,7 @@ function App() {
 
             { path: routes.documentMgmt, element: <DocumentsManagement /> },
             { path: routes.tripsMgmt, element: <TripsMgmtPage /> },
+            { path: routes.tripDetails, element: <TripDetailsPage /> },
 
             { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
             { path: routes.eventDetails, element: <EventDetailsPage /> },

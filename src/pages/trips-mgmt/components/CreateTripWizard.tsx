@@ -23,11 +23,15 @@ import {
 
 interface CreateTripWizardProps {
   onClose: () => void;
+  onPublishSuccess?: () => void;
 }
 
-const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
+const CreateTripWizard = ({
+  onClose,
+  onPublishSuccess,
+}: CreateTripWizardProps) => {
   const { t } = useTranslation("trips");
-  const { textPrimary, theme } = useThemeClasses();
+  const { textPrimary, isDark } = useThemeClasses();
 
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -49,13 +53,16 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
     setSchedules,
     isSubmitting,
 
+    isLoading,
+    isFetching,
+
     selectedDmoId,
     setSelectedDmoId,
     selectedAuthorityId,
     setSelectAuthorityId,
     websiteVisibilityIds,
     setWebsiteVisibilityIds,
-  } = useTrip();
+  } = useTrip({ onClose, onPublishSuccess });
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
@@ -71,7 +78,11 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
   const handlePrevious = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handlePublish = () => {
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent, false);
+  };
+
+  const handleSaveDraft = () => {
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent, true);
   };
 
   const renderStep = () => {
@@ -96,7 +107,6 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            associatedWebsiteIds={[]}
           />
         );
       case 2:
@@ -107,6 +117,8 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
             selectedStationDetails={selectedStationDetails}
             activeCategoryIds={activeCategoryIds}
             setClickedStation={setClickedStation}
+            selectedDmoId={selectedDmoId}
+            selectedAuthorityId={selectedAuthorityId}
           />
         );
       case 3:
@@ -123,6 +135,7 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
             t={t}
             selectedImages={selectedImages}
             setSelectedImages={setSelectedImages}
+            selectedStationDetails={selectedStationDetails}
           />
         );
       case 5:
@@ -134,6 +147,11 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
             shortDescription={shortDescription}
             selectedImages={selectedImages}
             selectedStationDetails={selectedStationDetails}
+            selectedDmoId={selectedDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            schedules={schedules}
+            setCurrentStep={setCurrentStep}
           />
         );
       default:
@@ -142,7 +160,10 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
   };
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isSubmitting}>
+    <ModalWrapper
+      onClose={onClose}
+      showSpinner={isSubmitting || isLoading || isFetching}
+    >
       <div className={clsx("px-4 pt-3 md:px-6 border-b", textPrimary)}>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -150,7 +171,7 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
               {t("create_trip")}
             </h2>
             <p
-              className={`text-xs md:text-sm truncate ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`text-xs md:text-sm truncate ${isDark ? "text-gray-400" : "text-gray-600"}`}
             >
               {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
               {steps[currentStep - 1]?.title}
@@ -176,6 +197,7 @@ const CreateTripWizard = ({ onClose }: CreateTripWizardProps) => {
         onPrevious={handlePrevious}
         onNext={handleNext}
         onPublish={handlePublish}
+        onSaveDraft={handleSaveDraft}
       />
     </ModalWrapper>
   );

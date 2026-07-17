@@ -15,8 +15,8 @@ export const tripQueryApi = createApi({
         params,
       }),
     }),
-    getTripById: builder.query<any, { tripId: string | null }>({
-      query: ({ tripId }) => ({
+    getTripById: builder.query<ITripDetailsRes, string>({
+      query: (tripId) => ({
         url: `${endpoints.trips}/${tripId}`,
         method: "GET",
       }),

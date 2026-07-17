@@ -67,5 +67,8 @@
   "close_without_saving": "יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לסגור מבלי לשמור?",
   "close": "סגור",
 
-  "login_attempt_rest_success": "ניסיונות ההתחברות אופסו בהצלחה!"
+  "login_attempt_rest_success": "ניסיונות ההתחברות אופסו בהצלחה!",
+
+  "trip_status_updated_success": "סטטוס הטיול עודכן בהצלחה",
+  "trip_status_updated_faild": "עדכון סטטוס הטיול נכשל"
 }

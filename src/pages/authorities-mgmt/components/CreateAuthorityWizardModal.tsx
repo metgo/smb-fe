@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import { LinkIcon, MapPin, Settings2, Upload, X } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
@@ -17,7 +18,6 @@ import {
 } from "@/store/api/websiteConfigApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Spinner } from "@/components/shared";
-import { toast } from "sonner";
 
 interface CreateAuthorityWizardModalProps {
   setIsOpen: (v: boolean) => void;

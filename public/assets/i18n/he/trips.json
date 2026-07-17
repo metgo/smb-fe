@@ -6,6 +6,15 @@
   "trip_name": "שם הטיול",
   "short_description": "תיאור קצר",
   "estimated_duration": "משך משוער",
+  "total_distance_covered": "מרחק כולל",
+  "edit": "ערוך",
+  "contact_details": "פרטי קשר",
+  "contact_name": "שם איש קשר",
+  "contact_phone_number": "מספר טלפון",
+  "contact_email": "דוא\"ל",
+  "select_dmo": "בחר DMO",
+  "select_authority": "בחר רשות",
+  "website_visibility": "נראות באתר",
   "stations": "תחנות",
   "status": "סטטוס",
   "created_at": "נוצר בתאריך",
@@ -48,6 +57,14 @@
   "search_stations_placeholder": "חפש תחנות...",
   "selected_stations": "תחנות נבחרות",
   "no_stations_found": "לא נמצאו תחנות",
+  "no_station_images_found": "אין תמונות זמינות לתחנה זו",
   "station_not_selected_yet": "טרם נבחרו תחנות",
-  "review_submit": "סקירה ואישור"
+  "review_submit": "סקירה ואישור",
+
+  "required_fields_missing": "יש למלא את כל השדות הנדרשים",
+  "website_visibility_required": "יש לבחור לפחות אתר אחד להצגה",
+  "short_description_length_exceeded": "התיאור הקצר חייב להכיל עד 150 תווים",
+  "description_length_exceeded": "התיאור חייב להכיל עד 500 תווים",
+  "stationsTooltip": "יש לבחור לפחות תחנה אחת",
+  "imagesTooltip": "יש להעלות לפחות תמונה אחת"
 }

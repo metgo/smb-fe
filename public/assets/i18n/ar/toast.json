@@ -68,5 +68,8 @@
   "close_without_saving": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد الإغلاق بدون الحفظ؟",
   "close": "إغلاق",
 
-  "login_attempt_rest_success": "تمت إعادة تعيين محاولات تسجيل الدخول بنجاح!"
+  "login_attempt_rest_success": "تمت إعادة تعيين محاولات تسجيل الدخول بنجاح!",
+
+  "trip_status_updated_success": "تم تحديث حالة الرحلة بنجاح",
+  "trip_status_updated_faild": "فشل تحديث حالة الرحلة"
 }

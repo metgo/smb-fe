@@ -1,11 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
-import { PageHeader, ShowColumns } from "@/components/shared";
+import { ConfirmDialog, PageHeader, ShowColumns } from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
+import { useDeleteTripMutation } from "@/store/api/tripsMutationApi";
 
 import {
   CreateTripWizard,
@@ -49,7 +52,9 @@ const columnDefinitions: Array<{
 
 const TripsMgmtPage = () => {
   const { t } = useTranslation("trips");
+  const { t: tc } = useTranslation("common");
   const { isDark, bgSecondary, borderColor } = useThemeClasses();
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const {
     filters,
@@ -60,8 +65,14 @@ const TripsMgmtPage = () => {
     hasSavedFilters,
   } = useTripListFilters();
 
-  const { combinedTrips, isLoading, isFetching, hasMore, fetchNextPage } =
-    useTripListData(filters, searchTerm);
+  const {
+    combinedTrips,
+    isLoading,
+    isFetching,
+    hasMore,
+    fetchNextPage,
+    refetchFromPage1,
+  } = useTripListData(filters, searchTerm);
 
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -69,8 +80,42 @@ const TripsMgmtPage = () => {
   const [selectedTrips, setSelectedTrips] = useState<Set<string>>(new Set());
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+  const [tripToDelete, setTripToDelete] = useState<ITrip | null>(null);
+
+  const [deleteTrip, { isLoading: isDeleting }] = useDeleteTripMutation();
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
+
+  const handleEdit = (trip: ITrip) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("id", trip._id);
+      return next;
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("id");
+      return next;
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!tripToDelete) return;
+    try {
+      await deleteTrip({ tripId: tripToDelete._id }).unwrap();
+      toast.success(tc("delete_success"));
+      refetchFromPage1();
+    } catch (err: any) {
+      toast.error(err?.data?.message?.[0] || tc("delete_failed"));
+    } finally {
+      setTripToDelete(null);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -172,13 +217,29 @@ const TripsMgmtPage = () => {
             columnVisibility={columnVisibility}
             selectedTrips={selectedTrips}
             setSelectedTrips={setSelectedTrips}
+            onEdit={handleEdit}
+            onDelete={setTripToDelete}
           />
         )}
       </div>
 
       {isCreateModalOpen && (
-        <CreateTripWizard onClose={() => setIsCreateModalOpen(false)} />
+        <CreateTripWizard
+          onClose={handleCloseModal}
+          onPublishSuccess={refetchFromPage1}
+        />
       )}
+
+      <ConfirmDialog
+        open={!!tripToDelete}
+        title="delete_trip"
+        message="delete_trip_confirm"
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => setTripToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };

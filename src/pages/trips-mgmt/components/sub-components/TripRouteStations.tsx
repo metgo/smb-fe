@@ -92,7 +92,9 @@ const TripRouteStations = () => {
   return (
     <>
       <div className={clsx(bgSecondary)}>
-        <h3 className="font-bold text-xl mb-2">{t("stations")}</h3>
+        <h3 className={clsx("font-bold text-xl mb-2", textPrimary)}>
+          {t("stations")}
+        </h3>
 
         <div className="h-[60vh] overflow-y-auto">
           <DragDropContext onDragEnd={handleDragEnd}>

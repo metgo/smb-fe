@@ -37,6 +37,10 @@
 
   "delete_business": "מחיקת עסק",
   "delete_business_confirm": "לאשר מחיקת העסק?",
+  "delete_trip": "מחיקת טיול",
+  "delete_trip_confirm": "לאשר מחיקת הטיול?",
+  "delete_success": "נמחק בהצלחה",
+  "delete_failed": "המחיקה נכשלה",
   "edit_location": "עריכת מיקום",
   "add_location": "הוספת מיקום",
   "location_address": "כתובת המיקום",
@@ -104,6 +108,7 @@
   "confirm": "אישור",
   "details": "פרטים",
   "edit": "ערוך",
+  "actions": "פעולות",
   "create": "צור",
   "duplicate": "שכפל",
   "continue": "המשך",
@@ -218,6 +223,9 @@
   "reload_page": "טען מחדש את הדף",
 
   "overview": "סקירה כללית",
+  "stations": "תחנות",
+  "step_itenary": "מסלול",
+  "contact_details": "פרטי קשר",
   "date_time": "תאריך ושעה",
   "location_map": "מיקום ומפה",
   "registration": "הרשמה",
