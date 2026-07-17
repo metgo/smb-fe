@@ -10,6 +10,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 type Props = {
+  isAuthorityRequired?: boolean;
   selectedDmoId: string;
   selectedAuthorityId: string;
   errors: Record<string, string>;
@@ -29,6 +30,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
   selectedAuthorityId,
   setSelectAuthorityId,
   dmoSectionRef,
+  isAuthorityRequired = true,
   selectedWebsiteIds = [], // Add default value
   setSelectWebsiteIds,
 }: Props) {
@@ -237,7 +239,10 @@ export default function DmoAuthorityWebsiteIdsSelector({
         </div>
 
         <div className="flex-1 w-full">
-          <FormFieldWrapper required label={t("select_authority")}>
+          <FormFieldWrapper
+            required={isAuthorityRequired}
+            label={t("select_authority")}
+          >
             <ReactSelect
               value={selectedAuthorityId}
               isDisabled={isAuthority}
@@ -275,6 +280,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
             }`}
           >
             {t("website_visibility")}
+            <span className="text-red-500 ml-1">*</span>
           </label>
 
           {renderSection(t("select_associated_websites"), associatedWebsites)}
@@ -284,6 +290,12 @@ export default function DmoAuthorityWebsiteIdsSelector({
               t("select_unassociated_websites"),
               unAssociatedWebsites,
             )}
+
+          {errors.websiteVisibilityIds && (
+            <p className="text-sm text-red-500">
+              {errors.websiteVisibilityIds}
+            </p>
+          )}
         </div>
       )}
     </section>

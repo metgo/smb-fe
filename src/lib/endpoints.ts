@@ -128,6 +128,8 @@ export const endpoints = {
   // trips
   trips: "/trips",
   stations: "/stations",
+  bulkTripsDelete: "/trips/bulk-delete",
+  bulkTripsStatusUpdate: "/trips/bulk-status-update",
 
   //voucher
   vouchers: "/vouchers",

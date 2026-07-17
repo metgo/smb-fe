@@ -40,7 +40,7 @@ export default function WizardFooter({
     <div
       className={clsx(
         borderColor,
-        "flex items-center justify-between p-3 sm:p-6 border-t",
+        "flex items-center justify-between px-3 md:p-2 border-t",
       )}
     >
       {/* Left */}

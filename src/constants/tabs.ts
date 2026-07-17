@@ -77,6 +77,13 @@ export const poiTabs = [
   { id: "media", label: "images", icon: ImageIcon },
 ];
 
+export const tripTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  { id: "stations", label: "stations", icon: MapPin },
+  { id: "itenary", label: "step_itenary", icon: Clock },
+  { id: "media", label: "media", icon: ImageIcon },
+];
+
 export const voucherTabs = [
   { id: "overview", label: "overview", icon: FileText },
   { id: "assignee", label: "assignee_and_creator", icon: Users },

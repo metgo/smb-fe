@@ -27,7 +27,8 @@ export const routes = {
   pointOfInterest: "/point-of-interest",
   poiMgmt: "/poi-management",
   poiDetails: "/poi-details",
-  trips: "/trips",
+  tripsMgmt: "/trips-management",
+  tripDetails: "/trip-details",
   notificationMgmt: "/notifications-management",
 
   funDays: "/fun-days",
