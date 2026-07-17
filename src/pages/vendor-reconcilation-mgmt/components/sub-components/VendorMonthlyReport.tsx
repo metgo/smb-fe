@@ -383,7 +383,7 @@ export const VendorMonthlyReport = () => {
       }
     }, 400);
   };
- useEffect(() => {
+  useEffect(() => {
     fetchDefaultBusinesses();
   }, [fetchDefaultBusinesses]);
   useEffect(() => {
@@ -986,12 +986,14 @@ export const VendorMonthlyReport = () => {
             </h1>
             <p className={textTertiary}>{t("review_and_approve_orders")}</p>
           </div>
-          <button
-            onClick={handleCloseAllOrders}
-            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
-          >
-            {t("close_all_orders")}
-          </button>
+          {adminView && (
+            <button
+              onClick={handleCloseAllOrders}
+              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+            >
+              {t("close_all_orders")}
+            </button>
+          )}
         </div>
       </div>
 
