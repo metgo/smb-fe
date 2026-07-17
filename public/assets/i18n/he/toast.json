@@ -70,5 +70,8 @@
   "login_attempt_rest_success": "ניסיונות ההתחברות אופסו בהצלחה!",
 
   "trip_status_updated_success": "סטטוס הטיול עודכן בהצלחה",
-  "trip_status_updated_faild": "עדכון סטטוס הטיול נכשל"
+  "trip_status_updated_faild": "עדכון סטטוס הטיול נכשל",
+  "trip_updated_success": "הטיול עודכן בהצלחה!",
+  "trip_created_success": "הטיול נוצר בהצלחה!",
+  "trip_create_failed": "יצירת הטיול נכשלה"
 }

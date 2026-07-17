@@ -5,10 +5,19 @@ import { useSearchParams } from "react-router-dom";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FilterButton } from "@/components/btns";
-import { ConfirmDialog, PageHeader, ShowColumns } from "@/components/shared";
+import {
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  ShowColumns,
+} from "@/components/shared";
 import SearchInput from "@/components/shared/SearchInput";
 import EmptyState from "@/components/shared/EmptyState";
-import { useDeleteTripMutation } from "@/store/api/tripsMutationApi";
+import {
+  useDeleteTripMutation,
+  useBulkDeleteTripsMutation,
+  useBulkUpdateTripsStatusMutation,
+} from "@/store/api/tripsMutationApi";
 
 import {
   CreateTripWizard,
@@ -81,8 +90,12 @@ const TripsMgmtPage = () => {
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
   const [tripToDelete, setTripToDelete] = useState<ITrip | null>(null);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const [deleteTrip, { isLoading: isDeleting }] = useDeleteTripMutation();
+  const [bulkDeleteTrips, { isLoading: isBulkDeleting }] =
+    useBulkDeleteTripsMutation();
+  const [bulkUpdateTripsStatus] = useBulkUpdateTripsStatusMutation();
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +127,46 @@ const TripsMgmtPage = () => {
       toast.error(err?.data?.message?.[0] || tc("delete_failed"));
     } finally {
       setTripToDelete(null);
+    }
+  };
+
+  const promptBulkDelete = () => {
+    if (!selectedTrips.size) return;
+    setIsBulkDeleteConfirmOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (!selectedTrips.size) return;
+    const toastId = toast.loading(tc("trip_delete_loading"));
+    try {
+      await bulkDeleteTrips({ ids: Array.from(selectedTrips) }).unwrap();
+      toast.success(tc("trip_deleted_success"), { id: toastId });
+      setSelectedTrips(new Set());
+      refetchFromPage1();
+    } catch (err: any) {
+      toast.error(err?.data?.message?.[0] || tc("trip_delete_failed"), {
+        id: toastId,
+      });
+    } finally {
+      setIsBulkDeleteConfirmOpen(false);
+    }
+  };
+
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedTrips.size) return;
+    const toastId = toast.loading(tc("trip_status_change_loading"));
+    try {
+      await bulkUpdateTripsStatus({
+        ids: Array.from(selectedTrips),
+        status: status.toUpperCase(),
+      }).unwrap();
+      toast.success(tc("trip_status_update_success"), { id: toastId });
+      setSelectedTrips(new Set());
+      refetchFromPage1();
+    } catch (err: any) {
+      toast.error(err?.data?.message?.[0] || tc("trip_status_update_failed"), {
+        id: toastId,
+      });
     }
   };
 
@@ -198,6 +251,13 @@ const TripsMgmtPage = () => {
             clearFilter={clearFilter}
           />
         )}
+
+        <BulkActionBar
+          selectedItemCount={selectedTrips.size}
+          handleBulkStatusChange={handleBulkStatusChange}
+          handleBulkDelete={promptBulkDelete}
+          hancleClearSelection={() => setSelectedTrips(new Set())}
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto mt-2">
@@ -239,6 +299,17 @@ const TripsMgmtPage = () => {
         variant="danger"
         onCancel={() => setTripToDelete(null)}
         onConfirm={handleDeleteConfirm}
+      />
+
+      <ConfirmDialog
+        open={isBulkDeleteConfirmOpen}
+        title="delete_trip"
+        message="delete_trip_confirm"
+        confirmText="delete"
+        loading={isBulkDeleting}
+        variant="danger"
+        onCancel={() => setIsBulkDeleteConfirmOpen(false)}
+        onConfirm={handleBulkDeleteConfirm}
       />
     </div>
   );

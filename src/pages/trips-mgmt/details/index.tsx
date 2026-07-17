@@ -25,7 +25,7 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function TripDetailsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { t } = useTranslation("trips");
   const { t: tc } = useTranslation("common");
@@ -64,6 +64,20 @@ export default function TripDetailsPage() {
   const handleClose = () => {
     refetch();
     setIsEditOpen(false);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("id");
+      return next;
+    });
+  };
+
+  const handleEditOpen = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("id", tripId);
+      return next;
+    });
+    setIsEditOpen(true);
   };
 
   const onStatusChangeHandler = async (status: string) => {
@@ -136,7 +150,7 @@ export default function TripDetailsPage() {
               >
                 <button
                   onClick={() => {
-                    setIsEditOpen(true);
+                    handleEditOpen();
                     setIsDropdownOpen(false);
                   }}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors cursor-pointer ${

@@ -30,6 +30,25 @@ export const tripMutationApi = createApi({
       }),
       invalidatesTags: ["Trips"],
     }),
+    bulkDeleteTrips: builder.mutation<any, { ids: string[] }>({
+      query: (body) => ({
+        url: endpoints.bulkTripsDelete,
+        method: "DELETE",
+        data: body,
+      }),
+      invalidatesTags: ["Trips"],
+    }),
+    bulkUpdateTripsStatus: builder.mutation<
+      any,
+      { ids: string[]; status: string }
+    >({
+      query: (body) => ({
+        url: endpoints.bulkTripsStatusUpdate,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Trips"],
+    }),
   }),
 });
 
@@ -37,4 +56,6 @@ export const {
   useCreateTripMutation,
   useUpdateTripMutation,
   useDeleteTripMutation,
+  useBulkDeleteTripsMutation,
+  useBulkUpdateTripsStatusMutation,
 } = tripMutationApi;

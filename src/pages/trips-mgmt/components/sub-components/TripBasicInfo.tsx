@@ -58,7 +58,7 @@ const TripBasicInfo = ({
   const inputClass = `w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary} focus:outline-none focus:ring-2 focus:ring-teal-500`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <DmoAuthorityWebsiteIdsSelector
         errors={errors}
         setErrors={setErrors}
@@ -85,6 +85,7 @@ const TripBasicInfo = ({
 
       <FormFieldWrapper
         label={t("short_description")}
+        required
         error={errors.shortDescription}
       >
         <textarea
@@ -114,23 +115,21 @@ const TripBasicInfo = ({
         </p>
       </FormFieldWrapper>
 
-      <div className="grid grid-cols-2 gap-4">
-        <FormFieldWrapper
-          label={t("estimated_duration")}
-          required
-          error={errors.estimatedDuration}
-        >
-          <input
-            type="number"
-            name="estimatedDuration"
-            min={0}
-            value={formData.estimatedDuration ?? ""}
-            onChange={handleInputChange}
-            placeholder={t("estimated_duration")}
-            className={inputClass}
-          />
-        </FormFieldWrapper>
-      </div>
+      <FormFieldWrapper
+        label={t("estimated_duration")}
+        required
+        error={errors.estimatedDuration}
+      >
+        <input
+          type="number"
+          name="estimatedDuration"
+          min={0}
+          value={formData.estimatedDuration ?? ""}
+          onChange={handleInputChange}
+          placeholder={t("estimated_duration")}
+          className={inputClass}
+        />
+      </FormFieldWrapper>
 
       <div className="grid grid-cols-3 gap-4">
         <FormFieldWrapper label={t("contact_name")} error={errors.contactName}>

@@ -130,7 +130,7 @@ interface ITripPayload {
   authorityId: string;
   associatedWebsiteIds: string[];
 
-  contactDetails: ITripContactDetails;
+  contactDetails?: ITripContactDetails;
 
   // Step 2
   stations: Array<{
@@ -188,9 +188,9 @@ interface ITripImage {
 }
 
 interface ITripContactDetails {
-  name: string;
-  phoneNumber: string;
-  email: string;
+  name?: string;
+  phoneNumber?: string;
+  email?: string;
 }
 
 interface ITripStation {

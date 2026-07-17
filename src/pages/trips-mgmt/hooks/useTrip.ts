@@ -42,10 +42,12 @@ export const useTrip = ({
 
   const { t: ct } = useTranslation("common");
   const { t: ft } = useTranslation("trips");
+  const { t: tt } = useTranslation("toast");
 
   const [, setClickedStation] = useState<IClickedStationProps>();
   const [isShowSelectedRouteChecked, setIsShowSelectedRouteChecked] =
     useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState("<p></p>");
   const [shortDescription, setshortDescription] = useState("<p></p>");
   const [tripDetails, setTripDetails] = useState<ITripDetailsRes | undefined>(
@@ -122,6 +124,36 @@ export const useTrip = ({
     }));
   };
 
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    switch (step) {
+      case 1:
+        if (!selectedDmoId) newErrors.dmo = ct("required_field");
+        if (!selectedAuthorityId) newErrors.authority = ct("required_field");
+        if (!formData.name?.trim()) newErrors.name = ct("required_field");
+        if (!shortDescription.replace(/<[^>]*>/g, "").trim())
+          newErrors.shortDescription = ct("required_field");
+        if (!formData.estimatedDuration)
+          newErrors.estimatedDuration = ct("required_field");
+        if (!websiteVisibilityIds?.length)
+          newErrors.websiteVisibility = ct("required_field");
+        break;
+
+      case 2:
+        if (!selectedStationDetails?.length)
+          newErrors.stations = ct("required_field");
+        break;
+
+      case 4:
+        if (!selectedImages?.length) newErrors.images = ct("required_field");
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
 
@@ -139,6 +171,12 @@ export const useTrip = ({
     if (!websiteVisibilityIds?.length) {
       setSelectedTab("details");
       toast.error(ft("website_visibility_required"));
+      return;
+    }
+
+    if (!shortDescription.replace(/<[^>]*>/g, "").trim()) {
+      setSelectedTab("details");
+      toast.error(ct("required_field"));
       return;
     }
 
@@ -168,6 +206,13 @@ export const useTrip = ({
 
     const status = isDraft ? "DRAFT" : isTraveller ? "PENDING" : "APPROVED";
 
+    const contactDetails: ITripContactDetails = {};
+    if (formData.contactName.trim()) contactDetails.name = formData.contactName;
+    if (formData.contactPhoneNumber.trim())
+      contactDetails.phoneNumber = formData.contactPhoneNumber;
+    if (formData.contactEmail.trim())
+      contactDetails.email = formData.contactEmail;
+
     const payload: ITripPayload = {
       description,
       shortDescription,
@@ -179,11 +224,7 @@ export const useTrip = ({
       totalDistanceCovered: Number(formData.totalDistanceCovered) || 0,
       isTrip: true,
       associatedWebsiteIds: websiteVisibilityIds,
-      contactDetails: {
-        name: formData.contactName,
-        phoneNumber: formData.contactPhoneNumber,
-        email: formData.contactEmail,
-      },
+      ...(Object.keys(contactDetails).length ? { contactDetails } : {}),
       images: selectedImages.map((image) => ({
         image: image.image,
         alt: image.alt,
@@ -211,8 +252,8 @@ export const useTrip = ({
         await createTrip(payload).unwrap();
       }
 
-      toast(
-        tripId ? "Trip updated successfully!" : "Trip created successfully!",
+      toast.success(
+        tripId ? tt("trip_updated_success") : tt("trip_created_success"),
       );
 
       if (!isDraft) {
@@ -221,7 +262,7 @@ export const useTrip = ({
         navigate(routes.tripsMgmt);
       }
     } catch (err: any) {
-      toast.error(err?.data?.message?.[0] || "Failed to create Trip");
+      toast.error(tt("trip_create_failed"));
     }
   };
 
@@ -355,6 +396,9 @@ export const useTrip = ({
   return {
     handleSubmit,
     handleInputChange,
+    validateStep,
+    errors,
+    setErrors,
     formData,
     stationsData,
     setClickedStation,

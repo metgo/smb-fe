@@ -35,7 +35,9 @@ const TripRouteStations = () => {
   );
 
   const [stations, setStations] = useState(selectedStationDetails || []);
-  const [deleteStationId, setDeleteStationId] = useState<string | null>(null);
+  const [deleteStationIndex, setDeleteStationIndex] = useState<number | null>(
+    null,
+  );
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -62,27 +64,32 @@ const TripRouteStations = () => {
     setStations(selectedStationDetails || []);
   }, [selectedStationDetails]);
 
-  function handleDeleteStationClick(id: string) {
-    setDeleteStationId(id);
+  function handleDeleteStationClick(index: number) {
+    setDeleteStationIndex(index);
   }
 
   function handleDeleteStation() {
-    if (deleteStationId) {
+    if (deleteStationIndex !== null) {
+      const deletedStationId = stations[deleteStationIndex]?._id;
+
       const updatedStations = stations?.filter(
-        (station) => station._id !== deleteStationId,
+        (_, index) => index !== deleteStationIndex,
       );
       setStations(updatedStations);
       dispatch(setSelectStationDetails(updatedStations));
-      const updatedSelectedStations = selectedStations?.filter(
-        (station) => station?.stationId !== deleteStationId,
-      );
-      dispatch(setSelectStations(updatedSelectedStations));
-      const updatedSelectedStationList = selectedStationList?.filter(
-        (station) => station?._id !== deleteStationId,
-      );
-      dispatch(setSelectedStationList(updatedSelectedStationList));
+
+      if (deletedStationId) {
+        const updatedSelectedStations = selectedStations?.filter(
+          (station) => station?.stationId !== deletedStationId,
+        );
+        dispatch(setSelectStations(updatedSelectedStations));
+        const updatedSelectedStationList = selectedStationList?.filter(
+          (station) => station?._id !== deletedStationId,
+        );
+        dispatch(setSelectedStationList(updatedSelectedStationList));
+      }
     }
-    setDeleteStationId(null);
+    setDeleteStationIndex(null);
   }
 
   function handleSationDetailsShow(item: IStationDetailsProps) {
@@ -116,8 +123,8 @@ const TripRouteStations = () => {
 
                   {stations?.map((item, index: number) => (
                     <Draggable
-                      key={item._id}
-                      draggableId={item._id}
+                      key={item._id ?? `station-${index}`}
+                      draggableId={item._id ?? `station-${index}`}
                       index={index}
                     >
                       {(provided) => (
@@ -155,7 +162,7 @@ const TripRouteStations = () => {
                           <div
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteStationClick(item._id);
+                              handleDeleteStationClick(index);
                             }}
                             className={`w-6 h-6 rounded-full bg-red-600 flex items-center justify-center absolute top-2 ${isRTL ? "left-2" : "right-2"} cursor-pointer transition-all duration-100 hover:h-7 hover:w-7`}
                           >
@@ -174,12 +181,12 @@ const TripRouteStations = () => {
       </div>
 
       <ConfirmDialog
-        open={!!deleteStationId}
+        open={deleteStationIndex !== null}
         title="delete_station"
         message="delete_station_confirm"
         confirmText="delete"
         variant="danger"
-        onCancel={() => setDeleteStationId(null)}
+        onCancel={() => setDeleteStationIndex(null)}
         onConfirm={handleDeleteStation}
       />
     </>

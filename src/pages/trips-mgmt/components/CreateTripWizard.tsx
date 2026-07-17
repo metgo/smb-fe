@@ -9,6 +9,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 
+import { useSearchParams } from "react-router-dom";
+
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ModalWrapper } from "@/components/wrapper";
 import { WizardFooter, WizardStepper } from "@/components/shared";
@@ -32,12 +34,17 @@ const CreateTripWizard = ({
 }: CreateTripWizardProps) => {
   const { t } = useTranslation("trips");
   const { textPrimary, isDark } = useThemeClasses();
+  const [searchParams] = useSearchParams();
+  const isEdit = Boolean(searchParams.get("id"));
 
   const [currentStep, setCurrentStep] = useState(1);
 
   const {
     handleSubmit,
     handleInputChange,
+    validateStep,
+    errors,
+    setErrors,
     formData,
     description,
     setDescription,
@@ -73,9 +80,25 @@ const CreateTripWizard = ({
   ];
   const totalSteps = steps.length;
 
-  const handleNext = () =>
+  const handleNext = () => {
+    if (!validateStep(currentStep)) return;
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+  };
   const handlePrevious = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+
+  const handleStepClick = (step: number) => {
+    if (step <= currentStep) {
+      setCurrentStep(step);
+      return;
+    }
+    for (let s = currentStep; s < step; s++) {
+      if (!validateStep(s)) {
+        setCurrentStep(s);
+        return;
+      }
+    }
+    setCurrentStep(step);
+  };
 
   const handlePublish = () => {
     handleSubmit({ preventDefault: () => {} } as React.FormEvent, false);
@@ -91,16 +114,15 @@ const CreateTripWizard = ({
         return (
           <TripBasicInfo
             t={t}
-            isEdit={false}
+            isEdit={isEdit}
             formData={formData}
-            errors={{}}
+            errors={errors}
             handleInputChange={handleInputChange}
             description={description}
             setDescription={setDescription}
             shortDescription={shortDescription}
             setshortDescription={setshortDescription}
-
-            setErrors={() => {}}
+            setErrors={setErrors}
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
@@ -168,7 +190,7 @@ const CreateTripWizard = ({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className={clsx("text-lg md:text-2xl truncate", textPrimary)}>
-              {t("create_trip")}
+              {isEdit ? t("edit_trip") : t("create_trip")}
             </h2>
             <p
               className={`text-xs md:text-sm truncate ${isDark ? "text-gray-400" : "text-gray-600"}`}
@@ -183,7 +205,7 @@ const CreateTripWizard = ({
           steps={steps}
           currentStep={currentStep}
           totalSteps={steps.length}
-          onStepClick={setCurrentStep}
+          onStepClick={handleStepClick}
         />
       </div>
 
