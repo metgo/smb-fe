@@ -1,34 +1,21 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { TripStatus, TripTypes } from '../trips.types';
-import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
-import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
-import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { normalizePhone } from 'src/common/utils/normalise-phone';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 
 @Schema({ _id: false })
 export class Image {
   @Prop() image: string;
-  @Prop() caption: string;
   @Prop() alt: string;
   @Prop() isPrimary: boolean;
   @Prop() stationId: string;
-  @Prop({
-    type: {
-      xMax: Number,
-      xMin: Number,
-      yMax: Number,
-      yMin: Number,
-    },
-  })
-    subCoordinates: Record<string, number>;
 }
 export const ImageSchema = SchemaFactory.createForClass(Image);
 
@@ -124,6 +111,14 @@ export class Trip extends AuditableSchema {
   })
     dmoId: mongoose.Types.ObjectId;
 
+  @Prop({
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: ExternalApi.name,
+    required: false,
+    default: [],
+  })
+    associatedWebsiteIds: mongoose.Types.ObjectId[];
+
   @Prop()
     slug: string;
 
@@ -141,30 +136,6 @@ export class Trip extends AuditableSchema {
 
   @Prop()
     totalDistanceCovered?: number;
-
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
-    required: false,
-  })
-    groupTypesId: mongoose.Types.ObjectId[];
-
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
-    required: false,
-  })
-    accessibilitiesId: mongoose.Types.ObjectId[];
-
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
-    required: false,
-  })
-    categoriesId: mongoose.Types.ObjectId[];
-
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
-    required: false,
-  })
-    subCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({ default: true })
     isTrip: boolean;

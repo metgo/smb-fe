@@ -120,11 +120,12 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         serviceType: ServicesTypes.EVENT,
       }));
 
-      // Trips have no TripsAudit collection and no website-association field,
-      // so - same as events - they're no longer curated per-category via cat.tripIds:
-      // every APPROVED trip shows up under every category on every site.
+      // Trips are no longer curated per-category via cat.tripIds - same as events,
+      // site scoping is determined solely by Trip.associatedWebsiteIds.
       const trips = await this.TripModel.find({
+        associatedWebsiteIds: siteSetting._id,
         status: TripStatus.APPROVED,
+        isDeleted: { $ne: true },
       })
         .select('slug name shortDescription images groupTypesId accessibilitiesId')
         .lean();
