@@ -180,5 +180,12 @@
   "closed": "مغلق",
   "close_all_orders": "إغلاق جميع الطلبات",
   "orders_closed_successfully": "تم إغلاق جميع الطلبات بنجاح",
-  "close_orders_failed": "فشل إغلاق الطلبات"
+  "close_orders_failed": "فشل إغلاق الطلبات",
+  "close_all_orders_target_month": "سيؤدي هذا إلى إغلاق وإنهاء جميع الطلبات القابلة للدفع لشهر {{month}}",
+  "close_all_orders_warning_desc": "هذا الإجراء لا يتأثر بمرشح الشهر أعلاه - فهو يطبق دائمًا على الشهر التقويمي السابق، بغض النظر عما هو معروض حاليًا في القائمة.",
+  "close_all_orders_ignores_filter_notice": "يجب التأكد من إتمام الدفع للموردين خارج المنصة قبل تأكيد هذا الإجراء.",
+  "close_all_orders_confirm": "إغلاق طلبات {{month}}",
+  "close_all_orders_checking_older_months": "جارٍ التحقق من الأشهر القديمة التي تم حلها...",
+  "close_all_orders_also_includes": "سيؤدي هذا أيضًا إلى إغلاق هذه الأشهر القديمة، التي تم حلها بالكامل الآن:",
+  "close_all_orders_preview_error": "تعذر التحقق من الأشهر القديمة التي تم حلها - يرجى المحاولة مرة أخرى قبل التأكيد."
 }

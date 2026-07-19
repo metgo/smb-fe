@@ -1,10 +1,5 @@
 import { useTranslation } from "react-i18next";
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
 
 import {
@@ -20,11 +15,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  PageHeader,
-  PageStats,
-  ShowColumns,
-} from "@/components/shared";
+import { PageHeader, PageStats, ShowColumns } from "@/components/shared";
 import {
   FilterSelect,
   MonthFilter,
@@ -56,7 +47,9 @@ const defaultSummaryColumns = {
 
 type SummaryColumnVisibility = typeof defaultSummaryColumns;
 
-const summaryColumnSettingsDefs = Object.keys(defaultSummaryColumns).map((key) => ({ key }));
+const summaryColumnSettingsDefs = Object.keys(defaultSummaryColumns).map(
+  (key) => ({ key }),
+);
 
 export default function OrdersSummaryMgmtPage() {
   const navigate = useNavigate();
@@ -80,7 +73,9 @@ export default function OrdersSummaryMgmtPage() {
     month: "all",
   });
 
-  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(null);
+  const [pendingDownloadId, setPendingDownloadId] = useState<string | null>(
+    null,
+  );
 
   const [businessOrderParams, setBusinessOrderParams] = useState<{
     page: number;
@@ -107,11 +102,22 @@ export default function OrdersSummaryMgmtPage() {
     if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
       const [month, year] = summaryFilters.month.split("-");
 
+      // format from the Date's own local year/month/day, not
+      // toISOString() - that converts to UTC first, which silently shifts
+      // the date back a day for any timezone ahead of UTC (midnight local
+      // time is still "yesterday evening" in UTC)
+      const formatLocalDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
       const firstDay = new Date(Number(year), Number(month) - 1, 1);
       const lastDay = new Date(Number(year), Number(month), 0);
 
-      params.startDate = firstDay.toISOString().split("T")[0];
-      params.endDate = lastDay.toISOString().split("T")[0];
+      params.startDate = formatLocalDate(firstDay);
+      params.endDate = formatLocalDate(lastDay);
     }
 
     // Custom date range
@@ -121,13 +127,7 @@ export default function OrdersSummaryMgmtPage() {
     }
 
     return params;
-  }, [
-    pageSummary,
-    searchTermSummary,
-    summaryFilters,
-    authorityId,
-    dmoId,
-  ]);
+  }, [pageSummary, searchTermSummary, summaryFilters, authorityId, dmoId]);
 
   const {
     data: orderSummaries,
@@ -511,7 +511,9 @@ export default function OrdersSummaryMgmtPage() {
                   showColumnSettings={showColumnSettings}
                   setShowColumnSettings={setShowColumnSettings}
                   setColumnVisibility={setColumnVisibility}
-                  resetToDefault={() => setColumnVisibility(defaultSummaryColumns)}
+                  resetToDefault={() =>
+                    setColumnVisibility(defaultSummaryColumns)
+                  }
                 />
                 <ExportOrdersButton
                   orders={[]}

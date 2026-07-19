@@ -191,7 +191,6 @@ export default function OrdersMgmtPage() {
     }
   }, [urlOrderId, canUseAuthenticatedOrderApis]);
 
-
   //camera persmissions
   const [stream, setStream] = useState<MediaStream | null>(null);
 
@@ -342,11 +341,22 @@ export default function OrdersMgmtPage() {
     if (filters.month !== "all" && filters.month !== "custom") {
       const [month, year] = filters.month.split("-");
 
+      // format from the Date's own local year/month/day, not
+      // toISOString() - that converts to UTC first, which silently shifts
+      // the date back a day for any timezone ahead of UTC (midnight local
+      // time is still "yesterday evening" in UTC)
+      const formatLocalDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
       const firstDay = new Date(Number(year), Number(month) - 1, 1);
       const lastDay = new Date(Number(year), Number(month), 0);
 
-      params.startDate = firstDay.toISOString().split("T")[0];
-      params.endDate = lastDay.toISOString().split("T")[0];
+      params.startDate = formatLocalDate(firstDay);
+      params.endDate = formatLocalDate(lastDay);
     }
 
     // Custom date range
@@ -551,7 +561,6 @@ export default function OrdersMgmtPage() {
     sortable?: boolean;
     render?: (row: IOrder) => React.ReactNode;
   }[];
-
 
   const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
@@ -899,70 +908,70 @@ export default function OrdersMgmtPage() {
                 </div>
 
                 <>
-                    <div className="min-w-45">
-                      <FilterSelect
-                        label={t("deliveryType")}
-                        value={filters.deliveryType}
-                        onChange={(value) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            deliveryType: value,
-                          }))
-                        }
-                        options={[
-                          { value: "all", label: t("all") },
-                          { value: "pick_up", label: t("pickups") },
-                          { value: "deliver", label: t("delivery") },
-                        ]}
-                      />
-                    </div>
+                  <div className="min-w-45">
+                    <FilterSelect
+                      label={t("deliveryType")}
+                      value={filters.deliveryType}
+                      onChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          deliveryType: value,
+                        }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "pick_up", label: t("pickups") },
+                        { value: "deliver", label: t("delivery") },
+                      ]}
+                    />
+                  </div>
 
-                    <div className="min-w-45">
-                      <FilterSelect
-                        label={t("paymentMethod")}
-                        value={filters.paymentMethod}
-                        onChange={(value) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            paymentMethod: value,
-                          }))
-                        }
-                        options={[
-                          { value: "all", label: t("all") },
-                          { value: "voucher", label: t("voucher") },
-                          { value: "card", label: t("creditCard") },
-                        ]}
-                      />
-                    </div>
+                  <div className="min-w-45">
+                    <FilterSelect
+                      label={t("paymentMethod")}
+                      value={filters.paymentMethod}
+                      onChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          paymentMethod: value,
+                        }))
+                      }
+                      options={[
+                        { value: "all", label: t("all") },
+                        { value: "voucher", label: t("voucher") },
+                        { value: "card", label: t("creditCard") },
+                      ]}
+                    />
+                  </div>
 
-                    {/* Active Filter Chips */}
-                    {activeFilterChips?.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-3 mt-3">
-                        <div className="flex flex-wrap gap-2">
-                          {activeFilterChips.map((chip) => (
-                            <FilterChips
-                              key={chip.key}
-                              label={t(chip.value)}
-                              onRemove={() =>
-                                setFilters((prev) => ({
-                                  ...prev,
-                                  [chip.key]: chip.key.includes("date")
-                                    ? ""
-                                    : "all",
-                                }))
-                              }
-                            />
-                          ))}
-                        </div>
-                        <button
-                          onClick={() => setFilters(defaultFilters)}
-                          className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                        >
-                          {t("clear_all")}
-                        </button>
+                  {/* Active Filter Chips */}
+                  {activeFilterChips?.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-3 mt-3">
+                      <div className="flex flex-wrap gap-2">
+                        {activeFilterChips.map((chip) => (
+                          <FilterChips
+                            key={chip.key}
+                            label={t(chip.value)}
+                            onRemove={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                [chip.key]: chip.key.includes("date")
+                                  ? ""
+                                  : "all",
+                              }))
+                            }
+                          />
+                        ))}
                       </div>
-                    )}
-                  </>
+                      <button
+                        onClick={() => setFilters(defaultFilters)}
+                        className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
+                      >
+                        {t("clear_all")}
+                      </button>
+                    </div>
+                  )}
+                </>
               </div>
             )}
           </div>

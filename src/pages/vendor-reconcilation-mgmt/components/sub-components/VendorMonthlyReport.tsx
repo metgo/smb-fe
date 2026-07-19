@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import OrderDetailsModal from "./OrderDetailsModal";
 import DisputeModal from "./DisputeModal";
 import CancelOrderModal from "./CancelOrderModal";
+import CloseAllOrdersModal from "./CloseAllOrdersModal";
 import { AdminDisputeResponseModal } from "./AdminDisputeReponseModal";
 import ExportOrdersButton from "../ExportOrdersButton";
 import { useAppSelector } from "@/hooks/hooks";
@@ -23,6 +24,7 @@ import {
   useGetReconciliationStatsQuery,
   useBulkMarkOrderAsCompletedMutation,
   useFinalizeClosedOrdersMutation,
+  usePreviewFinalizeClosedOrdersQuery,
 } from "@/store/api/reconciliationQueryApi";
 import { useLazyGetBusinessForProductQuery } from "@/store/api/businessQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
@@ -205,6 +207,7 @@ export const VendorMonthlyReport = () => {
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAdminDisputeModal, setShowAdminDisputeModal] = useState(false);
+  const [showCloseAllOrdersModal, setShowCloseAllOrdersModal] = useState(false);
   const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [disputedCount, setDisputedCount] = useState(0);
@@ -249,11 +252,22 @@ export const VendorMonthlyReport = () => {
     if (filters.month !== "all" && filters.month !== "custom") {
       const [month, year] = filters.month.split("-");
 
+      // format from the Date's own local year/month/day, not
+      // toISOString() - that converts to UTC first, which silently shifts
+      // the date back a day for any timezone ahead of UTC (midnight local
+      // time is still "yesterday evening" in UTC)
+      const formatLocalDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
       const firstDay = new Date(Number(year), Number(month) - 1, 1);
       const lastDay = new Date(Number(year), Number(month), 0);
 
-      params.startDate = firstDay.toISOString().split("T")[0];
-      params.endDate = lastDay.toISOString().split("T")[0];
+      params.startDate = formatLocalDate(firstDay);
+      params.endDate = formatLocalDate(lastDay);
     }
 
     // Custom date range
@@ -279,7 +293,17 @@ export const VendorMonthlyReport = () => {
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const [bulkMarkOrderAsCompleted] = useBulkMarkOrderAsCompletedMutation();
   const [bulkApproveOrderProducts] = useBulkApproveOrderProductsMutation();
-  const [finalizeClosedOrders] = useFinalizeClosedOrdersMutation();
+  const [finalizeClosedOrders, { isLoading: isClosingAllOrders }] =
+    useFinalizeClosedOrdersMutation();
+  // only fetched while the confirmation modal is actually open - no point
+  // hitting this on every page load
+  const {
+    data: finalizeSweepPreview,
+    isFetching: isFetchingSweepPreview,
+    isError: isSweepPreviewError,
+  } = usePreviewFinalizeClosedOrdersQuery(undefined, {
+    skip: !showCloseAllOrdersModal,
+  });
   const { data: reconciliationStats, refetch: refetchReconciliationStats } =
     useGetReconciliationStatsQuery();
   const { data: allWebsites } = useGetAllWebsitesQuery();
@@ -712,12 +736,39 @@ export const VendorMonthlyReport = () => {
     }
   };
 
+  // Prefer the backend's own authoritative targetMonth (computed in
+  // Asia/Jerusalem time, same as the actual finalize call) once the preview
+  // loads - the client-side "last calendar month" guess below is only a
+  // placeholder shown for the brief moment before that response arrives,
+  // since the browser's local clock/timezone can disagree with the server
+  // near a month boundary or under clock skew, and this label is what the
+  // CFO confirms against.
+  const targetMonth = finalizeSweepPreview?.targetMonth;
+  const closeAllOrdersTargetMonthLabel = useMemo(() => {
+    if (targetMonth) {
+      const [month, year] = targetMonth.split("/").map(Number);
+      if (month && year) {
+        return new Date(year, month - 1, 1).toLocaleString(undefined, {
+          month: "long",
+          year: "numeric",
+        });
+      }
+    }
+    const now = new Date();
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return previousMonth.toLocaleString(undefined, {
+      month: "long",
+      year: "numeric",
+    });
+  }, [targetMonth]);
+
   const handleCloseAllOrders = async () => {
     try {
       await finalizeClosedOrders({
         confirmFinalize: true,
       }).unwrap();
 
+      setShowCloseAllOrdersModal(false);
       toast.success(t("orders_closed_successfully"));
       refetchOrders();
       refetchReconciliationStats();
@@ -988,7 +1039,7 @@ export const VendorMonthlyReport = () => {
           </div>
           {adminView && (
             <button
-              onClick={handleCloseAllOrders}
+              onClick={() => setShowCloseAllOrdersModal(true)}
               className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
             >
               {t("close_all_orders")}
@@ -1367,6 +1418,18 @@ export const VendorMonthlyReport = () => {
             setDetailsOrderId(null);
           }}
           onResolve={handleAdminResolveDispute}
+        />
+      )}
+
+      {showCloseAllOrdersModal && (
+        <CloseAllOrdersModal
+          targetMonthLabel={closeAllOrdersTargetMonthLabel}
+          sweptMonths={finalizeSweepPreview?.sweptMonths ?? []}
+          isLoadingPreview={isFetchingSweepPreview}
+          hasPreviewError={isSweepPreviewError}
+          isConfirming={isClosingAllOrders}
+          onClose={() => setShowCloseAllOrdersModal(false)}
+          onConfirm={handleCloseAllOrders}
         />
       )}
     </div>

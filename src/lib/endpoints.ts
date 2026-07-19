@@ -73,6 +73,9 @@ export const endpoints = {
   reconciliationStats: "/orders/reconciliation-stats",
   bulkMarkAsComplete: "/orders/bulk-order-product-status",
   finaliseApprovedOrders: "/admin/monthly-reports/finalize-closed-orders",
+  previewFinaliseApprovedOrders:
+    "/admin/monthly-reports/finalize-closed-orders/preview",
+
   // public
   publicEventTicket: "/public/event-tickets",
   publicSessionTicket: "/public/session-tickets",

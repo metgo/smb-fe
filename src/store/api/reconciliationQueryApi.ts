@@ -38,6 +38,11 @@ export interface BulkMarkAsCompletedRequest {
 export interface FinalizeClosedOrdersRequest {
   confirmFinalize: boolean;
 }
+
+export interface FinalizeSweepPreview {
+  targetMonth: string;
+  sweptMonths: { label: string; payoutAmount: number }[];
+}
 export const reconciliationQueryApi = createApi({
   reducerPath: "reconciliationQueryApi",
   baseQuery: axiosBaseQuery(),
@@ -151,6 +156,14 @@ export const reconciliationQueryApi = createApi({
         data: body,
       }),
     }),
+
+    // GET /admin/monthly-reports/finalize-closed-orders/preview
+    previewFinalizeClosedOrders: builder.query<FinalizeSweepPreview, void>({
+      query: () => ({
+        url: endpoints.previewFinaliseApprovedOrders,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -166,4 +179,5 @@ export const {
   useBulkMarkOrderAsCompletedMutation,
   useGetReconciliationStatsQuery,
   useFinalizeClosedOrdersMutation,
+  usePreviewFinalizeClosedOrdersQuery,
 } = reconciliationQueryApi;
