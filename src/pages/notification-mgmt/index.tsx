@@ -476,7 +476,10 @@ export default function NotificationsMgmtPage() {
                         refetchNotifStats();
                         refetchNotifList();
                         // For DISPUTE, use orderProductId as the query parameter
-                        const paramName = itemType === "DISPUTE" ? "orderProductId" : queryParam;
+                        const paramName =
+                          itemType === "DISPUTE"
+                            ? "orderProductId"
+                            : queryParam;
                         navigate(
                           `${itemEndpoint[itemType]}?${paramName}=${notification.orderProductId}`,
                         );

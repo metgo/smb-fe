@@ -28,10 +28,10 @@ const NotificationStatsCards = ({ stats }: { stats: INotificationStats }) => {
       icon: Info,
       color: "purple",
     },
-     {
+    {
       label: t("dispute"),
       value: stats.dispute,
-      icon: Siren ,
+      icon: Siren,
       color: "red",
     },
     {

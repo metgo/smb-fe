@@ -585,7 +585,10 @@ function App() {
             { path: routes.websiteConfig, element: <WebsiteConfigPage /> },
 
             { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
-            { path: routes.ordersSummaryMgmt, element: <OrdersSummaryMgmtPage /> },
+            {
+              path: routes.ordersSummaryMgmt,
+              element: <OrdersSummaryMgmtPage />,
+            },
             {
               path: routes.notificationMgmt,
               element: <NotificationsMgmtPage />,

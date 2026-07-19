@@ -68,8 +68,12 @@ export default function CancelOrderModal({
             <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h2 className={`text-xl font-bold ${textPrimary}`}>{t("cancel_order")}</h2>
-            <p className={`text-sm ${textTertiary}`}>{t("order_number")} #{order._id}</p>
+            <h2 className={`text-xl font-bold ${textPrimary}`}>
+              {t("cancel_order")}
+            </h2>
+            <p className={`text-sm ${textTertiary}`}>
+              {t("order_number")} #{order._id}
+            </p>
           </div>
         </div>
       </div>
