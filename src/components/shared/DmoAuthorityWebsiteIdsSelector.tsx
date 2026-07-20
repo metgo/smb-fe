@@ -38,7 +38,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
   const { dmosAuthorities, allWebsites } = useCommon();
   const { isDark } = useThemeClasses();
   const { dmoId } = useAppSelector((state) => state.auth);
-  const { isSuperadmin, isDMO, isAuthority } = useUserRoles();
+  const { isDMO, isAuthority } = useUserRoles();
 
   // Auto-select DMO user's own DMO on mount
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function DmoAuthorityWebsiteIdsSelector({
     (item) => item?._id === selectedDmoId,
   );
 
-  const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
+  const { associatedWebsites } = useMemo(() => {
     const result = {
       associatedWebsites: [] as IWebsite[],
       unAssociatedWebsites: [] as IWebsite[],
