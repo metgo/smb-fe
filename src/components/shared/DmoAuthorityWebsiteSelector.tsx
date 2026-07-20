@@ -343,13 +343,13 @@ export default function DmoAuthorityWebsiteSelector({
       {/* Websites */}
       {(selectedDmoId || selectedAuthorityId) && (
         <div className="space-y-4">
-          <label
+          {/* <label
             className={`block text-sm mb-2 ${
               isDark ? "text-gray-300" : "text-gray-800"
             }`}
           >
             {t("website_visibility")}
-          </label>
+          </label> */}
 
           {renderSection(
             t("select_associated_websites"),
