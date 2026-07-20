@@ -45,8 +45,7 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         throw new NotFoundException(`SITE ${ServerErrors.NOT_FOUND}`);
       }
 
-      const select
-        = 'siteTopics';
+      const select = 'siteTopics';
 
       const siteSettings = await this.SiteFiltersConfigModel.findOne({
         externalApiId: siteSetting._id,
@@ -66,7 +65,8 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
           },
           {
             path: 'siteTopics.siteCategories.fundayIds',
-            select: 'slug name shortDescription images groupTypesId accessibilitiesId',
+            select:
+              'slug name  shortDescription images groupTypesId accessibilitiesId',
           },
           {
             path: 'siteTopics.siteCategories.productIds',
@@ -110,7 +110,9 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
           },
         ],
       })
-        .select('slug name shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address dayDescription eventId')
+        .select(
+          'slug name nameHe shortDescriptionHe shortDescription geoLocation images primaryCategoryId groupTypesId accessibilitiesId address dayDescription eventId',
+        )
         .lean();
 
       const siteEvents = events.map((event: any) => ({
@@ -127,7 +129,9 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
         status: TripStatus.APPROVED,
         isDeleted: { $ne: true },
       })
-        .select('slug name shortDescription images groupTypesId accessibilitiesId')
+        .select(
+          'slug name shortDescription images groupTypesId accessibilitiesId',
+        )
         .lean();
 
       const siteTrips = trips.map((trip: any) => ({
@@ -199,7 +203,10 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
                   ),
                   businessIds: (cat.businessIds || [])
                     .filter(Boolean)
-                    .map((item: any) => ({ ...this.localizeItem(item, locale), serviceType: ServicesTypes.BUSINESS })),
+                    .map((item: any) => ({
+                      ...this.localizeItem(item, locale),
+                      serviceType: ServicesTypes.BUSINESS,
+                    })),
                   poiIds: (cat.poiIds || [])
                     .filter(Boolean)
                     .map((item: any) => ({
@@ -242,8 +249,12 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
 
   private localizeItem(item: any, locale: Locale) {
     const {
-      name, nameHe, nameAr,
-      shortDescription, shortDescriptionHe, shortDescriptionAr,
+      name,
+      nameHe,
+      nameAr,
+      shortDescription,
+      shortDescriptionHe,
+      shortDescriptionAr,
       images,
       ...rest
     } = item;
@@ -251,7 +262,11 @@ implements IQueryHandler<GetSiteConfigByIdentifierIdQuery> {
       ...rest,
       name: this.localizeString({ base: name, he: nameHe, ar: nameAr }, locale),
       shortDescription: this.localizeString(
-        { base: shortDescription, he: shortDescriptionHe, ar: shortDescriptionAr },
+        {
+          base: shortDescription,
+          he: shortDescriptionHe,
+          ar: shortDescriptionAr,
+        },
         locale,
       ),
       images: this.sanitizeImages(images),
