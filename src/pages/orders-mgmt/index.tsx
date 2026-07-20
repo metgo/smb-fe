@@ -26,7 +26,7 @@ import {
   Building2,
 } from "lucide-react";
 
-import { useAppSelector } from "@/hooks/hooks";
+import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCommon } from "@/hooks/useCommon";
 import { envKeys } from "@/lib/envKeys";
@@ -64,6 +64,7 @@ import { useNavigate } from "react-router-dom";
 import { OrdersModal } from "./components/OrdersModal";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { formatILS } from "@/helpers/formatter";
+import { setDmo, setAuthority } from "@/features/authSlice";
 
 const limit = 20;
 
@@ -98,6 +99,7 @@ export default function OrdersMgmtPage() {
   const { dmoId, authorityId, websiteId } = useAppSelector(
     (state) => state.auth,
   );
+  const dispatch = useAppDispatch();
   const { isSuperadmin, isTraveller } = useUserRoles();
   const { isDark, isRTL, language } = useThemeClasses();
   const { dmosAuthorities } = useCommon();
@@ -253,12 +255,10 @@ export default function OrdersMgmtPage() {
     // Month filter
     if (summaryFilters.month !== "all" && summaryFilters.month !== "custom") {
       const [month, year] = summaryFilters.month.split("-");
+      const lastDay = new Date(Number(year), Number(month), 0).getDate();
 
-      const firstDay = new Date(Number(year), Number(month) - 1, 1);
-      const lastDay = new Date(Number(year), Number(month), 0);
-
-      params.startDate = firstDay.toISOString().split("T")[0];
-      params.endDate = lastDay.toISOString().split("T")[0];
+      params.startDate = `${year}-${month}-01`;
+      params.endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
     }
 
     // Custom date range
@@ -274,6 +274,8 @@ export default function OrdersMgmtPage() {
     limit: number;
     businessId?: string;
     detailedView: boolean;
+    startDate?: string;
+    endDate?: string;
   } | null>(null);
 
   const {
@@ -956,6 +958,24 @@ export default function OrdersMgmtPage() {
                 limit: 10,
                 businessId: row._id,
                 detailedView: true,
+                ...(summaryFilters.month !== "all" &&
+                  summaryFilters.month !== "custom" &&
+                  (() => {
+                    const [month, year] = summaryFilters.month.split("-");
+                    const lastDay = new Date(
+                      Number(year),
+                      Number(month),
+                      0,
+                    ).getDate();
+                    return {
+                      startDate: `${year}-${month}-01`,
+                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                    };
+                  })()),
+                ...(summaryFilters.month === "custom" && {
+                  startDate: summaryFilters.startDate || undefined,
+                  endDate: summaryFilters.endDate || undefined,
+                }),
               });
 
               setIsOpen(true); // open modal
@@ -986,6 +1006,24 @@ export default function OrdersMgmtPage() {
                 limit: 10,
                 businessId: row._id,
                 detailedView: true,
+                ...(summaryFilters.month !== "all" &&
+                  summaryFilters.month !== "custom" &&
+                  (() => {
+                    const [month, year] = summaryFilters.month.split("-");
+                    const lastDay = new Date(
+                      Number(year),
+                      Number(month),
+                      0,
+                    ).getDate();
+                    return {
+                      startDate: `${year}-${month}-01`,
+                      endDate: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
+                    };
+                  })()),
+                ...(summaryFilters.month === "custom" && {
+                  startDate: summaryFilters.startDate || undefined,
+                  endDate: summaryFilters.endDate || undefined,
+                }),
               });
               // downloadAsXLS(row);
               setPendingDownloadId(row._id);
@@ -1428,11 +1466,15 @@ export default function OrdersMgmtPage() {
                 {orderSummaryClick &&
                   (summaryFilters.status !== "all" ||
                     summaryFilters.month !== "all" ||
-                    summaryFilters.dmoId !== "all" ||
-                    summaryFilters.authorityId !== "all") && (
+                    !!dmoId ||
+                    !!authorityId) && (
                     <div className="min-w-55 mt-10">
                       <button
-                        onClick={() => setSummaryFilters(defaultSummaryFilters)}
+                        onClick={() => {
+                          setSummaryFilters(defaultSummaryFilters);
+                          dispatch(setDmo(""));
+                          dispatch(setAuthority(""));
+                        }}
                         className="px-3 py-1 bg-red-500/20 text-red-500 rounded-full text-xs hover:bg-red-500/30 transition-colors"
                       >
                         {t("clear_all")}
