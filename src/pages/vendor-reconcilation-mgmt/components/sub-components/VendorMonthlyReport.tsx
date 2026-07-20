@@ -969,17 +969,12 @@ export const VendorMonthlyReport = () => {
           className="flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {order.status === "pending" && userRole !== "traveller" && (
-            <button
-              onClick={() => handleApprove(order)}
-              className="p-1.5 rounded text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-              title={t("approve")}
-            >
-              <CheckCircle className="w-4 h-4" />
-            </button>
-          )}
-          {order.status !== "canceled" &&
-            order.reconciliationStatus == "pending" &&
+          
+          {order.status !== "canceled" 
+            && order.reconciliationStatus !== "approved" 
+                        && order.reconciliationStatus !== "disputed" 
+
+            && order.reconciliationStatus !== "rejected" &&
             userRole === "traveller" && (
               <button
                 onClick={() => handleOpenDispute(order)}
@@ -990,7 +985,7 @@ export const VendorMonthlyReport = () => {
               </button>
             )}
           {order.reconciliationStatus === "disputed" &&
-            userRole !== "traveller" && (
+            adminView && (
               <button
                 onClick={() => handleApproveDispute(order)}
                 className="p-1.5 rounded-full text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
@@ -1000,7 +995,7 @@ export const VendorMonthlyReport = () => {
               </button>
             )}
           {order.status !== "canceled" &&
-            order.reconciliationStatus !== "disputed" &&
+            order.reconciliationStatus !== "disputed" &&  order.reconciliationStatus !== "approved" &&  order.reconciliationStatus !== "rejected" &&
             order.status !== "completed" && (
               <button
                 onClick={() => handleCancelOrder(order)}
