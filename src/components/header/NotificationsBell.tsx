@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Check,
   Eye,
+  Siren,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -139,6 +140,12 @@ const NotificationsBell = () => {
         return (
           <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
             <XCircle className="w-4 h-4 text-red-500" />
+          </span>
+        );
+         case "DISPUTE":
+        return (
+          <span className={`${base} bg-red-100 dark:bg-red-900/40`}>
+            <Siren className="w-4 h-4 text-red-500" />
           </span>
         );
     }

@@ -169,7 +169,8 @@ type TNotifType =
   | "ACTION"
   | "URGENT"
   | "ERROR"
-  | "UNREAD";
+  | "UNREAD"
+  | "DISPUTE";
 
 type TItemStatus =
   | "PENDING"
